@@ -1,35 +1,37 @@
 {
-  "status": "done",
-  "user_goal": "在 Global ETF Backtest MVP 实现前，吸收独立 PRD/架构审计意见，补充 Portfolio Manager、T+1 Open 成交假设、PIT 数据降级、Tax-lot/OMS 边界和 AI filing prefilter 规则。",
-  "total_features": 6,
-  "completed_features": 6,
+  "status": "building",
+  "user_goal": "实现 fixture/mock-first 的 Global ETF Momentum 回测 MVP，包含 Python package、CI、fixture 数据、策略信号、T+1 Open 月度回测、风险检查、JSON/Markdown 报告、Python workflow E2E 和 no-live/no-secret/no-network guard tests。",
+  "total_features": 8,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F006",
+  "current_sprint": "F001",
   "last_updated": "2026-05-12",
   "reference_docs": [
+    "docs/specs/B006-global-etf-backtest-mvp-spec.md",
     "docs/specs/B005-pre-backtest-architecture-adjudication-spec.md",
     "docs/specs/B004-core-engineering-foundation-spec.md",
     "docs/prd/mvp-prd.md",
-    "docs/architecture/01-broker-adapter-spec.md",
-    "docs/architecture/02-data-model-point-in-time-policy.md",
-    "docs/architecture/03-environment-isolation-and-live-authorization.md",
-    "docs/research/strategy-audit-report-2026-05-12.md",
-    "docs/research/prd-architecture-audit-2026-05-12.md"
+    "docs/engineering/python-package-boundary.md",
+    "docs/engineering/config-and-environment-policy.md",
+    "docs/engineering/testing-and-fixture-policy.md",
+    "docs/engineering/no-live-safety-guards.md",
+    "docs/engineering/backtest-report-schema.md",
+    "docs/engineering/portfolio-allocation-boundary.md",
+    "docs/strategy/00-master-portfolio-allocation.md",
+    "docs/strategy/01-global-etf-momentum-rotation.md"
   ],
   "docs": {
-    "spec": "docs/specs/B005-pre-backtest-architecture-adjudication-spec.md",
-    "test_cases": "docs/test-reports/B005-pre-backtest-architecture-adjudication-review-2026-05-12.md",
-    "signoff": "docs/test-reports/B005-pre-backtest-architecture-adjudication-signoff-2026-05-12.md",
+    "spec": "docs/specs/B006-global-etf-backtest-mvp-spec.md",
+    "test_cases": null,
+    "signoff": null,
     "framework_reviewed": true
   },
   "role_assignments": null,
-  "evaluator_feedback": {
-    "summary": "Independent Evaluator reviewed B005 architecture adjudications against B001-B004 and both independent audit reports. No blocking consistency defects were found. B005 remains documentation-only and does not authorize product code, live trading, real broker calls, external API hard dependency, hidden secret dependency, formal frontend implementation, or tax advice."
-  },
-  "generator_handoff": "Planner completed B005 F001-F005 as a pure documentation/adjudication batch after B004 signoff. Evaluator should execute F006 only: review B005 docs against B001-B004 plus docs/research/strategy-audit-report-2026-05-12.md and docs/research/prd-architecture-audit-2026-05-12.md; verify B005 does not authorize product code, live trading, real broker calls, external API hard dependency, hidden secret dependency, formal frontend implementation, or tax advice.",
+  "evaluator_feedback": null,
+  "generator_handoff": "Generator should implement B006 features sequentially, starting with F001. B006 must create Python CI and tests, not CD; must not introduce Vitest, Playwright, Cypress, browser E2E, frontend, broker, paper/live, external API hard dependency, database, deployment, tax optimization, or AI trading. Required path is fixture/mock-first with pytest/ruff/compileall/mypy or documented staged mypy, Python workflow E2E, no-live/no-secret/no-network guard tests, T Close signals, T+1 Open execution, JSON/Markdown reports, and Portfolio Manager-compatible outputs.",
   "session_notes": {
-    "planner": "2026-05-12: User agreed to open B005-pre-backtest-architecture-adjudication after B004 signoff. B005 absorbs prd-architecture-audit findings: explicit Portfolio Manager chain, B006 T+1 Open default execution price, PIT degradation for non-PIT fundamentals, future tax-lot/OMS boundary, and AI filing prefilter before LLM. True Global ETF Backtest MVP is deferred to B006.",
-    "evaluator": "2026-05-12: User fixed this session identity as evaluator. Independent B005 F006 review completed with PASS. Created docs/test-reports/B005-pre-backtest-architecture-adjudication-review-2026-05-12.md and docs/test-reports/B005-pre-backtest-architecture-adjudication-signoff-2026-05-12.md."
+    "planner": "2026-05-12: B006 planning opened after user agreed with CI/testing decision. B006 is implementation batch for Global ETF Backtest MVP. Decision: CI yes, CD no, Vitest no, browser E2E no, Python workflow E2E yes. Status moved to building for Generator F001.",
+    "evaluator": null
   },
   "features": [
     "F001",
@@ -37,6 +39,8 @@
     "F003",
     "F004",
     "F005",
-    "F006"
+    "F006",
+    "F007",
+    "F008"
   ]
 }
