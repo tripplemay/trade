@@ -46,7 +46,7 @@
       "title": "策略研发文档一致性审查",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Evaluator 输出审查报告，检查五份策略文档之间的资金分配、风险约束、数据要求和上线门槛是否一致"
     }
   ]
