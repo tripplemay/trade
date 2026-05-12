@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "id": "B001-independent-reverification",
+    "title": "B001 策略研发文档独立复验",
+    "description": "B001 的一致性审查和 signoff 由同一会话自评生成，违反 Harness 规则。需要独立 Evaluator 重新审查五份策略文档，并生成新的正式审查报告和 signoff。",
+    "decisions": [
+      "保留 B001 生成的策略文档作为 Generator/Planner 产物。",
+      "既有 B001 review/signoff 已标记为 INVALIDATED PROCESS ARTIFACT，不得作为正式签收依据。",
+      "当前先修正 B002 为 verifying；B001 复验作为后续独立批次处理。"
+    ],
+    "confirmed_at": "2026-05-12",
+    "priority": "high"
+  }
+]

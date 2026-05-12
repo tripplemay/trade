@@ -1,10 +1,10 @@
 {
-  "status": "done",
+  "status": "verifying",
   "user_goal": "定义 AI 量化交易系统首期数据源、券商适配层、数据模型、point-in-time 政策和环境隔离规则。",
   "total_features": 5,
-  "completed_features": 5,
+  "completed_features": 4,
   "fix_rounds": 0,
-  "current_sprint": null,
+  "current_sprint": "F005",
   "last_updated": "2026-05-12",
   "reference_docs": [
     "docs/specs/B002-data-source-and-broker-adapter-spec.md"
@@ -12,19 +12,22 @@
   "docs": {
     "spec": "docs/specs/B002-data-source-and-broker-adapter-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B002-data-source-and-broker-adapter-signoff-2026-05-12.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
-  "generator_handoff": null,
-  "session_notes": {},
+  "evaluator_feedback": {
+    "summary": "Prior B002 review/signoff was self-generated in violation of Harness separation rules. Independent Evaluator must re-run F005. Existing B002 self-signoff report has been invalidated and must not be used as formal signoff. Current assistant identity is Planner only."
+  },
+  "generator_handoff": "B002 F001-F004 documents are complete. Prior F005 review/signoff was invalidated as self-signoff. Independent Evaluator should review docs/research/01-data-source-selection.md and docs/architecture/01-broker-adapter-spec.md, 02-data-model-point-in-time-policy.md, 03-environment-isolation-and-live-authorization.md; then produce a fresh B002 consistency review and signoff if PASS.",
+  "session_notes": {
+    "planner": "2026-05-12: User fixed this session identity as Planner. Planner recorded self-signoff violation, invalidated prior B001/B002 self-generated signoff artifacts, reset B002 to verifying with F005 pending, and added B001 independent re-verification to backlog."
+  },
   "features": [
     "F001",
     "F002",
     "F003",
     "F004",
-    "F005",
     "F005"
   ]
 }
