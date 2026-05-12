@@ -1,0 +1,28 @@
+# Harness agent local identity（本机身份，不入 git）
+.agent-id
+
+# Secrets and local environment
+.env
+.env.*
+*.key
+*.pem
+
+# Python / notebooks
+__pycache__/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Market data and local databases
+data/*
+!data/.gitkeep
+*.parquet
+*.csv
+*.db
+*.sqlite
+*.sqlite3
+logs/
+
+# OS / editor
+.DS_Store
+*.swp
+*.swo

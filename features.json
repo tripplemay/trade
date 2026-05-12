@@ -1,0 +1,53 @@
+{
+  "sprint": "B001-strategy-research-roadmap",
+  "features": [
+    {
+      "id": "F001",
+      "title": "编写全球 ETF 动量轮动策略说明书",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "文档包含资产池、信号、调仓频率、组合构建、风控规则、回测要求和上线门槛"
+    },
+    {
+      "id": "F002",
+      "title": "编写风险平价/波动率目标策略说明书",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "文档包含资产类别、波动率估计、权重算法、目标波动率、风险约束、回测指标和实盘门槛"
+    },
+    {
+      "id": "F003",
+      "title": "编写美股质量动量策略说明书",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "文档包含股票池、因子定义、组合构建、行业约束、数据要求、回测陷阱和上线门槛"
+    },
+    {
+      "id": "F004",
+      "title": "编写港股/中国 ETF 小仓位策略说明书",
+      "priority": "medium",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "文档说明港股/中国资产的仓位上限、ETF 优先原则、流动性约束、政策风险和回测要求"
+    },
+    {
+      "id": "F005",
+      "title": "编写 AI 新闻/公告风控策略说明书",
+      "priority": "medium",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "文档明确 AI 仅用于研究、解释和风险过滤，不直接触发实盘买入；包含输入、输出、置信度和审计要求"
+    },
+    {
+      "id": "F006",
+      "title": "策略研发文档一致性审查",
+      "priority": "high",
+      "executor": "codex",
+      "status": "pending",
+      "acceptance": "Evaluator 输出审查报告，检查五份策略文档之间的资金分配、风险约束、数据要求和上线门槛是否一致"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "status": "building",
+  "user_goal": "建立基于 Harness 的 AI 量化交易系统仓库，并启动首批策略研发路线图文档批次。",
+  "total_features": 6,
+  "completed_features": 0,
+  "fix_rounds": 0,
+  "current_sprint": "F001",
+  "last_updated": "2026-05-12",
+  "reference_docs": [
+    "docs/specs/B001-strategy-research-roadmap-spec.md"
+  ],
+  "docs": {
+    "spec": "docs/specs/B001-strategy-research-roadmap-spec.md",
+    "test_cases": null,
+    "signoff": null,
+    "framework_reviewed": false
+  },
+  "role_assignments": null,
+  "evaluator_feedback": null,
+  "generator_handoff": null,
+  "session_notes": {},
+  "features": [
+    "F001",
+    "F002",
+    "F003",
+    "F004",
+    "F005",
+    "F006"
+  ]
+}
