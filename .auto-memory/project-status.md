@@ -4,9 +4,9 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B006-global-etf-backtest-mvp：`done`**；Generator F001-F007 completed，Evaluator F008 L1 verification PASS.
-- Signoff: `docs/test-reports/B006-global-etf-backtest-mvp-signoff-2026-05-12.md`
-- L1 passed: pytest, ruff, compileall, mypy; workflow E2E generated JSON/Markdown reports.
+- **B007-backtest-quality-hardening：`building`**；Planner opened F001 after B006 signoff and user manual validation.
+- Goal: close B006 soft-watch with multi-rebalance fixtures, explicit missing T+1 Open handling, clean/warning risk scenarios, stronger metrics/equity curve reports, and preserved safety guards.
+- Local env ready: `.venv` Python 3.11.14; baseline pytest, ruff, compileall, mypy passed.
 
 ## 已完成签收
 - B001 strategy roadmap: `docs/test-reports/B001-independent-reverification-signoff-2026-05-12.md`
@@ -20,9 +20,9 @@ type: project
 - First implementation batch completed locally; no deployment, DB, broker API, secrets, or live-money operation.
 
 ## 下一步建议
-- Planner should decide next batch: deepen backtest metrics/fixtures, risk parity MVP, or paper/mock broker planning.
+- Generator should implement B007 F001-F005, then move status to verifying for F006.
 
 ## 已知 gap（非阻塞）
-- B006 soft-watch: one-rebalance metrics are shallow; missing T+1 open fallback should become configurable; add clean no-warning fixture later if needed.
+- B007 intentionally does not add live data, broker/paper execution, frontend, database, risk parity, multi-factor, or AI trading.
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->

@@ -1,69 +1,53 @@
 {
-  "sprint": "B006-global-etf-backtest-mvp",
+  "sprint": "B007-backtest-quality-hardening",
   "features": [
     {
       "id": "F001",
-      "title": "创建 Python package 骨架与 CI 工具链",
+      "title": "扩展多次月度调仓 fixture",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "创建 pyproject.toml、trade package、tests 目录和最小 GitHub Actions CI；CI 至少运行 pytest、ruff check、python -m compileall trade，并明确 mypy 启用或 staged adoption；不引入 Vitest、Playwright、Cypress 或浏览器 E2E"
+      "status": "pending",
+      "acceptance": "扩展 committed synthetic fixture，使默认 workflow 覆盖多个 signal month-end 和 T+1 open execution date；保持 fixture 小型、可审查、无网络；snapshot metadata/checksum 可复现；测试覆盖多次 rebalance 证据"
     },
     {
       "id": "F002",
-      "title": "实现 fixture 数据加载与 snapshot metadata",
+      "title": "配置化 T+1 Open 缺失处理策略",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "提供 committed 小型 fixture 数据、schema 校验、data_snapshot_id/checksum、无网络默认加载路径；pytest 覆盖缺失值、交易日历 gap、adjusted close 和 snapshot 可复现性"
+      "status": "pending",
+      "acceptance": "新增缺失 T+1 open execution price 的显式配置策略；默认行为文档化且测试覆盖；缺失价格场景必须在 report 中暴露 configured policy 与 fallback/skip/fail risk flag，不允许静默 fallback"
     },
     {
       "id": "F003",
-      "title": "实现 Global ETF Momentum 信号生成",
+      "title": "补充 clean 与 warning 风险场景",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "实现全球 ETF 动量最小策略，支持 momentum window、Top N、防守资产、趋势过滤；单元测试覆盖排序、过滤、防守切换和参数记录；不实现风险平价、多因子、港股/中国 ETF 或 AI 策略"
+      "status": "pending",
+      "acceptance": "提供无 position-limit warning 的 clean fixture/test path，同时保留 warning-producing path；risk output 能区分预期 warning 与 unexpected regression；不引入真实 PM、OMS 或 broker 行为"
     },
     {
       "id": "F004",
-      "title": "实现月度回测引擎与 T+1 Open 成交",
+      "title": "强化指标与 equity curve 报告",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "实现低频月度回测，T Close 生成信号、默认 T+1 Open 成交，支持成本/滑点参数；测试必须证明 T Close 不作为默认成交价，并覆盖 T+1 Open 缺失或 fallback risk flag"
+      "status": "pending",
+      "acceptance": "补强 monthly/yearly returns、volatility、Sharpe、max drawdown、turnover 与 equity curve traceability；默认多 rebalance fixture 下指标不应因样本过浅而全部退化为 0；测试验证报告字段与计算不变量"
     },
     {
       "id": "F005",
-      "title": "实现基础风险检查与 PM-compatible 输出",
+      "title": "保持 workflow E2E 与安全 guard 回归",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "实现单 ETF 权重上限、防守资产切换标记、drawdown 统计和 risk flags；输出包含 strategy_id、strategy_budget、target_weights、drawdown、risk flags，兼容 Portfolio Manager 后续消费；不实现真实 PM 调仓或 OMS"
+      "status": "pending",
+      "acceptance": "更新 Python workflow E2E 和 guard tests，确保无 .env、无 API key、无网络、无 broker call、无 paper/live entrypoint、AI 不下单不改参数；继续证明 T Close signal 与 T+1 Open 默认 execution；JSON/Markdown report deterministic"
     },
     {
       "id": "F006",
-      "title": "实现 JSON/Markdown 回测报告",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "生成 JSON 和 Markdown 报告，包含 run_id、data_snapshot_id、parameter_hash、signal/execution timing、signal_price、execution_price、execution_assumption、CAGR、volatility、Sharpe、max drawdown、turnover、monthly/yearly returns、risk flags"
-    },
-    {
-      "id": "F007",
-      "title": "实现 Python workflow E2E 与安全 guard tests",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "提供从 fixture config 到完整回测报告生成的 Python workflow E2E；guard tests 证明无 .env、无 API key、无网络、无 broker call、无 paper/live entrypoint、AI 不下单不改参数，且报告不得声称 paper/live execution"
-    },
-    {
-      "id": "F008",
-      "title": "独立验收 B006 Global ETF Backtest MVP",
+      "title": "独立验收 B007 Backtest Quality Hardening",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "Evaluator 在 localhost/CI-safe 环境执行 L1 验收，确认 pytest/ruff/compileall/mypy 或 staged mypy 结果、fixture workflow E2E、T+1 Open、report schema、no-live/no-secret/no-network guards 均符合 B001-B005 约束"
+      "status": "pending",
+      "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认 pytest/ruff/compileall/mypy、multi-rebalance fixture workflow E2E、缺失 T+1 open 策略、clean/warning risk scenarios、report schema、no-live/no-secret/no-network/no-broker/no-AI guards 均符合 B001-B006 约束，并产出 signoff"
     }
   ]
 }
