@@ -4,21 +4,22 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **B001-independent-reverification：`done`**（独立复验首批策略研发文档）
-- Codex-only 2/2 done，Evaluator independent reverification PASS
-- Signoff: `docs/test-reports/B001-independent-reverification-signoff-2026-05-12.md`
+- **B003-mvp-product-prd：`done`**（定义 MVP 产品边界、用户流程和验收标准）
+- Planner 4/4 done，Evaluator F005 PRD consistency review PASS
+- Signoff: `docs/test-reports/B003-mvp-product-prd-signoff-2026-05-12.md`
 
-## 上一批次（B002 done）
-- B002 independent signoff: `docs/test-reports/B002-independent-signoff-2026-05-12.md`
+## 上一批次（B001/B002 independent signoffs done）
+- B001 signoff: `docs/test-reports/B001-independent-reverification-signoff-2026-05-12.md`
+- B002 signoff: `docs/test-reports/B002-independent-signoff-2026-05-12.md`
 
 ## 生产状态
 - Documentation-only batch; no product code, migration, deployment, or live broker operation.
 
 ## 路线图（如有）
-- Next likely batch: B003 global ETF backtest MVP planning.
+- Next likely batches: B004 core engineering foundation, then B005 global ETF backtest MVP.
 
 ## 已知 gap（非阻塞）
-- B001/B002 constraints are documentation-only; implementation batches need L1 guard tests for PIT, paper/live guards, and AI no-buy behavior.
+- B004/B005 need fixture/mock-only CI and L1 guards for no live broker, PIT, paper/live boundaries, and AI no-buy behavior.
 
 ## Backlog（延后）
 - No known evaluator-blocking backlog item after B001/B002 independent signoffs.

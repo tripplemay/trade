@@ -1,8 +1,8 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "输出 AI 量化交易系统 MVP 产品 PRD，明确产品边界、用户流程、验收标准、非 MVP 范围和风险清单。",
   "total_features": 5,
-  "completed_features": 4,
+  "completed_features": 5,
   "fix_rounds": 0,
   "current_sprint": "F005",
   "last_updated": "2026-05-12",
@@ -13,17 +13,18 @@
   ],
   "docs": {
     "spec": "docs/specs/B003-mvp-product-prd-spec.md",
-    "test_cases": null,
-    "signoff": null,
+    "test_cases": "docs/test-reports/B003-mvp-prd-consistency-review-2026-05-12.md",
+    "signoff": "docs/test-reports/B003-mvp-product-prd-signoff-2026-05-12.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "B003 PRD was created by Planner as product specification. Independent Evaluator should review docs/prd/mvp-prd.md against B001/B002 and sign off if PASS."
+    "summary": "Independent Evaluator reviewed docs/prd/mvp-prd.md against B001/B002. No blocking consistency defects were found. The PRD preserves the USD 100k-500k personal-account scope, low-frequency ETF backtest MVP, fixture/mock-first data boundary, no live broker dependency, no unauthorized real-money testing, no formal frontend dashboard in MVP, and AI research/risk-filter-only boundary."
   },
   "generator_handoff": "Planner completed B003 F001-F004 by creating docs/prd/mvp-prd.md and updating B003 spec to mark PRD work as planner-owned. Independent Evaluator should execute F005 only: review PRD consistency with B001/B002 and confirm no unauthorized live trading or premature frontend implementation scope.",
   "session_notes": {
-    "planner": "2026-05-12: User fixed this session identity as Planner. Planner opened B003-mvp-product-prd and must not implement generator docs or sign off."
+    "planner": "2026-05-12: User fixed this session identity as Planner. Planner opened B003-mvp-product-prd and must not implement generator docs or sign off.",
+    "evaluator": "2026-05-12: User fixed this session identity as evaluator. Independent B003 F005 PRD consistency review completed with PASS. Created docs/test-reports/B003-mvp-prd-consistency-review-2026-05-12.md and docs/test-reports/B003-mvp-product-prd-signoff-2026-05-12.md."
   },
   "features": [
     "F001",

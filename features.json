@@ -38,7 +38,7 @@
       "title": "独立审查 MVP PRD 与 B001/B002 一致性",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Evaluator 输出审查报告，确认 MVP PRD 与 B001 策略文档、B002 数据/券商/环境规格一致，且没有引入未经授权 live trading 或不必要前端实现范围"
     }
   ]
