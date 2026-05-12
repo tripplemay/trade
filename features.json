@@ -1,21 +1,45 @@
 {
-  "sprint": "B001-independent-reverification",
+  "sprint": "B003-mvp-product-prd",
   "features": [
     {
       "id": "F001",
-      "title": "独立复验 B001 策略研发文档",
+      "title": "编写 MVP PRD 主文档",
       "priority": "high",
-      "executor": "codex",
-      "status": "completed",
-      "acceptance": "Evaluator 重新审查 B001 五份策略文档，确认资金规模、策略层级、风险限制、数据要求、Paper Trading 门槛、实盘门槛和 AI 使用边界一致，并输出独立审查报告"
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "docs/prd/mvp-prd.md 存在，覆盖产品背景、用户画像、目标资金规模、MVP 目标、MVP 范围、非 MVP 范围、核心功能、约束和成功指标"
     },
     {
       "id": "F002",
-      "title": "正式签收 B001 策略研发路线图",
+      "title": "编写 MVP 用户流程与功能边界",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "PRD 包含从数据导入、策略配置、回测、报告、风控检查到 Paper Trading 准备的核心用户流程，并明确前端暂不实现正式 dashboard"
+    },
+    {
+      "id": "F003",
+      "title": "编写 MVP 验收标准与里程碑",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "PRD 包含 MVP 验收指标、阶段里程碑、B004/B005/B006 后续批次衔接，以及工程基线和回测 MVP 的完成定义"
+    },
+    {
+      "id": "F004",
+      "title": "编写非 MVP 范围与风险清单",
+      "priority": "medium",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "PRD 明确排除真实资金自动交易、多用户、完整前端、高频、期权、机构数据强依赖、AI 自动下单，并列出产品、数据、合规、技术和交易风险"
+    },
+    {
+      "id": "F005",
+      "title": "独立审查 MVP PRD 与 B001/B002 一致性",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "若 F001 PASS，Evaluator 生成新的 B001 独立 signoff 报告，并在 progress.json.docs.signoff 指向新报告；此前 INVALIDATED 的自签收报告不得作为正式签收依据"
+      "status": "pending",
+      "acceptance": "Evaluator 输出审查报告，确认 MVP PRD 与 B001 策略文档、B002 数据/券商/环境规格一致，且没有引入未经授权 live trading 或不必要前端实现范围"
     }
   ]
 }

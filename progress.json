@@ -1,33 +1,35 @@
 {
-  "status": "done",
-  "user_goal": "对 B001 策略研发文档执行独立复验，替代此前被标记为无效的自签收报告。",
-  "total_features": 2,
-  "completed_features": 2,
+  "status": "building",
+  "user_goal": "输出 AI 量化交易系统 MVP 产品 PRD，明确产品边界、用户流程、验收标准、非 MVP 范围和风险清单。",
+  "total_features": 5,
+  "completed_features": 0,
   "fix_rounds": 0,
   "current_sprint": "F001",
   "last_updated": "2026-05-12",
   "reference_docs": [
-    "docs/specs/B001-independent-reverification-spec.md",
+    "docs/specs/B003-mvp-product-prd-spec.md",
     "docs/specs/B001-strategy-research-roadmap-spec.md",
-    "docs/test-reports/harness-violation-self-signoff-2026-05-12.md"
+    "docs/specs/B002-data-source-and-broker-adapter-spec.md"
   ],
   "docs": {
-    "spec": "docs/specs/B001-independent-reverification-spec.md",
-    "test_cases": "docs/test-reports/B001-independent-reverification-review-2026-05-12.md",
-    "signoff": "docs/test-reports/B001-independent-reverification-signoff-2026-05-12.md",
+    "spec": "docs/specs/B003-mvp-product-prd-spec.md",
+    "test_cases": null,
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "Independent Evaluator re-reviewed B001 strategy documents and found no blocking consistency defects. The five strategy docs are consistent on USD 100k-500k personal-account scope, low-frequency robust style, strategy hierarchy, allocation/risk limits, data/PIT requirements, Paper Trading gates, live-readiness gates, and AI usage boundaries. Prior B001 self-signoff reports remain invalid and are superseded by docs/test-reports/B001-independent-reverification-review-2026-05-12.md and docs/test-reports/B001-independent-reverification-signoff-2026-05-12.md."
+    "summary": "B003 is a Planner-created MVP PRD batch. Generator should write docs/prd/mvp-prd.md; independent Evaluator later checks consistency with B001/B002."
   },
-  "generator_handoff": "This is a Codex-only reverification batch. Review B001 strategy docs: docs/strategy/01-global-etf-momentum-rotation.md, 02-risk-parity-vol-target.md, 03-us-quality-momentum.md, 04-hk-china-etf-small-allocation.md, 05-ai-news-filing-risk-filter.md. Prior B001 review/signoff files are invalidated process artifacts and must not be used as formal signoff evidence. Produce fresh independent review and signoff if PASS.",
+  "generator_handoff": null,
   "session_notes": {
-    "planner": "2026-05-12: User fixed this session identity as Planner. Planner converted backlog item B001-independent-reverification into a Codex-only verifying batch. Planner must not perform review/signoff.",
-    "evaluator": "2026-05-12: User fixed this session identity as evaluator. Independent B001 reverification completed with PASS. Created docs/test-reports/B001-independent-reverification-review-2026-05-12.md and docs/test-reports/B001-independent-reverification-signoff-2026-05-12.md; prior B001 self-signoff reports remain invalid."
+    "planner": "2026-05-12: User fixed this session identity as Planner. Planner opened B003-mvp-product-prd and must not implement generator docs or sign off."
   },
   "features": [
     "F001",
-    "F002"
+    "F002",
+    "F003",
+    "F004",
+    "F005"
   ]
 }
