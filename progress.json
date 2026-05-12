@@ -1,23 +1,23 @@
 {
-  "status": "done",
-  "user_goal": "建立基于 Harness 的 AI 量化交易系统仓库，并启动首批策略研发路线图文档批次。",
-  "total_features": 6,
-  "completed_features": 6,
+  "status": "verifying",
+  "user_goal": "定义 AI 量化交易系统首期数据源、券商适配层、数据模型、point-in-time 政策和环境隔离规则。",
+  "total_features": 5,
+  "completed_features": 4,
   "fix_rounds": 0,
-  "current_sprint": null,
+  "current_sprint": "F005",
   "last_updated": "2026-05-12",
   "reference_docs": [
-    "docs/specs/B001-strategy-research-roadmap-spec.md"
+    "docs/specs/B002-data-source-and-broker-adapter-spec.md"
   ],
   "docs": {
-    "spec": "docs/specs/B001-strategy-research-roadmap-spec.md",
+    "spec": "docs/specs/B002-data-source-and-broker-adapter-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B001-strategy-research-roadmap-signoff-2026-05-12.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": null,
-  "generator_handoff": null,
+  "generator_handoff": "Generator completed B002 F001-F004 documents. Evaluator should execute F005 by reviewing consistency across data sources, broker adapter, point-in-time model, and environment/live authorization rules.",
   "session_notes": {},
   "features": [
     "F001",
@@ -25,6 +25,6 @@
     "F003",
     "F004",
     "F005",
-    "F006"
+    "F005"
   ]
 }

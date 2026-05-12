@@ -1,53 +1,45 @@
 {
-  "sprint": "B001-strategy-research-roadmap",
+  "sprint": "B002-data-source-and-broker-adapter-spec",
   "features": [
     {
       "id": "F001",
-      "title": "编写全球 ETF 动量轮动策略说明书",
+      "title": "编写数据源选型与采购规格",
       "priority": "high",
       "executor": "generator",
       "status": "completed",
-      "acceptance": "文档包含资产池、信号、调仓频率、组合构建、风控规则、回测要求和上线门槛"
+      "acceptance": "文档覆盖首期行情、基本面、宏观、新闻、港股/中国 ETF、机构数据升级路径、预算分层和授权风险"
     },
     {
       "id": "F002",
-      "title": "编写风险平价/波动率目标策略说明书",
+      "title": "编写券商适配层规格",
       "priority": "high",
       "executor": "generator",
       "status": "completed",
-      "acceptance": "文档包含资产类别、波动率估计、权重算法、目标波动率、风险约束、回测指标和实盘门槛"
+      "acceptance": "文档定义 Broker Adapter 接口、IBKR/Alpaca/Futu/Tiger 优先级、账户/持仓/订单/成交/错误码/限速/Paper-Live 隔离规则"
     },
     {
       "id": "F003",
-      "title": "编写美股质量动量策略说明书",
+      "title": "编写数据模型与 point-in-time 政策",
       "priority": "high",
       "executor": "generator",
       "status": "completed",
-      "acceptance": "文档包含股票池、因子定义、组合构建、行业约束、数据要求、回测陷阱和上线门槛"
+      "acceptance": "文档定义核心数据实体、时间字段、复权与公司行为、成分股历史、基本面可得时间、数据版本和反未来函数政策"
     },
     {
       "id": "F004",
-      "title": "编写港股/中国 ETF 小仓位策略说明书",
+      "title": "编写环境隔离与真实资金测试授权规则",
       "priority": "medium",
       "executor": "generator",
       "status": "completed",
-      "acceptance": "文档说明港股/中国资产的仓位上限、ETF 优先原则、流动性约束、政策风险和回测要求"
+      "acceptance": "文档定义 research/paper/live 环境隔离、密钥管理、真实券商和真实资金测试授权、数据文件禁入 Git 和审计要求"
     },
     {
       "id": "F005",
-      "title": "编写 AI 新闻/公告风控策略说明书",
-      "priority": "medium",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "文档明确 AI 仅用于研究、解释和风险过滤，不直接触发实盘买入；包含输入、输出、置信度和审计要求"
-    },
-    {
-      "id": "F006",
-      "title": "策略研发文档一致性审查",
+      "title": "B002 规格一致性审查",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "Evaluator 输出审查报告，检查五份策略文档之间的资金分配、风险约束、数据要求和上线门槛是否一致"
+      "status": "pending",
+      "acceptance": "Evaluator 输出审查报告，检查数据源、券商适配、数据模型、point-in-time 和环境隔离规则是否互相一致且不允许真实资金越权测试"
     }
   ]
 }
