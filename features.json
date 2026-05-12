@@ -38,7 +38,7 @@
       "title": "B002 规格一致性审查",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Evaluator 输出审查报告，检查数据源、券商适配、数据模型、point-in-time 和环境隔离规则是否互相一致且不允许真实资金越权测试"
     }
   ]
