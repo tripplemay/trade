@@ -1,10 +1,10 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "实现 fixture/mock-first 的 Global ETF Momentum 回测 MVP，包含 Python package、CI、fixture 数据、策略信号、T+1 Open 月度回测、风险检查、JSON/Markdown 报告、Python workflow E2E 和 no-live/no-secret/no-network guard tests。",
   "total_features": 8,
-  "completed_features": 0,
+  "completed_features": 7,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F008",
   "last_updated": "2026-05-12",
   "reference_docs": [
     "docs/specs/B006-global-etf-backtest-mvp-spec.md",
@@ -28,9 +28,10 @@
   },
   "role_assignments": null,
   "evaluator_feedback": null,
-  "generator_handoff": "Generator should implement B006 features sequentially, starting with F001. B006 must create Python CI and tests, not CD; must not introduce Vitest, Playwright, Cypress, browser E2E, frontend, broker, paper/live, external API hard dependency, database, deployment, tax optimization, or AI trading. Required path is fixture/mock-first with pytest/ruff/compileall/mypy or documented staged mypy, Python workflow E2E, no-live/no-secret/no-network guard tests, T Close signals, T+1 Open execution, JSON/Markdown reports, and Portfolio Manager-compatible outputs.",
+  "generator_handoff": "Generator completed F001-F007. Added Python package/CI, committed synthetic fixture data and loader, Global ETF Momentum signal generation, monthly T-close/T+1-open backtest, risk checks and PM-compatible output, JSON/Markdown reports, fixture workflow E2E, and no-live/no-secret/no-network/no-broker/no-AI-trade guard tests. Local .venv was created with uv because system Python lacks pip/ensurepip. Full local checks now pass: .venv/bin/python -m pytest, .venv/bin/python -m ruff check ., .venv/bin/python -m compileall trade tests, and .venv/bin/python -m mypy --install-types --non-interactive trade. Evaluator should run F008 L1 verification and inspect generated report fields and guard coverage.",
   "session_notes": {
     "planner": "2026-05-12: B006 planning opened after user agreed with CI/testing decision. B006 is implementation batch for Global ETF Backtest MVP. Decision: CI yes, CD no, Vitest no, browser E2E no, Python workflow E2E yes. Status moved to building for Generator F001.",
+    "generator": "2026-05-12: F001-F007 completed and status moved to verifying for F008. Installed uv locally and created .venv to work around missing system pip/ensurepip. Full local checks pass: pytest, ruff, compileall, and mypy. Evaluator should inspect guard/report behavior and independently verify F008.",
     "evaluator": null
   },
   "features": [

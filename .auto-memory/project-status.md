@@ -4,7 +4,8 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B006-global-etf-backtest-mvp：`building`**；Planner spec/features completed，Generator should start F001.
+- **B006-global-etf-backtest-mvp：`verifying`**；Generator completed F001-F007，Evaluator should perform F008.
+- Local `.venv` created with `uv`; generator checks pass: pytest, ruff, compileall, mypy.
 - Spec: `docs/specs/B006-global-etf-backtest-mvp-spec.md`
 
 ## 已完成签收
@@ -18,7 +19,7 @@ type: project
 - Documentation-only so far; no product code, migrations, deployment, broker API, secrets, or live-money operation.
 
 ## 下一步建议
-- Generator should implement F001 first: Python package scaffold, pyproject, tests directory, and CI.
+- Evaluator should run L1 verification: pytest, ruff, compileall, mypy, workflow E2E, report schema, and safety guards.
 
 ## 已知 gap（非阻塞）
 - B006 must preserve: CI yes, CD no, no Vitest/browser E2E, Python workflow E2E yes, fixture/mock-first, T+1 Open, no-live/no-secret/no-network guards.

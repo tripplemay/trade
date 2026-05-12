@@ -6,7 +6,7 @@
       "title": "创建 Python package 骨架与 CI 工具链",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "创建 pyproject.toml、trade package、tests 目录和最小 GitHub Actions CI；CI 至少运行 pytest、ruff check、python -m compileall trade，并明确 mypy 启用或 staged adoption；不引入 Vitest、Playwright、Cypress 或浏览器 E2E"
     },
     {
@@ -14,7 +14,7 @@
       "title": "实现 fixture 数据加载与 snapshot metadata",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "提供 committed 小型 fixture 数据、schema 校验、data_snapshot_id/checksum、无网络默认加载路径；pytest 覆盖缺失值、交易日历 gap、adjusted close 和 snapshot 可复现性"
     },
     {
@@ -22,7 +22,7 @@
       "title": "实现 Global ETF Momentum 信号生成",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "实现全球 ETF 动量最小策略，支持 momentum window、Top N、防守资产、趋势过滤；单元测试覆盖排序、过滤、防守切换和参数记录；不实现风险平价、多因子、港股/中国 ETF 或 AI 策略"
     },
     {
@@ -30,7 +30,7 @@
       "title": "实现月度回测引擎与 T+1 Open 成交",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "实现低频月度回测，T Close 生成信号、默认 T+1 Open 成交，支持成本/滑点参数；测试必须证明 T Close 不作为默认成交价，并覆盖 T+1 Open 缺失或 fallback risk flag"
     },
     {
@@ -38,7 +38,7 @@
       "title": "实现基础风险检查与 PM-compatible 输出",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "实现单 ETF 权重上限、防守资产切换标记、drawdown 统计和 risk flags；输出包含 strategy_id、strategy_budget、target_weights、drawdown、risk flags，兼容 Portfolio Manager 后续消费；不实现真实 PM 调仓或 OMS"
     },
     {
@@ -46,7 +46,7 @@
       "title": "实现 JSON/Markdown 回测报告",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "生成 JSON 和 Markdown 报告，包含 run_id、data_snapshot_id、parameter_hash、signal/execution timing、signal_price、execution_price、execution_assumption、CAGR、volatility、Sharpe、max drawdown、turnover、monthly/yearly returns、risk flags"
     },
     {
@@ -54,7 +54,7 @@
       "title": "实现 Python workflow E2E 与安全 guard tests",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "提供从 fixture config 到完整回测报告生成的 Python workflow E2E；guard tests 证明无 .env、无 API key、无网络、无 broker call、无 paper/live entrypoint、AI 不下单不改参数，且报告不得声称 paper/live execution"
     },
     {
