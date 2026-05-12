@@ -22,9 +22,9 @@ The PRD must define what the first usable product is, what it is not, and how la
 
 ## Scope
 
-Generator creates `docs/prd/mvp-prd.md`.
+Planner creates `docs/prd/mvp-prd.md` as the product specification for later Generator implementation batches.
 
-The document must synthesize B001 and B002, not supersede them. If conflict is found, Generator should preserve B001/B002 constraints and note the ambiguity in the PRD open questions.
+The document must synthesize B001 and B002, not supersede them. If conflict is found, Planner should preserve B001/B002 constraints and note the ambiguity in the PRD open questions.
 
 ## Required PRD Sections
 
@@ -57,9 +57,13 @@ The MVP PRD must include:
 
 ### F001 MVP PRD Main Document
 
+Executor: planner.
+
 Create `docs/prd/mvp-prd.md` with product background, user persona, target capital scale, MVP objectives, MVP scope, non-MVP scope, core features, constraints, and success metrics.
 
 ### F002 User Journeys and Feature Boundaries
+
+Executor: planner.
 
 Add user journeys covering:
 
@@ -74,9 +78,13 @@ The PRD must state that a formal frontend dashboard is not implemented in MVP, b
 
 ### F003 Acceptance Criteria and Milestones
 
+Executor: planner.
+
 Add MVP acceptance criteria and milestone mapping. It must make clear that B004 should be core engineering foundation and B005 should be global ETF backtest MVP unless the plan changes.
 
 ### F004 Non-MVP Scope and Risk List
+
+Executor: planner.
 
 Explicitly exclude:
 
@@ -92,6 +100,8 @@ Explicitly exclude:
 Add product, data, compliance, technical, and trading risks.
 
 ### F005 Independent PRD Consistency Review
+
+Executor: codex.
 
 Evaluator reviews `docs/prd/mvp-prd.md` against B001 and B002. It must verify that the MVP PRD does not expand scope into unauthorized live trading or premature frontend implementation.
 

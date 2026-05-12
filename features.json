@@ -5,32 +5,32 @@
       "id": "F001",
       "title": "编写 MVP PRD 主文档",
       "priority": "high",
-      "executor": "generator",
-      "status": "pending",
+      "executor": "planner",
+      "status": "completed",
       "acceptance": "docs/prd/mvp-prd.md 存在，覆盖产品背景、用户画像、目标资金规模、MVP 目标、MVP 范围、非 MVP 范围、核心功能、约束和成功指标"
     },
     {
       "id": "F002",
       "title": "编写 MVP 用户流程与功能边界",
       "priority": "high",
-      "executor": "generator",
-      "status": "pending",
+      "executor": "planner",
+      "status": "completed",
       "acceptance": "PRD 包含从数据导入、策略配置、回测、报告、风控检查到 Paper Trading 准备的核心用户流程，并明确前端暂不实现正式 dashboard"
     },
     {
       "id": "F003",
       "title": "编写 MVP 验收标准与里程碑",
       "priority": "high",
-      "executor": "generator",
-      "status": "pending",
+      "executor": "planner",
+      "status": "completed",
       "acceptance": "PRD 包含 MVP 验收指标、阶段里程碑、B004/B005/B006 后续批次衔接，以及工程基线和回测 MVP 的完成定义"
     },
     {
       "id": "F004",
       "title": "编写非 MVP 范围与风险清单",
       "priority": "medium",
-      "executor": "generator",
-      "status": "pending",
+      "executor": "planner",
+      "status": "completed",
       "acceptance": "PRD 明确排除真实资金自动交易、多用户、完整前端、高频、期权、机构数据强依赖、AI 自动下单，并列出产品、数据、合规、技术和交易风险"
     },
     {
