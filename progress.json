@@ -1,36 +1,40 @@
 {
-  "status": "done",
-  "user_goal": "输出 AI 量化交易系统 MVP 产品 PRD，明确产品边界、用户流程、验收标准、非 MVP 范围和风险清单。",
-  "total_features": 5,
+  "status": "verifying",
+  "user_goal": "在 Global ETF Backtest MVP 实现前，吸收独立 PRD/架构审计意见，补充 Portfolio Manager、T+1 Open 成交假设、PIT 数据降级、Tax-lot/OMS 边界和 AI filing prefilter 规则。",
+  "total_features": 6,
   "completed_features": 5,
   "fix_rounds": 0,
-  "current_sprint": "F005",
+  "current_sprint": "F006",
   "last_updated": "2026-05-12",
   "reference_docs": [
-    "docs/specs/B003-mvp-product-prd-spec.md",
-    "docs/specs/B001-strategy-research-roadmap-spec.md",
-    "docs/specs/B002-data-source-and-broker-adapter-spec.md"
+    "docs/specs/B005-pre-backtest-architecture-adjudication-spec.md",
+    "docs/specs/B004-core-engineering-foundation-spec.md",
+    "docs/prd/mvp-prd.md",
+    "docs/architecture/01-broker-adapter-spec.md",
+    "docs/architecture/02-data-model-point-in-time-policy.md",
+    "docs/architecture/03-environment-isolation-and-live-authorization.md",
+    "docs/research/strategy-audit-report-2026-05-12.md",
+    "docs/research/prd-architecture-audit-2026-05-12.md"
   ],
   "docs": {
-    "spec": "docs/specs/B003-mvp-product-prd-spec.md",
-    "test_cases": "docs/test-reports/B003-mvp-prd-consistency-review-2026-05-12.md",
-    "signoff": "docs/test-reports/B003-mvp-product-prd-signoff-2026-05-12.md",
-    "framework_reviewed": false
+    "spec": "docs/specs/B005-pre-backtest-architecture-adjudication-spec.md",
+    "test_cases": null,
+    "signoff": null,
+    "framework_reviewed": true
   },
   "role_assignments": null,
-  "evaluator_feedback": {
-    "summary": "Independent Evaluator reviewed docs/prd/mvp-prd.md against B001/B002. No blocking consistency defects were found. The PRD preserves the USD 100k-500k personal-account scope, low-frequency ETF backtest MVP, fixture/mock-first data boundary, no live broker dependency, no unauthorized real-money testing, no formal frontend dashboard in MVP, and AI research/risk-filter-only boundary."
-  },
-  "generator_handoff": "Planner completed B003 F001-F004 by creating docs/prd/mvp-prd.md and updating B003 spec to mark PRD work as planner-owned. Independent Evaluator should execute F005 only: review PRD consistency with B001/B002 and confirm no unauthorized live trading or premature frontend implementation scope.",
+  "evaluator_feedback": null,
+  "generator_handoff": "Planner completed B005 F001-F005 as a pure documentation/adjudication batch after B004 signoff. Evaluator should execute F006 only: review B005 docs against B001-B004 plus docs/research/strategy-audit-report-2026-05-12.md and docs/research/prd-architecture-audit-2026-05-12.md; verify B005 does not authorize product code, live trading, real broker calls, external API hard dependency, hidden secret dependency, formal frontend implementation, or tax advice.",
   "session_notes": {
-    "planner": "2026-05-12: Current Planner session ending. B001/B002/B003 all independently signed off; no active batch. User approved incorporating docs/research/strategy-audit-report-2026-05-12.md into future planning; backlog BL-001 now tracks portfolio allocation, account-level risk, slippage/tax/macro filter, and AI prefilter planning. Proposed IA refactor learning was沉淀 into Planner/Generator role memory.",
-    "evaluator": "2026-05-12: User fixed this session identity as evaluator. Independent B003 F005 PRD consistency review completed with PASS. Created docs/test-reports/B003-mvp-prd-consistency-review-2026-05-12.md and docs/test-reports/B003-mvp-product-prd-signoff-2026-05-12.md."
+    "planner": "2026-05-12: User agreed to open B005-pre-backtest-architecture-adjudication after B004 signoff. B005 absorbs prd-architecture-audit findings: explicit Portfolio Manager chain, B006 T+1 Open default execution price, PIT degradation for non-PIT fundamentals, future tax-lot/OMS boundary, and AI filing prefilter before LLM. True Global ETF Backtest MVP is deferred to B006.",
+    "evaluator": null
   },
   "features": [
     "F001",
     "F002",
     "F003",
     "F004",
-    "F005"
+    "F005",
+    "F006"
   ]
 }

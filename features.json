@@ -1,45 +1,53 @@
 {
-  "sprint": "B003-mvp-product-prd",
+  "sprint": "B005-pre-backtest-architecture-adjudication",
   "features": [
     {
       "id": "F001",
-      "title": "编写 MVP PRD 主文档",
+      "title": "裁决 Portfolio Manager 架构边界",
       "priority": "high",
-      "executor": "planner",
+      "executor": "generator",
       "status": "completed",
-      "acceptance": "docs/prd/mvp-prd.md 存在，覆盖产品背景、用户画像、目标资金规模、MVP 目标、MVP 范围、非 MVP 范围、核心功能、约束和成功指标"
+      "acceptance": "B005 spec、docs/engineering/python-package-boundary.md、docs/engineering/portfolio-allocation-boundary.md 明确 Strategy -> Portfolio Manager -> OMS -> Broker Adapter 链路，PM 负责 strategy budget/buying power 分配，且 B006 输出必须兼容 PM"
     },
     {
       "id": "F002",
-      "title": "编写 MVP 用户流程与功能边界",
+      "title": "裁决 B006 回测成交价格假设",
       "priority": "high",
-      "executor": "planner",
+      "executor": "generator",
       "status": "completed",
-      "acceptance": "PRD 包含从数据导入、策略配置、回测、报告、风控检查到 Paper Trading 准备的核心用户流程，并明确前端暂不实现正式 dashboard"
+      "acceptance": "docs/engineering/backtest-report-schema.md 与 B005 spec 明确 B006 默认使用 T+1 Open 作为成交价，T Close 只用于信号生成，并要求报告记录 signal_price/execution_price/execution_assumption"
     },
     {
       "id": "F003",
-      "title": "编写 MVP 验收标准与里程碑",
+      "title": "裁决 PIT 财务数据与多因子降级策略",
       "priority": "high",
-      "executor": "planner",
+      "executor": "generator",
       "status": "completed",
-      "acceptance": "PRD 包含 MVP 验收指标、阶段里程碑、B004/B005/B006 后续批次衔接，以及工程基线和回测 MVP 的完成定义"
+      "acceptance": "docs/engineering/pit-data-degradation-policy.md 存在，明确未采购高质量 PIT 财务数据前，美股多因子策略退级为纯量价因子；非 PIT 财务数据必须强制迟滞并显式标记"
     },
     {
       "id": "F004",
-      "title": "编写非 MVP 范围与风险清单",
+      "title": "补充 Tax-lot 与 OMS 边界",
       "priority": "medium",
-      "executor": "planner",
+      "executor": "generator",
       "status": "completed",
-      "acceptance": "PRD 明确排除真实资金自动交易、多用户、完整前端、高频、期权、机构数据强依赖、AI 自动下单，并列出产品、数据、合规、技术和交易风险"
+      "acceptance": "docs/engineering/oms-tax-lot-boundary.md 存在，并在 broker/portfolio 边界中声明未来 Position/OMS 不能只依赖 average_cost，需预留 tax_lots、lot ID、acquisition date、quantity、cost basis，但 B006 不实现税务优化"
     },
     {
       "id": "F005",
-      "title": "独立审查 MVP PRD 与 B001/B002 一致性",
+      "title": "补充 AI filing prefilter 架构规则",
+      "priority": "medium",
+      "executor": "generator",
+      "status": "completed",
+      "acceptance": "docs/engineering/ai-filing-prefilter-policy.md 存在，明确 SEC filing/news 在进入 LLM 前必须经过 keyword/rule/Bloom-filter 预筛，AI 不得全量处理 filings、不得下单、不得改参数"
+    },
+    {
+      "id": "F006",
+      "title": "独立审查 B005 架构裁决一致性",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "Evaluator 输出审查报告，确认 MVP PRD 与 B001 策略文档、B002 数据/券商/环境规格一致，且没有引入未经授权 live trading 或不必要前端实现范围"
+      "status": "pending",
+      "acceptance": "Evaluator 输出审查报告，确认 B005 裁决与 B001-B004、两份独立分析报告一致，且没有引入 live trading、真实 broker、外部 API 硬依赖、正式前端或实盘税务建议"
     }
   ]
 }
