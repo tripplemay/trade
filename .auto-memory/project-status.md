@@ -4,9 +4,9 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B006-global-etf-backtest-mvp：`verifying`**；Generator completed F001-F007，Evaluator should perform F008.
-- Local `.venv` created with `uv`; generator checks pass: pytest, ruff, compileall, mypy.
-- Spec: `docs/specs/B006-global-etf-backtest-mvp-spec.md`
+- **B006-global-etf-backtest-mvp：`done`**；Generator F001-F007 completed，Evaluator F008 L1 verification PASS.
+- Signoff: `docs/test-reports/B006-global-etf-backtest-mvp-signoff-2026-05-12.md`
+- L1 passed: pytest, ruff, compileall, mypy; workflow E2E generated JSON/Markdown reports.
 
 ## 已完成签收
 - B001 strategy roadmap: `docs/test-reports/B001-independent-reverification-signoff-2026-05-12.md`
@@ -14,14 +14,15 @@ type: project
 - B003 MVP PRD: `docs/test-reports/B003-mvp-product-prd-signoff-2026-05-12.md`
 - B004 engineering foundation: `docs/test-reports/B004-core-engineering-foundation-signoff-2026-05-12.md`
 - B005 pre-backtest adjudication: `docs/test-reports/B005-pre-backtest-architecture-adjudication-signoff-2026-05-12.md`
+- B006 Global ETF backtest MVP: `docs/test-reports/B006-global-etf-backtest-mvp-signoff-2026-05-12.md`
 
 ## 生产状态
-- Documentation-only so far; no product code, migrations, deployment, broker API, secrets, or live-money operation.
+- First implementation batch completed locally; no deployment, DB, broker API, secrets, or live-money operation.
 
 ## 下一步建议
-- Evaluator should run L1 verification: pytest, ruff, compileall, mypy, workflow E2E, report schema, and safety guards.
+- Planner should decide next batch: deepen backtest metrics/fixtures, risk parity MVP, or paper/mock broker planning.
 
 ## 已知 gap（非阻塞）
-- B006 must preserve: CI yes, CD no, no Vitest/browser E2E, Python workflow E2E yes, fixture/mock-first, T+1 Open, no-live/no-secret/no-network guards.
+- B006 soft-watch: one-rebalance metrics are shallow; missing T+1 open fallback should become configurable; add clean no-warning fixture later if needed.
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->

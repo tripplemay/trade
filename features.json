@@ -62,7 +62,7 @@
       "title": "独立验收 B006 Global ETF Backtest MVP",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Evaluator 在 localhost/CI-safe 环境执行 L1 验收，确认 pytest/ruff/compileall/mypy 或 staged mypy 结果、fixture workflow E2E、T+1 Open、report schema、no-live/no-secret/no-network guards 均符合 B001-B005 约束"
     }
   ]
