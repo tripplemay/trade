@@ -6,7 +6,7 @@
       "title": "编写全球 ETF 动量轮动策略说明书",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "文档包含资产池、信号、调仓频率、组合构建、风控规则、回测要求和上线门槛"
     },
     {
