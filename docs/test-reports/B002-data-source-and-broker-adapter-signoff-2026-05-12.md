@@ -1,0 +1,43 @@
+# B002 Data Source and Broker Adapter Signoff
+
+## Summary
+
+B002 completed the infrastructure specification baseline required before backtest or broker implementation.
+
+The batch defined first-phase data sources, broker adapter abstraction, point-in-time data policies, and strict environment isolation rules.
+
+## Completed Features
+
+| Feature | Result | Evidence |
+|---|---|---|
+| F001 Data Source Selection and Procurement | PASS | `docs/research/01-data-source-selection.md` |
+| F002 Broker Adapter Specification | PASS | `docs/architecture/01-broker-adapter-spec.md` |
+| F003 Data Model and Point-in-Time Policy | PASS | `docs/architecture/02-data-model-point-in-time-policy.md` |
+| F004 Environment Isolation and Real-Money Authorization | PASS | `docs/architecture/03-environment-isolation-and-live-authorization.md` |
+| F005 B002 Consistency Review | PASS | `docs/test-reports/B002-data-broker-consistency-review-2026-05-12.md` |
+
+## Validation
+
+- JSON state files were validated with `python3 -m json.tool`.
+- B002 documents were reviewed for consistency across data sources, broker adapter, point-in-time policy, environment isolation, and live authorization.
+- No document permits unauthorized real broker or real-money testing.
+
+## Key Decisions Captured
+
+- First-phase data should use affordable API sources plus SEC/FRED rather than institution-grade feeds as a hard dependency.
+- IBKR is the primary long-term broker target; Alpaca can support US paper trading; Futu/Tiger remain Hong Kong backup paths.
+- Strategies must not call broker APIs directly.
+- Backtests must use explicit data availability times and avoid lookahead bias.
+- Live trading is disabled by default and requires explicit user authorization.
+
+## Non-Blocking Follow-Ups
+
+- B003 should implement a global ETF backtest MVP using historical adjusted daily bars and a mock data interface.
+- B003 should not require real broker API keys or live market data.
+- Later data batches should validate point-in-time fundamentals before implementing US quality momentum.
+
+## Signoff
+
+Result: PASS.
+
+B002 is complete and ready to close.

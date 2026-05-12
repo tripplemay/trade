@@ -1,10 +1,10 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "定义 AI 量化交易系统首期数据源、券商适配层、数据模型、point-in-time 政策和环境隔离规则。",
   "total_features": 5,
-  "completed_features": 4,
+  "completed_features": 5,
   "fix_rounds": 0,
-  "current_sprint": "F005",
+  "current_sprint": null,
   "last_updated": "2026-05-12",
   "reference_docs": [
     "docs/specs/B002-data-source-and-broker-adapter-spec.md"
@@ -12,12 +12,12 @@
   "docs": {
     "spec": "docs/specs/B002-data-source-and-broker-adapter-spec.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/B002-data-source-and-broker-adapter-signoff-2026-05-12.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": null,
-  "generator_handoff": "Generator completed B002 F001-F004 documents. Evaluator should execute F005 by reviewing consistency across data sources, broker adapter, point-in-time model, and environment/live authorization rules.",
+  "generator_handoff": null,
   "session_notes": {},
   "features": [
     "F001",
