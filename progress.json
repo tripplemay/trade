@@ -1,34 +1,32 @@
 {
-  "status": "done",
-  "user_goal": "定义 AI 量化交易系统首期数据源、券商适配层、数据模型、point-in-time 政策和环境隔离规则。",
-  "total_features": 5,
-  "completed_features": 5,
+  "status": "verifying",
+  "user_goal": "对 B001 策略研发文档执行独立复验，替代此前被标记为无效的自签收报告。",
+  "total_features": 2,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F005",
+  "current_sprint": "F001",
   "last_updated": "2026-05-12",
   "reference_docs": [
-    "docs/specs/B002-data-source-and-broker-adapter-spec.md"
+    "docs/specs/B001-independent-reverification-spec.md",
+    "docs/specs/B001-strategy-research-roadmap-spec.md",
+    "docs/test-reports/harness-violation-self-signoff-2026-05-12.md"
   ],
   "docs": {
-    "spec": "docs/specs/B002-data-source-and-broker-adapter-spec.md",
-    "test_cases": "docs/test-reports/B002-independent-consistency-review-2026-05-12.md",
-    "signoff": "docs/test-reports/B002-independent-signoff-2026-05-12.md",
+    "spec": "docs/specs/B001-independent-reverification-spec.md",
+    "test_cases": null,
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "Independent Evaluator re-ran B002 F005. No blocking consistency defects were found; data source, broker adapter, data model, point-in-time, environment isolation, and live authorization rules are mutually consistent and do not permit unauthorized real-money testing. Prior self-signoff reports remain invalid and are superseded by docs/test-reports/B002-independent-consistency-review-2026-05-12.md and docs/test-reports/B002-independent-signoff-2026-05-12.md."
+    "summary": "B001 previous self-generated review/signoff was invalidated. Independent Evaluator must re-review B001 strategy documents and produce fresh review/signoff if PASS."
   },
-  "generator_handoff": "B002 F001-F004 documents are complete. Prior F005 review/signoff was invalidated as self-signoff. Independent Evaluator should review docs/research/01-data-source-selection.md and docs/architecture/01-broker-adapter-spec.md, 02-data-model-point-in-time-policy.md, 03-environment-isolation-and-live-authorization.md; then produce a fresh B002 consistency review and signoff if PASS.",
+  "generator_handoff": "This is a Codex-only reverification batch. Review B001 strategy docs: docs/strategy/01-global-etf-momentum-rotation.md, 02-risk-parity-vol-target.md, 03-us-quality-momentum.md, 04-hk-china-etf-small-allocation.md, 05-ai-news-filing-risk-filter.md. Prior B001 review/signoff files are invalidated process artifacts and must not be used as formal signoff evidence. Produce fresh independent review and signoff if PASS.",
   "session_notes": {
-    "planner": "2026-05-12: User fixed this session identity as Planner. Planner recorded self-signoff violation, invalidated prior B001/B002 self-generated signoff artifacts, reset B002 to verifying with F005 pending, and added B001 independent re-verification to backlog.",
-    "evaluator": "2026-05-12: User fixed this session identity as evaluator. Independent review of B002 F005 completed with PASS. Created docs/test-reports/B002-independent-consistency-review-2026-05-12.md and docs/test-reports/B002-independent-signoff-2026-05-12.md; prior self-signoff reports remain invalid."
+    "planner": "2026-05-12: User fixed this session identity as Planner. Planner converted backlog item B001-independent-reverification into a Codex-only verifying batch. Planner must not perform review/signoff."
   },
   "features": [
     "F001",
-    "F002",
-    "F003",
-    "F004",
-    "F005"
+    "F002"
   ]
 }
