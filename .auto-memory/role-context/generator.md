@@ -29,3 +29,10 @@ type: feedback
 
 - 每次 `git push origin main` 后必须 `gh run list --limit 3 --branch main` 检查
 - CI 红色 → 立即停止新功能，先修复 CI；通过后才继续下一个功能
+
+## IA refactor redirect scope 评估
+
+- 只有目标路由已 wire 等效或更优内容时，才启用老路由 redirect
+- 若目标路由只是 embed-old-components 占位，redirect 会造成 URL 换名但体验混乱，优先保留旧 deep-link
+- 列表页、新建页、报表页、子路径等深链需逐条验证目标功能是否 ready
+- redirect scope 在 building 中因 wire-readiness 缩减属于合理调整，不等同质量问题

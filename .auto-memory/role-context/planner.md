@@ -29,3 +29,9 @@ type: feedback
 - 即时提出：影响当前决策的规则变更，对话中提出 → 用户确认 → 立即写入
 - 后台队列：不紧急的，追加到 `framework/proposed-learnings.md`
 - **不得未经用户确认直接修改 `framework/` 文件**（proposed-learnings.md 除外）
+
+## IA refactor spec
+
+- 起草 IA refactor / page consolidation 批次时，redirect 清单必须标注目标路由 wire-readiness
+- 目标路由已含等效内容才列为 redirect；仅占位或未接线的深链应标为 kept deep-link
+- 在 spec 关键决策点说明哪些 redirect 延后到后续批次，避免 URL 变化但功能未就绪

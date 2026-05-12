@@ -23,7 +23,7 @@
   },
   "generator_handoff": "Planner completed B003 F001-F004 by creating docs/prd/mvp-prd.md and updating B003 spec to mark PRD work as planner-owned. Independent Evaluator should execute F005 only: review PRD consistency with B001/B002 and confirm no unauthorized live trading or premature frontend implementation scope.",
   "session_notes": {
-    "planner": "2026-05-12: Current Planner session ending. B001/B002/B003 all independently signed off; no active batch; backlog empty. User will start a new session with another Planner to write engineering docs. Recommended next batch: B004-core-engineering-foundation (engineering docs/spec first, then B005 global ETF backtest MVP).",
+    "planner": "2026-05-12: Current Planner session ending. B001/B002/B003 all independently signed off; no active batch. User approved incorporating docs/research/strategy-audit-report-2026-05-12.md into future planning; backlog BL-001 now tracks portfolio allocation, account-level risk, slippage/tax/macro filter, and AI prefilter planning. Proposed IA refactor learning was沉淀 into Planner/Generator role memory.",
     "evaluator": "2026-05-12: User fixed this session identity as evaluator. Independent B003 F005 PRD consistency review completed with PASS. Created docs/test-reports/B003-mvp-prd-consistency-review-2026-05-12.md and docs/test-reports/B003-mvp-product-prd-signoff-2026-05-12.md."
   },
   "features": [
