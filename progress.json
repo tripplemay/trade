@@ -1,8 +1,8 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "对 B001 策略研发文档执行独立复验，替代此前被标记为无效的自签收报告。",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 2,
   "fix_rounds": 0,
   "current_sprint": "F001",
   "last_updated": "2026-05-12",
@@ -13,17 +13,18 @@
   ],
   "docs": {
     "spec": "docs/specs/B001-independent-reverification-spec.md",
-    "test_cases": null,
-    "signoff": null,
+    "test_cases": "docs/test-reports/B001-independent-reverification-review-2026-05-12.md",
+    "signoff": "docs/test-reports/B001-independent-reverification-signoff-2026-05-12.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "B001 previous self-generated review/signoff was invalidated. Independent Evaluator must re-review B001 strategy documents and produce fresh review/signoff if PASS."
+    "summary": "Independent Evaluator re-reviewed B001 strategy documents and found no blocking consistency defects. The five strategy docs are consistent on USD 100k-500k personal-account scope, low-frequency robust style, strategy hierarchy, allocation/risk limits, data/PIT requirements, Paper Trading gates, live-readiness gates, and AI usage boundaries. Prior B001 self-signoff reports remain invalid and are superseded by docs/test-reports/B001-independent-reverification-review-2026-05-12.md and docs/test-reports/B001-independent-reverification-signoff-2026-05-12.md."
   },
   "generator_handoff": "This is a Codex-only reverification batch. Review B001 strategy docs: docs/strategy/01-global-etf-momentum-rotation.md, 02-risk-parity-vol-target.md, 03-us-quality-momentum.md, 04-hk-china-etf-small-allocation.md, 05-ai-news-filing-risk-filter.md. Prior B001 review/signoff files are invalidated process artifacts and must not be used as formal signoff evidence. Produce fresh independent review and signoff if PASS.",
   "session_notes": {
-    "planner": "2026-05-12: User fixed this session identity as Planner. Planner converted backlog item B001-independent-reverification into a Codex-only verifying batch. Planner must not perform review/signoff."
+    "planner": "2026-05-12: User fixed this session identity as Planner. Planner converted backlog item B001-independent-reverification into a Codex-only verifying batch. Planner must not perform review/signoff.",
+    "evaluator": "2026-05-12: User fixed this session identity as evaluator. Independent B001 reverification completed with PASS. Created docs/test-reports/B001-independent-reverification-review-2026-05-12.md and docs/test-reports/B001-independent-reverification-signoff-2026-05-12.md; prior B001 self-signoff reports remain invalid."
   },
   "features": [
     "F001",

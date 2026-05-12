@@ -6,7 +6,7 @@
       "title": "独立复验 B001 策略研发文档",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Evaluator 重新审查 B001 五份策略文档，确认资金规模、策略层级、风险限制、数据要求、Paper Trading 门槛、实盘门槛和 AI 使用边界一致，并输出独立审查报告"
     },
     {
@@ -14,7 +14,7 @@
       "title": "正式签收 B001 策略研发路线图",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "若 F001 PASS，Evaluator 生成新的 B001 独立 signoff 报告，并在 progress.json.docs.signoff 指向新报告；此前 INVALIDATED 的自签收报告不得作为正式签收依据"
     }
   ]
