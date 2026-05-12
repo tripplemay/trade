@@ -46,7 +46,7 @@
       "title": "独立验收 B007 Backtest Quality Hardening",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认 pytest/ruff/compileall/mypy、multi-rebalance fixture workflow E2E、缺失 T+1 open 策略、clean/warning risk scenarios、report schema、no-live/no-secret/no-network/no-broker/no-AI guards 均符合 B001-B006 约束，并产出 signoff"
     }
   ]
