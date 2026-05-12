@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
+from math import sqrt
 from pathlib import Path
 
 from trade import __version__
@@ -48,7 +49,10 @@ def build_report_payload(
     portfolio_output = build_portfolio_output(result)
     fills = result.fills
     first_fill = fills[0]
-    total_return = result.ending_value / result.starting_capital - 1.0
+    rebalances = result.rebalance_results or (result,)
+    monthly_returns = _period_returns(result)
+    yearly_returns = _yearly_returns(monthly_returns)
+    volatility = _annualized_volatility(tuple(monthly_returns.values()))
     risk_flags = tuple(portfolio_output.risk_flags)
     return {
         "run": {
@@ -101,6 +105,25 @@ def build_report_payload(
             "execution_date": first_fill.execution_date.isoformat(),
             "execution_price_field": first_fill.execution_price_field,
             "execution_assumption": first_fill.execution_assumption,
+            "missing_t_plus_1_open_policy": result.missing_t_plus_1_open_policy,
+            "missing_t_plus_1_open_flags": tuple(
+                flag for flag in result.risk_flags if flag.startswith("missing_t_plus_1_open")
+            ),
+            "rebalance_count": len(rebalances),
+            "rebalance_trace": [
+                {
+                    "signal_date": rebalance.signal.signal_date.isoformat(),
+                    "execution_date": rebalance.fills[0].execution_date.isoformat(),
+                    "ending_value": rebalance.ending_value,
+                    "target_weights": rebalance.signal.target_weights,
+                    "risk_flags": rebalance.risk_flags,
+                }
+                for rebalance in rebalances
+            ],
+            "equity_curve": [
+                {"date": point.date.isoformat(), "value": point.value}
+                for point in result.equity_curve
+            ],
             "fills": [
                 {
                     "symbol": fill.symbol,
@@ -125,17 +148,24 @@ def build_report_payload(
         "risk": {
             "drawdown": portfolio_output.drawdown,
             "kill_switch_state": "not_triggered_in_mvp_fixture",
-            "violations": tuple(flag for flag in risk_flags if "violation" in flag),
-            "warning_flags": risk_flags,
+            "violations": portfolio_output.warning_flags,
+            "warning_flags": portfolio_output.warning_flags,
+            "expected_warning_flags": portfolio_output.expected_warning_flags,
+            "unexpected_warning_flags": portfolio_output.unexpected_warning_flags,
+            "risk_flags": risk_flags,
         },
         "metrics": {
-            "CAGR": total_return,
-            "annualized_volatility": 0.0,
-            "Sharpe": 0.0,
+            "CAGR": _cagr(result),
+            "annualized_volatility": volatility,
+            "Sharpe": _sharpe(tuple(monthly_returns.values()), volatility),
             "max_drawdown": portfolio_output.drawdown,
-            "turnover": sum(fill.target_weight for fill in fills),
-            "monthly_returns": {first_fill.execution_date.strftime("%Y-%m"): total_return},
-            "yearly_returns": {first_fill.execution_date.strftime("%Y"): total_return},
+            "turnover": result.turnover,
+            "monthly_returns": monthly_returns,
+            "yearly_returns": yearly_returns,
+            "equity_curve": [
+                {"date": point.date.isoformat(), "value": point.value}
+                for point in result.equity_curve
+            ],
             "benchmark_comparison": "not_configured_for_mvp_fixture",
         },
         "outputs": {},
@@ -171,6 +201,7 @@ def render_markdown_report(report: dict[str, object]) -> str:
             f"- Execution timing: {strategy['execution_timing']}",
             f"- Execution price field: {execution['execution_price_field']}",
             f"- Execution assumption: {execution['execution_assumption']}",
+            f"- Missing T+1 open policy: {execution['missing_t_plus_1_open_policy']}",
             "",
             "## Performance Metrics",
             f"- Volatility: {metrics['annualized_volatility']}",
@@ -201,3 +232,38 @@ def _section(report: dict[str, object], key: str) -> dict[str, object]:
 def _default_run_id(result: MonthlyBacktestResult, snapshot: DataSnapshot) -> str:
     snapshot_suffix = snapshot.data_snapshot_id.removeprefix("fixture:")
     return f"{result.signal.parameters.strategy_id}-{snapshot_suffix}"
+
+
+def _period_returns(result: MonthlyBacktestResult) -> dict[str, float]:
+    returns: dict[str, float] = {}
+    for earlier, later in zip(result.equity_curve, result.equity_curve[1:], strict=False):
+        returns[later.date.strftime("%Y-%m")] = later.value / earlier.value - 1.0
+    return returns
+
+
+def _yearly_returns(monthly_returns: dict[str, float]) -> dict[str, float]:
+    yearly: dict[str, float] = {}
+    for month, value in monthly_returns.items():
+        year = month[:4]
+        yearly[year] = (1.0 + yearly.get(year, 0.0)) * (1.0 + value) - 1.0
+    return yearly
+
+
+def _annualized_volatility(period_returns: tuple[float, ...]) -> float:
+    if len(period_returns) < 2:
+        return 0.0
+    mean = sum(period_returns) / len(period_returns)
+    variance = sum((value - mean) ** 2 for value in period_returns) / (len(period_returns) - 1)
+    return sqrt(variance) * sqrt(12.0)
+
+
+def _sharpe(period_returns: tuple[float, ...], annualized_volatility: float) -> float:
+    if not period_returns or annualized_volatility == 0:
+        return 0.0
+    annualized_return = (sum(period_returns) / len(period_returns)) * 12.0
+    return annualized_return / annualized_volatility
+
+
+def _cagr(result: MonthlyBacktestResult) -> float:
+    periods = max(len(result.equity_curve) - 1, 1)
+    return float((result.ending_value / result.starting_capital) ** (12.0 / periods) - 1.0)

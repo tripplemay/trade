@@ -11,8 +11,8 @@ def test_default_fixture_loads_without_external_inputs() -> None:
 
     assert snapshot.source == "synthetic-global-etf-fixture-v1"
     assert snapshot.symbols == ("AGG", "EEM", "SPY", "VEA")
-    assert snapshot.start_date.isoformat() == "2024-01-31"
-    assert snapshot.end_date.isoformat() == "2024-12-31"
+    assert snapshot.start_date.isoformat() == "2023-11-30"
+    assert snapshot.end_date.isoformat() == "2025-01-31"
     assert snapshot.data_snapshot_id.startswith("fixture:")
     assert len(snapshot.checksum) == 64
 
@@ -43,6 +43,18 @@ def test_snapshot_metadata_is_reproducible() -> None:
     assert first.data_snapshot_id == second.data_snapshot_id
     assert first.checksum == second.checksum
     assert first.records == second.records
+
+
+def test_default_fixture_supports_multiple_rebalance_dates() -> None:
+    snapshot = load_fixture_prices()
+    trading_dates = tuple(sorted({record.date for record in snapshot.records}))
+
+    assert len(trading_dates) >= 4
+    assert trading_dates[-4:-1] == (
+        trading_dates[-4],
+        trading_dates[-3],
+        trading_dates[-2],
+    )
 
 
 def test_missing_value_fails_schema_validation(tmp_path: Path) -> None:

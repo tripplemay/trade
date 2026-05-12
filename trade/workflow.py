@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from trade.backtest.monthly import run_monthly_backtest
+from trade.backtest.monthly import run_multi_monthly_backtest
 from trade.config.defaults import WorkflowConfig, default_fixture_workflow_config
 from trade.data.loader import load_fixture_prices
 from trade.reporting.reports import ReportArtifacts, generate_backtest_reports
@@ -20,11 +20,11 @@ def run_fixture_workflow(
         raise ValueError("fixture workflow only allows local or ci environments")
     snapshot = load_fixture_prices()
     trading_dates = tuple(sorted({record.date for record in snapshot.records}))
-    signal_date = trading_dates[-2]
-    result = run_monthly_backtest(
+    signal_dates = trading_dates[-5:-2]
+    result = run_multi_monthly_backtest(
         snapshot.records,
+        signal_dates,
         workflow_config.strategy_parameters,
         workflow_config.backtest_parameters,
-        signal_date=signal_date,
     )
     return generate_backtest_reports(result, snapshot, output_dir, run_id=run_id)

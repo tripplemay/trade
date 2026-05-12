@@ -2,6 +2,14 @@
   "source": "synthetic-global-etf-fixture-v1",
   "adjusted_price_policy": "split_and_distribution_adjusted_close",
   "records": [
+    {"date": "2023-11-30", "symbol": "SPY", "open": 94.0, "close": 95.0, "adjusted_close": 95.0, "volume": 998000},
+    {"date": "2023-11-30", "symbol": "VEA", "open": 77.0, "close": 78.0, "adjusted_close": 78.0, "volume": 798000},
+    {"date": "2023-11-30", "symbol": "EEM", "open": 51.0, "close": 50.0, "adjusted_close": 50.0, "volume": 698000},
+    {"date": "2023-11-30", "symbol": "AGG", "open": 97.0, "close": 97.5, "adjusted_close": 97.5, "volume": 598000},
+    {"date": "2023-12-29", "symbol": "SPY", "open": 95.5, "close": 98.0, "adjusted_close": 98.0, "volume": 999000},
+    {"date": "2023-12-29", "symbol": "VEA", "open": 78.2, "close": 79.0, "adjusted_close": 79.0, "volume": 799000},
+    {"date": "2023-12-29", "symbol": "EEM", "open": 50.2, "close": 49.5, "adjusted_close": 49.5, "volume": 699000},
+    {"date": "2023-12-29", "symbol": "AGG", "open": 97.6, "close": 98.0, "adjusted_close": 98.0, "volume": 599000},
     {"date": "2024-01-31", "symbol": "SPY", "open": 100.0, "close": 102.0, "adjusted_close": 102.0, "volume": 1000000},
     {"date": "2024-01-31", "symbol": "VEA", "open": 80.0, "close": 81.0, "adjusted_close": 81.0, "volume": 800000},
     {"date": "2024-01-31", "symbol": "EEM", "open": 50.0, "close": 49.0, "adjusted_close": 49.0, "volume": 700000},
@@ -45,6 +53,10 @@
     {"date": "2024-12-31", "symbol": "SPY", "open": 55.5, "close": 57.0, "adjusted_close": 57.0, "volume": 1010000},
     {"date": "2024-12-31", "symbol": "VEA", "open": 82.1, "close": 81.0, "adjusted_close": 81.0, "volume": 810000},
     {"date": "2024-12-31", "symbol": "EEM", "open": 45.4, "close": 46.0, "adjusted_close": 46.0, "volume": 710000},
-    {"date": "2024-12-31", "symbol": "AGG", "open": 102.0, "close": 102.5, "adjusted_close": 102.5, "volume": 610000}
+    {"date": "2024-12-31", "symbol": "AGG", "open": 102.0, "close": 102.5, "adjusted_close": 102.5, "volume": 610000},
+    {"date": "2025-01-31", "symbol": "SPY", "open": 57.4, "close": 58.0, "adjusted_close": 58.0, "volume": 1011000},
+    {"date": "2025-01-31", "symbol": "VEA", "open": 81.4, "close": 82.0, "adjusted_close": 82.0, "volume": 811000},
+    {"date": "2025-01-31", "symbol": "EEM", "open": 46.2, "close": 47.0, "adjusted_close": 47.0, "volume": 711000},
+    {"date": "2025-01-31", "symbol": "AGG", "open": 102.6, "close": 102.9, "adjusted_close": 102.9, "volume": 611000}
   ]
 }

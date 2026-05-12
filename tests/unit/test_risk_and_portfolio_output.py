@@ -16,13 +16,29 @@ def test_position_limit_violation_is_flagged() -> None:
     )
 
     assert "position_limit_violation:SPY:0.5000>0.3500" in result.risk_flags
+    assert "position_limit_violation:SPY:0.5000>0.3500" in result.warning_flags
+    assert result.unexpected_warning_flags == ("position_limit_violation:SPY:0.5000>0.3500",)
 
 
 def test_defensive_switch_is_marked() -> None:
-    result = evaluate_risk({"SPY": 0.5, "AGG": 0.5}, (100.0, 101.0), "AGG")
+    result = evaluate_risk({"SPY": 0.3, "AGG": 0.7}, (100.0, 101.0), "AGG")
 
     assert result.defensive_switch is True
     assert "defensive_asset_active:AGG" in result.risk_flags
+    assert result.warning_flags == ()
+
+
+def test_clean_risk_path_has_no_warning_flags() -> None:
+    result = evaluate_risk(
+        {"SPY": 0.5, "AGG": 0.5},
+        (100.0, 105.0),
+        defensive_asset="AGG",
+        max_single_etf_weight=0.6,
+    )
+
+    assert result.warning_flags == ()
+    assert result.expected_warning_flags == ()
+    assert result.unexpected_warning_flags == ()
 
 
 def test_drawdown_stats_are_calculated() -> None:
@@ -50,3 +66,24 @@ def test_portfolio_output_contains_pm_compatible_fields() -> None:
     assert output.target_weights == {"SPY": 1.0}
     assert output.drawdown <= 0
     assert "position_limit_violation:SPY:1.0000>0.3500" in output.risk_flags
+    assert output.warning_flags == ("position_limit_violation:SPY:1.0000>0.3500",)
+
+
+def test_expected_warning_path_is_classified_separately() -> None:
+    parameters = MomentumParameters(
+        top_n=1,
+        momentum_windows=(MomentumWindow(periods=2, weight=1.0),),
+        trend_window=2,
+    )
+    backtest = run_monthly_backtest(
+        load_fixture_prices().records,
+        parameters,
+        signal_date=date(2024, 10, 31),
+    )
+    output = build_portfolio_output(
+        backtest,
+        expected_warning_prefixes=("position_limit_violation:",),
+    )
+
+    assert output.expected_warning_flags == ("position_limit_violation:SPY:1.0000>0.3500",)
+    assert output.unexpected_warning_flags == ()

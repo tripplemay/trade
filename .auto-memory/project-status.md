@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B007-backtest-quality-hardening：`building`**；Planner opened F001 after B006 signoff and user manual validation.
+- **B007-backtest-quality-hardening：`verifying`**；Generator completed F001-F005，Evaluator should perform F006.
 - Goal: close B006 soft-watch with multi-rebalance fixtures, explicit missing T+1 Open handling, clean/warning risk scenarios, stronger metrics/equity curve reports, and preserved safety guards.
 - Local env ready: `.venv` Python 3.11.14; baseline pytest, ruff, compileall, mypy passed.
 
@@ -20,7 +20,7 @@ type: project
 - First implementation batch completed locally; no deployment, DB, broker API, secrets, or live-money operation.
 
 ## 下一步建议
-- Generator should implement B007 F001-F005, then move status to verifying for F006.
+- Evaluator should run F006 L1 verification and write B007 signoff report.
 
 ## 已知 gap（非阻塞）
 - B007 intentionally does not add live data, broker/paper execution, frontend, database, risk parity, multi-factor, or AI trading.

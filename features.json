@@ -6,7 +6,7 @@
       "title": "扩展多次月度调仓 fixture",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "扩展 committed synthetic fixture，使默认 workflow 覆盖多个 signal month-end 和 T+1 open execution date；保持 fixture 小型、可审查、无网络；snapshot metadata/checksum 可复现；测试覆盖多次 rebalance 证据"
     },
     {
@@ -14,7 +14,7 @@
       "title": "配置化 T+1 Open 缺失处理策略",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新增缺失 T+1 open execution price 的显式配置策略；默认行为文档化且测试覆盖；缺失价格场景必须在 report 中暴露 configured policy 与 fallback/skip/fail risk flag，不允许静默 fallback"
     },
     {
@@ -22,7 +22,7 @@
       "title": "补充 clean 与 warning 风险场景",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "提供无 position-limit warning 的 clean fixture/test path，同时保留 warning-producing path；risk output 能区分预期 warning 与 unexpected regression；不引入真实 PM、OMS 或 broker 行为"
     },
     {
@@ -30,7 +30,7 @@
       "title": "强化指标与 equity curve 报告",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "补强 monthly/yearly returns、volatility、Sharpe、max drawdown、turnover 与 equity curve traceability；默认多 rebalance fixture 下指标不应因样本过浅而全部退化为 0；测试验证报告字段与计算不变量"
     },
     {
@@ -38,7 +38,7 @@
       "title": "保持 workflow E2E 与安全 guard 回归",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "更新 Python workflow E2E 和 guard tests，确保无 .env、无 API key、无网络、无 broker call、无 paper/live entrypoint、AI 不下单不改参数；继续证明 T Close signal 与 T+1 Open 默认 execution；JSON/Markdown report deterministic"
     },
     {

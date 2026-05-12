@@ -14,7 +14,7 @@ def test_signal_ranks_assets_by_weighted_momentum() -> None:
 
     ranked_symbols = [asset.symbol for asset in signal.ranked_assets]
 
-    assert ranked_symbols == ["EEM", "VEA", "SPY"]
+    assert ranked_symbols == ["SPY", "EEM", "VEA"]
 
 
 def test_trend_filter_excludes_negative_assets() -> None:
@@ -35,7 +35,7 @@ def test_defensive_asset_gets_unfilled_top_n_slots() -> None:
     parameters = MomentumParameters(top_n=3)
     signal = generate_momentum_signal(snapshot.records, parameters)
 
-    assert signal.selected_assets == ("EEM", "SPY")
+    assert signal.selected_assets == ("SPY", "EEM")
     assert signal.target_weights == {
         "EEM": pytest.approx(1 / 3),
         "SPY": pytest.approx(1 / 3),
