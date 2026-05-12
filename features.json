@@ -22,7 +22,7 @@
       "title": "编写美股质量动量策略说明书",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "文档包含股票池、因子定义、组合构建、行业约束、数据要求、回测陷阱和上线门槛"
     },
     {
@@ -30,7 +30,7 @@
       "title": "编写港股/中国 ETF 小仓位策略说明书",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "文档说明港股/中国资产的仓位上限、ETF 优先原则、流动性约束、政策风险和回测要求"
     },
     {
@@ -38,7 +38,7 @@
       "title": "编写 AI 新闻/公告风控策略说明书",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "文档明确 AI 仅用于研究、解释和风险过滤，不直接触发实盘买入；包含输入、输出、置信度和审计要求"
     },
     {

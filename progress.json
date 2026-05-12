@@ -1,10 +1,10 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "建立基于 Harness 的 AI 量化交易系统仓库，并启动首批策略研发路线图文档批次。",
   "total_features": 6,
-  "completed_features": 2,
+  "completed_features": 5,
   "fix_rounds": 0,
-  "current_sprint": "F003",
+  "current_sprint": "F006",
   "last_updated": "2026-05-12",
   "reference_docs": [
     "docs/specs/B001-strategy-research-roadmap-spec.md"
@@ -17,7 +17,7 @@
   },
   "role_assignments": null,
   "evaluator_feedback": null,
-  "generator_handoff": null,
+  "generator_handoff": "Generator completed B001 F001-F005 strategy research documents under docs/strategy/. Evaluator should execute F006 by reviewing consistency across capital allocation, risk limits, data assumptions, paper trading gates, and live-readiness gates, then write report under docs/test-reports/.",
   "session_notes": {},
   "features": [
     "F001",
