@@ -14,7 +14,7 @@
       "title": "编写风险平价/波动率目标策略说明书",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "文档包含资产类别、波动率估计、权重算法、目标波动率、风险约束、回测指标和实盘门槛"
     },
     {
