@@ -46,7 +46,7 @@
       "title": "独立审查 B005 架构裁决一致性",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Evaluator 输出审查报告，确认 B005 裁决与 B001-B004、两份独立分析报告一致，且没有引入 live trading、真实 broker、外部 API 硬依赖、正式前端或实盘税务建议"
     }
   ]

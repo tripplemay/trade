@@ -1,8 +1,8 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "在 Global ETF Backtest MVP 实现前，吸收独立 PRD/架构审计意见，补充 Portfolio Manager、T+1 Open 成交假设、PIT 数据降级、Tax-lot/OMS 边界和 AI filing prefilter 规则。",
   "total_features": 6,
-  "completed_features": 5,
+  "completed_features": 6,
   "fix_rounds": 0,
   "current_sprint": "F006",
   "last_updated": "2026-05-12",
@@ -18,16 +18,18 @@
   ],
   "docs": {
     "spec": "docs/specs/B005-pre-backtest-architecture-adjudication-spec.md",
-    "test_cases": null,
-    "signoff": null,
+    "test_cases": "docs/test-reports/B005-pre-backtest-architecture-adjudication-review-2026-05-12.md",
+    "signoff": "docs/test-reports/B005-pre-backtest-architecture-adjudication-signoff-2026-05-12.md",
     "framework_reviewed": true
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
+  "evaluator_feedback": {
+    "summary": "Independent Evaluator reviewed B005 architecture adjudications against B001-B004 and both independent audit reports. No blocking consistency defects were found. B005 remains documentation-only and does not authorize product code, live trading, real broker calls, external API hard dependency, hidden secret dependency, formal frontend implementation, or tax advice."
+  },
   "generator_handoff": "Planner completed B005 F001-F005 as a pure documentation/adjudication batch after B004 signoff. Evaluator should execute F006 only: review B005 docs against B001-B004 plus docs/research/strategy-audit-report-2026-05-12.md and docs/research/prd-architecture-audit-2026-05-12.md; verify B005 does not authorize product code, live trading, real broker calls, external API hard dependency, hidden secret dependency, formal frontend implementation, or tax advice.",
   "session_notes": {
     "planner": "2026-05-12: User agreed to open B005-pre-backtest-architecture-adjudication after B004 signoff. B005 absorbs prd-architecture-audit findings: explicit Portfolio Manager chain, B006 T+1 Open default execution price, PIT degradation for non-PIT fundamentals, future tax-lot/OMS boundary, and AI filing prefilter before LLM. True Global ETF Backtest MVP is deferred to B006.",
-    "evaluator": null
+    "evaluator": "2026-05-12: User fixed this session identity as evaluator. Independent B005 F006 review completed with PASS. Created docs/test-reports/B005-pre-backtest-architecture-adjudication-review-2026-05-12.md and docs/test-reports/B005-pre-backtest-architecture-adjudication-signoff-2026-05-12.md."
   },
   "features": [
     "F001",
