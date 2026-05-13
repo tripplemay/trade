@@ -1,1 +1,28 @@
-[]
+[
+  {
+    "id": "BL-B010-S1",
+    "title": "Risk parity 专用 fixture / workflow config",
+    "description": "B010 默认 fixture 是 Global ETF Momentum 用例，未按默认 risk parity universe + 120-day lookback 准备数据。若 risk parity 后续走向用户化 workflow，需补一份风险平价专用研究 fixture + workflow config（仍保持 fixture/mock-first 与 no-live/no-broker/no-AI 约束）。",
+    "decisions": [
+      "保留 inverse-vol 范围，不引入 ERC / min-var optimizer",
+      "新增 fixture 与 workflow config，不引入网络 / secret / paper / live",
+      "测试覆盖默认 universe + 120 日 lookback 路径"
+    ],
+    "confirmed_at": "2026-05-13",
+    "priority": "low",
+    "source": "B010 signoff soft-watch S1"
+  },
+  {
+    "id": "BL-B010-S2",
+    "title": "Risk parity baseline 替换为可计算 benchmark",
+    "description": "B010 reports 中 baseline 是结构化 placeholder（static_equal_weight_multi_asset_placeholder），非独立计算的基准路径。后续 reporting / analytics 加固批次可替换为可计算 benchmark（例如等权多资产 monthly rebalance backtest），保持 fixture/mock-first、不引入 live / paid 数据。",
+    "decisions": [
+      "保持 research-only 报告语义，不暗示 live execution",
+      "benchmark 必须可在默认 fixture / 已有 snapshot 上离线复现",
+      "至少覆盖 equity curve、年化收益、最大回撤"
+    ],
+    "confirmed_at": "2026-05-13",
+    "priority": "low",
+    "source": "B010 signoff soft-watch S2"
+  }
+]
