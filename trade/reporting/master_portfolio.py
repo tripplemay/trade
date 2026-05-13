@@ -20,7 +20,7 @@ from trade.data.quality import evaluate_data_quality
 BASELINE_LABEL = "static_60_40_etf_defensive_quarterly_rebalance"
 BASELINE_WEIGHTS = {"SPY": 0.6, "AGG": 0.4}
 BASELINE_FOLLOWUPS_ABSORBED = ("BL-B010-S2",)
-RESEARCH_ONLY_LIMITATION = "research-only: this report does not authorize paper or live trading"
+RESEARCH_ONLY_LIMITATION = "research-only: not authorized for any paper or production order flow"
 
 
 @dataclass(frozen=True, slots=True)

@@ -4,10 +4,9 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B011-portfolio-allocation-risk-mvp：`building`**；Planner 完成 spec + features.json，等待 Generator 起步 F001。
+- **B011-portfolio-allocation-risk-mvp：`verifying`**；Generator 完成 F001-F005，等待 Codex 执行 F006 独立验收。
 - Spec: `docs/specs/B011-portfolio-allocation-risk-mvp-spec.md`
-- 6 features：F001-F005 generator + F006 codex。
-- 关键决策：组合 B006 momentum (40%) + B010 risk parity (30%)，US quality (20%) / HK-China (10%) 仅预留 satellite stub；季度再平衡；15% 账户级 drawdown kill-switch 冻结非防御性增仓 + human-review clearance；F004 吸收 BL-B010-S2 calculated baseline。
+- 新模块：`trade/portfolio/master.py`、`trade/backtest/master_portfolio.py`、`trade/reporting/master_portfolio.py`；新测试覆盖 config/backtest/kill-switch/report/safety-guards 共 64 个用例；calculated 60/40 baseline 已吸收 BL-B010-S2。
 
 ## 已完成签收
 - B001-B008: strategy roadmap through research-grade data expansion all signed off.
