@@ -4,8 +4,8 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B009-public-data-snapshot-mvp：`reverifying`**；Generator fixed B009-F006-1R, awaiting Evaluator re-verification.
-- Reverify report: `docs/test-reports/B009-public-data-snapshot-mvp-reverification-2026-05-13.md`
+- **B009-public-data-snapshot-mvp：`done`**；F001-F006 completed and Evaluator signoff passed.
+- Signoff: `docs/test-reports/B009-public-data-snapshot-mvp-signoff-2026-05-13.md`
 
 ## 已完成签收
 - B001 strategy roadmap: `docs/test-reports/B001-independent-reverification-signoff-2026-05-12.md`
@@ -16,13 +16,14 @@ type: project
 - B006 Global ETF backtest MVP: `docs/test-reports/B006-global-etf-backtest-mvp-signoff-2026-05-12.md`
 - B007 backtest quality hardening: `docs/test-reports/B007-backtest-quality-hardening-signoff-2026-05-12.md`
 - B008 research-grade data expansion: `docs/test-reports/B008-research-grade-data-expansion-signoff-2026-05-13.md`
+- B009 public data snapshot MVP: `docs/test-reports/B009-public-data-snapshot-mvp-signoff-2026-05-13.md`
 
 ## B009 目标
 - 按 MVP PRD 补齐 manual public data import、local snapshot manifest、显式 snapshot loader、quality gate、research run artifact。
 - 保持 fixture/mock-first CI 与 no-live/no-secret/no-network-by-default/no-broker/no-AI guards。
 
-## 修复摘要
-- B009-F006-1R fixed: real import->workflow artifacts now reference importer manifest path and manifest `snapshot_id`.
+## 验收摘要
+- Real import -> workflow artifacts now reference importer manifest path and manifest `snapshot_id`; L1 checks passed.
 
 ## 生产状态
 - No deployment, DB, broker API, secrets, paper/live trading, or live-money operation.

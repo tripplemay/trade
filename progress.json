@@ -1,8 +1,8 @@
 {
-  "status": "reverifying",
+  "status": "done",
   "user_goal": "按 MVP PRD 推进 Global ETF Momentum 的可复现研究闭环：在 B008 研究级数据基础上，实现手动、默认禁用、CI 不依赖的公开数据导入与本地 snapshot workflow，补齐 snapshot manifest、显式数据加载、质量门禁和 research run artifact，同时继续保持 no-live/no-secret/no-network-by-default/no-broker/no-AI safety guards。",
   "total_features": 6,
-  "completed_features": 5,
+  "completed_features": 6,
   "fix_rounds": 2,
   "current_sprint": "F006",
   "last_updated": "2026-05-13",
@@ -24,16 +24,16 @@
   "docs": {
     "spec": "docs/specs/B009-public-data-snapshot-mvp-spec.md",
     "test_cases": "docs/test-reports/B009-public-data-snapshot-mvp-reverification-2026-05-13.md",
-    "signoff": null,
+    "signoff": "docs/test-reports/B009-public-data-snapshot-mvp-signoff-2026-05-13.md",
     "framework_reviewed": true
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
+  "evaluator_feedback": "PASS. B009 F006 second reverification completed on 2026-05-13. Evidence: pytest 62 passed, ruff passed, compileall passed, mypy passed. Real import_public_data -> run_fixture_workflow path now references importer-generated manifest path and snapshot_id in JSON report data.snapshot_manifest and research-run snapshot_reference.manifest. Safety boundaries preserved: fixture-first defaults, manual/disabled public import, gitignored output, no secret/broker/live/paper/AI-trading path. Signoff: docs/test-reports/B009-public-data-snapshot-mvp-signoff-2026-05-13.md",
   "generator_handoff": "Generator fixed B009-F006-1R in fixing round 2. Loader now supports real import_public_data manifest semantics: it first accepts adjacent {snapshot_file_stem}-manifest.json and otherwise scans sibling *-manifest.json files for files[].path plus files[].sha256 matching the explicit snapshot file, covering importer output names like {snapshot_id}-manifest.json. Added E2E regression test that calls import_public_data(), then run_fixture_workflow() on result.output_file, asserting JSON report data.snapshot_manifest and research-run snapshot_reference.manifest reference result.manifest_file and result.snapshot_id. Full local checks pass: .venv/bin/python -m pytest (62 passed), .venv/bin/python -m ruff check ., .venv/bin/python -m compileall trade tests, and .venv/bin/python -m mypy --install-types --non-interactive trade. Evaluator should reverify B009 F006.",
   "session_notes": {
     "planner": "2026-05-13: B008 was done with clean signoff. User agreed to next batch recommendation from MVP PRD perspective: B009 Public Data Snapshot MVP. Created spec and feature list; moved status to building for Generator F001. Key intent is to bridge synthetic fixture mechanics to reproducible local research snapshots while preserving offline CI and safety guards.",
     "generator": "2026-05-13: Fixed B009-F006-1R and moved status to reverifying. Loader now finds real import_public_data manifests by matching sibling *-manifest.json files against files[].path and sha256, so real import->workflow artifacts reference result.manifest_file and result.snapshot_id. Added E2E regression; full checks pass: pytest 62 passed, ruff, compileall, mypy.",
-    "evaluator": "2026-05-13: B009 F006 reverification FAIL. Checks passed (pytest 61, ruff, compileall, mypy), but B009-F006-1 remains incomplete for real importer output: import_public_data writes {snapshot_id}-manifest.json while load_snapshot_prices searches {snapshot_file_stem}-manifest.json, so report/research-run snapshot_manifest remains None. Report: docs/test-reports/B009-public-data-snapshot-mvp-reverification-2026-05-13.md. Status moved back to fixing; no signoff."
+    "evaluator": "2026-05-13: B009 F006 second reverification PASS. Checks passed: pytest 62, ruff, compileall, mypy. Real import_public_data -> workflow evidence under /tmp/opencode/b009-reverify2 confirmed JSON report and research-run artifact reference importer manifest path + snapshot_id, with public-best-effort/non-PIT/research-only/not-live-trading-ready labels and broker_free human-review-only artifact. Signoff: docs/test-reports/B009-public-data-snapshot-mvp-signoff-2026-05-13.md."
   },
   "features": [
     "F001",
