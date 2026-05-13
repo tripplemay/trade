@@ -1,61 +1,53 @@
 {
-  "sprint": "B010-risk-parity-backtest-mvp",
+  "sprint": "B011-portfolio-allocation-risk-mvp",
   "features": [
     {
       "id": "F001",
-      "title": "建立 Risk Parity 策略配置边界",
+      "title": "建立 Master Portfolio 配置边界",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "基于 docs/strategy/02-risk-parity-vol-target.md 增加最小 risk parity 配置与策略边界；首版仅支持 inverse volatility weighting、禁止杠杆，并显式定义 defensive asset/cash allocation 语义"
+      "status": "pending",
+      "acceptance": "基于 docs/strategy/00-master-portfolio-allocation.md 增加 Master Portfolio 配置：B006 momentum + B010 risk parity 作为 implemented core sleeves；US quality / HK-China 作为 satellite interface stubs（fall through 到 defensive/cash placeholder）；静态规划权重 momentum 0.40 / risk_parity 0.30 / satellite_us_quality 0.20 / satellite_hk_china 0.10 合计 1.0；声明 quarterly rebalance 频率与 15% 账户级 drawdown 阈值与 kill-switch 语义；禁止杠杆，max exposure ≤ 1.0；测试覆盖"
     },
     {
       "id": "F002",
-      "title": "实现收益率与波动率估计",
+      "title": "实现 Master Portfolio 季度再平衡 workflow",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "基于 adjusted close 或等价 fixture 数据实现 daily returns 与 annualized volatility 估计；至少支持 60/120/252 日 lookback，并对 insufficient/invalid data 显式 fail 或 warning；测试覆盖"
+      "status": "pending",
+      "acceptance": "新增 quarterly Master rebalance workflow：在每个 calendar quarter end 消费各 implemented child 的 target weights，应用 planning weight 派生 portfolio weights，聚合 per-asset，使用 T-day close signal / T+1 open execution 假设，记录 rebalance trace、equity curve、turnover、transaction costs、per-child contributions、snapshot references；rebalance 间隔内 Master 不消费 intra-quarter child 信号；测试覆盖"
     },
     {
       "id": "F003",
-      "title": "实现逆波动率权重与无杠杆 exposure scaling",
+      "title": "实现账户级 15% drawdown kill-switch",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "实现 deterministic inverse volatility weights：invalid vol exclusion、可行时的 weight caps、normalization、target volatility exposure scaling capped at 1.0，以及剩余 exposure 分配到 defensive asset/cash placeholder"
+      "status": "pending",
+      "acceptance": "实现 deterministic 15% account-level drawdown kill-switch（从 rolling high-water mark 计算）。触发时下一 rebalance 不增加任何 non-defensive sleeve 目标权重，保留现有仓位，需通过显式 config / runtime parameter 进行 clearance 解除；reports 必须暴露 kill_switch_active、kill_switch_triggered_at、kill_switch_trigger_drawdown、human_review_required；account-level controls 不修改 child-level risk rules；测试覆盖"
     },
     {
       "id": "F004",
-      "title": "实现 Risk Parity 月度回测 workflow",
+      "title": "输出 Portfolio reports 与可计算 baseline",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "新增 monthly risk parity backtest workflow，使用 T-day close signal calculation 与 T+1 execution assumptions，记录 rebalance trace、equity curve、turnover、costs、target weights、snapshot references 和 quality limitations"
+      "status": "pending",
+      "acceptance": "新增 JSON/Markdown portfolio reports：aggregated equity curve、年化收益/波动率/Sharpe/最大回撤、turnover、transaction costs、per-child contributions、planning vs effective weights、snapshot references、account-level risk flags、research limitations；新增 calculated multi-asset baseline（如 static 60/40 ETF/defensive quarterly rebalance）作为 portfolio baseline 与 BL-B010-S2 followup；reports 不得声明 paper / live execution"
     },
     {
       "id": "F005",
-      "title": "输出 Risk Parity 报告与基础 benchmark 对比",
-      "priority": "medium",
+      "title": "补强 Master Portfolio 安全 guard 与 workflow 回归",
+      "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "新增或扩展 JSON/Markdown risk parity reports，包含核心 performance metrics、weight history、realized vs target volatility（可行时）、transaction costs、research limitations，并至少包含一个 simple baseline comparison 且不增加 live/external dependency"
+      "status": "pending",
+      "acceptance": "增加回归覆盖证明 Master Portfolio 默认 fixture/mock-first，且不引入 network、secret、broker、paper/live、AI-trading、generated-data-commit、frontend/dashboard dependencies；kill-switch 行为 deterministic 且在 report payload 中可见；public-import stub 不被 Master pipeline 自动触发；pytest、ruff、compileall、mypy 全部通过"
     },
     {
       "id": "F006",
-      "title": "补强 Risk Parity 安全 guard 与 workflow 回归",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "增加回归覆盖证明 risk parity 默认 fixture/mock-first，且不引入 network、secret、broker、paper/live、AI-trading、generated-data-commit、frontend/dashboard dependencies；pytest、ruff、compileall、mypy 全部通过"
-    },
-    {
-      "id": "F007",
-      "title": "独立验收 B010 Risk Parity Backtest MVP",
+      "title": "独立验收 B011 Master Portfolio Allocation MVP",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认 B010 实现最小 risk parity backtest MVP、报告显式 research limitations、保留 snapshot/data-quality semantics，并保持 no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards；产出 review/signoff 报告"
+      "status": "pending",
+      "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认 B011 实现最小 Master Portfolio Allocation MVP、combined reports 含 calculated baseline 与 account-level risk flags、kill-switch 触发与清除 deterministic、snapshot/data-quality semantics 保留、所有 no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards 保留；signoff 中明确记录 BL-B010-S2 已被本批次吸收；产出 review/signoff 报告"
     }
   ]
 }
