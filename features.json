@@ -6,7 +6,7 @@
       "title": "建立 Risk Parity 策略配置边界",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "基于 docs/strategy/02-risk-parity-vol-target.md 增加最小 risk parity 配置与策略边界；首版仅支持 inverse volatility weighting、禁止杠杆，并显式定义 defensive asset/cash allocation 语义"
     },
     {
