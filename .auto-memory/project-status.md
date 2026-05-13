@@ -4,10 +4,10 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B011-portfolio-allocation-risk-mvp：`fixing`**；Codex F006 首轮验收发现 F002 阻断问题，等待 Generator 修复。
+- **B011-portfolio-allocation-risk-mvp：`reverifying`**；Generator 修复 F002 quarterly cadence 后等待 Codex 第二轮 F006 验收。
 - Spec: `docs/specs/B011-portfolio-allocation-risk-mvp-spec.md`
-- Review: `docs/test-reports/B011-portfolio-allocation-risk-mvp-review-2026-05-13.md`
-- Blocker: Master workflow executes arbitrary same-quarter `signal_dates`; must enforce quarter-end-only cadence or fail closed.
+- Review (round 1): `docs/test-reports/B011-portfolio-allocation-risk-mvp-review-2026-05-13.md`
+- Fix: `identify_quarter_end_signal_dates` + `_validate_quarter_end_signal_dates`(fail closed when 非 calendar quarter-end / 同季度重复)。所有 master 测试改用真实 quarter-end (Mar 31 / Jun 30 / Sep 30)。pytest 159 / ruff / mypy / compileall 全绿。
 
 ## 已完成签收
 - B001-B008: strategy roadmap through research-grade data expansion all signed off.

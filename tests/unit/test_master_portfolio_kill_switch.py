@@ -113,18 +113,27 @@ def _risk_parity_universe_params() -> RiskParityParameters:
     )
 
 
-def _crashing_history(observations: int) -> tuple[PriceBar, ...]:
-    """SPY rises mildly, then crashes; SGOV stays flat."""
+Q1_END = date(2024, 3, 31)
+Q2_END = date(2024, 6, 30)
+Q3_END = date(2024, 9, 30)
+QUARTER_END_SIGNAL_DATES = (Q1_END, Q2_END, Q3_END)
+MULTI_QUARTER_DAYS = 275
+
+
+def _crashing_history(observations: int = MULTI_QUARTER_DAYS) -> tuple[PriceBar, ...]:
+    """SPY rises mildly through Q1, crashes through Q2, then drifts flat with small noise."""
+
     start = date(2024, 1, 1)
     records: list[PriceBar] = []
     sgov = 100.0
     for index in range(observations):
-        if index < 60:
-            spy = 100.0 + 0.05 * index
-        elif index < 75:
-            spy = 103.0 - 1.5 * (index - 60)
+        if index <= 90:
+            base = 100.0 + 0.05 * index
+        elif index <= 180:
+            base = 104.5 - 0.32 * (index - 90)
         else:
-            spy = 80.5
+            base = 75.7
+        spy = base + (0.1 if index % 2 else -0.1)
         records.append(
             PriceBar(
                 date=start + timedelta(days=index),
@@ -135,6 +144,35 @@ def _crashing_history(observations: int) -> tuple[PriceBar, ...]:
                 volume=1000,
             )
         )
+        records.append(
+            PriceBar(
+                date=start + timedelta(days=index),
+                symbol="SGOV",
+                open=sgov + (0.001 if index % 2 else -0.001),
+                close=sgov + (0.001 if index % 2 else -0.001),
+                adjusted_close=sgov + (0.001 if index % 2 else -0.001),
+                volume=1000,
+            )
+        )
+    return tuple(records)
+
+
+def _rising_history(observations: int = MULTI_QUARTER_DAYS) -> tuple[PriceBar, ...]:
+    start = date(2024, 1, 1)
+    records: list[PriceBar] = []
+    for index in range(observations):
+        spy = 100.0 + 0.1 * index + (0.05 if index % 2 else -0.05)
+        records.append(
+            PriceBar(
+                date=start + timedelta(days=index),
+                symbol="SPY",
+                open=spy * 0.999,
+                close=spy,
+                adjusted_close=spy,
+                volume=1000,
+            )
+        )
+        sgov = 100.0 + (0.001 if index % 2 else -0.001)
         records.append(
             PriceBar(
                 date=start + timedelta(days=index),
@@ -150,34 +188,10 @@ def _crashing_history(observations: int) -> tuple[PriceBar, ...]:
 
 def test_master_kill_switch_inactive_when_equity_grows() -> None:
     """A monotonically rising scenario must never trigger the kill-switch."""
-    start = date(2024, 1, 1)
-    rising = []
-    for index in range(90):
-        spy = 100.0 + 0.1 * index
-        rising.append(
-            PriceBar(
-                date=start + timedelta(days=index),
-                symbol="SPY",
-                open=spy * 0.999,
-                close=spy,
-                adjusted_close=spy,
-                volume=1000,
-            )
-        )
-        rising.append(
-            PriceBar(
-                date=start + timedelta(days=index),
-                symbol="SGOV",
-                open=100.0,
-                close=100.0,
-                adjusted_close=100.0,
-                volume=1000,
-            )
-        )
 
     result = run_master_portfolio_quarterly_backtest(
-        tuple(rising),
-        (date(2024, 3, 5), date(2024, 3, 15), date(2024, 3, 25)),
+        _rising_history(),
+        QUARTER_END_SIGNAL_DATES,
         master_parameters=_single_sleeve_master(),
         child_parameters=MasterChildStrategyParameters(
             risk_parity=_risk_parity_universe_params()
@@ -190,11 +204,11 @@ def test_master_kill_switch_inactive_when_equity_grows() -> None:
 
 
 def test_master_kill_switch_triggers_when_drawdown_breaches_threshold() -> None:
-    records = _crashing_history(90)
+    records = _crashing_history()
 
     result = run_master_portfolio_quarterly_backtest(
         records,
-        (date(2024, 3, 1), date(2024, 3, 16), date(2024, 3, 27)),
+        QUARTER_END_SIGNAL_DATES,
         master_parameters=_single_sleeve_master(),
         child_parameters=MasterChildStrategyParameters(
             risk_parity=_risk_parity_universe_params()
@@ -216,10 +230,10 @@ def test_master_kill_switch_triggers_when_drawdown_breaches_threshold() -> None:
 
 
 def test_master_kill_switch_caps_non_defensive_after_trigger() -> None:
-    records = _crashing_history(90)
+    records = _crashing_history()
     result = run_master_portfolio_quarterly_backtest(
         records,
-        (date(2024, 3, 1), date(2024, 3, 16), date(2024, 3, 27)),
+        QUARTER_END_SIGNAL_DATES,
         master_parameters=_single_sleeve_master(),
         child_parameters=MasterChildStrategyParameters(
             risk_parity=_risk_parity_universe_params()
@@ -246,11 +260,10 @@ def test_master_kill_switch_caps_non_defensive_after_trigger() -> None:
 
 
 def test_master_kill_switch_clearance_resets_state_for_next_period() -> None:
-    records = _crashing_history(90)
-    quarter_signal_dates = (date(2024, 3, 1), date(2024, 3, 16), date(2024, 3, 27))
+    records = _crashing_history()
     result = run_master_portfolio_quarterly_backtest(
         records,
-        quarter_signal_dates,
+        QUARTER_END_SIGNAL_DATES,
         master_parameters=_single_sleeve_master(),
         child_parameters=MasterChildStrategyParameters(
             risk_parity=_risk_parity_universe_params()
@@ -258,7 +271,7 @@ def test_master_kill_switch_clearance_resets_state_for_next_period() -> None:
         backtest_parameters=BacktestParameters(
             starting_capital=100_000.0, cost_bps=0.0, slippage_bps=0.0
         ),
-        kill_switch_clearance_signal_dates=(date(2024, 3, 27),),
+        kill_switch_clearance_signal_dates=(Q3_END,),
     )
 
     last_period = result.rebalance_results[-1]
@@ -267,14 +280,14 @@ def test_master_kill_switch_clearance_resets_state_for_next_period() -> None:
         event for event in result.kill_switch_events if event.event_kind == "cleared"
     )
     assert len(clear_events) == 1
-    assert clear_events[0].signal_date == date(2024, 3, 27)
+    assert clear_events[0].signal_date == Q3_END
 
 
 def test_master_kill_switch_period_records_pre_rebalance_state() -> None:
-    records = _crashing_history(90)
+    records = _crashing_history()
     result = run_master_portfolio_quarterly_backtest(
         records,
-        (date(2024, 3, 1), date(2024, 3, 16), date(2024, 3, 27)),
+        QUARTER_END_SIGNAL_DATES,
         master_parameters=_single_sleeve_master(),
         child_parameters=MasterChildStrategyParameters(
             risk_parity=_risk_parity_universe_params()
@@ -293,10 +306,10 @@ def test_master_kill_switch_period_records_pre_rebalance_state() -> None:
 
 def test_master_kill_switch_does_not_modify_child_internal_weights() -> None:
     """Account-level kill-switch must not mutate child strategy target_weights."""
-    records = _crashing_history(90)
+    records = _crashing_history()
     result = run_master_portfolio_quarterly_backtest(
         records,
-        (date(2024, 3, 1), date(2024, 3, 16), date(2024, 3, 27)),
+        QUARTER_END_SIGNAL_DATES,
         master_parameters=_single_sleeve_master(),
         child_parameters=MasterChildStrategyParameters(
             risk_parity=_risk_parity_universe_params()

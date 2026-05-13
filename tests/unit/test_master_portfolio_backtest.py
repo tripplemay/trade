@@ -4,6 +4,7 @@ import pytest
 
 from trade.backtest.master_portfolio import (
     MasterChildStrategyParameters,
+    identify_quarter_end_signal_dates,
     run_master_portfolio_quarterly_backtest,
 )
 from trade.backtest.monthly import BacktestError, BacktestParameters
@@ -17,6 +18,12 @@ from trade.portfolio.master import (
 )
 from trade.strategies.global_etf_momentum import MomentumParameters, MomentumWindow
 from trade.strategies.risk_parity import RiskParityParameters
+
+Q1_END = date(2024, 3, 31)
+Q2_END = date(2024, 6, 30)
+Q3_END = date(2024, 9, 30)
+SINGLE_QUARTER_DAYS = 92
+MULTI_QUARTER_DAYS = 275
 
 
 def _short_momentum_params() -> MomentumParameters:
@@ -60,11 +67,22 @@ def _synthetic_daily_universe(
     return tuple(records)
 
 
+def test_identify_quarter_end_signal_dates_returns_last_trading_day_per_quarter() -> None:
+    records = _synthetic_daily_universe(("SPY", "AGG", "SGOV"), MULTI_QUARTER_DAYS)
+    all_dates = tuple(sorted({record.date for record in records}))
+
+    quarter_ends = identify_quarter_end_signal_dates(all_dates)
+
+    assert quarter_ends == (Q1_END, Q2_END, Q3_END)
+
+
 def test_master_portfolio_backtest_aggregates_to_full_planning_allocation() -> None:
-    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "GLD", "SGOV"), 90)
+    records = _synthetic_daily_universe(
+        ("SPY", "VEA", "AGG", "GLD", "SGOV"), SINGLE_QUARTER_DAYS
+    )
     result = run_master_portfolio_quarterly_backtest(
         records,
-        (date(2024, 3, 10),),
+        (Q1_END,),
         child_parameters=MasterChildStrategyParameters(
             momentum=_short_momentum_params(),
             risk_parity=_short_risk_parity_params(),
@@ -77,10 +95,12 @@ def test_master_portfolio_backtest_aggregates_to_full_planning_allocation() -> N
 
 
 def test_master_portfolio_backtest_records_per_sleeve_contributions() -> None:
-    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "GLD", "SGOV"), 90)
+    records = _synthetic_daily_universe(
+        ("SPY", "VEA", "AGG", "GLD", "SGOV"), SINGLE_QUARTER_DAYS
+    )
     result = run_master_portfolio_quarterly_backtest(
         records,
-        (date(2024, 3, 10),),
+        (Q1_END,),
         child_parameters=MasterChildStrategyParameters(
             momentum=_short_momentum_params(),
             risk_parity=_short_risk_parity_params(),
@@ -104,10 +124,12 @@ def test_master_portfolio_backtest_records_per_sleeve_contributions() -> None:
 
 
 def test_master_portfolio_satellite_stub_contribution_falls_through_to_defensive_asset() -> None:
-    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "GLD", "SGOV"), 90)
+    records = _synthetic_daily_universe(
+        ("SPY", "VEA", "AGG", "GLD", "SGOV"), SINGLE_QUARTER_DAYS
+    )
     result = run_master_portfolio_quarterly_backtest(
         records,
-        (date(2024, 3, 10),),
+        (Q1_END,),
         child_parameters=MasterChildStrategyParameters(
             momentum=_short_momentum_params(),
             risk_parity=_short_risk_parity_params(),
@@ -126,10 +148,12 @@ def test_master_portfolio_satellite_stub_contribution_falls_through_to_defensive
 
 
 def test_master_portfolio_executes_at_t_plus_1_open() -> None:
-    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "GLD", "SGOV"), 90)
+    records = _synthetic_daily_universe(
+        ("SPY", "VEA", "AGG", "GLD", "SGOV"), SINGLE_QUARTER_DAYS
+    )
     result = run_master_portfolio_quarterly_backtest(
         records,
-        (date(2024, 3, 10),),
+        (Q1_END,),
         child_parameters=MasterChildStrategyParameters(
             momentum=_short_momentum_params(),
             risk_parity=_short_risk_parity_params(),
@@ -137,24 +161,26 @@ def test_master_portfolio_executes_at_t_plus_1_open() -> None:
     )
 
     period = result.rebalance_results[0]
-    assert period.signal_date == date(2024, 3, 10)
-    assert period.execution_date == date(2024, 3, 11)
+    assert period.signal_date == Q1_END
+    assert period.execution_date == date(2024, 4, 1)
     assert {fill.execution_price_field for fill in period.fills} == {"open"}
     assert {fill.execution_assumption for fill in period.fills} == {"t_plus_1_open"}
 
 
 def test_master_portfolio_chains_capital_across_quarter_rebalances() -> None:
-    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "GLD", "SGOV"), 90)
+    records = _synthetic_daily_universe(
+        ("SPY", "VEA", "AGG", "GLD", "SGOV"), MULTI_QUARTER_DAYS
+    )
     result = run_master_portfolio_quarterly_backtest(
         records,
-        (date(2024, 3, 10), date(2024, 3, 20)),
+        (Q1_END, Q2_END, Q3_END),
         child_parameters=MasterChildStrategyParameters(
             momentum=_short_momentum_params(),
             risk_parity=_short_risk_parity_params(),
         ),
     )
 
-    assert len(result.rebalance_results) == 2
+    assert len(result.rebalance_results) == 3
     for prior, current in zip(
         result.rebalance_results, result.rebalance_results[1:], strict=False
     ):
@@ -162,10 +188,12 @@ def test_master_portfolio_chains_capital_across_quarter_rebalances() -> None:
 
 
 def test_master_portfolio_equity_curve_starts_at_starting_capital_and_extends_per_period() -> None:
-    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "GLD", "SGOV"), 90)
+    records = _synthetic_daily_universe(
+        ("SPY", "VEA", "AGG", "GLD", "SGOV"), MULTI_QUARTER_DAYS
+    )
     result = run_master_portfolio_quarterly_backtest(
         records,
-        (date(2024, 3, 10), date(2024, 3, 20)),
+        (Q1_END, Q2_END, Q3_END),
         child_parameters=MasterChildStrategyParameters(
             momentum=_short_momentum_params(),
             risk_parity=_short_risk_parity_params(),
@@ -173,16 +201,18 @@ def test_master_portfolio_equity_curve_starts_at_starting_capital_and_extends_pe
         backtest_parameters=BacktestParameters(starting_capital=100_000.0),
     )
 
-    assert len(result.equity_curve) == 3
+    assert len(result.equity_curve) == 4
     assert result.equity_curve[0].value == 100_000.0
     assert result.equity_curve[-1].value == result.ending_value
 
 
 def test_master_portfolio_turnover_and_cost_increase_with_each_rebalance() -> None:
-    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "GLD", "SGOV"), 90)
+    records = _synthetic_daily_universe(
+        ("SPY", "VEA", "AGG", "GLD", "SGOV"), MULTI_QUARTER_DAYS
+    )
     result = run_master_portfolio_quarterly_backtest(
         records,
-        (date(2024, 3, 10), date(2024, 3, 20)),
+        (Q1_END, Q2_END, Q3_END),
         child_parameters=MasterChildStrategyParameters(
             momentum=_short_momentum_params(),
             risk_parity=_short_risk_parity_params(),
@@ -197,9 +227,13 @@ def test_master_portfolio_turnover_and_cost_increase_with_each_rebalance() -> No
     assert result.rebalance_results[0].turnover == pytest.approx(1.0)
 
 
-def test_master_portfolio_does_not_act_between_supplied_signal_dates() -> None:
-    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "GLD", "SGOV"), 90)
-    quarter_signal_dates = (date(2024, 3, 10), date(2024, 3, 20))
+def test_master_portfolio_only_acts_at_supplied_quarter_end_signal_dates() -> None:
+    """Master must produce exactly one rebalance per supplied quarter-end and nothing in between."""
+
+    records = _synthetic_daily_universe(
+        ("SPY", "VEA", "AGG", "GLD", "SGOV"), MULTI_QUARTER_DAYS
+    )
+    quarter_signal_dates = (Q1_END, Q2_END, Q3_END)
     result = run_master_portfolio_quarterly_backtest(
         records,
         quarter_signal_dates,
@@ -209,18 +243,64 @@ def test_master_portfolio_does_not_act_between_supplied_signal_dates() -> None:
         ),
     )
 
-    assert tuple(period.signal_date for period in result.rebalance_results) == quarter_signal_dates
+    assert (
+        tuple(period.signal_date for period in result.rebalance_results)
+        == quarter_signal_dates
+    )
+
+
+def test_master_portfolio_rejects_intra_quarter_signal_dates() -> None:
+    """Same-quarter dates that are not quarter-ends must fail closed."""
+
+    records = _synthetic_daily_universe(
+        ("SPY", "VEA", "AGG", "GLD", "SGOV"), SINGLE_QUARTER_DAYS
+    )
+    with pytest.raises(BacktestError, match="calendar quarter-end"):
+        run_master_portfolio_quarterly_backtest(
+            records,
+            (date(2024, 3, 10), date(2024, 3, 20), date(2024, 3, 25)),
+            child_parameters=MasterChildStrategyParameters(
+                momentum=_short_momentum_params(),
+                risk_parity=_short_risk_parity_params(),
+            ),
+        )
+
+
+def test_master_portfolio_rejects_non_quarter_end_date() -> None:
+    records = _synthetic_daily_universe(
+        ("SPY", "VEA", "AGG", "GLD", "SGOV"), SINGLE_QUARTER_DAYS
+    )
+    with pytest.raises(BacktestError, match="calendar quarter-end"):
+        run_master_portfolio_quarterly_backtest(
+            records,
+            (date(2024, 3, 15),),
+        )
+
+
+def test_master_portfolio_rejects_duplicate_quarter_end_signal_dates() -> None:
+    records = _synthetic_daily_universe(
+        ("SPY", "VEA", "AGG", "GLD", "SGOV"), MULTI_QUARTER_DAYS
+    )
+    with pytest.raises(BacktestError, match="duplicate"):
+        run_master_portfolio_quarterly_backtest(
+            records,
+            (Q1_END, Q1_END),
+            child_parameters=MasterChildStrategyParameters(
+                momentum=_short_momentum_params(),
+                risk_parity=_short_risk_parity_params(),
+            ),
+        )
 
 
 def test_master_portfolio_rejects_empty_signal_dates() -> None:
-    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "SGOV"), 30)
+    records = _synthetic_daily_universe(("SPY", "AGG", "SGOV"), 30)
     with pytest.raises(BacktestError, match="signal_dates"):
         run_master_portfolio_quarterly_backtest(records, ())
 
 
 def test_master_portfolio_with_two_implemented_sleeves_routes_stub_to_defensive() -> None:
     """Custom master config with only one implemented + one stub still aggregates correctly."""
-    records = _synthetic_daily_universe(("SPY", "AGG", "SGOV"), 90)
+    records = _synthetic_daily_universe(("SPY", "AGG", "SGOV"), SINGLE_QUARTER_DAYS)
     custom = MasterPortfolioParameters(
         sleeves=(
             MasterSleeveConfig(
@@ -242,7 +322,7 @@ def test_master_portfolio_with_two_implemented_sleeves_routes_stub_to_defensive(
     )
     result = run_master_portfolio_quarterly_backtest(
         records,
-        (date(2024, 3, 10),),
+        (Q1_END,),
         master_parameters=custom,
         child_parameters=MasterChildStrategyParameters(momentum=_short_momentum_params()),
     )
@@ -254,24 +334,26 @@ def test_master_portfolio_with_two_implemented_sleeves_routes_stub_to_defensive(
 
 
 def test_master_portfolio_validates_parameters_before_running() -> None:
-    records = _synthetic_daily_universe(("SPY", "AGG", "SGOV"), 90)
+    records = _synthetic_daily_universe(("SPY", "AGG", "SGOV"), SINGLE_QUARTER_DAYS)
     leveraged = MasterPortfolioParameters(max_exposure=1.5)
     with pytest.raises(Exception, match="leverage"):
         run_master_portfolio_quarterly_backtest(
             records,
-            (date(2024, 3, 10),),
+            (Q1_END,),
             master_parameters=leveraged,
         )
 
 
 def test_master_portfolio_default_config_uses_default_child_parameters() -> None:
     """Calling without explicit child_parameters should still work with implementation defaults."""
-    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "GLD", "SGOV"), 90)
+    records = _synthetic_daily_universe(
+        ("SPY", "VEA", "AGG", "GLD", "SGOV"), SINGLE_QUARTER_DAYS
+    )
     custom = default_master_portfolio_parameters()
     # Exercise the default master config path while still using fast short child params.
     result = run_master_portfolio_quarterly_backtest(
         records,
-        (date(2024, 3, 10),),
+        (Q1_END,),
         master_parameters=custom,
         child_parameters=MasterChildStrategyParameters(
             momentum=_short_momentum_params(),

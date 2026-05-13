@@ -26,6 +26,12 @@ from trade.reporting.master_portfolio import generate_master_portfolio_reports
 from trade.strategies.global_etf_momentum import MomentumParameters, MomentumWindow
 from trade.strategies.risk_parity import RiskParityParameters
 
+Q1_END = date(2024, 3, 31)
+Q2_END = date(2024, 6, 30)
+Q3_END = date(2024, 9, 30)
+SINGLE_QUARTER_DAYS = 92
+MULTI_QUARTER_DAYS = 275
+
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 MASTER_MODULE_PATHS: tuple[Path, ...] = (
@@ -188,11 +194,11 @@ def test_master_portfolio_runs_offline_without_env_or_secrets(monkeypatch: Any) 
         "POLYGON_API_KEY",
     ):
         monkeypatch.delenv(env_name, raising=False)
-    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "GLD", "SGOV"), 90)
+    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "GLD", "SGOV"), MULTI_QUARTER_DAYS)
 
     result = run_master_portfolio_quarterly_backtest(
         records,
-        (date(2024, 3, 10), date(2024, 3, 20), date(2024, 3, 25)),
+        (Q1_END, Q2_END, Q3_END),
         child_parameters=MasterChildStrategyParameters(
             momentum=_short_momentum_params(),
             risk_parity=_short_risk_parity_params(),
@@ -214,11 +220,11 @@ def test_master_portfolio_pipeline_does_not_modify_committed_fixtures(
     fixtures_dir = PROJECT_ROOT / "trade" / "data" / "fixtures"
     fixtures_before = sorted(path.name for path in fixtures_dir.iterdir() if path.is_file())
 
-    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "GLD", "SGOV"), 90)
+    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "GLD", "SGOV"), MULTI_QUARTER_DAYS)
     snapshot = _wrap_snapshot(records)
     result = run_master_portfolio_quarterly_backtest(
         records,
-        (date(2024, 3, 10), date(2024, 3, 20), date(2024, 3, 25)),
+        (Q1_END, Q2_END, Q3_END),
         child_parameters=MasterChildStrategyParameters(
             momentum=_short_momentum_params(),
             risk_parity=_short_risk_parity_params(),
@@ -241,11 +247,11 @@ def test_master_portfolio_pipeline_does_not_modify_committed_fixtures(
 def test_master_portfolio_reports_do_not_claim_paper_or_live_execution(
     tmp_path: Path,
 ) -> None:
-    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "GLD", "SGOV"), 90)
+    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "GLD", "SGOV"), MULTI_QUARTER_DAYS)
     snapshot = _wrap_snapshot(records)
     result = run_master_portfolio_quarterly_backtest(
         records,
-        (date(2024, 3, 10), date(2024, 3, 20), date(2024, 3, 25)),
+        (Q1_END, Q2_END, Q3_END),
         child_parameters=MasterChildStrategyParameters(
             momentum=_short_momentum_params(),
             risk_parity=_short_risk_parity_params(),
@@ -273,12 +279,12 @@ def test_master_portfolio_default_parameters_avoid_broker_or_live_language() -> 
 
 
 def test_master_portfolio_rejects_leverage_via_validation() -> None:
-    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "GLD", "SGOV"), 90)
+    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "GLD", "SGOV"), MULTI_QUARTER_DAYS)
     leveraged = MasterPortfolioParameters(max_exposure=1.25)
     with pytest.raises(Exception, match="leverage"):
         run_master_portfolio_quarterly_backtest(
             records,
-            (date(2024, 3, 10),),
+            (Q1_END,),
             master_parameters=leveraged,
         )
 
@@ -294,11 +300,11 @@ def test_master_portfolio_pipeline_does_not_invoke_public_import_stub(
 
     monkeypatch.setattr("trade.data.public_import.import_public_data_stub", _flag_call)
 
-    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "GLD", "SGOV"), 90)
+    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "GLD", "SGOV"), MULTI_QUARTER_DAYS)
     snapshot = _wrap_snapshot(records)
     result = run_master_portfolio_quarterly_backtest(
         records,
-        (date(2024, 3, 10), date(2024, 3, 20), date(2024, 3, 25)),
+        (Q1_END, Q2_END, Q3_END),
         child_parameters=MasterChildStrategyParameters(
             momentum=_short_momentum_params(),
             risk_parity=_short_risk_parity_params(),
@@ -314,18 +320,20 @@ def test_master_portfolio_kill_switch_state_is_deterministic_and_visible_in_repo
 ) -> None:
     start = date(2024, 1, 1)
     records: list[PriceBar] = []
-    for index in range(90):
-        if index < 60:
-            spy = 100.0 + 0.05 * index
-        elif index < 75:
-            spy = 103.0 - 1.5 * (index - 60)
+    for index in range(MULTI_QUARTER_DAYS):
+        if index <= 90:
+            base = 100.0 + 0.05 * index
+        elif index <= 180:
+            base = 104.5 - 0.32 * (index - 90)
         else:
-            spy = 80.5
+            base = 75.7
+        spy = base + (0.1 if index % 2 else -0.1)
         records.append(
             PriceBar(start + timedelta(days=index), "SPY", spy * 0.999, spy, spy, 1000)
         )
+        sgov = 100.0 + (0.001 if index % 2 else -0.001)
         records.append(
-            PriceBar(start + timedelta(days=index), "SGOV", 100.0, 100.0, 100.0, 1000)
+            PriceBar(start + timedelta(days=index), "SGOV", sgov, sgov, sgov, 1000)
         )
     crash_records = tuple(records)
     snapshot = _wrap_snapshot(crash_records)
@@ -344,7 +352,7 @@ def test_master_portfolio_kill_switch_state_is_deterministic_and_visible_in_repo
 
     first_run = run_master_portfolio_quarterly_backtest(
         crash_records,
-        (date(2024, 3, 1), date(2024, 3, 16), date(2024, 3, 27)),
+        (Q1_END, Q2_END, Q3_END),
         master_parameters=custom_master,
         child_parameters=MasterChildStrategyParameters(
             risk_parity=RiskParityParameters(
@@ -360,7 +368,7 @@ def test_master_portfolio_kill_switch_state_is_deterministic_and_visible_in_repo
     )
     second_run = run_master_portfolio_quarterly_backtest(
         crash_records,
-        (date(2024, 3, 1), date(2024, 3, 16), date(2024, 3, 27)),
+        (Q1_END, Q2_END, Q3_END),
         master_parameters=custom_master,
         child_parameters=MasterChildStrategyParameters(
             risk_parity=RiskParityParameters(

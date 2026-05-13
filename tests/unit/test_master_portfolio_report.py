@@ -20,6 +20,11 @@ from trade.reporting.master_portfolio import generate_master_portfolio_reports
 from trade.strategies.global_etf_momentum import MomentumParameters, MomentumWindow
 from trade.strategies.risk_parity import RiskParityParameters
 
+Q1_END = date(2024, 3, 31)
+Q2_END = date(2024, 6, 30)
+Q3_END = date(2024, 9, 30)
+MULTI_QUARTER_DAYS = 275
+
 
 def _synthetic_daily_universe(
     symbols: tuple[str, ...], observations: int
@@ -83,11 +88,11 @@ def _short_risk_parity_params() -> RiskParityParameters:
 def _run_default_master_backtest() -> tuple[
     tuple[PriceBar, ...], DataSnapshot, MasterPortfolioBacktestResult
 ]:
-    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "GLD", "SGOV"), 90)
+    records = _synthetic_daily_universe(("SPY", "VEA", "AGG", "GLD", "SGOV"), MULTI_QUARTER_DAYS)
     snapshot = _make_snapshot(records)
     result = run_master_portfolio_quarterly_backtest(
         records,
-        (date(2024, 3, 10), date(2024, 3, 20), date(2024, 3, 25)),
+        (Q1_END, Q2_END, Q3_END),
         child_parameters=MasterChildStrategyParameters(
             momentum=_short_momentum_params(),
             risk_parity=_short_risk_parity_params(),
@@ -214,18 +219,20 @@ def test_master_portfolio_report_exposes_kill_switch_state_when_active(tmp_path:
     """When the kill-switch fires during the backtest, the report must surface it."""
     start = date(2024, 1, 1)
     records: list[PriceBar] = []
-    for index in range(90):
-        if index < 60:
-            spy = 100.0 + 0.05 * index
-        elif index < 75:
-            spy = 103.0 - 1.5 * (index - 60)
+    for index in range(MULTI_QUARTER_DAYS):
+        if index <= 90:
+            base = 100.0 + 0.05 * index
+        elif index <= 180:
+            base = 104.5 - 0.32 * (index - 90)
         else:
-            spy = 80.5
+            base = 75.7
+        spy = base + (0.1 if index % 2 else -0.1)
         records.append(
             PriceBar(start + timedelta(days=index), "SPY", spy * 0.999, spy, spy, 1000)
         )
+        sgov = 100.0 + (0.001 if index % 2 else -0.001)
         records.append(
-            PriceBar(start + timedelta(days=index), "SGOV", 100.0, 100.0, 100.0, 1000)
+            PriceBar(start + timedelta(days=index), "SGOV", sgov, sgov, sgov, 1000)
         )
     crash_records = tuple(records)
     snapshot = _make_snapshot(crash_records)
@@ -243,7 +250,7 @@ def test_master_portfolio_report_exposes_kill_switch_state_when_active(tmp_path:
     )
     result = run_master_portfolio_quarterly_backtest(
         crash_records,
-        (date(2024, 3, 1), date(2024, 3, 16), date(2024, 3, 27)),
+        (Q1_END, Q2_END, Q3_END),
         master_parameters=custom_master,
         child_parameters=MasterChildStrategyParameters(
             risk_parity=RiskParityParameters(
@@ -258,7 +265,7 @@ def test_master_portfolio_report_exposes_kill_switch_state_when_active(tmp_path:
         ),
     )
     artifacts = generate_master_portfolio_reports(
-        result, snapshot, Path("/tmp/master-killed"), run_id="killed"
+        result, snapshot, tmp_path, run_id="killed"
     )
     payload = json.loads(artifacts.json_path.read_text(encoding="utf-8"))
 

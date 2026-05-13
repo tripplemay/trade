@@ -111,6 +111,55 @@ def drawdown_against_hwm(equity: float, high_water_mark: float) -> float:
     return equity / high_water_mark - 1.0
 
 
+def identify_quarter_end_signal_dates(all_dates: tuple[date, ...]) -> tuple[date, ...]:
+    """Return the last trading date of each calendar quarter that is confirmed complete.
+
+    A calendar quarter is considered confirmed when the supplied ``all_dates`` contain at
+    least one trading date in the following calendar quarter; otherwise the data may simply
+    be truncated mid-quarter and the latest trading date is not a true quarter-end. This
+    guarantees that the returned signal dates have at least one trading date available for
+    T+1 open execution.
+    """
+
+    if not all_dates:
+        return ()
+    by_quarter: dict[tuple[int, int], date] = {}
+    quarters_present: set[tuple[int, int]] = set()
+    for trading_date in all_dates:
+        quarter_index = (trading_date.month - 1) // 3 + 1
+        key = (trading_date.year, quarter_index)
+        quarters_present.add(key)
+        existing = by_quarter.get(key)
+        if existing is None or trading_date > existing:
+            by_quarter[key] = trading_date
+    confirmed_quarter_ends: list[date] = []
+    for (year, quarter), end_date in by_quarter.items():
+        next_quarter = (year, quarter + 1) if quarter < 4 else (year + 1, 1)
+        if next_quarter in quarters_present:
+            confirmed_quarter_ends.append(end_date)
+    return tuple(sorted(confirmed_quarter_ends))
+
+
+def _validate_quarter_end_signal_dates(
+    signal_dates: tuple[date, ...], all_dates: tuple[date, ...]
+) -> None:
+    quarter_end_dates = identify_quarter_end_signal_dates(all_dates)
+    quarter_end_set = set(quarter_end_dates)
+    seen: set[date] = set()
+    for signal_date in signal_dates:
+        if signal_date not in quarter_end_set:
+            raise BacktestError(
+                f"signal_date {signal_date.isoformat()} is not a calendar quarter-end in the "
+                f"supplied records; expected one of: "
+                f"{[d.isoformat() for d in quarter_end_dates]}"
+            )
+        if signal_date in seen:
+            raise BacktestError(
+                f"duplicate quarter-end signal_date: {signal_date.isoformat()}"
+            )
+        seen.add(signal_date)
+
+
 def apply_kill_switch_constraint(
     *,
     new_weights: dict[str, float],
@@ -170,6 +219,7 @@ def run_master_portfolio_quarterly_backtest(
 
     by_symbol_date = {(record.symbol, record.date): record for record in records}
     all_dates = tuple(sorted({record.date for record in records}))
+    _validate_quarter_end_signal_dates(signal_dates, all_dates)
     clearance_set = set(kill_switch_clearance_signal_dates)
     drawdown_threshold = master_parameters.drawdown_threshold
     defensive_asset = master_parameters.defensive_asset
