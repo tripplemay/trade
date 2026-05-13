@@ -13,16 +13,17 @@
     "source": "B010 signoff soft-watch S1"
   },
   {
-    "id": "BL-B010-S2",
-    "title": "Risk parity baseline 替换为可计算 benchmark",
-    "description": "B010 reports 中 baseline 是结构化 placeholder（static_equal_weight_multi_asset_placeholder），非独立计算的基准路径。后续 reporting / analytics 加固批次可替换为可计算 benchmark（例如等权多资产 monthly rebalance backtest），保持 fixture/mock-first、不引入 live / paid 数据。",
+    "id": "BL-B011-S2",
+    "title": "实现 satellite 策略：US Quality Momentum + HK-China ETF",
+    "description": "B011 Master Portfolio 已为 US Quality (20%) 与 HK-China (10%) 预留 satellite stub，目前 fall through 到 defensive/cash。后续按独立 specs 分别实现这两个策略并接入 Master Portfolio：US Quality Momentum / Multi-factor，HK-China ETF small allocation（首期建议优先 US-listed ADR/ETF proxies）。仍保持 fixture/mock-first、no-live/no-broker/no-paper/no-AI、显式 snapshot、research-only 边界，并满足数据质量门槛。",
     "decisions": [
-      "保持 research-only 报告语义，不暗示 live execution",
-      "benchmark 必须可在默认 fixture / 已有 snapshot 上离线复现",
-      "至少覆盖 equity curve、年化收益、最大回撤"
+      "US Quality 与 HK-China 分别独立 spec（不在同一批次合并实现）",
+      "首期 HK-China 优先 US-listed ADR/ETF proxies，避免港股 paid 数据硬依赖",
+      "各 satellite 接入后必须复用 Master Portfolio quarter-end cadence 与账户级 kill-switch",
+      "数据范围参照 docs/strategy/03-us-quality-momentum.md 与 docs/strategy/04-hk-china-etf-small-allocation.md"
     ],
     "confirmed_at": "2026-05-13",
-    "priority": "low",
-    "source": "B010 signoff soft-watch S2"
+    "priority": "medium",
+    "source": "B011 signoff soft-watch S2"
   }
 ]
