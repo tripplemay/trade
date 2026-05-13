@@ -4,6 +4,7 @@ from typing import Any
 
 from trade.config.defaults import default_fixture_workflow_config
 from trade.data.loader import load_fixture_prices
+from trade.data.public_import import PublicImportRequest, import_public_data
 from trade.workflow import run_fixture_workflow
 
 
@@ -113,6 +114,62 @@ def test_workflow_uses_explicit_snapshot_without_changing_default(
     assert default.report["data"]["data_snapshot_id"].startswith("fixture:")  # type: ignore[index]
     assert default.report["data"]["snapshot_kind"] == "committed_fixture"  # type: ignore[index]
     assert default.report["data"]["snapshot_manifest"] is None  # type: ignore[index]
+
+
+def test_workflow_references_manifest_from_real_public_import(
+    tmp_path: Path, monkeypatch: Any
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    fixture = load_fixture_prices()
+    source_file = tmp_path / "manual-download.json"
+    source_file.write_text(
+        json.dumps(
+            {
+                "source": "manual-public-data-import",
+                "adjusted_price_policy": "public_best_effort_adjusted_close",
+                "records": [
+                    {
+                        "date": record.date.isoformat(),
+                        "symbol": record.symbol,
+                        "open": record.open,
+                        "close": record.close,
+                        "adjusted_close": record.adjusted_close,
+                        "volume": record.volume,
+                    }
+                    for record in fixture.records
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    import_result = import_public_data(
+        PublicImportRequest(
+            source_file=source_file,
+            provider="Eval Provider",
+            output_directory=Path("data/public-cache"),
+            manual_confirmation=True,
+        )
+    )
+    config = default_fixture_workflow_config()
+    snapshot_config = type(config)(
+        environment=config.environment,
+        strategy_budget=config.strategy_budget,
+        strategy_parameters=config.strategy_parameters,
+        backtest_parameters=config.backtest_parameters,
+        snapshot_path=import_result.output_file,
+    )
+
+    artifacts = run_fixture_workflow(
+        tmp_path / "real-import", config=snapshot_config, run_id="real-import"
+    )
+    research_run = json.loads(artifacts.research_run_path.read_text(encoding="utf-8"))
+    expected_manifest = {
+        "path": import_result.manifest_file.as_posix(),
+        "snapshot_id": import_result.snapshot_id,
+    }
+
+    assert artifacts.report["data"]["snapshot_manifest"] == expected_manifest  # type: ignore[index]
+    assert research_run["snapshot_reference"]["manifest"] == expected_manifest
 
 
 def _stable_report(report: dict[str, object]) -> dict[str, object]:

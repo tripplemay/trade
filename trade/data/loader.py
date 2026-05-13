@@ -93,8 +93,8 @@ def _read_fixture_payload(path: Path | None) -> dict[str, Any]:
 
 
 def _read_manifest_for_snapshot(path: Path) -> dict[str, str] | None:
-    manifest_path = path.with_name(f"{path.stem}-manifest.json")
-    if not manifest_path.is_file():
+    manifest_path = _find_manifest_for_snapshot(path)
+    if manifest_path is None:
         return None
     with manifest_path.open("r", encoding="utf-8") as file:
         manifest = json.load(file)
@@ -102,6 +102,44 @@ def _read_manifest_for_snapshot(path: Path) -> dict[str, str] | None:
     if not isinstance(snapshot_id, str) or not snapshot_id:
         raise FixtureDataError(f"snapshot manifest missing snapshot_id: {manifest_path}")
     return {"path": manifest_path.as_posix(), "snapshot_id": snapshot_id}
+
+
+def _find_manifest_for_snapshot(path: Path) -> Path | None:
+    adjacent_manifest = path.with_name(f"{path.stem}-manifest.json")
+    if adjacent_manifest.is_file():
+        return adjacent_manifest
+    file_hash = _sha256_file(path)
+    path_posix = path.as_posix()
+    for candidate in sorted(path.parent.glob("*-manifest.json")):
+        with candidate.open("r", encoding="utf-8") as file:
+            manifest = json.load(file)
+        if _manifest_references_file(manifest, path_posix, file_hash):
+            return candidate
+    return None
+
+
+def _manifest_references_file(manifest: object, path_posix: str, file_hash: str) -> bool:
+    if not isinstance(manifest, dict):
+        return False
+    files = manifest.get("files")
+    if not isinstance(files, list):
+        return False
+    for file_entry in files:
+        if not isinstance(file_entry, dict):
+            continue
+        manifest_path = file_entry.get("path")
+        manifest_hash = file_entry.get("sha256")
+        if manifest_path == path_posix and manifest_hash == file_hash:
+            return True
+    return False
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as file:
+        for chunk in iter(lambda: file.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _snapshot_from_payload(payload: dict[str, Any]) -> DataSnapshot:
