@@ -4,20 +4,15 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B010-risk-parity-backtest-mvp：`verifying`**；Generator 完成 F001-F006，等待 Codex 执行 F007 独立验收。
+- **B010-risk-parity-backtest-mvp：`done`**；Codex 已完成 F007 独立 L1 验收并签收。
 - Spec: `docs/specs/B010-risk-parity-backtest-mvp-spec.md`
-- F006 新增 `tests/unit/test_risk_parity_safety_guards.py`：网络/凭据/经纪商/AI/public-import/前端导入隔离、离线运行、报告无 paper/live 用词、不写 fixture 目录、无杠杆校验、public_import 不自动触发。
+- Signoff: `docs/test-reports/B010-risk-parity-backtest-mvp-signoff-2026-05-13.md`
+- Evidence: pytest 91 passed, ruff/compileall/mypy passed, B010 risk parity subset 29 passed under empty env, explicit B009-style snapshot smoke preserved manifest + limitations.
 
 ## 已完成签收
-- B001 strategy roadmap: `docs/test-reports/B001-independent-reverification-signoff-2026-05-12.md`
-- B002 data/broker specs: `docs/test-reports/B002-independent-signoff-2026-05-12.md`
-- B003 MVP PRD: `docs/test-reports/B003-mvp-product-prd-signoff-2026-05-12.md`
-- B004 engineering foundation: `docs/test-reports/B004-core-engineering-foundation-signoff-2026-05-12.md`
-- B005 pre-backtest adjudication: `docs/test-reports/B005-pre-backtest-architecture-adjudication-signoff-2026-05-12.md`
-- B006 Global ETF backtest MVP: `docs/test-reports/B006-global-etf-backtest-mvp-signoff-2026-05-12.md`
-- B007 backtest quality hardening: `docs/test-reports/B007-backtest-quality-hardening-signoff-2026-05-12.md`
-- B008 research-grade data expansion: `docs/test-reports/B008-research-grade-data-expansion-signoff-2026-05-13.md`
+- B001-B008: strategy roadmap through research-grade data expansion all signed off.
 - B009 public data snapshot MVP: `docs/test-reports/B009-public-data-snapshot-mvp-signoff-2026-05-13.md`
+- B010 risk parity backtest MVP: `docs/test-reports/B010-risk-parity-backtest-mvp-signoff-2026-05-13.md`
 
 ## B010 目标
 - 实现 Risk Parity / Vol Target 回测 MVP：inverse vol、no leverage、monthly T-day/T+1 workflow、reports。
@@ -28,5 +23,6 @@ type: project
 
 ## 已知 gap（非阻塞）
 - B010 首版不做 ERC/min-var optimizer、paper/live broker、frontend dashboard 或生产级投资建议。
+- 默认 momentum fixture 不适合直接跑默认 risk parity universe；后续用户化 workflow 可补专用 fixture/config。
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->

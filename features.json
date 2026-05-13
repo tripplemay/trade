@@ -54,7 +54,7 @@
       "title": "独立验收 B010 Risk Parity Backtest MVP",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认 B010 实现最小 risk parity backtest MVP、报告显式 research limitations、保留 snapshot/data-quality semantics，并保持 no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards；产出 review/signoff 报告"
     }
   ]

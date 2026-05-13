@@ -1,8 +1,8 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "按 MVP PRD 在 Global ETF Momentum 与 B009 数据 snapshot 基础上实现 Risk Parity / Volatility Target 回测 MVP：新增最小 risk parity 配置、收益率/波动率估计、逆波动率权重、无杠杆 exposure scaling、月度 T-day/T+1 回测 workflow、报告与安全回归，同时保持 fixture/mock-first CI、snapshot/data-quality semantics 和 no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards。",
   "total_features": 7,
-  "completed_features": 6,
+  "completed_features": 7,
   "fix_rounds": 0,
   "current_sprint": "F007",
   "last_updated": "2026-05-13",
@@ -24,17 +24,23 @@
   ],
   "docs": {
     "spec": "docs/specs/B010-risk-parity-backtest-mvp-spec.md",
-    "test_cases": null,
-    "signoff": null,
+    "test_cases": "docs/test-cases/B010-risk-parity-backtest-mvp-test-cases-2026-05-13.md",
+    "signoff": "docs/test-reports/B010-risk-parity-backtest-mvp-signoff-2026-05-13.md",
     "framework_reviewed": true
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
+  "evaluator_feedback": {
+    "summary": "B010 Risk Parity Backtest MVP passed local/CI-safe L1 verification. Required checks passed, risk parity reports preserve research limitations and snapshot/data-quality semantics, and safety guards remain intact.",
+    "pass_count": 7,
+    "partial_count": 0,
+    "fail_count": 0,
+    "issues": []
+  },
   "generator_handoff": "Generator completed B010 F001-F006. F006 added tests/unit/test_risk_parity_safety_guards.py with regression coverage proving the risk parity path is fixture/mock-first by default and does not introduce network/credential/broker/AI/public-import/frontend dependencies, that risk parity reports never claim paper or live execution, that the backtest does not perform socket I/O or modify trade/data/fixtures/, that default parameters carry no broker/live language, that leveraged max_exposure values fail validation, and that the public-import stub is never auto-invoked. Local checks pass: pytest (100 tests), ruff, compileall, mypy. Evaluator should run F007 L1 verification, inspect the new risk parity safety regression suite, and confirm B010 satisfies all B001-B009 safety guards.",
   "session_notes": {
     "planner": "2026-05-13: B009 was done with signoff after two fix rounds. Backlog/user reports/proposed-learnings were empty. User agreed to next MVP PRD step: B010 Risk Parity Backtest MVP. Created spec and feature list; moved status to building for Generator F001. Key constraints: inverse-vol only, no leverage, fixture/mock-first CI, explicit snapshot reuse only, no broker/paper/live/AI.",
     "generator": "2026-05-13: Completed B010 F006 in this session as the second generator identity (user fixed role = generator). Earlier session work on B007-F001 was discarded after re-sync revealed B007/B008/B009 were already signed off and current sprint had advanced to B010-F006. F006 added tests/unit/test_risk_parity_safety_guards.py covering risk-parity-specific safety regressions: forbidden network/credential/broker/AI/public-import/frontend imports stay absent from the risk parity modules, the pipeline runs offline without env or secrets, the backtest does not write to trade/data/fixtures/, reports never claim paper/live execution, default parameters carry no broker/live language, leveraged max_exposure fails validation, and the public-import stub is never auto-invoked. Full local check sweep passes: pytest (100 tests), ruff, compileall, mypy. Status moved to verifying for F007 Codex.",
-    "evaluator": null
+    "evaluator": "2026-05-13: Completed B010 F007 independent L1 verification. Evidence: pytest 91 passed, ruff passed, compileall passed, mypy passed, B010 risk parity subset passed under env -i, explicit B009-style local snapshot smoke preserved manifest reference and public-best-effort/non-PIT/research-only limitations. Wrote test cases, review, and signoff. Status moved to done."
   },
   "features": [
     "F001",
