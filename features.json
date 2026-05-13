@@ -38,7 +38,7 @@
       "title": "建立可复现 research run artifact 结构",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "创建或文档化 research run artifact 结构，关联 strategy config、snapshot manifest、quality summary、backtest report、target weights 或 portfolio-compatible output；保持 broker-free、human-review-only"
     },
     {

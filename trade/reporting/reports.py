@@ -20,6 +20,7 @@ class ReportArtifacts:
     run_id: str
     json_path: Path
     markdown_path: Path
+    research_run_path: Path
     report: dict[str, object]
 
 
@@ -34,12 +35,22 @@ def generate_backtest_reports(
     report = build_report_payload(result, snapshot, effective_run_id)
     json_path = output_dir / f"{effective_run_id}.json"
     markdown_path = output_dir / f"{effective_run_id}.md"
+    research_run_path = output_dir / f"{effective_run_id}-research-run.json"
     json_path.write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
     markdown_path.write_text(render_markdown_report(report), encoding="utf-8")
+    research_run_path.write_text(
+        json.dumps(
+            build_research_run_artifact(report, json_path, markdown_path),
+            indent=2,
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
     return ReportArtifacts(
         run_id=effective_run_id,
         json_path=json_path,
         markdown_path=markdown_path,
+        research_run_path=research_run_path,
         report=report,
     )
 
@@ -235,6 +246,49 @@ def render_markdown_report(report: dict[str, object]) -> str:
             f"- Config reference: {run['config_reference']}",
         ]
     )
+
+
+def build_research_run_artifact(
+    report: dict[str, object], json_path: Path, markdown_path: Path
+) -> dict[str, object]:
+    run = _section(report, "run")
+    strategy = _section(report, "strategy")
+    data = _section(report, "data")
+    parameters = _section(report, "parameters")
+    portfolio = _section(report, "portfolio")
+    limitations = _section(report, "research_limitations")
+    return {
+        "artifact_type": "research_run",
+        "run_id": run["run_id"],
+        "mode": "human-review-only",
+        "broker_free": True,
+        "strategy_config": {
+            "strategy_id": strategy["strategy_id"],
+            "strategy_version": strategy["strategy_version"],
+            "parameters": parameters,
+        },
+        "snapshot_reference": {
+            "data_snapshot_id": data["data_snapshot_id"],
+            "snapshot_kind": data["snapshot_kind"],
+            "checksum": data["checksum"],
+            "source": data["source"],
+            "date_range": data["date_range"],
+        },
+        "quality_summary": {
+            "quality_flags": data["quality_flags"],
+            "research_limitations": data["research_limitations"],
+        },
+        "backtest_report": {
+            "json_path": json_path.as_posix(),
+            "markdown_path": markdown_path.as_posix(),
+        },
+        "portfolio_compatible_output": {
+            "target_weights": portfolio["target_weights"],
+            "strategy_budget": portfolio["strategy_budget"],
+            "max_position_constraints": portfolio["max_position_constraints"],
+        },
+        "review_limitations": limitations["limitations"],
+    }
 
 
 def _section(report: dict[str, object], key: str) -> dict[str, object]:

@@ -1,3 +1,4 @@
+import json
 from datetime import date
 from pathlib import Path
 
@@ -19,6 +20,7 @@ def test_report_contains_required_json_sections(tmp_path: Path) -> None:
 
     assert artifacts.json_path.exists()
     assert artifacts.markdown_path.exists()
+    assert artifacts.research_run_path.exists()
     assert set(artifacts.report) == {
         "run",
         "strategy",
@@ -106,3 +108,30 @@ def test_multi_rebalance_report_metrics_are_traceable(tmp_path: Path) -> None:
     assert metrics["turnover"] == result.turnover  # type: ignore[index]
     assert metrics["max_drawdown"] <= 0  # type: ignore[index]
     assert metrics["equity_curve"] == report["execution"]["equity_curve"]  # type: ignore[index]
+
+
+def test_research_run_artifact_links_config_snapshot_report_and_portfolio(
+    tmp_path: Path,
+) -> None:
+    snapshot = load_fixture_prices()
+    parameters = MomentumParameters(
+        top_n=1,
+        momentum_windows=(MomentumWindow(periods=2, weight=1.0),),
+        trend_window=2,
+    )
+    result = run_monthly_backtest(snapshot.records, parameters, signal_date=date(2024, 10, 31))
+    artifacts = generate_backtest_reports(result, snapshot, tmp_path, run_id="research-run")
+    research_run = json.loads(artifacts.research_run_path.read_text(encoding="utf-8"))
+
+    assert research_run["artifact_type"] == "research_run"
+    assert research_run["mode"] == "human-review-only"
+    assert research_run["broker_free"] is True
+    assert research_run["strategy_config"]["strategy_id"] == "global_etf_momentum"
+    assert research_run["snapshot_reference"]["data_snapshot_id"] == snapshot.data_snapshot_id
+    assert research_run["quality_summary"]["quality_flags"]
+    assert research_run["backtest_report"] == {
+        "json_path": artifacts.json_path.as_posix(),
+        "markdown_path": artifacts.markdown_path.as_posix(),
+    }
+    assert research_run["portfolio_compatible_output"]["target_weights"] == {"SPY": 1.0}
+    assert "not_point_in_time_production_data" in research_run["review_limitations"]
