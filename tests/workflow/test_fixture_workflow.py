@@ -13,6 +13,8 @@ def test_fixture_workflow_generates_json_and_markdown_reports(tmp_path: Path) ->
     assert artifacts.json_path.exists()
     assert artifacts.markdown_path.exists()
     assert report["data"]["data_snapshot_id"]  # type: ignore[index]
+    assert report["data"]["quality_flags"]  # type: ignore[index]
+    assert report["data"]["research_limitations"]  # type: ignore[index]
     assert report["parameters"]["parameter_hash"]  # type: ignore[index]
     assert execution["rebalance_count"] == 3
     assert len(execution["rebalance_trace"]) == 3
@@ -39,6 +41,8 @@ def test_fixture_workflow_generates_json_and_markdown_reports(tmp_path: Path) ->
     assert metrics["Sharpe"] != 0.0
     assert metrics["equity_curve"] == execution["equity_curve"]
     assert report["risk"]["warning_flags"] is not None  # type: ignore[index]
+    assert report["research_limitations"]["limitations"]  # type: ignore[index]
+    assert "not_point_in_time_production_data" in report["research_limitations"]["limitations"]  # type: ignore[index]
 
 
 def test_fixture_workflow_report_is_deterministic_except_run_metadata(tmp_path: Path) -> None:

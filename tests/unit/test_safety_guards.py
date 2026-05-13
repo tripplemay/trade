@@ -4,6 +4,7 @@ from typing import Any
 
 from trade.ai import __all__ as ai_exports
 from trade.brokers import __all__ as broker_exports
+from trade.data.public_import import import_public_data_stub, public_import_boundary
 from trade.workflow import run_fixture_workflow
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -49,6 +50,15 @@ def test_no_network_modules_imported_by_trade_package() -> None:
     assert imported_modules.isdisjoint(forbidden_modules)
 
 
+def test_optional_public_import_boundary_is_not_default_or_ci_dependency() -> None:
+    boundary = public_import_boundary()
+
+    assert boundary.enabled_by_default is False
+    assert boundary.ci_dependency is False
+    assert boundary.requires_credentials is False
+    assert str(boundary.output_directory).startswith("data/")
+
+
 def test_no_broker_or_live_entrypoints_are_exported() -> None:
     assert broker_exports == []
     forbidden_names = {
@@ -89,6 +99,21 @@ def test_reports_do_not_claim_paper_or_live_execution(tmp_path: Path) -> None:
     assert "live execution" not in markdown_text
     assert "broker fill" not in report_text
     assert "broker fill" not in markdown_text
+
+
+def test_public_import_stub_is_not_called_by_workflow(tmp_path: Path, monkeypatch: Any) -> None:
+    called = False
+
+    def fail_if_called() -> None:
+        nonlocal called
+        called = True
+        import_public_data_stub()
+
+    monkeypatch.setattr("trade.data.public_import.import_public_data_stub", fail_if_called)
+
+    run_fixture_workflow(tmp_path, run_id="no-public-import")
+
+    assert called is False
 
 
 def test_strategy_and_reporting_do_not_import_brokers_or_ai() -> None:

@@ -11,6 +11,7 @@ from pathlib import Path
 from trade import __version__
 from trade.backtest.monthly import MonthlyBacktestResult
 from trade.data.loader import DataSnapshot
+from trade.data.quality import evaluate_data_quality
 from trade.portfolio.output import build_portfolio_output
 
 
@@ -54,6 +55,7 @@ def build_report_payload(
     yearly_returns = _yearly_returns(monthly_returns)
     volatility = _annualized_volatility(tuple(monthly_returns.values()))
     risk_flags = tuple(portfolio_output.risk_flags)
+    data_quality = evaluate_data_quality(snapshot)
     return {
         "run": {
             "run_id": run_id,
@@ -81,6 +83,8 @@ def build_report_payload(
             },
             "trading_calendar_gaps": snapshot.trading_calendar_gaps,
             "adjusted_price_policy": snapshot.adjusted_price_policy,
+            "quality_flags": data_quality.quality_flags,
+            "research_limitations": data_quality.research_limitations,
         },
         "parameters": {
             "parameter_hash": result.signal.parameter_hash,
@@ -168,6 +172,10 @@ def build_report_payload(
             ],
             "benchmark_comparison": "not_configured_for_mvp_fixture",
         },
+        "research_limitations": {
+            "data_quality_flags": data_quality.quality_flags,
+            "limitations": data_quality.research_limitations,
+        },
         "outputs": {},
     }
 
@@ -181,6 +189,7 @@ def render_markdown_report(report: dict[str, object]) -> str:
     portfolio = _section(report, "portfolio")
     risk = _section(report, "risk")
     metrics = _section(report, "metrics")
+    limitations = _section(report, "research_limitations")
     return "\n".join(
         [
             f"# Backtest Report {run['run_id']}",
@@ -214,6 +223,10 @@ def render_markdown_report(report: dict[str, object]) -> str:
             "",
             "## Risk Flags",
             f"- {risk['warning_flags']}",
+            "",
+            "## Research Limitations",
+            f"- Data quality flags: {limitations['data_quality_flags']}",
+            f"- Limitations: {limitations['limitations']}",
             "",
             "## Reproducibility",
             f"- Snapshot checksum: {data['checksum']}",

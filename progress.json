@@ -1,36 +1,39 @@
 {
-  "status": "done",
-  "user_goal": "在 B007 回测质量强化基础上扩展研究级数据基础：定义 Global ETF research universe、扩展本地研究样本/fixture、建立可选公开数据导入安全边界、补强数据质量检查与 research limitation 标记，同时保持默认 CI fixture/mock-first 和 no-live/no-secret/no-network/no-broker/no-AI safety guards。",
+  "status": "building",
+  "user_goal": "按 MVP PRD 推进 Global ETF Momentum 的可复现研究闭环：在 B008 研究级数据基础上，实现手动、默认禁用、CI 不依赖的公开数据导入与本地 snapshot workflow，补齐 snapshot manifest、显式数据加载、质量门禁和 research run artifact，同时继续保持 no-live/no-secret/no-network-by-default/no-broker/no-AI safety guards。",
   "total_features": 6,
-  "completed_features": 6,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F006",
+  "current_sprint": "F001",
   "last_updated": "2026-05-13",
   "reference_docs": [
+    "docs/specs/B009-public-data-snapshot-mvp-spec.md",
+    "docs/prd/mvp-prd.md",
     "docs/specs/B008-research-grade-data-expansion-spec.md",
     "docs/specs/B007-backtest-quality-hardening-spec.md",
     "docs/specs/B006-global-etf-backtest-mvp-spec.md",
-    "docs/test-reports/B007-backtest-quality-hardening-signoff-2026-05-12.md",
+    "docs/test-reports/B008-research-grade-data-expansion-signoff-2026-05-13.md",
     "docs/engineering/testing-and-fixture-policy.md",
     "docs/engineering/config-and-environment-policy.md",
     "docs/engineering/no-live-safety-guards.md",
     "docs/engineering/backtest-report-schema.md",
     "docs/engineering/pit-data-degradation-policy.md",
+    "docs/strategy/00-master-portfolio-allocation.md",
     "docs/strategy/01-global-etf-momentum-rotation.md"
   ],
   "docs": {
-    "spec": "docs/specs/B008-research-grade-data-expansion-spec.md",
-    "test_cases": "docs/test-reports/B008-research-grade-data-expansion-review-2026-05-13.md",
-    "signoff": "docs/test-reports/B008-research-grade-data-expansion-signoff-2026-05-13.md",
+    "spec": "docs/specs/B009-public-data-snapshot-mvp-spec.md",
+    "test_cases": null,
+    "signoff": null,
     "framework_reviewed": true
   },
   "role_assignments": null,
-  "evaluator_feedback": "PASS. F006 L1 verification completed on 2026-05-13. Evidence: pytest 48 passed, ruff passed, compileall passed, mypy passed. Reviewed research universe/data dictionary, expanded synthetic research sample, public import fail-closed boundary, data quality/research limitation report fields, deterministic workflow, and no-live/no-secret/no-network/no-broker/no-AI guards. Signoff: docs/test-reports/B008-research-grade-data-expansion-signoff-2026-05-13.md",
-  "generator_handoff": "Generator completed B008 F001-F005. F001 added research-only Global ETF universe config, loader, data dictionary docs, and tests for asset-class coverage and no live/broker authorization semantics. F002 added committed synthetic research sample fixture with SPY/QQQ/VEA/GLD/AGG/SGOV covering drawdown, choppy/recovery regimes, non-monotonic equity curve, and multi-asset rotation. F003 added manual-disabled public import boundary stub and docs/tests proving off-CI, credential-free, gitignored output, non-PIT best-effort semantics and no default network path. F004 added data quality/research limitation checks plus JSON/Markdown report fields for calendar gaps, suspicious jumps, synthetic sample source, non-PIT/public-best-effort limitations, and not-live-trading-ready labels. F005 strengthened workflow and safety guard regressions, including deterministic reports and no-live/no-secret/no-network/no-broker/no-AI assertions. Full local checks pass: .venv/bin/python -m pytest (48 passed), .venv/bin/python -m ruff check ., .venv/bin/python -m compileall trade tests, and .venv/bin/python -m mypy --install-types --non-interactive trade. Evaluator should run F006 independent L1 verification and produce signoff.",
+  "evaluator_feedback": null,
+  "generator_handoff": "Planner opened B009-public-data-snapshot-mvp after B008 signoff. User selected this direction to advance the MVP PRD rather than expanding strategies or UI. Scope: implement a manual/disabled-by-default public data import boundary, local research snapshot manifest, explicit snapshot loader integration, imported data quality gates/report limitation labels, and reproducible research run artifacts. Preserve fixture/mock-first CI and no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI-trading safety guards. Do not commit generated market data, secrets, paid data, broker exports, account data, large data files, or live/paper execution paths. F006 is Codex evaluator signoff.",
   "session_notes": {
-    "planner": "2026-05-12: User selected next batch option 1. Opened B008-research-grade-data-expansion after B007 signoff. Goal is to improve research universe/data/sample credibility while preserving fixture/mock-first CI and all no-live/no-secret/no-network/no-broker/no-AI guards. Status moved to building for Generator F001.",
-    "generator": "2026-05-12: B008 F001-F005 completed and status moved to verifying for F006. Full local checks pass: pytest 48 passed, ruff, compileall, mypy. Handoff highlights: research universe/config/docs, expanded synthetic research sample, manual-disabled public import stub, data quality/research limitation report fields, and strengthened workflow/safety guards all preserve offline fixture-first CI and no-live/no-secret/no-network/no-broker/no-AI boundaries.",
-    "evaluator": "2026-05-13: B008 F006 L1 verification PASS. Full local checks passed: pytest 48 passed, ruff, compileall, mypy. Workflow artifact under /tmp/opencode/b008-f006 confirmed synthetic fixture source, quality flags, research limitations, 3 rebalances, and local_or_ci_fixture environment. Signoff written to docs/test-reports/B008-research-grade-data-expansion-signoff-2026-05-13.md."
+    "planner": "2026-05-13: B008 was done with clean signoff. User agreed to next batch recommendation from MVP PRD perspective: B009 Public Data Snapshot MVP. Created spec and feature list; moved status to building for Generator F001. Key intent is to bridge synthetic fixture mechanics to reproducible local research snapshots while preserving offline CI and safety guards.",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",

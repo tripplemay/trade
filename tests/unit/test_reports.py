@@ -28,6 +28,7 @@ def test_report_contains_required_json_sections(tmp_path: Path) -> None:
         "portfolio",
         "risk",
         "metrics",
+        "research_limitations",
         "outputs",
     }
 
@@ -60,6 +61,8 @@ def test_report_records_signal_execution_prices_and_metadata(tmp_path: Path) -> 
     assert report["risk"]["unexpected_warning_flags"] == (  # type: ignore[index]
         "position_limit_violation:SPY:1.0000>0.3500",
     )
+    assert report["data"]["research_limitations"]  # type: ignore[index]
+    assert report["research_limitations"]["limitations"]  # type: ignore[index]
 
 
 def test_markdown_report_does_not_claim_paper_or_live_execution(tmp_path: Path) -> None:
@@ -76,6 +79,7 @@ def test_markdown_report_does_not_claim_paper_or_live_execution(tmp_path: Path) 
 
     assert "data snapshot" in markdown
     assert "parameter hash" in markdown
+    assert "research limitations" in markdown
     assert "paper execution" not in markdown
     assert "live execution" not in markdown
 
