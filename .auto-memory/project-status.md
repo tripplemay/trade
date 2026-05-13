@@ -4,8 +4,9 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B010-risk-parity-backtest-mvp：`building`**；Planner 已完成 spec/features，等待 Generator 从 F001 开始实现。
+- **B010-risk-parity-backtest-mvp：`verifying`**；Generator 完成 F001-F006，等待 Codex 执行 F007 独立验收。
 - Spec: `docs/specs/B010-risk-parity-backtest-mvp-spec.md`
+- F006 新增 `tests/unit/test_risk_parity_safety_guards.py`：网络/凭据/经纪商/AI/public-import/前端导入隔离、离线运行、报告无 paper/live 用词、不写 fixture 目录、无杠杆校验、public_import 不自动触发。
 
 ## 已完成签收
 - B001 strategy roadmap: `docs/test-reports/B001-independent-reverification-signoff-2026-05-12.md`

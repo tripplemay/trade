@@ -46,7 +46,7 @@
       "title": "补强 Risk Parity 安全 guard 与 workflow 回归",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "增加回归覆盖证明 risk parity 默认 fixture/mock-first，且不引入 network、secret、broker、paper/live、AI-trading、generated-data-commit、frontend/dashboard dependencies；pytest、ruff、compileall、mypy 全部通过"
     },
     {
