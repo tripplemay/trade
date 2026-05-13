@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "按 MVP PRD 在 Global ETF Momentum 与 B009 数据 snapshot 基础上实现 Risk Parity / Volatility Target 回测 MVP：新增最小 risk parity 配置、收益率/波动率估计、逆波动率权重、无杠杆 exposure scaling、月度 T-day/T+1 回测 workflow、报告与安全回归，同时保持 fixture/mock-first CI、snapshot/data-quality semantics 和 no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards。",
   "total_features": 7,
-  "completed_features": 4,
+  "completed_features": 5,
   "fix_rounds": 0,
-  "current_sprint": "F005",
+  "current_sprint": "F006",
   "last_updated": "2026-05-13",
   "reference_docs": [
     "docs/specs/B010-risk-parity-backtest-mvp-spec.md",
@@ -33,7 +33,7 @@
   "generator_handoff": "Planner opened B010-risk-parity-backtest-mvp after B009 signoff. User agreed to continue MVP PRD route: implement the second core strategy research path, Risk Parity / Volatility Target, before portfolio allocation or paper/broker work. Scope: F001 minimal risk parity config boundary; F002 daily returns and annualized volatility estimation; F003 inverse volatility weights with no-leverage exposure scaling capped at 1.0 and defensive/cash allocation; F004 monthly T-day close signal / T+1 execution backtest workflow; F005 JSON/Markdown reports with metrics, weight history, costs, baseline comparison, snapshot/data quality references, and research limitations; F006 safety/workflow regression; F007 Codex evaluation. Preserve fixture/mock-first CI, explicit snapshot loading only, fail-closed missing snapshot behavior, no generated market data commits, and no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI-trading guards. Do not implement ERC/min-var optimizers, broker adapters, paper/live trading, frontend dashboard, AI execution, tax, cloud deployment, or investment advice.",
   "session_notes": {
     "planner": "2026-05-13: B009 was done with signoff after two fix rounds. Backlog/user reports/proposed-learnings were empty. User agreed to next MVP PRD step: B010 Risk Parity Backtest MVP. Created spec and feature list; moved status to building for Generator F001. Key constraints: inverse-vol only, no leverage, fixture/mock-first CI, explicit snapshot reuse only, no broker/paper/live/AI.",
-    "generator": "2026-05-13: Completed B010 F001-F004. F001 added independent RiskParityParameters boundary. F002 added adjusted-close daily returns and annualized volatility estimation. F003 added deterministic inverse-volatility signal generation with invalid-vol exclusion, max asset caps, no-leverage exposure scaling capped at 1.0, and defensive allocation. F004 added monthly Risk Parity backtest core with T-day close signals, T+1 open execution assumptions, rebalance period results, fills, equity curve, turnover, transaction cost/slippage accounting, target weights, and risk flags. Local checks pass for F004: pytest tests/unit/test_risk_parity_backtest.py tests/unit/test_risk_parity_config.py, ruff on edited files, mypy.",
+    "generator": "2026-05-13: Completed B010 F001-F005. F001 added independent RiskParityParameters boundary. F002 added adjusted-close daily returns and annualized volatility estimation. F003 added deterministic inverse-volatility signal generation with invalid-vol exclusion, max asset caps, no-leverage exposure scaling capped at 1.0, and defensive allocation. F004 added monthly Risk Parity backtest core with T-day close signals, T+1 open execution assumptions, rebalance period results, fills, equity curve, turnover, transaction cost/slippage accounting, target weights, and risk flags. F005 added risk parity JSON/Markdown reports with performance metrics, weight history, realized vs target volatility, transaction costs, static equal-weight baseline placeholder, snapshot references, data quality flags, and research limitations. Local checks pass for F005: pytest tests/unit/test_risk_parity_reports.py tests/unit/test_risk_parity_backtest.py, ruff on edited files, mypy.",
     "evaluator": null
   },
   "features": [

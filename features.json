@@ -38,7 +38,7 @@
       "title": "输出 Risk Parity 报告与基础 benchmark 对比",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新增或扩展 JSON/Markdown risk parity reports，包含核心 performance metrics、weight history、realized vs target volatility（可行时）、transaction costs、research limitations，并至少包含一个 simple baseline comparison 且不增加 live/external dependency"
     },
     {
