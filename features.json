@@ -14,7 +14,7 @@
       "title": "实现收益率与波动率估计",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "基于 adjusted close 或等价 fixture 数据实现 daily returns 与 annualized volatility 估计；至少支持 60/120/252 日 lookback，并对 insufficient/invalid data 显式 fail 或 warning；测试覆盖"
     },
     {
