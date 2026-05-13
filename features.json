@@ -6,7 +6,7 @@
       "title": "建立 Target Positions 输出格式",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新增 TargetPositions dataclass 与等价 JSON schema，包含 schema_version、target_positions_id、strategy_id 或 portfolio_id、signal_date、generation_timestamp、snapshot_id / manifest 路径、account_state_reference、entries（symbol + target_weight + target_dollar_exposure）、defensive_allocation、research_limitations、固定 research-only disclaimer。同时输出百分比权重与美元 exposure。验证：非负权重、含 defensive 合计 ≈ 1.0、无杠杆、无重复 symbol、signal_date 在桥接生成时必须为有效交易日。测试覆盖序列化、校验成功 / 失败路径"
     },
     {

@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "按 MVP PRD §12 与 §4.5 在 B011 Master Portfolio 之后实现 Paper Trading prep MVP：定义 Target Positions 输出格式（百分比 + 美元双输出）、Broker Adapter 抽象接口（无真实 broker SDK 导入）、Mock Broker（JSON Lines append-only journal-only，固定研究账户状态）、Backtest→Paper 桥接（任意时间手动触发），同时保持 fixture/mock-first CI、研究-only 语义、no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards。",
   "total_features": 6,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-05-13",
   "reference_docs": [
     "docs/specs/B012-paper-trading-prep-mvp-spec.md",
@@ -31,7 +31,7 @@
   "generator_handoff": null,
   "session_notes": {
     "planner": "2026-05-13: Closed B011 done wrap-up (removed BL-B010-S2 absorbed, added BL-B011-S2 satellite strategies, session_notes refreshed). User confirmed next batch direction: B012 Paper Trading prep MVP per MVP PRD §12 + §4.5. Decisions captured: (1) Target Positions output emits BOTH percentage weights AND dollar exposures, (2) Mock Broker journal format = JSON Lines append-only immutable (planner recommendation, accepted by user), (3) Mock Broker returns a fixed research account state (default USD 250000 cash, zero open positions), (4) any-time manual trigger via direct function call — bridge does not enforce cadence. Hard boundary: no real broker SDK import (ib_insync / alpaca / futu / tiger / tradier / polygon), no paper-trading API URL, no simulated fills / P&L tracking. Wrote B012 spec and features.json (6 features: F001-F005 generator + F006 codex). Status moved to building for Generator F001.",
-    "generator": null,
+    "generator": "2026-05-13: F001 completed. Added trade/paper_prep/ package with target_positions.py exposing TargetPositions, AccountState, TargetPositionEntry, DefensiveAllocation dataclasses plus SCHEMA_VERSION='target-positions/v1' and a fixed research-only DISCLAIMER. validate_target_positions enforces non-negative weights, weights+defensive summing to 1.0, total dollar exposure within account capacity (no leverage), no duplicate symbols (including defensive-vs-entry collision), valid schema_version, fixed disclaimer literal, non-empty research_limitations, exactly-one strategy_id-or-portfolio_id, and account_state_reference matching the supplied AccountState. target_positions_to_dict / target_positions_from_dict provide deterministic JSON round-trip. tests/unit/test_target_positions.py covers serialization keys, dollar/weight totals, and 12 rejection paths. Full local checks pass: pytest (175), ruff, compileall, mypy. Next: F002 BrokerAdapter ABC.",
     "evaluator": null
   },
   "features": [
