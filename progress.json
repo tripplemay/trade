@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "按 MVP PRD §12 与 §4.5 在 B011 Master Portfolio 之后实现 Paper Trading prep MVP：定义 Target Positions 输出格式（百分比 + 美元双输出）、Broker Adapter 抽象接口（无真实 broker SDK 导入）、Mock Broker（JSON Lines append-only journal-only，固定研究账户状态）、Backtest→Paper 桥接（任意时间手动触发），同时保持 fixture/mock-first CI、研究-only 语义、no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards。",
   "total_features": 6,
-  "completed_features": 3,
+  "completed_features": 4,
   "fix_rounds": 0,
-  "current_sprint": "F004",
+  "current_sprint": "F005",
   "last_updated": "2026-05-13",
   "reference_docs": [
     "docs/specs/B012-paper-trading-prep-mvp-spec.md",

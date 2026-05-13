@@ -30,7 +30,7 @@
       "title": "实现 Backtest → Paper Trading 桥接",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新增 generate_target_positions_from_master(result, *, signal_date=None, account_state) 与 generate_target_positions_from_strategy(result, *, signal_date=None, account_state)：signal_date 缺省时使用最新 period，提供时必须命中 backtest period 否则 fail closed；输出含百分比权重与美元 exposure（exposure = weight × (cash + equity_value)）；defensive 残余权重映射到 master/strategy 的 defensive sleeve symbol；任意时间手动触发，桥接函数不强制 cadence。测试覆盖 B011 master + B006/B010 single-strategy 转换、缺省 latest period、显式 signal_date、missing signal_date fail closed、account-state-driven dollar 计算"
     },
     {
