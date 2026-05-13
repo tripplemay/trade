@@ -1,42 +1,36 @@
 {
   "status": "done",
-  "user_goal": "在 B006 Global ETF Momentum 回测 MVP 基础上做 backtest quality hardening：扩展多次月度调仓 fixture、配置化缺失 T+1 Open 处理、补充 clean/warning 风险场景、强化 metrics/equity curve/report 不变量，并保持 no-live/no-secret/no-network/no-broker/no-AI safety guards。",
+  "user_goal": "在 B007 回测质量强化基础上扩展研究级数据基础：定义 Global ETF research universe、扩展本地研究样本/fixture、建立可选公开数据导入安全边界、补强数据质量检查与 research limitation 标记，同时保持默认 CI fixture/mock-first 和 no-live/no-secret/no-network/no-broker/no-AI safety guards。",
   "total_features": 6,
   "completed_features": 6,
   "fix_rounds": 0,
   "current_sprint": "F006",
-  "last_updated": "2026-05-12",
+  "last_updated": "2026-05-13",
   "reference_docs": [
+    "docs/specs/B008-research-grade-data-expansion-spec.md",
     "docs/specs/B007-backtest-quality-hardening-spec.md",
     "docs/specs/B006-global-etf-backtest-mvp-spec.md",
-    "docs/test-reports/B006-global-etf-backtest-mvp-signoff-2026-05-12.md",
-    "docs/specs/B005-pre-backtest-architecture-adjudication-spec.md",
-    "docs/specs/B004-core-engineering-foundation-spec.md",
-    "docs/prd/mvp-prd.md",
-    "docs/engineering/python-package-boundary.md",
-    "docs/engineering/config-and-environment-policy.md",
+    "docs/test-reports/B007-backtest-quality-hardening-signoff-2026-05-12.md",
     "docs/engineering/testing-and-fixture-policy.md",
+    "docs/engineering/config-and-environment-policy.md",
     "docs/engineering/no-live-safety-guards.md",
     "docs/engineering/backtest-report-schema.md",
-    "docs/engineering/portfolio-allocation-boundary.md",
-    "docs/strategy/00-master-portfolio-allocation.md",
+    "docs/engineering/pit-data-degradation-policy.md",
     "docs/strategy/01-global-etf-momentum-rotation.md"
   ],
   "docs": {
-    "spec": "docs/specs/B007-backtest-quality-hardening-spec.md",
-    "test_cases": "docs/test-reports/B007-backtest-quality-hardening-review-2026-05-12.md",
-    "signoff": "docs/test-reports/B007-backtest-quality-hardening-signoff-2026-05-12.md",
+    "spec": "docs/specs/B008-research-grade-data-expansion-spec.md",
+    "test_cases": "docs/test-reports/B008-research-grade-data-expansion-review-2026-05-13.md",
+    "signoff": "docs/test-reports/B008-research-grade-data-expansion-signoff-2026-05-13.md",
     "framework_reviewed": true
   },
   "role_assignments": null,
-  "evaluator_feedback": {
-    "summary": "Independent Evaluator ran B007 F006 L1 verification. pytest, ruff, compileall, and mypy passed. Fixture workflow E2E generated deterministic JSON/Markdown reports with 3 rebalances, explicit missing T+1 open policy, T close signal, T+1 open execution, nonzero volatility/Sharpe, equity curve, clean warning flags, and preserved no-live/no-secret/no-network/no-broker/no-AI guards."
-  },
-  "generator_handoff": "Generator completed B007 F001-F005. F001 added multi-rebalance fixture/workflow coverage with rebalance_count and rebalance_trace. F002 added explicit missing_t_plus_1_open_policy with default flag_and_fallback_to_signal_close plus skip_trade and fail_closed tests, and reports expose configured policy and missing-price flags. F003 added clean/warning risk scenarios and expected/unexpected warning classification. F004 added equity_curve, turnover, monthly/yearly returns, annualized volatility, Sharpe, CAGR, max drawdown, and report traceability. F005 strengthened workflow E2E and safety guard regressions for no .env/API key/network/broker/paper/live/AI authority, T close signal, T+1 open default execution, nonzero metrics, and deterministic reports. Full local checks pass: .venv/bin/python -m pytest (37 passed), .venv/bin/python -m ruff check ., .venv/bin/python -m compileall trade tests, and .venv/bin/python -m mypy --install-types --non-interactive trade. Evaluator should run F006 independent L1 verification and produce signoff.",
+  "evaluator_feedback": "PASS. F006 L1 verification completed on 2026-05-13. Evidence: pytest 48 passed, ruff passed, compileall passed, mypy passed. Reviewed research universe/data dictionary, expanded synthetic research sample, public import fail-closed boundary, data quality/research limitation report fields, deterministic workflow, and no-live/no-secret/no-network/no-broker/no-AI guards. Signoff: docs/test-reports/B008-research-grade-data-expansion-signoff-2026-05-13.md",
+  "generator_handoff": "Generator completed B008 F001-F005. F001 added research-only Global ETF universe config, loader, data dictionary docs, and tests for asset-class coverage and no live/broker authorization semantics. F002 added committed synthetic research sample fixture with SPY/QQQ/VEA/GLD/AGG/SGOV covering drawdown, choppy/recovery regimes, non-monotonic equity curve, and multi-asset rotation. F003 added manual-disabled public import boundary stub and docs/tests proving off-CI, credential-free, gitignored output, non-PIT best-effort semantics and no default network path. F004 added data quality/research limitation checks plus JSON/Markdown report fields for calendar gaps, suspicious jumps, synthetic sample source, non-PIT/public-best-effort limitations, and not-live-trading-ready labels. F005 strengthened workflow and safety guard regressions, including deterministic reports and no-live/no-secret/no-network/no-broker/no-AI assertions. Full local checks pass: .venv/bin/python -m pytest (48 passed), .venv/bin/python -m ruff check ., .venv/bin/python -m compileall trade tests, and .venv/bin/python -m mypy --install-types --non-interactive trade. Evaluator should run F006 independent L1 verification and produce signoff.",
   "session_notes": {
-    "planner": "2026-05-12: User manually validated B006 T+1 Open execution and safety guards, then asked to proceed. Opened B007-backtest-quality-hardening to address B006 soft-watch: multi-rebalance fixtures, explicit missing T+1 open policy, clean/warning risk scenarios, stronger metrics/equity curve reports, preserved safety guards. Status moved to building for Generator F001.",
-    "generator": "2026-05-12: B007 F001-F005 completed and status moved to verifying for F006. Full local checks pass: pytest 37 passed, ruff, compileall, mypy. Key handoff: default workflow now runs three rebalances over 2024-09/10/11 signals with T+1 open execution, deterministic reports, explicit missing T+1 policy, clean/warning risk classifications, equity curve metrics, and safety guards preserved.",
-    "evaluator": "2026-05-12: User fixed this session identity as evaluator. Independent B007 F006 L1 verification completed with PASS. Created docs/test-reports/B007-backtest-quality-hardening-review-2026-05-12.md and docs/test-reports/B007-backtest-quality-hardening-signoff-2026-05-12.md. Commands passed: pytest, ruff, compileall, mypy. Independent workflow artifacts generated under /tmp/opencode/b007-f006/."
+    "planner": "2026-05-12: User selected next batch option 1. Opened B008-research-grade-data-expansion after B007 signoff. Goal is to improve research universe/data/sample credibility while preserving fixture/mock-first CI and all no-live/no-secret/no-network/no-broker/no-AI guards. Status moved to building for Generator F001.",
+    "generator": "2026-05-12: B008 F001-F005 completed and status moved to verifying for F006. Full local checks pass: pytest 48 passed, ruff, compileall, mypy. Handoff highlights: research universe/config/docs, expanded synthetic research sample, manual-disabled public import stub, data quality/research limitation report fields, and strengthened workflow/safety guards all preserve offline fixture-first CI and no-live/no-secret/no-network/no-broker/no-AI boundaries.",
+    "evaluator": "2026-05-13: B008 F006 L1 verification PASS. Full local checks passed: pytest 48 passed, ruff, compileall, mypy. Workflow artifact under /tmp/opencode/b008-f006 confirmed synthetic fixture source, quality flags, research limitations, 3 rebalances, and local_or_ci_fixture environment. Signoff written to docs/test-reports/B008-research-grade-data-expansion-signoff-2026-05-13.md."
   },
   "features": [
     "F001",

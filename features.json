@@ -1,53 +1,53 @@
 {
-  "sprint": "B007-backtest-quality-hardening",
+  "sprint": "B008-research-grade-data-expansion",
   "features": [
     {
       "id": "F001",
-      "title": "扩展多次月度调仓 fixture",
+      "title": "定义研究级 ETF universe 与数据字典",
       "priority": "high",
       "executor": "generator",
       "status": "completed",
-      "acceptance": "扩展 committed synthetic fixture，使默认 workflow 覆盖多个 signal month-end 和 T+1 open execution date；保持 fixture 小型、可审查、无网络；snapshot metadata/checksum 可复现；测试覆盖多次 rebalance 证据"
+      "acceptance": "新增研究级 ETF universe 文档/配置，覆盖 global equity、US equity、ex-US、bonds、gold/commodity、cash/defensive 等类别；记录 ticker、asset_class、region、currency、role、data_source_policy；不提交付费数据或真实账户数据"
     },
     {
       "id": "F002",
-      "title": "配置化 T+1 Open 缺失处理策略",
+      "title": "扩展本地研究样本数据但保持 CI fixture/mock-first",
       "priority": "high",
       "executor": "generator",
       "status": "completed",
-      "acceptance": "新增缺失 T+1 open execution price 的显式配置策略；默认行为文档化且测试覆盖；缺失价格场景必须在 report 中暴露 configured policy 与 fallback/skip/fail risk flag，不允许静默 fallback"
+      "acceptance": "新增或扩展可提交的小型 research sample/fixture，覆盖更长区间、非单调 equity curve、回撤/震荡场景和多资产轮动；默认 CI 仍使用 committed fixture，无网络、无 API key、无外部数据硬依赖"
     },
     {
       "id": "F003",
-      "title": "补充 clean 与 warning 风险场景",
-      "priority": "high",
+      "title": "实现可选公开数据导入脚本的安全边界",
+      "priority": "medium",
       "executor": "generator",
       "status": "completed",
-      "acceptance": "提供无 position-limit warning 的 clean fixture/test path，同时保留 warning-producing path；risk output 能区分预期 warning 与 unexpected regression；不引入真实 PM、OMS 或 broker 行为"
+      "acceptance": "如实现 public data import script，必须手动触发、默认禁用、CI 不依赖、输出到 gitignored 本地目录、无 credential 要求，并在报告中标记非 PIT/best-effort；若不实现脚本，则提供明确 stub/文档边界和测试证明默认路径不触网"
     },
     {
       "id": "F004",
-      "title": "强化指标与 equity curve 报告",
+      "title": "补强数据质量检查与研究限制标记",
       "priority": "high",
       "executor": "generator",
       "status": "completed",
-      "acceptance": "补强 monthly/yearly returns、volatility、Sharpe、max drawdown、turnover 与 equity curve traceability；默认多 rebalance fixture 下指标不应因样本过浅而全部退化为 0；测试验证报告字段与计算不变量"
+      "acceptance": "增加数据质量检查或报告标记：缺失 OHLC、非正价格、重复日期、交易日 gap、异常跳变、adjusted/open 字段缺失、非 PIT/样本数据限制；测试覆盖 quality flags 并确保报告显式暴露 research limitations"
     },
     {
       "id": "F005",
-      "title": "保持 workflow E2E 与安全 guard 回归",
+      "title": "保持回测 workflow 与安全 guard 回归",
       "priority": "high",
       "executor": "generator",
       "status": "completed",
-      "acceptance": "更新 Python workflow E2E 和 guard tests，确保无 .env、无 API key、无网络、无 broker call、无 paper/live entrypoint、AI 不下单不改参数；继续证明 T Close signal 与 T+1 Open 默认 execution；JSON/Markdown report deterministic"
+      "acceptance": "更新 workflow E2E 覆盖 research-grade sample 或扩展 fixture；继续通过 pytest、ruff、compileall、mypy；继续证明 no-live/no-secret/no-network default/no-broker/no-AI-trade guards；JSON/Markdown reports deterministic"
     },
     {
       "id": "F006",
-      "title": "独立验收 B007 Backtest Quality Hardening",
+      "title": "独立验收 B008 Research-Grade Data Expansion",
       "priority": "high",
       "executor": "codex",
       "status": "completed",
-      "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认 pytest/ruff/compileall/mypy、multi-rebalance fixture workflow E2E、缺失 T+1 open 策略、clean/warning risk scenarios、report schema、no-live/no-secret/no-network/no-broker/no-AI guards 均符合 B001-B006 约束，并产出 signoff"
+      "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认研究级 universe/样本/数据质量标记提升了研究可信度，同时默认 CI 无网络、无 secret、无 broker、无真实数据硬依赖，并产出 review/signoff 报告"
     }
   ]
 }
