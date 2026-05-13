@@ -2,10 +2,10 @@
 
 The MockBroker validates incoming Target Positions, appends one JSON Lines record per
 submission to a local journal file, and returns a deterministic journal entry. It never
-opens a socket, never reads ``os.environ``, never imports any real broker SDK, and never
-claims a paper or live execution. The default account state holds USD 250000 of cash and
-no open positions; it is purely a research-only artifact intended to feed downstream
-research review, not a trading instruction.
+opens a socket, never reads process environment variables, never imports any real broker
+SDK, and never claims a paper or production order flow. The default account state holds
+USD 250000 of cash and no open positions; it is purely a research-only artifact intended
+to feed downstream research review, not a trading instruction.
 """
 
 from __future__ import annotations

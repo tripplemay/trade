@@ -38,7 +38,7 @@
       "title": "补强 Paper Trading prep 安全 guard 与 workflow 回归",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "增加回归覆盖：B012 模块无 broker SDK 导入（ib_insync / alpaca / alpaca_trade_api / futu / futu-api / tiger / tiger_api / tradier / polygon 等），无 paper-trading API URL / endpoint，无 os.environ / secret 访问，无 socket I/O，无 paper-execution / live-execution / executed-order / filled 等用词；journals / reports / docstrings 均含 research-only disclaimer；MockBroker 默认 constructor 不触网；桥接对 leverage 与 missing signal_date fail closed。pytest、ruff、compileall、mypy 全部通过"
     },
     {

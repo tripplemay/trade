@@ -4,11 +4,11 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B012-paper-trading-prep-mvp：`building`**；Planner 完成 spec + features.json，等待 Generator 起步 F001。
+- **B012-paper-trading-prep-mvp：`verifying`**；Generator 完成 F001-F005,等待 Codex 第一轮 F006 验收。
 - Spec: `docs/specs/B012-paper-trading-prep-mvp-spec.md`
-- 6 features：F001-F005 generator + F006 codex。
-- 关键决策：Target Positions 同时输出百分比 + 美元 exposure；Mock Broker journal = JSON Lines append-only immutable；Mock Broker 返回固定研究账户状态（默认 USD 250000 cash）；任意时间手动触发，桥接不强制 cadence。
-- 硬边界：无真实 broker SDK 导入、无 paper-trading API URL、无模拟成交 / P&L、no env / secret / socket I/O。
+- 新增 `trade/paper_prep/` 包(target_positions / broker_adapter / mock_broker / bridge),5 个测试文件共 60 个用例。pytest 219 / ruff / mypy / compileall 全绿。
+- 关键决策(已落地):双输出 % + $、JSON Lines append-only journal、固定 USD 250000 账户、任意时间手动触发。
+- 硬边界保留:无 broker SDK 导入、无 API URL、无模拟成交、无 env/socket。
 
 ## 已完成签收
 - B001-B008: strategy roadmap through research-grade data expansion all signed off.
