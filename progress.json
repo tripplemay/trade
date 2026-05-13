@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "按 MVP PRD 推进 Global ETF Momentum 的可复现研究闭环：在 B008 研究级数据基础上，实现手动、默认禁用、CI 不依赖的公开数据导入与本地 snapshot workflow，补齐 snapshot manifest、显式数据加载、质量门禁和 research run artifact，同时继续保持 no-live/no-secret/no-network-by-default/no-broker/no-AI safety guards。",
   "total_features": 6,
-  "completed_features": 2,
+  "completed_features": 3,
   "fix_rounds": 0,
-  "current_sprint": "F003",
+  "current_sprint": "F004",
   "last_updated": "2026-05-13",
   "reference_docs": [
     "docs/specs/B009-public-data-snapshot-mvp-spec.md",
@@ -32,7 +32,7 @@
   "generator_handoff": "Planner opened B009-public-data-snapshot-mvp after B008 signoff. User selected this direction to advance the MVP PRD rather than expanding strategies or UI. Scope: implement a manual/disabled-by-default public data import boundary, local research snapshot manifest, explicit snapshot loader integration, imported data quality gates/report limitation labels, and reproducible research run artifacts. Preserve fixture/mock-first CI and no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI-trading safety guards. Do not commit generated market data, secrets, paid data, broker exports, account data, large data files, or live/paper execution paths. F006 is Codex evaluator signoff.",
   "session_notes": {
     "planner": "2026-05-13: B008 was done with clean signoff. User agreed to next batch recommendation from MVP PRD perspective: B009 Public Data Snapshot MVP. Created spec and feature list; moved status to building for Generator F001. Key intent is to bridge synthetic fixture mechanics to reproducible local research snapshots while preserving offline CI and safety guards.",
-    "generator": "2026-05-13: Completed B009 F001-F002. F001 added manual-only public data import CLI boundary: default/legacy callers fail closed, explicit confirmation flag is required, no network/credential imports are introduced, and confirmed imports only copy local files into gitignored data/public-cache. F002 added snapshot manifest generation beside imported local files with provider/source, timestamp, tickers, date range, row count, file hash/path, policy, and public-best-effort/non-PIT/research-only/not-live-trading-ready labels. Local checks pass: pytest 53 passed, ruff, compileall, mypy.",
+    "generator": "2026-05-13: Completed B009 F001-F003. F001 added manual-only public data import CLI boundary. F002 added snapshot manifest generation beside imported local files with provider/source, timestamp, tickers, date range, row count, file hash/path, policy, and public-best-effort/non-PIT/research-only/not-live-trading-ready labels. F003 added explicit WorkflowConfig.snapshot_path loading via load_snapshot_prices; defaults still use committed fixtures, missing snapshots fail closed, and non-local snapshot paths are rejected before any fallback. Local checks pass: pytest 57 passed, ruff, compileall, mypy.",
     "evaluator": null
   },
   "features": [

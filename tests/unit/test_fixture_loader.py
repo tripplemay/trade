@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from trade.data.loader import FixtureDataError, load_fixture_prices
+from trade.data.loader import FixtureDataError, load_fixture_prices, load_snapshot_prices
 
 
 def test_default_fixture_loads_without_external_inputs() -> None:
@@ -81,3 +81,46 @@ def test_missing_value_fails_schema_validation(tmp_path: Path) -> None:
 
     with pytest.raises(FixtureDataError, match="adjusted_close"):
         load_fixture_prices(fixture_path)
+
+
+def test_explicit_snapshot_loads_without_fixture_id(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    snapshot_dir = tmp_path / "data" / "public-cache"
+    snapshot_dir.mkdir(parents=True)
+    snapshot_path = snapshot_dir / "snapshot.json"
+    snapshot_path.write_text(
+        json.dumps(
+            {
+                "source": "manual-public-data-import",
+                "adjusted_price_policy": "public_best_effort_adjusted_close",
+                "records": [
+                    {
+                        "date": "2024-01-31",
+                        "symbol": "SPY",
+                        "open": 100.0,
+                        "close": 101.0,
+                        "adjusted_close": 101.0,
+                        "volume": 100,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    snapshot = load_snapshot_prices(Path("data/public-cache/snapshot.json"))
+
+    assert snapshot.source == "manual-public-data-import"
+    assert snapshot.data_snapshot_id.startswith("snapshot:")
+
+
+def test_missing_explicit_snapshot_fails_closed() -> None:
+    with pytest.raises(FixtureDataError, match="snapshot file does not exist"):
+        load_snapshot_prices(Path("data/public-cache/missing.json"))
+
+
+def test_snapshot_loader_rejects_implicit_external_paths() -> None:
+    with pytest.raises(FixtureDataError, match="explicit local data/ or tests/ path"):
+        load_snapshot_prices(Path("/tmp/public-cache/snapshot.json"))

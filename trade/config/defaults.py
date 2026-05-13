@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 from trade.backtest.monthly import BacktestParameters
 from trade.strategies.global_etf_momentum import MomentumParameters, MomentumWindow
@@ -14,6 +15,7 @@ class WorkflowConfig:
     strategy_budget: float
     strategy_parameters: MomentumParameters
     backtest_parameters: BacktestParameters
+    snapshot_path: Path | None = None
 
 
 def default_fixture_workflow_config() -> WorkflowConfig:

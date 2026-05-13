@@ -22,7 +22,7 @@
       "title": "接入显式 snapshot 历史数据加载路径",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Global ETF Momentum workflow 可在显式配置下读取本地 snapshot；默认 CI 仍使用 committed fixture；snapshot 缺失时 fail closed，不能隐式联网、读取 secret 或访问 broker"
     },
     {

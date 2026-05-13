@@ -1,6 +1,9 @@
+import json
 from pathlib import Path
 from typing import Any
 
+from trade.config.defaults import default_fixture_workflow_config
+from trade.data.loader import load_fixture_prices
 from trade.workflow import run_fixture_workflow
 
 
@@ -50,6 +53,52 @@ def test_fixture_workflow_report_is_deterministic_except_run_metadata(tmp_path: 
     second = run_fixture_workflow(tmp_path / "second", run_id="same-run").report
 
     assert _stable_report(first) == _stable_report(second)
+
+
+def test_workflow_uses_explicit_snapshot_without_changing_default(
+    tmp_path: Path, monkeypatch: Any
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    snapshot_dir = tmp_path / "data" / "public-cache"
+    snapshot_dir.mkdir(parents=True)
+    snapshot_path = snapshot_dir / "snapshot.json"
+    fixture = load_fixture_prices()
+    snapshot_path.write_text(
+        json.dumps(
+            {
+                "source": "manual-public-data-import",
+                "adjusted_price_policy": "public_best_effort_adjusted_close",
+                "records": [
+                    {
+                        "date": record.date.isoformat(),
+                        "symbol": record.symbol,
+                        "open": record.open,
+                        "close": record.close,
+                        "adjusted_close": record.adjusted_close,
+                        "volume": record.volume,
+                    }
+                    for record in fixture.records
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    config = default_fixture_workflow_config()
+    snapshot_config = type(config)(
+        environment=config.environment,
+        strategy_budget=config.strategy_budget,
+        strategy_parameters=config.strategy_parameters,
+        backtest_parameters=config.backtest_parameters,
+        snapshot_path=Path("data/public-cache/snapshot.json"),
+    )
+
+    explicit = run_fixture_workflow(
+        tmp_path / "explicit", config=snapshot_config, run_id="explicit"
+    )
+    default = run_fixture_workflow(tmp_path / "default", run_id="default")
+
+    assert explicit.report["data"]["data_snapshot_id"].startswith("snapshot:")  # type: ignore[index]
+    assert default.report["data"]["data_snapshot_id"].startswith("fixture:")  # type: ignore[index]
 
 
 def _stable_report(report: dict[str, object]) -> dict[str, object]:

@@ -52,6 +52,28 @@ def load_fixture_prices(path: Path | None = None) -> DataSnapshot:
     return _snapshot_from_payload(payload)
 
 
+def load_snapshot_prices(path: Path) -> DataSnapshot:
+    """Load an explicitly configured local snapshot without fallback or external access."""
+
+    if path.parts and path.parts[0] not in {"data", "tests"}:
+        raise FixtureDataError("snapshot file must be an explicit local data/ or tests/ path")
+    if not path.is_file():
+        raise FixtureDataError(f"snapshot file does not exist: {path}")
+    payload = _read_fixture_payload(path)
+    snapshot = _snapshot_from_payload(payload)
+    return DataSnapshot(
+        records=snapshot.records,
+        source=snapshot.source,
+        adjusted_price_policy=snapshot.adjusted_price_policy,
+        data_snapshot_id=f"snapshot:{snapshot.checksum[:16]}",
+        checksum=snapshot.checksum,
+        start_date=snapshot.start_date,
+        end_date=snapshot.end_date,
+        symbols=snapshot.symbols,
+        trading_calendar_gaps=snapshot.trading_calendar_gaps,
+    )
+
+
 def _read_fixture_payload(path: Path | None) -> dict[str, Any]:
     if path is None:
         fixture = resources.files("trade.data.fixtures").joinpath(FIXTURE_FILE_NAME)
