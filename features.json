@@ -46,7 +46,7 @@
       "title": "独立验收 B011 Master Portfolio Allocation MVP",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认 B011 实现最小 Master Portfolio Allocation MVP、combined reports 含 calculated baseline 与 account-level risk flags、kill-switch 触发与清除 deterministic、snapshot/data-quality semantics 保留、所有 no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards 保留；signoff 中明确记录 BL-B010-S2 已被本批次吸收；产出 review/signoff 报告"
     }
   ]
