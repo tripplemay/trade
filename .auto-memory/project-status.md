@@ -4,8 +4,8 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B009-public-data-snapshot-mvp：`building`**；Planner 已完成 spec/features，等待 Generator 从 F001 开始实现。
-- Spec: `docs/specs/B009-public-data-snapshot-mvp-spec.md`
+- **B009-public-data-snapshot-mvp：`fixing`**；Evaluator F006 L1 verification found one blocking gap.
+- Review: `docs/test-reports/B009-public-data-snapshot-mvp-review-2026-05-13.md`
 
 ## 已完成签收
 - B001 strategy roadmap: `docs/test-reports/B001-independent-reverification-signoff-2026-05-12.md`
@@ -20,6 +20,9 @@ type: project
 ## B009 目标
 - 按 MVP PRD 补齐 manual public data import、local snapshot manifest、显式 snapshot loader、quality gate、research run artifact。
 - 保持 fixture/mock-first CI 与 no-live/no-secret/no-network-by-default/no-broker/no-AI guards。
+
+## 当前阻塞
+- B009-F006-1: public import generates manifests, but JSON/research-run artifacts do not reference manifest path or manifest `snapshot_id`.
 
 ## 生产状态
 - No deployment, DB, broker API, secrets, paper/live trading, or live-money operation.
