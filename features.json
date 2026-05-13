@@ -14,7 +14,7 @@
       "title": "实现 Broker Adapter 抽象接口",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新增 BrokerAdapter ABC，含 submit_target_positions / get_account_state / get_open_orders 三个抽象方法签名；模块 docstring 明确：B012 仅定义抽象接口与 Mock 实现，真实 paper / live broker adapter 是后续批次范围。新增禁止导入回归：ib_insync、alpaca、alpaca_trade_api、futu、futu-api、tiger、tiger_api、tradier、polygon 等不得在新模块中出现。测试覆盖 ABC 不可直接实例化、子类必须实现全部抽象方法"
     },
     {
