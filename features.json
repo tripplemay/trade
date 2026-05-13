@@ -30,7 +30,7 @@
       "title": "输出 Portfolio reports 与可计算 baseline",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新增 JSON/Markdown portfolio reports：aggregated equity curve、年化收益/波动率/Sharpe/最大回撤、turnover、transaction costs、per-child contributions、planning vs effective weights、snapshot references、account-level risk flags、research limitations；新增 calculated multi-asset baseline（如 static 60/40 ETF/defensive quarterly rebalance）作为 portfolio baseline 与 BL-B010-S2 followup；reports 不得声明 paper / live execution"
     },
     {
