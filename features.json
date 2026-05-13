@@ -14,7 +14,7 @@
       "title": "实现 Master Portfolio 季度再平衡 workflow",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
+      "status": "pending",
       "acceptance": "新增 quarterly Master rebalance workflow：在每个 calendar quarter end 消费各 implemented child 的 target weights，应用 planning weight 派生 portfolio weights，聚合 per-asset，使用 T-day close signal / T+1 open execution 假设，记录 rebalance trace、equity curve、turnover、transaction costs、per-child contributions、snapshot references；rebalance 间隔内 Master 不消费 intra-quarter child 信号；测试覆盖"
     },
     {

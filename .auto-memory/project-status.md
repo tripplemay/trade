@@ -4,9 +4,10 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B011-portfolio-allocation-risk-mvp：`verifying`**；Generator 完成 F001-F005，等待 Codex 执行 F006 独立验收。
+- **B011-portfolio-allocation-risk-mvp：`fixing`**；Codex F006 首轮验收发现 F002 阻断问题，等待 Generator 修复。
 - Spec: `docs/specs/B011-portfolio-allocation-risk-mvp-spec.md`
-- 新模块：`trade/portfolio/master.py`、`trade/backtest/master_portfolio.py`、`trade/reporting/master_portfolio.py`；新测试覆盖 config/backtest/kill-switch/report/safety-guards 共 64 个用例；calculated 60/40 baseline 已吸收 BL-B010-S2。
+- Review: `docs/test-reports/B011-portfolio-allocation-risk-mvp-review-2026-05-13.md`
+- Blocker: Master workflow executes arbitrary same-quarter `signal_dates`; must enforce quarter-end-only cadence or fail closed.
 
 ## 已完成签收
 - B001-B008: strategy roadmap through research-grade data expansion all signed off.
