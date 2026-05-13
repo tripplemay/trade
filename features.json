@@ -30,7 +30,7 @@
       "title": "导入数据质量门禁与报告限制标记",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "对 imported snapshot 运行数据质量检查，并在 JSON/Markdown 报告中暴露 missing OHLC、non-positive price、duplicate date、calendar gap、missing adjusted/open、suspicious jump、public-best-effort、non-PIT、research-only、not-live-trading-ready 等 flags/limitations"
     },
     {

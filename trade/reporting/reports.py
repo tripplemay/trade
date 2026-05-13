@@ -75,6 +75,7 @@ def build_report_payload(
         },
         "data": {
             "data_snapshot_id": snapshot.data_snapshot_id,
+            "snapshot_kind": _snapshot_kind(snapshot),
             "checksum": snapshot.checksum,
             "source": snapshot.source,
             "date_range": {
@@ -201,6 +202,7 @@ def render_markdown_report(report: dict[str, object]) -> str:
             "",
             "## Data And Parameters",
             f"- Data snapshot: {data['data_snapshot_id']}",
+            f"- Snapshot kind: {data['snapshot_kind']}",
             f"- Parameter hash: {parameters['parameter_hash']}",
             f"- Momentum windows: {parameters['momentum_windows']}",
             "",
@@ -245,6 +247,12 @@ def _section(report: dict[str, object], key: str) -> dict[str, object]:
 def _default_run_id(result: MonthlyBacktestResult, snapshot: DataSnapshot) -> str:
     snapshot_suffix = snapshot.data_snapshot_id.removeprefix("fixture:")
     return f"{result.signal.parameters.strategy_id}-{snapshot_suffix}"
+
+
+def _snapshot_kind(snapshot: DataSnapshot) -> str:
+    if snapshot.data_snapshot_id.startswith("snapshot:"):
+        return "imported_public_research_snapshot"
+    return "committed_fixture"
 
 
 def _period_returns(result: MonthlyBacktestResult) -> dict[str, float]:

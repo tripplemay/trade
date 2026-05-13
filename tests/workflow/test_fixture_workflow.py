@@ -98,7 +98,11 @@ def test_workflow_uses_explicit_snapshot_without_changing_default(
     default = run_fixture_workflow(tmp_path / "default", run_id="default")
 
     assert explicit.report["data"]["data_snapshot_id"].startswith("snapshot:")  # type: ignore[index]
+    assert explicit.report["data"]["snapshot_kind"] == "imported_public_research_snapshot"  # type: ignore[index]
+    assert "imported_snapshot_data" in explicit.report["data"]["research_limitations"]  # type: ignore[index]
+    assert "not-live-trading-ready" in explicit.report["data"]["research_limitations"]  # type: ignore[index]
     assert default.report["data"]["data_snapshot_id"].startswith("fixture:")  # type: ignore[index]
+    assert default.report["data"]["snapshot_kind"] == "committed_fixture"  # type: ignore[index]
 
 
 def _stable_report(report: dict[str, object]) -> dict[str, object]:

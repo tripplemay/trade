@@ -32,9 +32,25 @@ def evaluate_data_quality(snapshot: DataSnapshot) -> DataQualityReport:
         "not_point_in_time_production_data",
         public_import_boundary().data_label,
     ]
+    if _is_imported_snapshot(snapshot):
+        limitations.extend(
+            [
+                "imported_snapshot_data",
+                "public-best-effort",
+                "non-PIT",
+                "research-only",
+                "not-live-trading-ready",
+            ]
+        )
     return DataQualityReport(
         quality_flags=tuple(flags),
         research_limitations=tuple(limitations),
+    )
+
+
+def _is_imported_snapshot(snapshot: DataSnapshot) -> bool:
+    return snapshot.data_snapshot_id.startswith("snapshot:") or snapshot.source.startswith(
+        "manual-public"
     )
 
 
