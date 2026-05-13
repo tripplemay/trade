@@ -22,7 +22,7 @@
       "title": "实现 Mock Broker（journal-only）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "实现 MockBroker(account_state, journal_path)：从 config 读取固定 research 账户状态（默认 USD 250000 cash，open_positions 为空），submit_target_positions 校验 schema 后以 JSON Lines append-only 写入 journal 文件（一次一行、不可改），返回 journal entry；get_account_state 透传固定状态；get_open_orders 返回空序列；全程无网络 I/O、无 os.environ 访问、无 broker SDK 导入；journal 默认路径在 data/paper-prep/ 并 gitignored。测试覆盖 happy path append、schema 校验失败拒绝、deterministic journal_entry_id、account state 透传、空 open orders"
     },
     {
