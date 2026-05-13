@@ -1,53 +1,61 @@
 {
-  "sprint": "B009-public-data-snapshot-mvp",
+  "sprint": "B010-risk-parity-backtest-mvp",
   "features": [
     {
       "id": "F001",
-      "title": "建立手动公开数据导入 CLI 安全边界",
+      "title": "建立 Risk Parity 策略配置边界",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "实现或完善 manual-only public data import CLI/script；默认禁用、CI 默认路径不调用、无 credential 要求、输出仅进入 gitignored 本地目录；测试证明默认路径不触网"
+      "status": "pending",
+      "acceptance": "基于 docs/strategy/02-risk-parity-vol-target.md 增加最小 risk parity 配置与策略边界；首版仅支持 inverse volatility weighting、禁止杠杆，并显式定义 defensive asset/cash allocation 语义"
     },
     {
       "id": "F002",
-      "title": "生成本地研究数据 snapshot manifest",
+      "title": "实现收益率与波动率估计",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "为导入的本地研究数据生成 snapshot manifest，记录 source/provider、timestamp、ticker list、date range、row counts、hash 或等价完整性元数据、本地输出路径，以及 public-best-effort/non-PIT/research-only limitation labels"
+      "status": "pending",
+      "acceptance": "基于 adjusted close 或等价 fixture 数据实现 daily returns 与 annualized volatility 估计；至少支持 60/120/252 日 lookback，并对 insufficient/invalid data 显式 fail 或 warning；测试覆盖"
     },
     {
       "id": "F003",
-      "title": "接入显式 snapshot 历史数据加载路径",
+      "title": "实现逆波动率权重与无杠杆 exposure scaling",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "Global ETF Momentum workflow 可在显式配置下读取本地 snapshot；默认 CI 仍使用 committed fixture；snapshot 缺失时 fail closed，不能隐式联网、读取 secret 或访问 broker"
+      "status": "pending",
+      "acceptance": "实现 deterministic inverse volatility weights：invalid vol exclusion、可行时的 weight caps、normalization、target volatility exposure scaling capped at 1.0，以及剩余 exposure 分配到 defensive asset/cash placeholder"
     },
     {
       "id": "F004",
-      "title": "导入数据质量门禁与报告限制标记",
+      "title": "实现 Risk Parity 月度回测 workflow",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "对 imported snapshot 运行数据质量检查，并在 JSON/Markdown 报告中暴露 missing OHLC、non-positive price、duplicate date、calendar gap、missing adjusted/open、suspicious jump、public-best-effort、non-PIT、research-only、not-live-trading-ready 等 flags/limitations"
+      "status": "pending",
+      "acceptance": "新增 monthly risk parity backtest workflow，使用 T-day close signal calculation 与 T+1 execution assumptions，记录 rebalance trace、equity curve、turnover、costs、target weights、snapshot references 和 quality limitations"
     },
     {
       "id": "F005",
-      "title": "建立可复现 research run artifact 结构",
+      "title": "输出 Risk Parity 报告与基础 benchmark 对比",
       "priority": "medium",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "创建或文档化 research run artifact 结构，关联 strategy config、snapshot manifest、quality summary、backtest report、target weights 或 portfolio-compatible output；保持 broker-free、human-review-only"
+      "status": "pending",
+      "acceptance": "新增或扩展 JSON/Markdown risk parity reports，包含核心 performance metrics、weight history、realized vs target volatility（可行时）、transaction costs、research limitations，并至少包含一个 simple baseline comparison 且不增加 live/external dependency"
     },
     {
       "id": "F006",
-      "title": "独立验收 B009 Public Data Snapshot MVP",
+      "title": "补强 Risk Parity 安全 guard 与 workflow 回归",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "增加回归覆盖证明 risk parity 默认 fixture/mock-first，且不引入 network、secret、broker、paper/live、AI-trading、generated-data-commit、frontend/dashboard dependencies；pytest、ruff、compileall、mypy 全部通过"
+    },
+    {
+      "id": "F007",
+      "title": "独立验收 B010 Risk Parity Backtest MVP",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认默认 CI offline fixture/mock-first、public import manual/disabled、输出 gitignored、报告引用 snapshot 和 limitations、quality gates 生效，且无 secret/broker/live/paper/AI-trading 路径；产出 review/signoff 报告"
+      "status": "pending",
+      "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认 B010 实现最小 risk parity backtest MVP、报告显式 research limitations、保留 snapshot/data-quality semantics，并保持 no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards；产出 review/signoff 报告"
     }
   ]
 }

@@ -1,39 +1,40 @@
 {
-  "status": "done",
-  "user_goal": "按 MVP PRD 推进 Global ETF Momentum 的可复现研究闭环：在 B008 研究级数据基础上，实现手动、默认禁用、CI 不依赖的公开数据导入与本地 snapshot workflow，补齐 snapshot manifest、显式数据加载、质量门禁和 research run artifact，同时继续保持 no-live/no-secret/no-network-by-default/no-broker/no-AI safety guards。",
-  "total_features": 6,
-  "completed_features": 6,
-  "fix_rounds": 2,
-  "current_sprint": "F006",
+  "status": "building",
+  "user_goal": "按 MVP PRD 在 Global ETF Momentum 与 B009 数据 snapshot 基础上实现 Risk Parity / Volatility Target 回测 MVP：新增最小 risk parity 配置、收益率/波动率估计、逆波动率权重、无杠杆 exposure scaling、月度 T-day/T+1 回测 workflow、报告与安全回归，同时保持 fixture/mock-first CI、snapshot/data-quality semantics 和 no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards。",
+  "total_features": 7,
+  "completed_features": 0,
+  "fix_rounds": 0,
+  "current_sprint": "F001",
   "last_updated": "2026-05-13",
   "reference_docs": [
-    "docs/specs/B009-public-data-snapshot-mvp-spec.md",
+    "docs/specs/B010-risk-parity-backtest-mvp-spec.md",
     "docs/prd/mvp-prd.md",
+    "docs/strategy/00-master-portfolio-allocation.md",
+    "docs/strategy/02-risk-parity-vol-target.md",
+    "docs/specs/B009-public-data-snapshot-mvp-spec.md",
     "docs/specs/B008-research-grade-data-expansion-spec.md",
     "docs/specs/B007-backtest-quality-hardening-spec.md",
     "docs/specs/B006-global-etf-backtest-mvp-spec.md",
-    "docs/test-reports/B008-research-grade-data-expansion-signoff-2026-05-13.md",
+    "docs/test-reports/B009-public-data-snapshot-mvp-signoff-2026-05-13.md",
     "docs/engineering/testing-and-fixture-policy.md",
     "docs/engineering/config-and-environment-policy.md",
     "docs/engineering/no-live-safety-guards.md",
     "docs/engineering/backtest-report-schema.md",
-    "docs/engineering/pit-data-degradation-policy.md",
-    "docs/strategy/00-master-portfolio-allocation.md",
-    "docs/strategy/01-global-etf-momentum-rotation.md"
+    "docs/engineering/pit-data-degradation-policy.md"
   ],
   "docs": {
-    "spec": "docs/specs/B009-public-data-snapshot-mvp-spec.md",
-    "test_cases": "docs/test-reports/B009-public-data-snapshot-mvp-reverification-2026-05-13.md",
-    "signoff": "docs/test-reports/B009-public-data-snapshot-mvp-signoff-2026-05-13.md",
+    "spec": "docs/specs/B010-risk-parity-backtest-mvp-spec.md",
+    "test_cases": null,
+    "signoff": null,
     "framework_reviewed": true
   },
   "role_assignments": null,
-  "evaluator_feedback": "PASS. B009 F006 second reverification completed on 2026-05-13. Evidence: pytest 62 passed, ruff passed, compileall passed, mypy passed. Real import_public_data -> run_fixture_workflow path now references importer-generated manifest path and snapshot_id in JSON report data.snapshot_manifest and research-run snapshot_reference.manifest. Safety boundaries preserved: fixture-first defaults, manual/disabled public import, gitignored output, no secret/broker/live/paper/AI-trading path. Signoff: docs/test-reports/B009-public-data-snapshot-mvp-signoff-2026-05-13.md",
-  "generator_handoff": "Generator fixed B009-F006-1R in fixing round 2. Loader now supports real import_public_data manifest semantics: it first accepts adjacent {snapshot_file_stem}-manifest.json and otherwise scans sibling *-manifest.json files for files[].path plus files[].sha256 matching the explicit snapshot file, covering importer output names like {snapshot_id}-manifest.json. Added E2E regression test that calls import_public_data(), then run_fixture_workflow() on result.output_file, asserting JSON report data.snapshot_manifest and research-run snapshot_reference.manifest reference result.manifest_file and result.snapshot_id. Full local checks pass: .venv/bin/python -m pytest (62 passed), .venv/bin/python -m ruff check ., .venv/bin/python -m compileall trade tests, and .venv/bin/python -m mypy --install-types --non-interactive trade. Evaluator should reverify B009 F006.",
+  "evaluator_feedback": null,
+  "generator_handoff": "Planner opened B010-risk-parity-backtest-mvp after B009 signoff. User agreed to continue MVP PRD route: implement the second core strategy research path, Risk Parity / Volatility Target, before portfolio allocation or paper/broker work. Scope: F001 minimal risk parity config boundary; F002 daily returns and annualized volatility estimation; F003 inverse volatility weights with no-leverage exposure scaling capped at 1.0 and defensive/cash allocation; F004 monthly T-day close signal / T+1 execution backtest workflow; F005 JSON/Markdown reports with metrics, weight history, costs, baseline comparison, snapshot/data quality references, and research limitations; F006 safety/workflow regression; F007 Codex evaluation. Preserve fixture/mock-first CI, explicit snapshot loading only, fail-closed missing snapshot behavior, no generated market data commits, and no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI-trading guards. Do not implement ERC/min-var optimizers, broker adapters, paper/live trading, frontend dashboard, AI execution, tax, cloud deployment, or investment advice.",
   "session_notes": {
-    "planner": "2026-05-13: B008 was done with clean signoff. User agreed to next batch recommendation from MVP PRD perspective: B009 Public Data Snapshot MVP. Created spec and feature list; moved status to building for Generator F001. Key intent is to bridge synthetic fixture mechanics to reproducible local research snapshots while preserving offline CI and safety guards.",
-    "generator": "2026-05-13: Fixed B009-F006-1R and moved status to reverifying. Loader now finds real import_public_data manifests by matching sibling *-manifest.json files against files[].path and sha256, so real import->workflow artifacts reference result.manifest_file and result.snapshot_id. Added E2E regression; full checks pass: pytest 62 passed, ruff, compileall, mypy.",
-    "evaluator": "2026-05-13: B009 F006 second reverification PASS. Checks passed: pytest 62, ruff, compileall, mypy. Real import_public_data -> workflow evidence under /tmp/opencode/b009-reverify2 confirmed JSON report and research-run artifact reference importer manifest path + snapshot_id, with public-best-effort/non-PIT/research-only/not-live-trading-ready labels and broker_free human-review-only artifact. Signoff: docs/test-reports/B009-public-data-snapshot-mvp-signoff-2026-05-13.md."
+    "planner": "2026-05-13: B009 was done with signoff after two fix rounds. Backlog/user reports/proposed-learnings were empty. User agreed to next MVP PRD step: B010 Risk Parity Backtest MVP. Created spec and feature list; moved status to building for Generator F001. Key constraints: inverse-vol only, no leverage, fixture/mock-first CI, explicit snapshot reuse only, no broker/paper/live/AI.",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",
@@ -41,6 +42,7 @@
     "F003",
     "F004",
     "F005",
-    "F006"
+    "F006",
+    "F007"
   ]
 }

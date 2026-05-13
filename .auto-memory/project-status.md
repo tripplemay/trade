@@ -4,8 +4,8 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B009-public-data-snapshot-mvp：`done`**；F001-F006 completed and Evaluator signoff passed.
-- Signoff: `docs/test-reports/B009-public-data-snapshot-mvp-signoff-2026-05-13.md`
+- **B010-risk-parity-backtest-mvp：`building`**；Planner 已完成 spec/features，等待 Generator 从 F001 开始实现。
+- Spec: `docs/specs/B010-risk-parity-backtest-mvp-spec.md`
 
 ## 已完成签收
 - B001 strategy roadmap: `docs/test-reports/B001-independent-reverification-signoff-2026-05-12.md`
@@ -18,17 +18,14 @@ type: project
 - B008 research-grade data expansion: `docs/test-reports/B008-research-grade-data-expansion-signoff-2026-05-13.md`
 - B009 public data snapshot MVP: `docs/test-reports/B009-public-data-snapshot-mvp-signoff-2026-05-13.md`
 
-## B009 目标
-- 按 MVP PRD 补齐 manual public data import、local snapshot manifest、显式 snapshot loader、quality gate、research run artifact。
-- 保持 fixture/mock-first CI 与 no-live/no-secret/no-network-by-default/no-broker/no-AI guards。
-
-## 验收摘要
-- Real import -> workflow artifacts now reference importer manifest path and manifest `snapshot_id`; L1 checks passed.
+## B010 目标
+- 实现 Risk Parity / Vol Target 回测 MVP：inverse vol、no leverage、monthly T-day/T+1 workflow、reports。
+- 复用 B009 snapshot/data-quality semantics，保持 fixture/mock-first CI 与 no-live/no-secret/no-network-by-default/no-broker/no-AI guards。
 
 ## 生产状态
 - No deployment, DB, broker API, secrets, paper/live trading, or live-money operation.
 
 ## 已知 gap（非阻塞）
-- B009 仍不承诺 PIT/生产级行情；public data snapshot 仅用于 research-only best-effort 本地研究。
+- B010 首版不做 ERC/min-var optimizer、paper/live broker、frontend dashboard 或生产级投资建议。
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->
