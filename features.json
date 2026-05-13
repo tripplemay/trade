@@ -22,7 +22,7 @@
       "title": "实现账户级 15% drawdown kill-switch",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "实现 deterministic 15% account-level drawdown kill-switch（从 rolling high-water mark 计算）。触发时下一 rebalance 不增加任何 non-defensive sleeve 目标权重，保留现有仓位，需通过显式 config / runtime parameter 进行 clearance 解除；reports 必须暴露 kill_switch_active、kill_switch_triggered_at、kill_switch_trigger_drawdown、human_review_required；account-level controls 不修改 child-level risk rules；测试覆盖"
     },
     {

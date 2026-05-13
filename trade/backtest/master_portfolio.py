@@ -30,6 +30,8 @@ from trade.strategies.risk_parity import (
 )
 
 WEIGHT_ROUND_DIGITS = 12
+KILL_SWITCH_TRIGGERED = "triggered"
+KILL_SWITCH_CLEARED = "cleared"
 
 
 @dataclass(frozen=True, slots=True)
@@ -51,6 +53,24 @@ class MasterSleeveContribution:
 
 
 @dataclass(frozen=True, slots=True)
+class MasterAccountRiskState:
+    high_water_mark: float
+    drawdown: float
+    kill_switch_active: bool
+    kill_switch_triggered_at: date | None
+    kill_switch_trigger_drawdown: float | None
+    human_review_required: bool
+
+
+@dataclass(frozen=True, slots=True)
+class MasterKillSwitchEvent:
+    event_kind: str
+    signal_date: date
+    drawdown: float
+    high_water_mark: float
+
+
+@dataclass(frozen=True, slots=True)
 class MasterRebalancePeriodResult:
     signal_date: date
     execution_date: date
@@ -63,6 +83,8 @@ class MasterRebalancePeriodResult:
     cost_amount: float
     turnover: float
     risk_flags: tuple[str, ...]
+    pre_rebalance_account_risk_state: MasterAccountRiskState
+    weights_capped_by_kill_switch: dict[str, float]
 
 
 @dataclass(frozen=True, slots=True)
@@ -77,6 +99,47 @@ class MasterPortfolioBacktestResult:
     risk_flags: tuple[str, ...]
     cost_bps: float
     slippage_bps: float
+    account_risk_state: MasterAccountRiskState
+    kill_switch_events: tuple[MasterKillSwitchEvent, ...]
+
+
+def drawdown_against_hwm(equity: float, high_water_mark: float) -> float:
+    """Return equity/HWM - 1, clamped to 0 when HWM is non-positive."""
+
+    if high_water_mark <= 0:
+        return 0.0
+    return equity / high_water_mark - 1.0
+
+
+def apply_kill_switch_constraint(
+    *,
+    new_weights: dict[str, float],
+    prior_weights: dict[str, float],
+    defensive_asset: str,
+) -> tuple[dict[str, float], dict[str, float]]:
+    """Cap each non-defensive asset's new weight at its prior weight.
+
+    Excess weight (capped reduction) is rerouted to the defensive asset. Decreases relative to
+    prior are preserved untouched. Returns the capped weights plus a mapping of asset to the
+    reduction amount applied.
+    """
+
+    capped: dict[str, float] = dict(new_weights)
+    reductions: dict[str, float] = {}
+    excess = 0.0
+    for asset, weight in new_weights.items():
+        if asset == defensive_asset:
+            continue
+        prior = prior_weights.get(asset, 0.0)
+        if weight > prior:
+            capped[asset] = prior
+            reduction = weight - prior
+            reductions[asset] = round(reduction, WEIGHT_ROUND_DIGITS)
+            excess += reduction
+    if excess > 0:
+        capped[defensive_asset] = capped.get(defensive_asset, 0.0) + excess
+    capped = {asset: round(weight, WEIGHT_ROUND_DIGITS) for asset, weight in capped.items()}
+    return capped, reductions
 
 
 def run_master_portfolio_quarterly_backtest(
@@ -85,15 +148,9 @@ def run_master_portfolio_quarterly_backtest(
     master_parameters: MasterPortfolioParameters | None = None,
     child_parameters: MasterChildStrategyParameters | None = None,
     backtest_parameters: BacktestParameters | None = None,
+    kill_switch_clearance_signal_dates: tuple[date, ...] = (),
 ) -> MasterPortfolioBacktestResult:
-    """Run a quarterly Master Portfolio backtest.
-
-    At each supplied signal date (treated as a calendar quarter end in the fixture), the Master
-    consumes each implemented child's then-current target weights, routes satellite stub
-    planning weights to the defensive asset, aggregates per-asset portfolio weights, and
-    executes at T+1 open. Capital chains across periods with cost/slippage friction applied to
-    weight turnover.
-    """
+    """Run a quarterly Master Portfolio backtest with account-level kill-switch."""
 
     if not signal_dates:
         raise BacktestError("signal_dates must not be empty")
@@ -113,11 +170,20 @@ def run_master_portfolio_quarterly_backtest(
 
     by_symbol_date = {(record.symbol, record.date): record for record in records}
     all_dates = tuple(sorted({record.date for record in records}))
+    clearance_set = set(kill_switch_clearance_signal_dates)
+    drawdown_threshold = master_parameters.drawdown_threshold
+    defensive_asset = master_parameters.defensive_asset
 
     current_capital = backtest_parameters.starting_capital
+    high_water_mark = current_capital
+    drawdown = 0.0
+    kill_switch_active = False
+    kill_switch_triggered_at: date | None = None
+    kill_switch_trigger_drawdown: float | None = None
     previous_portfolio_weights: dict[str, float] = {}
     periods: list[MasterRebalancePeriodResult] = []
     equity_points: list[EquityPoint] = [EquityPoint(signal_dates[0], current_capital)]
+    kill_switch_events: list[MasterKillSwitchEvent] = []
     total_turnover = 0.0
     total_cost = 0.0
     risk_flags: list[str] = []
@@ -125,22 +191,57 @@ def run_master_portfolio_quarterly_backtest(
         backtest_parameters.cost_bps + backtest_parameters.slippage_bps
     ) / 10_000.0
 
-    for signal_date in signal_dates:
+    for period_index, signal_date in enumerate(signal_dates):
+        if kill_switch_active and signal_date in clearance_set:
+            kill_switch_active = False
+            kill_switch_triggered_at = None
+            kill_switch_trigger_drawdown = None
+            kill_switch_events.append(
+                MasterKillSwitchEvent(
+                    event_kind=KILL_SWITCH_CLEARED,
+                    signal_date=signal_date,
+                    drawdown=drawdown,
+                    high_water_mark=high_water_mark,
+                )
+            )
+
+        pre_rebalance_state = MasterAccountRiskState(
+            high_water_mark=high_water_mark,
+            drawdown=drawdown,
+            kill_switch_active=kill_switch_active,
+            kill_switch_triggered_at=kill_switch_triggered_at,
+            kill_switch_trigger_drawdown=kill_switch_trigger_drawdown,
+            human_review_required=kill_switch_active,
+        )
+
         execution_date = _next_trading_date(all_dates, signal_date)
         if execution_date is None:
             raise BacktestError(
                 "no trading date exists after signal_date for T+1 open execution"
             )
-        valuation_date = _next_trading_date(all_dates, execution_date) or execution_date
+        if period_index + 1 < len(signal_dates):
+            valuation_date = signal_dates[period_index + 1]
+        else:
+            valuation_date = all_dates[-1]
 
-        sleeve_contributions, portfolio_target = _build_portfolio_target(
+        sleeve_contributions, raw_portfolio_target = _build_portfolio_target(
             sleeves=master_parameters.sleeves,
-            defensive_asset=master_parameters.defensive_asset,
+            defensive_asset=defensive_asset,
             records=records,
             signal_date=signal_date,
             momentum_params=momentum_params,
             risk_parity_params=risk_parity_params,
         )
+
+        if kill_switch_active:
+            portfolio_target, weights_capped_by_kill_switch = apply_kill_switch_constraint(
+                new_weights=raw_portfolio_target,
+                prior_weights=previous_portfolio_weights,
+                defensive_asset=defensive_asset,
+            )
+        else:
+            portfolio_target = raw_portfolio_target
+            weights_capped_by_kill_switch = {}
 
         turnover = _weight_turnover(previous_portfolio_weights, portfolio_target)
         period_cost = current_capital * turnover * friction_rate
@@ -168,14 +269,41 @@ def run_master_portfolio_quarterly_backtest(
                 cost_amount=period_cost,
                 turnover=turnover,
                 risk_flags=tuple(period_flags),
+                pre_rebalance_account_risk_state=pre_rebalance_state,
+                weights_capped_by_kill_switch=weights_capped_by_kill_switch,
             )
         )
         equity_points.append(EquityPoint(valuation_date, ending_value))
         total_turnover += turnover
         total_cost += period_cost
         risk_flags.extend(period_flags)
+
+        high_water_mark = max(high_water_mark, ending_value)
+        drawdown = drawdown_against_hwm(ending_value, high_water_mark)
+        if not kill_switch_active and drawdown <= -drawdown_threshold:
+            kill_switch_active = True
+            kill_switch_triggered_at = signal_date
+            kill_switch_trigger_drawdown = drawdown
+            kill_switch_events.append(
+                MasterKillSwitchEvent(
+                    event_kind=KILL_SWITCH_TRIGGERED,
+                    signal_date=signal_date,
+                    drawdown=drawdown,
+                    high_water_mark=high_water_mark,
+                )
+            )
+
         previous_portfolio_weights = portfolio_target
         current_capital = ending_value
+
+    final_account_risk_state = MasterAccountRiskState(
+        high_water_mark=high_water_mark,
+        drawdown=drawdown,
+        kill_switch_active=kill_switch_active,
+        kill_switch_triggered_at=kill_switch_triggered_at,
+        kill_switch_trigger_drawdown=kill_switch_trigger_drawdown,
+        human_review_required=kill_switch_active,
+    )
 
     return MasterPortfolioBacktestResult(
         starting_capital=backtest_parameters.starting_capital,
@@ -188,6 +316,8 @@ def run_master_portfolio_quarterly_backtest(
         risk_flags=tuple(risk_flags),
         cost_bps=backtest_parameters.cost_bps,
         slippage_bps=backtest_parameters.slippage_bps,
+        account_risk_state=final_account_risk_state,
+        kill_switch_events=tuple(kill_switch_events),
     )
 
 

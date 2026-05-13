@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "按 MVP PRD §12 路线图在 B006 Global ETF Momentum 与 B010 Risk Parity Backtest MVP 基础上实现 Master Portfolio Allocation MVP：组合两个 core sleeves（momentum 40% + risk parity 30%）并预留 satellite interface stubs（US quality 20% + HK-China 10%）、季度再平衡 workflow、账户级 15% drawdown kill-switch（冻结非防御性增仓 + human-review-required clearance）、组合层 reports 含 calculated baseline（吸收 BL-B010-S2），同时保持 fixture/mock-first CI、snapshot/data-quality semantics 和 no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards。",
   "total_features": 6,
-  "completed_features": 2,
+  "completed_features": 3,
   "fix_rounds": 0,
-  "current_sprint": "F003",
+  "current_sprint": "F004",
   "last_updated": "2026-05-13",
   "reference_docs": [
     "docs/specs/B011-portfolio-allocation-risk-mvp-spec.md",
