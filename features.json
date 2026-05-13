@@ -1,53 +1,53 @@
 {
-  "sprint": "B011-portfolio-allocation-risk-mvp",
+  "sprint": "B012-paper-trading-prep-mvp",
   "features": [
     {
       "id": "F001",
-      "title": "建立 Master Portfolio 配置边界",
+      "title": "建立 Target Positions 输出格式",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "基于 docs/strategy/00-master-portfolio-allocation.md 增加 Master Portfolio 配置：B006 momentum + B010 risk parity 作为 implemented core sleeves；US quality / HK-China 作为 satellite interface stubs（fall through 到 defensive/cash placeholder）；静态规划权重 momentum 0.40 / risk_parity 0.30 / satellite_us_quality 0.20 / satellite_hk_china 0.10 合计 1.0；声明 quarterly rebalance 频率与 15% 账户级 drawdown 阈值与 kill-switch 语义；禁止杠杆，max exposure ≤ 1.0；测试覆盖"
+      "status": "pending",
+      "acceptance": "新增 TargetPositions dataclass 与等价 JSON schema，包含 schema_version、target_positions_id、strategy_id 或 portfolio_id、signal_date、generation_timestamp、snapshot_id / manifest 路径、account_state_reference、entries（symbol + target_weight + target_dollar_exposure）、defensive_allocation、research_limitations、固定 research-only disclaimer。同时输出百分比权重与美元 exposure。验证：非负权重、含 defensive 合计 ≈ 1.0、无杠杆、无重复 symbol、signal_date 在桥接生成时必须为有效交易日。测试覆盖序列化、校验成功 / 失败路径"
     },
     {
       "id": "F002",
-      "title": "实现 Master Portfolio 季度再平衡 workflow",
+      "title": "实现 Broker Adapter 抽象接口",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "新增 quarterly Master rebalance workflow：在每个 calendar quarter end 消费各 implemented child 的 target weights，应用 planning weight 派生 portfolio weights，聚合 per-asset，使用 T-day close signal / T+1 open execution 假设，记录 rebalance trace、equity curve、turnover、transaction costs、per-child contributions、snapshot references；rebalance 间隔内 Master 不消费 intra-quarter child 信号；测试覆盖"
+      "status": "pending",
+      "acceptance": "新增 BrokerAdapter ABC，含 submit_target_positions / get_account_state / get_open_orders 三个抽象方法签名；模块 docstring 明确：B012 仅定义抽象接口与 Mock 实现，真实 paper / live broker adapter 是后续批次范围。新增禁止导入回归：ib_insync、alpaca、alpaca_trade_api、futu、futu-api、tiger、tiger_api、tradier、polygon 等不得在新模块中出现。测试覆盖 ABC 不可直接实例化、子类必须实现全部抽象方法"
     },
     {
       "id": "F003",
-      "title": "实现账户级 15% drawdown kill-switch",
+      "title": "实现 Mock Broker（journal-only）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "实现 deterministic 15% account-level drawdown kill-switch（从 rolling high-water mark 计算）。触发时下一 rebalance 不增加任何 non-defensive sleeve 目标权重，保留现有仓位，需通过显式 config / runtime parameter 进行 clearance 解除；reports 必须暴露 kill_switch_active、kill_switch_triggered_at、kill_switch_trigger_drawdown、human_review_required；account-level controls 不修改 child-level risk rules；测试覆盖"
+      "status": "pending",
+      "acceptance": "实现 MockBroker(account_state, journal_path)：从 config 读取固定 research 账户状态（默认 USD 250000 cash，open_positions 为空），submit_target_positions 校验 schema 后以 JSON Lines append-only 写入 journal 文件（一次一行、不可改），返回 journal entry；get_account_state 透传固定状态；get_open_orders 返回空序列；全程无网络 I/O、无 os.environ 访问、无 broker SDK 导入；journal 默认路径在 data/paper-prep/ 并 gitignored。测试覆盖 happy path append、schema 校验失败拒绝、deterministic journal_entry_id、account state 透传、空 open orders"
     },
     {
       "id": "F004",
-      "title": "输出 Portfolio reports 与可计算 baseline",
+      "title": "实现 Backtest → Paper Trading 桥接",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "新增 JSON/Markdown portfolio reports：aggregated equity curve、年化收益/波动率/Sharpe/最大回撤、turnover、transaction costs、per-child contributions、planning vs effective weights、snapshot references、account-level risk flags、research limitations；新增 calculated multi-asset baseline（如 static 60/40 ETF/defensive quarterly rebalance）作为 portfolio baseline 与 BL-B010-S2 followup；reports 不得声明 paper / live execution"
+      "status": "pending",
+      "acceptance": "新增 generate_target_positions_from_master(result, *, signal_date=None, account_state) 与 generate_target_positions_from_strategy(result, *, signal_date=None, account_state)：signal_date 缺省时使用最新 period，提供时必须命中 backtest period 否则 fail closed；输出含百分比权重与美元 exposure（exposure = weight × (cash + equity_value)）；defensive 残余权重映射到 master/strategy 的 defensive sleeve symbol；任意时间手动触发，桥接函数不强制 cadence。测试覆盖 B011 master + B006/B010 single-strategy 转换、缺省 latest period、显式 signal_date、missing signal_date fail closed、account-state-driven dollar 计算"
     },
     {
       "id": "F005",
-      "title": "补强 Master Portfolio 安全 guard 与 workflow 回归",
+      "title": "补强 Paper Trading prep 安全 guard 与 workflow 回归",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "增加回归覆盖证明 Master Portfolio 默认 fixture/mock-first，且不引入 network、secret、broker、paper/live、AI-trading、generated-data-commit、frontend/dashboard dependencies；kill-switch 行为 deterministic 且在 report payload 中可见；public-import stub 不被 Master pipeline 自动触发；pytest、ruff、compileall、mypy 全部通过"
+      "status": "pending",
+      "acceptance": "增加回归覆盖：B012 模块无 broker SDK 导入（ib_insync / alpaca / alpaca_trade_api / futu / futu-api / tiger / tiger_api / tradier / polygon 等），无 paper-trading API URL / endpoint，无 os.environ / secret 访问，无 socket I/O，无 paper-execution / live-execution / executed-order / filled 等用词；journals / reports / docstrings 均含 research-only disclaimer；MockBroker 默认 constructor 不触网；桥接对 leverage 与 missing signal_date fail closed。pytest、ruff、compileall、mypy 全部通过"
     },
     {
       "id": "F006",
-      "title": "独立验收 B011 Master Portfolio Allocation MVP",
+      "title": "独立验收 B012 Paper Trading prep MVP",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认 B011 实现最小 Master Portfolio Allocation MVP、combined reports 含 calculated baseline 与 account-level risk flags、kill-switch 触发与清除 deterministic、snapshot/data-quality semantics 保留、所有 no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards 保留；signoff 中明确记录 BL-B010-S2 已被本批次吸收；产出 review/signoff 报告"
+      "status": "pending",
+      "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认 B012 实现最小 Paper Trading prep MVP：TargetPositions schema 含百分比与美元双输出与校验、BrokerAdapter ABC 仅抽象、Mock Broker journal-only 不模拟成交不触网、Backtest→Paper 桥接支持任意时间手动触发并对无效 signal_date fail closed、禁止导入回归覆盖完整、所有 no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards 保留；产出 review/signoff 报告"
     }
   ]
 }
