@@ -14,7 +14,7 @@
       "title": "生成本地研究数据 snapshot manifest",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "为导入的本地研究数据生成 snapshot manifest，记录 source/provider、timestamp、ticker list、date range、row counts、hash 或等价完整性元数据、本地输出路径，以及 public-best-effort/non-PIT/research-only limitation labels"
     },
     {
