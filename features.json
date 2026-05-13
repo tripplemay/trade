@@ -22,7 +22,7 @@
       "title": "实现逆波动率权重与无杠杆 exposure scaling",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "实现 deterministic inverse volatility weights：invalid vol exclusion、可行时的 weight caps、normalization、target volatility exposure scaling capped at 1.0，以及剩余 exposure 分配到 defensive asset/cash placeholder"
     },
     {

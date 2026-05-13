@@ -69,6 +69,20 @@ class VolatilityEstimate:
     end_date: date
 
 
+@dataclass(frozen=True, slots=True)
+class RiskParitySignal:
+    signal_date: date
+    target_weights: dict[str, float]
+    risk_asset_weights: dict[str, float]
+    excluded_symbols: tuple[str, ...]
+    exposure_scale: float
+    estimated_portfolio_volatility: float
+    defensive_asset: str
+    defensive_weight: float
+    parameter_hash: str
+    parameters: RiskParityParameters
+
+
 def validate_risk_parity_parameters(parameters: RiskParityParameters) -> None:
     if parameters.strategy_id != "risk_parity_vol_target":
         raise RiskParityConfigError("strategy_id must be risk_parity_vol_target")
@@ -151,6 +165,116 @@ def estimate_universe_volatility(
         estimate_annualized_volatility(records, symbol, parameters.volatility_lookback, end_date)
         for symbol in parameters.universe
     )
+
+
+def generate_risk_parity_signal(
+    records: tuple[PriceBar, ...],
+    parameters: RiskParityParameters | None = None,
+    signal_date: date | None = None,
+) -> RiskParitySignal:
+    if parameters is None:
+        parameters = default_risk_parity_parameters()
+    validate_risk_parity_parameters(parameters)
+    estimates: list[VolatilityEstimate] = []
+    excluded: list[str] = []
+    for symbol in parameters.universe:
+        if symbol == parameters.defensive_asset:
+            continue
+        try:
+            estimates.append(
+                estimate_annualized_volatility(
+                    records, symbol, parameters.volatility_lookback, signal_date
+                )
+            )
+        except RiskParityDataError:
+            excluded.append(symbol)
+    if not estimates:
+        raise RiskParityDataError("no valid volatility estimates for risk assets")
+
+    base_weights = _inverse_volatility_weights(estimates)
+    capped_weights = _cap_and_normalize_weights(base_weights, parameters.max_asset_weight)
+    estimated_portfolio_volatility = _weighted_average_volatility(capped_weights, estimates)
+    exposure_scale = min(parameters.target_volatility / estimated_portfolio_volatility, 1.0)
+    risk_asset_weights = {
+        symbol: weight * exposure_scale for symbol, weight in capped_weights.items()
+    }
+    defensive_weight = 1.0 - sum(risk_asset_weights.values())
+    target_weights = dict(risk_asset_weights)
+    target_weights[parameters.defensive_asset] = target_weights.get(
+        parameters.defensive_asset, 0.0
+    ) + defensive_weight
+    effective_signal_date = signal_date or max(estimate.end_date for estimate in estimates)
+    return RiskParitySignal(
+        signal_date=effective_signal_date,
+        target_weights=_round_weights(target_weights),
+        risk_asset_weights=_round_weights(risk_asset_weights),
+        excluded_symbols=tuple(sorted(excluded)),
+        exposure_scale=exposure_scale,
+        estimated_portfolio_volatility=estimated_portfolio_volatility,
+        defensive_asset=parameters.defensive_asset,
+        defensive_weight=defensive_weight,
+        parameter_hash=parameters.parameter_hash(),
+        parameters=parameters,
+    )
+
+
+def _inverse_volatility_weights(
+    estimates: tuple[VolatilityEstimate, ...] | list[VolatilityEstimate],
+) -> dict[str, float]:
+    valid = tuple(estimate for estimate in estimates if estimate.annualized_volatility > 0)
+    if not valid:
+        raise RiskParityDataError("no valid positive volatility estimates")
+    raw = {estimate.symbol: 1.0 / estimate.annualized_volatility for estimate in valid}
+    raw_sum = sum(raw.values())
+    return {symbol: value / raw_sum for symbol, value in raw.items()}
+
+
+def _cap_and_normalize_weights(weights: dict[str, float], max_weight: float) -> dict[str, float]:
+    if max_weight >= 1.0:
+        return _normalize(weights)
+    capped: dict[str, float] = {}
+    uncapped = dict(weights)
+    remaining_weight = 1.0
+    while uncapped:
+        normalized = _normalize(uncapped)
+        breaches = {
+            symbol: weight
+            for symbol, weight in normalized.items()
+            if weight * remaining_weight > max_weight
+        }
+        if not breaches:
+            capped.update(
+                {symbol: weight * remaining_weight for symbol, weight in normalized.items()}
+            )
+            return _normalize(capped)
+        for symbol in breaches:
+            capped[symbol] = max_weight
+            uncapped.pop(symbol)
+            remaining_weight -= max_weight
+        if remaining_weight <= 0:
+            return _normalize(capped)
+    return _normalize(capped)
+
+
+def _normalize(weights: dict[str, float]) -> dict[str, float]:
+    total = sum(weights.values())
+    if total <= 0:
+        raise RiskParityDataError("weights must sum to a positive value")
+    return {symbol: weight / total for symbol, weight in weights.items()}
+
+
+def _weighted_average_volatility(
+    weights: dict[str, float], estimates: tuple[VolatilityEstimate, ...] | list[VolatilityEstimate]
+) -> float:
+    by_symbol = {estimate.symbol: estimate.annualized_volatility for estimate in estimates}
+    volatility = sum(weights[symbol] * by_symbol[symbol] for symbol in weights)
+    if volatility <= 0:
+        raise RiskParityDataError("estimated portfolio volatility must be positive")
+    return volatility
+
+
+def _round_weights(weights: dict[str, float]) -> dict[str, float]:
+    return {symbol: round(weight, 10) for symbol, weight in sorted(weights.items())}
 
 
 def _history_for_symbol(

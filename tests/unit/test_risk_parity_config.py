@@ -11,6 +11,7 @@ from trade.strategies.risk_parity import (
     default_risk_parity_parameters,
     estimate_annualized_volatility,
     estimate_universe_volatility,
+    generate_risk_parity_signal,
     validate_risk_parity_parameters,
 )
 
@@ -111,6 +112,88 @@ def test_universe_volatility_uses_parameter_lookback_and_universe() -> None:
     assert all(estimate.lookback == 60 for estimate in estimates)
 
 
+def test_inverse_volatility_signal_allocates_more_to_lower_vol_asset() -> None:
+    parameters = RiskParityParameters(
+        universe=("LOW", "HIGH", "SGOV"),
+        volatility_lookback=60,
+        defensive_asset="SGOV",
+        target_volatility=1.0,
+        max_asset_weight=1.0,
+    )
+    records = (
+        _pattern_price_history("LOW", 61, (0.002, -0.001))
+        + _pattern_price_history("HIGH", 61, (0.03, -0.025))
+        + _pattern_price_history("SGOV", 61, (0.0001, 0.0001))
+    )
+
+    signal = generate_risk_parity_signal(records, parameters)
+
+    assert signal.risk_asset_weights["LOW"] > signal.risk_asset_weights["HIGH"]
+    assert signal.exposure_scale == 1.0
+    assert signal.defensive_weight == 0.0
+    assert round(sum(signal.target_weights.values()), 8) == 1.0
+
+
+def test_risk_parity_caps_exposure_and_allocates_unused_to_defensive_asset() -> None:
+    parameters = RiskParityParameters(
+        universe=("SPY", "AGG", "SGOV"),
+        volatility_lookback=60,
+        defensive_asset="SGOV",
+        target_volatility=0.02,
+        max_asset_weight=1.0,
+    )
+    records = (
+        _pattern_price_history("SPY", 61, (0.03, -0.025))
+        + _pattern_price_history("AGG", 61, (0.02, -0.015))
+        + _pattern_price_history("SGOV", 61, (0.0001, 0.0001))
+    )
+
+    signal = generate_risk_parity_signal(records, parameters)
+
+    assert 0 < signal.exposure_scale < 1.0
+    assert signal.target_weights["SGOV"] > 0.0
+    assert round(sum(signal.target_weights.values()), 8) == 1.0
+
+
+def test_risk_parity_applies_weight_caps_when_feasible() -> None:
+    parameters = RiskParityParameters(
+        universe=("LOW", "MID", "HIGH", "SGOV"),
+        volatility_lookback=60,
+        defensive_asset="SGOV",
+        target_volatility=1.0,
+        max_asset_weight=0.5,
+    )
+    records = (
+        _pattern_price_history("LOW", 61, (0.001, -0.0005))
+        + _pattern_price_history("MID", 61, (0.01, -0.008))
+        + _pattern_price_history("HIGH", 61, (0.03, -0.025))
+        + _pattern_price_history("SGOV", 61, (0.0001, 0.0001))
+    )
+
+    signal = generate_risk_parity_signal(records, parameters)
+
+    assert max(signal.risk_asset_weights.values()) <= 0.5
+    assert round(sum(signal.target_weights.values()), 8) == 1.0
+
+
+def test_risk_parity_excludes_invalid_volatility_assets() -> None:
+    parameters = RiskParityParameters(
+        universe=("VALID", "INVALID", "SGOV"),
+        volatility_lookback=60,
+        defensive_asset="SGOV",
+    )
+    records = (
+        _pattern_price_history("VALID", 61, (0.01, -0.008))
+        + _flat_price_history("INVALID", 61)
+        + _pattern_price_history("SGOV", 61, (0.0001, 0.0001))
+    )
+
+    signal = generate_risk_parity_signal(records, parameters)
+
+    assert signal.excluded_symbols == ("INVALID",)
+    assert "INVALID" not in signal.target_weights
+
+
 def _price_history(symbol: str, observations: int) -> tuple[PriceBar, ...]:
     start = date(2024, 1, 1)
     return tuple(
@@ -144,3 +227,40 @@ def _oscillating_price_history(symbol: str, observations: int) -> tuple[PriceBar
             )
         )
     return tuple(records)
+
+
+def _pattern_price_history(
+    symbol: str, observations: int, daily_pattern: tuple[float, ...]
+) -> tuple[PriceBar, ...]:
+    start = date(2024, 1, 1)
+    price = 100.0
+    records: list[PriceBar] = []
+    for index in range(observations):
+        if index:
+            price *= 1.0 + daily_pattern[index % len(daily_pattern)]
+        records.append(
+            PriceBar(
+                date=start + timedelta(days=index),
+                symbol=symbol,
+                open=price,
+                close=price,
+                adjusted_close=price,
+                volume=1000,
+            )
+        )
+    return tuple(records)
+
+
+def _flat_price_history(symbol: str, observations: int) -> tuple[PriceBar, ...]:
+    start = date(2024, 1, 1)
+    return tuple(
+        PriceBar(
+            date=start + timedelta(days=index),
+            symbol=symbol,
+            open=100.0,
+            close=100.0,
+            adjusted_close=100.0,
+            volume=1000,
+        )
+        for index in range(observations)
+    )
