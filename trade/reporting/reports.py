@@ -87,6 +87,7 @@ def build_report_payload(
         "data": {
             "data_snapshot_id": snapshot.data_snapshot_id,
             "snapshot_kind": _snapshot_kind(snapshot),
+            "snapshot_manifest": _snapshot_manifest_reference(snapshot),
             "checksum": snapshot.checksum,
             "source": snapshot.source,
             "date_range": {
@@ -214,6 +215,7 @@ def render_markdown_report(report: dict[str, object]) -> str:
             "## Data And Parameters",
             f"- Data snapshot: {data['data_snapshot_id']}",
             f"- Snapshot kind: {data['snapshot_kind']}",
+            f"- Snapshot manifest: {data['snapshot_manifest']}",
             f"- Parameter hash: {parameters['parameter_hash']}",
             f"- Momentum windows: {parameters['momentum_windows']}",
             "",
@@ -273,6 +275,7 @@ def build_research_run_artifact(
             "checksum": data["checksum"],
             "source": data["source"],
             "date_range": data["date_range"],
+            "manifest": data["snapshot_manifest"],
         },
         "quality_summary": {
             "quality_flags": data["quality_flags"],
@@ -307,6 +310,15 @@ def _snapshot_kind(snapshot: DataSnapshot) -> str:
     if snapshot.data_snapshot_id.startswith("snapshot:"):
         return "imported_public_research_snapshot"
     return "committed_fixture"
+
+
+def _snapshot_manifest_reference(snapshot: DataSnapshot) -> dict[str, str] | None:
+    if snapshot.manifest_path is None and snapshot.manifest_snapshot_id is None:
+        return None
+    return {
+        "path": snapshot.manifest_path or "",
+        "snapshot_id": snapshot.manifest_snapshot_id or "",
+    }
 
 
 def _period_returns(result: MonthlyBacktestResult) -> dict[str, float]:

@@ -39,6 +39,8 @@ class DataSnapshot:
     end_date: date
     symbols: tuple[str, ...]
     trading_calendar_gaps: tuple[str, ...]
+    manifest_path: str | None = None
+    manifest_snapshot_id: str | None = None
 
 
 class FixtureDataError(ValueError):
@@ -59,6 +61,7 @@ def load_snapshot_prices(path: Path) -> DataSnapshot:
         raise FixtureDataError("snapshot file must be an explicit local data/ or tests/ path")
     if not path.is_file():
         raise FixtureDataError(f"snapshot file does not exist: {path}")
+    manifest = _read_manifest_for_snapshot(path)
     payload = _read_fixture_payload(path)
     snapshot = _snapshot_from_payload(payload)
     return DataSnapshot(
@@ -71,6 +74,8 @@ def load_snapshot_prices(path: Path) -> DataSnapshot:
         end_date=snapshot.end_date,
         symbols=snapshot.symbols,
         trading_calendar_gaps=snapshot.trading_calendar_gaps,
+        manifest_path=manifest["path"] if manifest else None,
+        manifest_snapshot_id=manifest["snapshot_id"] if manifest else None,
     )
 
 
@@ -85,6 +90,18 @@ def _read_fixture_payload(path: Path | None) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise FixtureDataError("fixture payload must be a JSON object")
     return payload
+
+
+def _read_manifest_for_snapshot(path: Path) -> dict[str, str] | None:
+    manifest_path = path.with_name(f"{path.stem}-manifest.json")
+    if not manifest_path.is_file():
+        return None
+    with manifest_path.open("r", encoding="utf-8") as file:
+        manifest = json.load(file)
+    snapshot_id = manifest.get("snapshot_id")
+    if not isinstance(snapshot_id, str) or not snapshot_id:
+        raise FixtureDataError(f"snapshot manifest missing snapshot_id: {manifest_path}")
+    return {"path": manifest_path.as_posix(), "snapshot_id": snapshot_id}
 
 
 def _snapshot_from_payload(payload: dict[str, Any]) -> DataSnapshot:

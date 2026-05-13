@@ -116,6 +116,44 @@ def test_explicit_snapshot_loads_without_fixture_id(
     assert snapshot.data_snapshot_id.startswith("snapshot:")
 
 
+def test_explicit_snapshot_loads_manifest_reference(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    snapshot_dir = tmp_path / "data" / "public-cache"
+    snapshot_dir.mkdir(parents=True)
+    snapshot_path = snapshot_dir / "provider-prices.json"
+    snapshot_path.write_text(
+        json.dumps(
+            {
+                "source": "manual-public-data-import",
+                "adjusted_price_policy": "public_best_effort_adjusted_close",
+                "records": [
+                    {
+                        "date": "2024-01-31",
+                        "symbol": "SPY",
+                        "open": 100.0,
+                        "close": 101.0,
+                        "adjusted_close": 101.0,
+                        "volume": 100,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    manifest_path = snapshot_dir / "provider-prices-manifest.json"
+    manifest_path.write_text(
+        json.dumps({"snapshot_id": "public:provider:abc123"}),
+        encoding="utf-8",
+    )
+
+    snapshot = load_snapshot_prices(Path("data/public-cache/provider-prices.json"))
+
+    assert snapshot.manifest_path == "data/public-cache/provider-prices-manifest.json"
+    assert snapshot.manifest_snapshot_id == "public:provider:abc123"
+
+
 def test_missing_explicit_snapshot_fails_closed() -> None:
     with pytest.raises(FixtureDataError, match="snapshot file does not exist"):
         load_snapshot_prices(Path("data/public-cache/missing.json"))

@@ -61,7 +61,7 @@ def test_workflow_uses_explicit_snapshot_without_changing_default(
     monkeypatch.chdir(tmp_path)
     snapshot_dir = tmp_path / "data" / "public-cache"
     snapshot_dir.mkdir(parents=True)
-    snapshot_path = snapshot_dir / "snapshot.json"
+    snapshot_path = snapshot_dir / "provider-prices.json"
     fixture = load_fixture_prices()
     snapshot_path.write_text(
         json.dumps(
@@ -83,13 +83,18 @@ def test_workflow_uses_explicit_snapshot_without_changing_default(
         ),
         encoding="utf-8",
     )
+    manifest_path = snapshot_dir / "provider-prices-manifest.json"
+    manifest_path.write_text(
+        json.dumps({"snapshot_id": "public:provider:abc123"}),
+        encoding="utf-8",
+    )
     config = default_fixture_workflow_config()
     snapshot_config = type(config)(
         environment=config.environment,
         strategy_budget=config.strategy_budget,
         strategy_parameters=config.strategy_parameters,
         backtest_parameters=config.backtest_parameters,
-        snapshot_path=Path("data/public-cache/snapshot.json"),
+        snapshot_path=Path("data/public-cache/provider-prices.json"),
     )
 
     explicit = run_fixture_workflow(
@@ -99,10 +104,15 @@ def test_workflow_uses_explicit_snapshot_without_changing_default(
 
     assert explicit.report["data"]["data_snapshot_id"].startswith("snapshot:")  # type: ignore[index]
     assert explicit.report["data"]["snapshot_kind"] == "imported_public_research_snapshot"  # type: ignore[index]
+    assert explicit.report["data"]["snapshot_manifest"] == {  # type: ignore[index]
+        "path": "data/public-cache/provider-prices-manifest.json",
+        "snapshot_id": "public:provider:abc123",
+    }
     assert "imported_snapshot_data" in explicit.report["data"]["research_limitations"]  # type: ignore[index]
     assert "not-live-trading-ready" in explicit.report["data"]["research_limitations"]  # type: ignore[index]
     assert default.report["data"]["data_snapshot_id"].startswith("fixture:")  # type: ignore[index]
     assert default.report["data"]["snapshot_kind"] == "committed_fixture"  # type: ignore[index]
+    assert default.report["data"]["snapshot_manifest"] is None  # type: ignore[index]
 
 
 def _stable_report(report: dict[str, object]) -> dict[str, object]:

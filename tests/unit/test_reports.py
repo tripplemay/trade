@@ -3,7 +3,7 @@ from datetime import date
 from pathlib import Path
 
 from trade.backtest.monthly import run_monthly_backtest, run_multi_monthly_backtest
-from trade.data.loader import load_fixture_prices
+from trade.data.loader import DataSnapshot, load_fixture_prices
 from trade.reporting.reports import generate_backtest_reports
 from trade.strategies.global_etf_momentum import MomentumParameters, MomentumWindow
 
@@ -135,3 +135,35 @@ def test_research_run_artifact_links_config_snapshot_report_and_portfolio(
     }
     assert research_run["portfolio_compatible_output"]["target_weights"] == {"SPY": 1.0}
     assert "not_point_in_time_production_data" in research_run["review_limitations"]
+
+
+def test_imported_snapshot_reports_reference_manifest(tmp_path: Path) -> None:
+    snapshot = DataSnapshot(
+        records=load_fixture_prices().records,
+        source="manual-public-data-import",
+        adjusted_price_policy="public_best_effort_adjusted_close",
+        data_snapshot_id="snapshot:abc123",
+        checksum="a" * 64,
+        start_date=date(2023, 11, 30),
+        end_date=date(2025, 1, 31),
+        symbols=("AGG", "EEM", "SPY", "VEA"),
+        trading_calendar_gaps=(),
+        manifest_path="data/public-cache/provider-prices-manifest.json",
+        manifest_snapshot_id="public:provider:abc123",
+    )
+    parameters = MomentumParameters(
+        top_n=1,
+        momentum_windows=(MomentumWindow(periods=2, weight=1.0),),
+        trend_window=2,
+    )
+    result = run_monthly_backtest(snapshot.records, parameters, signal_date=date(2024, 10, 31))
+    artifacts = generate_backtest_reports(result, snapshot, tmp_path, run_id="manifest-run")
+    report = json.loads(artifacts.json_path.read_text(encoding="utf-8"))
+    research_run = json.loads(artifacts.research_run_path.read_text(encoding="utf-8"))
+
+    expected_manifest = {
+        "path": "data/public-cache/provider-prices-manifest.json",
+        "snapshot_id": "public:provider:abc123",
+    }
+    assert report["data"]["snapshot_manifest"] == expected_manifest
+    assert research_run["snapshot_reference"]["manifest"] == expected_manifest
