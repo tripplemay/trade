@@ -30,7 +30,7 @@
       "title": "实现 Risk Parity 月度回测 workflow",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新增 monthly risk parity backtest workflow，使用 T-day close signal calculation 与 T+1 execution assumptions，记录 rebalance trace、equity curve、turnover、costs、target weights、snapshot references 和 quality limitations"
     },
     {
