@@ -6,7 +6,7 @@
       "title": "建立 Master Portfolio 配置边界",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "基于 docs/strategy/00-master-portfolio-allocation.md 增加 Master Portfolio 配置：B006 momentum + B010 risk parity 作为 implemented core sleeves；US quality / HK-China 作为 satellite interface stubs（fall through 到 defensive/cash placeholder）；静态规划权重 momentum 0.40 / risk_parity 0.30 / satellite_us_quality 0.20 / satellite_hk_china 0.10 合计 1.0；声明 quarterly rebalance 频率与 15% 账户级 drawdown 阈值与 kill-switch 语义；禁止杠杆，max exposure ≤ 1.0；测试覆盖"
     },
     {
