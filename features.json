@@ -6,7 +6,7 @@
       "title": "建立手动公开数据导入 CLI 安全边界",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "实现或完善 manual-only public data import CLI/script；默认禁用、CI 默认路径不调用、无 credential 要求、输出仅进入 gitignored 本地目录；测试证明默认路径不触网"
     },
     {

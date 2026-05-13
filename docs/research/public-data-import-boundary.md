@@ -1,13 +1,25 @@
 # Public Data Import Boundary
 
-B008 does not implement a public data downloader. The required workflow remains committed-fixture-first, offline, and CI-safe.
+B009 provides a manual local-file import boundary, not a downloader. The required workflow remains committed-fixture-first, offline, and CI-safe.
 
 The code boundary is `trade.data.public_import`:
 
 - `public_import_boundary()` returns the policy metadata.
-- `import_public_data_stub()` fails closed and performs no network calls.
+- `import_public_data_stub()` fails closed for default/legacy callers and performs no network calls.
+- `import_public_data()` copies an already-downloaded local file into `data/public-cache/` only when the caller passes explicit manual confirmation.
 
-Any future public data importer must be separately scoped and must remain:
+Example manual invocation:
+
+```bash
+python -m trade.data.public_import \
+  --source-file ~/Downloads/public-prices.csv \
+  --provider stooq \
+  --i-understand-this-is-manual-research-data
+```
+
+This command does not fetch from the network and does not read credentials. It only copies the local source file into the gitignored `data/` tree.
+
+Any future network downloader must be separately scoped and must remain:
 
 - Manual only.
 - Disabled by default.
