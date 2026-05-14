@@ -38,7 +38,7 @@
       "title": "B010 backwards-compat + B016 安全 guard 回归",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "证明 weighting_method='inverse_volatility'（默认）在合成 fixture 上**与 B010 signoff 行为 bit-for-bit 一致**：既有 B010 + B011 + B013 + B015 测试套件全部不修改即继续通过。新增 B016 安全 guard 回归：risk_parity_hrp.py / risk_parity_hrp_comparison.py 等新模块**无 scipy / numpy / pandas / sklearn / networkx 导入**；无 broker / AI / LLM SDK 导入；strategy 模块无 os.environ / os.getenv 读取；默认 fixture run 无 socket I/O；B016 输出无 paper / live / executed-order / filled / place_order / submit_order 用语。pytest / ruff / compileall / mypy 全过"
     },
     {

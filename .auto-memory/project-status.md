@@ -4,11 +4,12 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B016-risk-parity-hrp-upgrade：`building`**；Planner 完成 spec + features.json，等待 Generator 起步 F001。
+- **B016-risk-parity-hrp-upgrade：`verifying`**；Generator 完成 F001-F005（5/6），交接给 Codex F006 独立验收。
 - Spec: `docs/specs/B016-risk-parity-hrp-upgrade-spec.md`
+- 交付：trade/strategies/risk_parity.py (Literal+dispatcher), trade/strategies/risk_parity_hrp.py (pure-stdlib HRP), trade/strategies/risk_parity_hrp_comparison.py (harness+report), scripts/generate_b016_hrp_comparison_report.py (CLI), trade/reporting/risk_parity.py (per-period weighting_method in trace).
+- Canonical artifact: `docs/test-reports/B016-risk-parity-hrp-comparison-2026-05-14.{md,json}`（status=skipped，manifest 不在 repo 是 by-design）。
+- 测试：526 PASS，mypy strict / ruff / compileall 全清；inverse-vol path bit-for-bit B010 锚点 + 18 项 B016 安全 guard 已加入。
 - 起因：B011 master sleeve + B013 L2 都复用 B010 plain inverse-vol；arxiv 2026 多篇支持 HRP；B014 跨策略发现 B010 inverse-vol 在 calm window 让 60/40 ~25pp，HRP correlation-aware 可能缩窄 gap。
-- 6 features：F001-F005 generator + F006 codex（混合批次）。
-- 关键决策：(1) RiskParityParameters.weighting_method 收紧为 Literal['inverse_volatility', 'hrp']，默认 inverse_volatility；(2) HRP 在新模块 `trade/strategies/risk_parity_hrp.py` 实现 De Prado (2016)，**纯 stdlib**（math + statistics + dataclasses + typing，**禁** scipy/numpy/pandas/sklearn/networkx）；(3) B010 workflow dispatch；(4) 比较 harness 在 B014 yfinance snapshot 上跑 inverse-vol vs HRP vs 60/40 baseline，narrative 写 HRP 是否缩窄 gap；(5) **backwards-compat 硬要求**：默认 inverse-vol bit-for-bit 与 B010 signoff 一致；(6) B011/B012/B013/B014/B015 策略代码与 specs 不动。
 - 硬边界：默认 CI 仍 fixture/mock-first；`trade/` 模块零第三方依赖（仅 yfinance 在 scripts/）；no-broker/no-paper/no-AI/no-secret-in-strategy；B016 输出含 research-only disclaimer。
 
 ## 已完成签收
