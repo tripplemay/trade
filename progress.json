@@ -31,27 +31,30 @@
   "role_assignments": null,
   "evaluator_feedback": "B014 real-snapshot validation is blocked on Stooq returning an 'apikey' portal page instead of CSV for the direct /q/d/l/ endpoint. Local fetcher/tests are green, but Codex cannot complete the one-time real acquisition from this environment without changing the fetch flow. Generator should add explicit apikey support to scripts/fetch_stooq_regime_adaptive_csvs.py, keep stdlib-only and stooq.com-only constraints, and extend tests for apikey present / missing / invalid / fail-closed behavior. Strategy code in B013 must remain unchanged.",
   "generator_handoff": {
-    "completed_features": ["F001", "F002"],
-    "delivered_artifacts": {
-      "fetcher_script": "scripts/fetch_stooq_regime_adaptive_csvs.py",
-      "fetcher_tests": "tests/unit/test_stooq_fetcher.py"
-    },
-    "usage_for_codex": {
-      "fetch_stooq_csvs": "python scripts/fetch_stooq_regime_adaptive_csvs.py --output-dir data/public-cache-staging --from 2018-01-01 --to 2025-12-31 --i-understand-this-is-manual-research-data",
+    "fix_direction": "Stooq → yfinance data-source pivot (planner override of Codex's apikey-support handoff). Codex confirmed Stooq /q/d/l/ now requires apikey; user prefers automated free path. Planner directs Generator to replace the Stooq fetcher with a yfinance-based fetcher.",
+    "fix_tasks": [
+      "Delete scripts/fetch_stooq_regime_adaptive_csvs.py and tests/unit/test_stooq_fetcher.py.",
+      "Add yfinance to project dependencies (pyproject.toml / requirements as appropriate).",
+      "Add scripts/fetch_yfinance_regime_adaptive_csvs.py: uses yfinance.Ticker.history(start, end, auto_adjust=True, actions=False, raise_errors=True); writes <SYMBOL>.csv with lowercase canonical schema date,open,high,low,close,adjusted_close,volume (.6f formatting); opt-in via --i-understand-this-is-manual-research-data flag; preserves SGOV short-history allowance (default inception 2020-05-28) and >=95% coverage requirement for other 8 tickers; fail-closed on yfinance exception / empty DataFrame / schema mismatch / coverage shortfall.",
+      "Add tests/unit/test_yfinance_fetcher.py: patch yfinance.Ticker.history (or fetcher wrapper) to return canned pandas DataFrames; cover happy-path 9-ticker, missing-flag, yfinance exception, empty DataFrame, schema mismatch, non-SGOV short-history rejection, SGOV short-history acceptance, output filename and CSV schema. No real network call.",
+      "Keep all B013 strategy modules unchanged.",
+      "Verify forbidden broker / AI SDK lists, env reads, and execution-language phrasing remain clean for the new fetcher.",
+      "Run pytest, ruff, compileall, mypy locally before handing off; ensure full suite stays green."
+    ],
+    "post_fix_codex_workflow": {
+      "fetch_via_yfinance": "python scripts/fetch_yfinance_regime_adaptive_csvs.py --output-dir data/public-cache-staging --from 2018-01-01 --to 2025-12-31 --i-understand-this-is-manual-research-data",
       "register_snapshot_after_fetch": "python scripts/acquire_regime_adaptive_snapshot.py --source-dir data/public-cache-staging --output-dir data/public-cache --from 2018-01-01 --to 2025-12-31 --i-understand-this-is-manual-research-data",
-      "note_on_sgov_short_history": "Fetcher hardcodes SGOV inception as 2020-05-28 and treats SGOV as the only allowed short-history ticker by default; the other 8 tickers must reach >=95% expected business-day coverage or the run exits non-zero with diagnostic.",
-      "note_on_safety": "Fetcher is stdlib-only (urllib + csv), refuses any URL that is not https://stooq.com/q/d/l/, fails closed on HTTP/URL errors, malformed CSV, or 'No data' responses, and reads no env vars. Default CI never invokes it (no test entry point depends on it without monkeypatched urlopen)."
-    },
-    "open_codex_features": ["F003", "F004", "F005", "F006"],
-    "expected_outputs": {
-      "F003": "docs/test-reports/B014-regime-adaptive-stress-validation-acquisition-log-2026-MM-DD.md plus manifest at data/public-cache/regime-adaptive-prices-manifest.json (gitignored CSVs)",
-      "F004": "docs/test-reports/B014-regime-adaptive-stress-validation-2026-MM-DD.md + JSON sidecar",
-      "F005": "docs/test-reports/B014-regime-adaptive-cross-strategy-comparison-2026-MM-DD.md + JSON sidecar",
-      "F006": "docs/test-reports/B014-regime-adaptive-stress-validation-signoff-2026-MM-DD.md + optional framework/proposed-learnings.md entry if max DD > 15%"
+      "open_codex_features": ["F003", "F004", "F005", "F006"],
+      "expected_outputs": {
+        "F003": "docs/test-reports/B014-regime-adaptive-stress-validation-acquisition-log-2026-MM-DD.md plus manifest at data/public-cache/regime-adaptive-prices-manifest.json (gitignored CSVs)",
+        "F004": "docs/test-reports/B014-regime-adaptive-stress-validation-2026-MM-DD.md + JSON sidecar",
+        "F005": "docs/test-reports/B014-regime-adaptive-cross-strategy-comparison-2026-MM-DD.md + JSON sidecar",
+        "F006": "docs/test-reports/B014-regime-adaptive-stress-validation-signoff-2026-MM-DD.md + optional framework/proposed-learnings.md entry if max DD > 15%"
+      }
     }
   },
   "session_notes": {
-    "planner": "2026-05-14 B014 planning: User agreed to B013 stress validation extension batch after planner flagged the outstanding research item (B013 stress gate skipped). Discovered acquire_regime_adaptive_snapshot.py is structurally CSV-import only (no download); user authorized adding a Stooq-based fetcher helper (mixed batch). Decisions captured: (1) Stooq direct CSV endpoint stooq.com/q/d/l/ is the only authorized network host; (2) fetcher uses stdlib only (urllib + csv); (3) fetcher is opt-in via --i-understand-this-is-manual-research-data; (4) SGOV inception 2020-05-28 noted as known short-history exception (other 8 tickers require >=95% coverage); (5) 2020 stress window 2020-02-01 to 2020-12-31, SGOV pre-inception sub-window held as cash placeholder; 2022 window fully covered; (6) cross-strategy comparison covers B013 vs B006 vs B010 vs static 60/40 on overlapping range; (7) B014 does NOT mutate B013 strategy code; if empirical max DD breaches 15%, add proposed-learnings entry recommending parameter retune. Wrote B014 spec and features.json (6 features: F001-F002 generator + F003-F006 codex; mixed batch). Status moved to building for Generator F001.",
+    "planner": "2026-05-14 B014 data-source pivot: Codex reported Stooq /q/d/l/ endpoint now apikey-gated, blocking F003 real acquisition. Codex requested Generator add apikey support. User asked for an automated path that does not require apikey procurement. Planner overrode Codex's handoff direction: pivot Stooq → yfinance (pip package, free, no API key). Updated B014 spec with Amendment 2026-05-14 (yfinance is sole authorized network entry; stdlib-only constraint relaxed to allow yfinance in scripts/ only). Updated F001/F002 acceptance to specify yfinance. Generator handoff replaced with explicit fix tasks: delete Stooq fetcher + tests, add yfinance dependency, add yfinance fetcher + tests, preserve SGOV / >=95% coverage / opt-in / fail-closed semantics. Status remains fixing for Generator pickup. Original B014 hard decisions (universe, stress windows, cross-strategy comparison, no B013 strategy code mutation, proposed-learnings on stress failure) all retained.",
     "generator": "2026-05-14 B014 building: Implemented F001 scripts/fetch_stooq_regime_adaptive_csvs.py (stdlib-only opt-in Stooq fetcher, stooq.com host enforced via urlparse, default CI never invokes it, fails closed on HTTP/URL errors, malformed CSV, 'No data', or sub-95% coverage for non-SGOV tickers; SGOV defaults to allowed short-history with hardcoded 2020-05-28 inception). F002 tests/unit/test_stooq_fetcher.py adds 26 unit tests, all mocking urlopen — happy path, missing flag, HTTP error, URLError, malformed CSV, 'No data', non-SGOV short-history rejection, SGOV short-history acceptance, SGOV rejection when allowance disabled, URL/host enforcement, business-day counting, CLI main success/failure, arg parser parses, output schema lowercase canonical (date,open,high,low,close,adjusted_close,volume) with .6f formatting, no real socket usage, no forbidden broker/AI imports, no execution-language phrasing, no os.environ reads. Output schema chosen to match downstream PriceBar dataclass (close == adjusted_close, since Stooq's free CSV is split-adjusted). Output filename SYMBOL.csv (uppercase). Local checks all green: pytest 362 passed (336 prior + 26 new), ruff/compileall/mypy clean. Status moved to verifying for Codex F003-F006.",
     "evaluator": "2026-05-14: B014 verifying blocked by external Stooq access gate. Direct CSV requests to /q/d/l/ return an 'apikey' portal page instead of CSV, so real acquisition cannot complete from this environment. Local B014 fetcher tests pass and B013 strategy tests remain green. Requested generator handoff: add explicit apikey support to scripts/fetch_stooq_regime_adaptive_csvs.py and extend mocked coverage; do not modify B013 strategy code."
   },

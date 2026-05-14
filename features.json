@@ -3,19 +3,19 @@
   "features": [
     {
       "id": "F001",
-      "title": "新增 Stooq CSV fetcher 辅助脚本",
+      "title": "yfinance CSV fetcher 辅助脚本（Stooq pivot 后）",
       "priority": "high",
       "executor": "generator",
       "status": "completed",
-      "acceptance": "新增 scripts/fetch_stooq_regime_adaptive_csvs.py：从 Stooq 公开 CSV endpoint（https://stooq.com/q/d/l/?s=<symbol>.us&i=d&d1=YYYYMMDD&d2=YYYYMMDD）抓取 9 资产（SPY/QQQ/VEA/VWO/IEF/TLT/GLD/DBC/SGOV）日 OHLCV 2018-01-01 到 2025-12-31（CLI 可配）；写 <SYMBOL>.csv 到 --output-dir；opt-in via --i-understand-this-is-manual-research-data；stdlib-only（urllib + csv），无第三方依赖；唯一允许的 host 是 stooq.com；SGOV 后期上市作为允许 short-history 例外（--allow-short-history 或专属处理），其他 8 个 ticker 必须达 ≥95% 预期交易日覆盖否则 fail-closed；HTTP error / 畸形 CSV / 覆盖不足 / 缺 flag → 非零退出；默认 CI 永不调用"
+      "acceptance": "新增 scripts/fetch_yfinance_regime_adaptive_csvs.py：通过 yfinance（auto_adjust=True）抓取 9 资产（SPY/QQQ/VEA/VWO/IEF/TLT/GLD/DBC/SGOV）日 OHLCV 2018-01-01 到 2025-12-31（CLI 可配）；写 <SYMBOL>.csv 到 --output-dir 使用 lowercase canonical schema date,open,high,low,close,adjusted_close,volume + .6f 数字格式；opt-in via --i-understand-this-is-manual-research-data；fetcher 依赖 yfinance + stdlib；唯一允许的网络入口是 yfinance（Yahoo Finance）；SGOV 后期上市作为允许 short-history 例外，其他 8 个 ticker 必须达 ≥95% 预期交易日覆盖否则 fail-closed；yfinance 异常 / 空 DataFrame / schema 不匹配 / 覆盖不足 / 缺 flag → 非零退出；默认 CI 永不调用。**Fix 迭代删除** 旧的 scripts/fetch_stooq_regime_adaptive_csvs.py（Stooq apikey 门梢导致不可用）。Amendment 2026-05-14: 由 Stooq 切换到 yfinance"
     },
     {
       "id": "F002",
-      "title": "Fetcher 单元测试（mocked HTTP）",
+      "title": "yfinance Fetcher 单元测试（mocked yf）",
       "priority": "high",
       "executor": "generator",
       "status": "completed",
-      "acceptance": "新增 tests/unit/test_stooq_fetcher.py：mock urllib.request.urlopen 返回 canned CSV bytes；覆盖 happy-path 9-ticker 抓取、缺 flag 拒绝、HTTP error fail-closed、畸形 CSV fail-closed、非 SGOV 短历史拒绝、SGOV 短历史在 allowance 下接受、output 文件名大小写与 CSV schema 正确、任何测试都不触真实网络。pytest / ruff / compileall / mypy 全过"
+      "acceptance": "新增 tests/unit/test_yfinance_fetcher.py（替换 test_stooq_fetcher.py）：patch yfinance.Ticker.history 返回 canned pandas DataFrame；覆盖 happy-path 9-ticker 抓取、缺 flag 拒绝、yfinance 异常 fail-closed、空 DataFrame fail-closed、schema 不匹配 fail-closed、非 SGOV 短历史拒绝、SGOV 短历史接受、output 文件名大小写与 CSV schema 正确、任何测试都不触真实网络。pytest / ruff / compileall / mypy 全过。Amendment 2026-05-14: 由 Stooq 切换到 yfinance"
     },
     {
       "id": "F003",
@@ -23,7 +23,7 @@
       "priority": "high",
       "executor": "codex",
       "status": "pending",
-      "acceptance": "Codex 显式 opt-in 一次性运行 scripts/fetch_stooq_regime_adaptive_csvs.py 抓取 staging 目录的真实 Stooq CSVs；验证 per-ticker 日志：8 个非 SGOV ticker ≥95% 预期交易日覆盖，SGOV 报告真实 first-available date；运行 scripts/acquire_regime_adaptive_snapshot.py 把 staging CSV 注册为 manifest（data/public-cache/regime-adaptive-prices-manifest.json）；验证 manifest sha256 在两次连续 import（跳过 fetch）后稳定一致；提交 acquisition 日志 docs/test-reports/B014-regime-adaptive-stress-validation-acquisition-log-2026-MM-DD.md；raw CSVs 与 snapshot 保持 gitignored"
+      "acceptance": "Codex 显式 opt-in 一次性运行 scripts/fetch_yfinance_regime_adaptive_csvs.py 抓取 staging 目录的真实 yfinance CSVs；验证 per-ticker 日志：8 个非 SGOV ticker ≥95% 预期交易日覆盖，SGOV 报告真实 first-available date；运行 scripts/acquire_regime_adaptive_snapshot.py 把 staging CSV 注册为 manifest（data/public-cache/regime-adaptive-prices-manifest.json）；验证 manifest sha256 在两次连续 import（跳过 fetch）后稳定一致；提交 acquisition 日志 docs/test-reports/B014-regime-adaptive-stress-validation-acquisition-log-2026-MM-DD.md；raw CSVs 与 snapshot 保持 gitignored"
     },
     {
       "id": "F004",

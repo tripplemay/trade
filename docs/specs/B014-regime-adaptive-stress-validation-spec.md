@@ -23,10 +23,15 @@ This batch is a validation extension — not a strategy redesign, broker adapter
 
 ## Hard Decisions
 
-- Data source: **Stooq** direct CSV endpoint at `https://stooq.com/q/d/l/?s=<symbol>.us&i=d&d1=YYYYMMDD&d2=YYYYMMDD`. Free, no API key, returns plain CSV with columns `Date, Open, High, Low, Close, Volume`. Best-effort public data; treated as non-PIT, research-only.
-- Fetcher implementation uses Python **stdlib only** (`urllib.request`, `urllib.error`, `csv`, `pathlib`). No new third-party dependencies. Zero broker / paper / paid-data / AI SDK imports anywhere in the helper.
+### Amendment 2026-05-14: Stooq → yfinance data-source pivot
+
+The original B014 plan targeted Stooq's free CSV endpoint at `https://stooq.com/q/d/l/`. After F001/F002 landed and Codex attempted F003 (one-time real acquisition), Codex reported that Stooq now serves an apikey-gated portal page instead of CSV for anonymous requests, blocking the real acquisition. The user prefers an automated path. Planner directed pivot from Stooq to **yfinance** (pip package, free, no API key, scrapes Yahoo Finance). Hard decisions below are updated accordingly; bullets that historically said "Stooq" / "stdlib-only" are amended.
+
+- Data source: **yfinance** (https://github.com/ranaroussi/yfinance), a maintained Python wrapper around Yahoo Finance's public historical-data endpoint. Free, no API key, returns adjusted OHLCV. Best-effort public data; treated as non-PIT, research-only. yfinance is the only authorized network entry; no other host (Stooq, Alpha Vantage, paid feeds) is permitted from B014 code.
+- Fetcher implementation depends on **yfinance** (added to project dependencies) plus Python stdlib (`csv`, `pathlib`, `datetime`). No other third-party packages. Zero broker / paper / paid-data / AI SDK imports anywhere in the helper.
 - Fetcher is **opt-in** via an explicit `--i-understand-this-is-manual-research-data` flag (same idiom as the existing acquire script). It refuses to run without the flag. It is never invoked by default CI.
-- The fetcher script is the only B014 module that performs network I/O. It lives under `scripts/` to keep `trade/` strategy modules network-free. Strategy module forbidden-import scans (B013 F010) remain intact.
+- The fetcher script is the only B014 module that performs network I/O. It lives under `scripts/` to keep `trade/` strategy modules network-free. Strategy module forbidden-import scans (B013 F010) remain intact; yfinance is permitted in `scripts/` only.
+- The previous Stooq fetcher (`scripts/fetch_stooq_regime_adaptive_csvs.py`) and its tests are **removed** in the fix iteration. They are not retained as deprecated artifacts to avoid two competing entry points; git history preserves the audit trail.
 - The fetcher is **fail-closed**:
   - HTTP error on any ticker → exit non-zero with explicit diagnostic.
   - Partial response (fewer rows than the expected business-day count by a tolerance) → exit non-zero unless `--allow-short-history` is explicitly passed (used only when SGOV-style late-inception tickers are involved).
@@ -37,7 +42,7 @@ This batch is a validation extension — not a strategy redesign, broker adapter
 - Cross-strategy comparison: B013 + B006 momentum + B010 risk parity + static 60/40 baseline. All four run on the same date range using the same real snapshot. Period alignment by trading-day intersection; no extrapolation.
 - All artifacts research-only. Reports, fetcher logs, manifest entries, and docstrings carry the research-only disclaimer. Tests assert absence of `paper-execution`, `live-execution`, `executed-order`, `filled`, `place_order`, `submit_order` phrasing in B014 outputs.
 - No mutation of B013 strategy code, B011 master portfolio code, B010 / B006 strategy code, or any spec under `docs/specs/B0xx`. B013's stress gate semantics (pass/skip/fail) are retained — B014 only fills in real data to flip `skipped` to `pass` or `fail`.
-- Codex-executed network operation is one-time, explicit, and bounded: only the 9 tickers over 2018-01-01 to 2025-12-31, ≤ 9 HTTP GETs to Stooq, no API keys, no credentials, no broker, no paper or live trading. The acquired data is gitignored under `data/public-cache/`; only the manifest (sha256 references) is committed.
+- Codex-executed network operation is one-time, explicit, and bounded: only the 9 tickers over 2018-01-01 to 2025-12-31 via yfinance, no API keys, no credentials, no broker, no paper or live trading. The acquired data is gitignored under `data/public-cache/`; only the manifest (sha256 references) is committed.
 - Default CI continues to use synthetic fixtures and remains fixture/mock-first. Real-snapshot tests are exercised only when the manifest is present and only by explicit research-mode tests.
 - If empirical max DD on 2020 or 2022 breaches 15% on the real snapshot, B014 records this in a **proposed-learnings** entry suggesting parameter retune (no automatic code change). This is a research finding, not a code defect.
 
@@ -60,14 +65,14 @@ This batch is a validation extension — not a strategy redesign, broker adapter
 
 ## Proposed Implementation Shape
 
-### Stooq Fetcher Helper
+### yfinance Fetcher Helper
 
-A new opt-in CLI: `scripts/fetch_stooq_regime_adaptive_csvs.py`.
+A new opt-in CLI: `scripts/fetch_yfinance_regime_adaptive_csvs.py` (replaces the removed Stooq fetcher).
 
 Interface (sketch):
 
 ```text
-python scripts/fetch_stooq_regime_adaptive_csvs.py \
+python scripts/fetch_yfinance_regime_adaptive_csvs.py \
     --output-dir data/public-cache-staging \
     --from 2018-01-01 \
     --to 2025-12-31 \
@@ -77,29 +82,28 @@ python scripts/fetch_stooq_regime_adaptive_csvs.py \
 Behavior:
 
 - Requires `--i-understand-this-is-manual-research-data` flag.
-- For each ticker in the 9-asset universe, builds the Stooq URL: `https://stooq.com/q/d/l/?s=<symbol_lower>.us&i=d&d1=<YYYYMMDD>&d2=<YYYYMMDD>`.
-- Performs HTTP GET via `urllib.request.urlopen` with explicit timeout (e.g., 30s) and a research-only User-Agent string.
-- Parses the response as CSV; validates header `Date,Open,High,Low,Close,Volume`; validates each row's date is within the requested window.
-- Writes `<SYMBOL>.csv` to the output directory (uppercase symbol filename, preserving Stooq's column order).
-- Logs per-ticker fetch summary: ticker, HTTP status, row count, first / last date.
-- SGOV exception: accepts short history with explicit note in the log; logs SGOV first-available date.
-- Other 8 tickers: must reach `>= 95%` of expected business-day count for the window or exit non-zero (no silent partial fetch).
-- After all 9 tickers fetched, optionally invokes the existing acquire script via `subprocess` (or just instructs the user to run it next).
-- Network call is opt-in, one-time, bounded.
+- For each ticker in the 9-asset universe, calls `yfinance.Ticker(symbol).history(start=..., end=..., auto_adjust=True, actions=False, raise_errors=True)`.
+- Validates the returned DataFrame columns and date index; converts to canonical CSV schema `date,open,high,low,close,adjusted_close,volume` (lowercase) with `.6f` numeric formatting. Because `auto_adjust=True` returns split- and dividend-adjusted prices, `close` and `adjusted_close` are equal in the output (matches existing F001 schema decision).
+- Writes `<SYMBOL>.csv` to the output directory (uppercase symbol filename).
+- Logs per-ticker fetch summary: ticker, row count, first / last date, "OK" or "FAIL: <reason>".
+- SGOV exception: accepts short history with explicit note in the log; logs SGOV first-available date (it should be 2020-05-28 or later).
+- Other 8 tickers: must reach `>= 95%` of expected business-day count for the window or exit non-zero.
+- Fail-closed conditions: yfinance raises exception, returned DataFrame is empty, schema mismatch, or coverage shortfall on non-SGOV ticker → exit non-zero with diagnostic.
+- Network call is opt-in, one-time, bounded, performed by yfinance internally; no direct urllib usage in B014 code.
 
-### Tests For The Fetcher (Generator, Mocked HTTP)
+### Tests For The Fetcher (Generator, Mocked yfinance)
 
-`tests/unit/test_stooq_fetcher.py`:
+`tests/unit/test_yfinance_fetcher.py`:
 
-- Mock `urllib.request.urlopen` to return canned CSV bytes.
-- Cover: happy-path 9-ticker fetch, missing-flag refusal, HTTP error → exit non-zero, malformed CSV → exit non-zero, short history without `--allow-short-history` → exit non-zero, SGOV short-history accepted with explicit allowance, output filename casing, log content shape.
+- Patch `yfinance.Ticker.history` (or the fetcher's wrapper) to return canned `pandas.DataFrame` objects.
+- Cover: happy-path 9-ticker fetch, missing-flag refusal, yfinance exception → exit non-zero, empty DataFrame → exit non-zero, schema mismatch → exit non-zero, non-SGOV short-history rejection, SGOV short-history acceptance, output filename casing, CSV schema, no real network call in any test.
 - No real network call in any test.
 
 ### Real Snapshot Acquisition (Codex)
 
 Codex runs:
 
-1. `python scripts/fetch_stooq_regime_adaptive_csvs.py --output-dir data/public-cache-staging --from 2018-01-01 --to 2025-12-31 --i-understand-this-is-manual-research-data`
+1. `python scripts/fetch_yfinance_regime_adaptive_csvs.py --output-dir data/public-cache-staging --from 2018-01-01 --to 2025-12-31 --i-understand-this-is-manual-research-data`
 2. Inspects per-ticker logs; if any non-SGOV ticker reports < 95% coverage, halts and reports.
 3. `python scripts/acquire_regime_adaptive_snapshot.py --source-dir data/public-cache-staging --output-dir data/public-cache --from 2018-01-01 --to 2025-12-31 --i-understand-this-is-manual-research-data`
 4. Verifies manifest at `data/public-cache/regime-adaptive-prices-manifest.json` exists, sha256 entries are consistent, SGOV first-date metadata is captured.
@@ -147,8 +151,8 @@ All existing safety boundaries remain mandatory and B014-specific tests prove:
 
 - Fetcher module contains no broker SDK imports (reuse B012 list).
 - Fetcher module contains no AI/LLM SDK imports (reuse B013 list).
-- Fetcher module contains no paper-trading API URLs (the fetcher itself targets Stooq's public CSV endpoint — that is the only authorized host).
-- Fetcher module's only network call is the explicit Stooq GET, gated behind the opt-in flag.
+- Fetcher module contains no paper-trading API URLs. The only authorized network entry point is yfinance, which targets Yahoo Finance's public historical endpoint.
+- Fetcher module's only network call is via yfinance, gated behind the opt-in flag.
 - No `os.environ` / `os.getenv` reads in the fetcher's parser logic (config comes through CLI args).
 - Default CI test path performs no network I/O.
 - Reports / logs / docstrings carry the research-only disclaimer; tests assert absence of `paper-execution`, `live-execution`, `executed-order`, `filled`, `place_order`, `submit_order` phrasing in B014 outputs.
@@ -157,23 +161,23 @@ All existing safety boundaries remain mandatory and B014-specific tests prove:
 
 ## Feature Requirements
 
-### F001 Stooq Fetcher Helper Script
+### F001 yfinance Fetcher Helper Script
 
 Executor: generator.
 
-Add `scripts/fetch_stooq_regime_adaptive_csvs.py` that fetches the 9 regime-adaptive tickers' daily OHLCV from Stooq's public CSV endpoint over 2018-01-01 to 2025-12-31 (configurable), writes per-ticker `<SYMBOL>.csv` files to an output directory, and is opt-in via the explicit `--i-understand-this-is-manual-research-data` flag. The fetcher uses stdlib only (urllib + csv), targets only `stooq.com/q/d/l/`, treats SGOV's late inception as an allowed short-history case, and fails closed on HTTP errors, malformed CSV, or insufficient coverage for non-SGOV tickers. Default CI must not invoke it.
+Add `scripts/fetch_yfinance_regime_adaptive_csvs.py` that fetches the 9 regime-adaptive tickers' daily OHLCV via yfinance (`auto_adjust=True`) over 2018-01-01 to 2025-12-31 (configurable), writes per-ticker `<SYMBOL>.csv` files (lowercase canonical schema `date,open,high,low,close,adjusted_close,volume` with `.6f` numeric formatting) to an output directory, and is opt-in via the explicit `--i-understand-this-is-manual-research-data` flag. The fetcher depends on yfinance + stdlib, treats SGOV's late inception as an allowed short-history case, and fails closed on yfinance exceptions, empty DataFrames, schema mismatch, or insufficient coverage for non-SGOV tickers. Default CI must not invoke it. **Removes** the previous `scripts/fetch_stooq_regime_adaptive_csvs.py` (Stooq apikey gate made it inoperable).
 
-### F002 Fetcher Unit Tests With Mocked HTTP
+### F002 Fetcher Unit Tests With Mocked yfinance
 
 Executor: generator.
 
-Add `tests/unit/test_stooq_fetcher.py` covering: happy-path 9-ticker fetch via mocked HTTP responses, missing-flag refusal, HTTP error fail-closed, malformed CSV fail-closed, short-history rejection for non-SGOV tickers, SGOV short-history acceptance with allowance flag, output filename and CSV schema correctness, no real network call in any test. pytest, ruff, compileall, mypy all pass.
+Add `tests/unit/test_yfinance_fetcher.py` (replacing `test_stooq_fetcher.py`) covering: happy-path 9-ticker fetch via patched `yfinance.Ticker.history` returning canned pandas DataFrames, missing-flag refusal, yfinance exception → fail-closed, empty DataFrame → fail-closed, schema mismatch → fail-closed, short-history rejection for non-SGOV tickers, SGOV short-history acceptance, output filename and CSV schema correctness, no real network call in any test. pytest, ruff, compileall, mypy all pass.
 
 ### F003 Real Snapshot Acquisition And Manifest Verification
 
 Executor: codex.
 
-Run `scripts/fetch_stooq_regime_adaptive_csvs.py` once with the explicit opt-in flag to retrieve real Stooq CSVs into a staging directory. Verify per-ticker fetch logs show: all 8 non-SGOV tickers reach ≥ 95% expected business-day coverage; SGOV reports its real first-available date with allowance. Run `scripts/acquire_regime_adaptive_snapshot.py` to register the staged CSVs as a manifest at `data/public-cache/regime-adaptive-prices-manifest.json`. Verify manifest sha256 entries are stable across two consecutive runs of the import (skipping the fetch). Commit an acquisition log at `docs/test-reports/B014-regime-adaptive-stress-validation-acquisition-log-2026-MM-DD.md`. Raw CSVs and the snapshot remain gitignored.
+Run `scripts/fetch_yfinance_regime_adaptive_csvs.py` once with the explicit opt-in flag to retrieve real CSVs into a staging directory via yfinance. Verify per-ticker fetch logs show: all 8 non-SGOV tickers reach ≥ 95% expected business-day coverage; SGOV reports its real first-available date with allowance. Run `scripts/acquire_regime_adaptive_snapshot.py` to register the staged CSVs as a manifest at `data/public-cache/regime-adaptive-prices-manifest.json`. Verify manifest sha256 entries are stable across two consecutive runs of the import (skipping the fetch). Commit an acquisition log at `docs/test-reports/B014-regime-adaptive-stress-validation-acquisition-log-2026-MM-DD.md`. Raw CSVs and the snapshot remain gitignored.
 
 ### F004 Stress Backtest On Real Snapshot
 
