@@ -4,12 +4,12 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B015-regime-adaptive-activation-policy：`done`**；Codex 已完成 verifying，写入签收报告并把 `docs.signoff` 指向 `docs/test-reports/B015-regime-adaptive-activation-policy-signoff-2026-05-14.md`。
-- Spec: `docs/specs/B015-regime-adaptive-activation-policy-spec.md`
-- 已交付：`regime_activation_policy` 配置开关、L1 gating activation helper、三 policy 比较 harness、比较报告、backwards-compat / safety 回归；real-data 分支在当前 checkout 中按 spec 正常 `skipped`。
-- 关键决策（不变）：`always_on` 必须 bit-for-bit 保持 B013 行为；`only_non_normal` / `only_crisis` 只改变 L1 触发频率，不改 L2/L3；B011 Master Portfolio 默认注册保持 `always_on`。
-- 硬边界：默认 CI 仍 fixture/mock-first；no-broker/no-paper/no-AI/no-secret-in-strategy；B014 fetcher / snapshot importer 保持不变。
-- 踩坑沉淀：report 的 real-data 分支是否能 `ran` 取决于 B014 manifest 是否在仓库中；manifest 缺失时应明确 `skipped`，不能硬失败。
+- **B016-risk-parity-hrp-upgrade：`building`**；Planner 完成 spec + features.json，等待 Generator 起步 F001。
+- Spec: `docs/specs/B016-risk-parity-hrp-upgrade-spec.md`
+- 起因：B011 master sleeve + B013 L2 都复用 B010 plain inverse-vol；arxiv 2026 多篇支持 HRP；B014 跨策略发现 B010 inverse-vol 在 calm window 让 60/40 ~25pp，HRP correlation-aware 可能缩窄 gap。
+- 6 features：F001-F005 generator + F006 codex（混合批次）。
+- 关键决策：(1) RiskParityParameters.weighting_method 收紧为 Literal['inverse_volatility', 'hrp']，默认 inverse_volatility；(2) HRP 在新模块 `trade/strategies/risk_parity_hrp.py` 实现 De Prado (2016)，**纯 stdlib**（math + statistics + dataclasses + typing，**禁** scipy/numpy/pandas/sklearn/networkx）；(3) B010 workflow dispatch；(4) 比较 harness 在 B014 yfinance snapshot 上跑 inverse-vol vs HRP vs 60/40 baseline，narrative 写 HRP 是否缩窄 gap；(5) **backwards-compat 硬要求**：默认 inverse-vol bit-for-bit 与 B010 signoff 一致；(6) B011/B012/B013/B014/B015 策略代码与 specs 不动。
+- 硬边界：默认 CI 仍 fixture/mock-first；`trade/` 模块零第三方依赖（仅 yfinance 在 scripts/）；no-broker/no-paper/no-AI/no-secret-in-strategy；B016 输出含 research-only disclaimer。
 
 ## 已完成签收
 - B001-B008: strategy roadmap through research-grade data expansion all signed off.
@@ -25,8 +25,8 @@ type: project
 - No deployment, DB, broker API, secrets, paper/live trading, or live-money operation.
 
 ## 已知 gap（非阻塞）
-- BL-B010-S1 + BL-B011-S2 + BL-B010-S3 + BL-B013-D1 + BL-B013-D2 仍在 backlog。
-- 本机 system `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`（环境记录在 environment.md）。
-- B015 committed comparison report 是 manifest-absent 路径（synthetic fixture）；要看真实 only_non_normal / only_crisis 是否缩窄 vs 60/40 gap，需本机 fetch yfinance manifest 后重跑 generate_b015 脚本。
+- BL-B010-S1 + BL-B011-S2 + BL-B013-D1 + BL-B013-D2 仍在 backlog（BL-B010-S3 = 本批次 B016）。
+- 本机 system `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
+- B015 / B016 比较 report 真实数据路径需 B014 snapshot manifest 在仓库；不在则按 spec 走 skipped。
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->

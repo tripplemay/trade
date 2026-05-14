@@ -1,49 +1,41 @@
 {
-  "status": "done",
-  "user_goal": "在 B014 经验签收（2020 max DD -4.76% / 2022 max DD -1.66%）后，针对其跨策略对比发现的 'B013 在非危机期间绝对收益让出给 60/40' 现象做最小研究批次：给 B013 加 regime_activation_policy 参数（always_on 默认 / only_non_normal / only_crisis），让 L1 200-SMA 趋势过滤按当前 regime label 条件启用；L2 inverse-vol + 8% target 与 L3 crisis 减半不变；默认保持 B013 现状 bit-for-bit；在 B014 真实 snapshot 上跨 policy 与 B006/B010/60-40 对比，看是否缩窄 absolute-return gap。**不修改 B013 strategy code 外的任何文件**（包括 B010/B011 等），保留 fixture/mock-first 默认 CI、no-live/no-secret-in-strategy/no-broker/no-paper/no-AI guards。",
+  "status": "building",
+  "user_goal": "在 B015 done 之后做 B010 risk parity HRP 升级（BL-B010-S3）：给 RiskParityParameters 加 weighting_method Literal['inverse_volatility', 'hrp']（默认 inverse_volatility，B010 signoff 行为 bit-for-bit 保留），新增 pure-stdlib HRP 算法模块（De Prado 2016：correlation → distance → single-linkage clustering → quasi-diagonalize → recursive bisection；无 scipy/numpy/pandas/sklearn）；B010 backtest workflow dispatch；在 B014 真实 snapshot 上对比 HRP vs inverse-vol vs static 60/40，看 HRP 是否缩窄 B014 cross-strategy 发现的 absolute-return gap。**不修改 B011/B012/B013/B014/B015 strategy code**；B011 master portfolio risk_parity sleeve 默认走 inverse-vol 自动保持 invariants。保留 fixture/mock-first 默认 CI、no-live/no-secret-in-strategy/no-broker/no-paper/no-AI guards。",
   "total_features": 6,
-  "completed_features": 6,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F006",
+  "current_sprint": "F001",
   "last_updated": "2026-05-14",
   "reference_docs": [
-    "docs/specs/B015-regime-adaptive-activation-policy-spec.md",
-    "docs/specs/B014-regime-adaptive-stress-validation-spec.md",
-    "docs/specs/B013-regime-adaptive-multi-asset-mvp-spec.md",
+    "docs/specs/B016-risk-parity-hrp-upgrade-spec.md",
     "docs/specs/B010-risk-parity-backtest-mvp-spec.md",
-    "docs/specs/B011-portfolio-allocation-risk-mvp-spec.md",
-    "docs/test-reports/B013-regime-adaptive-multi-asset-mvp-signoff-2026-05-14.md",
+    "docs/specs/B013-regime-adaptive-multi-asset-mvp-spec.md",
+    "docs/specs/B014-regime-adaptive-stress-validation-spec.md",
+    "docs/specs/B015-regime-adaptive-activation-policy-spec.md",
+    "docs/test-reports/B010-risk-parity-backtest-mvp-signoff-2026-05-13.md",
     "docs/test-reports/B014-regime-adaptive-stress-validation-signoff-2026-05-14.md",
     "docs/test-reports/B014-regime-adaptive-cross-strategy-comparison-2026-05-14.md",
-    "docs/test-reports/B014-regime-adaptive-stress-validation-2026-05-14.md",
+    "docs/research_materials/arxiv_strategies.json",
     "docs/strategy/00-master-portfolio-allocation.md",
+    "docs/strategy/02-risk-parity-vol-target.md",
     "docs/prd/mvp-prd.md",
     "docs/engineering/testing-and-fixture-policy.md",
     "docs/engineering/no-live-safety-guards.md",
     "docs/engineering/backtest-report-schema.md"
   ],
   "docs": {
-    "spec": "docs/specs/B015-regime-adaptive-activation-policy-spec.md",
+    "spec": "docs/specs/B016-risk-parity-hrp-upgrade-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B015-regime-adaptive-activation-policy-signoff-2026-05-14.md",
+    "signoff": null,
     "framework_reviewed": true
   },
   "role_assignments": null,
-  "evaluator_feedback": {
-    "summary": "B015 Regime-Adaptive Activation Policy passed first-round L1 verification. F001-F006 all PASS: regime_activation_policy enum + validation + parameter_hash inclusion; should_l1_gate_run 9-cell truth table; always_on reproduces B013 fixture behavior bit-for-bit (backwards-compat); comparative report present with three policies + B006/B010/60-40 baselines + 2020/2022 stress verdicts; real-data branch correctly marked 'skipped' due to absent B014 manifest in this checkout; all forbidden broker/AI/network/env/paper-live guards intact. Local checks: pytest 423, ruff, compileall, mypy 44 source files all green.",
-    "pass_count": 6,
-    "partial_count": 0,
-    "fail_count": 0,
-    "issues": [],
-    "soft_watch": [
-      "S1: B015 committed comparison report is synthetic-fixture path because B014 manifest absent. Real-data only_non_normal / only_crisis vs 60/40 gap-narrowing claim is not yet evidence-backed; per user, no new batch will be opened — next Generator session will run fetcher + re-generate when needed (option B selected during done wrap-up)."
-    ]
-  },
-  "generator_handoff": "B015 F001-F005 done (Generator). Run pytest / ruff / mypy / compileall to reproduce: 423 tests, 0 ruff issues, 0 mypy issues in 44 trade/ files, all *.py syntactically valid. Evaluator focus areas for F006: (1) config: regime_activation_policy ∈ {always_on, only_non_normal, only_crisis}; default=always_on; parameter_hash includes the field — tests in test_regime_adaptive_config.py. (2) should_l1_gate_run truth table — test_regime_adaptive_trend_gating.py contains the 9-cell parametrized test. (3) backwards-compat: test_regime_adaptive_b015_backwards_compat.py verifies always_on gating mask == direct apply_trend_gating output bit-for-bit, l1_active=True every period, equity/weight/gating histories deterministic across runs. (4) Comparative report: scripts/generate_b015_activation_policy_report.py emits docs/test-reports/B015-regime-adaptive-activation-policy-comparison-2026-05-14.md + JSON sidecar; current committed copy reflects manifest-absent path (real_data_status=skipped, synthetic 9-asset fixture, B014 baselines from sidecar). To exercise the real-data path: run scripts/fetch_yfinance_regime_adaptive_csvs.py + scripts/acquire_regime_adaptive_snapshot.py to produce data/public-cache/regime-adaptive-prices-manifest.json, then re-run the generate script. (5) Safety: no new broker/AI/network imports; activation_policy_comparison.py imports only csv/json + trade modules; activation_policy_report.py imports only json + trade modules; no os.environ reads in any strategy module. Output naming: B013/B011 strategy code & specs unmodified; only trade/strategies/regime_adaptive/ (+ scripts/generate_b015_*) + tests + docs/test-reports/B015-* changed in B015.",
+  "evaluator_feedback": null,
+  "generator_handoff": null,
   "session_notes": {
-    "planner": "2026-05-14 B015 done wrap-up: Confirmed Codex first-round signoff (6/6 PASS, 0 issues, fix_rounds=0). State machine had stale fields after Codex signoff: repaired completed_features 5→6, features.json F006 status pending→completed, evaluator_feedback populated with pass counts + S1 soft-watch. project-status.md already accurate (Codex updated). proposed-learnings.md no active entries this batch. role_assignments already null. Backlog unchanged. Outstanding research item: real-data only_non_normal / only_crisis vs 60/40 gap-narrowing claim is not yet evidence-backed because committed report is synthetic-fixture path (no B014 manifest in repo). User selected option B at wrap-up: no new validation batch opened; next Generator session will run scripts/fetch_yfinance_regime_adaptive_csvs.py + scripts/acquire_regime_adaptive_snapshot.py + scripts/generate_b015_activation_policy_report.py when convenient. Earlier this session: B015 planned as small-scope follow-up to B014's empirical finding (B013 underperformed static 60/40 by ~25pp cumulative return in calm 2020-06..2022-12 window despite delivering low-DD crisis shield). Hypothesis: persistent L1 200-SMA gating in NORMAL regime drove upside give-up. B015 added regime_activation_policy config field with three values (always_on default / only_non_normal / only_crisis); L1 gating becomes regime-conditional; L2 + L3 unchanged. Backwards-compat hard requirement: always_on reproduces B013 signoff bit-for-bit (verified in F005). Mutations restricted to trade/strategies/regime_adaptive/ + tests + new report; B010/B011/B012/B013/B014 strategy code and specs untouched. Generator delivered F001-F005 in one session, 41 new B015 tests, 423 total green; Codex F006 first-round PASS with the real-data section correctly skipped per spec.",
-    "generator": "2026-05-14 F005 done. Added test_regime_adaptive_b015_backwards_compat.py with 10 tests covering: default config still always_on; always_on backtest gating mask == direct apply_trend_gating output bit-for-bit (per period); l1_active is True every period under always_on; equity/weights/gating histories deterministic across two runs; activation_policy_comparison run does not open sockets; both new B015 modules carry research-only disclaimer in docstrings; neither reads os.environ / os.getenv; committed B015 markdown + JSON sidecar contain the research-only disclaimer and no paper/live execution phrasing; rendered markdown also has no forbidden trade terms. Full repo: 423 tests + ruff 0 issues + mypy 44 trade/ files clean + compileall all green. B013 / B011 / B012 strategy code & specs untouched. Status moved building → verifying for Codex F006 independent verification. Generator handoff captured in generator_handoff field above.",
-    "evaluator": "2026-05-14: B015 independent verification completed. regime_activation_policy enum/validation and should_l1_gate_run truth table pass; always_on reproduces B013 fixture behavior; comparison report exists and the real-data branch is correctly marked skipped because the B014 manifest is absent in this checkout. Full repo checks passed: pytest 423, ruff, compileall, mypy."
+    "planner": "2026-05-14 B016 planning: B015 done wrap-up confirmed (6/6 PASS); user selected BL-B010-S3 HRP upgrade as next batch direction. Rationale: B010 plain inverse-vol is reused as B011 master portfolio risk_parity sleeve and B013 L2 engine; upgrading once benefits multiple downstream paths. arxiv 2026 research material (Beyond De Prado and Cotton, Hierarchical Min Variance, Topological RP) strongly supports HRP variants over plain inverse-vol on out-of-sample Sharpe + drawdown + stability. Plus the B014 cross-strategy finding (B010 underperformed static 60/40 by ~25pp in 2020-06..2022-12) motivates testing whether correlation-aware HRP closes some of that gap on the same real snapshot. Project constraint check: trade/ modules are pure-stdlib zero-third-party-deps (only yfinance, in scripts/ only). HRP must be implemented in pure stdlib (math + statistics + dataclasses + typing) — no scipy/numpy/pandas/sklearn. Small algorithm, ~200 lines, reviewable. Decisions captured: (1) weighting_method tightened from free str to Literal['inverse_volatility', 'hrp'] with default 'inverse_volatility'; (2) HRP lives in new trade/strategies/risk_parity_hrp.py; (3) B010 workflow dispatches based on policy; (4) comparative backtest harness reuses B014 snapshot + sidecar baseline; (5) default must reproduce B010 signoff bit-for-bit (backwards-compat hard requirement); (6) B011/B012/B013/B014/B015 strategy code untouched; (7) no scipy/numpy/pandas/sklearn imports anywhere. Wrote B016 spec and features.json (6 features: F001-F005 generator + F006 codex; mixed batch). Status moved to building for Generator F001.",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",

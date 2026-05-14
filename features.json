@@ -1,53 +1,53 @@
 {
-  "sprint": "B015-regime-adaptive-activation-policy",
+  "sprint": "B016-risk-parity-hrp-upgrade",
   "features": [
     {
       "id": "F001",
-      "title": "RegimeAdaptiveConfig 新增 regime_activation_policy 字段与校验",
+      "title": "RiskParityParameters.weighting_method 收紧为 Literal + 校验",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "RegimeAdaptiveConfig 新增 regime_activation_policy: Literal['always_on', 'only_non_normal', 'only_crisis'] = 'always_on'；validation 拒绝其他字符串并给出诊断列出 valid choices；parameter_hash（或等价）包含此字段使配置区分。测试覆盖：默认构造（always_on）、三种 valid 值、invalid 字符串拒绝、三个 policy 的 hash distinctness、序列化/反序列化"
+      "status": "pending",
+      "acceptance": "把 RiskParityParameters.weighting_method 从自由 str 收紧为 Literal['inverse_volatility', 'hrp']，默认仍 'inverse_volatility'；__post_init__（或等价）校验拒绝其他字符串并给出诊断列出 valid choices；parameter_hash 已包含此字段，验证两种 valid 值产生不同 hash。测试覆盖默认构造、两 valid 值、invalid 字符串拒绝、hash distinctness、序列化/反序列化"
     },
     {
       "id": "F002",
-      "title": "L1 trend gating 按 activation policy 条件启用",
+      "title": "实现 HRP 算法模块（pure-stdlib）+ 单元测试",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "新增 should_l1_gate_run(regime_label, policy) -> bool 辅助：always_on → 任何 regime True；only_non_normal → BEAR/CRISIS True，NORMAL False；only_crisis → CRISIS True，其他 False。Backtest workflow 在 L3 产出 regime 后调用此辅助；返回 False 时绕过 apply_trend_gating，非 defensive 资产均当作 ungated；SGOV defensive 路由不变；per-period rebalance trace 记录 l1_active: bool 与 active policy。测试覆盖全部 9 个 (policy × regime) 组合、trace flag 正确、always_on 不变约束"
+      "status": "pending",
+      "acceptance": "新增 trade/strategies/risk_parity_hrp.py 实现 De Prado (2016) HRP：correlation_matrix → distance_matrix d_ij=sqrt(0.5*(1-corr_ij)) → single_linkage_clustering → quasi_diagonalize → recursive_bisection → compute_hrp_weights(returns, symbols) -> dict[str, float]。**纯 stdlib**（math / statistics / dataclasses / typing / collections.abc），无 scipy / numpy / pandas / sklearn / networkx。Edge cases：n=1 trivial、n=2 inverse-variance、zero-variance asset 抛 ValueError。新增 tests/unit/test_risk_parity_hrp.py 覆盖：correlation/distance matrix 正确性、single linkage 参考案例、quasi-diagonalize 顺序、recursive bisection split 公式、end-to-end n∈{1,2,3,5,9}、zero variance 拒绝、deterministic 输出"
     },
     {
       "id": "F003",
-      "title": "真实 snapshot 上的三 policy 对比 backtest 工具",
+      "title": "B010 backtest workflow 集成 HRP dispatcher",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "新增 research-mode 对比 backtest harness：B014 manifest 在场时对 B013 三种 activation policy 跑完整 overlapping window backtest（含 2020 + 2022 stress 子窗口）。每个 policy 记录：年化收益/波动率/Sharpe、每窗口 max DD、turnover、regime label 分布、L1 firing rate。manifest 缺失时 real-data 部分标 skipped，合成 fixture 至少跑 smoke 测试。默认 CI 不依赖 manifest。测试覆盖三 policy backtest 独立 deterministic、skipped 语义、L1 firing rate 统计正确"
+      "status": "pending",
+      "acceptance": "在 B010 月度 backtest 的权重计算步骤处加 dispatch：parameters.weighting_method=='hrp' 时调用 compute_hrp_weights；否则现有 inverse-vol 路径**不变**。L2 target-vol 缩放、defensive sleeve 路由、max_exposure=1.0 cap 对两条路径均适用。Per-period rebalance trace 记录 weighting_method 字段以便下游报告归因。测试覆盖：HRP 路径在 9 资产合成 fixture 上端到端跑通；inverse-vol 路径**与 B010 signoff bit-for-bit 一致**；trace 字段记录正确"
     },
     {
       "id": "F004",
-      "title": "对比报告与跨策略扩展",
+      "title": "HRP vs inverse-vol vs 60/40 比较 harness + 报告",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "输出 docs/test-reports/B015-regime-adaptive-activation-policy-comparison-2026-MM-DD.md + JSON sidecar：三 B013 policy metrics 表（年化收益/波动率/Sharpe/max DD/turnover/L1 firing rate）+ B006 momentum + B010 risk parity + static 60/40 同窗口对比行（尽量复用 B014 comparison sidecar 缓存值，仅在缺失时重算）+ 2020/2022 stress gate 判定 per policy + L1 firing rate per policy + narrative 说明 only_non_normal / only_crisis 是否缩窄了 vs 60/40 的 absolute-return gap。reports 含 research-only disclaimer，不得声明 paper/live execution。测试覆盖 report schema、baseline 行存在、stress 判定 per policy 写入"
+      "status": "pending",
+      "acceptance": "新增 trade/strategies/risk_parity_hrp_comparison.py（harness）与 scripts/generate_b016_hrp_comparison_report.py（CLI）。在 B013 9 资产宇宙上、B014 snapshot 在场时跑 overlapping window backtest，运行 B010 两种 weighting policy；manifest 缺失时 real-data 部分标 skipped，合成 fixture 至少跑 smoke。每方法记录年化收益/波动率/Sharpe/max DD/2020+2022 sub-window max DD/turnover/per-asset 权重历史。报告 reuse B014 sidecar 的 static 60/40 baseline 行。输出 docs/test-reports/B016-risk-parity-hrp-comparison-2026-MM-DD.md + JSON sidecar，narrative 写 HRP 是否缩窄 vs 60/40 gap（empirical research finding，非 pass/fail）。reports 含 research-only disclaimer，不得声明 paper/live execution。测试覆盖 schema 正确、skipped 语义、run 语义（fixture manifest stub）"
     },
     {
       "id": "F005",
-      "title": "B013 backwards-compat 与 B015 安全 guard 回归",
+      "title": "B010 backwards-compat + B016 安全 guard 回归",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "证明 regime_activation_policy='always_on' 在合成 fixture 上**与 B013 signoff 行为 bit-for-bit 一致**：既有 B013 测试套件 + B011 Master Portfolio sleeve 注册测试全部不修改即继续通过；equity curve、weight history、L1 gating history 与 B013 fixture-based golden 输出无差。新增 B015 安全 guard 回归：无新增 broker/AI/LLM SDK 导入、strategy 模块无 os.environ 读取、默认 fixture run 无 socket I/O、B015 输出无 paper/live execution 用语。pytest / ruff / compileall / mypy 全过"
+      "status": "pending",
+      "acceptance": "证明 weighting_method='inverse_volatility'（默认）在合成 fixture 上**与 B010 signoff 行为 bit-for-bit 一致**：既有 B010 + B011 + B013 + B015 测试套件全部不修改即继续通过。新增 B016 安全 guard 回归：risk_parity_hrp.py / risk_parity_hrp_comparison.py 等新模块**无 scipy / numpy / pandas / sklearn / networkx 导入**；无 broker / AI / LLM SDK 导入；strategy 模块无 os.environ / os.getenv 读取；默认 fixture run 无 socket I/O；B016 输出无 paper / live / executed-order / filled / place_order / submit_order 用语。pytest / ruff / compileall / mypy 全过"
     },
     {
       "id": "F006",
-      "title": "独立验收 B015 Regime-Adaptive Activation Policy",
+      "title": "独立验收 B016 Risk Parity HRP Upgrade",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认：(1) regime_activation_policy enum + validation 正确；(2) should_l1_gate_run 在 9 个组合上正确；(3) always_on 与 B013 signoff 行为 bit-for-bit 一致（合成 fixture）；(4) 对比报告存在且含三 policy 行 + 跨策略对比行 + 2020/2022 stress per policy + L1 firing rate + narrative；(5) B014 snapshot 在场时三 policy 数字与报告 narrative 一致，缺失时 real-data section 标 skipped 不失败；(6) 所有 no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards 保留。Signoff 中明确说明 backwards-compat 验证结果与 only_non_normal/only_crisis 是否缩窄 vs 60/40 absolute-return gap（empirical research finding，不是 pass/fail 标准）"
+      "status": "pending",
+      "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认：(1) weighting_method Literal + 校验正确；(2) HRP 在 canned 参考案例上权重正确；(3) inverse_volatility 默认在合成 fixture 上与 B010 signoff bit-for-bit 一致；(4) 比较报告存在含两 method 行 + static 60/40 baseline 行 + 2020/2022 stress sub-window per method + narrative；(5) B014 snapshot 在场时 HRP 经验数字与 narrative 一致，缺失时 real-data section 标 skipped 不失败；(6) B016 strategy 模块无 scipy/numpy/pandas/sklearn 导入；(7) 所有 no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards 保留。Signoff 明确说明 backwards-compat 验证结果与 HRP vs inverse-vol vs 60/40 经验对比（empirical research finding，非 pass/fail 标准）"
     }
   ]
 }
