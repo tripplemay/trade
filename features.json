@@ -46,7 +46,7 @@
       "title": "独立验收 B016 Risk Parity HRP Upgrade",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认：(1) weighting_method Literal + 校验正确；(2) HRP 在 canned 参考案例上权重正确；(3) inverse_volatility 默认在合成 fixture 上与 B010 signoff bit-for-bit 一致；(4) 比较报告存在含两 method 行 + static 60/40 baseline 行 + 2020/2022 stress sub-window per method + narrative；(5) B014 snapshot 在场时 HRP 经验数字与 narrative 一致，缺失时 real-data section 标 skipped 不失败；(6) B016 strategy 模块无 scipy/numpy/pandas/sklearn 导入；(7) 所有 no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards 保留。Signoff 明确说明 backwards-compat 验证结果与 HRP vs inverse-vol vs 60/40 经验对比（empirical research finding，非 pass/fail 标准）"
     }
   ]

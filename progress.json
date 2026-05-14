@@ -2,10 +2,10 @@
   "status": "done",
   "user_goal": "在 B015 done 之后做 B010 risk parity HRP 升级（BL-B010-S3）：给 RiskParityParameters 加 weighting_method Literal['inverse_volatility', 'hrp']（默认 inverse_volatility，B010 signoff 行为 bit-for-bit 保留），新增 pure-stdlib HRP 算法模块（De Prado 2016：correlation → distance → single-linkage clustering → quasi-diagonalize → recursive bisection；无 scipy/numpy/pandas/sklearn）；B010 backtest workflow dispatch；在 B014 真实 snapshot 上对比 HRP vs inverse-vol vs static 60/40，看 HRP 是否缩窄 B014 cross-strategy 发现的 absolute-return gap。**不修改 B011/B012/B013/B014/B015 strategy code**；B011 master portfolio risk_parity sleeve 默认走 inverse-vol 自动保持 invariants。保留 fixture/mock-first 默认 CI、no-live/no-secret-in-strategy/no-broker/no-paper/no-AI guards。",
   "total_features": 6,
-  "completed_features": 5,
+  "completed_features": 6,
   "fix_rounds": 0,
   "current_sprint": "F006",
-  "last_updated": "2026-05-14",
+  "last_updated": "2026-05-15",
   "reference_docs": [
     "docs/specs/B016-risk-parity-hrp-upgrade-spec.md",
     "docs/specs/B010-risk-parity-backtest-mvp-spec.md",
