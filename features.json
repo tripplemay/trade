@@ -46,7 +46,7 @@
       "title": "独立验收 B015 Regime-Adaptive Activation Policy",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认：(1) regime_activation_policy enum + validation 正确；(2) should_l1_gate_run 在 9 个组合上正确；(3) always_on 与 B013 signoff 行为 bit-for-bit 一致（合成 fixture）；(4) 对比报告存在且含三 policy 行 + 跨策略对比行 + 2020/2022 stress per policy + L1 firing rate + narrative；(5) B014 snapshot 在场时三 policy 数字与报告 narrative 一致，缺失时 real-data section 标 skipped 不失败；(6) 所有 no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards 保留。Signoff 中明确说明 backwards-compat 验证结果与 only_non_normal/only_crisis 是否缩窄 vs 60/40 absolute-return gap（empirical research finding，不是 pass/fail 标准）"
     }
   ]
