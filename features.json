@@ -14,7 +14,7 @@
       "title": "获取真实历史公开数据 snapshot（2018-2025）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "复用 B009 snapshot 基础设施。新增 opt-in CLI 脚本（scripts/acquire_regime_adaptive_snapshot.py 或等价）：下载 9 资产日 OHLCV + 复权收盘 2018-01-01 至 2025-12-31，写 manifest 到 data/public-cache/regime-adaptive-prices-manifest.json，价格文件放 data/public-cache/（gitignored）。脚本必须 opt-in、缺资产 fail closed、默认 CI 不运行、不自动触网。测试覆盖 manifest schema、缺资产 fail closed、snapshot id 确定性"
     },
     {
