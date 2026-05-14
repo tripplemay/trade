@@ -22,7 +22,7 @@
       "title": "实现 L1 资产级 200-day SMA 趋势过滤",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "实现 apply_trend_gating(prices, config)：对每个资产在 signal date T 计算 200 日 SMA（复权收盘）并返回 boolean gating mask 与权重归零标志；历史不足 200 日 → fail closed（asset 关闭）；SGOV（defensive）永不被关闭；gated 资金标记为可路由到 defensive。测试覆盖全历史通过、部分历史 fail closed、阈值附近的转换、gated 资金 accounting"
     },
     {
