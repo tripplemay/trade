@@ -38,7 +38,7 @@
       "title": "B013 backwards-compat 与 B015 安全 guard 回归",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "证明 regime_activation_policy='always_on' 在合成 fixture 上**与 B013 signoff 行为 bit-for-bit 一致**：既有 B013 测试套件 + B011 Master Portfolio sleeve 注册测试全部不修改即继续通过；equity curve、weight history、L1 gating history 与 B013 fixture-based golden 输出无差。新增 B015 安全 guard 回归：无新增 broker/AI/LLM SDK 导入、strategy 模块无 os.environ 读取、默认 fixture run 无 socket I/O、B015 输出无 paper/live execution 用语。pytest / ruff / compileall / mypy 全过"
     },
     {
