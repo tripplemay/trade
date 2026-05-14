@@ -7,8 +7,21 @@ import json
 from dataclasses import dataclass
 from datetime import date
 from math import sqrt
+from typing import Literal
 
 from trade.data.loader import PriceBar
+
+
+class RiskParityConfigError(ValueError):
+    """Raised when risk parity parameters violate the B010 research boundary."""
+
+
+class RiskParityDataError(ValueError):
+    """Raised when return or volatility estimation cannot use supplied data."""
+
+
+WeightingMethod = Literal["inverse_volatility", "hrp"]
+VALID_WEIGHTING_METHODS: tuple[WeightingMethod, ...] = ("inverse_volatility", "hrp")
 
 
 @dataclass(frozen=True, slots=True)
@@ -22,10 +35,18 @@ class RiskParityParameters:
     target_volatility: float = 0.08
     defensive_asset: str = "SGOV"
     rebalance_frequency: str = "monthly"
-    weighting_method: str = "inverse_volatility"
+    weighting_method: WeightingMethod = "inverse_volatility"
     max_exposure: float = 1.0
     max_asset_weight: float = 0.35
     cash_allocation_label: str = "defensive_asset_or_cash_placeholder"
+
+    def __post_init__(self) -> None:
+        if self.weighting_method not in VALID_WEIGHTING_METHODS:
+            raise RiskParityConfigError(
+                "weighting_method must be one of "
+                f"{list(VALID_WEIGHTING_METHODS)!r}; got {self.weighting_method!r}. "
+                "Valid choices: 'inverse_volatility', 'hrp'."
+            )
 
     def parameter_hash(self) -> str:
         payload = {
@@ -43,14 +64,6 @@ class RiskParityParameters:
         }
         canonical = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
         return hashlib.sha256(canonical).hexdigest()
-
-
-class RiskParityConfigError(ValueError):
-    """Raised when risk parity parameters violate the B010 research boundary."""
-
-
-class RiskParityDataError(ValueError):
-    """Raised when return or volatility estimation cannot use supplied data."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -86,8 +99,8 @@ class RiskParitySignal:
 def validate_risk_parity_parameters(parameters: RiskParityParameters) -> None:
     if parameters.strategy_id != "risk_parity_vol_target":
         raise RiskParityConfigError("strategy_id must be risk_parity_vol_target")
-    if parameters.weighting_method != "inverse_volatility":
-        raise RiskParityConfigError("B010 supports inverse_volatility weighting only")
+    # weighting_method is enforced by RiskParityParameters.__post_init__ (Literal type);
+    # both 'inverse_volatility' (B010 default) and 'hrp' (B016 addition) are accepted.
     if parameters.max_exposure > 1.0:
         raise RiskParityConfigError("leverage is not allowed; max_exposure must be <= 1.0")
     if parameters.max_exposure <= 0:

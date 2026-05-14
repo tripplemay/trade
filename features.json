@@ -6,7 +6,7 @@
       "title": "RiskParityParameters.weighting_method 收紧为 Literal + 校验",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "把 RiskParityParameters.weighting_method 从自由 str 收紧为 Literal['inverse_volatility', 'hrp']，默认仍 'inverse_volatility'；__post_init__（或等价）校验拒绝其他字符串并给出诊断列出 valid choices；parameter_hash 已包含此字段，验证两种 valid 值产生不同 hash。测试覆盖默认构造、两 valid 值、invalid 字符串拒绝、hash distinctness、序列化/反序列化"
     },
     {
