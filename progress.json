@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "在 B006/B010/B011/B012 之后实现 Regime-Adaptive Multi-Asset 策略 MVP（独立新策略路径）：新资产宇宙（Risk Core SPY/QQQ/VEA/VWO + Stabilizers IEF/TLT/GLD/DBC + Defensive SGOV）、L1 200-day SMA 趋势过滤、L2 复用 B010 inverse-vol + 8% 目标波动率、L3 regime 检测（Fast/Slow vol ratio + SPY 趋势 → NORMAL/BEAR/CRISIS）+ 危机模式敞口减半、3% tolerance bands + regime override、真实历史公开数据 snapshot（2018-2025）支撑 2020/2022 stress 验收（max drawdown < 15%）、lightweight 参数 sensitivity sweep、Master Portfolio 新增 regime_adaptive sleeve（planning_weight=0.0 保留向后兼容），全程 fixture/mock-first、no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI guards。",
   "total_features": 11,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-05-14",
   "reference_docs": [
     "docs/specs/B013-regime-adaptive-multi-asset-mvp-spec.md",
@@ -38,7 +38,7 @@
   "generator_handoff": null,
   "session_notes": {
     "planner": "2026-05-14: Closed B012 done wrap-up (state-machine consistency fix + environment.md python>=3.11 note). User added a research document (docs/specs/research/B011-regime-adaptive-multi-asset-spec.md) and three research material collections (arxiv 38 / github 32 / institutional 47); naming collision resolved by moving the regime-adaptive spec under docs/specs/research/. Analyzed research materials against current implementation; found strong literature support for the user's L1/L2/L3 three-shield proposal (AEGIS, regime-switching trend-following, smoothing volatility targeting, transaction-cost tolerance-band literature). Confirmed B013 direction: Option A independent new strategy module, add real historical public data snapshot 2018-2025 (user authorized public data download), include lightweight parameter sensitivity sweep (planner recommendation), add regime_adaptive sleeve to Master Portfolio at planning_weight=0.0 for backwards-compat. Wrote B013 spec and features.json (11 features: F001-F010 generator + F011 codex). Status moved to building for Generator F001.",
-    "generator": null,
+    "generator": "2026-05-14: F001 completed. Added trade/strategies/regime_adaptive/ package with config.py exposing RegimeAdaptiveConfig + AssetEntry + ASSET_CATEGORY_* constants + VALID_ASSET_CATEGORIES + STRATEGY_ID='regime_adaptive_multi_asset'. Default universe carries 9 assets classified as Risk Core (SPY/QQQ/VEA/VWO), Stabilizer (IEF/TLT/GLD/DBC), and Defensive (SGOV). Default parameters: trend_window=200, vol_lookback=120, target_volatility=0.08, regime_fast=20, regime_slow=120, regime_crisis_ratio=1.5, regime_spy=SPY, regime_crisis_exposure_scale=0.5, tolerance_band=0.03, account_drawdown_threshold=0.15, max_exposure=1.0, defensive=SGOV. validate_regime_adaptive_config enforces no leverage, positive target_volatility/all windows, regime_crisis_ratio>1.0, tolerance/crisis_scale/drawdown range checks, non-empty universe, no duplicate symbols, valid category for every entry, at least one risk_core + one defensive, defensive_symbol present and correctly categorised, regime_spy_symbol present. parameter_hash is deterministic 64-char SHA-256. tests/unit/test_regime_adaptive_config.py covers 20 paths (defaults, classifications, hash determinism, 14 rejection paths). Full local checks pass: pytest (239), ruff, compileall, mypy. Next: F002 historical snapshot acquisition script.",
     "evaluator": null
   },
   "features": [

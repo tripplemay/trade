@@ -6,7 +6,7 @@
       "title": "建立 Regime-Adaptive 策略配置与资产宇宙",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新增 RegimeAdaptiveConfig dataclass：9 资产宇宙（Risk Core: SPY/QQQ/VEA/VWO；Stabilizers: IEF/TLT/GLD/DBC；Defensive: SGOV），按 category 分类；默认参数 trend_window=200 / vol_lookback=120 / target_volatility=0.08 / regime_fast=20 / regime_slow=120 / regime_ratio=1.5 / crisis_exposure_scale=0.5 / tolerance_band=0.03 / account_drawdown=0.15 / max_exposure=1.0 / defensive=SGOV；validation 含权重非负、无杠杆、至少一个 risk_core + 一个 defensive、各窗口正数、ratio>1.0、tolerance∈[0,1]。测试覆盖默认构造、validation 成功/失败、分类正确、序列化"
     },
     {
