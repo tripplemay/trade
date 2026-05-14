@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B016-risk-parity-hrp-upgrade：`verifying`**；Generator 完成 F001-F005（5/6），交接给 Codex F006 独立验收。
+- **B016-risk-parity-hrp-upgrade：`done`**；Codex F006 独立验收完成并签收。
 - Spec: `docs/specs/B016-risk-parity-hrp-upgrade-spec.md`
 - 交付：trade/strategies/risk_parity.py (Literal+dispatcher), trade/strategies/risk_parity_hrp.py (pure-stdlib HRP), trade/strategies/risk_parity_hrp_comparison.py (harness+report), scripts/generate_b016_hrp_comparison_report.py (CLI), trade/reporting/risk_parity.py (per-period weighting_method in trace).
 - Canonical artifact: `docs/test-reports/B016-risk-parity-hrp-comparison-2026-05-14.{md,json}`（status=skipped，manifest 不在 repo 是 by-design）。
