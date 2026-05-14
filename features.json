@@ -6,7 +6,7 @@
       "title": "P&L attribution 模块 + 单元测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新增 trade/analysis/pnl_attribution.py（纯 stdlib：math + statistics + dataclasses + typing + collections.abc，**禁** scipy/numpy/pandas/sklearn/networkx）：compute_per_asset_contribution（per-asset 累计收益 contribution gap）+ compute_per_layer_contribution（B010: L2 vol_scaling + defensive_routing；B013: L1 gating + L2 + L3 crisis_cut + defensive_routing）+ attribution_summary（合 per-asset + per-layer + total gap）。新增 tests/unit/test_pnl_attribution.py 含 canned backtest result + canned benchmark curve；覆盖 per-asset 符号正确性、per-layer 加和近似 total、empty result / missing periods / single-asset / missing benchmark dates 等 edge cases。pytest / ruff / compileall / mypy 全过"
     },
     {
