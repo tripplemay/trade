@@ -30,7 +30,7 @@
       "title": "HRP vs inverse-vol vs 60/40 比较 harness + 报告",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新增 trade/strategies/risk_parity_hrp_comparison.py（harness）与 scripts/generate_b016_hrp_comparison_report.py（CLI）。在 B013 9 资产宇宙上、B014 snapshot 在场时跑 overlapping window backtest，运行 B010 两种 weighting policy；manifest 缺失时 real-data 部分标 skipped，合成 fixture 至少跑 smoke。每方法记录年化收益/波动率/Sharpe/max DD/2020+2022 sub-window max DD/turnover/per-asset 权重历史。报告 reuse B014 sidecar 的 static 60/40 baseline 行。输出 docs/test-reports/B016-risk-parity-hrp-comparison-2026-MM-DD.md + JSON sidecar，narrative 写 HRP 是否缩窄 vs 60/40 gap（empirical research finding，非 pass/fail）。reports 含 research-only disclaimer，不得声明 paper/live execution。测试覆盖 schema 正确、skipped 语义、run 语义（fixture manifest stub）"
     },
     {
