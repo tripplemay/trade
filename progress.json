@@ -1,10 +1,10 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "在 B015 (regime-adaptive activation policy) 与 B016 (risk parity HRP upgrade) signed off 后，把两个批次留下的真实数据验证 outstanding research item 合并到一个 Codex-only 小批次里跑掉：让 Codex 一次性获取 B014 真实 yfinance 9 资产 snapshot (2018-2025)，重新生成 B015 与 B016 比较报告（real_data_status 从 skipped 翻为 ran），跨策略对比 only_non_normal / only_crisis / always_on 三 activation policy 与 inverse_volatility / hrp 两 weighting method 在 calm window 2020-06..2022-12 的 absolute return gap vs static 60/40 与 2020/2022 stress sub-window max DD，用经验数字回答两个研究问题：is the B013 gap shrunk under regime-aware activation? is the B010 gap shrunk under HRP? 任何 stress threshold breach 走 framework/proposed-learnings；任何 hybrid 候选走 backlog；**B017 不修改任何 strategy / 测试 / spec 代码**，纯 Codex 跑现成 script + 写 signoff。",
   "total_features": 4,
   "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F004",
   "last_updated": "2026-05-15",
   "reference_docs": [
     "docs/specs/B017-b015-b016-real-data-validation-spec.md",
@@ -23,11 +23,11 @@
   "docs": {
     "spec": "docs/specs/B017-b015-b016-real-data-validation-spec.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/B017-real-data-validation-signoff-2026-05-15.md",
     "framework_reviewed": true
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
+  "evaluator_feedback": "B017 F001-F004 PASS. Real yfinance snapshot acquired and registered; B015 and B016 reports regenerated with real_data_status=ran; cross-analysis completed against static 60/40. All empirical 2020/2022 stress gates stayed above -15%. B015: only_crisis was marginally closer to 60/40 than always_on, only_non_normal was worse; B016: hrp underperformed inverse_volatility by 496.44 ending-value units and increased turnover. Full sweep 526 passed; ruff/mypy/compileall clean. Signoff at docs/test-reports/B017-real-data-validation-signoff-2026-05-15.md.",
   "generator_handoff": null,
   "session_notes": {
     "planner": "2026-05-15 B017 planning: B016 done wrap-up confirmed (6/6 PASS, fix_rounds=0). User selected option B at wrap-up: open a Codex-only validation extension to close the real-data outstanding research items from BOTH B015 and B016 (they both depend on the same B014 yfinance manifest, makes sense to bundle). Decisions captured: (1) Codex-only batch (state flow new → planning → verifying → done, skips building); (2) NO code changes — all scripts already exist from B014/B015/B016; (3) network access is the one-time yfinance fetch authorized previously by user; (4) 4 features (F001 acquire, F002 regen B015 report, F003 regen B016 report, F004 cross-analysis signoff); (5) stress threshold breaches go to proposed-learnings (research finding, not defect); (6) hybrid configuration candidates go to backlog; (7) No mutation of any strategy code / spec / test / module; (8) Local checks should be no-op since no code changes. Wrote B017 spec and features.json. Status set directly to 'verifying' per Codex-only batch convention.",

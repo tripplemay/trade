@@ -6,7 +6,7 @@
       "title": "执行真实 yfinance snapshot 获取 + manifest 注册",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Codex 显式 opt-in 一次性运行 scripts/fetch_yfinance_regime_adaptive_csvs.py 抓取 staging 目录的真实 yfinance 9 资产 CSV（2018-01-01..2025-12-31）；运行 scripts/acquire_regime_adaptive_snapshot.py 注册 manifest 到 data/public-cache/regime-adaptive-prices-manifest.json；验证 per-ticker 覆盖：8 个非 SGOV ticker ≥95% 预期交易日，SGOV 短历史例外（inception 2020-05-28）；任何 non-SGOV 覆盖不达标或其他 fetch 失败 → 中止 B017 with 明确诊断；提交 acquisition 日志 docs/test-reports/B017-real-data-validation-acquisition-log-2026-MM-DD.md（含 per-ticker sha256 / 行数 / 起止日期）；raw CSV 保持 gitignored"
     },
     {
@@ -14,7 +14,7 @@
       "title": "重新生成 B015 real-data 比较报告",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "在 manifest 已就绪的情况下运行 scripts/generate_b015_activation_policy_report.py；确认新报告 real_data_status='ran'；提取三 activation policy 在真实 snapshot 上的：2020-02-01..2020-12-31 max DD、2022-01-01..2022-12-31 max DD、2020-06-01..2022-12-31 ending value、regime label counts、L1 firing rate；提交 docs/test-reports/B015-regime-adaptive-activation-policy-comparison-2026-MM-DD.md + JSON sidecar（替换 synthetic-fixture 旧版本，git 历史保留）"
     },
     {
@@ -22,7 +22,7 @@
       "title": "重新生成 B016 real-data 比较报告",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "运行 scripts/generate_b016_hrp_comparison_report.py；确认新报告 real_data_status='ran'；提取两 weighting method 在真实 snapshot 上的：2020 max DD、2022 max DD、full-window ending value、annualized Sharpe、turnover、per-asset 平均权重；提交 docs/test-reports/B016-risk-parity-hrp-comparison-2026-MM-DD.md + JSON sidecar（替换 synthetic-fixture 旧版本，git 历史保留）"
     },
     {
@@ -30,7 +30,7 @@
       "title": "跨策略 cross-analysis + evidence-backed signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "产出 docs/test-reports/B017-real-data-validation-signoff-2026-MM-DD.md：含 B015 verdict per activation policy（含 vs B013 always_on baseline 与 vs static 60/40）+ B016 verdict per weighting method（含 vs B010 inverse_volatility baseline 与 vs static 60/40）+ narrative 回答两个研究问题（only_non_normal/only_crisis 是否缩窄 B013 gap？HRP 是否缩窄 B010 gap？具体百分点）+ soft-watch（任何配置 2020/2022 max DD 超过 -15% 阈值都报为 research finding 不是 defect）+ 必要时 framework/proposed-learnings.md 追加 entry（参数 retune 候选）+ 必要时 backlog.json 追加 BL-B017-* entry（hybrid 配置候选）。更新 progress.json 的 evaluator_feedback 与 docs.signoff。pytest / ruff / compileall / mypy 全过（应是 no-op，B017 不改代码）"
     }
   ]

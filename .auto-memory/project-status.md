@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B017-b015-b016-real-data-validation：`verifying`**（Codex-only 批次，跳过 building）；Planner 完成 spec + features.json，等待 Codex 起步 F001。
+- **B017-b015-b016-real-data-validation：`done`**；Codex 完成真实 snapshot acquisition、B015/B016 real-data reports 与 signoff。
 - Spec: `docs/specs/B017-b015-b016-real-data-validation-spec.md`
 - 4 features 全部 executor: codex（F001 acquire snapshot / F002 regen B015 report / F003 regen B016 report / F004 cross-analysis signoff）。
 - 起因：B015 与 B016 都在 done wrap-up 时留下 outstanding research item（real_data_status=skipped 因 B014 manifest 不在 repo）；用户两次选 option B 让 Codex 后续 session 处理。B017 把两个批次的真实数据验证合并 — 同一 yfinance fetch 一次拿，两个 report 一次重生成，一份 evidence-backed signoff 同时回答两个研究问题（only_non_normal/only_crisis 是否缩窄 B013 vs 60/40 gap？HRP 是否缩窄 B010 vs 60/40 gap？）。
