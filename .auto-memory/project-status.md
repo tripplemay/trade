@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B013-regime-adaptive-multi-asset-mvp：`verifying`**；Generator 完成 F001-F010,等待 Codex 第一轮 F011 验收。新增 `trade/strategies/regime_adaptive/` 包 + `scripts/acquire_regime_adaptive_snapshot.py` + Master 0-weight regime_adaptive sleeve。pytest 336 / ruff / mypy / compileall 全绿。
+- **B013-regime-adaptive-multi-asset-mvp：`done`**；Codex 已签收 F011，报告为 `docs/test-reports/B013-regime-adaptive-multi-asset-mvp-signoff-2026-05-14.md`。新增 `trade/strategies/regime_adaptive/` 包 + `scripts/acquire_regime_adaptive_snapshot.py` + Master 0-weight regime_adaptive sleeve。pytest 336 / ruff / mypy / compileall 全绿。
 - Spec: `docs/specs/B013-regime-adaptive-multi-asset-mvp-spec.md`；用户研究稿移至 `docs/specs/research/B011-regime-adaptive-multi-asset-spec.md`。
 - 11 features：F001-F010 generator + F011 codex。
 - 关键决策：独立新策略（不污染 B010）；新 9 资产宇宙（SPY/QQQ/VEA/VWO + IEF/TLT/GLD/DBC + SGOV）；L1 200-SMA gating + L2 复用 B010 inverse-vol 8% target + L3 regime（Fast/Slow vol×1.5 & SPY trend → NORMAL/BEAR/CRISIS）+ 3% tolerance band + regime override；真实历史 snapshot 2018-2025（用户授权公开下载）；2020/2022 stress 验收 max DD<15%；轻量参数 sensitivity sweep；B011 Master Portfolio 新增 regime_adaptive sleeve（planning_weight=0.0 保留 B011 向后兼容）。
@@ -16,6 +16,7 @@ type: project
 - B010 risk parity backtest MVP: `docs/test-reports/B010-risk-parity-backtest-mvp-signoff-2026-05-13.md`
 - B011 portfolio allocation risk MVP: `docs/test-reports/B011-portfolio-allocation-risk-mvp-signoff-2026-05-13.md`
 - B012 paper trading prep MVP: `docs/test-reports/B012-paper-trading-prep-mvp-signoff-2026-05-14.md`
+- B013 regime-adaptive multi-asset MVP: `docs/test-reports/B013-regime-adaptive-multi-asset-mvp-signoff-2026-05-14.md`
 
 ## 生产状态
 - No deployment, DB, broker API, secrets, paper/live trading, or live-money operation.
@@ -24,5 +25,6 @@ type: project
 - 真实 paper/live broker adapter 仍未实现（B013 范围外）。
 - BL-B010-S1（risk parity 专用 fixture）+ BL-B011-S2（satellite 策略 US Quality / HK-China）仍在 backlog；本会话新增 BL-B013-D1（smoothed vol targeting）+ BL-B013-D2（VIX 尾部对冲）+ BL-B010-S3（B010 升级 HRP/HRP-μ/CRISP）作为后续候选。
 - 本机 system `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`（环境记录在 environment.md）。
+- 当前仓库未包含 `data/public-cache/` 的真实 B013 snapshot，因此 2020 / 2022 stress gate 依 spec 处理为 `skipped`。
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->
