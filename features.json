@@ -14,7 +14,7 @@
       "title": "实现 HRP 算法模块（pure-stdlib）+ 单元测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新增 trade/strategies/risk_parity_hrp.py 实现 De Prado (2016) HRP：correlation_matrix → distance_matrix d_ij=sqrt(0.5*(1-corr_ij)) → single_linkage_clustering → quasi_diagonalize → recursive_bisection → compute_hrp_weights(returns, symbols) -> dict[str, float]。**纯 stdlib**（math / statistics / dataclasses / typing / collections.abc），无 scipy / numpy / pandas / sklearn / networkx。Edge cases：n=1 trivial、n=2 inverse-variance、zero-variance asset 抛 ValueError。新增 tests/unit/test_risk_parity_hrp.py 覆盖：correlation/distance matrix 正确性、single linkage 参考案例、quasi-diagonalize 顺序、recursive bisection split 公式、end-to-end n∈{1,2,3,5,9}、zero variance 拒绝、deterministic 输出"
     },
     {
