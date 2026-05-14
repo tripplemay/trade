@@ -4,11 +4,11 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B013-regime-adaptive-multi-asset-mvp：`done`**；Codex 已签收 F011，报告为 `docs/test-reports/B013-regime-adaptive-multi-asset-mvp-signoff-2026-05-14.md`。新增 `trade/strategies/regime_adaptive/` 包 + `scripts/acquire_regime_adaptive_snapshot.py` + Master 0-weight regime_adaptive sleeve。pytest 336 / ruff / mypy / compileall 全绿。
-- Spec: `docs/specs/B013-regime-adaptive-multi-asset-mvp-spec.md`；用户研究稿移至 `docs/specs/research/B011-regime-adaptive-multi-asset-spec.md`。
-- 11 features：F001-F010 generator + F011 codex。
-- 关键决策：独立新策略（不污染 B010）；新 9 资产宇宙（SPY/QQQ/VEA/VWO + IEF/TLT/GLD/DBC + SGOV）；L1 200-SMA gating + L2 复用 B010 inverse-vol 8% target + L3 regime（Fast/Slow vol×1.5 & SPY trend → NORMAL/BEAR/CRISIS）+ 3% tolerance band + regime override；真实历史 snapshot 2018-2025（用户授权公开下载）；2020/2022 stress 验收 max DD<15%；轻量参数 sensitivity sweep；B011 Master Portfolio 新增 regime_adaptive sleeve（planning_weight=0.0 保留 B011 向后兼容）。
-- 硬边界：fixture/mock-first 默认 CI、no-live/no-secret/no-broker/no-paper/no-AI、AI/LLM SDK 在 strategy 模块禁止（研究脚本除外）、snapshot 获取脚本 opt-in。
+- **B014-regime-adaptive-stress-validation：`building`**；Planner 完成 spec + features.json，等待 Generator 起步 F001（Stooq fetcher）。
+- Spec: `docs/specs/B014-regime-adaptive-stress-validation-spec.md`
+- 6 features（混合批次）：F001-F002 generator（fetcher 脚本 + mocked HTTP tests）+ F003-F006 codex（一次性真实抓取、2020+2022 stress、跨策略对比、evidence-backed 签收）。
+- 关键决策：Stooq stooq.com/q/d/l/ 唯一允许 host；fetcher stdlib-only（urllib + csv）+ opt-in flag；SGOV 2020-05-28 上市作为允许 short-history；其他 8 资产 ≥95% 覆盖否则 fail-closed；2020 窗口 2020-02-01→2020-12-31（SGOV 上市前作为 cash placeholder），2022 窗口 2022-01-01→2022-12-31；跨策略对比 B013/B006/B010/60-40；**B014 不修改 B013 策略代码**；max DD>15% 走 proposed-learnings 建议参数 retune。
+- 硬边界保留：默认 CI 仍 fixture/mock-first；fetcher 是 strategy 模块外（scripts/）唯一网络入口；no-broker/no-paper/no-AI/no-secret-in-strategy。
 
 ## 已完成签收
 - B001-B008: strategy roadmap through research-grade data expansion all signed off.
@@ -22,9 +22,8 @@ type: project
 - No deployment, DB, broker API, secrets, paper/live trading, or live-money operation.
 
 ## 已知 gap（非阻塞）
-- 真实 paper/live broker adapter 仍未实现（B013 范围外）。
-- BL-B010-S1（risk parity 专用 fixture）+ BL-B011-S2（satellite 策略 US Quality / HK-China）仍在 backlog；本会话新增 BL-B013-D1（smoothed vol targeting）+ BL-B013-D2（VIX 尾部对冲）+ BL-B010-S3（B010 升级 HRP/HRP-μ/CRISP）作为后续候选。
+- B013 的 2020/2022 max DD<15% claim 仍待 B014 经验验证；B014 完成后 B013 stress gate 从 skipped 翻为 pass/fail。
+- BL-B010-S1 + BL-B011-S2 + BL-B010-S3 + BL-B013-D1 + BL-B013-D2 仍在 backlog。
 - 本机 system `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`（环境记录在 environment.md）。
-- 当前仓库未包含 `data/public-cache/` 的真实 B013 snapshot，因此 2020 / 2022 stress gate 依 spec 处理为 `skipped`。
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->

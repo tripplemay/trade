@@ -1,93 +1,53 @@
 {
-  "sprint": "B013-regime-adaptive-multi-asset-mvp",
+  "sprint": "B014-regime-adaptive-stress-validation",
   "features": [
     {
       "id": "F001",
-      "title": "建立 Regime-Adaptive 策略配置与资产宇宙",
+      "title": "新增 Stooq CSV fetcher 辅助脚本",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "新增 RegimeAdaptiveConfig dataclass：9 资产宇宙（Risk Core: SPY/QQQ/VEA/VWO；Stabilizers: IEF/TLT/GLD/DBC；Defensive: SGOV），按 category 分类；默认参数 trend_window=200 / vol_lookback=120 / target_volatility=0.08 / regime_fast=20 / regime_slow=120 / regime_ratio=1.5 / crisis_exposure_scale=0.5 / tolerance_band=0.03 / account_drawdown=0.15 / max_exposure=1.0 / defensive=SGOV；validation 含权重非负、无杠杆、至少一个 risk_core + 一个 defensive、各窗口正数、ratio>1.0、tolerance∈[0,1]。测试覆盖默认构造、validation 成功/失败、分类正确、序列化"
+      "status": "pending",
+      "acceptance": "新增 scripts/fetch_stooq_regime_adaptive_csvs.py：从 Stooq 公开 CSV endpoint（https://stooq.com/q/d/l/?s=<symbol>.us&i=d&d1=YYYYMMDD&d2=YYYYMMDD）抓取 9 资产（SPY/QQQ/VEA/VWO/IEF/TLT/GLD/DBC/SGOV）日 OHLCV 2018-01-01 到 2025-12-31（CLI 可配）；写 <SYMBOL>.csv 到 --output-dir；opt-in via --i-understand-this-is-manual-research-data；stdlib-only（urllib + csv），无第三方依赖；唯一允许的 host 是 stooq.com；SGOV 后期上市作为允许 short-history 例外（--allow-short-history 或专属处理），其他 8 个 ticker 必须达 ≥95% 预期交易日覆盖否则 fail-closed；HTTP error / 畸形 CSV / 覆盖不足 / 缺 flag → 非零退出；默认 CI 永不调用"
     },
     {
       "id": "F002",
-      "title": "获取真实历史公开数据 snapshot（2018-2025）",
+      "title": "Fetcher 单元测试（mocked HTTP）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "复用 B009 snapshot 基础设施。新增 opt-in CLI 脚本（scripts/acquire_regime_adaptive_snapshot.py 或等价）：下载 9 资产日 OHLCV + 复权收盘 2018-01-01 至 2025-12-31，写 manifest 到 data/public-cache/regime-adaptive-prices-manifest.json，价格文件放 data/public-cache/（gitignored）。脚本必须 opt-in、缺资产 fail closed、默认 CI 不运行、不自动触网。测试覆盖 manifest schema、缺资产 fail closed、snapshot id 确定性"
+      "status": "pending",
+      "acceptance": "新增 tests/unit/test_stooq_fetcher.py：mock urllib.request.urlopen 返回 canned CSV bytes；覆盖 happy-path 9-ticker 抓取、缺 flag 拒绝、HTTP error fail-closed、畸形 CSV fail-closed、非 SGOV 短历史拒绝、SGOV 短历史在 allowance 下接受、output 文件名大小写与 CSV schema 正确、任何测试都不触真实网络。pytest / ruff / compileall / mypy 全过"
     },
     {
       "id": "F003",
-      "title": "实现 L1 资产级 200-day SMA 趋势过滤",
+      "title": "执行真实 snapshot 获取并验证 manifest",
       "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "实现 apply_trend_gating(prices, config)：对每个资产在 signal date T 计算 200 日 SMA（复权收盘）并返回 boolean gating mask 与权重归零标志；历史不足 200 日 → fail closed（asset 关闭）；SGOV（defensive）永不被关闭；gated 资金标记为可路由到 defensive。测试覆盖全历史通过、部分历史 fail closed、阈值附近的转换、gated 资金 accounting"
+      "executor": "codex",
+      "status": "pending",
+      "acceptance": "Codex 显式 opt-in 一次性运行 scripts/fetch_stooq_regime_adaptive_csvs.py 抓取 staging 目录的真实 Stooq CSVs；验证 per-ticker 日志：8 个非 SGOV ticker ≥95% 预期交易日覆盖，SGOV 报告真实 first-available date；运行 scripts/acquire_regime_adaptive_snapshot.py 把 staging CSV 注册为 manifest（data/public-cache/regime-adaptive-prices-manifest.json）；验证 manifest sha256 在两次连续 import（跳过 fetch）后稳定一致；提交 acquisition 日志 docs/test-reports/B014-regime-adaptive-stress-validation-acquisition-log-2026-MM-DD.md；raw CSVs 与 snapshot 保持 gitignored"
     },
     {
       "id": "F004",
-      "title": "L2 复用 B010 逆波动率 + 8% 目标波动率",
+      "title": "真实 snapshot 上跑 2020 + 2022 stress 回测",
       "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "将 regime-adaptive 策略接入既有 B010 inverse-volatility 权重引擎与 target-volatility exposure-scaling 工具；默认 target_volatility=0.08。L2 在 L1 之后，只对未 gated 资产计算权重；gated 资产 weight=0。target-vol scaling capped at 1.0；残余 exposure 路由到 SGOV。测试验证与 B010 模块的集成契约（不重复 B010 逻辑）与 L1→L2 round-trip"
+      "executor": "codex",
+      "status": "pending",
+      "acceptance": "Codex 在真实 snapshot 上跑 B013 月度回测：2020-02-01→2020-12-31（COVID）+ 2022-01-01→2022-12-31（通胀）；使用 B013 默认参数不变；记录每窗口经验 max drawdown / drawdown 持续 / 恢复时间 / 年化收益/波动率/Sharpe / turnover / transaction costs / regime label timeline / gating 活动 / tolerance-band 统计；stress gate 判定：2020 max DD < 0.15 且 2022 max DD < 0.15 → pass，否则 fail（带经验数字）。输出 docs/test-reports/B014-regime-adaptive-stress-validation-2026-MM-DD.md + JSON sidecar；reports 含 research-only disclaimer"
     },
     {
       "id": "F005",
-      "title": "实现 L3 regime 检测与敞口调整",
+      "title": "跨策略对比报告（B013 / B006 / B010 / 60-40）",
       "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "实现 detect_regime(prices, prior_weights, config) 返回 RegimeState(regime∈NORMAL/BEAR/CRISIS, fast_vol, slow_vol, ratio, spy_trend_signal, triggered_at, human_review_required)；分类：fast_vol>slow_vol*1.5 且 SPY<SMA200_SPY → CRISIS；否则 SPY<SMA200_SPY → BEAR；否则 NORMAL。apply_regime_exposure_adjustment(weights, regime_state, config)：CRISIS 时非 defensive 权重 ×0.5 并把释放敞口路由到 SGOV；BEAR 依赖 L1 个股 gating，不额外缩减；NORMAL 透传。CRISIS 触发 human_review_required=true。测试覆盖四象限分类、缩放正确、defensive 吸收、flag 联动"
+      "executor": "codex",
+      "status": "pending",
+      "acceptance": "Codex 在真实 snapshot 的 overlapping 窗口上跑 B013、B006 momentum、B010 risk parity、static 60/40 baseline（默认配置）；输出 equity curve、年化收益/波动率/Sharpe/max DD、turnover、transaction costs 对比；每 stress 窗口 drawdown 对比表。输出 docs/test-reports/B014-regime-adaptive-cross-strategy-comparison-2026-MM-DD.md + JSON sidecar。不新增策略代码，仅复用既有实现"
     },
     {
       "id": "F006",
-      "title": "实现 3% tolerance bands + regime override + 月度回测 workflow",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "实现月度回测：每月 signal date 运行 L1→L2→L3 派生 target weights；与上期 effective weights 比较，仅 |target_i − current_i| > tolerance_band 时发交易；regime 在期间发生切换则**绕过 tolerance band 全量再平衡**；T-day close signal / T+1 open execution；记录 rebalance trace、equity curve、turnover、transaction costs、regime history、gating history、snapshot references。standalone 运行时同样接入 15% account-level drawdown kill-switch（与 B011 一致）。测试覆盖月度节奏、tolerance band 抑制、regime 强制再平衡、T+1 执行、deterministic equity、turnover、kill-switch"
-    },
-    {
-      "id": "F007",
-      "title": "输出 reports + baselines + 2020/2022 stress 验收",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "JSON/Markdown reports：aggregated equity、年化收益/波动率/Sharpe/最大回撤、turnover、transaction costs、per-asset weight history、L1 gating history、regime history、tolerance-band 统计（抑制交易数 + turnover 节省 vs no-band baseline）、snapshot/manifest references、account-level risk flags、research limitations、固定 research-only disclaimer。新增 calculated baselines：static 60/40（复用 B011 机制）+ B006 momentum + B010 risk parity（同期）。Stress 验收：snapshot 在场时 2020-02-01→2020-12-31 与 2022-01-01→2022-12-31 max drawdown < 15%；snapshot 缺失时 gate 状态为 'skipped' 不计失败。测试覆盖 report schema、baseline 集成、stress gate pass/skip 语义、disclaimer 存在"
-    },
-    {
-      "id": "F008",
-      "title": "Lightweight 参数 sensitivity sweep",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "Deterministic one-at-a-time 参数 sweep：target_volatility {0.06, 0.08, 0.10}、regime_fast {15, 20, 30}、regime_slow {90, 120, 180}、regime_ratio {1.3, 1.5, 1.8}、tolerance_band {0.00, 0.03, 0.05}、trend_window {150, 200, 250}。每个 variation 在 synthetic fixture 上跑完整 backtest（snapshot 在场时可选附加）。输出 data/research/regime-adaptive-sensitivity-<timestamp>.json + docs/test-reports/research/ 下 Markdown 摘要。必须 deterministic、单进程、几秒内完成、无网络/env/外部服务调用。**非** Monte Carlo / **非** 学习优化器。测试覆盖确定性、参数覆盖、无 network/env/broker import"
-    },
-    {
-      "id": "F009",
-      "title": "Master Portfolio 新增 regime_adaptive sleeve（planning_weight=0.0）",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "扩展 B011 Master Portfolio 配置：新增 sleeve {id: 'regime_adaptive', type: 'implemented_strategy', strategy_ref: 'regime_adaptive_multi_asset', planning_weight: 0.0, role: 'regime defensive overlay'}。planning weights 总和保持 1.0（momentum 0.40 + risk_parity 0.30 + us_quality_stub 0.20 + hk_china_stub 0.10 + regime_adaptive 0.00）。Master backtest 对 planning_weight==0 的 implemented 策略 short-circuit（不调用 backtest）但要校验策略可加载。**既有 B011 测试必须不修改即继续通过**（仅新增 sleeve 条目）。测试覆盖新 sleeve config、合 1.0 invariant、零权重 short-circuit、loadability check"
-    },
-    {
-      "id": "F010",
-      "title": "补强 B013 安全 guard 与 workflow 回归",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "增加回归覆盖：B013 strategy 模块**无 broker SDK 导入**（复用 B012 列表）、**无 AI/LLM SDK 导入**（新增列表：openai / anthropic / google.generativeai / langchain / transformers / torch / tensorflow / sklearn 在 strategy 模块禁止；研究脚本除外）、**无 paper-trading API URL**、strategy 模块**无 os.environ / os.getenv 读取**（snapshot 获取脚本在 scripts/ 下不算 strategy 模块）、默认 fixture run **无 socket I/O**、reports/docstrings 含 research-only disclaimer。pytest、ruff、compileall、mypy 全部通过"
-    },
-    {
-      "id": "F011",
-      "title": "独立验收 B013 Regime-Adaptive Multi-Asset MVP",
+      "title": "Evidence-backed 签收并解决 B013 stress gate",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认 B013 实现最小 Regime-Adaptive Multi-Asset MVP：L1→L2→L3 pipeline 组合确定性、tolerance-band 减 turnover、regime 切换强制再平衡、snapshot 在场时可加载、snapshot 缺失时 stress gate 报 skipped（不失败）、snapshot 在场时 2020 + 2022 max drawdown < 15%、sensitivity sweep deterministic + offline、Master Portfolio 新 sleeve 0 权重且既有 B011 invariant 保留、no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards 保留；signoff 明确记录 snapshot 获取状态（acquired/pending/skipped）与 2020/2022 stress gate 结果（pass/skip/fail）；产出 review/signoff 报告"
+      "status": "pending",
+      "acceptance": "Codex 写 docs/test-reports/B014-regime-adaptive-stress-validation-signoff-2026-MM-DD.md：含经验 2020 + 2022 max DD 数字、stress gate 判定（pass/fail）与 15% 阈值的具体差值、跨策略对比摘要、soft-watch、必要时 framework learnings（如 max DD > 15% 应建议参数 retune）。明确标注 B013 之前 skipped 的 stress gate 现已经验上解决。如果 fail：向 framework/proposed-learnings.md 追加 entry 描述 empirical shortfall + 建议下一批次（参数 retune）；**B014 内不修改 B013 策略代码**。更新 progress.json 的 evaluator_feedback 与 docs.signoff。pytest / ruff / compileall / mypy 全过"
     }
   ]
 }
