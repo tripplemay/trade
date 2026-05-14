@@ -1,37 +1,45 @@
 {
-  "sprint": "B017-b015-b016-real-data-validation",
+  "sprint": "B018-gap-root-cause-attribution",
   "features": [
     {
       "id": "F001",
-      "title": "执行真实 yfinance snapshot 获取 + manifest 注册",
+      "title": "P&L attribution 模块 + 单元测试",
       "priority": "high",
-      "executor": "codex",
-      "status": "completed",
-      "acceptance": "Codex 显式 opt-in 一次性运行 scripts/fetch_yfinance_regime_adaptive_csvs.py 抓取 staging 目录的真实 yfinance 9 资产 CSV（2018-01-01..2025-12-31）；运行 scripts/acquire_regime_adaptive_snapshot.py 注册 manifest 到 data/public-cache/regime-adaptive-prices-manifest.json；验证 per-ticker 覆盖：8 个非 SGOV ticker ≥95% 预期交易日，SGOV 短历史例外（inception 2020-05-28）；任何 non-SGOV 覆盖不达标或其他 fetch 失败 → 中止 B017 with 明确诊断；提交 acquisition 日志 docs/test-reports/B017-real-data-validation-acquisition-log-2026-MM-DD.md（含 per-ticker sha256 / 行数 / 起止日期）；raw CSV 保持 gitignored"
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "新增 trade/analysis/pnl_attribution.py（纯 stdlib：math + statistics + dataclasses + typing + collections.abc，**禁** scipy/numpy/pandas/sklearn/networkx）：compute_per_asset_contribution（per-asset 累计收益 contribution gap）+ compute_per_layer_contribution（B010: L2 vol_scaling + defensive_routing；B013: L1 gating + L2 + L3 crisis_cut + defensive_routing）+ attribution_summary（合 per-asset + per-layer + total gap）。新增 tests/unit/test_pnl_attribution.py 含 canned backtest result + canned benchmark curve；覆盖 per-asset 符号正确性、per-layer 加和近似 total、empty result / missing periods / single-asset / missing benchmark dates 等 edge cases。pytest / ruff / compileall / mypy 全过"
     },
     {
       "id": "F002",
-      "title": "重新生成 B015 real-data 比较报告",
+      "title": "参数 sweep harness（vol_target / universe / cadence）+ 单元测试",
       "priority": "high",
-      "executor": "codex",
-      "status": "completed",
-      "acceptance": "在 manifest 已就绪的情况下运行 scripts/generate_b015_activation_policy_report.py；确认新报告 real_data_status='ran'；提取三 activation policy 在真实 snapshot 上的：2020-02-01..2020-12-31 max DD、2022-01-01..2022-12-31 max DD、2020-06-01..2022-12-31 ending value、regime label counts、L1 firing rate；提交 docs/test-reports/B015-regime-adaptive-activation-policy-comparison-2026-MM-DD.md + JSON sidecar（替换 synthetic-fixture 旧版本，git 历史保留）"
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "新增 trade/analysis/parameter_sweep.py（纯 stdlib）：run_vol_target_sweep（target_volatility ∈ {0.05, 0.08, 0.10, 0.12, 0.15}）+ run_universe_ablation_sweep（≥4 个 variant：full / drop_SGOV / drop_stabilizers / SPY+IEF only / SPY only）+ run_cadence_sweep（monthly / quarterly / semiannual / annual）。每个 sweep 接收预加载 snapshot records、strategy name、参数值、窗口元组，返回 deterministic SweepRunResult list（含 ending_value / gap_vs_60_40 / max_drawdown / turnover / transaction_costs / sharpe）。**override config 内联构造，绝不 mutate strategy 默认参数**；不支持的 cadence 显式 skip with diagnostic。tests/unit/test_parameter_sweep.py 用 mocked snapshot records 覆盖：每 sweep 返回预期数量、deterministic 跨 run、override 不泄漏到默认、unsupported cadence skip。pytest / ruff / compileall / mypy 全过"
     },
     {
       "id": "F003",
-      "title": "重新生成 B016 real-data 比较报告",
+      "title": "真实数据 P&L attribution 跑通",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "运行 scripts/generate_b016_hrp_comparison_report.py；确认新报告 real_data_status='ran'；提取两 weighting method 在真实 snapshot 上的：2020 max DD、2022 max DD、full-window ending value、annualized Sharpe、turnover、per-asset 平均权重；提交 docs/test-reports/B016-risk-parity-hrp-comparison-2026-MM-DD.md + JSON sidecar（替换 synthetic-fixture 旧版本，git 历史保留）"
+      "status": "pending",
+      "acceptance": "Codex 在 B014 manifest 在场时调用 trade/analysis/pnl_attribution 对 B013 与 B010 vs static 60/40（B014 sidecar 加载）做 per-asset + per-layer attribution；窗口覆盖 calm window 2020-06-01..2022-12-31 + 2020-02-01..2020-12-31 + 2022-01-01..2022-12-31。输出 docs/test-reports/B018-gap-attribution-2026-MM-DD.json sections 1-3（per-asset 表 + per-layer 表 + 跨窗口对比）。manifest 缺失时 fallback 到合成 9 资产 fixture 并标 real_data_status='skipped'"
     },
     {
       "id": "F004",
-      "title": "跨策略 cross-analysis + evidence-backed signoff",
+      "title": "真实数据三轴参数 sweep 跑通",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "产出 docs/test-reports/B017-real-data-validation-signoff-2026-MM-DD.md：含 B015 verdict per activation policy（含 vs B013 always_on baseline 与 vs static 60/40）+ B016 verdict per weighting method（含 vs B010 inverse_volatility baseline 与 vs static 60/40）+ narrative 回答两个研究问题（only_non_normal/only_crisis 是否缩窄 B013 gap？HRP 是否缩窄 B010 gap？具体百分点）+ soft-watch（任何配置 2020/2022 max DD 超过 -15% 阈值都报为 research finding 不是 defect）+ 必要时 framework/proposed-learnings.md 追加 entry（参数 retune 候选）+ 必要时 backlog.json 追加 BL-B017-* entry（hybrid 配置候选）。更新 progress.json 的 evaluator_feedback 与 docs.signoff。pytest / ruff / compileall / mypy 全过（应是 no-op，B017 不改代码）"
+      "status": "pending",
+      "acceptance": "Codex 在 B014 manifest 在场时对 B013 与 B010 分别执行 vol_target sweep（5 个值）+ universe ablation（≥4 variant）+ rebalance cadence sweep（3-4 个值）；每个 variant 在 calm window + 两个 stress sub-window 上跑 backtest 并记录 ending_value / gap_vs_60_40 / 2020 max DD / 2022 max DD / turnover / costs / Sharpe。Append 到 B018 JSON sidecar sections 4-6。manifest 缺失时 fallback synthetic fixture + skipped 标识"
+    },
+    {
+      "id": "F005",
+      "title": "诊断报告 + Pareto 推荐 + Codex signoff",
+      "priority": "high",
+      "executor": "codex",
+      "status": "pending",
+      "acceptance": "Codex 产出 docs/test-reports/B018-gap-attribution-2026-MM-DD.md 含 9 节（real-data baseline recap / per-asset attribution / per-layer attribution / vol target sweep / universe ablation / cadence sweep / Pareto 推荐 / 结论 / disclaimer）+ 至少 3 个 Pareto-style 配置推荐（low-DD / balanced / high-return）含具体 trade-off 数字（'config X: gap 缩窄 Y%, 2022 max DD 从 -A% 到 -B%'）。同时写 docs/test-reports/B018-gap-attribution-signoff-2026-MM-DD.md（scope / verification / high-level findings / 可选 BL-B018-* backlog entry）。更新 progress.json 的 evaluator_feedback 与 docs.signoff。**B018 不修改 B010 / B013 默认参数** — 任何 retune 候选只入 backlog 不入 spec。pytest / ruff / compileall / mypy 全过"
     }
   ]
 }

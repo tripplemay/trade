@@ -1,36 +1,42 @@
 {
-  "status": "done",
-  "user_goal": "在 B015 (regime-adaptive activation policy) 与 B016 (risk parity HRP upgrade) signed off 后，把两个批次留下的真实数据验证 outstanding research item 合并到一个 Codex-only 小批次里跑掉：让 Codex 一次性获取 B014 真实 yfinance 9 资产 snapshot (2018-2025)，重新生成 B015 与 B016 比较报告（real_data_status 从 skipped 翻为 ran），跨策略对比 only_non_normal / only_crisis / always_on 三 activation policy 与 inverse_volatility / hrp 两 weighting method 在 calm window 2020-06..2022-12 的 absolute return gap vs static 60/40 与 2020/2022 stress sub-window max DD，用经验数字回答两个研究问题：is the B013 gap shrunk under regime-aware activation? is the B010 gap shrunk under HRP? 任何 stress threshold breach 走 framework/proposed-learnings；任何 hybrid 候选走 backlog；**B017 不修改任何 strategy / 测试 / spec 代码**，纯 Codex 跑现成 script + 写 signoff。",
-  "total_features": 4,
-  "completed_features": 4,
+  "status": "building",
+  "user_goal": "在 B017 经验签收（B015 regime-aware activation 不缩窄 B013 vs 60/40 gap；B016 HRP 不缩窄 B010 vs 60/40 gap，HRP -$496 + turnover +41%）之后，做 gap root-cause attribution 批次：用 B014 真实 yfinance snapshot 量化 B013 与 B010 vs static 60/40 的 absolute-return gap 来源，按资产 / 按策略 layer（L1 / L2 / L3 / defensive routing）做归因，并跨三轴做参数 sensitivity sweep（vol_target {5,8,10,12,15}% × universe ablation 4-5 variant × rebalance cadence 3-4 variant）；输出诊断报告含至少 3 个 Pareto-style 配置推荐（low-DD / balanced / high-return 带具体 trade-off 数字）。**B018 不修改任何 strategy / spec / 测试默认参数**（任何 retune 候选只入 backlog）。保留 fixture/mock-first 默认 CI、纯 stdlib trade/ 模块（无 scipy/numpy/pandas/sklearn）、no-live/no-secret-in-strategy/no-broker/no-paper/no-AI guards。",
+  "total_features": 5,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F004",
+  "current_sprint": "F001",
   "last_updated": "2026-05-15",
   "reference_docs": [
-    "docs/specs/B017-b015-b016-real-data-validation-spec.md",
+    "docs/specs/B018-gap-root-cause-attribution-spec.md",
+    "docs/specs/B010-risk-parity-backtest-mvp-spec.md",
+    "docs/specs/B013-regime-adaptive-multi-asset-mvp-spec.md",
     "docs/specs/B014-regime-adaptive-stress-validation-spec.md",
     "docs/specs/B015-regime-adaptive-activation-policy-spec.md",
     "docs/specs/B016-risk-parity-hrp-upgrade-spec.md",
-    "docs/test-reports/B014-regime-adaptive-stress-validation-signoff-2026-05-14.md",
+    "docs/specs/B017-b015-b016-real-data-validation-spec.md",
+    "docs/test-reports/B017-real-data-validation-signoff-2026-05-15.md",
+    "docs/test-reports/B015-regime-adaptive-activation-policy-comparison-2026-05-15.md",
+    "docs/test-reports/B016-risk-parity-hrp-comparison-2026-05-15.md",
     "docs/test-reports/B014-regime-adaptive-cross-strategy-comparison-2026-05-14.md",
-    "docs/test-reports/B014-regime-adaptive-cross-strategy-comparison-2026-05-14.json",
-    "docs/test-reports/B015-regime-adaptive-activation-policy-signoff-2026-05-14.md",
-    "docs/test-reports/B015-regime-adaptive-activation-policy-comparison-2026-05-14.md",
-    "docs/test-reports/B016-risk-parity-hrp-upgrade-signoff-2026-05-15.md",
-    "docs/test-reports/B016-risk-parity-hrp-comparison-2026-05-14.md",
-    "docs/engineering/no-live-safety-guards.md"
+    "framework/proposed-learnings.md",
+    "docs/strategy/00-master-portfolio-allocation.md",
+    "docs/strategy/02-risk-parity-vol-target.md",
+    "docs/prd/mvp-prd.md",
+    "docs/engineering/testing-and-fixture-policy.md",
+    "docs/engineering/no-live-safety-guards.md",
+    "docs/engineering/backtest-report-schema.md"
   ],
   "docs": {
-    "spec": "docs/specs/B017-b015-b016-real-data-validation-spec.md",
+    "spec": "docs/specs/B018-gap-root-cause-attribution-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B017-real-data-validation-signoff-2026-05-15.md",
+    "signoff": null,
     "framework_reviewed": true
   },
   "role_assignments": null,
-  "evaluator_feedback": "B017 F001-F004 PASS. Real yfinance snapshot acquired and registered; B015 and B016 reports regenerated with real_data_status=ran; cross-analysis completed against static 60/40. All empirical 2020/2022 stress gates stayed above -15%. B015: only_crisis was marginally closer to 60/40 than always_on, only_non_normal was worse; B016: hrp underperformed inverse_volatility by 496.44 ending-value units and increased turnover. Full sweep 526 passed; ruff/mypy/compileall clean. Signoff at docs/test-reports/B017-real-data-validation-signoff-2026-05-15.md.",
+  "evaluator_feedback": null,
   "generator_handoff": null,
   "session_notes": {
-    "planner": "2026-05-15 B017 done wrap-up: Confirmed Codex F001-F004 PASS (4/4, 0 issues, fix_rounds=0). Repaired stale completed_features 0→4 (Codex omission). Empirical findings landed (full table in evaluator_feedback): B015 conclusion = regime-aware activation does NOT meaningfully shrink B013's gap vs 60/40 — only_crisis +$257 (0.26% improvement, but 2022 DD worsens 15x to -7.72%); only_non_normal -$3,148 (worse). B016 conclusion = HRP does NOT shrink B010's gap vs 60/40 — HRP -$496 + turnover +41% vs inverse-vol. Both research questions answered NO; both stress gates safe (no -15% breach). Codex did NOT add proposed-learnings or backlog entries; planner judged two observations worth surfacing and per user direction (option A) wrote them into framework/proposed-learnings.md as 待确认 entries: (1) synthetic fixture vs real-data signal reversal warning (B016 saw HRP slightly better on synthetic, real reversed); (2) B013/B010 vs 60/40 gap root cause is NOT L1 trend gating and NOT weighting method — open research question. MVP analysis prepared (per user request) for next-batch recommendation: PRD §10/§11/§4 success criteria all met; §12 last milestone (Broker Adapter Paper) crosses §5 non-MVP line; B017 negative findings suggest gap root cause investigation may be highest-ROI before adding more strategies; alternatives include satellite策略 (BL-B011-S2 medium) / smoothed vol / VIX overlay / pause. role_assignments already null; backlog unchanged (BL-B010-S1 + BL-B011-S2 + BL-B013-D1 + BL-B013-D2).",
+    "planner": "2026-05-15 B018 planning: B017 done wrap-up closed with two negative findings (B015 regime activation policy did NOT shrink B013 gap; B016 HRP did NOT shrink B010 gap). Planner did MVP analysis vs PRD §10/§11/§4/§12 — concluded MVP is functionally complete (5/6 §12 milestones done, last one is Broker Adapter Paper which crosses §5 non-MVP line). Identified the B017 negative findings as a research debt: gap source between B013/B010 and static 60/40 remains unknown despite the two excluded hypotheses. User selected option 1 (推荐方向 B018 Gap root-cause attribution). Decisions captured: (1) mixed batch (2 generator F001-F002 + 3 codex F003-F005); (2) new analysis modules under trade/analysis/, pure stdlib like rest of trade/ (no scipy/numpy/pandas/sklearn); (3) parameter sweep covers vol_target ∈ {0.05, 0.08, 0.10, 0.12, 0.15} + universe ablation (full / drop_SGOV / drop_stabilizers / SPY+IEF / SPY only) + cadence (monthly / quarterly / semiannual / annual); (4) override configs constructed inline, NEVER mutate strategy defaults; (5) diagnostic report with at least 3 Pareto-style recommendations with concrete trade-off numbers; (6) B018 does NOT modify B010/B013/B011/B015/B016 defaults — any retune is a follow-up batch candidate; (7) backwards-compat: existing tests unchanged; (8) manifest-absent fallback: synthetic 9-asset fixture + skipped semantics; (9) reports research-only. Wrote B018 spec and features.json (5 features). Status moved to building for Generator F001.",
     "generator": null,
     "evaluator": null
   },
@@ -38,6 +44,7 @@
     "F001",
     "F002",
     "F003",
-    "F004"
+    "F004",
+    "F005"
   ]
 }
