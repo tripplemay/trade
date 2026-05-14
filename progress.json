@@ -1,5 +1,5 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "按 MVP PRD §12 与 §4.5 在 B011 Master Portfolio 之后实现 Paper Trading prep MVP：定义 Target Positions 输出格式（百分比 + 美元双输出）、Broker Adapter 抽象接口（无真实 broker SDK 导入）、Mock Broker（JSON Lines append-only journal-only，固定研究账户状态）、Backtest→Paper 桥接（任意时间手动触发），同时保持 fixture/mock-first CI、研究-only 语义、no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards。",
   "total_features": 6,
   "completed_features": 5,
@@ -23,7 +23,7 @@
   "docs": {
     "spec": "docs/specs/B012-paper-trading-prep-mvp-spec.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/B012-paper-trading-prep-mvp-signoff-2026-05-14.md",
     "framework_reviewed": true
   },
   "role_assignments": null,
@@ -32,7 +32,7 @@
   "session_notes": {
     "planner": "2026-05-13: Closed B011 done wrap-up (removed BL-B010-S2 absorbed, added BL-B011-S2 satellite strategies, session_notes refreshed). User confirmed next batch direction: B012 Paper Trading prep MVP per MVP PRD §12 + §4.5. Decisions captured: (1) Target Positions output emits BOTH percentage weights AND dollar exposures, (2) Mock Broker journal format = JSON Lines append-only immutable (planner recommendation, accepted by user), (3) Mock Broker returns a fixed research account state (default USD 250000 cash, zero open positions), (4) any-time manual trigger via direct function call — bridge does not enforce cadence. Hard boundary: no real broker SDK import (ib_insync / alpaca / futu / tiger / tradier / polygon), no paper-trading API URL, no simulated fills / P&L tracking. Wrote B012 spec and features.json (6 features: F001-F005 generator + F006 codex). Status moved to building for Generator F001.",
     "generator": "2026-05-13: B012 F001-F005 completed in one session. F001 trade/paper_prep/target_positions.py (TargetPositions + AccountState + DefensiveAllocation + TargetPositionEntry + SCHEMA_VERSION + DISCLAIMER + validate + JSON round-trip). F002 broker_adapter.py (BrokerAdapter ABC + JournalEntry + OpenOrder + FORBIDDEN_BROKER_SDK_MODULES). F003 mock_broker.py (MockBroker journal-only with deterministic journal_entry_id, default USD 250000 cash, gitignored data/paper-prep/ path, injectable clock, side-effect-free constructor). F004 bridge.py (generate_target_positions_from_master + generate_target_positions_from_strategy bridging MasterPortfolioBacktestResult and MonthlyBacktestResult/RiskParityBacktestResult, default-latest period, fail-closed BridgeError on missing signal_date, account-capacity dollar exposures, deterministic target_positions_id). F005 tests/unit/test_paper_prep_safety_guards.py: forbidden broker SDK imports across paper_prep, forbidden network/credential/frontend imports, forbidden API hosts (alpaca.markets, polygon.io, tradier.com, alpaca-paper, ...), forbidden trade language (paper execution / live execution / broker fill / place_order / submit_order / executed-order), no os.environ/os.getenv, research-only docstrings, MockBroker offline construction, bridge fail-closed regression, no writes to trade/data/fixtures/. Updated mock_broker.py docstring wording to avoid the literal phrases being flagged by the new scanner. Full local checks: pytest (219), ruff, compileall, mypy. Status moved to verifying for F006 Codex.",
-    "evaluator": null
+    "evaluator": "2026-05-14: Completed B012 L1 verification on `.venv/bin/python` (Python 3.11.15). Verified 60 targeted B012 tests plus full suite (219), ruff, compileall, and mypy all passed. Confirmed TargetPositions dual-output schema, BrokerAdapter abstract boundary, MockBroker append-only journal behavior, bridge fail-closed semantics, and forbidden import / network / env / execution-language guards. Noted local system `python3` is 3.9.6, so future runs should keep using `.venv/bin/python`."
   },
   "features": [
     "F001",
