@@ -1,0 +1,4861 @@
+{
+  "account_risk": {
+    "drawdown": 0.0,
+    "drawdown_threshold": 0.15,
+    "events": [],
+    "high_water_mark": 126726.20313341531,
+    "human_review_required": false,
+    "kill_switch_active": false,
+    "kill_switch_trigger_drawdown": null,
+    "kill_switch_triggered_at": null
+  },
+  "baselines": {
+    "global_etf_momentum": {
+      "reason": "B006 Global ETF Momentum overlap is reported only when an explicit overlapping backtest result is supplied by the caller.",
+      "status": "skipped"
+    },
+    "risk_parity": {
+      "reason": "B010 Risk Parity overlap is reported only when an explicit overlapping backtest result is supplied by the caller.",
+      "status": "skipped"
+    },
+    "static_60_40": {
+      "ending_value": 158978.38353347202,
+      "equity_curve": [
+        {
+          "date": "2020-06-30",
+          "value": 100000.0
+        },
+        {
+          "date": "2020-07-31",
+          "value": 103848.40741408145
+        },
+        {
+          "date": "2020-08-31",
+          "value": 107483.92472635215
+        },
+        {
+          "date": "2020-09-30",
+          "value": 104887.80477679386
+        },
+        {
+          "date": "2020-10-30",
+          "value": 102592.5966940872
+        },
+        {
+          "date": "2020-11-30",
+          "value": 108934.33540239192
+        },
+        {
+          "date": "2020-12-31",
+          "value": 110810.35937559433
+        },
+        {
+          "date": "2021-01-29",
+          "value": 109593.06194152594
+        },
+        {
+          "date": "2021-02-26",
+          "value": 110065.64525829034
+        },
+        {
+          "date": "2021-03-31",
+          "value": 111690.83068558844
+        },
+        {
+          "date": "2021-04-30",
+          "value": 115089.57923121486
+        },
+        {
+          "date": "2021-05-28",
+          "value": 115250.36553992455
+        },
+        {
+          "date": "2021-06-30",
+          "value": 116768.95836864322
+        },
+        {
+          "date": "2021-07-30",
+          "value": 118875.13755390845
+        },
+        {
+          "date": "2021-08-31",
+          "value": 120569.94883407462
+        },
+        {
+          "date": "2021-09-30",
+          "value": 116551.33059396222
+        },
+        {
+          "date": "2021-10-29",
+          "value": 121065.3255235061
+        },
+        {
+          "date": "2021-11-30",
+          "value": 120576.0767991344
+        },
+        {
+          "date": "2021-12-31",
+          "value": 122894.16240415614
+        },
+        {
+          "date": "2022-01-31",
+          "value": 118000.01561593727
+        },
+        {
+          "date": "2022-02-28",
+          "value": 115243.3003573672
+        },
+        {
+          "date": "2022-03-31",
+          "value": 116645.94823118455
+        },
+        {
+          "date": "2022-04-29",
+          "value": 108741.2235057411
+        },
+        {
+          "date": "2022-05-31",
+          "value": 109366.25150359006
+        },
+        {
+          "date": "2022-06-30",
+          "value": 102906.84624557037
+        },
+        {
+          "date": "2022-07-29",
+          "value": 109465.34154850892
+        },
+        {
+          "date": "2022-08-31",
+          "value": 105841.716411078
+        },
+        {
+          "date": "2022-09-30",
+          "value": 98728.77749250802
+        },
+        {
+          "date": "2022-10-31",
+          "value": 102040.39505918093
+        },
+        {
+          "date": "2022-11-30",
+          "value": 106095.62213535057
+        },
+        {
+          "date": "2022-12-30",
+          "value": 101796.76574613138
+        },
+        {
+          "date": "2025-12-31",
+          "value": 158978.38353347202
+        }
+      ],
+      "label": "static_60_40_etf_defensive_quarterly_rebalance",
+      "note": "static_quarterly_rebalance_using_master_signal_dates",
+      "weights": {
+        "AGG": 0.4,
+        "SPY": 0.6
+      }
+    }
+  },
+  "comparison": {
+    "notes": [
+      "Comparison window starts on 2020-06-01 because SGOV first becomes available then, which is required by B010 default parameters.",
+      "B013 comparison uses the same overlap window for direct parity against B006/B010 and static 60/40."
+    ],
+    "signal_dates": [
+      "2020-06-30",
+      "2020-07-31",
+      "2020-08-31",
+      "2020-09-30",
+      "2020-10-30",
+      "2020-11-30",
+      "2020-12-31",
+      "2021-01-29",
+      "2021-02-26",
+      "2021-03-31",
+      "2021-04-30",
+      "2021-05-28",
+      "2021-06-30",
+      "2021-07-30",
+      "2021-08-31",
+      "2021-09-30",
+      "2021-10-29",
+      "2021-11-30",
+      "2021-12-31",
+      "2022-01-31",
+      "2022-02-28",
+      "2022-03-31",
+      "2022-04-29",
+      "2022-05-31",
+      "2022-06-30",
+      "2022-07-29",
+      "2022-08-31",
+      "2022-09-30",
+      "2022-10-31",
+      "2022-11-30",
+      "2022-12-30"
+    ],
+    "strategies": {
+      "global_etf_momentum": {
+        "CAGR": 0.0037175201969457117,
+        "Sharpe": 0.18766528093068546,
+        "annualized_volatility": 0.02091183150961996,
+        "ending_value": 100963.18779949828,
+        "max_drawdown": -0.030626564701251136,
+        "transaction_costs": 944.5776965081254,
+        "turnover": 40.0
+      },
+      "regime_adaptive": {
+        "CAGR": 0.09602197198664397,
+        "Sharpe": 0.67446126225043,
+        "annualized_volatility": 0.15063570065105453,
+        "ending_value": 126726.20313341531,
+        "gating_activity": {
+          "DBC": {
+            "gated": 7,
+            "passed": 24
+          },
+          "GLD": {
+            "gated": 18,
+            "passed": 13
+          },
+          "IEF": {
+            "gated": 22,
+            "passed": 9
+          },
+          "QQQ": {
+            "gated": 12,
+            "passed": 19
+          },
+          "SGOV": {
+            "gated": 0,
+            "passed": 31
+          },
+          "SPY": {
+            "gated": 9,
+            "passed": 22
+          },
+          "TLT": {
+            "gated": 21,
+            "passed": 10
+          },
+          "VEA": {
+            "gated": 12,
+            "passed": 19
+          },
+          "VWO": {
+            "gated": 18,
+            "passed": 13
+          }
+        },
+        "max_drawdown": -0.022475532689068656,
+        "regime_counts": {
+          "BEAR": 9,
+          "NORMAL": 22
+        },
+        "tolerance_band_statistics": {
+          "forced_full_rebalances": 5,
+          "suppressed_per_period": [
+            [],
+            [
+              "GLD",
+              "IEF",
+              "QQQ",
+              "SPY",
+              "TLT",
+              "VEA",
+              "VWO"
+            ],
+            [
+              "GLD",
+              "QQQ",
+              "SPY",
+              "TLT",
+              "VEA",
+              "VWO"
+            ],
+            [
+              "DBC",
+              "GLD",
+              "QQQ",
+              "SPY"
+            ],
+            [
+              "GLD",
+              "QQQ",
+              "VEA",
+              "VWO"
+            ],
+            [
+              "QQQ",
+              "SPY",
+              "VEA",
+              "VWO"
+            ],
+            [
+              "DBC",
+              "QQQ",
+              "SPY",
+              "VEA",
+              "VWO"
+            ],
+            [
+              "DBC",
+              "QQQ",
+              "SGOV",
+              "SPY",
+              "VEA",
+              "VWO"
+            ],
+            [
+              "DBC",
+              "QQQ",
+              "SPY",
+              "VEA",
+              "VWO"
+            ],
+            [
+              "DBC",
+              "QQQ",
+              "SPY",
+              "VEA",
+              "VWO"
+            ],
+            [
+              "DBC",
+              "QQQ",
+              "SPY",
+              "VEA",
+              "VWO"
+            ],
+            [
+              "DBC",
+              "QQQ",
+              "SPY",
+              "VEA",
+              "VWO"
+            ],
+            [
+              "DBC",
+              "QQQ",
+              "SGOV",
+              "SPY",
+              "VEA",
+              "VWO"
+            ],
+            [
+              "DBC",
+              "QQQ",
+              "SPY",
+              "VEA"
+            ],
+            [
+              "DBC",
+              "IEF",
+              "TLT"
+            ],
+            [
+              "DBC",
+              "QQQ",
+              "SPY",
+              "TLT",
+              "VEA"
+            ],
+            [
+              "DBC",
+              "QQQ",
+              "SGOV",
+              "SPY",
+              "TLT",
+              "VEA"
+            ],
+            [
+              "DBC",
+              "QQQ",
+              "SPY",
+              "TLT"
+            ],
+            [
+              "DBC",
+              "IEF",
+              "QQQ",
+              "SPY",
+              "TLT"
+            ],
+            [
+              "DBC"
+            ],
+            [],
+            [],
+            [],
+            [
+              "DBC"
+            ],
+            [
+              "DBC",
+              "SGOV"
+            ],
+            [
+              "DBC",
+              "SGOV"
+            ],
+            [
+              "DBC",
+              "SGOV"
+            ],
+            [],
+            [],
+            [],
+            []
+          ],
+          "suppressed_total": 97
+        },
+        "transaction_costs": 212.04185934558518,
+        "transitions": [
+          {
+            "from": "NORMAL",
+            "signal_date": "2022-02-28",
+            "to": "BEAR"
+          },
+          {
+            "from": "BEAR",
+            "signal_date": "2022-03-31",
+            "to": "NORMAL"
+          },
+          {
+            "from": "NORMAL",
+            "signal_date": "2022-04-29",
+            "to": "BEAR"
+          },
+          {
+            "from": "BEAR",
+            "signal_date": "2022-11-30",
+            "to": "NORMAL"
+          },
+          {
+            "from": "NORMAL",
+            "signal_date": "2022-12-30",
+            "to": "BEAR"
+          }
+        ],
+        "turnover": 6.95441488615
+      },
+      "risk_parity": {
+        "CAGR": 0.014803422851811465,
+        "Sharpe": 1.0558292159122624,
+        "annualized_volatility": 0.014016156534459633,
+        "ending_value": 103869.16382166126,
+        "max_drawdown": -0.008360811544914304,
+        "transaction_costs": 105.08666758288857,
+        "turnover": 3.4569573223999996
+      },
+      "static_60_40": {
+        "CAGR": 0.19656782313500476,
+        "Sharpe": 0.6268265576820613,
+        "annualized_volatility": 0.3694704509063286,
+        "ending_value": 158978.38353347202,
+        "equity_curve": [
+          {
+            "date": "2020-06-30",
+            "value": 100000.0
+          },
+          {
+            "date": "2020-07-31",
+            "value": 103848.40741408145
+          },
+          {
+            "date": "2020-08-31",
+            "value": 107483.92472635215
+          },
+          {
+            "date": "2020-09-30",
+            "value": 104887.80477679386
+          },
+          {
+            "date": "2020-10-30",
+            "value": 102592.5966940872
+          },
+          {
+            "date": "2020-11-30",
+            "value": 108934.33540239192
+          },
+          {
+            "date": "2020-12-31",
+            "value": 110810.35937559433
+          },
+          {
+            "date": "2021-01-29",
+            "value": 109593.06194152594
+          },
+          {
+            "date": "2021-02-26",
+            "value": 110065.64525829034
+          },
+          {
+            "date": "2021-03-31",
+            "value": 111690.83068558844
+          },
+          {
+            "date": "2021-04-30",
+            "value": 115089.57923121486
+          },
+          {
+            "date": "2021-05-28",
+            "value": 115250.36553992455
+          },
+          {
+            "date": "2021-06-30",
+            "value": 116768.95836864322
+          },
+          {
+            "date": "2021-07-30",
+            "value": 118875.13755390845
+          },
+          {
+            "date": "2021-08-31",
+            "value": 120569.94883407462
+          },
+          {
+            "date": "2021-09-30",
+            "value": 116551.33059396222
+          },
+          {
+            "date": "2021-10-29",
+            "value": 121065.3255235061
+          },
+          {
+            "date": "2021-11-30",
+            "value": 120576.0767991344
+          },
+          {
+            "date": "2021-12-31",
+            "value": 122894.16240415614
+          },
+          {
+            "date": "2022-01-31",
+            "value": 118000.01561593727
+          },
+          {
+            "date": "2022-02-28",
+            "value": 115243.3003573672
+          },
+          {
+            "date": "2022-03-31",
+            "value": 116645.94823118455
+          },
+          {
+            "date": "2022-04-29",
+            "value": 108741.2235057411
+          },
+          {
+            "date": "2022-05-31",
+            "value": 109366.25150359006
+          },
+          {
+            "date": "2022-06-30",
+            "value": 102906.84624557037
+          },
+          {
+            "date": "2022-07-29",
+            "value": 109465.34154850892
+          },
+          {
+            "date": "2022-08-31",
+            "value": 105841.716411078
+          },
+          {
+            "date": "2022-09-30",
+            "value": 98728.77749250802
+          },
+          {
+            "date": "2022-10-31",
+            "value": 102040.39505918093
+          },
+          {
+            "date": "2022-11-30",
+            "value": 106095.62213535057
+          },
+          {
+            "date": "2022-12-30",
+            "value": 101796.76574613138
+          },
+          {
+            "date": "2025-12-31",
+            "value": 158978.38353347202
+          }
+        ],
+        "label": "static_60_40_etf_defensive_quarterly_rebalance",
+        "max_drawdown": -0.19663574281239315,
+        "note": "static_quarterly_rebalance_using_master_signal_dates",
+        "weights": {
+          "AGG": 0.4,
+          "SPY": 0.6
+        }
+      }
+    },
+    "stress_window_comparison": {
+      "2020_overlap_q3_q4": {
+        "global_etf_momentum": {
+          "drawdown_duration_days": 91,
+          "max_drawdown": -0.0149519969914087,
+          "peak_date": "2020-09-02",
+          "points_evaluated": 7,
+          "recovery_date": null,
+          "recovery_time_days": null,
+          "status": "computed",
+          "trough_date": "2020-12-02",
+          "trough_value": 99784.1211423155,
+          "window_end": "2020-12-31",
+          "window_start": "2020-06-01"
+        },
+        "regime_adaptive": {
+          "drawdown_duration_days": -62,
+          "max_drawdown": -0.016193924790144587,
+          "peak_date": "2020-12-31",
+          "points_evaluated": 7,
+          "recovery_date": "2020-12-31",
+          "recovery_time_days": 62,
+          "status": "computed",
+          "trough_date": "2020-10-30",
+          "trough_value": 99633.79693371561,
+          "window_end": "2020-12-31",
+          "window_start": "2020-06-01"
+        },
+        "risk_parity": {
+          "drawdown_duration_days": -61,
+          "max_drawdown": -0.0016016275421261161,
+          "peak_date": "2020-12-02",
+          "points_evaluated": 7,
+          "recovery_date": "2020-12-02",
+          "recovery_time_days": 61,
+          "status": "computed",
+          "trough_date": "2020-10-02",
+          "trough_value": 100349.9240209469,
+          "window_end": "2020-12-31",
+          "window_start": "2020-06-01"
+        },
+        "static_60_40": {
+          "drawdown_duration_days": -62,
+          "max_drawdown": -0.04550753096072724,
+          "peak_date": "2020-12-31",
+          "points_evaluated": 7,
+          "recovery_date": "2020-12-31",
+          "recovery_time_days": 62,
+          "status": "computed",
+          "trough_date": "2020-10-30",
+          "trough_value": 102592.5966940872,
+          "window_end": "2020-12-31",
+          "window_start": "2020-06-01"
+        }
+      },
+      "2022_full_year": {
+        "global_etf_momentum": {
+          "drawdown_duration_days": 150,
+          "max_drawdown": -0.030209592755105596,
+          "peak_date": "2022-07-05",
+          "points_evaluated": 12,
+          "recovery_date": null,
+          "recovery_time_days": null,
+          "status": "computed",
+          "trough_date": "2022-12-02",
+          "trough_value": 101006.6166942594,
+          "window_end": "2022-12-31",
+          "window_start": "2022-01-01"
+        },
+        "regime_adaptive": {
+          "drawdown_duration_days": -124,
+          "max_drawdown": -0.005053597113954811,
+          "peak_date": "2022-11-30",
+          "points_evaluated": 12,
+          "recovery_date": "2022-11-30",
+          "recovery_time_days": 124,
+          "status": "computed",
+          "trough_date": "2022-07-29",
+          "trough_value": 101715.74623204547,
+          "window_end": "2022-12-31",
+          "window_start": "2022-01-01"
+        },
+        "risk_parity": {
+          "drawdown_duration_days": 29,
+          "max_drawdown": -0.008360811544914304,
+          "peak_date": "2022-10-04",
+          "points_evaluated": 12,
+          "recovery_date": null,
+          "recovery_time_days": null,
+          "status": "computed",
+          "trough_date": "2022-11-02",
+          "trough_value": 103557.25043898224,
+          "window_end": "2022-12-31",
+          "window_start": "2022-01-01"
+        },
+        "static_60_40": {
+          "drawdown_duration_days": 242,
+          "max_drawdown": -0.16331555570426937,
+          "peak_date": "2022-01-31",
+          "points_evaluated": 12,
+          "recovery_date": null,
+          "recovery_time_days": null,
+          "status": "computed",
+          "trough_date": "2022-09-30",
+          "trough_value": 98728.77749250802,
+          "window_end": "2022-12-31",
+          "window_start": "2022-01-01"
+        }
+      }
+    },
+    "window_end": "2022-12-31",
+    "window_start": "2020-06-01"
+  },
+  "data": {
+    "checksum": "38bb62ec5d1344330ea490adb3c4d2d68ccf2ddee599bc3acf5983b0ef9d2fa4",
+    "comparison_bundle": {
+      "note": "Supplemental AGG/EEM pulls were added so the default B006/B010 baselines could be executed on the same overlap window.",
+      "symbols": [
+        "AGG",
+        "EEM"
+      ]
+    },
+    "data_snapshot_id": "snapshot:38bb62ec5d134433",
+    "date_range": {
+      "end": "2025-12-31",
+      "start": "2018-01-02"
+    },
+    "snapshot_manifest": {
+      "path": "/Users/yixingzhou/project/trade/data/public-cache/regime-adaptive-prices-manifest.json",
+      "snapshot_id": "regime-adaptive:8e923fbfdfb7ffad"
+    },
+    "source": "manual-public-data-import+yfinance-comparison-bundle"
+  },
+  "execution": {
+    "equity_curve": [
+      {
+        "date": "2020-06-30",
+        "value": 100000.0
+      },
+      {
+        "date": "2020-07-31",
+        "value": 101101.61738618286
+      },
+      {
+        "date": "2020-08-31",
+        "value": 101273.81751780985
+      },
+      {
+        "date": "2020-09-30",
+        "value": 100648.7178536252
+      },
+      {
+        "date": "2020-10-30",
+        "value": 99633.79693371561
+      },
+      {
+        "date": "2020-11-30",
+        "value": 101042.50644636241
+      },
+      {
+        "date": "2020-12-31",
+        "value": 101978.63049791502
+      },
+      {
+        "date": "2021-01-29",
+        "value": 101702.63970971078
+      },
+      {
+        "date": "2021-02-26",
+        "value": 102330.27942615208
+      },
+      {
+        "date": "2021-03-31",
+        "value": 102373.23012843431
+      },
+      {
+        "date": "2021-04-30",
+        "value": 103293.1933378686
+      },
+      {
+        "date": "2021-05-28",
+        "value": 103667.43079476758
+      },
+      {
+        "date": "2021-06-30",
+        "value": 103341.26269582077
+      },
+      {
+        "date": "2021-07-30",
+        "value": 103264.77028923457
+      },
+      {
+        "date": "2021-08-31",
+        "value": 103290.59699553702
+      },
+      {
+        "date": "2021-09-30",
+        "value": 101337.45006514802
+      },
+      {
+        "date": "2021-10-29",
+        "value": 103207.2817417675
+      },
+      {
+        "date": "2021-11-30",
+        "value": 102509.5710208699
+      },
+      {
+        "date": "2021-12-31",
+        "value": 103012.02142647421
+      },
+      {
+        "date": "2022-01-31",
+        "value": 101505.12703686288
+      },
+      {
+        "date": "2022-02-28",
+        "value": 101719.04044864717
+      },
+      {
+        "date": "2022-03-31",
+        "value": 102232.38753062293
+      },
+      {
+        "date": "2022-04-29",
+        "value": 101927.30496481265
+      },
+      {
+        "date": "2022-05-31",
+        "value": 102178.99153874352
+      },
+      {
+        "date": "2022-06-30",
+        "value": 101830.46878594167
+      },
+      {
+        "date": "2022-07-29",
+        "value": 101715.74623204547
+      },
+      {
+        "date": "2022-08-31",
+        "value": 101932.61797914983
+      },
+      {
+        "date": "2022-09-30",
+        "value": 101854.73863856062
+      },
+      {
+        "date": "2022-10-31",
+        "value": 102045.10442674847
+      },
+      {
+        "date": "2022-11-30",
+        "value": 102340.77395167497
+      },
+      {
+        "date": "2022-12-30",
+        "value": 102268.59068768877
+      },
+      {
+        "date": "2025-12-31",
+        "value": 126726.20313341531
+      }
+    ],
+    "rebalance_count": 31,
+    "rebalance_trace": [
+      {
+        "cost_amount": 29.999999998124995,
+        "effective_weights": {
+          "DBC": 0.0,
+          "GLD": 0.0508759395625,
+          "IEF": 0.0730541385625,
+          "QQQ": 0.0236936294375,
+          "SGOV": 0.7912738898125,
+          "SPY": 0.0236359493125,
+          "TLT": 0.03746645325,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "ending_value": 101101.61738618286,
+        "execution_date": "2020-07-01",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 22,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "DBC",
+            "VEA",
+            "VWO"
+          ],
+          "passing": [
+            "GLD",
+            "IEF",
+            "QQQ",
+            "SGOV",
+            "SPY",
+            "TLT"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 0.0,
+          "fast_volatility": 0.0,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.0,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2020-06-30",
+        "starting_value": 100000.0,
+        "suppressed_by_tolerance": [],
+        "target_weights": {
+          "DBC": 0.0,
+          "GLD": 0.0508759395625,
+          "IEF": 0.0730541385625,
+          "QQQ": 0.0236936294375,
+          "SGOV": 0.7912738898125,
+          "SPY": 0.0236359493125,
+          "TLT": 0.03746645325,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "turnover": 0.9999999999375,
+        "valuation_date": "2020-07-31"
+      },
+      {
+        "cost_amount": 1.8956554828381536e-09,
+        "effective_weights": {
+          "DBC": 0.0,
+          "GLD": 0.0508759395625,
+          "IEF": 0.0730541385625,
+          "QQQ": 0.0236936294375,
+          "SGOV": 0.791273889875,
+          "SPY": 0.0236359493125,
+          "TLT": 0.03746645325,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "ending_value": 101273.81751780985,
+        "execution_date": "2020-08-03",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 44,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "DBC"
+          ],
+          "passing": [
+            "GLD",
+            "IEF",
+            "QQQ",
+            "SGOV",
+            "SPY",
+            "TLT",
+            "VEA",
+            "VWO"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 0.3462434938770643,
+          "fast_volatility": 0.04132206294431532,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.11934394053621394,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2020-07-31",
+        "starting_value": 101101.61738618286,
+        "suppressed_by_tolerance": [
+          "GLD",
+          "IEF",
+          "QQQ",
+          "SPY",
+          "TLT",
+          "VEA",
+          "VWO"
+        ],
+        "target_weights": {
+          "DBC": 0.0,
+          "GLD": 0.0475611185,
+          "IEF": 0.094296443325,
+          "QQQ": 0.022240650075,
+          "SGOV": 0.7305815905125,
+          "SPY": 0.0223976027625,
+          "TLT": 0.03577835415,
+          "VEA": 0.023774868162499997,
+          "VWO": 0.0233693726
+        },
+        "turnover": 6.250000517127319e-11,
+        "valuation_date": "2020-08-31"
+      },
+      {
+        "cost_amount": 5.561096299163277,
+        "effective_weights": {
+          "DBC": 0.0431160298,
+          "GLD": 0.0508759395625,
+          "IEF": 0.1214572601,
+          "QQQ": 0.0236936294375,
+          "SGOV": 0.6997547385375,
+          "SPY": 0.0236359493125,
+          "TLT": 0.03746645325,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "ending_value": 100648.7178536252,
+        "execution_date": "2020-09-01",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 65,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [],
+          "passing": [
+            "DBC",
+            "GLD",
+            "IEF",
+            "QQQ",
+            "SGOV",
+            "SPY",
+            "TLT",
+            "VEA",
+            "VWO"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 0.9529285355978769,
+          "fast_volatility": 0.11192414715713185,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.11745282356027834,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2020-08-31",
+        "starting_value": 101273.81751780985,
+        "suppressed_by_tolerance": [
+          "GLD",
+          "QQQ",
+          "SPY",
+          "TLT",
+          "VEA",
+          "VWO"
+        ],
+        "target_weights": {
+          "DBC": 0.0431160298,
+          "GLD": 0.0440269727,
+          "IEF": 0.1214572601,
+          "QQQ": 0.0244976965,
+          "SGOV": 0.6522875669,
+          "SPY": 0.0248323507,
+          "TLT": 0.0395259006,
+          "VEA": 0.025575182,
+          "VWO": 0.0246810407
+        },
+        "turnover": 0.183038302675,
+        "valuation_date": "2020-09-30"
+      },
+      {
+        "cost_amount": 12.448702703815796,
+        "effective_weights": {
+          "DBC": 0.0431160298,
+          "GLD": 0.0508759395625,
+          "IEF": 0.1971265588,
+          "QQQ": 0.0236936294375,
+          "SGOV": 0.49361363428749994,
+          "SPY": 0.0236359493125,
+          "TLT": 0.0747511493,
+          "VEA": 0.04802703,
+          "VWO": 0.0451600795
+        },
+        "ending_value": 99633.79693371561,
+        "execution_date": "2020-10-01",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 86,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [],
+          "passing": [
+            "DBC",
+            "GLD",
+            "IEF",
+            "QQQ",
+            "SGOV",
+            "SPY",
+            "TLT",
+            "VEA",
+            "VWO"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 1.0269789541226715,
+          "fast_volatility": 0.0740488997291797,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.07210361948696238,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2020-09-30",
+        "starting_value": 100648.7178536252,
+        "suppressed_by_tolerance": [
+          "DBC",
+          "GLD",
+          "QQQ",
+          "SPY"
+        ],
+        "target_weights": {
+          "DBC": 0.0529823061,
+          "GLD": 0.0585444952,
+          "IEF": 0.1971265588,
+          "QQQ": 0.0395427336,
+          "SGOV": 0.4367812606,
+          "SPY": 0.047084387,
+          "TLT": 0.0747511493,
+          "VEA": 0.04802703,
+          "VWO": 0.0451600795
+        },
+        "turnover": 0.4122822085000001,
+        "valuation_date": "2020-10-30"
+      },
+      {
+        "cost_amount": 10.162776056947166,
+        "effective_weights": {
+          "DBC": 0.0,
+          "GLD": 0.0508759395625,
+          "IEF": 0.14499158385,
+          "QQQ": 0.0236936294375,
+          "SGOV": 0.6334469406750001,
+          "SPY": 0.053804796975,
+          "TLT": 0.0,
+          "VEA": 0.04802703,
+          "VWO": 0.0451600795
+        },
+        "ending_value": 101042.50644636241,
+        "execution_date": "2020-11-02",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 108,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "DBC",
+            "TLT"
+          ],
+          "passing": [
+            "GLD",
+            "IEF",
+            "QQQ",
+            "SGOV",
+            "SPY",
+            "VEA",
+            "VWO"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 0.9212602059843075,
+          "fast_volatility": 0.06085861832724973,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.06606018357454851,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2020-10-30",
+        "starting_value": 99633.79693371561,
+        "suppressed_by_tolerance": [
+          "GLD",
+          "QQQ",
+          "VEA",
+          "VWO"
+        ],
+        "target_weights": {
+          "DBC": 0.0,
+          "GLD": 0.06431336227500001,
+          "IEF": 0.14499158385,
+          "QQQ": 0.0431719038,
+          "SGOV": 0.585738331825,
+          "SPY": 0.053804796975,
+          "TLT": 0.0,
+          "VEA": 0.055653624675,
+          "VWO": 0.05232639659999999
+        },
+        "turnover": 0.3400043081000001,
+        "valuation_date": "2020-11-30"
+      },
+      {
+        "cost_amount": 11.87456729822434,
+        "effective_weights": {
+          "DBC": 0.061143473125,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0236936294375,
+          "SGOV": 0.7681709909625,
+          "SPY": 0.053804796975,
+          "TLT": 0.0,
+          "VEA": 0.04802703,
+          "VWO": 0.0451600795
+        },
+        "ending_value": 101978.63049791502,
+        "execution_date": "2020-12-01",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 128,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "GLD",
+            "IEF",
+            "TLT"
+          ],
+          "passing": [
+            "DBC",
+            "QQQ",
+            "SGOV",
+            "SPY",
+            "VEA",
+            "VWO"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 0.9458414391935064,
+          "fast_volatility": 0.08998472842669579,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.0951372235323326,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2020-11-30",
+        "starting_value": 101042.50644636241,
+        "suppressed_by_tolerance": [
+          "QQQ",
+          "SPY",
+          "VEA",
+          "VWO"
+        ],
+        "target_weights": {
+          "DBC": 0.061143473125,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.037812159750000005,
+          "SGOV": 0.747200743375,
+          "SPY": 0.050225025375,
+          "TLT": 0.0,
+          "VEA": 0.0529878566875,
+          "VWO": 0.0506307416875
+        },
+        "turnover": 0.39173504682499993,
+        "valuation_date": "2020-12-31"
+      },
+      {
+        "cost_amount": 3.2931332319742523,
+        "effective_weights": {
+          "DBC": 0.061143473125,
+          "GLD": 0.05382064222499999,
+          "IEF": 0.0,
+          "QQQ": 0.0236936294375,
+          "SGOV": 0.7143503487375,
+          "SPY": 0.053804796975,
+          "TLT": 0.0,
+          "VEA": 0.04802703,
+          "VWO": 0.0451600795
+        },
+        "ending_value": 101702.63970971078,
+        "execution_date": "2021-01-04",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 150,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "IEF",
+            "TLT"
+          ],
+          "passing": [
+            "DBC",
+            "GLD",
+            "QQQ",
+            "SGOV",
+            "SPY",
+            "VEA",
+            "VWO"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 0.586920734992192,
+          "fast_volatility": 0.08165484248566787,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.1391241399688395,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2020-12-31",
+        "starting_value": 101978.63049791502,
+        "suppressed_by_tolerance": [
+          "DBC",
+          "QQQ",
+          "SPY",
+          "VEA",
+          "VWO"
+        ],
+        "target_weights": {
+          "DBC": 0.067615081725,
+          "GLD": 0.05382064222499999,
+          "IEF": 0.0,
+          "QQQ": 0.04113918825,
+          "SGOV": 0.6535152991,
+          "SPY": 0.060632263199999994,
+          "TLT": 0.0,
+          "VEA": 0.062162540475,
+          "VWO": 0.061114985025
+        },
+        "turnover": 0.10764128444999993,
+        "valuation_date": "2021-01-29"
+      },
+      {
+        "cost_amount": 3.284220831092654,
+        "effective_weights": {
+          "DBC": 0.061143473125,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0236936294375,
+          "SGOV": 0.7681709909625001,
+          "SPY": 0.053804796975,
+          "TLT": 0.0,
+          "VEA": 0.04802703,
+          "VWO": 0.0451600795
+        },
+        "ending_value": 102330.27942615208,
+        "execution_date": "2021-02-01",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 169,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "GLD",
+            "IEF",
+            "TLT"
+          ],
+          "passing": [
+            "DBC",
+            "QQQ",
+            "SGOV",
+            "SPY",
+            "VEA",
+            "VWO"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 0.9937447783433114,
+          "fast_volatility": 0.13136347929008763,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.13219035928831332,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2021-01-29",
+        "starting_value": 101702.63970971078,
+        "suppressed_by_tolerance": [
+          "DBC",
+          "QQQ",
+          "SGOV",
+          "SPY",
+          "VEA",
+          "VWO"
+        ],
+        "target_weights": {
+          "DBC": 0.064918057375,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.040716778625000005,
+          "SGOV": 0.717208792375,
+          "SPY": 0.05808784,
+          "TLT": 0.0,
+          "VEA": 0.0610634516875,
+          "VWO": 0.058005079937499995
+        },
+        "turnover": 0.10764128445000004,
+        "valuation_date": "2021-02-26"
+      },
+      {
+        "cost_amount": 0.0,
+        "effective_weights": {
+          "DBC": 0.061143473125,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0236936294375,
+          "SGOV": 0.7681709909625001,
+          "SPY": 0.053804796975,
+          "TLT": 0.0,
+          "VEA": 0.04802703,
+          "VWO": 0.0451600795
+        },
+        "ending_value": 102373.23012843431,
+        "execution_date": "2021-03-01",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 188,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "GLD",
+            "IEF",
+            "TLT"
+          ],
+          "passing": [
+            "DBC",
+            "QQQ",
+            "SGOV",
+            "SPY",
+            "VEA",
+            "VWO"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 1.0064664761204642,
+          "fast_volatility": 0.14530582693063646,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.14437224724139222,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2021-02-26",
+        "starting_value": 102330.27942615208,
+        "suppressed_by_tolerance": [
+          "DBC",
+          "QQQ",
+          "SPY",
+          "VEA",
+          "VWO"
+        ],
+        "target_weights": {
+          "DBC": 0.0624510961875,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0420567804375,
+          "SGOV": 0.7177338413750001,
+          "SPY": 0.059295290875,
+          "TLT": 0.0,
+          "VEA": 0.0623610624375,
+          "VWO": 0.0561019286875
+        },
+        "turnover": 0.0,
+        "valuation_date": "2021-03-31"
+      },
+      {
+        "cost_amount": 3.409713515815126e-15,
+        "effective_weights": {
+          "DBC": 0.061143473125,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0236936294375,
+          "SGOV": 0.7681709909625,
+          "SPY": 0.053804796975,
+          "TLT": 0.0,
+          "VEA": 0.04802703,
+          "VWO": 0.0451600795
+        },
+        "ending_value": 103293.1933378686,
+        "execution_date": "2021-04-01",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 211,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "GLD",
+            "IEF",
+            "TLT"
+          ],
+          "passing": [
+            "DBC",
+            "QQQ",
+            "SGOV",
+            "SPY",
+            "VEA",
+            "VWO"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 1.2158898581491924,
+          "fast_volatility": 0.17368883734089674,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.14284915379200797,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2021-03-31",
+        "starting_value": 102373.23012843431,
+        "suppressed_by_tolerance": [
+          "DBC",
+          "QQQ",
+          "SPY",
+          "VEA",
+          "VWO"
+        ],
+        "target_weights": {
+          "DBC": 0.0553387755625,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.043546340875,
+          "SGOV": 0.721291442375,
+          "SPY": 0.0642206040625,
+          "TLT": 0.0,
+          "VEA": 0.0645819761875,
+          "VWO": 0.0510208609375
+        },
+        "turnover": 1.1102230246251565e-16,
+        "valuation_date": "2021-04-30"
+      },
+      {
+        "cost_amount": 0.0,
+        "effective_weights": {
+          "DBC": 0.061143473125,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0236936294375,
+          "SGOV": 0.7681709909625,
+          "SPY": 0.053804796975,
+          "TLT": 0.0,
+          "VEA": 0.04802703,
+          "VWO": 0.0451600795
+        },
+        "ending_value": 103667.43079476758,
+        "execution_date": "2021-05-03",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 232,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "GLD",
+            "IEF",
+            "TLT"
+          ],
+          "passing": [
+            "DBC",
+            "QQQ",
+            "SGOV",
+            "SPY",
+            "VEA",
+            "VWO"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 0.6526535557154888,
+          "fast_volatility": 0.08347230747191611,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.12789680948019563,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2021-04-30",
+        "starting_value": 103293.1933378686,
+        "suppressed_by_tolerance": [
+          "DBC",
+          "QQQ",
+          "SPY",
+          "VEA",
+          "VWO"
+        ],
+        "target_weights": {
+          "DBC": 0.0570672198125,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0491826644375,
+          "SGOV": 0.695130658625,
+          "SPY": 0.07435018993749999,
+          "TLT": 0.0,
+          "VEA": 0.07082617925,
+          "VWO": 0.053443087937499995
+        },
+        "turnover": 0.0,
+        "valuation_date": "2021-05-28"
+      },
+      {
+        "cost_amount": 4.257513850588488,
+        "effective_weights": {
+          "DBC": 0.061143473125,
+          "GLD": 0.0684482712,
+          "IEF": 0.0,
+          "QQQ": 0.0236936294375,
+          "SGOV": 0.6997227197625,
+          "SPY": 0.053804796975,
+          "TLT": 0.0,
+          "VEA": 0.04802703,
+          "VWO": 0.0451600795
+        },
+        "ending_value": 103341.26269582077,
+        "execution_date": "2021-06-01",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 252,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "IEF",
+            "TLT"
+          ],
+          "passing": [
+            "DBC",
+            "GLD",
+            "QQQ",
+            "SGOV",
+            "SPY",
+            "VEA",
+            "VWO"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 0.9164281908518972,
+          "fast_volatility": 0.11794044100133314,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.12869578018076633,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2021-05-28",
+        "starting_value": 103667.43079476758,
+        "suppressed_by_tolerance": [
+          "DBC",
+          "QQQ",
+          "SPY",
+          "VEA",
+          "VWO"
+        ],
+        "target_weights": {
+          "DBC": 0.054299327475000006,
+          "GLD": 0.0684482712,
+          "IEF": 0.0,
+          "QQQ": 0.047766960375,
+          "SGOV": 0.628408497775,
+          "SPY": 0.073493808225,
+          "TLT": 0.0,
+          "VEA": 0.07450510604999999,
+          "VWO": 0.053078028900000004
+        },
+        "turnover": 0.13689654239999996,
+        "valuation_date": "2021-06-30"
+      },
+      {
+        "cost_amount": 4.2441184650923915,
+        "effective_weights": {
+          "DBC": 0.061143473125,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0236936294375,
+          "SGOV": 0.7681709909625001,
+          "SPY": 0.053804796975,
+          "TLT": 0.0,
+          "VEA": 0.04802703,
+          "VWO": 0.0451600795
+        },
+        "ending_value": 103264.77028923457,
+        "execution_date": "2021-07-01",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 274,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "GLD",
+            "IEF",
+            "TLT"
+          ],
+          "passing": [
+            "DBC",
+            "QQQ",
+            "SGOV",
+            "SPY",
+            "VEA",
+            "VWO"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 0.818365200097472,
+          "fast_volatility": 0.09551736629157603,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.11671728744110742,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2021-06-30",
+        "starting_value": 103341.26269582077,
+        "suppressed_by_tolerance": [
+          "DBC",
+          "QQQ",
+          "SGOV",
+          "SPY",
+          "VEA",
+          "VWO"
+        ],
+        "target_weights": {
+          "DBC": 0.053879848812500006,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.04878391243750001,
+          "SGOV": 0.6945320591874999,
+          "SPY": 0.0748771884375,
+          "TLT": 0.0,
+          "VEA": 0.0738758886875,
+          "VWO": 0.054051102562499995
+        },
+        "turnover": 0.13689654240000007,
+        "valuation_date": "2021-07-30"
+      },
+      {
+        "cost_amount": 15.68564493825478,
+        "effective_weights": {
+          "DBC": 0.061143473125,
+          "GLD": 0.0,
+          "IEF": 0.18022189125,
+          "QQQ": 0.0236936294375,
+          "SGOV": 0.5601688207375,
+          "SPY": 0.053804796975,
+          "TLT": 0.07294035847500001,
+          "VEA": 0.04802703,
+          "VWO": 0.0
+        },
+        "ending_value": 103290.59699553702,
+        "execution_date": "2021-08-02",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 295,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "GLD",
+            "VWO"
+          ],
+          "passing": [
+            "DBC",
+            "IEF",
+            "QQQ",
+            "SGOV",
+            "SPY",
+            "TLT",
+            "VEA"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 1.1329361785831988,
+          "fast_volatility": 0.13932453611959783,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.12297650896260642,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2021-07-30",
+        "starting_value": 103264.77028923457,
+        "suppressed_by_tolerance": [
+          "DBC",
+          "QQQ",
+          "SPY",
+          "VEA"
+        ],
+        "target_weights": {
+          "DBC": 0.050662809674999996,
+          "GLD": 0.0,
+          "IEF": 0.18022189125,
+          "QQQ": 0.052840540650000004,
+          "SGOV": 0.48508031065,
+          "SPY": 0.080853780675,
+          "TLT": 0.07294035847500001,
+          "VEA": 0.077400308625,
+          "VWO": 0.0
+        },
+        "turnover": 0.5063244994500001,
+        "valuation_date": "2021-08-31"
+      },
+      {
+        "cost_amount": 15.963532201050894,
+        "effective_weights": {
+          "DBC": 0.061143473125,
+          "GLD": 0.0783491114,
+          "IEF": 0.18022189125,
+          "QQQ": 0.0675676239,
+          "SGOV": 0.30258596444999997,
+          "SPY": 0.0939720663,
+          "TLT": 0.07294035847500001,
+          "VEA": 0.0812740098,
+          "VWO": 0.0619455013
+        },
+        "ending_value": 101337.45006514802,
+        "execution_date": "2021-09-01",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 317,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [],
+          "passing": [
+            "DBC",
+            "GLD",
+            "IEF",
+            "QQQ",
+            "SGOV",
+            "SPY",
+            "TLT",
+            "VEA",
+            "VWO"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 1.0133355612708435,
+          "fast_volatility": 0.06054131454705509,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.05974458694721921,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2021-08-31",
+        "starting_value": 103290.59699553702,
+        "suppressed_by_tolerance": [
+          "DBC",
+          "IEF",
+          "TLT"
+        ],
+        "target_weights": {
+          "DBC": 0.0480959924,
+          "GLD": 0.0783491114,
+          "IEF": 0.2094295613,
+          "QQQ": 0.0675676239,
+          "SGOV": 0.2778350234,
+          "SPY": 0.0939720663,
+          "TLT": 0.0815311102,
+          "VEA": 0.0812740098,
+          "VWO": 0.0619455013
+        },
+        "turnover": 0.515165712575,
+        "valuation_date": "2021-09-30"
+      },
+      {
+        "cost_amount": 19.488195128453363,
+        "effective_weights": {
+          "DBC": 0.061143473125,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0675676239,
+          "SGOV": 0.6231024683999999,
+          "SPY": 0.0939720663,
+          "TLT": 0.07294035847500001,
+          "VEA": 0.0812740098,
+          "VWO": 0.0
+        },
+        "ending_value": 103207.2817417675,
+        "execution_date": "2021-10-01",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 338,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "GLD",
+            "IEF",
+            "VWO"
+          ],
+          "passing": [
+            "DBC",
+            "QQQ",
+            "SGOV",
+            "SPY",
+            "TLT",
+            "VEA"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 1.0395515211017237,
+          "fast_volatility": 0.07028757579497924,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.0676133643866809,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2021-09-30",
+        "starting_value": 101337.45006514802,
+        "suppressed_by_tolerance": [
+          "DBC",
+          "QQQ",
+          "SPY",
+          "TLT",
+          "VEA"
+        ],
+        "target_weights": {
+          "DBC": 0.054626292874999996,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.07159890399999999,
+          "SGOV": 0.6240796063125,
+          "SPY": 0.0904528616875,
+          "TLT": 0.08065929143749999,
+          "VEA": 0.07858304368749999,
+          "VWO": 0.0
+        },
+        "turnover": 0.6410330079,
+        "valuation_date": "2021-10-29"
+      },
+      {
+        "cost_amount": 0.0,
+        "effective_weights": {
+          "DBC": 0.061143473125,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0675676239,
+          "SGOV": 0.6231024683999999,
+          "SPY": 0.0939720663,
+          "TLT": 0.07294035847500001,
+          "VEA": 0.0812740098,
+          "VWO": 0.0
+        },
+        "ending_value": 102509.5710208699,
+        "execution_date": "2021-11-01",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 359,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "GLD",
+            "IEF",
+            "VWO"
+          ],
+          "passing": [
+            "DBC",
+            "QQQ",
+            "SGOV",
+            "SPY",
+            "TLT",
+            "VEA"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 0.8163119896020166,
+          "fast_volatility": 0.069807905960055,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.08551620807883642,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2021-10-29",
+        "starting_value": 103207.2817417675,
+        "suppressed_by_tolerance": [
+          "DBC",
+          "QQQ",
+          "SGOV",
+          "SPY",
+          "TLT",
+          "VEA"
+        ],
+        "target_weights": {
+          "DBC": 0.053695622375,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0742421445625,
+          "SGOV": 0.6233220629375,
+          "SPY": 0.0894014075,
+          "TLT": 0.0765261336875,
+          "VEA": 0.08281262893750001,
+          "VWO": 0.0
+        },
+        "turnover": 0.0,
+        "valuation_date": "2021-11-30"
+      },
+      {
+        "cost_amount": 9.589703636553015,
+        "effective_weights": {
+          "DBC": 0.061143473125,
+          "GLD": 0.0,
+          "IEF": 0.1559155816875,
+          "QQQ": 0.0675676239,
+          "SGOV": 0.5484608965125,
+          "SPY": 0.0939720663,
+          "TLT": 0.07294035847500001,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "ending_value": 103012.02142647421,
+        "execution_date": "2021-12-01",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 380,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "GLD",
+            "VEA",
+            "VWO"
+          ],
+          "passing": [
+            "DBC",
+            "IEF",
+            "QQQ",
+            "SGOV",
+            "SPY",
+            "TLT"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 1.2419135998024984,
+          "fast_volatility": 0.10646874177049111,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.08572958842501027,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2021-11-30",
+        "starting_value": 102509.5710208699,
+        "suppressed_by_tolerance": [
+          "DBC",
+          "QQQ",
+          "SPY",
+          "TLT"
+        ],
+        "target_weights": {
+          "DBC": 0.0499284760625,
+          "GLD": 0.0,
+          "IEF": 0.1559155816875,
+          "QQQ": 0.0782260565,
+          "SGOV": 0.5545269095,
+          "SPY": 0.09142734293749999,
+          "TLT": 0.069975633375,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "turnover": 0.311831163375,
+        "valuation_date": "2021-12-31"
+      },
+      {
+        "cost_amount": 9.946607459243445,
+        "effective_weights": {
+          "DBC": 0.061143473125,
+          "GLD": 0.08067996632499999,
+          "IEF": 0.1559155816875,
+          "QQQ": 0.0675676239,
+          "SGOV": 0.3875313383,
+          "SPY": 0.0939720663,
+          "TLT": 0.07294035847500001,
+          "VEA": 0.0802495918875,
+          "VWO": 0.0
+        },
+        "ending_value": 101505.12703686288,
+        "execution_date": "2022-01-03",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 402,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "VWO"
+          ],
+          "passing": [
+            "DBC",
+            "GLD",
+            "IEF",
+            "QQQ",
+            "SGOV",
+            "SPY",
+            "TLT",
+            "VEA"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 1.1368429643651703,
+          "fast_volatility": 0.07222996739513804,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.0635355714546488,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2021-12-31",
+        "starting_value": 103012.02142647421,
+        "suppressed_by_tolerance": [
+          "DBC",
+          "IEF",
+          "QQQ",
+          "SPY",
+          "TLT"
+        ],
+        "target_weights": {
+          "DBC": 0.048635479725,
+          "GLD": 0.08067996632499999,
+          "IEF": 0.1782989116125,
+          "QQQ": 0.06282567095,
+          "SGOV": 0.40243154136250003,
+          "SPY": 0.078678930225,
+          "TLT": 0.0681999079125,
+          "VEA": 0.0802495918875,
+          "VWO": 0.0
+        },
+        "turnover": 0.321859116425,
+        "valuation_date": "2022-01-31"
+      },
+      {
+        "cost_amount": 29.90545017718544,
+        "effective_weights": {
+          "DBC": 0.061143473125,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 0.878564830075,
+          "SPY": 0.0602916968,
+          "TLT": 0.0,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "ending_value": 101719.04044864717,
+        "execution_date": "2022-02-01",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 422,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "GLD",
+            "IEF",
+            "QQQ",
+            "TLT",
+            "VEA",
+            "VWO"
+          ],
+          "passing": [
+            "DBC",
+            "SGOV",
+            "SPY"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 1.220679629306219,
+          "fast_volatility": 0.08795342748809794,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.07205283464760269,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2022-01-31",
+        "starting_value": 101505.12703686288,
+        "suppressed_by_tolerance": [
+          "DBC"
+        ],
+        "target_weights": {
+          "DBC": 0.0602916968,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 0.8794166064,
+          "SPY": 0.0602916968,
+          "TLT": 0.0,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "turnover": 0.98206698355,
+        "valuation_date": "2022-02-28"
+      },
+      {
+        "cost_amount": 4.436997279339553,
+        "effective_weights": {
+          "DBC": 0.0669218409,
+          "GLD": 0.0669218409,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 0.866156318225,
+          "SPY": 0.0,
+          "TLT": 0.0,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "ending_value": 102232.38753062293,
+        "execution_date": "2022-03-01",
+        "forced_rebalance_by_regime_transition": true,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 441,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "IEF",
+            "QQQ",
+            "SPY",
+            "TLT",
+            "VEA",
+            "VWO"
+          ],
+          "passing": [
+            "DBC",
+            "GLD",
+            "SGOV"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 0.7532240475486848,
+          "fast_volatility": 0.10401571425455713,
+          "human_review_required": false,
+          "regime": "BEAR",
+          "slow_volatility": 0.13809399021853994,
+          "spy_trend_signal": false,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2022-02-28",
+        "starting_value": 101719.04044864717,
+        "suppressed_by_tolerance": [],
+        "target_weights": {
+          "DBC": 0.0669218409,
+          "GLD": 0.0669218409,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 0.866156318225,
+          "SPY": 0.0,
+          "TLT": 0.0,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "turnover": 0.14540041732499992,
+        "valuation_date": "2022-03-31"
+      },
+      {
+        "cost_amount": 3.3389327911774367,
+        "effective_weights": {
+          "DBC": 0.04665746445,
+          "GLD": 0.0544337085,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 0.8444751185125,
+          "SPY": 0.0544337085,
+          "TLT": 0.0,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "ending_value": 101927.30496481265,
+        "execution_date": "2022-04-01",
+        "forced_rebalance_by_regime_transition": true,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 464,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "IEF",
+            "QQQ",
+            "TLT",
+            "VEA",
+            "VWO"
+          ],
+          "passing": [
+            "DBC",
+            "GLD",
+            "SGOV",
+            "SPY"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 1.8883704345267895,
+          "fast_volatility": 0.33511121943990696,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.17746053068442746,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2022-03-31",
+        "starting_value": 102232.38753062293,
+        "suppressed_by_tolerance": [],
+        "target_weights": {
+          "DBC": 0.04665746445,
+          "GLD": 0.0544337085,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 0.8444751185125,
+          "SPY": 0.0544337085,
+          "TLT": 0.0,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "turnover": 0.10886741706250005,
+        "valuation_date": "2022-04-29"
+      },
+      {
+        "cost_amount": 3.6857435171075315,
+        "effective_weights": {
+          "DBC": 0.0485998973,
+          "GLD": 0.0485998973,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 0.9028002053999999,
+          "SPY": 0.0,
+          "TLT": 0.0,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "ending_value": 102178.99153874352,
+        "execution_date": "2022-05-02",
+        "forced_rebalance_by_regime_transition": true,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 484,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "IEF",
+            "QQQ",
+            "SPY",
+            "TLT",
+            "VEA",
+            "VWO"
+          ],
+          "passing": [
+            "DBC",
+            "GLD",
+            "SGOV"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 1.0900481712372545,
+          "fast_volatility": 0.1413944539014094,
+          "human_review_required": false,
+          "regime": "BEAR",
+          "slow_volatility": 0.1297139499265617,
+          "spy_trend_signal": false,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2022-04-29",
+        "starting_value": 101927.30496481265,
+        "suppressed_by_tolerance": [],
+        "target_weights": {
+          "DBC": 0.0485998973,
+          "GLD": 0.0485998973,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 0.9028002053999999,
+          "SPY": 0.0,
+          "TLT": 0.0,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "turnover": 0.12053503943749992,
+        "valuation_date": "2022-05-31"
+      },
+      {
+        "cost_amount": 2.979533097000303,
+        "effective_weights": {
+          "DBC": 0.0485998973,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 0.9514001027,
+          "SPY": 0.0,
+          "TLT": 0.0,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "ending_value": 101830.46878594167,
+        "execution_date": "2022-06-01",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 505,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "GLD",
+            "IEF",
+            "QQQ",
+            "SPY",
+            "TLT",
+            "VEA",
+            "VWO"
+          ],
+          "passing": [
+            "DBC",
+            "SGOV"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 0.9718548621562192,
+          "fast_volatility": 0.17982649214097263,
+          "human_review_required": false,
+          "regime": "BEAR",
+          "slow_volatility": 0.18503430825256983,
+          "spy_trend_signal": false,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2022-05-31",
+        "starting_value": 102178.99153874352,
+        "suppressed_by_tolerance": [
+          "DBC"
+        ],
+        "target_weights": {
+          "DBC": 0.03739846275,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 0.96260153725,
+          "SPY": 0.0,
+          "TLT": 0.0,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "turnover": 0.09719979460000003,
+        "valuation_date": "2022-06-30"
+      },
+      {
+        "cost_amount": 0.0,
+        "effective_weights": {
+          "DBC": 0.0485998973,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 0.9514001027,
+          "SPY": 0.0,
+          "TLT": 0.0,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "ending_value": 101715.74623204547,
+        "execution_date": "2022-07-01",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 526,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "GLD",
+            "IEF",
+            "QQQ",
+            "SPY",
+            "TLT",
+            "VEA",
+            "VWO"
+          ],
+          "passing": [
+            "DBC",
+            "SGOV"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 0.8596237869519414,
+          "fast_volatility": 0.24117394074660456,
+          "human_review_required": false,
+          "regime": "BEAR",
+          "slow_volatility": 0.28055754669349064,
+          "spy_trend_signal": false,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2022-06-30",
+        "starting_value": 101830.46878594167,
+        "suppressed_by_tolerance": [
+          "DBC",
+          "SGOV"
+        ],
+        "target_weights": {
+          "DBC": 0.0356433113875,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 0.9643566886125,
+          "SPY": 0.0,
+          "TLT": 0.0,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "turnover": 0.0,
+        "valuation_date": "2022-07-29"
+      },
+      {
+        "cost_amount": 0.0,
+        "effective_weights": {
+          "DBC": 0.0485998973,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 0.9514001027,
+          "SPY": 0.0,
+          "TLT": 0.0,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "ending_value": 101932.61797914983,
+        "execution_date": "2022-08-01",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 546,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "GLD",
+            "IEF",
+            "QQQ",
+            "SPY",
+            "TLT",
+            "VEA",
+            "VWO"
+          ],
+          "passing": [
+            "DBC",
+            "SGOV"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 1.196679244808442,
+          "fast_volatility": 0.3783163504744302,
+          "human_review_required": false,
+          "regime": "BEAR",
+          "slow_volatility": 0.3161384741280351,
+          "spy_trend_signal": false,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2022-07-29",
+        "starting_value": 101715.74623204547,
+        "suppressed_by_tolerance": [
+          "DBC",
+          "SGOV"
+        ],
+        "target_weights": {
+          "DBC": 0.0316317083125,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 0.9683682916875,
+          "SPY": 0.0,
+          "TLT": 0.0,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "turnover": 0.0,
+        "valuation_date": "2022-08-31"
+      },
+      {
+        "cost_amount": 0.0,
+        "effective_weights": {
+          "DBC": 0.0485998973,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 0.9514001027,
+          "SPY": 0.0,
+          "TLT": 0.0,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "ending_value": 101854.73863856062,
+        "execution_date": "2022-09-01",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 569,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "GLD",
+            "IEF",
+            "QQQ",
+            "SPY",
+            "TLT",
+            "VEA",
+            "VWO"
+          ],
+          "passing": [
+            "DBC",
+            "SGOV"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 0.7635037391057129,
+          "fast_volatility": 0.21670311741945297,
+          "human_review_required": false,
+          "regime": "BEAR",
+          "slow_volatility": 0.28382718553975383,
+          "spy_trend_signal": false,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2022-08-31",
+        "starting_value": 101932.61797914983,
+        "suppressed_by_tolerance": [
+          "DBC",
+          "SGOV"
+        ],
+        "target_weights": {
+          "DBC": 0.0352327067625,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 0.9647672932375,
+          "SPY": 0.0,
+          "TLT": 0.0,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "turnover": 0.0,
+        "valuation_date": "2022-09-30"
+      },
+      {
+        "cost_amount": 2.9700779024114334,
+        "effective_weights": {
+          "DBC": 0.0,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 1.0,
+          "SPY": 0.0,
+          "TLT": 0.0,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "ending_value": 102045.10442674847,
+        "execution_date": "2022-10-03",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 590,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "DBC",
+            "GLD",
+            "IEF",
+            "QQQ",
+            "SPY",
+            "TLT",
+            "VEA",
+            "VWO"
+          ],
+          "passing": [
+            "SGOV"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 0.9822038367764632,
+          "fast_volatility": 0.264393795989721,
+          "human_review_required": false,
+          "regime": "BEAR",
+          "slow_volatility": 0.2691842427101958,
+          "spy_trend_signal": false,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2022-09-30",
+        "starting_value": 101854.73863856062,
+        "suppressed_by_tolerance": [],
+        "target_weights": {
+          "SGOV": 1.0
+        },
+        "turnover": 0.09719979460000003,
+        "valuation_date": "2022-10-31"
+      },
+      {
+        "cost_amount": 0.0,
+        "effective_weights": {
+          "DBC": 0.0,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 1.0,
+          "SPY": 0.0,
+          "TLT": 0.0,
+          "VEA": 0.0,
+          "VWO": 0.0
+        },
+        "ending_value": 102340.77395167497,
+        "execution_date": "2022-11-01",
+        "forced_rebalance_by_regime_transition": false,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 611,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "DBC",
+            "GLD",
+            "IEF",
+            "QQQ",
+            "SPY",
+            "TLT",
+            "VEA",
+            "VWO"
+          ],
+          "passing": [
+            "SGOV"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 0.0,
+          "fast_volatility": 0.0,
+          "human_review_required": false,
+          "regime": "BEAR",
+          "slow_volatility": 0.0,
+          "spy_trend_signal": false,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2022-10-31",
+        "starting_value": 102045.10442674847,
+        "suppressed_by_tolerance": [],
+        "target_weights": {
+          "SGOV": 1.0
+        },
+        "turnover": 0.0,
+        "valuation_date": "2022-11-30"
+      },
+      {
+        "cost_amount": 4.977104194469005,
+        "effective_weights": {
+          "DBC": 0.0,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 0.918945564525,
+          "SPY": 0.040527217725,
+          "TLT": 0.0,
+          "VEA": 0.040527217725,
+          "VWO": 0.0
+        },
+        "ending_value": 102268.59068768877,
+        "execution_date": "2022-12-01",
+        "forced_rebalance_by_regime_transition": true,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 632,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "DBC",
+            "GLD",
+            "IEF",
+            "QQQ",
+            "TLT",
+            "VWO"
+          ],
+          "passing": [
+            "SGOV",
+            "SPY",
+            "VEA"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 0.0,
+          "fast_volatility": 0.0,
+          "human_review_required": false,
+          "regime": "NORMAL",
+          "slow_volatility": 0.0,
+          "spy_trend_signal": true,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2022-11-30",
+        "starting_value": 102340.77395167497,
+        "suppressed_by_tolerance": [],
+        "target_weights": {
+          "DBC": 0.0,
+          "GLD": 0.0,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 0.918945564525,
+          "SPY": 0.040527217725,
+          "TLT": 0.0,
+          "VEA": 0.040527217725,
+          "VWO": 0.0
+        },
+        "turnover": 0.16210887092500004,
+        "valuation_date": "2022-12-30"
+      },
+      {
+        "cost_amount": 3.948208286419938,
+        "effective_weights": {
+          "DBC": 0.0,
+          "GLD": 0.05243549615,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 0.8951290077,
+          "SPY": 0.0,
+          "TLT": 0.0,
+          "VEA": 0.05243549615,
+          "VWO": 0.0
+        },
+        "ending_value": 126726.20313341531,
+        "execution_date": "2023-01-03",
+        "forced_rebalance_by_regime_transition": true,
+        "gating": {
+          "defensive_routing_symbol": "SGOV",
+          "details": [
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "SPY"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "QQQ"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "VEA"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "VWO"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "IEF"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "TLT"
+            },
+            {
+              "observations": 200,
+              "passes": true,
+              "reason": "passes_trend_filter",
+              "symbol": "GLD"
+            },
+            {
+              "observations": 200,
+              "passes": false,
+              "reason": "close_at_or_below_sma",
+              "symbol": "DBC"
+            },
+            {
+              "observations": 653,
+              "passes": true,
+              "reason": "defensive_never_gated",
+              "symbol": "SGOV"
+            }
+          ],
+          "gated": [
+            "DBC",
+            "IEF",
+            "QQQ",
+            "SPY",
+            "TLT",
+            "VWO"
+          ],
+          "passing": [
+            "GLD",
+            "SGOV",
+            "VEA"
+          ]
+        },
+        "kill_switch_constraint": {},
+        "regime": {
+          "fast_slow_ratio": 0.7400898142944413,
+          "fast_volatility": 0.16668566107176344,
+          "human_review_required": false,
+          "regime": "BEAR",
+          "slow_volatility": 0.22522355780652362,
+          "spy_trend_signal": false,
+          "triggered_at": null
+        },
+        "risk_flags": [],
+        "signal_date": "2022-12-30",
+        "starting_value": 102268.59068768877,
+        "suppressed_by_tolerance": [],
+        "target_weights": {
+          "DBC": 0.0,
+          "GLD": 0.05243549615,
+          "IEF": 0.0,
+          "QQQ": 0.0,
+          "SGOV": 0.8951290077,
+          "SPY": 0.0,
+          "TLT": 0.0,
+          "VEA": 0.05243549615,
+          "VWO": 0.0
+        },
+        "turnover": 0.12868754912499994,
+        "valuation_date": "2025-12-31"
+      }
+    ]
+  },
+  "metrics": {
+    "CAGR": 0.09602197198664397,
+    "Sharpe": 0.67446126225043,
+    "annualized_volatility": 0.15063570065105453,
+    "max_drawdown": -0.022475532689068656,
+    "period_returns": {
+      "2020-07-31": 0.011016173861828626,
+      "2020-08-31": 0.0017032381486956627,
+      "2020-09-30": -0.006172371887479322,
+      "2020-10-30": -0.010083793828209564,
+      "2020-11-30": 0.014138872109671796,
+      "2020-12-31": 0.009264655880736106,
+      "2021-01-29": -0.002706359036757977,
+      "2021-02-26": 0.006171321789019135,
+      "2021-03-31": 0.00041972622886499167,
+      "2021-04-30": 0.008986364973344374,
+      "2021-05-28": 0.003623060192116112,
+      "2021-06-30": -0.003146292875652823,
+      "2021-07-30": -0.0007401922967725794,
+      "2021-08-31": 0.00025010181333007253,
+      "2021-09-30": -0.018909242343457366,
+      "2021-10-29": 0.018451536676888924,
+      "2021-11-30": -0.006760285796920007,
+      "2021-12-31": 0.0049014974953121015,
+      "2022-01-31": -0.014628335302466544,
+      "2022-02-28": 0.0021074148471988963,
+      "2022-03-31": 0.005046715734945639,
+      "2022-04-29": -0.0029842066020310254,
+      "2022-05-31": 0.002469275274351146,
+      "2022-06-30": -0.003410904213804966,
+      "2022-07-29": -0.0011266034151071747,
+      "2022-08-31": 0.002132135437610705,
+      "2022-09-30": -0.0007640276697802317,
+      "2022-10-31": 0.0018689929475286249,
+      "2022-11-30": 0.0028974395840688505,
+      "2022-12-30": -0.0007053226314301941,
+      "2025-12-31": 0.23915077230716908
+    },
+    "tolerance_band_statistics": {
+      "forced_full_rebalances": 5,
+      "no_band_reference_turnover": "not_computed_in_main_run",
+      "suppressed_per_period": [
+        [],
+        [
+          "GLD",
+          "IEF",
+          "QQQ",
+          "SPY",
+          "TLT",
+          "VEA",
+          "VWO"
+        ],
+        [
+          "GLD",
+          "QQQ",
+          "SPY",
+          "TLT",
+          "VEA",
+          "VWO"
+        ],
+        [
+          "DBC",
+          "GLD",
+          "QQQ",
+          "SPY"
+        ],
+        [
+          "GLD",
+          "QQQ",
+          "VEA",
+          "VWO"
+        ],
+        [
+          "QQQ",
+          "SPY",
+          "VEA",
+          "VWO"
+        ],
+        [
+          "DBC",
+          "QQQ",
+          "SPY",
+          "VEA",
+          "VWO"
+        ],
+        [
+          "DBC",
+          "QQQ",
+          "SGOV",
+          "SPY",
+          "VEA",
+          "VWO"
+        ],
+        [
+          "DBC",
+          "QQQ",
+          "SPY",
+          "VEA",
+          "VWO"
+        ],
+        [
+          "DBC",
+          "QQQ",
+          "SPY",
+          "VEA",
+          "VWO"
+        ],
+        [
+          "DBC",
+          "QQQ",
+          "SPY",
+          "VEA",
+          "VWO"
+        ],
+        [
+          "DBC",
+          "QQQ",
+          "SPY",
+          "VEA",
+          "VWO"
+        ],
+        [
+          "DBC",
+          "QQQ",
+          "SGOV",
+          "SPY",
+          "VEA",
+          "VWO"
+        ],
+        [
+          "DBC",
+          "QQQ",
+          "SPY",
+          "VEA"
+        ],
+        [
+          "DBC",
+          "IEF",
+          "TLT"
+        ],
+        [
+          "DBC",
+          "QQQ",
+          "SPY",
+          "TLT",
+          "VEA"
+        ],
+        [
+          "DBC",
+          "QQQ",
+          "SGOV",
+          "SPY",
+          "TLT",
+          "VEA"
+        ],
+        [
+          "DBC",
+          "QQQ",
+          "SPY",
+          "TLT"
+        ],
+        [
+          "DBC",
+          "IEF",
+          "QQQ",
+          "SPY",
+          "TLT"
+        ],
+        [
+          "DBC"
+        ],
+        [],
+        [],
+        [],
+        [
+          "DBC"
+        ],
+        [
+          "DBC",
+          "SGOV"
+        ],
+        [
+          "DBC",
+          "SGOV"
+        ],
+        [
+          "DBC",
+          "SGOV"
+        ],
+        [],
+        [],
+        [],
+        []
+      ],
+      "suppressed_total": 97
+    },
+    "transaction_costs": 212.04185934558518,
+    "turnover": 6.95441488615
+  },
+  "parameters": {
+    "account_drawdown_threshold": 0.15,
+    "cost_bps": 1.0,
+    "defensive_symbol": "SGOV",
+    "max_exposure": 1.0,
+    "parameter_hash": "e9115c64f9ac000c8c914b9e22884da1e9310db1806ab481dd90c76398ef64fd",
+    "regime_crisis_exposure_scale": 0.5,
+    "regime_crisis_ratio": 1.5,
+    "regime_fast_vol_window_days": 20,
+    "regime_slow_vol_window_days": 120,
+    "slippage_bps": 2.0,
+    "target_volatility": 0.08,
+    "tolerance_band": 0.03,
+    "trend_window_days": 200,
+    "universe": [
+      {
+        "category": "risk_core",
+        "symbol": "SPY"
+      },
+      {
+        "category": "risk_core",
+        "symbol": "QQQ"
+      },
+      {
+        "category": "risk_core",
+        "symbol": "VEA"
+      },
+      {
+        "category": "risk_core",
+        "symbol": "VWO"
+      },
+      {
+        "category": "stabilizer",
+        "symbol": "IEF"
+      },
+      {
+        "category": "stabilizer",
+        "symbol": "TLT"
+      },
+      {
+        "category": "stabilizer",
+        "symbol": "GLD"
+      },
+      {
+        "category": "stabilizer",
+        "symbol": "DBC"
+      },
+      {
+        "category": "defensive",
+        "symbol": "SGOV"
+      }
+    ],
+    "vol_lookback_days": 120
+  },
+  "portfolio": {
+    "ending_value": 126726.20313341531,
+    "starting_capital": 100000.0
+  },
+  "research_limitations": {
+    "disclaimer": "research-only artifact; this is not a trading instruction. Regime-adaptive outputs never authorize any paper or production order flow.",
+    "limitations": [
+      "research-only artifact; this is not a trading instruction. Regime-adaptive outputs never authorize any paper or production order flow.",
+      "no_paper_or_production_order_flow_authorized",
+      "fixture_or_research_snapshot_only",
+      "stress_gates_require_real_historical_snapshot_to_meaningfully_pass"
+    ]
+  },
+  "run": {
+    "config_reference": "regime_adaptive_fixture_defaults",
+    "environment": "local_or_ci_fixture",
+    "package_version": "0.1.0",
+    "run_id": "B014-regime-adaptive-cross-strategy-comparison-2026-05-14",
+    "timestamp": "2026-05-14T10:58:46+00:00"
+  },
+  "strategy": {
+    "execution_timing": "T+1 open",
+    "no_leverage": true,
+    "rebalance_frequency": "monthly",
+    "signal_timing": "T close",
+    "strategy_id": "regime_adaptive_multi_asset",
+    "strategy_version": "mvp"
+  },
+  "stress_validation": {
+    "2020_q1_q4": {
+      "limit": -0.15,
+      "max_drawdown": -0.016193924790144587,
+      "points_evaluated": 7,
+      "status": "pass",
+      "window_end": "2020-12-31",
+      "window_start": "2020-02-01"
+    },
+    "2022_full_year": {
+      "limit": -0.15,
+      "max_drawdown": -0.005053597113954811,
+      "points_evaluated": 12,
+      "status": "pass",
+      "window_end": "2022-12-31",
+      "window_start": "2022-01-01"
+    }
+  }
+}
