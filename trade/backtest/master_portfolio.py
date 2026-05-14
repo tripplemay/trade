@@ -33,6 +33,14 @@ WEIGHT_ROUND_DIGITS = 12
 KILL_SWITCH_TRIGGERED = "triggered"
 KILL_SWITCH_CLEARED = "cleared"
 
+KNOWN_IMPLEMENTED_STRATEGY_IDS: frozenset[str] = frozenset(
+    {
+        "global_etf_momentum",
+        "risk_parity_vol_target",
+        "regime_adaptive_multi_asset",
+    }
+)
+
 
 @dataclass(frozen=True, slots=True)
 class MasterChildStrategyParameters:
@@ -383,6 +391,26 @@ def _build_portfolio_target(
     contributions: list[MasterSleeveContribution] = []
     portfolio_target: dict[str, float] = {}
     for sleeve in sleeves:
+        if (
+            sleeve.sleeve_type == SLEEVE_TYPE_IMPLEMENTED
+            and sleeve.planning_weight == 0.0
+        ):
+            if sleeve.strategy_id not in KNOWN_IMPLEMENTED_STRATEGY_IDS:
+                raise BacktestError(
+                    f"no child signal generator registered for strategy_id: "
+                    f"{sleeve.strategy_id}"
+                )
+            contributions.append(
+                MasterSleeveContribution(
+                    sleeve_id=sleeve.sleeve_id,
+                    sleeve_type=sleeve.sleeve_type,
+                    strategy_id=sleeve.strategy_id,
+                    planning_weight=sleeve.planning_weight,
+                    child_target_weights={},
+                    contribution_weights={},
+                )
+            )
+            continue
         child_weights = _resolve_child_weights(
             sleeve,
             records=records,
@@ -433,6 +461,12 @@ def _resolve_child_weights(
             records, risk_parity_params, signal_date
         )
         return dict(risk_parity_signal.target_weights)
+    if sleeve.strategy_id == "regime_adaptive_multi_asset":
+        raise BacktestError(
+            "regime_adaptive_multi_asset is registered but not yet invokable inside the "
+            "Master quarterly backtest with planning_weight > 0; B013 ships it at "
+            "planning_weight=0.0 for backwards compatibility"
+        )
     raise BacktestError(
         f"no child signal generator registered for strategy_id: {sleeve.strategy_id}"
     )

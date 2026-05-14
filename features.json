@@ -70,7 +70,7 @@
       "title": "Master Portfolio 新增 regime_adaptive sleeve（planning_weight=0.0）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "扩展 B011 Master Portfolio 配置：新增 sleeve {id: 'regime_adaptive', type: 'implemented_strategy', strategy_ref: 'regime_adaptive_multi_asset', planning_weight: 0.0, role: 'regime defensive overlay'}。planning weights 总和保持 1.0（momentum 0.40 + risk_parity 0.30 + us_quality_stub 0.20 + hk_china_stub 0.10 + regime_adaptive 0.00）。Master backtest 对 planning_weight==0 的 implemented 策略 short-circuit（不调用 backtest）但要校验策略可加载。**既有 B011 测试必须不修改即继续通过**（仅新增 sleeve 条目）。测试覆盖新 sleeve config、合 1.0 invariant、零权重 short-circuit、loadability check"
     },
     {

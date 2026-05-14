@@ -14,6 +14,9 @@ VALID_SLEEVE_TYPES: frozenset[str] = frozenset(
 
 PLANNING_WEIGHT_SUM_TOLERANCE = 1e-8
 
+REGIME_ADAPTIVE_SLEEVE_ID = "regime_adaptive"
+REGIME_ADAPTIVE_STRATEGY_ID = "regime_adaptive_multi_asset"
+
 
 @dataclass(frozen=True, slots=True)
 class MasterSleeveConfig:
@@ -128,9 +131,9 @@ def validate_master_portfolio_parameters(parameters: MasterPortfolioParameters) 
             raise MasterPortfolioConfigError(
                 f"unknown sleeve_type: {sleeve.sleeve_type}"
             )
-        if sleeve.planning_weight <= 0:
+        if sleeve.planning_weight < 0:
             raise MasterPortfolioConfigError(
-                f"planning_weight must be positive for {sleeve.sleeve_id}"
+                f"planning_weight must be non-negative for {sleeve.sleeve_id}"
             )
         if sleeve.sleeve_type == SLEEVE_TYPE_IMPLEMENTED and not sleeve.strategy_id:
             raise MasterPortfolioConfigError(
@@ -150,5 +153,30 @@ def validate_master_portfolio_parameters(parameters: MasterPortfolioParameters) 
 
 def default_master_portfolio_parameters() -> MasterPortfolioParameters:
     parameters = MasterPortfolioParameters()
+    validate_master_portfolio_parameters(parameters)
+    return parameters
+
+
+_REGIME_ADAPTIVE_SLEEVE = MasterSleeveConfig(
+    sleeve_id=REGIME_ADAPTIVE_SLEEVE_ID,
+    sleeve_type=SLEEVE_TYPE_IMPLEMENTED,
+    strategy_id=REGIME_ADAPTIVE_STRATEGY_ID,
+    planning_weight=0.0,
+    role_label="regime_defensive_overlay",
+)
+
+
+def default_master_portfolio_parameters_with_regime_adaptive() -> MasterPortfolioParameters:
+    """Return defaults augmented with the B013 regime-adaptive sleeve at planning_weight=0.0.
+
+    The Master backtest path treats zero-weight implemented sleeves as loadable-but-
+    uninvoked, so this helper preserves the B011 sum-to-1.0 planning weight invariant
+    without changing any other sleeve. Existing B011 callers that import
+    ``default_master_portfolio_parameters`` continue to receive the four-sleeve default.
+    """
+
+    parameters = MasterPortfolioParameters(
+        sleeves=(*_DEFAULT_SLEEVES, _REGIME_ADAPTIVE_SLEEVE)
+    )
     validate_master_portfolio_parameters(parameters)
     return parameters

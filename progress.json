@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "在 B006/B010/B011/B012 之后实现 Regime-Adaptive Multi-Asset 策略 MVP（独立新策略路径）：新资产宇宙（Risk Core SPY/QQQ/VEA/VWO + Stabilizers IEF/TLT/GLD/DBC + Defensive SGOV）、L1 200-day SMA 趋势过滤、L2 复用 B010 inverse-vol + 8% 目标波动率、L3 regime 检测（Fast/Slow vol ratio + SPY 趋势 → NORMAL/BEAR/CRISIS）+ 危机模式敞口减半、3% tolerance bands + regime override、真实历史公开数据 snapshot（2018-2025）支撑 2020/2022 stress 验收（max drawdown < 15%）、lightweight 参数 sensitivity sweep、Master Portfolio 新增 regime_adaptive sleeve（planning_weight=0.0 保留向后兼容），全程 fixture/mock-first、no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI guards。",
   "total_features": 11,
-  "completed_features": 8,
+  "completed_features": 9,
   "fix_rounds": 0,
-  "current_sprint": "F009",
+  "current_sprint": "F010",
   "last_updated": "2026-05-14",
   "reference_docs": [
     "docs/specs/B013-regime-adaptive-multi-asset-mvp-spec.md",

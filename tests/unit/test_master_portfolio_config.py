@@ -188,20 +188,20 @@ def test_master_portfolio_rejects_duplicate_sleeve_ids() -> None:
         validate_master_portfolio_parameters(MasterPortfolioParameters(sleeves=bad_sleeves))
 
 
-def test_master_portfolio_rejects_non_positive_planning_weight() -> None:
+def test_master_portfolio_rejects_negative_planning_weight() -> None:
     bad_sleeves = (
         MasterSleeveConfig(
             sleeve_id="momentum",
             sleeve_type=SLEEVE_TYPE_IMPLEMENTED,
             strategy_id="global_etf_momentum",
-            planning_weight=0.0,
+            planning_weight=-0.1,
             role_label="role",
         ),
         MasterSleeveConfig(
             sleeve_id="risk_parity",
             sleeve_type=SLEEVE_TYPE_IMPLEMENTED,
             strategy_id="risk_parity_vol_target",
-            planning_weight=1.0,
+            planning_weight=1.1,
             role_label="role",
         ),
     )
