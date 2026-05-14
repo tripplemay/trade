@@ -30,7 +30,7 @@
       "title": "L2 复用 B010 逆波动率 + 8% 目标波动率",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "将 regime-adaptive 策略接入既有 B010 inverse-volatility 权重引擎与 target-volatility exposure-scaling 工具；默认 target_volatility=0.08。L2 在 L1 之后，只对未 gated 资产计算权重；gated 资产 weight=0。target-vol scaling capped at 1.0；残余 exposure 路由到 SGOV。测试验证与 B010 模块的集成契约（不重复 B010 逻辑）与 L1→L2 round-trip"
     },
     {
