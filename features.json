@@ -46,7 +46,7 @@
       "title": "实现 3% tolerance bands + regime override + 月度回测 workflow",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "实现月度回测：每月 signal date 运行 L1→L2→L3 派生 target weights；与上期 effective weights 比较，仅 |target_i − current_i| > tolerance_band 时发交易；regime 在期间发生切换则**绕过 tolerance band 全量再平衡**；T-day close signal / T+1 open execution；记录 rebalance trace、equity curve、turnover、transaction costs、regime history、gating history、snapshot references。standalone 运行时同样接入 15% account-level drawdown kill-switch（与 B011 一致）。测试覆盖月度节奏、tolerance band 抑制、regime 强制再平衡、T+1 执行、deterministic equity、turnover、kill-switch"
     },
     {
