@@ -4,13 +4,13 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B014-regime-adaptive-stress-validation：`fixing`**；Codex 已验证 yfinance fetcher 能真实抓取 9 资产 CSV，但 snapshot importer 在 SPY/SGOV 上 fail closed，需 Generator 修复覆盖起始日逻辑后再继续 F003-F006。
+- **B014-regime-adaptive-stress-validation：`reverifying`**；Generator 完成 fix round 2（snapshot importer coverage 放宽），交回 Codex 复验 F003-F006。
 - Spec: `docs/specs/B014-regime-adaptive-stress-validation-spec.md`（含 Amendment 2026-05-14 数据源 pivot）。
-- 已交付（fix round 1）：删 `scripts/fetch_stooq_regime_adaptive_csvs.py` + `tests/unit/test_stooq_fetcher.py`；`pyproject.toml` 加 `yfinance>=0.2.40`；新增 `scripts/fetch_yfinance_regime_adaptive_csvs.py`（yfinance.Ticker.history `auto_adjust=True`, `actions=False`, `raise_errors=True`，lowercase canonical schema 不变）+ `tests/unit/test_yfinance_fetcher.py`（23 个 mocked-yfinance 单测，0 真实网络）。SGOV 短历史例外 + 其他 8 ≥95% + opt-in + fail-closed 全保留。**B013 策略代码不变**。
-- Codex 后续（progress.json `generator_handoff.post_fix_codex_workflow`）：yfinance fetcher 已成功；当前卡在 acquire 注册 manifest，因 importer 仍要求请求起始日精确覆盖而拒绝 SPY（2018-01-01 为假日）和 SGOV（实际首可得日 2020-06-01）。需 Generator 修复 importer/coverage 逻辑后再继续 F004/F005/F006。
-- 关键决策（不变）：9 资产宇宙；SGOV 2020-05-28 允许 short-history；2020 窗口 02-01→12-31（SGOV 上市前 cash placeholder），2022 窗口 01-01→12-31；跨策略对比 B013/B006/B010/60-40；max DD>15% 走 proposed-learnings。
-- 硬边界：默认 CI 仍 fixture/mock-first（pytest 359 全过；ruff/compileall/mypy 干净）；yfinance 是 scripts/ 唯一网络入口；no-broker/no-paper/no-AI/no-secret-in-strategy。
-- 踩坑沉淀：pandas.Timestamp 继承自 datetime（→ date），fetcher 内 `isinstance(value, date)` 短路返回 Timestamp 会让 `< date` 抛 TypeError；先 `to_pydatetime().date()` 再 fallback。
+- 已交付（fix round 2）：`trade/strategies/regime_adaptive/snapshot.py` 加 `DEFAULT_START_TOLERANCE_BUSINESS_DAYS=5` + `DEFAULT_SHORT_HISTORY_ALLOWANCE=frozenset({'SGOV'})`；`RegimeAdaptiveSnapshotRequest` 加 `allow_short_history` / `start_tolerance_business_days` 字段；`_ensure_coverage` 改为 "tolerance-first → short-history exempt → fail-closed"（SGOV 1 个 holiday 日缺口走 tolerance，不被 flag exempt；SGOV 2020-06-01 走 exempt）；manifest 每个 file 加 `short_history_exempt: bool`，snapshot_id 不变；`acquire_regime_adaptive_snapshot.py` CLI 加 `--allow-short-history` 与 `--start-tolerance-business-days`；新增 8 个单测。**B013 策略代码不变**。
+- Codex 后续（progress.json `generator_handoff.post_fix_codex_workflow`）：重跑 yfinance fetcher → acquire 注册 manifest（默认就放过 SPY 1 日 holiday + SGOV 2020-06-01）→ F004 2020+2022 stress → F005 跨策略对比 → F006 evidence-backed 签收。
+- 关键决策（不变）：9 资产宇宙；SGOV 实际首可得日 ~2020-06-01（fetcher hardcode 2020-05-28 是请求起点，不是要求）；2020 窗口 02-01→12-31（SGOV 上市前 cash placeholder），2022 窗口 01-01→12-31；跨策略对比 B013/B006/B010/60-40；max DD>15% 走 proposed-learnings。
+- 硬边界：默认 CI 仍 fixture/mock-first（pytest 367 全过；ruff/compileall/mypy 干净）；yfinance 是 scripts/ 唯一网络入口；no-broker/no-paper/no-AI/no-secret-in-strategy。
+- 踩坑沉淀：(1) pandas.Timestamp 继承自 datetime（→ date），fetcher 内 `isinstance(value, date)` 短路返回 Timestamp 会让 `< date` 抛 TypeError，先 `to_pydatetime().date()` 再 fallback。(2) snapshot importer 把 short_history_exempt 标志的语义压紧到"真正 late-inception"——holiday-only gap 走 tolerance 路径不置 flag，避免下游 Codex 误判 cash-placeholder 边界。
 
 ## 已完成签收
 - B001-B008: strategy roadmap through research-grade data expansion all signed off.

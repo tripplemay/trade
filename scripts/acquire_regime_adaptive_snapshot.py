@@ -20,6 +20,8 @@ from pathlib import Path
 
 from trade.strategies.regime_adaptive.snapshot import (
     DEFAULT_OUTPUT_DIRECTORY,
+    DEFAULT_SHORT_HISTORY_ALLOWANCE,
+    DEFAULT_START_TOLERANCE_BUSINESS_DAYS,
     RegimeAdaptiveSnapshotRequest,
     import_regime_adaptive_snapshot,
 )
@@ -29,6 +31,12 @@ MANUAL_CONFIRM_FLAG = "--i-understand-this-is-manual-research-data"
 
 def _parse_date(value: str) -> date:
     return date.fromisoformat(value)
+
+
+def _parse_allow_short_history(value: str) -> frozenset[str]:
+    if not value.strip():
+        return frozenset()
+    return frozenset(token.strip().upper() for token in value.split(",") if token.strip())
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
@@ -65,6 +73,28 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Latest date required in every input file (default: 2025-12-31).",
     )
     parser.add_argument(
+        "--allow-short-history",
+        dest="allow_short_history",
+        type=_parse_allow_short_history,
+        default=DEFAULT_SHORT_HISTORY_ALLOWANCE,
+        help=(
+            "Comma-separated tickers permitted to have a late first-available date "
+            "(e.g. SGOV whose real inception is around 2020-06); pass an empty string to "
+            "disable the allowance (default: 'SGOV')."
+        ),
+    )
+    parser.add_argument(
+        "--start-tolerance-business-days",
+        dest="start_tolerance_business_days",
+        type=int,
+        default=DEFAULT_START_TOLERANCE_BUSINESS_DAYS,
+        help=(
+            "Number of business days tolerated between '--from' and the first actual "
+            "trading day for non-short-history tickers (default: 5; covers holidays at "
+            "the start of the window)."
+        ),
+    )
+    parser.add_argument(
         MANUAL_CONFIRM_FLAG,
         dest="manual_confirmation",
         action="store_true",
@@ -85,6 +115,8 @@ def main(argv: list[str] | None = None) -> int:
             date_from=args.date_from,
             date_to=args.date_to,
             manual_confirmation=args.manual_confirmation,
+            allow_short_history=args.allow_short_history,
+            start_tolerance_business_days=args.start_tolerance_business_days,
         )
     )
     print(f"snapshot_id   : {result.snapshot_id}")

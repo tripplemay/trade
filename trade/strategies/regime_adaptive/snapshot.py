@@ -6,6 +6,13 @@ into the gitignored ``data/public-cache/`` directory and emits a research-only m
 explicit manual-confirmation flag must be set), fails closed on missing tickers or
 insufficient date coverage, and performs no network I/O. The artifact is research-only and
 never authorizes any paper or production order flow.
+
+The coverage gate is parameterised so that real public-data acquisitions can pass even
+when (a) the requested ``date_from`` lands on a market holiday and the first trading day
+falls a few business days later, or (b) a late-inception ticker (e.g. SGOV, real first
+available date around 2020-06) cannot supply data back to ``date_from``. See
+``RegimeAdaptiveSnapshotRequest.allow_short_history`` and
+``RegimeAdaptiveSnapshotRequest.start_tolerance_business_days``.
 """
 
 from __future__ import annotations
@@ -15,7 +22,7 @@ import hashlib
 import json
 import shutil
 from dataclasses import dataclass, field
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -36,6 +43,8 @@ REGIME_ADAPTIVE_SNAPSHOT_MANIFEST_NAME = "regime-adaptive-prices-manifest.json"
 RESEARCH_ONLY_DISCLAIMER = (
     "research-only public-best-effort non-PIT snapshot; not a trading instruction"
 )
+DEFAULT_START_TOLERANCE_BUSINESS_DAYS = 5
+DEFAULT_SHORT_HISTORY_ALLOWANCE: frozenset[str] = frozenset({"SGOV"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,6 +55,8 @@ class RegimeAdaptiveSnapshotRequest:
     date_to: date | None = None
     manual_confirmation: bool = False
     extra_limitations: tuple[str, ...] = field(default_factory=tuple)
+    allow_short_history: frozenset[str] = DEFAULT_SHORT_HISTORY_ALLOWANCE
+    start_tolerance_business_days: int = DEFAULT_START_TOLERANCE_BUSINESS_DAYS
 
 
 @dataclass(frozen=True, slots=True)
@@ -83,10 +94,23 @@ def import_regime_adaptive_snapshot(
             "date_to must not precede date_from"
         )
 
+    if request.start_tolerance_business_days < 0:
+        raise RegimeAdaptiveSnapshotError(
+            "start_tolerance_business_days must be non-negative; got "
+            f"{request.start_tolerance_business_days}"
+        )
+
     per_ticker_payloads = _read_required_tickers(source_dir)
+    short_history_exempt: dict[str, bool] = {}
     for ticker, payload in per_ticker_payloads.items():
-        _ensure_coverage(
-            ticker, payload["start"], payload["end"], request.date_from, request.date_to
+        short_history_exempt[ticker] = _ensure_coverage(
+            ticker,
+            payload["start"],
+            payload["end"],
+            request.date_from,
+            request.date_to,
+            allow_short_history=request.allow_short_history,
+            start_tolerance_business_days=request.start_tolerance_business_days,
         )
 
     output_dir = request.output_dir.expanduser()
@@ -105,6 +129,7 @@ def import_regime_adaptive_snapshot(
                 "row_count": payload["row_count"],
                 "start": payload["start"].isoformat(),
                 "end": payload["end"].isoformat(),
+                "short_history_exempt": short_history_exempt[ticker],
             }
         )
 
@@ -171,17 +196,51 @@ def _ensure_coverage(
     actual_end: date,
     required_from: date,
     required_to: date,
-) -> None:
+    *,
+    allow_short_history: frozenset[str],
+    start_tolerance_business_days: int,
+) -> bool:
+    """Validate coverage. Returns True when the ticker is short-history exempt."""
+
+    short_history_exempt = False
     if actual_start > required_from:
-        raise RegimeAdaptiveSnapshotError(
-            f"date_range coverage gap for {ticker}: starts {actual_start.isoformat()} "
-            f"but required {required_from.isoformat()}"
-        )
+        business_day_gap = _count_business_days_in_range(required_from, actual_start)
+        if business_day_gap <= start_tolerance_business_days:
+            # Accepted by holiday/first-trading-day tolerance; not a late-inception case.
+            pass
+        elif ticker in allow_short_history:
+            short_history_exempt = True
+        else:
+            raise RegimeAdaptiveSnapshotError(
+                f"date_range coverage gap for {ticker}: starts "
+                f"{actual_start.isoformat()} which is {business_day_gap} business "
+                f"days after required {required_from.isoformat()} (tolerance "
+                f"{start_tolerance_business_days})"
+            )
     if actual_end < required_to:
         raise RegimeAdaptiveSnapshotError(
             f"date_range coverage gap for {ticker}: ends {actual_end.isoformat()} "
             f"but required {required_to.isoformat()}"
         )
+    return short_history_exempt
+
+
+def _count_business_days_in_range(start: date, end_exclusive: date) -> int:
+    """Count weekdays in the half-open interval ``[start, end_exclusive)``.
+
+    Used to measure how many trading-eligible days are missing between
+    ``required_from`` and the first available actual trading day.
+    """
+
+    if end_exclusive <= start:
+        return 0
+    count = 0
+    current = start
+    while current < end_exclusive:
+        if current.weekday() < 5:
+            count += 1
+        current += timedelta(days=1)
+    return count
 
 
 def _summarize_csv(path: Path) -> dict[str, Any]:
