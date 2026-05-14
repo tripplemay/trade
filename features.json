@@ -6,7 +6,7 @@
       "title": "RegimeAdaptiveConfig 新增 regime_activation_policy 字段与校验",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "RegimeAdaptiveConfig 新增 regime_activation_policy: Literal['always_on', 'only_non_normal', 'only_crisis'] = 'always_on'；validation 拒绝其他字符串并给出诊断列出 valid choices；parameter_hash（或等价）包含此字段使配置区分。测试覆盖：默认构造（always_on）、三种 valid 值、invalid 字符串拒绝、三个 policy 的 hash distinctness、序列化/反序列化"
     },
     {

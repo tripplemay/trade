@@ -6,7 +6,11 @@ from trade.strategies.regime_adaptive.config import (
     ASSET_CATEGORY_DEFENSIVE,
     ASSET_CATEGORY_RISK_CORE,
     ASSET_CATEGORY_STABILIZER,
+    POLICY_ALWAYS_ON,
+    POLICY_ONLY_CRISIS,
+    POLICY_ONLY_NON_NORMAL,
     VALID_ASSET_CATEGORIES,
+    VALID_REGIME_ACTIVATION_POLICIES,
     AssetEntry,
     RegimeAdaptiveConfig,
     RegimeAdaptiveConfigError,
@@ -198,3 +202,58 @@ def test_default_regime_adaptive_config_strategy_id_is_research_only_label() -> 
     config = _default()
 
     assert config.strategy_id == "regime_adaptive_multi_asset"
+
+
+def test_valid_regime_activation_policies_constant_matches_spec() -> None:
+    expected = frozenset({POLICY_ALWAYS_ON, POLICY_ONLY_NON_NORMAL, POLICY_ONLY_CRISIS})
+    assert expected == VALID_REGIME_ACTIVATION_POLICIES
+    assert POLICY_ALWAYS_ON == "always_on"
+    assert POLICY_ONLY_NON_NORMAL == "only_non_normal"
+    assert POLICY_ONLY_CRISIS == "only_crisis"
+
+
+def test_default_regime_activation_policy_is_always_on() -> None:
+    config = _default()
+
+    assert config.regime_activation_policy == POLICY_ALWAYS_ON
+
+
+def test_validate_accepts_all_three_regime_activation_policies() -> None:
+    for policy in (POLICY_ALWAYS_ON, POLICY_ONLY_NON_NORMAL, POLICY_ONLY_CRISIS):
+        config = replace(_default(), regime_activation_policy=policy)
+        validate_regime_adaptive_config(config)
+        assert config.regime_activation_policy == policy
+
+
+def test_validate_rejects_invalid_regime_activation_policy_diagnostic_lists_choices() -> None:
+    config = replace(_default(), regime_activation_policy="aggressive")
+
+    with pytest.raises(RegimeAdaptiveConfigError) as exc_info:
+        validate_regime_adaptive_config(config)
+
+    message = str(exc_info.value)
+    assert "regime_activation_policy" in message
+    assert "aggressive" in message
+    for choice in (POLICY_ALWAYS_ON, POLICY_ONLY_NON_NORMAL, POLICY_ONLY_CRISIS):
+        assert choice in message
+
+
+def test_parameter_hash_distinguishes_all_three_regime_activation_policies() -> None:
+    hashes = {
+        policy: replace(_default(), regime_activation_policy=policy).parameter_hash()
+        for policy in (POLICY_ALWAYS_ON, POLICY_ONLY_NON_NORMAL, POLICY_ONLY_CRISIS)
+    }
+
+    assert len(set(hashes.values())) == 3, hashes
+    for digest in hashes.values():
+        assert len(digest) == 64
+
+
+def test_regime_activation_policy_survives_dataclasses_replace_round_trip() -> None:
+    base = _default()
+    modified = replace(base, regime_activation_policy=POLICY_ONLY_CRISIS)
+    restored = replace(modified, regime_activation_policy=base.regime_activation_policy)
+
+    assert modified.regime_activation_policy == POLICY_ONLY_CRISIS
+    assert restored.regime_activation_policy == POLICY_ALWAYS_ON
+    assert restored.parameter_hash() == base.parameter_hash()

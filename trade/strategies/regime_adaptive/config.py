@@ -12,6 +12,7 @@ import hashlib
 import json
 from collections.abc import Sequence
 from dataclasses import dataclass, field
+from typing import Final, Literal
 
 ASSET_CATEGORY_RISK_CORE = "risk_core"
 ASSET_CATEGORY_STABILIZER = "stabilizer"
@@ -19,6 +20,14 @@ ASSET_CATEGORY_DEFENSIVE = "defensive"
 VALID_ASSET_CATEGORIES: frozenset[str] = frozenset(
     {ASSET_CATEGORY_RISK_CORE, ASSET_CATEGORY_STABILIZER, ASSET_CATEGORY_DEFENSIVE}
 )
+
+POLICY_ALWAYS_ON: Final = "always_on"
+POLICY_ONLY_NON_NORMAL: Final = "only_non_normal"
+POLICY_ONLY_CRISIS: Final = "only_crisis"
+VALID_REGIME_ACTIVATION_POLICIES: frozenset[str] = frozenset(
+    {POLICY_ALWAYS_ON, POLICY_ONLY_NON_NORMAL, POLICY_ONLY_CRISIS}
+)
+RegimeActivationPolicy = Literal["always_on", "only_non_normal", "only_crisis"]
 
 STRATEGY_ID = "regime_adaptive_multi_asset"
 
@@ -63,12 +72,14 @@ class RegimeAdaptiveConfig:
     account_drawdown_threshold: float = 0.15
     max_exposure: float = 1.0
     defensive_symbol: str = "SGOV"
+    regime_activation_policy: RegimeActivationPolicy = POLICY_ALWAYS_ON
 
     def parameter_hash(self) -> str:
         payload = {
             "account_drawdown_threshold": self.account_drawdown_threshold,
             "defensive_symbol": self.defensive_symbol,
             "max_exposure": self.max_exposure,
+            "regime_activation_policy": self.regime_activation_policy,
             "regime_crisis_exposure_scale": self.regime_crisis_exposure_scale,
             "regime_crisis_ratio": self.regime_crisis_ratio,
             "regime_fast_vol_window_days": self.regime_fast_vol_window_days,
@@ -126,6 +137,12 @@ def validate_regime_adaptive_config(config: RegimeAdaptiveConfig) -> None:
     if not 0.0 < config.account_drawdown_threshold < 1.0:
         raise RegimeAdaptiveConfigError(
             "account_drawdown_threshold must be within (0, 1)"
+        )
+    if config.regime_activation_policy not in VALID_REGIME_ACTIVATION_POLICIES:
+        valid_choices = ", ".join(sorted(VALID_REGIME_ACTIVATION_POLICIES))
+        raise RegimeAdaptiveConfigError(
+            f"regime_activation_policy {config.regime_activation_policy!r} is not supported; "
+            f"valid choices are: {valid_choices}"
         )
 
     if not config.universe:

@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "在 B014 经验签收（2020 max DD -4.76% / 2022 max DD -1.66%）后，针对其跨策略对比发现的 'B013 在非危机期间绝对收益让出给 60/40' 现象做最小研究批次：给 B013 加 regime_activation_policy 参数（always_on 默认 / only_non_normal / only_crisis），让 L1 200-SMA 趋势过滤按当前 regime label 条件启用；L2 inverse-vol + 8% target 与 L3 crisis 减半不变；默认保持 B013 现状 bit-for-bit；在 B014 真实 snapshot 上跨 policy 与 B006/B010/60-40 对比，看是否缩窄 absolute-return gap。**不修改 B013 strategy code 外的任何文件**（包括 B010/B011 等），保留 fixture/mock-first 默认 CI、no-live/no-secret-in-strategy/no-broker/no-paper/no-AI guards。",
   "total_features": 6,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-05-14",
   "reference_docs": [
     "docs/specs/B015-regime-adaptive-activation-policy-spec.md",
@@ -33,7 +33,7 @@
   "generator_handoff": null,
   "session_notes": {
     "planner": "2026-05-14 B015 planning: B014 done wrap-up confirmed empirical stress PASS (2020 DD -4.76% / 2022 DD -1.66%) but cross-strategy comparison surfaced B013 underperformance vs static 60/40 in calm window (126726 vs 158978 in 2020-06..2022-12). User selected B015 'regime-aware activation' as the small-scope research follow-up. Decisions captured: (1) single new config field regime_activation_policy with three values (always_on default / only_non_normal / only_crisis); (2) gate applies only to L1 trend gating; L2 inverse-vol + 8% target and L3 crisis halving unchanged; (3) default always_on must reproduce B013 signoff bit-for-bit on synthetic fixture (backwards-compat hard requirement); (4) comparative backtest runs on B014 real snapshot for all three policies + B006 + B010 + 60/40; (5) B015 mutates only files inside trade/strategies/regime_adaptive/ (config + trend_gating + backtest) plus tests + new report — B010/B011/B012/B013 spec & strategy code untouched; (6) Master Portfolio regime_adaptive sleeve registration uses default always_on so B011 invariants preserved automatically; (7) no broker/AI/paper/live language anywhere. Wrote B015 spec and features.json (6 features: F001-F005 generator + F006 codex; mixed batch). Status moved to building for Generator F001.",
-    "generator": null,
+    "generator": "2026-05-14 F001 done. Added Final-typed POLICY_ALWAYS_ON / POLICY_ONLY_NON_NORMAL / POLICY_ONLY_CRISIS constants, VALID_REGIME_ACTIVATION_POLICIES frozenset, and RegimeActivationPolicy Literal alias to config.py. RegimeAdaptiveConfig gained regime_activation_policy field defaulting to POLICY_ALWAYS_ON; validate_regime_adaptive_config rejects invalid strings with diagnostic listing sorted valid choices; parameter_hash payload now includes the field so three policies produce distinct hashes. Added 6 new tests (constants, default, accept-3, reject-invalid, hash-distinctness, replace round-trip). Full regime_adaptive scope (131 tests) plus full repo (373 tests, ruff, mypy 42 files, compileall) all green. B013/B011/B012 callers untouched — sleeve registration test still passes because new field has a default. Moving to F002 (should_l1_gate_run helper + backtest workflow bypass).",
     "evaluator": null
   },
   "features": [
