@@ -1,40 +1,41 @@
 #!/usr/bin/env python3
-"""Opt-in Stooq CSV fetcher for the Regime-Adaptive 9-asset universe.
+"""Opt-in yfinance CSV fetcher for the Regime-Adaptive 9-asset universe.
 
 This helper is the only B014 module that performs network I/O. It is research-only,
 public-best-effort, and non-PIT. It fetches daily OHLCV records for SPY, QQQ, VEA, VWO,
-IEF, TLT, GLD, DBC, and SGOV from the free Stooq direct CSV endpoint at
-``https://stooq.com/q/d/l/`` and writes one ``<SYMBOL>.csv`` per ticker into a caller
-supplied output directory. The script is gated behind the explicit
+IEF, TLT, GLD, DBC, and SGOV via the `yfinance` package (Yahoo Finance public historical
+endpoint) and writes one ``<SYMBOL>.csv`` per ticker into a caller supplied output
+directory. The script is gated behind the explicit
 ``--i-understand-this-is-manual-research-data`` flag, runs only on demand (never invoked
-by default CI), targets ``stooq.com`` as the only authorized host, uses Python standard
-library only (no third-party dependencies), and fails closed on HTTP errors, malformed
-responses, or insufficient coverage for non-SGOV tickers. SGOV's documented inception on
-2020-05-28 is treated as an allowed short-history case. The artifact never authorizes any
-paper or live trading.
+by default CI), uses ``yfinance.Ticker.history(auto_adjust=True, actions=False,
+raise_errors=True)`` so that returned ``Close`` is split- and dividend-adjusted (mapped
+directly to the output ``adjusted_close`` column), and fails closed on yfinance
+exceptions, empty results, schema mismatches, or insufficient coverage for non-SGOV
+tickers. SGOV's documented inception on 2020-05-28 is treated as the only allowed
+short-history case by default. The artifact never authorizes any paper or live trading.
+
+This module replaces the previous Stooq-based fetcher after the upstream Stooq /q/d/l/
+endpoint introduced an apikey gate that blocked the Codex F003 real-acquisition step;
+the planner directed a pivot to yfinance (free, no API key, pip-installed).
 """
 
 from __future__ import annotations
 
 import argparse
 import csv
-import io
 import sys
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
-from urllib.error import HTTPError, URLError
-from urllib.parse import urlparse
-from urllib.request import Request, urlopen
+from typing import Any
+
+import yfinance as yf
 
 from trade.strategies.regime_adaptive.snapshot import REQUIRED_TICKERS
 
-STOOQ_HOST = "stooq.com"
-STOOQ_BASE_URL = "https://stooq.com/q/d/l/"
-DEFAULT_TIMEOUT_SECONDS = 30
-DEFAULT_USER_AGENT = "trade-regime-adaptive-stress-validation/0.1 (research-only)"
+DEFAULT_USER_AGENT = "trade-regime-adaptive-stress-validation/0.2 (research-only)"
 MANUAL_CONFIRM_FLAG = "--i-understand-this-is-manual-research-data"
-EXPECTED_STOOQ_HEADER: tuple[str, ...] = ("Date", "Open", "High", "Low", "Close", "Volume")
+EXPECTED_YF_COLUMNS: tuple[str, ...] = ("Open", "High", "Low", "Close", "Volume")
 OUTPUT_CSV_HEADER: tuple[str, ...] = (
     "date",
     "open",
@@ -56,8 +57,8 @@ RESEARCH_ONLY_DISCLAIMER = (
 )
 
 
-class StooqFetcherError(RuntimeError):
-    """Raised when the opt-in Stooq fetch cannot complete deterministically."""
+class YFinanceFetcherError(RuntimeError):
+    """Raised when the opt-in yfinance fetch cannot complete deterministically."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,14 +68,11 @@ class FetchRequest:
     date_to: date = DEFAULT_DATE_TO
     manual_confirmation: bool = False
     allow_short_history: frozenset[str] = DEFAULT_ALLOW_SHORT_HISTORY
-    timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS
-    user_agent: str = DEFAULT_USER_AGENT
 
 
 @dataclass(frozen=True, slots=True)
 class TickerFetchResult:
     ticker: str
-    http_status: int
     row_count: int
     first_date: date
     last_date: date
@@ -103,18 +101,36 @@ class _ParsedRow:
     volume: int
 
 
-def fetch_stooq_regime_adaptive_csvs(request: FetchRequest) -> FetchSummary:
+def _fetch_ticker_history(symbol: str, start: date, end: date) -> Any:
+    """Thin yfinance wrapper kept at module top level so tests can monkeypatch it.
+
+    yfinance's ``end`` parameter is exclusive (pandas slicing convention); we shift it
+    forward by one day to keep ``end`` inclusive at the public API surface.
+    """
+
+    end_exclusive = end + timedelta(days=1)
+    ticker = yf.Ticker(symbol)
+    return ticker.history(
+        start=start.isoformat(),
+        end=end_exclusive.isoformat(),
+        auto_adjust=True,
+        actions=False,
+        raise_errors=True,
+    )
+
+
+def fetch_yfinance_regime_adaptive_csvs(request: FetchRequest) -> FetchSummary:
     """Run the opt-in fetch and return a structured summary.
 
     The fetch is research-only and never authorizes paper or live trading.
     """
 
     if not request.manual_confirmation:
-        raise StooqFetcherError(
-            "manual confirmation flag required; Stooq fetcher is opt-in research-only"
+        raise YFinanceFetcherError(
+            "manual confirmation flag required; yfinance fetcher is opt-in research-only"
         )
     if request.date_to < request.date_from:
-        raise StooqFetcherError(
+        raise YFinanceFetcherError(
             f"date_to {request.date_to.isoformat()} precedes date_from "
             f"{request.date_from.isoformat()}"
         )
@@ -142,38 +158,40 @@ def _fetch_single_ticker(
     else:
         effective_from = request.date_from
     if effective_from > request.date_to:
-        raise StooqFetcherError(
+        raise YFinanceFetcherError(
             f"effective window for {ticker} is empty: "
             f"{effective_from.isoformat()} > {request.date_to.isoformat()}"
         )
-    url = _build_stooq_url(ticker, effective_from, request.date_to)
-    payload, http_status = _http_get(
-        url=url,
-        timeout_seconds=request.timeout_seconds,
-        user_agent=request.user_agent,
-    )
-    rows = _parse_stooq_csv(
+    try:
+        frame = _fetch_ticker_history(ticker, effective_from, request.date_to)
+    except YFinanceFetcherError:
+        raise
+    except Exception as exc:  # noqa: BLE001 - yfinance can raise many error types
+        raise YFinanceFetcherError(
+            f"yfinance.Ticker({ticker!r}).history(...) raised "
+            f"{type(exc).__name__}: {exc}"
+        ) from exc
+    rows = _parse_history_frame(
         ticker=ticker,
-        payload=payload,
+        frame=frame,
         effective_from=effective_from,
         effective_to=request.date_to,
     )
     expected = _expected_business_days(effective_from, request.date_to)
     coverage_ratio = (len(rows) / expected) if expected > 0 else 0.0
     if not short_history_exempt and coverage_ratio < COVERAGE_THRESHOLD:
-        raise StooqFetcherError(
+        raise YFinanceFetcherError(
             f"insufficient coverage for {ticker}: {len(rows)}/{expected} business days "
             f"({coverage_ratio:.2%}) is below {COVERAGE_THRESHOLD:.0%} threshold"
         )
     if not rows:
-        raise StooqFetcherError(
-            f"Stooq returned no data rows for {ticker} between "
+        raise YFinanceFetcherError(
+            f"yfinance returned no data rows for {ticker} between "
             f"{effective_from.isoformat()} and {request.date_to.isoformat()}"
         )
     output_file = _write_ticker_csv(output_dir, ticker, rows)
     return TickerFetchResult(
         ticker=ticker,
-        http_status=http_status,
         row_count=len(rows),
         first_date=rows[0].date,
         last_date=rows[-1].date,
@@ -184,110 +202,53 @@ def _fetch_single_ticker(
     )
 
 
-def _build_stooq_url(symbol: str, date_from: date, date_to: date) -> str:
-    return (
-        f"{STOOQ_BASE_URL}?s={symbol.lower()}.us&i=d"
-        f"&d1={date_from.strftime('%Y%m%d')}&d2={date_to.strftime('%Y%m%d')}"
-    )
-
-
-def _http_get(*, url: str, timeout_seconds: int, user_agent: str) -> tuple[bytes, int]:
-    parsed = urlparse(url)
-    if parsed.scheme != "https" or parsed.hostname != STOOQ_HOST:
-        raise StooqFetcherError(
-            f"refusing to fetch {url}: only https://{STOOQ_HOST}/q/d/l/ is authorized"
-        )
-    request_obj = Request(url, headers={"User-Agent": user_agent})
-    try:
-        with urlopen(request_obj, timeout=timeout_seconds) as response:
-            status = int(getattr(response, "status", 200))
-            body = response.read()
-    except HTTPError as exc:
-        raise StooqFetcherError(
-            f"HTTP {exc.code} error fetching {url}: {exc.reason}"
-        ) from exc
-    except URLError as exc:
-        raise StooqFetcherError(f"network error fetching {url}: {exc.reason}") from exc
-    if status != 200:
-        raise StooqFetcherError(f"non-200 HTTP status {status} fetching {url}")
-    if not isinstance(body, (bytes, bytearray)):
-        raise StooqFetcherError(
-            f"unexpected non-bytes response body from {url}: {type(body).__name__}"
-        )
-    return bytes(body), status
-
-
-def _parse_stooq_csv(
+def _parse_history_frame(
     *,
     ticker: str,
-    payload: bytes,
+    frame: Any,
     effective_from: date,
     effective_to: date,
 ) -> list[_ParsedRow]:
-    try:
-        text = payload.decode("utf-8")
-    except UnicodeDecodeError as exc:
-        raise StooqFetcherError(
-            f"Stooq response for {ticker} is not valid UTF-8"
-        ) from exc
-    stripped = text.strip()
-    if not stripped:
-        raise StooqFetcherError(f"Stooq response for {ticker} is empty")
-    handle = io.StringIO(text)
-    reader = csv.reader(handle)
-    try:
-        header = next(reader)
-    except StopIteration as exc:  # pragma: no cover - defended by empty-body check above
-        raise StooqFetcherError(f"Stooq response for {ticker} has no header") from exc
-    if len(header) < len(EXPECTED_STOOQ_HEADER) or tuple(
-        header[: len(EXPECTED_STOOQ_HEADER)]
-    ) != EXPECTED_STOOQ_HEADER:
-        joined = ",".join(header).strip().lower()
-        if joined.startswith("no data") or joined == "":
-            raise StooqFetcherError(
-                f"Stooq reports 'No data' for {ticker} between "
-                f"{effective_from.isoformat()} and {effective_to.isoformat()}"
-            )
-        raise StooqFetcherError(
-            f"unexpected Stooq header for {ticker}: {header!r}; "
-            f"expected leading columns {list(EXPECTED_STOOQ_HEADER)}"
+    if frame is None:
+        raise YFinanceFetcherError(
+            f"yfinance returned no DataFrame for {ticker}"
+        )
+    columns = tuple(getattr(frame, "columns", ()))
+    if not columns:
+        raise YFinanceFetcherError(
+            f"yfinance DataFrame for {ticker} has no columns; "
+            f"expected at least {list(EXPECTED_YF_COLUMNS)}"
+        )
+    missing = [name for name in EXPECTED_YF_COLUMNS if name not in columns]
+    if missing:
+        raise YFinanceFetcherError(
+            f"yfinance DataFrame for {ticker} is missing required columns "
+            f"{missing} (got {list(columns)})"
+        )
+    if int(getattr(frame, "shape", (0, 0))[0]) == 0:
+        raise YFinanceFetcherError(
+            f"yfinance returned an empty DataFrame for {ticker} between "
+            f"{effective_from.isoformat()} and {effective_to.isoformat()}"
         )
     rows: list[_ParsedRow] = []
-    for raw_row in reader:
-        if not raw_row or all(cell == "" for cell in raw_row):
-            continue
-        if len(raw_row) < len(EXPECTED_STOOQ_HEADER):
-            raise StooqFetcherError(
-                f"malformed Stooq row for {ticker}: {raw_row!r} (too few columns)"
-            )
-        date_text, open_text, high_text, low_text, close_text, volume_text = (
-            raw_row[0],
-            raw_row[1],
-            raw_row[2],
-            raw_row[3],
-            raw_row[4],
-            raw_row[5],
-        )
-        try:
-            row_date = date.fromisoformat(date_text)
-        except ValueError as exc:
-            raise StooqFetcherError(
-                f"malformed date {date_text!r} in Stooq row for {ticker}"
-            ) from exc
+    for index_value, row in frame.iterrows():
+        row_date = _coerce_date(index_value, ticker=ticker)
         if row_date < effective_from or row_date > effective_to:
-            raise StooqFetcherError(
-                f"Stooq row for {ticker} outside requested window "
-                f"[{effective_from.isoformat()}, {effective_to.isoformat()}]: {date_text}"
+            raise YFinanceFetcherError(
+                f"yfinance row for {ticker} outside requested window "
+                f"[{effective_from.isoformat()}, {effective_to.isoformat()}]: "
+                f"{row_date.isoformat()}"
             )
         try:
-            open_value = float(open_text)
-            high_value = float(high_text)
-            low_value = float(low_text)
-            close_value = float(close_text)
-            volume_value = int(float(volume_text))
-        except ValueError as exc:
-            raise StooqFetcherError(
-                f"malformed numeric value in Stooq row for {ticker}: {raw_row!r}"
+            open_value = float(row["Open"])
+            high_value = float(row["High"])
+            low_value = float(row["Low"])
+            close_value = float(row["Close"])
+            volume_value = int(float(row["Volume"]))
+        except (TypeError, ValueError) as exc:
+            raise YFinanceFetcherError(
+                f"malformed numeric value in yfinance row for {ticker} on "
+                f"{row_date.isoformat()}: {exc}"
             ) from exc
         rows.append(
             _ParsedRow(
@@ -301,11 +262,51 @@ def _parse_stooq_csv(
             )
         )
     if not rows:
-        raise StooqFetcherError(
-            f"Stooq response for {ticker} contained no data rows"
+        raise YFinanceFetcherError(
+            f"yfinance DataFrame for {ticker} produced no usable rows"
         )
     rows.sort(key=lambda parsed: parsed.date)
     return rows
+
+
+def _coerce_date(value: Any, *, ticker: str) -> date:
+    # pandas.Timestamp inherits from datetime.datetime which inherits from
+    # datetime.date, but Timestamp/datetime do NOT compare cleanly against pure
+    # datetime.date instances. Reduce anything richer than a pure date to date()
+    # before returning, so the caller can do date-only comparisons safely.
+    to_pydatetime = getattr(value, "to_pydatetime", None)
+    if callable(to_pydatetime):
+        try:
+            converted = to_pydatetime()
+        except Exception as exc:  # noqa: BLE001 - defensive against vendor objects
+            raise YFinanceFetcherError(
+                f"could not coerce yfinance index value {value!r} to a date for "
+                f"{ticker}: {exc}"
+            ) from exc
+        if isinstance(converted, datetime):
+            return converted.date()
+        if isinstance(converted, date):
+            return converted
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    date_method = getattr(value, "date", None)
+    if callable(date_method):
+        try:
+            result = date_method()
+        except Exception as exc:  # noqa: BLE001 - defensive against vendor objects
+            raise YFinanceFetcherError(
+                f"could not coerce yfinance index value {value!r} to a date for "
+                f"{ticker}: {exc}"
+            ) from exc
+        if isinstance(result, datetime):
+            return result.date()
+        if isinstance(result, date):
+            return result
+    raise YFinanceFetcherError(
+        f"yfinance index value {value!r} for {ticker} is not a date-like object"
+    )
 
 
 def _expected_business_days(date_from: date, date_to: date) -> int:
@@ -353,7 +354,7 @@ def _parse_allow_short_history(value: str) -> frozenset[str]:
 def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Opt-in Stooq CSV fetcher for the Regime-Adaptive 9-asset universe. "
+            "Opt-in yfinance CSV fetcher for the Regime-Adaptive 9-asset universe. "
             "Research-only public-best-effort non-PIT data; never authorizes paper or "
             "live trading."
         )
@@ -369,14 +370,14 @@ def build_arg_parser() -> argparse.ArgumentParser:
         dest="date_from",
         type=_parse_iso_date,
         default=DEFAULT_DATE_FROM,
-        help="Earliest date to request from Stooq (default: 2018-01-01).",
+        help="Earliest date to request from yfinance (default: 2018-01-01).",
     )
     parser.add_argument(
         "--to",
         dest="date_to",
         type=_parse_iso_date,
         default=DEFAULT_DATE_TO,
-        help="Latest date to request from Stooq (default: 2025-12-31).",
+        help="Latest date to request from yfinance (default: 2025-12-31).",
     )
     parser.add_argument(
         "--allow-short-history",
@@ -389,26 +390,13 @@ def build_arg_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
-        "--timeout",
-        dest="timeout_seconds",
-        type=int,
-        default=DEFAULT_TIMEOUT_SECONDS,
-        help="HTTP request timeout in seconds (default: 30).",
-    )
-    parser.add_argument(
-        "--user-agent",
-        dest="user_agent",
-        default=DEFAULT_USER_AGENT,
-        help="HTTP User-Agent header (default: research-only identifier).",
-    )
-    parser.add_argument(
         MANUAL_CONFIRM_FLAG,
         dest="manual_confirmation",
         action="store_true",
         help=(
             "Required acknowledgement that this performs a one-time real network "
-            "fetch for research-only public-best-effort non-PIT data and never "
-            "authorizes paper or live trading."
+            "fetch (via yfinance) for research-only public-best-effort non-PIT data "
+            "and never authorizes paper or live trading."
         ),
     )
     return parser
@@ -417,19 +405,16 @@ def build_arg_parser() -> argparse.ArgumentParser:
 def _format_summary(summary: FetchSummary) -> str:
     lines: list[str] = []
     lines.append(
-        f"Stooq fetch summary "
+        f"yfinance fetch summary "
         f"({summary.date_from.isoformat()}..{summary.date_to.isoformat()}) "
         f"into {summary.output_dir.as_posix()}:"
     )
     lines.append(RESEARCH_ONLY_DISCLAIMER)
-    lines.append(
-        "ticker  status  rows  first         last          coverage  short_history"
-    )
+    lines.append("ticker  rows  first         last          coverage  short_history")
     for result in summary.results:
         lines.append(
-            f"{result.ticker:<6}  {result.http_status:<6}  "
-            f"{result.row_count:>4}  {result.first_date.isoformat()}  "
-            f"{result.last_date.isoformat()}  "
+            f"{result.ticker:<6}  {result.row_count:>4}  "
+            f"{result.first_date.isoformat()}  {result.last_date.isoformat()}  "
             f"{result.coverage_ratio:>7.2%}  "
             f"{'yes' if result.short_history_exempt else 'no'}"
         )
@@ -445,12 +430,10 @@ def main(argv: list[str] | None = None) -> int:
         date_to=args.date_to,
         manual_confirmation=args.manual_confirmation,
         allow_short_history=args.allow_short_history,
-        timeout_seconds=args.timeout_seconds,
-        user_agent=args.user_agent,
     )
     try:
-        summary = fetch_stooq_regime_adaptive_csvs(request)
-    except StooqFetcherError as exc:
+        summary = fetch_yfinance_regime_adaptive_csvs(request)
+    except YFinanceFetcherError as exc:
         print(f"fetch failed: {exc}", file=sys.stderr)
         return 2
     print(_format_summary(summary))
