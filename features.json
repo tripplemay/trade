@@ -22,7 +22,7 @@
       "title": "执行真实 snapshot 获取并验证 manifest",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Codex 显式 opt-in 一次性运行 scripts/fetch_yfinance_regime_adaptive_csvs.py 抓取 staging 目录的真实 yfinance CSVs；验证 per-ticker 日志：8 个非 SGOV ticker ≥95% 预期交易日覆盖，SGOV 报告真实 first-available date；运行 scripts/acquire_regime_adaptive_snapshot.py 把 staging CSV 注册为 manifest（data/public-cache/regime-adaptive-prices-manifest.json）；验证 manifest sha256 在两次连续 import（跳过 fetch）后稳定一致；提交 acquisition 日志 docs/test-reports/B014-regime-adaptive-stress-validation-acquisition-log-2026-MM-DD.md；raw CSVs 与 snapshot 保持 gitignored"
     },
     {
@@ -30,7 +30,7 @@
       "title": "真实 snapshot 上跑 2020 + 2022 stress 回测",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Codex 在真实 snapshot 上跑 B013 月度回测：2020-02-01→2020-12-31（COVID）+ 2022-01-01→2022-12-31（通胀）；使用 B013 默认参数不变；记录每窗口经验 max drawdown / drawdown 持续 / 恢复时间 / 年化收益/波动率/Sharpe / turnover / transaction costs / regime label timeline / gating 活动 / tolerance-band 统计；stress gate 判定：2020 max DD < 0.15 且 2022 max DD < 0.15 → pass，否则 fail（带经验数字）。输出 docs/test-reports/B014-regime-adaptive-stress-validation-2026-MM-DD.md + JSON sidecar；reports 含 research-only disclaimer"
     },
     {
@@ -38,7 +38,7 @@
       "title": "跨策略对比报告（B013 / B006 / B010 / 60-40）",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Codex 在真实 snapshot 的 overlapping 窗口上跑 B013、B006 momentum、B010 risk parity、static 60/40 baseline（默认配置）；输出 equity curve、年化收益/波动率/Sharpe/max DD、turnover、transaction costs 对比；每 stress 窗口 drawdown 对比表。输出 docs/test-reports/B014-regime-adaptive-cross-strategy-comparison-2026-MM-DD.md + JSON sidecar。不新增策略代码，仅复用既有实现"
     },
     {
@@ -46,7 +46,7 @@
       "title": "Evidence-backed 签收并解决 B013 stress gate",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Codex 写 docs/test-reports/B014-regime-adaptive-stress-validation-signoff-2026-MM-DD.md：含经验 2020 + 2022 max DD 数字、stress gate 判定（pass/fail）与 15% 阈值的具体差值、跨策略对比摘要、soft-watch、必要时 framework learnings（如 max DD > 15% 应建议参数 retune）。明确标注 B013 之前 skipped 的 stress gate 现已经验上解决。如果 fail：向 framework/proposed-learnings.md 追加 entry 描述 empirical shortfall + 建议下一批次（参数 retune）；**B014 内不修改 B013 策略代码**。更新 progress.json 的 evaluator_feedback 与 docs.signoff。pytest / ruff / compileall / mypy 全过"
     }
   ]
