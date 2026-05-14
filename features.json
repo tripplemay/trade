@@ -54,7 +54,7 @@
       "title": "输出 reports + baselines + 2020/2022 stress 验收",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "JSON/Markdown reports：aggregated equity、年化收益/波动率/Sharpe/最大回撤、turnover、transaction costs、per-asset weight history、L1 gating history、regime history、tolerance-band 统计（抑制交易数 + turnover 节省 vs no-band baseline）、snapshot/manifest references、account-level risk flags、research limitations、固定 research-only disclaimer。新增 calculated baselines：static 60/40（复用 B011 机制）+ B006 momentum + B010 risk parity（同期）。Stress 验收：snapshot 在场时 2020-02-01→2020-12-31 与 2022-01-01→2022-12-31 max drawdown < 15%；snapshot 缺失时 gate 状态为 'skipped' 不计失败。测试覆盖 report schema、baseline 集成、stress gate pass/skip 语义、disclaimer 存在"
     },
     {
