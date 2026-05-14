@@ -62,7 +62,7 @@
       "title": "Lightweight 参数 sensitivity sweep",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Deterministic one-at-a-time 参数 sweep：target_volatility {0.06, 0.08, 0.10}、regime_fast {15, 20, 30}、regime_slow {90, 120, 180}、regime_ratio {1.3, 1.5, 1.8}、tolerance_band {0.00, 0.03, 0.05}、trend_window {150, 200, 250}。每个 variation 在 synthetic fixture 上跑完整 backtest（snapshot 在场时可选附加）。输出 data/research/regime-adaptive-sensitivity-<timestamp>.json + docs/test-reports/research/ 下 Markdown 摘要。必须 deterministic、单进程、几秒内完成、无网络/env/外部服务调用。**非** Monte Carlo / **非** 学习优化器。测试覆盖确定性、参数覆盖、无 network/env/broker import"
     },
     {
