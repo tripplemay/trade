@@ -78,7 +78,7 @@
       "title": "补强 B013 安全 guard 与 workflow 回归",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "增加回归覆盖：B013 strategy 模块**无 broker SDK 导入**（复用 B012 列表）、**无 AI/LLM SDK 导入**（新增列表：openai / anthropic / google.generativeai / langchain / transformers / torch / tensorflow / sklearn 在 strategy 模块禁止；研究脚本除外）、**无 paper-trading API URL**、strategy 模块**无 os.environ / os.getenv 读取**（snapshot 获取脚本在 scripts/ 下不算 strategy 模块）、默认 fixture run **无 socket I/O**、reports/docstrings 含 research-only disclaimer。pytest、ruff、compileall、mypy 全部通过"
     },
     {
