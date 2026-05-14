@@ -38,7 +38,7 @@
       "title": "实现 L3 regime 检测与敞口调整",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "实现 detect_regime(prices, prior_weights, config) 返回 RegimeState(regime∈NORMAL/BEAR/CRISIS, fast_vol, slow_vol, ratio, spy_trend_signal, triggered_at, human_review_required)；分类：fast_vol>slow_vol*1.5 且 SPY<SMA200_SPY → CRISIS；否则 SPY<SMA200_SPY → BEAR；否则 NORMAL。apply_regime_exposure_adjustment(weights, regime_state, config)：CRISIS 时非 defensive 权重 ×0.5 并把释放敞口路由到 SGOV；BEAR 依赖 L1 个股 gating，不额外缩减；NORMAL 透传。CRISIS 触发 human_review_required=true。测试覆盖四象限分类、缩放正确、defensive 吸收、flag 联动"
     },
     {
