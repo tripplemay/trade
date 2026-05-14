@@ -6,7 +6,7 @@
       "title": "新增 Stooq CSV fetcher 辅助脚本",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新增 scripts/fetch_stooq_regime_adaptive_csvs.py：从 Stooq 公开 CSV endpoint（https://stooq.com/q/d/l/?s=<symbol>.us&i=d&d1=YYYYMMDD&d2=YYYYMMDD）抓取 9 资产（SPY/QQQ/VEA/VWO/IEF/TLT/GLD/DBC/SGOV）日 OHLCV 2018-01-01 到 2025-12-31（CLI 可配）；写 <SYMBOL>.csv 到 --output-dir；opt-in via --i-understand-this-is-manual-research-data；stdlib-only（urllib + csv），无第三方依赖；唯一允许的 host 是 stooq.com；SGOV 后期上市作为允许 short-history 例外（--allow-short-history 或专属处理），其他 8 个 ticker 必须达 ≥95% 预期交易日覆盖否则 fail-closed；HTTP error / 畸形 CSV / 覆盖不足 / 缺 flag → 非零退出；默认 CI 永不调用"
     },
     {
@@ -14,7 +14,7 @@
       "title": "Fetcher 单元测试（mocked HTTP）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新增 tests/unit/test_stooq_fetcher.py：mock urllib.request.urlopen 返回 canned CSV bytes；覆盖 happy-path 9-ticker 抓取、缺 flag 拒绝、HTTP error fail-closed、畸形 CSV fail-closed、非 SGOV 短历史拒绝、SGOV 短历史在 allowance 下接受、output 文件名大小写与 CSV schema 正确、任何测试都不触真实网络。pytest / ruff / compileall / mypy 全过"
     },
     {

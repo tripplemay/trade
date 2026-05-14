@@ -1,10 +1,10 @@
 {
-  "status": "building",
-  "user_goal": "在 B013 之后做 Regime-Adaptive 策略的 stress validation 扩展：补一个 Stooq-based opt-in CSV fetcher（stdlib-only，stooq.com 唯一允许 host），通过 Codex 一次性获取真实 9 资产 2018-2025 snapshot，在真实数据上跑 B013 的 2020+2022 stress 回测，与 B006 momentum、B010 risk parity、static 60/40 跨策略对比，并以经验证据签收：把 B013 之前 skipped 的 stress gate 翻成 pass 或 fail（带经验数字）。若 fail 则写 proposed-learnings 建议参数 retune，**不修改 B013 策略代码**。全程保持 fixture/mock-first 默认 CI、no-live/no-secret-in-strategy/no-broker/no-paper/no-AI guards，fetcher 是 strategy 模块外（scripts/）的唯一网络入口。",
+  "status": "verifying",
+  "user_goal": "在 B013 之后做 Regime-Adaptive 策略的 stress validation 扩展：补一个 Stooq-based opt-in CSV fetcher（stdlib-only，stooq.com 唯一允许 host），通过 Codex 一次性获取真实 9 资产 2018-2025 snapshot，在真实数据上跑 B013 的 2020+2022 stress 回测，与 B006 momentum、B010 risk parity、static 60/40 跨策略对比,并以经验证据签收：把 B013 之前 skipped 的 stress gate 翻成 pass 或 fail（带经验数字）。若 fail 则写 proposed-learnings 建议参数 retune，**不修改 B013 策略代码**。全程保持 fixture/mock-first 默认 CI、no-live/no-secret-in-strategy/no-broker/no-paper/no-AI guards，fetcher 是 strategy 模块外（scripts/）的唯一网络入口。",
   "total_features": 6,
-  "completed_features": 0,
+  "completed_features": 2,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F003",
   "last_updated": "2026-05-14",
   "reference_docs": [
     "docs/specs/B014-regime-adaptive-stress-validation-spec.md",
@@ -30,10 +30,29 @@
   },
   "role_assignments": null,
   "evaluator_feedback": null,
-  "generator_handoff": null,
+  "generator_handoff": {
+    "completed_features": ["F001", "F002"],
+    "delivered_artifacts": {
+      "fetcher_script": "scripts/fetch_stooq_regime_adaptive_csvs.py",
+      "fetcher_tests": "tests/unit/test_stooq_fetcher.py"
+    },
+    "usage_for_codex": {
+      "fetch_stooq_csvs": "python scripts/fetch_stooq_regime_adaptive_csvs.py --output-dir data/public-cache-staging --from 2018-01-01 --to 2025-12-31 --i-understand-this-is-manual-research-data",
+      "register_snapshot_after_fetch": "python scripts/acquire_regime_adaptive_snapshot.py --source-dir data/public-cache-staging --output-dir data/public-cache --from 2018-01-01 --to 2025-12-31 --i-understand-this-is-manual-research-data",
+      "note_on_sgov_short_history": "Fetcher hardcodes SGOV inception as 2020-05-28 and treats SGOV as the only allowed short-history ticker by default; the other 8 tickers must reach >=95% expected business-day coverage or the run exits non-zero with diagnostic.",
+      "note_on_safety": "Fetcher is stdlib-only (urllib + csv), refuses any URL that is not https://stooq.com/q/d/l/, fails closed on HTTP/URL errors, malformed CSV, or 'No data' responses, and reads no env vars. Default CI never invokes it (no test entry point depends on it without monkeypatched urlopen)."
+    },
+    "open_codex_features": ["F003", "F004", "F005", "F006"],
+    "expected_outputs": {
+      "F003": "docs/test-reports/B014-regime-adaptive-stress-validation-acquisition-log-2026-MM-DD.md plus manifest at data/public-cache/regime-adaptive-prices-manifest.json (gitignored CSVs)",
+      "F004": "docs/test-reports/B014-regime-adaptive-stress-validation-2026-MM-DD.md + JSON sidecar",
+      "F005": "docs/test-reports/B014-regime-adaptive-cross-strategy-comparison-2026-MM-DD.md + JSON sidecar",
+      "F006": "docs/test-reports/B014-regime-adaptive-stress-validation-signoff-2026-MM-DD.md + optional framework/proposed-learnings.md entry if max DD > 15%"
+    }
+  },
   "session_notes": {
     "planner": "2026-05-14 B014 planning: User agreed to B013 stress validation extension batch after planner flagged the outstanding research item (B013 stress gate skipped). Discovered acquire_regime_adaptive_snapshot.py is structurally CSV-import only (no download); user authorized adding a Stooq-based fetcher helper (mixed batch). Decisions captured: (1) Stooq direct CSV endpoint stooq.com/q/d/l/ is the only authorized network host; (2) fetcher uses stdlib only (urllib + csv); (3) fetcher is opt-in via --i-understand-this-is-manual-research-data; (4) SGOV inception 2020-05-28 noted as known short-history exception (other 8 tickers require >=95% coverage); (5) 2020 stress window 2020-02-01 to 2020-12-31, SGOV pre-inception sub-window held as cash placeholder; 2022 window fully covered; (6) cross-strategy comparison covers B013 vs B006 vs B010 vs static 60/40 on overlapping range; (7) B014 does NOT mutate B013 strategy code; if empirical max DD breaches 15%, add proposed-learnings entry recommending parameter retune. Wrote B014 spec and features.json (6 features: F001-F002 generator + F003-F006 codex; mixed batch). Status moved to building for Generator F001.",
-    "generator": null,
+    "generator": "2026-05-14 B014 building: Implemented F001 scripts/fetch_stooq_regime_adaptive_csvs.py (stdlib-only opt-in Stooq fetcher, stooq.com host enforced via urlparse, default CI never invokes it, fails closed on HTTP/URL errors, malformed CSV, 'No data', or sub-95% coverage for non-SGOV tickers; SGOV defaults to allowed short-history with hardcoded 2020-05-28 inception). F002 tests/unit/test_stooq_fetcher.py adds 26 unit tests, all mocking urlopen — happy path, missing flag, HTTP error, URLError, malformed CSV, 'No data', non-SGOV short-history rejection, SGOV short-history acceptance, SGOV rejection when allowance disabled, URL/host enforcement, business-day counting, CLI main success/failure, arg parser parses, output schema lowercase canonical (date,open,high,low,close,adjusted_close,volume) with .6f formatting, no real socket usage, no forbidden broker/AI imports, no execution-language phrasing, no os.environ reads. Output schema chosen to match downstream PriceBar dataclass (close == adjusted_close, since Stooq's free CSV is split-adjusted). Output filename SYMBOL.csv (uppercase). Local checks all green: pytest 362 passed (336 prior + 26 new), ruff/compileall/mypy clean. Status moved to verifying for Codex F003-F006.",
     "evaluator": null
   },
   "features": [

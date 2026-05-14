@@ -4,11 +4,12 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B014-regime-adaptive-stress-validation：`building`**；Planner 完成 spec + features.json，等待 Generator 起步 F001（Stooq fetcher）。
+- **B014-regime-adaptive-stress-validation：`verifying`**；Generator 完成 F001+F002，移交 Codex 跑 F003-F006（一次性真实抓取 + stress + 跨策略对比 + evidence-backed 签收）。
 - Spec: `docs/specs/B014-regime-adaptive-stress-validation-spec.md`
-- 6 features（混合批次）：F001-F002 generator（fetcher 脚本 + mocked HTTP tests）+ F003-F006 codex（一次性真实抓取、2020+2022 stress、跨策略对比、evidence-backed 签收）。
+- 已完成 (Generator): F001 `scripts/fetch_stooq_regime_adaptive_csvs.py` + F002 `tests/unit/test_stooq_fetcher.py`（26 个 mocked HTTP 单测，0 真实网络）。Fetcher 输出 `<SYMBOL>.csv` 用 lowercase canonical schema `date,open,high,low,close,adjusted_close,volume`（Stooq 免费 CSV 是 split-adjusted，close 直接落 adjusted_close）。
+- Codex 入口（详见 progress.json `generator_handoff`）：先跑 fetcher 抓 `data/public-cache-staging/`，再 `acquire_regime_adaptive_snapshot.py` 注册 manifest，然后 F004 2020+2022 stress + F005 跨策略 + F006 签收。
 - 关键决策：Stooq stooq.com/q/d/l/ 唯一允许 host；fetcher stdlib-only（urllib + csv）+ opt-in flag；SGOV 2020-05-28 上市作为允许 short-history；其他 8 资产 ≥95% 覆盖否则 fail-closed；2020 窗口 2020-02-01→2020-12-31（SGOV 上市前作为 cash placeholder），2022 窗口 2022-01-01→2022-12-31；跨策略对比 B013/B006/B010/60-40；**B014 不修改 B013 策略代码**；max DD>15% 走 proposed-learnings 建议参数 retune。
-- 硬边界保留：默认 CI 仍 fixture/mock-first；fetcher 是 strategy 模块外（scripts/）唯一网络入口；no-broker/no-paper/no-AI/no-secret-in-strategy。
+- 硬边界保留：默认 CI 仍 fixture/mock-first（pytest 362 全过；ruff/compileall/mypy 干净）；fetcher 是 strategy 模块外（scripts/）唯一网络入口；no-broker/no-paper/no-AI/no-secret-in-strategy。
 
 ## 已完成签收
 - B001-B008: strategy roadmap through research-grade data expansion all signed off.
