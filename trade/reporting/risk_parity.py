@@ -97,6 +97,7 @@ def build_risk_parity_report_payload(
                     "turnover": period.turnover,
                     "cost_amount": period.cost_amount,
                     "ending_value": period.ending_value,
+                    "weighting_method": period.signal.parameters.weighting_method,
                 }
                 for period in result.rebalance_results
             ],

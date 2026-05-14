@@ -22,7 +22,7 @@
       "title": "B010 backtest workflow 集成 HRP dispatcher",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "在 B010 月度 backtest 的权重计算步骤处加 dispatch：parameters.weighting_method=='hrp' 时调用 compute_hrp_weights；否则现有 inverse-vol 路径**不变**。L2 target-vol 缩放、defensive sleeve 路由、max_exposure=1.0 cap 对两条路径均适用。Per-period rebalance trace 记录 weighting_method 字段以便下游报告归因。测试覆盖：HRP 路径在 9 资产合成 fixture 上端到端跑通；inverse-vol 路径**与 B010 signoff bit-for-bit 一致**；trace 字段记录正确"
     },
     {

@@ -10,6 +10,7 @@ from math import sqrt
 from typing import Literal
 
 from trade.data.loader import PriceBar
+from trade.strategies.risk_parity_hrp import compute_hrp_weights
 
 
 class RiskParityConfigError(ValueError):
@@ -204,7 +205,12 @@ def generate_risk_parity_signal(
     if not estimates:
         raise RiskParityDataError("no valid volatility estimates for risk assets")
 
-    base_weights = _inverse_volatility_weights(estimates)
+    if parameters.weighting_method == "hrp":
+        base_weights = _hrp_risk_asset_weights(
+            records, parameters, estimates, signal_date
+        )
+    else:
+        base_weights = _inverse_volatility_weights(estimates)
     capped_weights = _cap_and_normalize_weights(base_weights, parameters.max_asset_weight)
     estimated_portfolio_volatility = _weighted_average_volatility(capped_weights, estimates)
     exposure_scale = min(parameters.target_volatility / estimated_portfolio_volatility, 1.0)
@@ -240,6 +246,33 @@ def _inverse_volatility_weights(
     raw = {estimate.symbol: 1.0 / estimate.annualized_volatility for estimate in valid}
     raw_sum = sum(raw.values())
     return {symbol: value / raw_sum for symbol, value in raw.items()}
+
+
+def _hrp_risk_asset_weights(
+    records: tuple[PriceBar, ...],
+    parameters: RiskParityParameters,
+    estimates: tuple[VolatilityEstimate, ...] | list[VolatilityEstimate],
+    signal_date: date | None,
+) -> dict[str, float]:
+    """HRP weights over the same lookback window used for volatility estimates."""
+
+    lookback = parameters.volatility_lookback
+    series: list[tuple[float, ...]] = []
+    symbols: list[str] = []
+    for estimate in estimates:
+        returns = daily_returns(records, estimate.symbol, signal_date)
+        if len(returns) < lookback:
+            raise RiskParityDataError(
+                f"insufficient returns for HRP on {estimate.symbol}: "
+                f"need {lookback}, got {len(returns)}"
+            )
+        window = returns[-lookback:]
+        series.append(tuple(observation.value for observation in window))
+        symbols.append(estimate.symbol)
+    try:
+        return compute_hrp_weights(series, symbols)
+    except ValueError as exc:
+        raise RiskParityDataError(f"HRP weight computation failed: {exc}") from exc
 
 
 def _cap_and_normalize_weights(weights: dict[str, float], max_weight: float) -> dict[str, float]:
