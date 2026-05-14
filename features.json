@@ -1,53 +1,53 @@
 {
-  "sprint": "B014-regime-adaptive-stress-validation",
+  "sprint": "B015-regime-adaptive-activation-policy",
   "features": [
     {
       "id": "F001",
-      "title": "yfinance CSV fetcher 辅助脚本（Stooq pivot 后）",
+      "title": "RegimeAdaptiveConfig 新增 regime_activation_policy 字段与校验",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "新增 scripts/fetch_yfinance_regime_adaptive_csvs.py：通过 yfinance（auto_adjust=True）抓取 9 资产（SPY/QQQ/VEA/VWO/IEF/TLT/GLD/DBC/SGOV）日 OHLCV 2018-01-01 到 2025-12-31（CLI 可配）；写 <SYMBOL>.csv 到 --output-dir 使用 lowercase canonical schema date,open,high,low,close,adjusted_close,volume + .6f 数字格式；opt-in via --i-understand-this-is-manual-research-data；fetcher 依赖 yfinance + stdlib；唯一允许的网络入口是 yfinance（Yahoo Finance）；SGOV 后期上市作为允许 short-history 例外，其他 8 个 ticker 必须达 ≥95% 预期交易日覆盖否则 fail-closed；yfinance 异常 / 空 DataFrame / schema 不匹配 / 覆盖不足 / 缺 flag → 非零退出；默认 CI 永不调用。**Fix 迭代删除** 旧的 scripts/fetch_stooq_regime_adaptive_csvs.py（Stooq apikey 门梢导致不可用）。Amendment 2026-05-14: 由 Stooq 切换到 yfinance"
+      "status": "pending",
+      "acceptance": "RegimeAdaptiveConfig 新增 regime_activation_policy: Literal['always_on', 'only_non_normal', 'only_crisis'] = 'always_on'；validation 拒绝其他字符串并给出诊断列出 valid choices；parameter_hash（或等价）包含此字段使配置区分。测试覆盖：默认构造（always_on）、三种 valid 值、invalid 字符串拒绝、三个 policy 的 hash distinctness、序列化/反序列化"
     },
     {
       "id": "F002",
-      "title": "yfinance Fetcher 单元测试（mocked yf）",
+      "title": "L1 trend gating 按 activation policy 条件启用",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "新增 tests/unit/test_yfinance_fetcher.py（替换 test_stooq_fetcher.py）：patch yfinance.Ticker.history 返回 canned pandas DataFrame；覆盖 happy-path 9-ticker 抓取、缺 flag 拒绝、yfinance 异常 fail-closed、空 DataFrame fail-closed、schema 不匹配 fail-closed、非 SGOV 短历史拒绝、SGOV 短历史接受、output 文件名大小写与 CSV schema 正确、任何测试都不触真实网络。pytest / ruff / compileall / mypy 全过。Amendment 2026-05-14: 由 Stooq 切换到 yfinance"
+      "status": "pending",
+      "acceptance": "新增 should_l1_gate_run(regime_label, policy) -> bool 辅助：always_on → 任何 regime True；only_non_normal → BEAR/CRISIS True，NORMAL False；only_crisis → CRISIS True，其他 False。Backtest workflow 在 L3 产出 regime 后调用此辅助；返回 False 时绕过 apply_trend_gating，非 defensive 资产均当作 ungated；SGOV defensive 路由不变；per-period rebalance trace 记录 l1_active: bool 与 active policy。测试覆盖全部 9 个 (policy × regime) 组合、trace flag 正确、always_on 不变约束"
     },
     {
       "id": "F003",
-      "title": "执行真实 snapshot 获取并验证 manifest",
+      "title": "真实 snapshot 上的三 policy 对比 backtest 工具",
       "priority": "high",
-      "executor": "codex",
-      "status": "completed",
-      "acceptance": "Codex 显式 opt-in 一次性运行 scripts/fetch_yfinance_regime_adaptive_csvs.py 抓取 staging 目录的真实 yfinance CSVs；验证 per-ticker 日志：8 个非 SGOV ticker ≥95% 预期交易日覆盖，SGOV 报告真实 first-available date；运行 scripts/acquire_regime_adaptive_snapshot.py 把 staging CSV 注册为 manifest（data/public-cache/regime-adaptive-prices-manifest.json）；验证 manifest sha256 在两次连续 import（跳过 fetch）后稳定一致；提交 acquisition 日志 docs/test-reports/B014-regime-adaptive-stress-validation-acquisition-log-2026-MM-DD.md；raw CSVs 与 snapshot 保持 gitignored"
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "新增 research-mode 对比 backtest harness：B014 manifest 在场时对 B013 三种 activation policy 跑完整 overlapping window backtest（含 2020 + 2022 stress 子窗口）。每个 policy 记录：年化收益/波动率/Sharpe、每窗口 max DD、turnover、regime label 分布、L1 firing rate。manifest 缺失时 real-data 部分标 skipped，合成 fixture 至少跑 smoke 测试。默认 CI 不依赖 manifest。测试覆盖三 policy backtest 独立 deterministic、skipped 语义、L1 firing rate 统计正确"
     },
     {
       "id": "F004",
-      "title": "真实 snapshot 上跑 2020 + 2022 stress 回测",
+      "title": "对比报告与跨策略扩展",
       "priority": "high",
-      "executor": "codex",
-      "status": "completed",
-      "acceptance": "Codex 在真实 snapshot 上跑 B013 月度回测：2020-02-01→2020-12-31（COVID）+ 2022-01-01→2022-12-31（通胀）；使用 B013 默认参数不变；记录每窗口经验 max drawdown / drawdown 持续 / 恢复时间 / 年化收益/波动率/Sharpe / turnover / transaction costs / regime label timeline / gating 活动 / tolerance-band 统计；stress gate 判定：2020 max DD < 0.15 且 2022 max DD < 0.15 → pass，否则 fail（带经验数字）。输出 docs/test-reports/B014-regime-adaptive-stress-validation-2026-MM-DD.md + JSON sidecar；reports 含 research-only disclaimer"
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "输出 docs/test-reports/B015-regime-adaptive-activation-policy-comparison-2026-MM-DD.md + JSON sidecar：三 B013 policy metrics 表（年化收益/波动率/Sharpe/max DD/turnover/L1 firing rate）+ B006 momentum + B010 risk parity + static 60/40 同窗口对比行（尽量复用 B014 comparison sidecar 缓存值，仅在缺失时重算）+ 2020/2022 stress gate 判定 per policy + L1 firing rate per policy + narrative 说明 only_non_normal / only_crisis 是否缩窄了 vs 60/40 的 absolute-return gap。reports 含 research-only disclaimer，不得声明 paper/live execution。测试覆盖 report schema、baseline 行存在、stress 判定 per policy 写入"
     },
     {
       "id": "F005",
-      "title": "跨策略对比报告（B013 / B006 / B010 / 60-40）",
+      "title": "B013 backwards-compat 与 B015 安全 guard 回归",
       "priority": "high",
-      "executor": "codex",
-      "status": "completed",
-      "acceptance": "Codex 在真实 snapshot 的 overlapping 窗口上跑 B013、B006 momentum、B010 risk parity、static 60/40 baseline（默认配置）；输出 equity curve、年化收益/波动率/Sharpe/max DD、turnover、transaction costs 对比；每 stress 窗口 drawdown 对比表。输出 docs/test-reports/B014-regime-adaptive-cross-strategy-comparison-2026-MM-DD.md + JSON sidecar。不新增策略代码，仅复用既有实现"
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "证明 regime_activation_policy='always_on' 在合成 fixture 上**与 B013 signoff 行为 bit-for-bit 一致**：既有 B013 测试套件 + B011 Master Portfolio sleeve 注册测试全部不修改即继续通过；equity curve、weight history、L1 gating history 与 B013 fixture-based golden 输出无差。新增 B015 安全 guard 回归：无新增 broker/AI/LLM SDK 导入、strategy 模块无 os.environ 读取、默认 fixture run 无 socket I/O、B015 输出无 paper/live execution 用语。pytest / ruff / compileall / mypy 全过"
     },
     {
       "id": "F006",
-      "title": "Evidence-backed 签收并解决 B013 stress gate",
+      "title": "独立验收 B015 Regime-Adaptive Activation Policy",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "Codex 写 docs/test-reports/B014-regime-adaptive-stress-validation-signoff-2026-MM-DD.md：含经验 2020 + 2022 max DD 数字、stress gate 判定（pass/fail）与 15% 阈值的具体差值、跨策略对比摘要、soft-watch、必要时 framework learnings（如 max DD > 15% 应建议参数 retune）。明确标注 B013 之前 skipped 的 stress gate 现已经验上解决。如果 fail：向 framework/proposed-learnings.md 追加 entry 描述 empirical shortfall + 建议下一批次（参数 retune）；**B014 内不修改 B013 策略代码**。更新 progress.json 的 evaluator_feedback 与 docs.signoff。pytest / ruff / compileall / mypy 全过"
+      "status": "pending",
+      "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认：(1) regime_activation_policy enum + validation 正确；(2) should_l1_gate_run 在 9 个组合上正确；(3) always_on 与 B013 signoff 行为 bit-for-bit 一致（合成 fixture）；(4) 对比报告存在且含三 policy 行 + 跨策略对比行 + 2020/2022 stress per policy + L1 firing rate + narrative；(5) B014 snapshot 在场时三 policy 数字与报告 narrative 一致，缺失时 real-data section 标 skipped 不失败；(6) 所有 no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards 保留。Signoff 中明确说明 backwards-compat 验证结果与 only_non_normal/only_crisis 是否缩窄 vs 60/40 absolute-return gap（empirical research finding，不是 pass/fail 标准）"
     }
   ]
 }

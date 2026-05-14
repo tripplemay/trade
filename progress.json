@@ -1,75 +1,40 @@
 {
-  "status": "done",
-  "user_goal": "在 B013 之后做 Regime-Adaptive 策略的 stress validation 扩展：通过 yfinance opt-in fetcher（pip 包，免 API key，scripts/ 唯一网络入口）一次性获取真实 9 资产 2018-2025 snapshot，在真实数据上跑 B013 的 2020+2022 stress 回测，与 B006 momentum、B010 risk parity、static 60/40 跨策略对比,并以经验证据签收：把 B013 之前 skipped 的 stress gate 翻成 pass 或 fail（带经验数字）。若 fail 则写 proposed-learnings 建议参数 retune，**不修改 B013 策略代码**。全程保持 fixture/mock-first 默认 CI、no-live/no-secret-in-strategy/no-broker/no-paper/no-AI guards。Stooq pivot 历史：F001/F002 原 Stooq 实现因 upstream apikey gate 不可用，已替换为 yfinance 实现；F003 真实 acquisition 又遇到 importer coverage 过严（SPY holiday、SGOV 实际首日 2020-06-01），fix round 2 引入 first-trading-day tolerance + short-history allowance。",
+  "status": "building",
+  "user_goal": "在 B014 经验签收（2020 max DD -4.76% / 2022 max DD -1.66%）后，针对其跨策略对比发现的 'B013 在非危机期间绝对收益让出给 60/40' 现象做最小研究批次：给 B013 加 regime_activation_policy 参数（always_on 默认 / only_non_normal / only_crisis），让 L1 200-SMA 趋势过滤按当前 regime label 条件启用；L2 inverse-vol + 8% target 与 L3 crisis 减半不变；默认保持 B013 现状 bit-for-bit；在 B014 真实 snapshot 上跨 policy 与 B006/B010/60-40 对比，看是否缩窄 absolute-return gap。**不修改 B013 strategy code 外的任何文件**（包括 B010/B011 等），保留 fixture/mock-first 默认 CI、no-live/no-secret-in-strategy/no-broker/no-paper/no-AI guards。",
   "total_features": 6,
-  "completed_features": 6,
-  "fix_rounds": 2,
-  "current_sprint": "F006",
+  "completed_features": 0,
+  "fix_rounds": 0,
+  "current_sprint": "F001",
   "last_updated": "2026-05-14",
   "reference_docs": [
+    "docs/specs/B015-regime-adaptive-activation-policy-spec.md",
     "docs/specs/B014-regime-adaptive-stress-validation-spec.md",
     "docs/specs/B013-regime-adaptive-multi-asset-mvp-spec.md",
-    "docs/specs/research/B011-regime-adaptive-multi-asset-spec.md",
-    "docs/specs/B009-public-data-snapshot-mvp-spec.md",
     "docs/specs/B010-risk-parity-backtest-mvp-spec.md",
-    "docs/specs/B006-global-etf-backtest-mvp-spec.md",
+    "docs/specs/B011-portfolio-allocation-risk-mvp-spec.md",
     "docs/test-reports/B013-regime-adaptive-multi-asset-mvp-signoff-2026-05-14.md",
-    "docs/test-reports/B011-portfolio-allocation-risk-mvp-signoff-2026-05-13.md",
-    "docs/prd/mvp-prd.md",
+    "docs/test-reports/B014-regime-adaptive-stress-validation-signoff-2026-05-14.md",
+    "docs/test-reports/B014-regime-adaptive-cross-strategy-comparison-2026-05-14.md",
+    "docs/test-reports/B014-regime-adaptive-stress-validation-2026-05-14.md",
     "docs/strategy/00-master-portfolio-allocation.md",
+    "docs/prd/mvp-prd.md",
     "docs/engineering/testing-and-fixture-policy.md",
     "docs/engineering/no-live-safety-guards.md",
-    "docs/engineering/backtest-report-schema.md",
-    "docs/engineering/pit-data-degradation-policy.md"
+    "docs/engineering/backtest-report-schema.md"
   ],
   "docs": {
-    "spec": "docs/specs/B014-regime-adaptive-stress-validation-spec.md",
+    "spec": "docs/specs/B015-regime-adaptive-activation-policy-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B014-regime-adaptive-stress-validation-signoff-2026-05-14.md",
+    "signoff": null,
     "framework_reviewed": true
   },
   "role_assignments": null,
-  "evaluator_feedback": {
-    "summary": "B014 passed reverification on real yfinance 9-asset snapshot (2018-2025). Stress validation gate PASS: 2020-02-01..2020-12-31 max DD -4.76% (threshold -15%); 2022-01-01..2022-12-31 max DD -1.66% (threshold -15%). B013's previously skipped stress gate is now empirically resolved. Cross-strategy comparison on overlapping window 2020-06-01..2022-12-31: regime-adaptive ending value 126726.20 vs momentum 100963.19 vs risk parity 103869.16 vs static 60/40 158978.38. Verdict: B013 successfully delivers low-drawdown crisis shield; the cost is upside give-up in bull markets relative to static 60/40 (research finding, not a code defect). Signoff at docs/test-reports/B014-regime-adaptive-stress-validation-signoff-2026-05-14.md.",
-    "pass_count": 6,
-    "partial_count": 0,
-    "fail_count": 0,
-    "issues": [],
-    "soft_watch": [
-      "Cross-strategy comparison required supplemental AGG/EEM pulls because the audited regime-adaptive snapshot is only 9 assets.",
-      "Comparison window begins at 2020-06-01 so SGOV exists for B010 default parameters."
-    ]
-  },
-  "generator_handoff": {
-    "fix_round": 2,
-    "fix_direction_delivered": "Snapshot importer coverage policy relaxation. Importer no longer rejects acquisitions when (a) the first trading day in the requested window lands a few business days after date_from due to market holidays, or (b) a ticker in an explicit allow-list (default: SGOV) has a real-world first-available date later than date_from. Strategy code untouched.",
-    "fix_tasks_completed": [
-      "Added DEFAULT_START_TOLERANCE_BUSINESS_DAYS (=5) and DEFAULT_SHORT_HISTORY_ALLOWANCE (=frozenset({'SGOV'})) constants to trade/strategies/regime_adaptive/snapshot.py.",
-      "Extended RegimeAdaptiveSnapshotRequest with allow_short_history and start_tolerance_business_days fields (defaults preserve research-only behavior; existing callers unaffected).",
-      "Rewrote _ensure_coverage: tolerance-first acceptance for actual_start gaps within N business days, then short-history exemption for tickers in the allowance, else fail-closed. Added _count_business_days_in_range helper. Negative tolerance is rejected up front.",
-      "Recorded short_history_exempt: bool per file in the manifest (kept out of _build_snapshot_id payload so snapshot_id stays stable across policy changes).",
-      "Updated scripts/acquire_regime_adaptive_snapshot.py CLI with --allow-short-history (default 'SGOV') and --start-tolerance-business-days (default 5); passed both through to the request.",
-      "Added 8 new unit tests in tests/unit/test_regime_adaptive_snapshot.py covering: default constants, first-trading-day tolerance acceptance + non-exempt flag, excessive start-gap rejection, SGOV late-inception acceptance + exempt flag (other tickers stay non-exempt), short-history allowance disabled rejects SGOV, negative tolerance rejected, manifest contains short_history_exempt, snapshot_id stability across policy changes.",
-      "B013 strategy modules untouched. Existing snapshot tests + B013 safety regression tests pass unchanged.",
-      "Local checks pass: pytest 367 passed (359 prior + 8 new), ruff clean, compileall silent, mypy strict 42 source files clean."
-    ],
-    "post_fix_codex_workflow": {
-      "fetch_via_yfinance": "python scripts/fetch_yfinance_regime_adaptive_csvs.py --output-dir data/public-cache-staging --from 2018-01-01 --to 2025-12-31 --i-understand-this-is-manual-research-data",
-      "register_snapshot_after_fetch": "python scripts/acquire_regime_adaptive_snapshot.py --source-dir data/public-cache-staging --output-dir data/public-cache --from 2018-01-01 --to 2025-12-31 --i-understand-this-is-manual-research-data",
-      "notes_for_codex": "Default CLI now applies SGOV short-history allowance and a 5-business-day start tolerance, so SPY's 2018-01-02 first trading day and SGOV's ~2020-06-01 first available date should both be accepted. If yfinance returns coverage beyond what is required, only the start-side is relaxed — end-date still must reach --to. Manifest now exposes short_history_exempt per file (snapshot_id is unaffected by this metadata).",
-      "open_codex_features": ["F003", "F004", "F005", "F006"],
-      "expected_outputs": {
-        "F003": "docs/test-reports/B014-regime-adaptive-stress-validation-acquisition-log-2026-MM-DD.md plus manifest at data/public-cache/regime-adaptive-prices-manifest.json (gitignored CSVs)",
-        "F004": "docs/test-reports/B014-regime-adaptive-stress-validation-2026-MM-DD.md + JSON sidecar",
-        "F005": "docs/test-reports/B014-regime-adaptive-cross-strategy-comparison-2026-MM-DD.md + JSON sidecar",
-        "F006": "docs/test-reports/B014-regime-adaptive-stress-validation-signoff-2026-MM-DD.md + optional framework/proposed-learnings.md entry if max DD > 15%"
-      }
-    }
-  },
+  "evaluator_feedback": null,
+  "generator_handoff": null,
   "session_notes": {
-    "planner": "2026-05-14 B014 done wrap-up: Confirmed Codex reverifying signoff (6/6 PASS, 0 issues, 2 soft-watch). Empirical stress validation 2020 max DD -4.76% / 2022 max DD -1.66% — both well under -15% threshold. B013's previously skipped stress gate is now empirically resolved as PASS. Cross-strategy comparison shows B013 delivers low-DD crisis shield but underperforms static 60/40 in absolute terms during 2020-06..2022-12 (research finding, not a defect). State machine had stale fields after Codex signoff: repaired completed_features 2→6, current_sprint F003→F006, evaluator_feedback populated (pass counts + soft-watch entries), features.json F003-F006 status pending→completed. project-status.md was already accurate (Codex updated). proposed-learnings.md no active entries this batch (Codex framework_learnings: none required). role_assignments already null. Backlog unchanged. Two notable observations not yet in backlog: (a) regime-adaptive vs 60/40 absolute return gap suggests possible future 'regime-adaptive only when non-NORMAL' research; (b) cross-strategy comparison needed supplemental AGG/EEM — universe extension candidate. Both pending user decision. Earlier in this batch: B014 went through two fix rounds — round 1 was the Stooq→yfinance data-source pivot (Codex hit apikey gate), round 2 was snapshot importer coverage relaxation (SPY 2018-01-01 holiday + SGOV 2020-06-01 inception). Both fixes preserved B013 strategy code unchanged.",
-    "generator": "2026-05-14 B014 fixing (round 2, snapshot importer coverage policy): Codex confirmed yfinance fetcher itself works in production, but acquire_regime_adaptive_snapshot.py rejected SPY (2018-01-01 is a NYSE holiday so first trading day is 2018-01-02) and SGOV (real first available date 2020-06-01, not the hardcoded 2020-05-28). Patched trade/strategies/regime_adaptive/snapshot.py: added DEFAULT_START_TOLERANCE_BUSINESS_DAYS=5 + DEFAULT_SHORT_HISTORY_ALLOWANCE=frozenset({'SGOV'}) constants; extended RegimeAdaptiveSnapshotRequest with allow_short_history + start_tolerance_business_days fields; rewrote _ensure_coverage with tolerance-first then short-history-exemption logic (so SGOV with a 1-day gap is accepted by tolerance and not flagged exempt, while SGOV at 2020-06-01 IS flagged exempt); added _count_business_days_in_range helper; manifest now records short_history_exempt: bool per file (excluded from _build_snapshot_id so snapshot_id is stable across policy changes); negative tolerance rejected. Updated scripts/acquire_regime_adaptive_snapshot.py with --allow-short-history (default 'SGOV') + --start-tolerance-business-days (default 5) flags. Added 8 new unit tests in tests/unit/test_regime_adaptive_snapshot.py covering: default constants, first-trading-day tolerance acceptance, excessive start gap rejection, SGOV late-inception acceptance + exempt flag, allowance-disabled SGOV rejection, negative tolerance, manifest schema, snapshot_id stability across policy. Initial design returned short_history_exempt=True any time actual_start>required_from for SGOV; refined to tolerance-first so the flag is only set for genuine late-inception (not holiday-only) gaps. B013 strategy modules untouched. Local checks: pytest 367 passed (359 prior + 8 new), ruff clean, compileall silent, mypy strict 42 source files clean. Status moved to reverifying with fix_rounds=2; Codex re-runs F003 acquisition then F004/F005/F006.",
-    "evaluator": "2026-05-14: B014 reverification completed on the real public-data bundle. The audited 9-asset acquisition manifest remains stable; B013 stress validation passes with 2020 max DD -0.0476 and 2022 max DD -0.0166 after adding the SGOV cash-placeholder pre-inception rows required by the spec. Cross-strategy comparison on the shared 2020-06-01..2022-12-31 overlap also completed against B006 momentum, B010 risk parity, and static 60/40. Signoff written to docs/test-reports/B014-regime-adaptive-stress-validation-signoff-2026-05-14.md."
+    "planner": "2026-05-14 B015 planning: B014 done wrap-up confirmed empirical stress PASS (2020 DD -4.76% / 2022 DD -1.66%) but cross-strategy comparison surfaced B013 underperformance vs static 60/40 in calm window (126726 vs 158978 in 2020-06..2022-12). User selected B015 'regime-aware activation' as the small-scope research follow-up. Decisions captured: (1) single new config field regime_activation_policy with three values (always_on default / only_non_normal / only_crisis); (2) gate applies only to L1 trend gating; L2 inverse-vol + 8% target and L3 crisis halving unchanged; (3) default always_on must reproduce B013 signoff bit-for-bit on synthetic fixture (backwards-compat hard requirement); (4) comparative backtest runs on B014 real snapshot for all three policies + B006 + B010 + 60/40; (5) B015 mutates only files inside trade/strategies/regime_adaptive/ (config + trend_gating + backtest) plus tests + new report — B010/B011/B012/B013 spec & strategy code untouched; (6) Master Portfolio regime_adaptive sleeve registration uses default always_on so B011 invariants preserved automatically; (7) no broker/AI/paper/live language anywhere. Wrote B015 spec and features.json (6 features: F001-F005 generator + F006 codex; mixed batch). Status moved to building for Generator F001.",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",
