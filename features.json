@@ -30,7 +30,7 @@
       "title": "对比报告与跨策略扩展",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "输出 docs/test-reports/B015-regime-adaptive-activation-policy-comparison-2026-MM-DD.md + JSON sidecar：三 B013 policy metrics 表（年化收益/波动率/Sharpe/max DD/turnover/L1 firing rate）+ B006 momentum + B010 risk parity + static 60/40 同窗口对比行（尽量复用 B014 comparison sidecar 缓存值，仅在缺失时重算）+ 2020/2022 stress gate 判定 per policy + L1 firing rate per policy + narrative 说明 only_non_normal / only_crisis 是否缩窄了 vs 60/40 的 absolute-return gap。reports 含 research-only disclaimer，不得声明 paper/live execution。测试覆盖 report schema、baseline 行存在、stress 判定 per policy 写入"
     },
     {
