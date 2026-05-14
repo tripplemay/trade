@@ -22,7 +22,7 @@
       "title": "真实 snapshot 上的三 policy 对比 backtest 工具",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "新增 research-mode 对比 backtest harness：B014 manifest 在场时对 B013 三种 activation policy 跑完整 overlapping window backtest（含 2020 + 2022 stress 子窗口）。每个 policy 记录：年化收益/波动率/Sharpe、每窗口 max DD、turnover、regime label 分布、L1 firing rate。manifest 缺失时 real-data 部分标 skipped，合成 fixture 至少跑 smoke 测试。默认 CI 不依赖 manifest。测试覆盖三 policy backtest 独立 deterministic、skipped 语义、L1 firing rate 统计正确"
     },
     {
