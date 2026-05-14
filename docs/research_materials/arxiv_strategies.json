@@ -1,0 +1,430 @@
+[
+  {
+    "title": "Beyond De Prado and Cotton: Hierarchical and Iterative Methods for General Mean-Variance Portfolios",
+    "authors": [
+      "Bernd Johannes Wuebben"
+    ],
+    "published": "2026-04-26T18:38:53Z",
+    "link": "http://arxiv.org/abs/2604.23833v1",
+    "summary": "Hierarchical Risk Parity (De Pardo) and the Schur-complement generalization of Cotton are among the most widely adopted regularised portfolio construction methods, yet both are signal-blind: they solve only the minimum-variance problem and cannot accommodate an arbitrary expected-return forecast. This paper introduces three methods that incorporate alpha signals into hierarchical and regularised portfolio construction.   HRP-$μ$ is a hierarchical allocator that accepts an arbitrary signal $μ$ and nests standard HRP when $γ= 0$ and $μ=\\mathbf{1}$. It preserves the tree-based structure of HRP while extending it beyond the minimum-variance setting. HRP-$Σμ$ strengthens this construction by replacing inverse-variance representatives with recursive local mean-variance optima, thereby using richer within-cluster covariance information at the same $O(N^2)$ asymptotic cost.   CRISP (Correlation-Regularised Iterative Shrinkage Portfolios) is an iterative solver for $P_γw = μ$ with $P_γ= (1-γ)\\operatorname{diag}(Σ) + γΣ$, so that $γ$ interpolates between a diagonal portfolio rule and full Markowitz. At convergence, CRISP is Markowitz applied to a variance-preserving shrunk covariance-diagonal variances unchanged, off-diagonal correlations shrunk-with $γ$ tuned for out-of-sample Sharpe rather than covariance-estimation loss.   In Monte Carlo experiments across multiple covariance regimes and estimation ratios, HRP-$μ$ and HRP-$Σμ$ both outperform plain HRP with HRP-$Σμ$ consistently improving on HRP-$μ$. CRISP at intermediate $γ$ is the dominant method in both regimes, outperforming HRP, Cotton, Ledoit-Wolf shrinkage, direct Markowitz, and the signal-aware hierarchical methods."
+  },
+  {
+    "title": "Topological Risk Parity",
+    "authors": [
+      "Revant Nayar",
+      "Dnyanesh Kulkarni",
+      "El Mehdi Ainasse"
+    ],
+    "published": "2026-04-18T01:35:40Z",
+    "link": "http://arxiv.org/abs/2604.16773v1",
+    "summary": "We develop \\emph{Topological Risk Parity} (TRP), a tree-based portfolio construction approach intended for long/short, market neutral, factor-aware portfolios. The method is motivated by the dominance of passive/factor flows that naturally create a tree-like structure in markets. We introduce two implementation variants: (i) a rooted minimum-spanning-tree allocator, and (ii) a market/sector-anchored variant referred to here as \\emph{Semi-Supervised TRP}, which imposes SPY as the root node and the 11 sector ETFs as the second layer. In both cases, the key object is a sparse rooted topology extracted from a correlation-distance graph, together with a propagation law that maps signed signals into portfolio weights.   Relative to classical Hierarchical Risk Parity (HRP), TRP is non-binary and designed for signed cross-sectional signals and hedged long-short portfolios: it preserves signal direction while using return-dependence geometry to shape exposures. It accounts for the fact that there is imperfect correlation between parent and child nodes, and thus does not propagate weights entirely to the children. We can also impose economically motivated hierarchy that involves industries, sub-industries or factors, etc. This makes it much more robust to macroeconomic shocks and crises, where within-cluster correlations might spike. These features make TRP well suited for market-neutral, equity stat-arb or L/S trend-type strategies, where enforcing neutrality or limiting exposures at the market, sector or factor level is extremely important."
+  },
+  {
+    "title": "Constrained Portfolio Optimization via Quantum Approximate Optimization Algorithm (QAOA) with XY-Mixers and Trotterized Initialization: A Hybrid Approach for Direct Indexing",
+    "authors": [
+      "Javier Mancilla",
+      "Theodoros D. Bouloumis",
+      "Frederic Goguikian"
+    ],
+    "published": "2026-02-16T15:19:15Z",
+    "link": "http://arxiv.org/abs/2602.14827v1",
+    "summary": "Portfolio optimization under strict cardinality constraints is a combinatorial challenge that defies classical convex optimization techniques, particularly in the context of \"Direct Indexing\" and ESG-constrained mandates. In the Noisy Intermediate-Scale Quantum (NISQ) era, the Quantum Approximate Optimization Algorithm (QAOA) offers a promising hybrid approach. However, standard QAOA implementations utilizing transverse field mixers often fail to strictly enforce hard constraints, necessitating soft penalties that distort the energy landscape. This paper presents a comprehensive analysis of a constraint-preserving QAOA formulation against Simulated Annealing (SA) and Hierarchical Risk Parity (HRP). We implement a specific QAOA ansatz utilizing a Dicke state initialization and an XY-mixer Hamiltonian that strictly preserves the Hamming weight of the solution, ensuring only valid portfolios of size K are explored. Furthermore, we introduce a Trotterized parameter initialization schedule inspired by adiabatic quantum computing to mitigate the \"Barren Plateau\" problem. Backtesting on a basket of 10 US equities over 2025 reveals that our QAOA approach achieves a Sharpe Ratio of 1.81, significantly outperforming Simulated Annealing (1.31) and HRP (0.98). We further analyze the operational implications of the algorithm's high turnover (76.8%), discussing the trade-offs between theoretical optimality and implementation costs in institutional settings."
+  },
+  {
+    "title": "Basis Immunity: Isotropy as a Regularizer for Uncertainty",
+    "authors": [
+      "Florent Segonne"
+    ],
+    "published": "2025-11-17T13:06:43Z",
+    "link": "http://arxiv.org/abs/2511.13334v1",
+    "summary": "Diversification is a cornerstone of robust portfolio construction, yet its application remains fraught with challenges due to model uncertainty and estimation errors. Practitioners often rely on sophisticated, proprietary heuristics to navigate these issues. Among recent advancements, Agnostic Risk Parity introduces eigenrisk parity (ERP), an innovative approach that leverages isotropy to evenly allocate risk across eigenmodes, enhancing portfolio stability.   In this paper, we review and extend the isotropy-enforced philosophy of ERP proposing a versatile framework that integrates mean-variance optimization with an isotropy constraint acting as a geometric regularizer against signal uncertainty. The resulting allocations decompose naturally into canonical portfolios, smoothly interpolating between full isotropy (closed-form isotropic-mean allocation) and pure mean-variance through a tunable isotropy penalty.   Beyond methodology, we revisit fundamental concepts and clarify foundational links between isotropy, canonical portfolios, principal portfolios, primal versus dual representations, and intrinsic basis-invariant metrics for returns, risk, and isotropy. Applied to sector trend-following, the isotropy constraint systematically induces negative average-signal exposure -- a structural, parameter-robust crash hedge.   This work offers both a practical, theoretically grounded tool for resilient allocation under signal uncertainty and a pedagogical synthesis of modern portfolio concepts."
+  },
+  {
+    "title": "Hierarchical Risk Parity for Portfolio Allocation in the Latin American NUAM Market",
+    "authors": [
+      "Gonzalo Ramirez-Carrillo",
+      "David Ortiz-Mora",
+      "Alex Aguilar-Larrotta"
+    ],
+    "published": "2025-09-03T20:55:50Z",
+    "link": "http://arxiv.org/abs/2509.03712v1",
+    "summary": "This study applies the Hierarchical Risk Parity (HRP) portfolio allocation methodology to the NUAM market, a regional holding that integrates the markets of Chile, Colombia and Peru. As one of the first empirical analyses of HRP in this newly formed Latin American context, the paper addresses a gap in the literature on portfolio construction under cross-border, emerging market conditions. HRP leverages hierarchical clustering and recursive bisection to allocate risk in a manner that is both interpretable and robust--avoiding the need to invert the covariance matrix, a common limitation in the traditional mean-variance optimization. Using daily data from 54 constituent stocks of the MSCI NUAM Index from 2019 to 2025, we compare the performance of HRP against two standard benchmarks: an equally weighted portfolio (1/N) and a maximum Sharpe ratio portfolio. Results show that while the Max Sharpe portfolio yields the highest return, the HRP portfolio delivers a smoother risk-return profile, with lower drawdowns and tracking error. These findings highlight HRP's potential as a practical and resilient asset allocation framework for investors operating in the integrated, high-volatility markets like NUAM."
+  },
+  {
+    "title": "Optimal Portfolio Construction -- A Reinforcement Learning Embedded Bayesian Hierarchical Risk Parity (RL-BHRP) Approach",
+    "authors": [
+      "Shaofeng Kang",
+      "Zeying Tian"
+    ],
+    "published": "2025-08-16T00:48:26Z",
+    "link": "http://arxiv.org/abs/2508.11856v1",
+    "summary": "We propose a two-level, learning-based portfolio method (RL-BHRP) that spreads risk across sectors and stocks, and adjusts exposures as market conditions change. Using U.S. Equities from 2012 to mid-2025, we design the model using 2012 to 2019 data, and evaluate it out-of-sample from 2020 to 2025 against a sector index built from exchange-traded funds and a static risk-balanced portfolio. Over the test window, the adaptive portfolio compounds wealth by approximately 120 percent, compared with 101 percent for the static comparator and 91 percent for the sector benchmark. The average annual growth is roughly 15 percent, compared to 13 percent and 12 percent, respectively. Gains are achieved without significant deviations from the benchmark and with peak-to-trough losses comparable to those of the alternatives, indicating that the method adds value while remaining diversified and investable. Weight charts show gradual shifts rather than abrupt swings, reflecting disciplined rebalancing and the cost-aware design. Overall, the results support risk-balanced, adaptive allocation as a practical approach to achieving stronger and more stable long-term performance."
+  },
+  {
+    "title": "EvoPort: An Evolutionary Framework for Portfolio Optimization via Randomized Alpha Discovery and Ensemble-Based Allocation",
+    "authors": [
+      "Nguyen Van Thanh",
+      "Nguyen Thi Hau"
+    ],
+    "published": "2025-04-29T18:12:02Z",
+    "link": "http://arxiv.org/abs/2504.21095v2",
+    "summary": "In this paper, we introduce EvoPort, a novel evolutionary portfolio optimization method that leverages stochastic exploration over a spectrum of investment pipeline depths. From raw equity data, we employ a randomized feature generation framework that hierarchically produces mathematical, logical, time-series, and cross-sectional operators for uncovering latent trading signals. Candidate alphas are then evaluated through a randomized hill-climbing optimization procedure, taking as guidance performance measures such as mean squared error (MSE) or Sharpe ratio. In order to increase robustness and generalizability further, we use a random ensemble model selection process whereby a heterogeneous set of machine learning models (e.g., linear regression, logistic regression, XG-Boost) are randomly drawn and combined to backtest the generated alphas. Finally, we use randomized portfolio weighting schemes based on the Markowitz modern portfolio theory with stochastic optimization techniques such as inverse volatility, risk parity, and variance-constrained approaches to optimally allocate assets. Our empirical results on real equity datasets demonstrate that EvoPort not only discovers rich sets of heterogeneous predictive signals but also constructs very robust and profitable portfolios. Compared to conventional alpha construction and allocation methods, our approach exhibits significant improvement in cumulative returns, Sharpe ratio, and drawdown control. We highlight the interpretability, scalability, and modularity of EvoPort, and speculate on its use as a general-purpose research pipeline for modern quantitative finance."
+  },
+  {
+    "title": "Deep Declarative Risk Budgeting Portfolios",
+    "authors": [
+      "Manuel Parra-Diaz",
+      "Carlos Castro-Iragorri"
+    ],
+    "published": "2025-04-28T16:53:13Z",
+    "link": "http://arxiv.org/abs/2504.19980v1",
+    "summary": "Recent advances in deep learning have spurred the development of end-to-end frameworks for portfolio optimization that utilize implicit layers. However, many such implementations are highly sensitive to neural network initialization, undermining performance consistency. This research introduces a robust end-to-end framework tailored for risk budgeting portfolios that effectively reduces sensitivity to initialization. Importantly, this enhanced stability does not compromise portfolio performance, as our framework consistently outperforms the risk parity benchmark."
+  },
+  {
+    "title": "Hierarchical Minimum Variance Portfolios: A Theoretical and Algorithmic Approach",
+    "authors": [
+      "Gamal Mograby"
+    ],
+    "published": "2025-03-16T02:48:51Z",
+    "link": "http://arxiv.org/abs/2503.12328v1",
+    "summary": "We introduce a novel approach to portfolio optimization that leverages hierarchical graph structures and the Schur complement method to systematically reduce computational complexity while preserving full covariance information. Inspired by Lopez de Prados hierarchical risk parity and Cottons Schur complement methods, our framework models the covariance matrix as an adjacency-like structure of a hierarchical graph. We demonstrate that portfolio optimization can be recursively reduced across hierarchical levels, allowing optimal weights to be computed efficiently by inverting only small submatrices regardless of portfolio size. Moreover, we translate our results into a recursive algorithm that constructs optimal portfolio allocations. Our results reveal a transparent and mathematically rigorous connection between classical Markowitz mean-variance optimization, hierarchical clustering, and the Schur complement method."
+  },
+  {
+    "title": "A multi-factor market-neutral investment strategy for New York Stock Exchange equities",
+    "authors": [
+      "Georgios M. Gkolemis",
+      "Adwin Richie Lee",
+      "Amine Roudani"
+    ],
+    "published": "2024-12-16T20:42:32Z",
+    "link": "http://arxiv.org/abs/2412.12350v1",
+    "summary": "This report presents a systematic market-neutral, multi-factor investment strategy for New York Stock Exchange equities with the objective of delivering steady returns while minimizing correlation with the market. A robust feature set is integrated combining momentum-based indicators, fundamental factors, and analyst recommendations. Using various statistical tests for feature selection, the strategy identifies key drivers of equity performance and ranks stocks to build a balanced portfolio of long and short positions. Portfolio construction methods, including equally weighted, risk parity, and minimum variance beta-neutral approaches, were evaluated through rigorous backtesting. Risk parity demonstrated superior performance with a higher Sharpe ratio, lower beta, and smaller maximum drawdown compared to the Standard and Poor's 500 index. Risk parity's market neutrality, combined with its ability to maintain steady returns and mitigate large drawdowns, makes it a suitable approach for managing significant capital in equity markets."
+  },
+  {
+    "title": "Stablecoins as Dry Powder: A Copula-Based Risk Analysis of Cryptocurrency Markets",
+    "authors": [
+      "Elliot Jones",
+      "Toshiko Matsui",
+      "William Knottenbelt"
+    ],
+    "published": "2026-03-24T17:44:24Z",
+    "link": "http://arxiv.org/abs/2603.23480v1",
+    "summary": "Stablecoins serve as the fundamental infrastructure for Decentralised Finance (DeFi), acting as the primary bridge between fiat currencies and the digital asset ecosystem. While peg stability is well-documented, the structural role stablecoins play in transmitting systemic risk to the broader market remains under-explored. This study uses copula-based approaches to quantify the transmission of volatility and activity from stablecoin to cryptocurrency markets. We demonstrate in-sample causality across daily, weekly, and monthly horizons. Furthermore, we show that incorporating stablecoin factors significantly reduces Mean Squared Error in cryptocurrency forecasting. Specifically, we link stablecoin volume and upside volatility to broader market volatility, indicating its role as dry powder. Finally, we establish economic value by demonstrating reduced risk in a cryptocurrency volatility targeting model when stablecoin factors are employed."
+  },
+  {
+    "title": "Single-Asset Adaptive Leveraged Volatility Control",
+    "authors": [
+      "Nikhil Devanathan",
+      "Dylan Rueter",
+      "Stephen Boyd",
+      "Emmanuel Candès",
+      "Trevor Hastie",
+      "Mykel J. Kochenderfer",
+      "Arpit Apoorv",
+      "David Soronow",
+      "Igor Zamkovsky"
+    ],
+    "published": "2026-03-01T22:03:27Z",
+    "link": "http://arxiv.org/abs/2603.01298v2",
+    "summary": "This paper introduces a methodology for constructing a market index composed of a liquid risky asset and a liquid risk-free asset that achieves a fixed target volatility. Existing volatility-targeting strategies typically scale portfolio exposure inversely with a variance forecast, but such open-loop approaches suffer from high turnover, leverage spikes, and sensitivity to estimation error -- issues that limit practical adoption in index construction. We propose a proportional-control approach for setting the index weights that explicitly corrects tracking error through feedback. The method requires only a few interpretable parameters, making it transparent and practical for index construction. We demonstrate in simulation that this approach is more effective at consistently achieving the target volatility than the open-loop alternative."
+  },
+  {
+    "title": "Deep Hedging with Reinforcement Learning: A Practical Framework for Option Risk Management",
+    "authors": [
+      "Travon Lucius",
+      "Christian Koch",
+      "Jacob Starling",
+      "Julia Zhu",
+      "Miguel Urena",
+      "Carrie Hu"
+    ],
+    "published": "2025-12-13T18:18:08Z",
+    "link": "http://arxiv.org/abs/2512.12420v1",
+    "summary": "We present a reinforcement-learning (RL) framework for dynamic hedging of equity index option exposures under realistic transaction costs and position limits. We hedge a normalized option-implied equity exposure (one unit of underlying delta, offset via SPY) by trading the underlying index ETF, using the option surface and macro variables only as state information and not as a direct pricing engine. Building on the \"deep hedging\" paradigm of Buehler et al. (2019), we design a leak-free environment, a cost-aware reward function, and a lightweight stochastic actor-critic agent trained on daily end-of-day panel data constructed from SPX/SPY implied volatility term structure, skew, realized volatility, and macro rate context. On a fixed train/validation/test split, the learned policy improves risk-adjusted performance versus no-hedge, momentum, and volatility-targeting baselines (higher point-estimate Sharpe); only the GAE policy's test-sample Sharpe is statistically distinguishable from zero, although confidence intervals overlap with a long-SPY benchmark so we stop short of claiming formal dominance. Turnover remains controlled and the policy is robust to doubled transaction costs. The modular codebase, comprising a data pipeline, simulator, and training scripts, is engineered for extensibility to multi-asset overlays, alternative objectives (e.g., drawdown or CVaR), and intraday data. From a portfolio management perspective, the learned overlay is designed to sit on top of an existing SPX or SPY allocation, improving the portfolio's mean-variance trade-off with controlled turnover and drawdowns. We discuss practical implications for portfolio overlays and outline avenues for future work."
+  },
+  {
+    "title": "Forecast-to-Fill: Benchmark-Neutral Alpha and Billion-Dollar Capacity in Gold Futures (2015-2025)",
+    "authors": [
+      "Mainak Singha",
+      "Jose Aguilera-Toste",
+      "Vinayak Lahiri"
+    ],
+    "published": "2025-11-11T18:52:06Z",
+    "link": "http://arxiv.org/abs/2511.08571v1",
+    "summary": "We test whether simple, interpretable state variables-trend and momentum-can generate durable out-of-sample alpha in one of the world's most liquid assets, gold. Using a rolling 10-year training and 6-month testing walk-forward from 2015 to 2025 (2,793 trading days), we convert a smoothed trend-momentum regime signal into volatility-targeted, friction-aware positions through fractional, impact-adjusted Kelly sizing and ATR-based exits. Out of sample, the strategy delivers a Sharpe ratio of 2.88 and a maximum drawdown of 0.52 percent, net of 0.7 basis-point linear cost and a square-root impact term (gamma = 0.02). A regression on spot-gold returns yields a 43 percent annualized return (CAGR approximately 43 percent) and a 37 percent alpha (Sharpe = 2.88, IR = 2.09) at a 15 percent volatility target with beta approximately 0.03, confirming benchmark-neutral performance. Bootstrap confidence intervals ([2.49, 3.27]) and SPA tests (p = 0.000) confirm statistical significance and robustness to latency, reversal, and cost stress. We conclude that forecast-to-fill engineering-linking transparent signals to executable trades with explicit risk, cost, and impact control-can transform modest predictability into allocator-grade, billion-dollar-scalable alpha."
+  },
+  {
+    "title": "A central limit theorem and its application to the limiting distribution of volatility target index",
+    "authors": [
+      "Xuan Liu",
+      "Michel Gauthier"
+    ],
+    "published": "2025-03-21T06:24:47Z",
+    "link": "http://arxiv.org/abs/2503.16878v1",
+    "summary": "We study the limiting distribution of a volatility target index as the discretisation time step converges to zero. Two limit theorems (a strong law of large numbers and a central limit theorem) are established, and as an application, the exact limiting distribution is derived. We demonstrate that the volatility of the limiting distribution is consistently larger than the target volatility, and converges to the target volatility as the observation-window parameter $λ$ in the definition of the realised variance converges to $1$. Besides the exact formula for the drift and the volatility of the limiting distribution, their upper and lower bounds are derived. As a corollary of the exact limiting distribution, we obtain a vega conversion formula which converts the rho sensitivity of a financial derivative on the limiting diffusion to the vega sensitivity of the same financial derivative on the underlying of the volatility target index."
+  },
+  {
+    "title": "Smoothing volatility targeting",
+    "authors": [
+      "Mauro Bernardi",
+      "Daniele Bianchi",
+      "Nicolas Bianco"
+    ],
+    "published": "2022-12-14T15:43:22Z",
+    "link": "http://arxiv.org/abs/2212.07288v1",
+    "summary": "We propose an alternative approach towards cost mitigation in volatility-managed portfolios based on smoothing the predictive density of an otherwise standard stochastic volatility model. Specifically, we develop a novel variational Bayes estimation method that flexibly encompasses different smoothness assumptions irrespective of the persistence of the underlying latent state. Using a large set of equity trading strategies, we show that smoothing volatility targeting helps to regularise the extreme leverage/turnover that results from commonly used realised variance estimates. This has important implications for both the risk-adjusted returns and the mean-variance efficiency of volatility-managed portfolios, once transaction costs are factored in. An extensive simulation study shows that our variational inference scheme compares favourably against existing state-of-the-art Bayesian estimation methods for stochastic volatility models."
+  },
+  {
+    "title": "Risk budget portfolios with convex Non-negative Matrix Factorization",
+    "authors": [
+      "Bruno Spilak",
+      "Wolfgang Karl Härdle"
+    ],
+    "published": "2022-04-06T12:02:15Z",
+    "link": "http://arxiv.org/abs/2204.02757v2",
+    "summary": "We propose a portfolio allocation method based on risk factor budgeting using convex Nonnegative Matrix Factorization (NMF). Unlike classical factor analysis, PCA, or ICA, NMF ensures positive factor loadings to obtain interpretable long-only portfolios. As the NMF factors represent separate sources of risk, they have a quasi-diagonal correlation matrix, promoting diversified portfolio allocations. We evaluate our method in the context of volatility targeting on two long-only global portfolios of cryptocurrencies and traditional assets. Our method outperforms classical portfolio allocations regarding diversification and presents a better risk profile than hierarchical risk parity (HRP). We assess the robustness of our findings using Monte Carlo simulation."
+  },
+  {
+    "title": "Adaptive learning for financial markets mixing model-based and model-free RL for volatility targeting",
+    "authors": [
+      "Eric Benhamou",
+      "David Saltiel",
+      "Serge Tabachnik",
+      "Sui Kai Wong",
+      "François Chareyron"
+    ],
+    "published": "2021-04-19T19:20:22Z",
+    "link": "http://arxiv.org/abs/2104.10483v2",
+    "summary": "Model-Free Reinforcement Learning has achieved meaningful results in stable environments but, to this day, it remains problematic in regime changing environments like financial markets. In contrast, model-based RL is able to capture some fundamental and dynamical concepts of the environment but suffer from cognitive bias. In this work, we propose to combine the best of the two techniques by selecting various model-based approaches thanks to Model-Free Deep Reinforcement Learning. Using not only past performance and volatility, we include additional contextual information such as macro and risk appetite signals to account for implicit regime changes. We also adapt traditional RL methods to real-life situations by considering only past data for the training sets. Hence, we cannot use future information in our training data set as implied by K-fold cross validation. Building on traditional statistical methods, we use the traditional \"walk-forward analysis\", which is defined by successive training and testing based on expanding periods, to assert the robustness of the resulting agent.   Finally, we present the concept of statistical difference's significance based on a two-tailed T-test, to highlight the ways in which our models differ from more traditional ones. Our experimental results show that our approach outperforms traditional financial baseline portfolio models such as the Markowitz model in almost all evaluation metrics commonly used in financial mathematics, namely net performance, Sharpe and Sortino ratios, maximum drawdown, maximum drawdown over volatility."
+  },
+  {
+    "title": "Taming the Black Swan: A Momentum-Gated Hierarchical Optimisation Framework for Asymmetric Alpha Generation",
+    "authors": [
+      "Arya Chakraborty",
+      "Randhir Singh"
+    ],
+    "published": "2026-04-10T07:39:27Z",
+    "link": "http://arxiv.org/abs/2604.09060v1",
+    "summary": "Conventional momentum strategies, despite their proven efficacy in generating alpha, frequently suffer from the \"Winner's Curse\", a structural vulnerability in which high performing assets exhibit clustered volatility and severe drawdowns during market reversals. To counteract this propensity for momentum crashes, this study presents the Adaptive Equity Generation and Immunisation System (AEGIS), a novel framework that fundamentally reengineers the trade-off between growth and stability. By leveraging a volatility-adjusted momentum filter to identify trend strength and employing a minimax correlation algorithm to enforce structural diversification, the model utilises sequential least squares programming (SLSQP) to optimise capital allocation for the sortino ratio. This architecture allows the portfolio to dynamically adapt to distinct market regimes: explicitly lowering the intensity of crashes during bear markets by decoupling correlated risks, while retaining asymmetric upside participation during bull runs. Empirical validation via a comprehensive 20-year walk-forward backtest (2006-2025), which covers significant stress events like the 2008 Global Financial Crisis, confirms that the framework produces substantial excess alpha relative to the standard S&P 500 benchmark. Notably, the strategy successfully matched the capital appreciation of the high-beta NASDAQ-100 index while achieving significantly reduced downside volatility and improved structural resilience. These results suggest that synthetic beta can be effectively engineered through mathematical regularisation, enabling investors to capture the high-growth characteristics of concentrated portfolios while preserving the defensive stability typically associated with broad-market diversification."
+  },
+  {
+    "title": "A heavy-ball type curve search method for smooth convexly constrained optimization",
+    "authors": [
+      "Federica Donnini",
+      "Pierluigi Mansueto"
+    ],
+    "published": "2026-03-19T15:30:33Z",
+    "link": "http://arxiv.org/abs/2603.19032v1",
+    "summary": "This paper addresses smooth convexly constrained optimization problems where the Euclidean projection onto the feasible set is computationally tractable. Although momentum techniques like Polyak's heavy-ball are known for accelerating optimization algorithms, their use in constrained settings remains limited due to challenges in preserving feasibility and ensuring convergence. We thus propose a heavy-ball-type method that extends to the constrained case a recently introduced curve-search globalization framework. The method attempts a momentum update and performs a curvilinear search to enforce an Armijo-type descent condition: when the momentum step is infeasible or unacceptable, the algorithm smoothly reverts to a feasible descent direction. We prove that the algorithm is well-defined and globally convergent to stationary points; the derivation of these results is nontrivial due to the use of a heavy-ball type direction in a constrained setting, where it may generate infeasible iterates. We discuss the incorporation of further mechanisms into the algorithm, including non-monotone curve search, spectral steplength selection and an adaptive momentum strategy. Numerical experiments on benchmark problems show the method is robust and competitive with the state-of-the-art."
+  },
+  {
+    "title": "Beyond Visual Realism: Toward Reliable Financial Time Series Generation",
+    "authors": [
+      "Fan Zhang",
+      "Jiabin Luo",
+      "Zheng Zhang",
+      "Shuanghong Huang",
+      "Zhipeng Liu",
+      "Yu Chen"
+    ],
+    "published": "2026-01-19T12:09:54Z",
+    "link": "http://arxiv.org/abs/2601.12990v1",
+    "summary": "Generative models for financial time series often create data that look realistic and even reproduce stylized facts such as fat tails or volatility clustering. However, these apparent successes break down under trading backtests: models like GANs or WGAN-GP frequently collapse, yielding extreme and unrealistic results that make the synthetic data unusable in practice. We identify the root cause in the neglect of financial asymmetry and rare tail events, which strongly affect market risk but are often overlooked by objectives focusing on distribution matching. To address this, we introduce the Stylized Facts Alignment GAN (SFAG), which converts key stylized facts into differentiable structural constraints and jointly optimizes them with adversarial loss. This multi-constraint design ensures that generated series remain aligned with market dynamics not only in plots but also in backtesting. Experiments on the Shanghai Composite Index (2004--2024) show that while baseline GANs produce unstable and implausible trading outcomes, SFAG generates synthetic data that preserve stylized facts and support robust momentum strategy performance. Our results highlight that structure-preserving objectives are essential to bridge the gap between superficial realism and practical usability in financial generative modeling."
+  },
+  {
+    "title": "ChatGPT in Systematic Investing -- Enhancing Risk-Adjusted Returns with LLMs",
+    "authors": [
+      "Nikolas Anic",
+      "Andrea Barbon",
+      "Ralf Seiz",
+      "Carlo Zarattini"
+    ],
+    "published": "2025-10-30T08:06:37Z",
+    "link": "http://arxiv.org/abs/2510.26228v1",
+    "summary": "This paper investigates whether large language models (LLMs) can improve cross-sectional momentum strategies by extracting predictive signals from firm-specific news. We combine daily U.S. equity returns for S&P 500 constituents with high-frequency news data and use prompt-engineered queries to ChatGPT that inform the model when a stock is about to enter a momentum portfolio. The LLM evaluates whether recent news supports a continuation of past returns, producing scores that condition both stock selection and portfolio weights. An LLM-enhanced momentum strategy outperforms a standard long-only momentum benchmark, delivering higher Sharpe and Sortino ratios both in-sample and in a truly out-of-sample period after the model's pre-training cut-off. These gains are robust to transaction costs, prompt design, and portfolio constraints, and are strongest for concentrated, high-conviction portfolios. The results suggest that LLMs can serve as effective real-time interpreters of financial news, adding incremental value to established factor-based investment strategies."
+  },
+  {
+    "title": "SmaRT: Style-Modulated Robust Test-Time Adaptation for Cross-Domain Brain Tumor Segmentation in MRI",
+    "authors": [
+      "Yuanhan Wang",
+      "Yifei Chen",
+      "Shuo Jiang",
+      "Wenjing Yu",
+      "Mingxuan Liu",
+      "Beining Wu",
+      "Jinying Zong",
+      "Feiwei Qin",
+      "Changmiao Wang",
+      "Qiyuan Tian"
+    ],
+    "published": "2025-09-22T15:50:59Z",
+    "link": "http://arxiv.org/abs/2509.17925v1",
+    "summary": "Reliable brain tumor segmentation in MRI is indispensable for treatment planning and outcome monitoring, yet models trained on curated benchmarks often fail under domain shifts arising from scanner and protocol variability as well as population heterogeneity. Such gaps are especially severe in low-resource and pediatric cohorts, where conventional test-time or source-free adaptation strategies often suffer from instability and structural inconsistency. We propose SmaRT, a style-modulated robust test-time adaptation framework that enables source-free cross-domain generalization. SmaRT integrates style-aware augmentation to mitigate appearance discrepancies, a dual-branch momentum strategy for stable pseudo-label refinement, and structural priors enforcing consistency, integrity, and connectivity. This synergy ensures both adaptation stability and anatomical fidelity under extreme domain shifts. Extensive evaluations on sub-Saharan Africa and pediatric glioma datasets show that SmaRT consistently outperforms state-of-the-art methods, with notable gains in Dice accuracy and boundary precision. Overall, SmaRT bridges the gap between algorithmic advances and equitable clinical applicability, supporting robust deployment of MRI-based neuro-oncology tools in diverse clinical environments. Our source code is available at https://github.com/baiyou1234/SmaRT."
+  },
+  {
+    "title": "Dual Reinforcement Learning Synergy in Resource Allocation: Emergence of Self-Organized Momentum Strategy",
+    "authors": [
+      "Zhen-Na Zhang",
+      "Guo-Zhong Zhen",
+      "Li Chen",
+      "Chao-Ran Cai",
+      "Sheng-Feng Deng",
+      "Bin-Quan Li",
+      "Ji-Qiang Zhang"
+    ],
+    "published": "2025-09-14T08:39:59Z",
+    "link": "http://arxiv.org/abs/2509.11161v2",
+    "summary": "In natural ecosystems and human societies, self-organized resource allocation and policy synergy are ubiquitous and significant. This work focuses on the synergy between Dual Reinforcement Learning Policies in the Minority Game (DRLP-MG) to optimize resource allocation. Our study examines a mixed-structured population with two sub-populations: a Q-subpopulation using Q-learning policy and a C-subpopulation adopting the classical policy. We first identify a synergy effect between these subpopulations. A first-order phase transition occurs as the mixing ratio of the subpopulations changes. Further analysis reveals that the Q-subpopulation consists of two internal synergy clusters (IS-clusters) and a single external synergy cluster (ES-cluster). The former contribute to the internal synergy within the Q-subpopulation through synchronization and anti-synchronization, whereas the latter engages in the inter-subpopulation synergy. Within the ES-cluster, the classical momentum strategy in the financial market manifests and assumes a crucial role in the inter-subpopulation synergy. This particular strategy serves to prevent long-term under-utilization of resources. However, it also triggers trend reversals and leads to a decrease in rewards for those who adopt it. Our research reveals that the frozen effect, in either the C- or Q-subpopulation, is a crucial prerequisite for synergy, consistent with previous studies. We also conduct mathematical analyses on subpopulation synergy effects and the synchronization and anti-synchronization forms of IS-clusters in the Q-subpopulation. Overall, our work comprehensively explores the complex resource-allocation dynamics in DRLP-MG, uncovers multiple synergy mechanisms and their conditions, enriching the theoretical understanding of reinforcement-learning-based resource allocation and offering valuable practical insights"
+  },
+  {
+    "title": "Sentiment-Aware Mean-Variance Portfolio Optimization for Cryptocurrencies",
+    "authors": [
+      "Qizhao Chen"
+    ],
+    "published": "2025-08-22T13:34:09Z",
+    "link": "http://arxiv.org/abs/2508.16378v2",
+    "summary": "Cryptocurrency markets are highly volatile and influenced by both price trends and market sentiment, making effective portfolio management challenging. This paper proposes a dynamic cryptocurrency portfolio strategy that integrates technical indicators and sentiment analysis to enhance investment decision-making. Market momentum is captured using the 14-day Relative Strength Index (RSI) and Simple Moving Average (SMA), while sentiment signals are extracted from news articles with VADER and further validated using the Google Gemini large language model. These signals are incorporated into expected return estimates and used in a constrained mean-variance optimization framework. Backtesting across multiple cryptocurrencies shows that the integrated approach outperforms traditional benchmarks, including momentum strategy, Bitcoin Long-Short strategy, and an equal-weighted portfolio, achieving stronger risk-adjusted returns and more consistent cumulative growth. Furthermore, comparing the sentiment-only and technical-only strategies shows that incorporating sentiment information alongside technical indicators can lead to more consistent performance gains. However, the strategies exhibit substantial drawdowns that coincide with known periods of market stress, indicating that additional risk-management components are required to improve stability."
+  },
+  {
+    "title": "Winners vs. Losers: Momentum-based Strategies with Intertemporal Choice for ESG Portfolios",
+    "authors": [
+      "Ayush Jha",
+      "Abootaleb Shirvani",
+      "Ali Jaffri",
+      "Svetlozar T. Rachev",
+      "Frank J. Fabozzi"
+    ],
+    "published": "2025-05-30T06:15:05Z",
+    "link": "http://arxiv.org/abs/2505.24250v1",
+    "summary": "This paper introduces a state-dependent momentum framework that integrates ESG regime switching with tail-risk-aware reward-risk metrics. Using a dynamic programming approach and solving a finite-horizon Bellman equation, we construct long-short momentum portfolios that adjust to changing ESG sentiment regimes. Unlike traditional momentum strategies based on historical returns, our approach incorporates the Stable Tail Adjusted Return ratio and Rachev ratio to better capture downside risk in turbulent markets. We apply this framework across three asset classes, Russell 3000 equities, Dow Jones~30 stocks, and cryptocurrencies, under both pro- and anti-ESG market regimes. We find that ESG-loser portfolios significantly outperform ESG-winner portfolios in pro-ESG regimes, a counterintuitive result suggesting that market overreaction to ESG sentiment creates short-term pricing inefficiencies. This pattern is robust across tail-sensitive performance metrics and is most pronounced under a two-week formation and holding period. Our framework highlights how ESG considerations and sentiment regimes alter return dynamics, offering practical guidance for investors seeking to implement responsive momentum strategies under sustainability constraints. These findings challenge conventional assumptions about ESG investing and underscore the importance of dynamic, regime-aware portfolio construction in environments shaped by regulatory signals, investor flows, and behavioral biases."
+  },
+  {
+    "title": "Leveraging LLMS for Top-Down Sector Allocation In Automated Trading",
+    "authors": [
+      "Ryan Quek Wei Heng",
+      "Edoardo Vittori",
+      "Keane Ong",
+      "Rui Mao",
+      "Erik Cambria",
+      "Gianmarco Mengaldo"
+    ],
+    "published": "2025-03-12T08:41:36Z",
+    "link": "http://arxiv.org/abs/2503.09647v5",
+    "summary": "This paper introduces a methodology leveraging Large Language Models (LLMs) for sector-level portfolio allocation through systematic analysis of macroeconomic conditions and market sentiment. Our framework emphasizes top-down sector allocation by processing multiple data streams simultaneously, including policy documents, economic indicators, and sentiment patterns. Empirical results demonstrate superior risk-adjusted returns compared to traditional cross momentum strategies, achieving a Sharpe ratio of 2.51 and portfolio return of 8.79% versus -0.61 and -1.39% respectively. These results suggest that LLM-based systematic macro analysis presents a viable approach for enhancing automated portfolio allocation decisions at the sector level."
+  },
+  {
+    "title": "Deep-Unfolded Massive Grant-Free Transmission in Cell-Free Wireless Communication Systems",
+    "authors": [
+      "Gangle Sun",
+      "Mengyao Cao",
+      "Wenjin Wang",
+      "Wei Xu",
+      "Christoph Studer"
+    ],
+    "published": "2025-02-19T03:04:10Z",
+    "link": "http://arxiv.org/abs/2502.13390v1",
+    "summary": "Grant-free transmission and cell-free communication are vital in improving coverage and quality-of-service for massive machine-type communication. This paper proposes a novel framework of joint active user detection, channel estimation, and data detection (JACD) for massive grant-free transmission in cell-free wireless communication systems. We formulate JACD as an optimization problem and solve it approximately using forward-backward splitting. To deal with the discrete symbol constraint, we relax the discrete constellation to its convex hull and propose two approaches that promote solutions from the constellation set. To reduce complexity, we replace costly computations with approximate shrinkage operations and approximate posterior mean estimator computations. To improve active user detection (AUD) performance, we introduce a soft-output AUD module that considers both the data estimates and channel conditions. To jointly optimize all algorithm hyper-parameters and to improve JACD performance, we further deploy deep unfolding together with a momentum strategy, resulting in two algorithms called DU-ABC and DU-POEM. Finally, we demonstrate the efficacy of the proposed JACD algorithms via extensive system simulations."
+  },
+  {
+    "title": "Beyond ESG Scores: Learning Dynamic Constraints for Sequential Portfolio Optimization",
+    "authors": [
+      "Xin Li",
+      "Yan Ke",
+      "Longbing Cao"
+    ],
+    "published": "2026-05-10T04:06:48Z",
+    "link": "http://arxiv.org/abs/2605.09310v1",
+    "summary": "ESG-aware portfolio optimization is increasingly important for sustainable capital allocation, yet most learning-based methods still operationalize ESG by appending static scores to the policy observation or reward. This creates a mismatch for sequential control: ESG scores are noisy, provider-dependent, low-frequency, and temporally misaligned with sequential portfolio decisions, while financial evidence suggests that ESG is better treated as a portfolio preference, risk-exposure, or hedge dimension than as a robust alpha factor. We propose to impose ESG constraints without modifying the financial policy's observation or reward, using a Multimodal Action-Conditioned Constraint Field (MACF) that learns mechanism-specific ESG costs from point-in-time multimodal evidence and contemplated portfolio transitions. We then introduce MACF-X, a family of optimizer-specific adapters that converts MACF costs and uncertainties into native constrained-optimization interfaces through a shared slack- and uncertainty-aware pressure layer. Across multiple constraint-integration interfaces, MACF-X reduces tail ESG budget pressure while maintaining competitive financial performance. Ablations show that this improvement depends on dynamic evidence inputs and three-head decomposition, while static ESG-score proxies are nearly indistinguishable from score-shuffled noise baselines."
+  },
+  {
+    "title": "The Engineering of Skew: A Path-Dependent Framework for Asymmetric Volatility Management",
+    "authors": [
+      "Gregory A. Fanous"
+    ],
+    "published": "2026-05-09T19:15:00Z",
+    "link": "http://arxiv.org/abs/2605.09123v1",
+    "summary": "Volatility is the language in which finance often describes risk, but it is not the language in which institutions experience risk. Allocators live through drawdowns, liquidity needs, spending rules, rebalance decisions, board oversight, and the interval between a prior high-water mark and full recovery. This paper develops a path-dependent framework for asymmetric volatility management. The arithmetic of recovery is nonlinear: after a drawdown of depth $D$, the required gain is $R=\\frac{1}{1-D}-1$. Lower volatility can improve geometric compounding through the familiar small-return approximation $g \\approx μ-\\frac{1}{2}σ^2$, but symmetric de-risking can also impair recovery if it sacrifices too much upside participation. The relevant design problem is therefore not volatility reduction in isolation; it is conditional exposure shaping. Skew engineering is defined here as the portfolio construction discipline of reducing harmful downside participation more than productive upside participation, controlling submergence, and preserving enough recovery participation to sustain compounding under adverse regimes. The resulting Recovery-Efficiency Protocol links drawdown depth, time underwater, recovery burden reduction, and rebound participation into an allocator-facing reporting discipline. Machine learning and AI methods are framed as tools for conditional estimation, regime mapping, robustness testing, and model-risk governance, not as market prediction."
+  },
+  {
+    "title": "Large-Scale Asset Selection via Metric Dependence with Enriched High Frequency Information",
+    "authors": [
+      "Yangzhou Chen",
+      "Shuaida He",
+      "Xin Chen"
+    ],
+    "published": "2026-05-04T08:26:39Z",
+    "link": "http://arxiv.org/abs/2605.02326v2",
+    "summary": "Large-scale portfolio choice is highly sensitive to estimation error, making the preliminary asset selection essential in empirical implementation. Existing selection rules typically rely on scalar returns or low dimensional high frequency summaries, and thus discard intraday risk dynamics that may be relevant for risk adjusted allocation. We propose Metric Dependence Screening (MDS), an asset selection procedure that incorporates high frequency information as object valued data. Each asset day observation is represented as a point-curve object combining daily return with an intraday risk state curve, equipped with a weighted product metric that preserves both reward information and within day risk dynamics. MDS ranks assets by a Fréchet variation based dependence score, measuring how much a risk adjusted target explains the metric dispersion of the asset representations. This yields a simple two stage portfolio procedure: MDS first reduces the investable universe, and standard mean-variance or minimum variance allocation is then applied. We develop a target slicing estimator and establish concentration, sure selection, and rank consistency guarantees under $α$-mixing time series dependence and ultrahigh dimensionality. Simulations show that MDS performs well across both Euclidean and non-Euclidean settings. Using high frequency data for $2938$ Chinese A-share stocks from July 2023 to December 2025, we demonstrate that MDS improves out of sample portfolio performance over return based and scalar dependence based benchmarks, highlighting the value of preserving intraday risk dynamics."
+  },
+  {
+    "title": "Learning to Spend: Model Predictive Control for Budgeting under Non-Stationary Returns",
+    "authors": [
+      "Nilavra Pathak",
+      "Smriti Shyamal",
+      "Prasant Mhasker",
+      "Christopher Swartz"
+    ],
+    "published": "2026-04-29T20:39:25Z",
+    "link": "http://arxiv.org/abs/2604.27186v1",
+    "summary": "We study finite-horizon budget allocation as a closed-loop economic control problem and evaluate receding-horizon Model Predictive Control (MPC) relative to reactive budgeting policies. Budgets are allocated periodically under execution noise and operational constraints, while return efficiency may evolve over time. Using a controlled simulation framework motivated by digital marketing, we compare reactive pacing to MPC across environments with increasing degrees of non-stationarity. Our results show that non-stationarity alone does not justify predictive control. When return dynamics are stationary or evolve through unpredictable stochastic drift, MPC offers no systematic advantage over reactive baselines. By contrast, when return efficiency exhibits predictable structure over the planning horizon, that is captured through an underlying model, MPC consistently outperforms reactive budgeting by exploiting intertemporal trade-offs."
+  },
+  {
+    "title": "Auditing Marketing Budget Allocation with Hindsight Regret",
+    "authors": [
+      "Nilavra Pathak",
+      "Olivier Jeunen",
+      "Eric Lambert"
+    ],
+    "published": "2026-04-28T13:57:02Z",
+    "link": "http://arxiv.org/abs/2604.25977v2",
+    "summary": "Organizations routinely make strategic budget allocations under operational constraints, but often lack a principled way to assess whether realized allocations were close to the best feasible choices in hindsight. We present a retrospective auditing framework based on hindsight regret, defined as the opportunity cost of the realized allocation relative to a constraint-faithful benchmark under the same budget and stability guardrails. The framework estimates regime-specific spend--response functions from historical logs, computes feasible hindsight allocations via constrained optimization, and propagates uncertainty through Monte Carlo evaluation to produce regret distributions, expected lift, and probability-of-improvement summaries. This separates allocation inefficiency from uncertainty in the estimated response surfaces. Experiments on real marketing allocation logs show that the framework yields interpretable post-hoc diagnostics and reveals a practical trade-off between allocation flexibility and detectability: moderate feasible reallocations often capture most measurable gain, while larger shifts move into weak-support regions with higher uncertainty. The result is a practical method for auditing historical budget decisions when online experimentation is costly or infeasible."
+  },
+  {
+    "title": "Beyond De Prado and Cotton: Hierarchical and Iterative Methods for General Mean-Variance Portfolios",
+    "authors": [
+      "Bernd Johannes Wuebben"
+    ],
+    "published": "2026-04-26T18:38:53Z",
+    "link": "http://arxiv.org/abs/2604.23833v1",
+    "summary": "Hierarchical Risk Parity (De Pardo) and the Schur-complement generalization of Cotton are among the most widely adopted regularised portfolio construction methods, yet both are signal-blind: they solve only the minimum-variance problem and cannot accommodate an arbitrary expected-return forecast. This paper introduces three methods that incorporate alpha signals into hierarchical and regularised portfolio construction.   HRP-$μ$ is a hierarchical allocator that accepts an arbitrary signal $μ$ and nests standard HRP when $γ= 0$ and $μ=\\mathbf{1}$. It preserves the tree-based structure of HRP while extending it beyond the minimum-variance setting. HRP-$Σμ$ strengthens this construction by replacing inverse-variance representatives with recursive local mean-variance optima, thereby using richer within-cluster covariance information at the same $O(N^2)$ asymptotic cost.   CRISP (Correlation-Regularised Iterative Shrinkage Portfolios) is an iterative solver for $P_γw = μ$ with $P_γ= (1-γ)\\operatorname{diag}(Σ) + γΣ$, so that $γ$ interpolates between a diagonal portfolio rule and full Markowitz. At convergence, CRISP is Markowitz applied to a variance-preserving shrunk covariance-diagonal variances unchanged, off-diagonal correlations shrunk-with $γ$ tuned for out-of-sample Sharpe rather than covariance-estimation loss.   In Monte Carlo experiments across multiple covariance regimes and estimation ratios, HRP-$μ$ and HRP-$Σμ$ both outperform plain HRP with HRP-$Σμ$ consistently improving on HRP-$μ$. CRISP at intermediate $γ$ is the dominant method in both regimes, outperforming HRP, Cotton, Ledoit-Wolf shrinkage, direct Markowitz, and the signal-aware hierarchical methods."
+  },
+  {
+    "title": "Evaluating Structured Strategy Backtests: Peer Benchmarks, Regime Timing, and Live Performance",
+    "authors": [
+      "Chang Liu"
+    ],
+    "published": "2026-04-20T20:41:24Z",
+    "link": "http://arxiv.org/abs/2604.18821v1",
+    "summary": "Institutional allocators often evaluate structured strategies on the basis of marketed backtests -- hypothetical track records constructed by applying a strategy's rules to historical data prior to any live trading, also referred to as pro-forma performance. It is unclear how much of that signal survives once the strategy is actually traded. Using 1,726 commercially distributed structured strategies from ten global institutions, this paper shows that raw pro-forma performance has only limited portability into the live period and weakens sharply once live outcomes are measured relative to peer and external benchmarks. The evidence indicates that marketed backtests predominantly reflect the common factor regime present before launch rather than strategy-specific skill. Strategies launched after unusually strong bucket-factor conditions experience materially worse subsequent deterioration. For allocators, the implication is practical: backtests should be judged relative to appropriate peer benchmarks, and the discount applied to them should increase when launch occurs after an extreme factor run."
+  },
+  {
+    "title": "Topological Risk Parity",
+    "authors": [
+      "Revant Nayar",
+      "Dnyanesh Kulkarni",
+      "El Mehdi Ainasse"
+    ],
+    "published": "2026-04-18T01:35:40Z",
+    "link": "http://arxiv.org/abs/2604.16773v1",
+    "summary": "We develop \\emph{Topological Risk Parity} (TRP), a tree-based portfolio construction approach intended for long/short, market neutral, factor-aware portfolios. The method is motivated by the dominance of passive/factor flows that naturally create a tree-like structure in markets. We introduce two implementation variants: (i) a rooted minimum-spanning-tree allocator, and (ii) a market/sector-anchored variant referred to here as \\emph{Semi-Supervised TRP}, which imposes SPY as the root node and the 11 sector ETFs as the second layer. In both cases, the key object is a sparse rooted topology extracted from a correlation-distance graph, together with a propagation law that maps signed signals into portfolio weights.   Relative to classical Hierarchical Risk Parity (HRP), TRP is non-binary and designed for signed cross-sectional signals and hedged long-short portfolios: it preserves signal direction while using return-dependence geometry to shape exposures. It accounts for the fact that there is imperfect correlation between parent and child nodes, and thus does not propagate weights entirely to the children. We can also impose economically motivated hierarchy that involves industries, sub-industries or factors, etc. This makes it much more robust to macroeconomic shocks and crises, where within-cluster correlations might spike. These features make TRP well suited for market-neutral, equity stat-arb or L/S trend-type strategies, where enforcing neutrality or limiting exposures at the market, sector or factor level is extremely important."
+  },
+  {
+    "title": "Risk-Sensitive Investment Management via Free Energy-Entropy Duality",
+    "authors": [
+      "Sebastien Lleo",
+      "Wolfgang Runggaldier"
+    ],
+    "published": "2026-04-16T18:26:08Z",
+    "link": "http://arxiv.org/abs/2604.15463v2",
+    "summary": "We study a benchmarked risk-sensitive portfolio problem in a factor-based setting to bring together three strands of the literature: benchmarked risk-sensitive investment management, the Kuroda-Nagai change-of-measure method, and the free energy-entropy duality of Dai Pra et al. (1996). We show that the duality yields a direct solution of the benchmarked problem by reformulating it as a linear-quadratic-Gaussian stochastic differential game under a suitable equivalent probability measure, with an entropic regularization. The resulting value function is quadratic, the optimal controls are explicit affine feedback maps, and the optimal allocation admits two complementary interpretations: as a fractional Kelly strategy and as a Kelly portfolio adjusted via the entropic regularization. This formulation, therefore, contributes both a direct analytical route to the solution and a clearer interpretation of risk sensitivity, thereby embedding the classical Kuroda-Nagai change-of-measure approach within a more general framework. An added benefit of this formulation is that it is suitable for implementation via an RL algorithm. A simple implementation on U.S. equity data illustrates the tractability of the framework and numerically confirms the equivalence of the two approaches."
+  },
+  {
+    "title": "Investing Is Compression",
+    "authors": [
+      "Oscar Stiffelman"
+    ],
+    "published": "2026-04-12T17:56:53Z",
+    "link": "http://arxiv.org/abs/2604.10758v3",
+    "summary": "In 1956 John Kelly wrote a paper at Bell Labs describing the relationship between gambling and Information Theory. What came to be known as the Kelly Criterion is both an objective and a closed-form solution to sizing wagers when odds and edge are known. Samuelson argued it was arbitrary and subjective, and successfully kept it out of mainstream economics. Luckily it lived on in computer science, mostly because of Tom Cover's work at Stanford. He showed that it is the uniquely optimal way to invest: it maximizes long-term wealth, minimizes the risk of ruin, and is competitively optimal in a game-theoretic sense, even over the short term.   One of Cover's most surprising contributions to portfolio theory was the universal portfolio. Related to universal compression in information theory, it performs asymptotically as well as the best constant-rebalanced portfolio in hindsight. I borrow a trick from that algorithm to show that Kelly's objective, even in the general form, factors the investing problem into three terms: a money term, an entropy term, and a divergence term. The only way to maximize growth is to minimize divergence which measures the difference between our distribution and the true distribution in bits. Investing is, fundamentally, a compression problem.   This decomposition also yields new practical results. Because the money and entropy terms are constant across strategies in a given backtest, the difference in log growth between two strategies measures their relative divergence in bits. I also introduce a winner fraction heuristic which allocates capital in proportion to each asset's probability of dominating the candidate set. The growth shortfall of this heuristic relative to the optimal portfolio is bounded by the entropy of the winner fraction distribution. To my knowledge, both the heuristic and the entropy bound are original contributions."
+  }
+]

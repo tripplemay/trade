@@ -1,0 +1,376 @@
+[
+  {
+    "name": "t-espy/lean-optimizer-public",
+    "description": "Parallel optimization engine for QuantConnect LEAN algorithmic trading strategies",
+    "url": "https://github.com/t-espy/lean-optimizer-public",
+    "stars": 1,
+    "language": "Python",
+    "topics": [
+      "algorithmic-trading",
+      "backtesting",
+      "bayesian-optimization",
+      "docker",
+      "dotnet",
+      "genetic-algorithm",
+      "latin-hypercube-sampling",
+      "lean",
+      "parameter-optimization",
+      "python",
+      "quant-finance",
+      "quantconnect",
+      "trading-strategy"
+    ]
+  },
+  {
+    "name": "coremetro/Risk_Parity",
+    "description": "Risk_Parity strategy 风险平价",
+    "url": "https://github.com/coremetro/Risk_Parity",
+    "stars": 32,
+    "language": "Jupyter Notebook",
+    "topics": [
+      "portfolio",
+      "risk-parity"
+    ]
+  },
+  {
+    "name": "mnalevanko/all-weather-for-noobs",
+    "description": "Semi-automated investing strategy (risk parity)",
+    "url": "https://github.com/mnalevanko/all-weather-for-noobs",
+    "stars": 28,
+    "language": "Python",
+    "topics": []
+  },
+  {
+    "name": "apostleoffinance/ml-hrp-crypto-portfolio",
+    "description": "End-to-end ML-enhanced Hierarchical Risk Parity (HRP) portfolio strategy for multi-crypto assets: from research and feature engineering (price normalization, technical indicators, on-chain metrics) to predictive modeling, backtesting, and live execution-ready allocation.",
+    "url": "https://github.com/apostleoffinance/ml-hrp-crypto-portfolio",
+    "stars": 17,
+    "language": "Jupyter Notebook",
+    "topics": []
+  },
+  {
+    "name": "pierovic94/TACTICAL-ASSET-ALLOCATION-AND-MACHINE-LEARNING",
+    "description": "This paper studies how a machine learning algorithm can generate tactical allocation which outperforms returns for a pre-defined benchmark. We use three distinct and diverse data sets to implement the model which tries to forecast the next month’s a selected equity index price. The algorithm used to accomplish this task is Elastic Net. Once the predictions are generated from an out-of-sample subset, we elaborate a tactical portfolio allocation aiming to maximize the return of a different combination of classical allocation between bonds and equity, and a risk parity strategy. Finally, we evaluate those returns by comparing them to the benchmark.",
+    "url": "https://github.com/pierovic94/TACTICAL-ASSET-ALLOCATION-AND-MACHINE-LEARNING",
+    "stars": 16,
+    "language": "Jupyter Notebook",
+    "topics": []
+  },
+  {
+    "name": "HarperGuo/Risk-Parity-and-Beyond",
+    "description": "Measured marginal contributions to risk by de-correlating transformation like PCA and alternatives to build Risk Parity strategies.",
+    "url": "https://github.com/HarperGuo/Risk-Parity-and-Beyond",
+    "stars": 9,
+    "language": "Python",
+    "topics": []
+  },
+  {
+    "name": "JaaasperLiu/robo-advisor",
+    "description": "Reproducible backtesting system for Risk Parity and Time-Series Momentum strategies",
+    "url": "https://github.com/JaaasperLiu/robo-advisor",
+    "stars": 9,
+    "language": "Jupyter Notebook",
+    "topics": []
+  },
+  {
+    "name": "py310/portfolio-rebalance-methods",
+    "description": "Portfolio Rebalance Methods: Explore and implement diverse rebalancing strategies, including Static Weights, Risk Parity, and Markowitz, to optimize and fine-tune your investment portfolios.",
+    "url": "https://github.com/py310/portfolio-rebalance-methods",
+    "stars": 8,
+    "language": "Python",
+    "topics": [
+      "equal-weights",
+      "portfolio-rebalancing",
+      "static-weights"
+    ]
+  },
+  {
+    "name": "GianMarcoOddo/FinancialModeling-Black-Litterman-RiskParityAllocation",
+    "description": "This repository features an automated quantitative strategy using the Black-Litterman Model and Risk Parity Allocation, with an integrated backtesting procedure to evaluate performance over the last 4 years.",
+    "url": "https://github.com/GianMarcoOddo/FinancialModeling-Black-Litterman-RiskParityAllocation",
+    "stars": 8,
+    "language": "Jupyter Notebook",
+    "topics": []
+  },
+  {
+    "name": "qiao-zhou/risk_parity",
+    "description": "risk parity strategy",
+    "url": "https://github.com/qiao-zhou/risk_parity",
+    "stars": 6,
+    "language": "Jupyter Notebook",
+    "topics": []
+  },
+  {
+    "name": "Nataland/commodity_risk_parity_strategy",
+    "description": "Commodity risk parity strategy",
+    "url": "https://github.com/Nataland/commodity_risk_parity_strategy",
+    "stars": 5,
+    "language": "Python",
+    "topics": []
+  },
+  {
+    "name": "alpacahq/Momentum-Trading-Example",
+    "description": "An example algorithm for a momentum-based day trading strategy.",
+    "url": "https://github.com/alpacahq/Momentum-Trading-Example",
+    "stars": 706,
+    "language": "Python",
+    "topics": []
+  },
+  {
+    "name": "deshwalmahesh/NSE-Stock-Scanner",
+    "description": "National Stock Exchange (NSE), India based Stock screener program. Supports Live Data, Swing / Momentum Trading, Intraday Trading, Connect to online brokers as Zerodha Kite, Risk Management, Emotion Control, Screening, Strategies, Backtesting, Automatic Stock Downloading after closing, live free day trading data and much more",
+    "url": "https://github.com/deshwalmahesh/NSE-Stock-Scanner",
+    "stars": 310,
+    "language": "Jupyter Notebook",
+    "topics": [
+      "algorithmic-trading",
+      "algotrading",
+      "candlestick-chart",
+      "equity",
+      "futures",
+      "live-stocks",
+      "livedata",
+      "moving-average",
+      "nse",
+      "options",
+      "python",
+      "stock-market",
+      "stock-scanner",
+      "stocks",
+      "strategy",
+      "trading",
+      "trading-strategies",
+      "zerodha",
+      "zerodha-kite"
+    ]
+  },
+  {
+    "name": "kieranjwood/slow-momentum-fast-reversion",
+    "description": "This code accompanies the the paper Slow Momentum with Fast Reversion: A Trading Strategy Using Deep Learning and Changepoint Detection (https://arxiv.org/pdf/2105.13727.pdf).",
+    "url": "https://github.com/kieranjwood/slow-momentum-fast-reversion",
+    "stars": 267,
+    "language": "Python",
+    "topics": [
+      "change-point-detection",
+      "deep-learning",
+      "machine-learning",
+      "momentum-trading-strategy",
+      "quantum-mechanics",
+      "trading",
+      "trading-strategies"
+    ]
+  },
+  {
+    "name": "ChypherFish3r/coinbase-trading-bot",
+    "description": "coinbase trading bot for momentum strategies with optional profit transfers, CSV backtests, and a clean CLI",
+    "url": "https://github.com/ChypherFish3r/coinbase-trading-bot",
+    "stars": 110,
+    "language": "JavaScript",
+    "topics": [
+      "coinbase",
+      "momentum",
+      "trading",
+      "trading-bot"
+    ]
+  },
+  {
+    "name": "jo-cho/trading-rules-using-machine-learning",
+    "description": "Machine learning-driven financial trading strategy: momentum prediction, regime detection, and enhanced trading decisions.",
+    "url": "https://github.com/jo-cho/trading-rules-using-machine-learning",
+    "stars": 70,
+    "language": "Jupyter Notebook",
+    "topics": [
+      "algorithmic-trading",
+      "finance",
+      "machine-learning",
+      "quantitative-finance",
+      "trading"
+    ]
+  },
+  {
+    "name": "jshellen/CTA-strategies",
+    "description": "Backtest result archive for Momentum Trading Strategies",
+    "url": "https://github.com/jshellen/CTA-strategies",
+    "stars": 68,
+    "language": "Jupyter Notebook",
+    "topics": []
+  },
+  {
+    "name": "bideeen/Building-A-Trading-Strategy-With-Python",
+    "description": "trading strategy is a fixed plan to go long or short in markets,  there are two common trading strategies: the momentum strategy and the reversion strategy. Firstly, the momentum strategy is also called divergence or trend trading. When you follow this strategy, you do so because you believe the movement of a quantity will continue in its current direction. Stated differently, you believe that stocks have momentum or upward or downward trends, that you can detect and exploit. Some examples of this strategy are the moving average crossover, the dual moving average crossover, and turtle trading:  The moving average crossover is when the price of an asset moves from one side of a moving average to the other. This crossover represents a change in momentum and can be used as a point of making the decision to enter or exit the market. You’ll see an example of this strategy, which is the “hello world” of quantitative trading later on in this tutorial. The dual moving average crossover occurs when a short-term average crosses a long-term average. This signal is used to identify that momentum is shifting in the direction of the short-term average. A buy signal is generated when the short-term average crosses the long-term average and rises above it, while a sell signal is triggered by a short-term average crossing long-term average and falling below it. Turtle trading is a popular trend following strategy that was initially taught by Richard Dennis. The basic strategy is to buy futures on a 20-day high and sell on a 20-day low.  Secondly, the reversion strategy, which is also known as convergence or cycle trading. This strategy departs from the belief that the movement of a quantity will eventually reverse. This might seem a little bit abstract, but will not be so anymore when you take the example. Take a look at the mean reversion strategy, where you actually believe that stocks return to their mean and that you can exploit when it deviates from that mean.  That already sounds a whole lot more practical, right?  Another example of this strategy, besides the mean reversion strategy, is the pairs trading mean-reversion, which is similar to the mean reversion strategy. Whereas the mean reversion strategy basically stated that stocks return to their mean, the pairs trading strategy extends this and states that if two stocks can be identified that have a relatively high correlation, the change in the difference in price between the two stocks can be used to signal trading events if one of the two moves out of correlation with the other. That means that if the correlation between two stocks has decreased, the stock with the higher price can be considered to be in a short position. It should be sold because the higher-priced stock will return to the mean. The lower-priced stock, on the other hand, will be in a long position because the price will rise as the correlation will return to normal.  Besides these two most frequent strategies, there are also other ones that you might come across once in a while, such as the forecasting strategy, which attempts to predict the direction or value of a stock, in this case, in subsequent future time periods based on certain historical factors. There’s also the High-Frequency Trading (HFT) strategy, which exploits the sub-millisecond market microstructure.  That’s all music for the future for now; Let’s focus on developing your first trading strategy for now!  A Simple Trading Strategy As you read above, you’ll start with the “hello world” of quantitative trading: the moving average crossover. The strategy that you’ll be developing is simple: you create two separate Simple Moving Averages (SMA) of a time series with differing lookback periods, let’s say, 40 days and 100 days. If the short moving average exceeds the long moving average then you go long, if the long moving average exceeds the short moving average then you exit.  Remember that when you go long, you think that the stock price will go up and will sell at a higher price in the future (= buy signal); When you go short, you sell your stock, expecting that you can buy it back at a lower price and realize a profit (= sell signal).  This simple strategy might seem quite complex when you’re just starting out, but let’s take this step by step:  First define your two different lookback periods: a short window and a long window. You set up two variables and assign one integer per variable. Make sure that the integer that you assign to the short window is shorter than the integer that you assign to the long window variable! Next, make an empty signals DataFrame, but do make sure to copy the index of your aapl data so that you can start calculating the daily buy or sell signal for your aapl data. Create a column in your empty signals DataFrame that is named signal and initialize it by setting the value for all rows in this column to 0.0. After the preparatory work, it’s time to create the set of short and long simple moving averages over the respective long and short time windows. Make use of the rolling() function to start your rolling window calculations: within the function, specify the window and the min_period, and set the center argument. In practice, this will result in a rolling() function to which you have passed either short_window or long_window, 1 as the minimum number of observations in the window that are required to have a value, and False, so that the labels are not set at the center of the window. Next, don’t forget to also chain the mean() function so that you calculate the rolling mean. After you have calculated the mean average of the short and long windows, you should create a signal when the short moving average crosses the long moving average, but only for the period greater than the shortest moving average window. In Python, this will result in a condition: signals['short_mavg'][short_window:] > signals['long_mavg'][short_window:]. Note that you add the [short_window:] to comply with the condition “only for the period greater than the shortest moving average window”. When the condition is true, the initialized value 0.0 in the signal column will be overwritten with 1.0. A “signal” is created! If the condition is false, the original value of 0.0 will be kept and no signal is generated. You use the NumPy where() function to set up this condition. Much the same like you read just now, the variable to which you assign this result is signals['signal'][short_window], because you only want to create signals for the period greater than the shortest moving average window! Lastly, you take the difference of the signals in order to generate actual trading orders. In other words, in this column of your signals DataFrame, you’ll be able to distinguish between long and short positions, whether you’re buying or selling stock.",
+    "url": "https://github.com/bideeen/Building-A-Trading-Strategy-With-Python",
+    "stars": 64,
+    "language": "Jupyter Notebook",
+    "topics": []
+  },
+  {
+    "name": "sanjeevai/trading-with-momentum",
+    "description": "Implement a momentum trading strategy in Python and test to see if it has the potential to be profitable",
+    "url": "https://github.com/sanjeevai/trading-with-momentum",
+    "stars": 58,
+    "language": "HTML",
+    "topics": [
+      "algorithmic-trading",
+      "momentum-strategy",
+      "returns",
+      "t-test"
+    ]
+  },
+  {
+    "name": "BessieChen/R-in-Finance",
+    "description": "This course, taught by Prof.Jerzy in NYU, applies the R programming language to momentum trading, statistical arbitrage (pairs trading), and other active portfolio management strategies. The course implements volatility and price forecasting models, asset pricing and factor models, and portfolio optimization. The course applies machine learning techniques, such as backtesting (cross-validation) and parameter regularization (shrinkage). ",
+    "url": "https://github.com/BessieChen/R-in-Finance",
+    "stars": 52,
+    "language": "R",
+    "topics": []
+  },
+  {
+    "name": "rbeeli/short-term_momentum_strategy",
+    "description": "Short-term momentum trading strategy implemented for the lecture \"Systematic risk premia strategies traded at hedge funds\" at University of Zurich, FS 2018.",
+    "url": "https://github.com/rbeeli/short-term_momentum_strategy",
+    "stars": 45,
+    "language": "R",
+    "topics": [
+      "fund",
+      "hedge",
+      "momentum",
+      "reversal",
+      "strategy",
+      "trading"
+    ]
+  },
+  {
+    "name": "cn-vhql/FactorHub",
+    "description": "FactorHub is an open-source modern quantitative factor analysis platform designed specifically for the Chinese A-share market.  FactorHub = Factor + Hub  A full-stack quantitative investment research system integrating factor management, analysis, mining, portfolio optimization, and strategy backtesting.",
+    "url": "https://github.com/cn-vhql/FactorHub",
+    "stars": 342,
+    "language": "Python",
+    "topics": [
+      "finance",
+      "quantitative-finance",
+      "trading-strategies"
+    ]
+  },
+  {
+    "name": "AlainDaccache/Quantropy",
+    "description": "Financial pipeline for the data-driven investor to research, develop and deploy robust strategies. Big Data ingestion, risk factor modeling, stock screening, portfolio optimization, and broker API.",
+    "url": "https://github.com/AlainDaccache/Quantropy",
+    "stars": 179,
+    "language": "Python",
+    "topics": [
+      "broker-api",
+      "edgar",
+      "finance",
+      "financial-data",
+      "financial-markets",
+      "fundamental-analysis",
+      "machine-learning",
+      "portfolio-construction",
+      "portfolio-optimization",
+      "quantitative-finance",
+      "strategies",
+      "trading"
+    ]
+  },
+  {
+    "name": "HFTHaidra/Deep-Reinforcement-Learning-for-Automated-Stock-Trading-Strategy",
+    "description": "Stock trading strategies play a critical role in investment. However, it is challenging to design a profitable strategy in a complex and dynamic stock market. In this paper, we propose a deep ensemble reinforcement learning scheme that automatically learns a stock trading strategy by maximizing investment return. We train a deep reinforcement learning agent and obtain an ensemble trading strategy using the three actor-critic based algorithms: Proximal Policy Optimization (PPO), Advantage Actor Critic (A2C), and Deep Deterministic Policy Gradient (DDPG). The ensemble strategy inherits and integrates the best features of the three algorithms, thereby robustly adjusting to different market conditions. In order to avoid the large memory consumption in training networks with continuous action space, we employ a load-on-demand approach for processing very large data. We test our algorithms on the 30 Dow Jones stocks which have adequate liquidity. The performance of the trading agent with different reinforcement learning algorithms is evaluated and compared with both the Dow Jones Industrial Average index and the traditional min-variance portfolio allocation strategy. The proposed deep ensemble scheme is shown to outperform the three individual algorithms and the two baselines in terms of the risk-adjusted return measured by the Sharpe ratio.",
+    "url": "https://github.com/HFTHaidra/Deep-Reinforcement-Learning-for-Automated-Stock-Trading-Strategy",
+    "stars": 50,
+    "language": "Jupyter Notebook",
+    "topics": []
+  },
+  {
+    "name": "jojo142/QuantPortfolio",
+    "description": "My quant portfolio leverages quantitative finance and data-driven insights to optimize investment strategies. Using advanced models, statistical analysis, and machine learning, I develop systematic trading strategies to capitalize on market inefficiencies and generate alpha. ",
+    "url": "https://github.com/jojo142/QuantPortfolio",
+    "stars": 42,
+    "language": "Jupyter Notebook",
+    "topics": [
+      "algorithmictrading",
+      "eventstudy",
+      "factoranalysis",
+      "microstructure",
+      "optimization",
+      "optionpricing",
+      "quant",
+      "sentiment-analysis"
+    ]
+  },
+  {
+    "name": "DemetersSon83/Markowitzify",
+    "description": "Markowitzify will implement a variety of portfolio and stock/cryptocurrency analysis methods to optimize portfolios or trading strategies.  The two primary classes are \"portfolio\" and \"stonks.\"",
+    "url": "https://github.com/DemetersSon83/Markowitzify",
+    "stars": 38,
+    "language": "Python",
+    "topics": [
+      "asset-management",
+      "asset-manager",
+      "assets-management",
+      "backtesting-trading-strategies",
+      "clustering-algorithm",
+      "cryptocurrency-exchanges",
+      "finance",
+      "hurst-exponent",
+      "machine-learning-algorithms",
+      "markowitz",
+      "markowitz-model",
+      "markowitz-portfolio",
+      "monte-carlo-simulation",
+      "portfolio-optimization",
+      "quantitive-finance",
+      "relative-strength-index",
+      "sharpe-ratio",
+      "stock-analysis",
+      "stock-portfolio-manager",
+      "trading-strategies"
+    ]
+  },
+  {
+    "name": "serkannpolatt/DATA-SCIENCE-FOR-FINANCE",
+    "description": "This repository features data science projects focused on financial data analysis and forecasting. The projects apply machine learning algorithms to analyze stock market data, predict trends, and optimize investment strategies.",
+    "url": "https://github.com/serkannpolatt/DATA-SCIENCE-FOR-FINANCE",
+    "stars": 29,
+    "language": "Jupyter Notebook",
+    "topics": [
+      "analysis",
+      "finance",
+      "managment",
+      "portfolio",
+      "python",
+      "stock",
+      "stock-market",
+      "trading"
+    ]
+  },
+  {
+    "name": "Gouldh/ML-Portfolio-Optimization",
+    "description": "A tool integrating mean-variance optimization, machine learning strategies, Black-Litterman model adjustments, and comprehensive factor analysis to enhance investment decision-making.",
+    "url": "https://github.com/Gouldh/ML-Portfolio-Optimization",
+    "stars": 23,
+    "language": "Python",
+    "topics": []
+  },
+  {
+    "name": "singhaniatanay/QuantFinance-Trading",
+    "description": "Quantative Trading, building a trading strategy by generating alpha, optimizing a portfolio.",
+    "url": "https://github.com/singhaniatanay/QuantFinance-Trading",
+    "stars": 22,
+    "language": "Jupyter Notebook",
+    "topics": [
+      "finance",
+      "pca-analysis",
+      "quantitative-finance",
+      "quantum-computing",
+      "stock-market"
+    ]
+  },
+  {
+    "name": "Ru-Yan/Sharpe-LSTM-Investment-Model",
+    "description": "The research provides effective management strategies for different asset portfolios in the financial sector by building models. The VMD-LSTM-PSO model is developed for daily financial market price forecasting, where the time series are decomposed by VMD and the sub-series are used as LSTM input units to carry out forecasting, and then the network parameters are adjusted by PSO to improve the forecasting accuracy, and the Huber-loss of the model is 1.0481e-04. For the daily portfolio strategy, EEG is used to construct a system of investment risk indicators, which is optimized by incorporating the risk indicators into the Sharpe index, and the objective function is analyzed by using GA to derive the optimal daily asset share that maximizes the investor's return with minimal risk. The results of the empirical analysis show that the model provides strategies with good robustness.",
+    "url": "https://github.com/Ru-Yan/Sharpe-LSTM-Investment-Model",
+    "stars": 20,
+    "language": "Python",
+    "topics": []
+  }
+]
