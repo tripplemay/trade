@@ -39,6 +39,8 @@ from trade.strategies.regime_adaptive.regime import (
 from trade.strategies.regime_adaptive.trend_gating import (
     TrendGatingResult,
     apply_trend_gating,
+    build_policy_skipped_trend_result,
+    should_l1_gate_run,
 )
 from trade.strategies.regime_adaptive.weighting import (
     RegimeAdaptiveWeightAllocation,
@@ -66,6 +68,7 @@ class RegimeAdaptivePeriodResult:
     pre_rebalance_account_risk_state: MasterAccountRiskState
     weights_capped_by_kill_switch: dict[str, float]
     risk_flags: tuple[str, ...]
+    l1_active: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -148,11 +151,17 @@ def run_regime_adaptive_monthly_backtest(
             human_review_required=kill_switch_active,
         )
 
-        gating_result = apply_trend_gating(records, config, signal_date)
-        allocation = derive_regime_adaptive_weights(records, config, signal_date, gating_result)
         regime_state = detect_regime(
             records, previous_effective_weights, config, signal_date
         )
+        l1_active = should_l1_gate_run(
+            regime_state.regime, config.regime_activation_policy
+        )
+        if l1_active:
+            gating_result = apply_trend_gating(records, config, signal_date)
+        else:
+            gating_result = build_policy_skipped_trend_result(records, config, signal_date)
+        allocation = derive_regime_adaptive_weights(records, config, signal_date, gating_result)
         target_weights = apply_regime_exposure_adjustment(
             allocation.target_weights, regime_state, config
         )
@@ -219,6 +228,7 @@ def run_regime_adaptive_monthly_backtest(
                 pre_rebalance_account_risk_state=pre_rebalance_state,
                 weights_capped_by_kill_switch=weights_capped_by_kill_switch,
                 risk_flags=tuple(period_flags),
+                l1_active=l1_active,
             )
         )
         equity_points.append(EquityPoint(valuation_date, ending_value))

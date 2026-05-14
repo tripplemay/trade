@@ -14,7 +14,7 @@
       "title": "L1 trend gating 按 activation policy 条件启用",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "新增 should_l1_gate_run(regime_label, policy) -> bool 辅助：always_on → 任何 regime True；only_non_normal → BEAR/CRISIS True，NORMAL False；only_crisis → CRISIS True，其他 False。Backtest workflow 在 L3 产出 regime 后调用此辅助；返回 False 时绕过 apply_trend_gating，非 defensive 资产均当作 ungated；SGOV defensive 路由不变；per-period rebalance trace 记录 l1_active: bool 与 active policy。测试覆盖全部 9 个 (policy × regime) 组合、trace flag 正确、always_on 不变约束"
     },
     {

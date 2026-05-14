@@ -12,9 +12,16 @@ from trade.strategies.regime_adaptive.backtest import (
 )
 from trade.strategies.regime_adaptive.config import (
     ASSET_CATEGORY_DEFENSIVE,
+    POLICY_ALWAYS_ON,
+    POLICY_ONLY_CRISIS,
+    POLICY_ONLY_NON_NORMAL,
     default_regime_adaptive_config,
 )
 from trade.strategies.regime_adaptive.regime import REGIME_NORMAL
+from trade.strategies.regime_adaptive.trend_gating import (
+    GATE_REASON_DEFENSIVE_PASS,
+    GATE_REASON_POLICY_SKIPPED,
+)
 
 
 def _bars(symbol: str, prices: list[float], start: date = date(2024, 1, 1)) -> list[PriceBar]:
@@ -223,3 +230,64 @@ def test_run_regime_adaptive_monthly_backtest_equity_curve_starts_at_starting_ca
 
     assert result.equity_curve[0].value == pytest.approx(100_000.0)
     assert result.equity_curve[-1].value == pytest.approx(result.ending_value)
+
+
+def test_run_regime_adaptive_monthly_backtest_default_policy_always_fires_l1() -> None:
+    config = _short_config()
+    records = _build_records(_rising(120, start=100.0, step=0.5), length=120)
+    signal_dates = (date(2024, 3, 20), date(2024, 4, 19))
+
+    result = run_regime_adaptive_monthly_backtest(records, signal_dates, config)
+
+    assert config.regime_activation_policy == POLICY_ALWAYS_ON
+    for period in result.rebalance_results:
+        assert period.l1_active is True
+
+
+def test_run_regime_adaptive_monthly_backtest_only_non_normal_skips_l1_in_normal_regime() -> None:
+    config = replace(_short_config(), regime_activation_policy=POLICY_ONLY_NON_NORMAL)
+    records = _build_records(_rising(120, start=100.0, step=0.5), length=120)
+    signal_dates = (date(2024, 3, 20),)
+
+    result = run_regime_adaptive_monthly_backtest(records, signal_dates, config)
+    period = result.rebalance_results[0]
+
+    assert period.regime_state.regime == REGIME_NORMAL
+    assert period.l1_active is False
+    by_symbol = {signal.symbol: signal for signal in period.gating_result.details}
+    for entry in config.universe:
+        assert period.gating_result.mask[entry.symbol] is True
+        if entry.category == ASSET_CATEGORY_DEFENSIVE:
+            assert by_symbol[entry.symbol].reason == GATE_REASON_DEFENSIVE_PASS
+        else:
+            assert by_symbol[entry.symbol].reason == GATE_REASON_POLICY_SKIPPED
+    assert period.gating_result.gated_symbols == ()
+
+
+def test_run_regime_adaptive_monthly_backtest_only_crisis_skips_l1_in_normal_regime() -> None:
+    config = replace(_short_config(), regime_activation_policy=POLICY_ONLY_CRISIS)
+    records = _build_records(_rising(120, start=100.0, step=0.5), length=120)
+    signal_dates = (date(2024, 3, 20),)
+
+    result = run_regime_adaptive_monthly_backtest(records, signal_dates, config)
+    period = result.rebalance_results[0]
+
+    assert period.regime_state.regime == REGIME_NORMAL
+    assert period.l1_active is False
+    for entry in config.universe:
+        assert period.gating_result.mask[entry.symbol] is True
+
+
+def test_run_regime_adaptive_monthly_backtest_always_on_invariant_l1_active_true() -> None:
+    """always_on (default) means l1_active is True regardless of regime label."""
+    config = replace(_short_config(), regime_activation_policy=POLICY_ALWAYS_ON)
+    spy_series = _crashing_spy(length=120)
+    records = _build_records(spy_series, length=120)
+    signal_dates = (date(2024, 3, 20), date(2024, 4, 25))
+
+    result = run_regime_adaptive_monthly_backtest(records, signal_dates, config)
+
+    regimes = {period.regime_state.regime for period in result.rebalance_results}
+    assert len(regimes) >= 1
+    for period in result.rebalance_results:
+        assert period.l1_active is True

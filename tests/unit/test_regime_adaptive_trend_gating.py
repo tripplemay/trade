@@ -7,17 +7,24 @@ from trade.data.loader import PriceBar
 from trade.strategies.regime_adaptive.config import (
     ASSET_CATEGORY_DEFENSIVE,
     ASSET_CATEGORY_RISK_CORE,
+    POLICY_ALWAYS_ON,
+    POLICY_ONLY_CRISIS,
+    POLICY_ONLY_NON_NORMAL,
     AssetEntry,
     default_regime_adaptive_config,
 )
+from trade.strategies.regime_adaptive.regime import REGIME_BEAR, REGIME_CRISIS, REGIME_NORMAL
 from trade.strategies.regime_adaptive.trend_gating import (
     GATE_REASON_BELOW_SMA,
     GATE_REASON_DEFENSIVE_PASS,
     GATE_REASON_INSUFFICIENT_HISTORY,
     GATE_REASON_PASS,
+    GATE_REASON_POLICY_SKIPPED,
     AssetTrendSignal,
     TrendGatingResult,
     apply_trend_gating,
+    build_policy_skipped_trend_result,
+    should_l1_gate_run,
 )
 
 
@@ -288,3 +295,53 @@ def test_asset_entry_imports_from_config_module_for_tests() -> None:
     # Sanity check that AssetEntry is exposed for downstream construction.
     entry = AssetEntry(symbol="SPY", category=ASSET_CATEGORY_RISK_CORE)
     assert entry.symbol == "SPY"
+
+
+@pytest.mark.parametrize(
+    ("policy", "regime", "expected"),
+    [
+        (POLICY_ALWAYS_ON, REGIME_NORMAL, True),
+        (POLICY_ALWAYS_ON, REGIME_BEAR, True),
+        (POLICY_ALWAYS_ON, REGIME_CRISIS, True),
+        (POLICY_ONLY_NON_NORMAL, REGIME_NORMAL, False),
+        (POLICY_ONLY_NON_NORMAL, REGIME_BEAR, True),
+        (POLICY_ONLY_NON_NORMAL, REGIME_CRISIS, True),
+        (POLICY_ONLY_CRISIS, REGIME_NORMAL, False),
+        (POLICY_ONLY_CRISIS, REGIME_BEAR, False),
+        (POLICY_ONLY_CRISIS, REGIME_CRISIS, True),
+    ],
+)
+def test_should_l1_gate_run_truth_table(policy: str, regime: str, expected: bool) -> None:
+    assert should_l1_gate_run(regime, policy) is expected
+
+
+def test_should_l1_gate_run_rejects_unknown_policy() -> None:
+    with pytest.raises(ValueError, match="regime_activation_policy"):
+        should_l1_gate_run(REGIME_NORMAL, "aggressive")
+
+
+def test_should_l1_gate_run_rejects_unknown_regime() -> None:
+    with pytest.raises(ValueError, match="regime"):
+        should_l1_gate_run("UNKNOWN", POLICY_ALWAYS_ON)
+
+
+def test_build_policy_skipped_trend_result_marks_all_non_defensive_assets_passing() -> None:
+    config = default_regime_adaptive_config()
+    records: list[PriceBar] = []
+    for entry in config.universe:
+        records.extend(_records(entry.symbol, _rising_series(220)))
+    signal_date = records[-1].date
+
+    result = build_policy_skipped_trend_result(tuple(records), config, signal_date)
+
+    assert isinstance(result, TrendGatingResult)
+    by_symbol = {signal.symbol: signal for signal in result.details}
+    for entry in config.universe:
+        assert result.mask[entry.symbol] is True
+        if entry.category == ASSET_CATEGORY_DEFENSIVE:
+            assert by_symbol[entry.symbol].reason == GATE_REASON_DEFENSIVE_PASS
+        else:
+            assert by_symbol[entry.symbol].reason == GATE_REASON_POLICY_SKIPPED
+    assert result.gated_symbols == ()
+    assert result.signal_date == signal_date
+    assert result.defensive_routing_symbol == config.defensive_symbol

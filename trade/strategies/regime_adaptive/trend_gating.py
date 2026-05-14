@@ -17,14 +17,26 @@ from datetime import date
 from trade.data.loader import PriceBar
 from trade.strategies.regime_adaptive.config import (
     ASSET_CATEGORY_DEFENSIVE,
+    POLICY_ALWAYS_ON,
+    POLICY_ONLY_CRISIS,
+    POLICY_ONLY_NON_NORMAL,
+    VALID_REGIME_ACTIVATION_POLICIES,
     AssetEntry,
     RegimeAdaptiveConfig,
+)
+from trade.strategies.regime_adaptive.regime import (
+    REGIME_BEAR,
+    REGIME_CRISIS,
+    REGIME_NORMAL,
 )
 
 GATE_REASON_PASS = "passes_trend_filter"
 GATE_REASON_BELOW_SMA = "close_at_or_below_sma"
 GATE_REASON_INSUFFICIENT_HISTORY = "insufficient_history"
 GATE_REASON_DEFENSIVE_PASS = "defensive_never_gated"
+GATE_REASON_POLICY_SKIPPED = "l1_skipped_by_activation_policy"
+
+_VALID_REGIME_LABELS: frozenset[str] = frozenset({REGIME_NORMAL, REGIME_BEAR, REGIME_CRISIS})
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,6 +58,78 @@ class TrendGatingResult:
     gated_symbols: tuple[str, ...]
     passing_symbols: tuple[str, ...]
     defensive_routing_symbol: str
+
+
+def should_l1_gate_run(regime_label: str, policy: str) -> bool:
+    """Return True when L1 trend gating should fire for the supplied regime under the policy."""
+
+    if policy not in VALID_REGIME_ACTIVATION_POLICIES:
+        valid_choices = ", ".join(sorted(VALID_REGIME_ACTIVATION_POLICIES))
+        raise ValueError(
+            f"regime_activation_policy {policy!r} is not supported; "
+            f"valid choices are: {valid_choices}"
+        )
+    if regime_label not in _VALID_REGIME_LABELS:
+        valid_regimes = ", ".join(sorted(_VALID_REGIME_LABELS))
+        raise ValueError(
+            f"regime label {regime_label!r} is not supported; valid labels are: {valid_regimes}"
+        )
+    if policy == POLICY_ALWAYS_ON:
+        return True
+    if policy == POLICY_ONLY_NON_NORMAL:
+        return regime_label in (REGIME_BEAR, REGIME_CRISIS)
+    if policy == POLICY_ONLY_CRISIS:
+        return regime_label == REGIME_CRISIS
+    raise AssertionError(f"unreachable policy branch: {policy!r}")  # pragma: no cover
+
+
+def build_policy_skipped_trend_result(
+    records: tuple[PriceBar, ...],
+    config: RegimeAdaptiveConfig,
+    signal_date: date,
+) -> TrendGatingResult:
+    """Construct a TrendGatingResult where L1 is bypassed by the activation policy.
+
+    Every non-defensive asset is marked as ungated (``passes=True``) and tagged with the
+    ``GATE_REASON_POLICY_SKIPPED`` reason; SGOV defensive routing is preserved.
+    """
+
+    by_symbol = _group_by_symbol(records)
+    details: list[AssetTrendSignal] = []
+    mask: dict[str, bool] = {}
+    for entry in config.universe:
+        history = tuple(
+            record
+            for record in by_symbol.get(entry.symbol, ())
+            if record.date <= signal_date
+        )
+        latest = history[-1].adjusted_close if history else 0.0
+        reason = (
+            GATE_REASON_DEFENSIVE_PASS
+            if entry.category == ASSET_CATEGORY_DEFENSIVE
+            else GATE_REASON_POLICY_SKIPPED
+        )
+        details.append(
+            AssetTrendSignal(
+                symbol=entry.symbol,
+                category=entry.category,
+                passes=True,
+                reason=reason,
+                latest_adjusted_close=latest,
+                moving_average=latest,
+                observations=len(history),
+            )
+        )
+        mask[entry.symbol] = True
+    passing_symbols = tuple(sorted(mask))
+    return TrendGatingResult(
+        signal_date=signal_date,
+        mask=mask,
+        details=tuple(details),
+        gated_symbols=(),
+        passing_symbols=passing_symbols,
+        defensive_routing_symbol=config.defensive_symbol,
+    )
 
 
 def apply_trend_gating(
