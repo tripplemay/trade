@@ -1,48 +1,43 @@
 {
-  "status": "done",
-  "user_goal": "在 B015 done 之后做 B010 risk parity HRP 升级（BL-B010-S3）：给 RiskParityParameters 加 weighting_method Literal['inverse_volatility', 'hrp']（默认 inverse_volatility，B010 signoff 行为 bit-for-bit 保留），新增 pure-stdlib HRP 算法模块（De Prado 2016：correlation → distance → single-linkage clustering → quasi-diagonalize → recursive bisection；无 scipy/numpy/pandas/sklearn）；B010 backtest workflow dispatch；在 B014 真实 snapshot 上对比 HRP vs inverse-vol vs static 60/40，看 HRP 是否缩窄 B014 cross-strategy 发现的 absolute-return gap。**不修改 B011/B012/B013/B014/B015 strategy code**；B011 master portfolio risk_parity sleeve 默认走 inverse-vol 自动保持 invariants。保留 fixture/mock-first 默认 CI、no-live/no-secret-in-strategy/no-broker/no-paper/no-AI guards。",
-  "total_features": 6,
-  "completed_features": 6,
+  "status": "verifying",
+  "user_goal": "在 B015 (regime-adaptive activation policy) 与 B016 (risk parity HRP upgrade) signed off 后，把两个批次留下的真实数据验证 outstanding research item 合并到一个 Codex-only 小批次里跑掉：让 Codex 一次性获取 B014 真实 yfinance 9 资产 snapshot (2018-2025)，重新生成 B015 与 B016 比较报告（real_data_status 从 skipped 翻为 ran），跨策略对比 only_non_normal / only_crisis / always_on 三 activation policy 与 inverse_volatility / hrp 两 weighting method 在 calm window 2020-06..2022-12 的 absolute return gap vs static 60/40 与 2020/2022 stress sub-window max DD，用经验数字回答两个研究问题：is the B013 gap shrunk under regime-aware activation? is the B010 gap shrunk under HRP? 任何 stress threshold breach 走 framework/proposed-learnings；任何 hybrid 候选走 backlog；**B017 不修改任何 strategy / 测试 / spec 代码**，纯 Codex 跑现成 script + 写 signoff。",
+  "total_features": 4,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F006",
+  "current_sprint": "F001",
   "last_updated": "2026-05-15",
   "reference_docs": [
-    "docs/specs/B016-risk-parity-hrp-upgrade-spec.md",
-    "docs/specs/B010-risk-parity-backtest-mvp-spec.md",
-    "docs/specs/B013-regime-adaptive-multi-asset-mvp-spec.md",
+    "docs/specs/B017-b015-b016-real-data-validation-spec.md",
     "docs/specs/B014-regime-adaptive-stress-validation-spec.md",
     "docs/specs/B015-regime-adaptive-activation-policy-spec.md",
-    "docs/test-reports/B010-risk-parity-backtest-mvp-signoff-2026-05-13.md",
+    "docs/specs/B016-risk-parity-hrp-upgrade-spec.md",
     "docs/test-reports/B014-regime-adaptive-stress-validation-signoff-2026-05-14.md",
     "docs/test-reports/B014-regime-adaptive-cross-strategy-comparison-2026-05-14.md",
-    "docs/research_materials/arxiv_strategies.json",
-    "docs/strategy/00-master-portfolio-allocation.md",
-    "docs/strategy/02-risk-parity-vol-target.md",
-    "docs/prd/mvp-prd.md",
-    "docs/engineering/testing-and-fixture-policy.md",
-    "docs/engineering/no-live-safety-guards.md",
-    "docs/engineering/backtest-report-schema.md"
+    "docs/test-reports/B014-regime-adaptive-cross-strategy-comparison-2026-05-14.json",
+    "docs/test-reports/B015-regime-adaptive-activation-policy-signoff-2026-05-14.md",
+    "docs/test-reports/B015-regime-adaptive-activation-policy-comparison-2026-05-14.md",
+    "docs/test-reports/B016-risk-parity-hrp-upgrade-signoff-2026-05-15.md",
+    "docs/test-reports/B016-risk-parity-hrp-comparison-2026-05-14.md",
+    "docs/engineering/no-live-safety-guards.md"
   ],
   "docs": {
-    "spec": "docs/specs/B016-risk-parity-hrp-upgrade-spec.md",
+    "spec": "docs/specs/B017-b015-b016-real-data-validation-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B016-risk-parity-hrp-upgrade-signoff-2026-05-15.md",
+    "signoff": null,
     "framework_reviewed": true
   },
   "role_assignments": null,
-  "evaluator_feedback": "B016 F006 verifier PASS. Verified weighting_method Literal validation, pure-stdlib HRP correctness on canned cases, inverse_volatility default bit-for-bit compatibility with B010 synthetic fixture, comparative report schema, real_data_status=skipped semantics, forbidden-import / env-read / socket / broker / AI guards, and required local checks. Full sweep: 526 passed, ruff clean, mypy clean, compileall clean. Signoff recorded at docs/test-reports/B016-risk-parity-hrp-upgrade-signoff-2026-05-15.md.",
-  "generator_handoff": "B016 F001-F005 complete (5/6 features). Generator tooling delivered: (1) trade/strategies/risk_parity.py — weighting_method tightened to Literal['inverse_volatility','hrp'] with __post_init__ validation; HRP dispatcher in generate_risk_parity_signal. (2) trade/strategies/risk_parity_hrp.py — pure-stdlib De Prado (2016) HRP algorithm + ClusterNode, public functions: compute_correlation_matrix / compute_distance_matrix / single_linkage_clustering / quasi_diagonalize / recursive_bisection / compute_hrp_weights. (3) trade/strategies/risk_parity_hrp_comparison.py — harness (run_hrp_comparison / try_run_real_snapshot_hrp_comparison / build_monthly_signal_dates / load_hrp_snapshot_records) + B014 sidecar loader (load_static_60_40_baseline) + report builder (build_hrp_comparison_payload / render_hrp_comparison_markdown / generate_hrp_comparison_report). (4) scripts/generate_b016_hrp_comparison_report.py — CLI: tries B014 yfinance manifest at data/public-cache/regime-adaptive-prices-manifest.json; falls back to a synthetic 9-asset fixture when absent. (5) trade/reporting/risk_parity.py — rebalance_trace dict entries now record weighting_method per-period. Canonical artifact docs/test-reports/B016-risk-parity-hrp-comparison-2026-05-14.{md,json} committed (real_data_status: skipped because the manifest is not in-repo by design). Tests delivered: tests/unit/test_risk_parity_weighting_method.py (21), tests/unit/test_risk_parity_hrp.py (39), tests/unit/test_risk_parity_hrp_workflow.py (10), tests/unit/test_risk_parity_hrp_comparison.py (15), tests/unit/test_b016_safety_and_compat.py (18). Local verification (.venv/bin/python): 526 tests pass, mypy strict (files=['trade']) clean, ruff clean (trade+tests+scripts), compileall clean. All B010 + B011 + B013 + B015 pre-existing suites pass without modification; explicit bit-for-bit snapshot test pins inverse-vol parameter_hash + target_weights + ending_value + turnover + cost_amount. Codex F006 acceptance — please verify: (1) weighting_method Literal + __post_init__ rejects invalid values with diagnostic listing valid choices; (2) HRP on canned reference cases produces correct weights (see tests/unit/test_risk_parity_hrp.py reference cases); (3) inverse_volatility default reproduces B010 signoff bit-for-bit on the synthetic fixture (test_inverse_vol_*_bit_for_bit_b010 tests); (4) docs/test-reports/B016-risk-parity-hrp-comparison-2026-05-14.md contains per-method rows for inverse_volatility and hrp + static 60/40 baseline row + 2020/2022 stress sub-window per method + narrative section; (5) if B014 manifest is added to data/public-cache/, regenerate the report and confirm real_data_status flips to 'ran' and narrative computes the gap verdict; missing manifest must keep status='skipped' without failing; (6) no scipy/numpy/pandas/sklearn/networkx imports in any new B016 module (test_b016_module_has_no_third_party_numerical_imports); (7) no-broker/no-paper/no-AI/no-env-read/no-socket-on-fixture/no-paper-or-live-phrasing guards (entire tests/unit/test_b016_safety_and_compat.py). Suggested verification commands: .venv/bin/python -m pytest tests/ -q; .venv/bin/python -m mypy trade; .venv/bin/python -m ruff check trade tests scripts; .venv/bin/python -m compileall -q trade tests scripts; .venv/bin/python scripts/generate_b016_hrp_comparison_report.py --output-dir /tmp/b016-evaluator. Signoff target: docs/test-reports/B016-risk-parity-hrp-upgrade-signoff-2026-MM-DD.md.",
+  "evaluator_feedback": null,
+  "generator_handoff": null,
   "session_notes": {
-    "planner": "2026-05-14 B016 planning: B015 done wrap-up confirmed (6/6 PASS); user selected BL-B010-S3 HRP upgrade as next batch direction. Rationale: B010 plain inverse-vol is reused as B011 master portfolio risk_parity sleeve and B013 L2 engine; upgrading once benefits multiple downstream paths. arxiv 2026 research material (Beyond De Prado and Cotton, Hierarchical Min Variance, Topological RP) strongly supports HRP variants over plain inverse-vol on out-of-sample Sharpe + drawdown + stability. Plus the B014 cross-strategy finding (B010 underperformed static 60/40 by ~25pp in 2020-06..2022-12) motivates testing whether correlation-aware HRP closes some of that gap on the same real snapshot. Project constraint check: trade/ modules are pure-stdlib zero-third-party-deps (only yfinance, in scripts/ only). HRP must be implemented in pure stdlib (math + statistics + dataclasses + typing) — no scipy/numpy/pandas/sklearn. Small algorithm, ~200 lines, reviewable. Decisions captured: (1) weighting_method tightened from free str to Literal['inverse_volatility', 'hrp'] with default 'inverse_volatility'; (2) HRP lives in new trade/strategies/risk_parity_hrp.py; (3) B010 workflow dispatches based on policy; (4) comparative backtest harness reuses B014 snapshot + sidecar baseline; (5) default must reproduce B010 signoff bit-for-bit (backwards-compat hard requirement); (6) B011/B012/B013/B014/B015 strategy code untouched; (7) no scipy/numpy/pandas/sklearn imports anywhere. Wrote B016 spec and features.json (6 features: F001-F005 generator + F006 codex; mixed batch). Status moved to building for Generator F001.",
-    "generator": "2026-05-14 B016 F001-F005 done; status → verifying for Codex F006. F005 added tests/unit/test_b016_safety_and_compat.py (18 tests): bit-for-bit B010 snapshot pins inverse-vol parameter_hash=e88eb3...4d0f, target_weights AGG=0.832887495 SPY=0.167112505 SGOV=0.0, exposure_scale=1.0, defensive_weight=0.0, ending_value=99694.29055771964, turnover=1.0, cost_amount≈30.0 on a deterministic 3-asset 90-day fixture (SPY/AGG/SGOV with fixed return patterns 0.012/-0.010/0.008/-0.006 etc.); default==explicit-'inverse_volatility' equivalence test; AST-walk parametrised guard rejects scipy/numpy/pandas/sklearn/networkx imports in 3 B016 modules (risk_parity_hrp.py / risk_parity_hrp_comparison.py / generate_b016_hrp_comparison_report.py); broker/AI/public-import guard parametrised across same 3 modules; network/credential client guard on 2 strategy modules; os.environ / os.getenv source-grep guard on 2 strategy modules (catches both attribute access and direct getenv() calls); socket.socket / socket.create_connection monkeypatch guard during a default HRP fixture run; canonical artifact phrasing guard (B016-risk-parity-hrp-comparison-* under docs/test-reports/ scanned for paper-execution / paper execution / live execution / live-execution / executed-order / executed order / place_order / submit_order); freshly-generated-report phrasing guard runs the report builder against a missing-manifest tmp path and re-scans both MD and JSON outputs; sanity test for the DataSnapshot fixture. Full sweep: 526 tests PASS, mypy strict (files=['trade']) clean, ruff clean (trade+tests+scripts), compileall clean. status moved to verifying; generator_handoff written with concrete verification commands and acceptance pointers for Codex F006.",
+    "planner": "2026-05-15 B017 planning: B016 done wrap-up confirmed (6/6 PASS, fix_rounds=0). User selected option B at wrap-up: open a Codex-only validation extension to close the real-data outstanding research items from BOTH B015 and B016 (they both depend on the same B014 yfinance manifest, makes sense to bundle). Decisions captured: (1) Codex-only batch (state flow new → planning → verifying → done, skips building); (2) NO code changes — all scripts already exist from B014/B015/B016; (3) network access is the one-time yfinance fetch authorized previously by user; (4) 4 features (F001 acquire, F002 regen B015 report, F003 regen B016 report, F004 cross-analysis signoff); (5) stress threshold breaches go to proposed-learnings (research finding, not defect); (6) hybrid configuration candidates go to backlog; (7) No mutation of any strategy code / spec / test / module; (8) Local checks should be no-op since no code changes. Wrote B017 spec and features.json. Status set directly to 'verifying' per Codex-only batch convention.",
+    "generator": null,
     "evaluator": null
   },
   "features": [
     "F001",
     "F002",
     "F003",
-    "F004",
-    "F005",
-    "F006"
+    "F004"
   ]
 }

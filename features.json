@@ -1,53 +1,37 @@
 {
-  "sprint": "B016-risk-parity-hrp-upgrade",
+  "sprint": "B017-b015-b016-real-data-validation",
   "features": [
     {
       "id": "F001",
-      "title": "RiskParityParameters.weighting_method 收紧为 Literal + 校验",
+      "title": "执行真实 yfinance snapshot 获取 + manifest 注册",
       "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "把 RiskParityParameters.weighting_method 从自由 str 收紧为 Literal['inverse_volatility', 'hrp']，默认仍 'inverse_volatility'；__post_init__（或等价）校验拒绝其他字符串并给出诊断列出 valid choices；parameter_hash 已包含此字段，验证两种 valid 值产生不同 hash。测试覆盖默认构造、两 valid 值、invalid 字符串拒绝、hash distinctness、序列化/反序列化"
+      "executor": "codex",
+      "status": "pending",
+      "acceptance": "Codex 显式 opt-in 一次性运行 scripts/fetch_yfinance_regime_adaptive_csvs.py 抓取 staging 目录的真实 yfinance 9 资产 CSV（2018-01-01..2025-12-31）；运行 scripts/acquire_regime_adaptive_snapshot.py 注册 manifest 到 data/public-cache/regime-adaptive-prices-manifest.json；验证 per-ticker 覆盖：8 个非 SGOV ticker ≥95% 预期交易日，SGOV 短历史例外（inception 2020-05-28）；任何 non-SGOV 覆盖不达标或其他 fetch 失败 → 中止 B017 with 明确诊断；提交 acquisition 日志 docs/test-reports/B017-real-data-validation-acquisition-log-2026-MM-DD.md（含 per-ticker sha256 / 行数 / 起止日期）；raw CSV 保持 gitignored"
     },
     {
       "id": "F002",
-      "title": "实现 HRP 算法模块（pure-stdlib）+ 单元测试",
+      "title": "重新生成 B015 real-data 比较报告",
       "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "新增 trade/strategies/risk_parity_hrp.py 实现 De Prado (2016) HRP：correlation_matrix → distance_matrix d_ij=sqrt(0.5*(1-corr_ij)) → single_linkage_clustering → quasi_diagonalize → recursive_bisection → compute_hrp_weights(returns, symbols) -> dict[str, float]。**纯 stdlib**（math / statistics / dataclasses / typing / collections.abc），无 scipy / numpy / pandas / sklearn / networkx。Edge cases：n=1 trivial、n=2 inverse-variance、zero-variance asset 抛 ValueError。新增 tests/unit/test_risk_parity_hrp.py 覆盖：correlation/distance matrix 正确性、single linkage 参考案例、quasi-diagonalize 顺序、recursive bisection split 公式、end-to-end n∈{1,2,3,5,9}、zero variance 拒绝、deterministic 输出"
+      "executor": "codex",
+      "status": "pending",
+      "acceptance": "在 manifest 已就绪的情况下运行 scripts/generate_b015_activation_policy_report.py；确认新报告 real_data_status='ran'；提取三 activation policy 在真实 snapshot 上的：2020-02-01..2020-12-31 max DD、2022-01-01..2022-12-31 max DD、2020-06-01..2022-12-31 ending value、regime label counts、L1 firing rate；提交 docs/test-reports/B015-regime-adaptive-activation-policy-comparison-2026-MM-DD.md + JSON sidecar（替换 synthetic-fixture 旧版本，git 历史保留）"
     },
     {
       "id": "F003",
-      "title": "B010 backtest workflow 集成 HRP dispatcher",
+      "title": "重新生成 B016 real-data 比较报告",
       "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "在 B010 月度 backtest 的权重计算步骤处加 dispatch：parameters.weighting_method=='hrp' 时调用 compute_hrp_weights；否则现有 inverse-vol 路径**不变**。L2 target-vol 缩放、defensive sleeve 路由、max_exposure=1.0 cap 对两条路径均适用。Per-period rebalance trace 记录 weighting_method 字段以便下游报告归因。测试覆盖：HRP 路径在 9 资产合成 fixture 上端到端跑通；inverse-vol 路径**与 B010 signoff bit-for-bit 一致**；trace 字段记录正确"
+      "executor": "codex",
+      "status": "pending",
+      "acceptance": "运行 scripts/generate_b016_hrp_comparison_report.py；确认新报告 real_data_status='ran'；提取两 weighting method 在真实 snapshot 上的：2020 max DD、2022 max DD、full-window ending value、annualized Sharpe、turnover、per-asset 平均权重；提交 docs/test-reports/B016-risk-parity-hrp-comparison-2026-MM-DD.md + JSON sidecar（替换 synthetic-fixture 旧版本，git 历史保留）"
     },
     {
       "id": "F004",
-      "title": "HRP vs inverse-vol vs 60/40 比较 harness + 报告",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "新增 trade/strategies/risk_parity_hrp_comparison.py（harness）与 scripts/generate_b016_hrp_comparison_report.py（CLI）。在 B013 9 资产宇宙上、B014 snapshot 在场时跑 overlapping window backtest，运行 B010 两种 weighting policy；manifest 缺失时 real-data 部分标 skipped，合成 fixture 至少跑 smoke。每方法记录年化收益/波动率/Sharpe/max DD/2020+2022 sub-window max DD/turnover/per-asset 权重历史。报告 reuse B014 sidecar 的 static 60/40 baseline 行。输出 docs/test-reports/B016-risk-parity-hrp-comparison-2026-MM-DD.md + JSON sidecar，narrative 写 HRP 是否缩窄 vs 60/40 gap（empirical research finding，非 pass/fail）。reports 含 research-only disclaimer，不得声明 paper/live execution。测试覆盖 schema 正确、skipped 语义、run 语义（fixture manifest stub）"
-    },
-    {
-      "id": "F005",
-      "title": "B010 backwards-compat + B016 安全 guard 回归",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "证明 weighting_method='inverse_volatility'（默认）在合成 fixture 上**与 B010 signoff 行为 bit-for-bit 一致**：既有 B010 + B011 + B013 + B015 测试套件全部不修改即继续通过。新增 B016 安全 guard 回归：risk_parity_hrp.py / risk_parity_hrp_comparison.py 等新模块**无 scipy / numpy / pandas / sklearn / networkx 导入**；无 broker / AI / LLM SDK 导入；strategy 模块无 os.environ / os.getenv 读取；默认 fixture run 无 socket I/O；B016 输出无 paper / live / executed-order / filled / place_order / submit_order 用语。pytest / ruff / compileall / mypy 全过"
-    },
-    {
-      "id": "F006",
-      "title": "独立验收 B016 Risk Parity HRP Upgrade",
+      "title": "跨策略 cross-analysis + evidence-backed signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认：(1) weighting_method Literal + 校验正确；(2) HRP 在 canned 参考案例上权重正确；(3) inverse_volatility 默认在合成 fixture 上与 B010 signoff bit-for-bit 一致；(4) 比较报告存在含两 method 行 + static 60/40 baseline 行 + 2020/2022 stress sub-window per method + narrative；(5) B014 snapshot 在场时 HRP 经验数字与 narrative 一致，缺失时 real-data section 标 skipped 不失败；(6) B016 strategy 模块无 scipy/numpy/pandas/sklearn 导入；(7) 所有 no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards 保留。Signoff 明确说明 backwards-compat 验证结果与 HRP vs inverse-vol vs 60/40 经验对比（empirical research finding，非 pass/fail 标准）"
+      "status": "pending",
+      "acceptance": "产出 docs/test-reports/B017-real-data-validation-signoff-2026-MM-DD.md：含 B015 verdict per activation policy（含 vs B013 always_on baseline 与 vs static 60/40）+ B016 verdict per weighting method（含 vs B010 inverse_volatility baseline 与 vs static 60/40）+ narrative 回答两个研究问题（only_non_normal/only_crisis 是否缩窄 B013 gap？HRP 是否缩窄 B010 gap？具体百分点）+ soft-watch（任何配置 2020/2022 max DD 超过 -15% 阈值都报为 research finding 不是 defect）+ 必要时 framework/proposed-learnings.md 追加 entry（参数 retune 候选）+ 必要时 backlog.json 追加 BL-B017-* entry（hybrid 配置候选）。更新 progress.json 的 evaluator_feedback 与 docs.signoff。pytest / ruff / compileall / mypy 全过（应是 no-op，B017 不改代码）"
     }
   ]
 }
