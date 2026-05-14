@@ -1,53 +1,93 @@
 {
-  "sprint": "B012-paper-trading-prep-mvp",
+  "sprint": "B013-regime-adaptive-multi-asset-mvp",
   "features": [
     {
       "id": "F001",
-      "title": "建立 Target Positions 输出格式",
+      "title": "建立 Regime-Adaptive 策略配置与资产宇宙",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "新增 TargetPositions dataclass 与等价 JSON schema，包含 schema_version、target_positions_id、strategy_id 或 portfolio_id、signal_date、generation_timestamp、snapshot_id / manifest 路径、account_state_reference、entries（symbol + target_weight + target_dollar_exposure）、defensive_allocation、research_limitations、固定 research-only disclaimer。同时输出百分比权重与美元 exposure。验证：非负权重、含 defensive 合计 ≈ 1.0、无杠杆、无重复 symbol、signal_date 在桥接生成时必须为有效交易日。测试覆盖序列化、校验成功 / 失败路径"
+      "status": "pending",
+      "acceptance": "新增 RegimeAdaptiveConfig dataclass：9 资产宇宙（Risk Core: SPY/QQQ/VEA/VWO；Stabilizers: IEF/TLT/GLD/DBC；Defensive: SGOV），按 category 分类；默认参数 trend_window=200 / vol_lookback=120 / target_volatility=0.08 / regime_fast=20 / regime_slow=120 / regime_ratio=1.5 / crisis_exposure_scale=0.5 / tolerance_band=0.03 / account_drawdown=0.15 / max_exposure=1.0 / defensive=SGOV；validation 含权重非负、无杠杆、至少一个 risk_core + 一个 defensive、各窗口正数、ratio>1.0、tolerance∈[0,1]。测试覆盖默认构造、validation 成功/失败、分类正确、序列化"
     },
     {
       "id": "F002",
-      "title": "实现 Broker Adapter 抽象接口",
+      "title": "获取真实历史公开数据 snapshot（2018-2025）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "新增 BrokerAdapter ABC，含 submit_target_positions / get_account_state / get_open_orders 三个抽象方法签名；模块 docstring 明确：B012 仅定义抽象接口与 Mock 实现，真实 paper / live broker adapter 是后续批次范围。新增禁止导入回归：ib_insync、alpaca、alpaca_trade_api、futu、futu-api、tiger、tiger_api、tradier、polygon 等不得在新模块中出现。测试覆盖 ABC 不可直接实例化、子类必须实现全部抽象方法"
+      "status": "pending",
+      "acceptance": "复用 B009 snapshot 基础设施。新增 opt-in CLI 脚本（scripts/acquire_regime_adaptive_snapshot.py 或等价）：下载 9 资产日 OHLCV + 复权收盘 2018-01-01 至 2025-12-31，写 manifest 到 data/public-cache/regime-adaptive-prices-manifest.json，价格文件放 data/public-cache/（gitignored）。脚本必须 opt-in、缺资产 fail closed、默认 CI 不运行、不自动触网。测试覆盖 manifest schema、缺资产 fail closed、snapshot id 确定性"
     },
     {
       "id": "F003",
-      "title": "实现 Mock Broker（journal-only）",
+      "title": "实现 L1 资产级 200-day SMA 趋势过滤",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "实现 MockBroker(account_state, journal_path)：从 config 读取固定 research 账户状态（默认 USD 250000 cash，open_positions 为空），submit_target_positions 校验 schema 后以 JSON Lines append-only 写入 journal 文件（一次一行、不可改），返回 journal entry；get_account_state 透传固定状态；get_open_orders 返回空序列；全程无网络 I/O、无 os.environ 访问、无 broker SDK 导入；journal 默认路径在 data/paper-prep/ 并 gitignored。测试覆盖 happy path append、schema 校验失败拒绝、deterministic journal_entry_id、account state 透传、空 open orders"
+      "status": "pending",
+      "acceptance": "实现 apply_trend_gating(prices, config)：对每个资产在 signal date T 计算 200 日 SMA（复权收盘）并返回 boolean gating mask 与权重归零标志；历史不足 200 日 → fail closed（asset 关闭）；SGOV（defensive）永不被关闭；gated 资金标记为可路由到 defensive。测试覆盖全历史通过、部分历史 fail closed、阈值附近的转换、gated 资金 accounting"
     },
     {
       "id": "F004",
-      "title": "实现 Backtest → Paper Trading 桥接",
+      "title": "L2 复用 B010 逆波动率 + 8% 目标波动率",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "新增 generate_target_positions_from_master(result, *, signal_date=None, account_state) 与 generate_target_positions_from_strategy(result, *, signal_date=None, account_state)：signal_date 缺省时使用最新 period，提供时必须命中 backtest period 否则 fail closed；输出含百分比权重与美元 exposure（exposure = weight × (cash + equity_value)）；defensive 残余权重映射到 master/strategy 的 defensive sleeve symbol；任意时间手动触发，桥接函数不强制 cadence。测试覆盖 B011 master + B006/B010 single-strategy 转换、缺省 latest period、显式 signal_date、missing signal_date fail closed、account-state-driven dollar 计算"
+      "status": "pending",
+      "acceptance": "将 regime-adaptive 策略接入既有 B010 inverse-volatility 权重引擎与 target-volatility exposure-scaling 工具；默认 target_volatility=0.08。L2 在 L1 之后，只对未 gated 资产计算权重；gated 资产 weight=0。target-vol scaling capped at 1.0；残余 exposure 路由到 SGOV。测试验证与 B010 模块的集成契约（不重复 B010 逻辑）与 L1→L2 round-trip"
     },
     {
       "id": "F005",
-      "title": "补强 Paper Trading prep 安全 guard 与 workflow 回归",
+      "title": "实现 L3 regime 检测与敞口调整",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "增加回归覆盖：B012 模块无 broker SDK 导入（ib_insync / alpaca / alpaca_trade_api / futu / futu-api / tiger / tiger_api / tradier / polygon 等），无 paper-trading API URL / endpoint，无 os.environ / secret 访问，无 socket I/O，无 paper-execution / live-execution / executed-order / filled 等用词；journals / reports / docstrings 均含 research-only disclaimer；MockBroker 默认 constructor 不触网；桥接对 leverage 与 missing signal_date fail closed。pytest、ruff、compileall、mypy 全部通过"
+      "status": "pending",
+      "acceptance": "实现 detect_regime(prices, prior_weights, config) 返回 RegimeState(regime∈NORMAL/BEAR/CRISIS, fast_vol, slow_vol, ratio, spy_trend_signal, triggered_at, human_review_required)；分类：fast_vol>slow_vol*1.5 且 SPY<SMA200_SPY → CRISIS；否则 SPY<SMA200_SPY → BEAR；否则 NORMAL。apply_regime_exposure_adjustment(weights, regime_state, config)：CRISIS 时非 defensive 权重 ×0.5 并把释放敞口路由到 SGOV；BEAR 依赖 L1 个股 gating，不额外缩减；NORMAL 透传。CRISIS 触发 human_review_required=true。测试覆盖四象限分类、缩放正确、defensive 吸收、flag 联动"
     },
     {
       "id": "F006",
-      "title": "独立验收 B012 Paper Trading prep MVP",
+      "title": "实现 3% tolerance bands + regime override + 月度回测 workflow",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "实现月度回测：每月 signal date 运行 L1→L2→L3 派生 target weights；与上期 effective weights 比较，仅 |target_i − current_i| > tolerance_band 时发交易；regime 在期间发生切换则**绕过 tolerance band 全量再平衡**；T-day close signal / T+1 open execution；记录 rebalance trace、equity curve、turnover、transaction costs、regime history、gating history、snapshot references。standalone 运行时同样接入 15% account-level drawdown kill-switch（与 B011 一致）。测试覆盖月度节奏、tolerance band 抑制、regime 强制再平衡、T+1 执行、deterministic equity、turnover、kill-switch"
+    },
+    {
+      "id": "F007",
+      "title": "输出 reports + baselines + 2020/2022 stress 验收",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "JSON/Markdown reports：aggregated equity、年化收益/波动率/Sharpe/最大回撤、turnover、transaction costs、per-asset weight history、L1 gating history、regime history、tolerance-band 统计（抑制交易数 + turnover 节省 vs no-band baseline）、snapshot/manifest references、account-level risk flags、research limitations、固定 research-only disclaimer。新增 calculated baselines：static 60/40（复用 B011 机制）+ B006 momentum + B010 risk parity（同期）。Stress 验收：snapshot 在场时 2020-02-01→2020-12-31 与 2022-01-01→2022-12-31 max drawdown < 15%；snapshot 缺失时 gate 状态为 'skipped' 不计失败。测试覆盖 report schema、baseline 集成、stress gate pass/skip 语义、disclaimer 存在"
+    },
+    {
+      "id": "F008",
+      "title": "Lightweight 参数 sensitivity sweep",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "Deterministic one-at-a-time 参数 sweep：target_volatility {0.06, 0.08, 0.10}、regime_fast {15, 20, 30}、regime_slow {90, 120, 180}、regime_ratio {1.3, 1.5, 1.8}、tolerance_band {0.00, 0.03, 0.05}、trend_window {150, 200, 250}。每个 variation 在 synthetic fixture 上跑完整 backtest（snapshot 在场时可选附加）。输出 data/research/regime-adaptive-sensitivity-<timestamp>.json + docs/test-reports/research/ 下 Markdown 摘要。必须 deterministic、单进程、几秒内完成、无网络/env/外部服务调用。**非** Monte Carlo / **非** 学习优化器。测试覆盖确定性、参数覆盖、无 network/env/broker import"
+    },
+    {
+      "id": "F009",
+      "title": "Master Portfolio 新增 regime_adaptive sleeve（planning_weight=0.0）",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "扩展 B011 Master Portfolio 配置：新增 sleeve {id: 'regime_adaptive', type: 'implemented_strategy', strategy_ref: 'regime_adaptive_multi_asset', planning_weight: 0.0, role: 'regime defensive overlay'}。planning weights 总和保持 1.0（momentum 0.40 + risk_parity 0.30 + us_quality_stub 0.20 + hk_china_stub 0.10 + regime_adaptive 0.00）。Master backtest 对 planning_weight==0 的 implemented 策略 short-circuit（不调用 backtest）但要校验策略可加载。**既有 B011 测试必须不修改即继续通过**（仅新增 sleeve 条目）。测试覆盖新 sleeve config、合 1.0 invariant、零权重 short-circuit、loadability check"
+    },
+    {
+      "id": "F010",
+      "title": "补强 B013 安全 guard 与 workflow 回归",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "增加回归覆盖：B013 strategy 模块**无 broker SDK 导入**（复用 B012 列表）、**无 AI/LLM SDK 导入**（新增列表：openai / anthropic / google.generativeai / langchain / transformers / torch / tensorflow / sklearn 在 strategy 模块禁止；研究脚本除外）、**无 paper-trading API URL**、strategy 模块**无 os.environ / os.getenv 读取**（snapshot 获取脚本在 scripts/ 下不算 strategy 模块）、默认 fixture run **无 socket I/O**、reports/docstrings 含 research-only disclaimer。pytest、ruff、compileall、mypy 全部通过"
+    },
+    {
+      "id": "F011",
+      "title": "独立验收 B013 Regime-Adaptive Multi-Asset MVP",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认 B012 实现最小 Paper Trading prep MVP：TargetPositions schema 含百分比与美元双输出与校验、BrokerAdapter ABC 仅抽象、Mock Broker journal-only 不模拟成交不触网、Backtest→Paper 桥接支持任意时间手动触发并对无效 signal_date fail closed、禁止导入回归覆盖完整、所有 no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards 保留；产出 review/signoff 报告"
+      "status": "pending",
+      "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认 B013 实现最小 Regime-Adaptive Multi-Asset MVP：L1→L2→L3 pipeline 组合确定性、tolerance-band 减 turnover、regime 切换强制再平衡、snapshot 在场时可加载、snapshot 缺失时 stress gate 报 skipped（不失败）、snapshot 在场时 2020 + 2022 max drawdown < 15%、sensitivity sweep deterministic + offline、Master Portfolio 新 sleeve 0 权重且既有 B011 invariant 保留、no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards 保留；signoff 明确记录 snapshot 获取状态（acquired/pending/skipped）与 2020/2022 stress gate 结果（pass/skip/fail）；产出 review/signoff 报告"
     }
   ]
 }

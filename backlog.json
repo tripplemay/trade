@@ -25,5 +25,47 @@
     "confirmed_at": "2026-05-13",
     "priority": "medium",
     "source": "B011 signoff soft-watch S2"
+  },
+  {
+    "id": "BL-B010-S3",
+    "title": "B010 升级为 HRP / HRP-μ / CRISP 等 hierarchical 变体",
+    "description": "B010 当前采用 plain inverse-volatility weighting。研究文献（arxiv 2026：『Beyond De Prado and Cotton』、『Hierarchical Minimum Variance Portfolios』、『Topological Risk Parity』、『Risk-Sensitive Investment via Free Energy-Entropy Duality』）显示 Hierarchical Risk Parity 及其变体（HRP-μ / HRP-Σμ / CRISP / Topological RP）在 out-of-sample Sharpe、回撤控制、稳定性上多数情境下优于 plain inverse-vol。后续可作为 B010 增量升级批次，保留 fixture/mock-first、no-live/no-broker/no-AI、显式 snapshot 边界。",
+    "decisions": [
+      "保留 plain inverse-vol 作为 baseline 进行 A/B 对比",
+      "首版只引入 HRP（De Prado 经典）；HRP-μ / CRISP / Topological 列为后续候选",
+      "不引入需要矩阵求逆的 Markowitz 直接形式（数值稳定性差）",
+      "Backtest 必须保持 monthly cadence 与 T-day/T+1 语义"
+    ],
+    "confirmed_at": "2026-05-14",
+    "priority": "low",
+    "source": "B013 research material analysis (arxiv 2026 HRP variants)"
+  },
+  {
+    "id": "BL-B013-D1",
+    "title": "Smoothed / feedback volatility targeting",
+    "description": "研究文献（arxiv 2022『Smoothing volatility targeting』、arxiv 2026『Single-Asset Adaptive Leveraged Volatility Control』）表明 open-loop vol-targeting（exposure 与 realized variance 倒数挂钩）会导致 turnover 与 leverage spike。改用 proportional-control 或 variational Bayes smoothing 可以显著减少 turnover 并维持目标波动率。可作为 B010 / B013 共同的 vol-target 优化批次，提供 feedback-based 与 smoothing 两种实现并对比 turnover/Sharpe。",
+    "decisions": [
+      "保留 open-loop 实现作为 baseline 对比",
+      "feedback 与 smoothing 两种实现至少各完成一种",
+      "不引入复杂的 Bayesian 推断库（保持 stdlib + numpy/pandas 范围）",
+      "Backtest 必须证明 turnover 显著下降且 realized vol 仍逼近目标"
+    ],
+    "confirmed_at": "2026-05-14",
+    "priority": "low",
+    "source": "B013 research material analysis (arxiv vol-targeting papers)"
+  },
+  {
+    "id": "BL-B013-D2",
+    "title": "VIX-based tail risk overlay（option/ETN proxy 研究）",
+    "description": "机构研究 13 篇汇总（『Hedging Market Tail Risk Factors with Volatility Indices』、『Hedging Tail Risk with Robust VIXY Models』、『VIX Tail Risk Hedging and Predictor』等）显示在系统性 drawdown 期间持有 VIX-linked 工具（VIXY / VXX / 期权）可以显著减少 tail loss。MVP 范围外，因涉及期权/期货数据与潜在 broker 接入。后续可作为研究性 sleeve（fixture-first，先评估在 2020/2022 stress window 下的对冲效果），不引入真实 broker / paid 数据。",
+    "decisions": [
+      "首版只用 ETN/ETF proxy（VIXY 或等价），不用期权",
+      "保持 fixture-first；如需历史数据，走 B009 snapshot 路径",
+      "Backtest 必须显示对冲后 tail loss 显著下降但长期负 carry 可量化",
+      "不接入真实 broker 或 paper API"
+    ],
+    "confirmed_at": "2026-05-14",
+    "priority": "low",
+    "source": "B013 research material analysis (institutional tail-risk hedging papers)"
   }
 ]

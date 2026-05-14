@@ -1,44 +1,45 @@
 {
-  "status": "done",
-  "user_goal": "按 MVP PRD §12 与 §4.5 在 B011 Master Portfolio 之后实现 Paper Trading prep MVP：定义 Target Positions 输出格式（百分比 + 美元双输出）、Broker Adapter 抽象接口（无真实 broker SDK 导入）、Mock Broker（JSON Lines append-only journal-only，固定研究账户状态）、Backtest→Paper 桥接（任意时间手动触发），同时保持 fixture/mock-first CI、研究-only 语义、no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards。",
-  "total_features": 6,
-  "completed_features": 6,
+  "status": "building",
+  "user_goal": "在 B006/B010/B011/B012 之后实现 Regime-Adaptive Multi-Asset 策略 MVP（独立新策略路径）：新资产宇宙（Risk Core SPY/QQQ/VEA/VWO + Stabilizers IEF/TLT/GLD/DBC + Defensive SGOV）、L1 200-day SMA 趋势过滤、L2 复用 B010 inverse-vol + 8% 目标波动率、L3 regime 检测（Fast/Slow vol ratio + SPY 趋势 → NORMAL/BEAR/CRISIS）+ 危机模式敞口减半、3% tolerance bands + regime override、真实历史公开数据 snapshot（2018-2025）支撑 2020/2022 stress 验收（max drawdown < 15%）、lightweight 参数 sensitivity sweep、Master Portfolio 新增 regime_adaptive sleeve（planning_weight=0.0 保留向后兼容），全程 fixture/mock-first、no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI guards。",
+  "total_features": 11,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F006",
+  "current_sprint": "F001",
   "last_updated": "2026-05-14",
   "reference_docs": [
-    "docs/specs/B012-paper-trading-prep-mvp-spec.md",
+    "docs/specs/B013-regime-adaptive-multi-asset-mvp-spec.md",
+    "docs/specs/research/B011-regime-adaptive-multi-asset-spec.md",
+    "docs/research_materials/arxiv_strategies.json",
+    "docs/research_materials/github_strategies.json",
+    "docs/research_materials/institutional_strategies.json",
     "docs/prd/mvp-prd.md",
     "docs/strategy/00-master-portfolio-allocation.md",
-    "docs/specs/B011-portfolio-allocation-risk-mvp-spec.md",
-    "docs/specs/B010-risk-parity-backtest-mvp-spec.md",
+    "docs/strategy/02-risk-parity-vol-target.md",
     "docs/specs/B009-public-data-snapshot-mvp-spec.md",
-    "docs/specs/B006-global-etf-backtest-mvp-spec.md",
+    "docs/specs/B010-risk-parity-backtest-mvp-spec.md",
+    "docs/specs/B011-portfolio-allocation-risk-mvp-spec.md",
+    "docs/specs/B012-paper-trading-prep-mvp-spec.md",
     "docs/test-reports/B011-portfolio-allocation-risk-mvp-signoff-2026-05-13.md",
+    "docs/test-reports/B012-paper-trading-prep-mvp-signoff-2026-05-14.md",
     "docs/engineering/testing-and-fixture-policy.md",
     "docs/engineering/config-and-environment-policy.md",
     "docs/engineering/no-live-safety-guards.md",
-    "docs/engineering/backtest-report-schema.md"
+    "docs/engineering/backtest-report-schema.md",
+    "docs/engineering/pit-data-degradation-policy.md"
   ],
   "docs": {
-    "spec": "docs/specs/B012-paper-trading-prep-mvp-spec.md",
+    "spec": "docs/specs/B013-regime-adaptive-multi-asset-mvp-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B012-paper-trading-prep-mvp-signoff-2026-05-14.md",
+    "signoff": null,
     "framework_reviewed": true
   },
   "role_assignments": null,
-  "evaluator_feedback": {
-    "summary": "B012 Paper Trading prep MVP passed first-round L1 verification on `.venv/bin/python` (Python 3.11.15). 60 targeted tests + full suite (219) + ruff + compileall + mypy all passed. Confirmed TargetPositions dual-output schema, BrokerAdapter abstract boundary, MockBroker append-only journal-only behavior, bridge fail-closed semantics on missing signal_date, and forbidden-import / network / env / paper-live-execution-language safety guards. Soft-watch S1: local system python3 is 3.9.6 (does not satisfy repo >=3.11); future runs must keep using .venv/bin/python.",
-    "pass_count": 6,
-    "partial_count": 0,
-    "fail_count": 0,
-    "issues": []
-  },
-  "generator_handoff": "Generator completed B012 F001-F005 in one session. New package trade/paper_prep/ with target_positions.py (TargetPositions schema + validate), broker_adapter.py (BrokerAdapter ABC + JournalEntry + OpenOrder + FORBIDDEN_BROKER_SDK_MODULES), mock_broker.py (MockBroker journal-only, deterministic journal_entry_id, fixed USD 250000 account default, gitignored data/paper-prep/ path), bridge.py (generate_target_positions_from_master + generate_target_positions_from_strategy, default-latest period, fail-closed on missing signal_date, account-capacity dollar exposures). New tests/unit/ files: test_target_positions.py (16), test_broker_adapter.py (7), test_mock_broker.py (11), test_paper_prep_bridge.py (13), test_paper_prep_safety_guards.py (13). Forbidden broker SDK list (ib_insync, alpaca, alpaca_trade_api, futu, futu_api, tiger, tiger_api, tradier, polygon) is regression-scanned across the whole package. Reports/journals/docstrings carry the research-only disclaimer; no paper/live execution language, no API hosts, no os.environ/os.getenv, no socket I/O at construction. Local checks: pytest (219), ruff, compileall, mypy. Evaluator should run F006 L1 verification of forbidden-import scan, journal disclaimer, and bridge fail-closed semantics.",
+  "evaluator_feedback": null,
+  "generator_handoff": null,
   "session_notes": {
-    "planner": "2026-05-14 B012 done wrap-up: Confirmed Codex first-round signoff (6/6 PASS, 0 issues, fix_rounds=0). State machine had stale fields after Codex signoff commit and were repaired here: completed_features 5→6, last_updated 2026-05-13→2026-05-14, features.json F006 status pending→completed, evaluator_feedback populated with summary, project-status.md refreshed from verifying→done. Wrote environment.md note: repo requires Python >=3.11; local system python3 is 3.9.6; all checks must use .venv/bin/python (source: B012 signoff S1). proposed-learnings.md has no active entries this batch. role_assignments already null. backlog.json unchanged (BL-B010-S1 + BL-B011-S2 remain). MVP status flag: with B012 signed off, MVP PRD §4.5 Paper Trading prep items are all complete and §10/§11 success criteria are substantively met. Next batch direction pending user decision (PRD §12 B013 Broker Adapter Paper crosses §5 non-MVP line; alternatives are MVP audit, satellite strategies BL-B011-S2, BL-B010-S1, or pause).",
-    "generator": "2026-05-13: B012 F001-F005 completed in one session. F001 trade/paper_prep/target_positions.py (TargetPositions + AccountState + DefensiveAllocation + TargetPositionEntry + SCHEMA_VERSION + DISCLAIMER + validate + JSON round-trip). F002 broker_adapter.py (BrokerAdapter ABC + JournalEntry + OpenOrder + FORBIDDEN_BROKER_SDK_MODULES). F003 mock_broker.py (MockBroker journal-only with deterministic journal_entry_id, default USD 250000 cash, gitignored data/paper-prep/ path, injectable clock, side-effect-free constructor). F004 bridge.py (generate_target_positions_from_master + generate_target_positions_from_strategy bridging MasterPortfolioBacktestResult and MonthlyBacktestResult/RiskParityBacktestResult, default-latest period, fail-closed BridgeError on missing signal_date, account-capacity dollar exposures, deterministic target_positions_id). F005 tests/unit/test_paper_prep_safety_guards.py: forbidden broker SDK imports across paper_prep, forbidden network/credential/frontend imports, forbidden API hosts (alpaca.markets, polygon.io, tradier.com, alpaca-paper, ...), forbidden trade language (paper execution / live execution / broker fill / place_order / submit_order / executed-order), no os.environ/os.getenv, research-only docstrings, MockBroker offline construction, bridge fail-closed regression, no writes to trade/data/fixtures/. Updated mock_broker.py docstring wording to avoid the literal phrases being flagged by the new scanner. Full local checks: pytest (219), ruff, compileall, mypy. Status moved to verifying for F006 Codex.",
-    "evaluator": "2026-05-14: Completed B012 L1 verification on `.venv/bin/python` (Python 3.11.15). Verified 60 targeted B012 tests plus full suite (219), ruff, compileall, and mypy all passed. Confirmed TargetPositions dual-output schema, BrokerAdapter abstract boundary, MockBroker append-only journal behavior, bridge fail-closed semantics, and forbidden import / network / env / execution-language guards. Noted local system `python3` is 3.9.6, so future runs should keep using `.venv/bin/python`."
+    "planner": "2026-05-14: Closed B012 done wrap-up (state-machine consistency fix + environment.md python>=3.11 note). User added a research document (docs/specs/research/B011-regime-adaptive-multi-asset-spec.md) and three research material collections (arxiv 38 / github 32 / institutional 47); naming collision resolved by moving the regime-adaptive spec under docs/specs/research/. Analyzed research materials against current implementation; found strong literature support for the user's L1/L2/L3 three-shield proposal (AEGIS, regime-switching trend-following, smoothing volatility targeting, transaction-cost tolerance-band literature). Confirmed B013 direction: Option A independent new strategy module, add real historical public data snapshot 2018-2025 (user authorized public data download), include lightweight parameter sensitivity sweep (planner recommendation), add regime_adaptive sleeve to Master Portfolio at planning_weight=0.0 for backwards-compat. Wrote B013 spec and features.json (11 features: F001-F010 generator + F011 codex). Status moved to building for Generator F001.",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",
@@ -46,6 +47,11 @@
     "F003",
     "F004",
     "F005",
-    "F006"
+    "F006",
+    "F007",
+    "F008",
+    "F009",
+    "F010",
+    "F011"
   ]
 }
