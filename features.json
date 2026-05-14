@@ -86,7 +86,7 @@
       "title": "独立验收 B013 Regime-Adaptive Multi-Asset MVP",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Evaluator 在 local/CI-safe 环境执行 L1 验收，确认 B013 实现最小 Regime-Adaptive Multi-Asset MVP：L1→L2→L3 pipeline 组合确定性、tolerance-band 减 turnover、regime 切换强制再平衡、snapshot 在场时可加载、snapshot 缺失时 stress gate 报 skipped（不失败）、snapshot 在场时 2020 + 2022 max drawdown < 15%、sensitivity sweep deterministic + offline、Master Portfolio 新 sleeve 0 权重且既有 B011 invariant 保留、no-live/no-secret/no-network-by-default/no-broker/no-paper/no-AI safety guards 保留；signoff 明确记录 snapshot 获取状态（acquired/pending/skipped）与 2020/2022 stress gate 结果（pass/skip/fail）；产出 review/signoff 报告"
     }
   ]
