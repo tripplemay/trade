@@ -4,11 +4,11 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B018-gap-root-cause-attribution：`building`**；Planner 完成 spec + features.json，等待 Generator 起步 F001。
+- **B018-gap-root-cause-attribution：`verifying`**；Generator 完成 F001+F002（2/5），交接给 Codex F003-F005 独立验收。
 - Spec: `docs/specs/B018-gap-root-cause-attribution-spec.md`
-- 起因：B017 经验给出两个负面发现 — B015 regime activation 不缩窄 B013 vs 60/40 gap；B016 HRP 不缩窄 B010 vs 60/40 gap（HRP -$496 + turnover +41%）。Gap 真实来源仍未知。MVP PRD §10/§11/§4/§12 已基本完成（5/6 §12 里程碑过；最后 Broker Adapter Paper 跨 §5 非 MVP 边界）。继续盲目加策略变体有放大错误风险。B018 是研究归因批次。
-- 5 features（混合批次）：F001-F002 generator（pnl_attribution + parameter_sweep 模块 + 测试）+ F003-F005 codex（真实数据归因 + 三轴 sweep + 诊断报告 + Pareto 推荐 + signoff）。
-- 关键决策：(1) 新模块在 trade/analysis/，纯 stdlib（无 scipy/numpy/pandas/sklearn）；(2) override config 内联构造，**不 mutate strategy 默认参数**；(3) sweep 三轴：vol_target ∈ {5,8,10,12,15}% + universe ablation 4-5 variant + cadence 3-4 variant；(4) 至少 3 个 Pareto 推荐含具体 trade-off 数字；(5) B018 **不改任何 strategy/spec/test 默认**，retune 候选只入 backlog；(6) manifest 缺失 fallback synthetic + skipped。
+- 交付：trade/analysis/__init__.py + trade/analysis/pnl_attribution.py (PeriodAttribution/AttributionInput/AttributionReport + B010_LAYERS/B013_LAYERS + per-asset/per-layer/summary/compute_period_asset_returns) + trade/analysis/parameter_sweep.py (SweepWindow/SweepRunResult/UniverseVariant + DEFAULT_VOL_TARGETS=(0.05/0.08/0.10/0.12/0.15) + 5 universe variants + 4 cadences + run_vol_target_sweep/run_universe_ablation_sweep/run_cadence_sweep)，纯 stdlib，override config 用 dataclasses.replace 内联构造，绝不 mutate 默认。
+- 测试：573 PASS（23 attribution + 24 sweep + 526 prior），mypy strict / ruff / compileall 全清。F003-F005 Codex 域：真实数据 attribution + 三轴 sweep + 诊断报告 + Pareto 推荐 + signoff。
+- 起因：B017 经验两个负面发现（B015 regime activation 不缩窄 B013 gap；B016 HRP 不缩窄 B010 gap，HRP -$496 + turnover +41%）。MVP PRD 5/6 §12 里程碑过；继续盲目加策略变体有放大错误风险，先归因。
 - 硬边界：默认 CI 仍 fixture/mock-first；`trade/` 模块零第三方依赖；no-broker/no-paper/no-AI/no-secret-in-strategy；report 含 research-only disclaimer。
 
 ## 已完成签收

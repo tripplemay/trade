@@ -14,7 +14,7 @@
       "title": "参数 sweep harness（vol_target / universe / cadence）+ 单元测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新增 trade/analysis/parameter_sweep.py（纯 stdlib）：run_vol_target_sweep（target_volatility ∈ {0.05, 0.08, 0.10, 0.12, 0.15}）+ run_universe_ablation_sweep（≥4 个 variant：full / drop_SGOV / drop_stabilizers / SPY+IEF only / SPY only）+ run_cadence_sweep（monthly / quarterly / semiannual / annual）。每个 sweep 接收预加载 snapshot records、strategy name、参数值、窗口元组，返回 deterministic SweepRunResult list（含 ending_value / gap_vs_60_40 / max_drawdown / turnover / transaction_costs / sharpe）。**override config 内联构造，绝不 mutate strategy 默认参数**；不支持的 cadence 显式 skip with diagnostic。tests/unit/test_parameter_sweep.py 用 mocked snapshot records 覆盖：每 sweep 返回预期数量、deterministic 跨 run、override 不泄漏到默认、unsupported cadence skip。pytest / ruff / compileall / mypy 全过"
     },
     {
