@@ -59,7 +59,7 @@ pids+=("$!")
 ) &
 pids+=("$!")
 
-echo "workbench backend  → http://${BACKEND_HOST}:${BACKEND_PORT}/health"
+echo "workbench backend  → http://${BACKEND_HOST}:${BACKEND_PORT}/api/health"
 echo "workbench frontend → http://127.0.0.1:${FRONTEND_PORT}/"
 echo "Ctrl-C to stop both."
 

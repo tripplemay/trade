@@ -75,7 +75,7 @@ bash workbench/scripts/start_workbench.sh
 
 You should then see:
 
-- Backend `GET http://127.0.0.1:8723/health` returns
+- Backend `GET http://127.0.0.1:8723/api/health` returns
   `{"status":"ok","version":"<git_sha>"}`.
 - Frontend `http://127.0.0.1:3000/` renders the "Workbench scaffold OK" card
   and the research-only disclaimer footer.

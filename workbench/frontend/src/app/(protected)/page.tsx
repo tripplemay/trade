@@ -8,7 +8,7 @@ import type { components } from "@/types/api";
 type HealthResponse = components["schemas"]["HealthResponse"];
 
 const HEALTH_URL =
-  process.env.NEXT_PUBLIC_WORKBENCH_HEALTH_URL ?? "http://127.0.0.1:8723/health";
+  process.env.NEXT_PUBLIC_WORKBENCH_HEALTH_URL ?? "http://127.0.0.1:8723/api/health";
 
 export default function HomePage() {
   const [health, setHealth] = useState<HealthResponse | null>(null);

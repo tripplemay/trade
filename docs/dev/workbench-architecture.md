@@ -35,9 +35,12 @@ workbench/
 ## Backend
 
 - FastAPI app factory in `workbench/backend/workbench_api/app.py`.
-- Single B020 route: `GET /health`.
+- Public surface lives under the `/api` prefix that nginx forwards in
+  production (e.g. `GET /api/health`). B021 F001 also wires the first
+  auth-gated probe, `GET /api/protected-test`.
 - `workbench/backend/workbench_api/settings.py` uses an explicit env-var
-  allowlist. In B020 the allowlist is empty.
+  allowlist; B021 F001 adds `NEXTAUTH_SECRET` and `ALLOWED_USER_EMAIL`.
+  The safety regression keeps the model and the allowlist in lockstep.
 - Backend binds to `127.0.0.1` for local-only dev use.
 - Tests are split into unit and safety guards.
 

@@ -12,6 +12,7 @@ export default defineConfig({
     include: [
       "tests/unit/**/*.{spec,test}.ts",
       "tests/safety/no-broker-sdk-imports.spec.ts",
+      "tests/safety/production-callback-url.spec.ts",
     ],
     exclude: [
       "tests/e2e/**",

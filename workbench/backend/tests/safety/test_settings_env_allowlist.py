@@ -1,19 +1,31 @@
 """Settings env-var allowlist contract for the workbench backend.
 
-B020 keeps the allowlist empty; every future env var added to ``Settings``
-must also be appended to ``ALLOWED_ENV_VARS``. The two assertions below
-detect drift in either direction.
+``ALLOWED_ENV_VARS`` and ``Settings`` model fields must stay in sync. Either
+side drifting silently widens the boundary and is rejected here.
+
+Expected contents are also pinned by name: B021 F001 introduces exactly two
+entries — NextAuth's shared signing secret and the single-user allowlist
+email. New env vars in subsequent features must update this set together
+with the ``Settings`` model.
 """
 
 from __future__ import annotations
 
 from workbench_api.settings import ALLOWED_ENV_VARS, Settings
 
+EXPECTED_ALLOWLIST: frozenset[str] = frozenset(
+    {
+        "NEXTAUTH_SECRET",
+        "ALLOWED_USER_EMAIL",
+    }
+)
 
-def test_allowlist_is_empty_in_b020() -> None:
-    assert len(ALLOWED_ENV_VARS) == 0, (
-        "B020 contract: workbench backend reads no environment variables. "
-        f"Add a deliberate ADR entry before relaxing this. Current: {ALLOWED_ENV_VARS}"
+
+def test_allowlist_matches_expected_set() -> None:
+    assert ALLOWED_ENV_VARS == EXPECTED_ALLOWLIST, (
+        "Allowlist drifted from the documented contract. Update this test "
+        f"intentionally when a feature widens the surface. Expected: "
+        f"{sorted(EXPECTED_ALLOWLIST)}; got: {sorted(ALLOWED_ENV_VARS)}."
     )
 
 
@@ -23,4 +35,17 @@ def test_settings_fields_are_subset_of_allowlist() -> None:
     assert extras == set(), (
         "Settings declares fields outside ALLOWED_ENV_VARS — add them to the "
         f"allowlist and re-check the boundary justification. Extras: {extras}"
+    )
+
+
+def test_settings_fields_cover_full_allowlist() -> None:
+    """Every allowlisted env var must have a typed field; otherwise the var
+    is read by ``os.environ`` outside the typed surface and bypasses validation.
+    """
+
+    declared_fields = set(Settings.model_fields.keys())
+    missing = set(ALLOWED_ENV_VARS) - declared_fields
+    assert missing == set(), (
+        "Allowlist entries lack matching Settings fields — add typed fields "
+        f"so consumers go through the validated surface. Missing: {missing}"
     )

@@ -58,10 +58,10 @@ echo "→ starting backend (uvicorn workbench_api.app:app @ ${BACKEND_URL})"
 ) >"${UVICORN_LOG}" 2>&1 &
 UVICORN_PID=$!
 
-echo "→ waiting for ${BACKEND_URL}/health (pid ${UVICORN_PID})"
+echo "→ waiting for ${BACKEND_URL}/api/health (pid ${UVICORN_PID})"
 ATTEMPTS=0
 MAX_ATTEMPTS=60
-until curl -fsS "${BACKEND_URL}/health" -o /dev/null 2>/dev/null; do
+until curl -fsS "${BACKEND_URL}/api/health" -o /dev/null 2>/dev/null; do
   ATTEMPTS=$((ATTEMPTS + 1))
   if (( ATTEMPTS >= MAX_ATTEMPTS )); then
     echo "error: backend not responsive after ${MAX_ATTEMPTS} probes. Last log:" >&2

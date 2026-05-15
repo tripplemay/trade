@@ -1,29 +1,43 @@
-"""Workbench settings loader with explicit env-var allowlist (B020).
+"""Workbench backend settings with explicit env-var allowlist.
 
-B020 deliberately reads no environment variables. The empty allowlist below is
-the enforcement surface: any future env var must be added here AND consumed via
-the typed Settings model. The safety test
-``tests/safety/test_settings_env_allowlist.py`` asserts the allowlist contents.
+The allowlist is the enforcement surface: any env var consumed by the backend
+must appear in ``ALLOWED_ENV_VARS`` *and* be declared as a typed field on
+``Settings``. ``tests/safety/test_settings_env_allowlist.py`` keeps the two
+ends in sync.
+
+B021 F001 introduces the first real entries: NextAuth's JWT signing secret
+(shared with the frontend so the backend can verify session cookies) and the
+single-user allowlist email.
 """
 
 from __future__ import annotations
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-ALLOWED_ENV_VARS: frozenset[str] = frozenset()
-"""Names of environment variables the workbench backend is permitted to read.
+ALLOWED_ENV_VARS: frozenset[str] = frozenset(
+    {
+        "NEXTAUTH_SECRET",
+        "ALLOWED_USER_EMAIL",
+    }
+)
+"""Environment variables the workbench backend is permitted to read.
 
-B020 holds this empty by design. Subsequent batches add entries here and the
-matching typed field on ``Settings``.
+Each entry has a matching typed field on ``Settings`` below. Adding a new
+variable requires a deliberate review of the safety boundary it widens.
 """
 
 
 class Settings(BaseSettings):
     """Typed runtime configuration for the workbench backend.
 
-    Fields are intentionally absent in B020. The allowlist mechanism (and the
-    associated safety test) keep this surface honest as features land.
+    Fields are all optional so the FastAPI app boots in dev even when the
+    OAuth + allowlist plumbing is not yet configured. Routes that require
+    authentication enforce non-emptiness at request time (see
+    ``workbench_api.auth.jwt_validator``).
     """
+
+    NEXTAUTH_SECRET: str | None = None
+    ALLOWED_USER_EMAIL: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=None,
@@ -33,6 +47,6 @@ class Settings(BaseSettings):
 
 
 def get_settings() -> Settings:
-    """Return a fresh Settings instance. Cheap; not memoized in B020."""
+    """Return a fresh Settings instance. Cheap; not memoized."""
 
     return Settings()

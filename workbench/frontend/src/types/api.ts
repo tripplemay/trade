@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/health": {
+    "/api/health": {
         parameters: {
             query?: never;
             header?: never;
@@ -12,7 +12,24 @@ export interface paths {
             cookie?: never;
         };
         /** Health */
-        get: operations["health_health_get"];
+        get: operations["health_api_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/protected-test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Protected Test */
+        get: operations["protected_test_api_protected_test_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -27,13 +44,23 @@ export interface components {
     schemas: {
         /**
          * HealthResponse
-         * @description Response schema for ``GET /health``.
+         * @description Response schema for ``GET /api/health``.
          */
         HealthResponse: {
             /** Status */
             status: string;
             /** Version */
             version: string;
+        };
+        /**
+         * ProtectedTestResponse
+         * @description Response schema for ``GET /api/protected-test`` (auth probe).
+         */
+        ProtectedTestResponse: {
+            /** Status */
+            status: string;
+            /** Email */
+            email: string;
         };
     };
     responses: never;
@@ -44,7 +71,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    health_health_get: {
+    health_api_health_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -60,6 +87,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthResponse"];
+                };
+            };
+        };
+    };
+    protected_test_api_protected_test_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProtectedTestResponse"];
                 };
             };
         };
