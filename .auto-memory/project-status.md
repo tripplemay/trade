@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B020-dev-infrastructure：`fixing`**；Generator 全部 4 个 executor:generator 功能完成 F001 (dc0c4c6) + F002 (d5c1ba7) + F003 (6184a1b) + F004 (393e180)。F005 已由 Codex 完成独立验收，但发现阻塞：`workbench/scripts/start_workbench.sh` 在本机默认 `/bin/bash` 3.2.57 上因 `wait -n` 失败，导致一键 boot 命令不可用；已回传 generator 修复。详见 progress.json.evaluator_feedback / generator_handoff。
+- **B020-dev-infrastructure：`reverifying`**；fix-round 1：4f0b2a8 修了 Codex L1 唯一阻塞（start_workbench.sh `wait -n` → Bash 3.2 兼容的轮询循环 + regression 静态守卫 + README prerequisites 加 Bash 3.2+ 行）。两 workflow rerun 绿（backend 58s + frontend 3m16s，初次失败是 GHA runner 排队卡死不分配，重跑解决）。Codex 在 macOS /bin/bash 3.2.57 上复跑 boot smoke 后即可签收。其余 7 项 L1 checklist 已 PASS 不重跑。
 - Spec：`docs/specs/B020-dev-infrastructure-spec.md`
 - 范围：纯 dev tooling 批次——workbench/{backend,frontend} 骨架 + FastAPI hello-world + Next.js 14 placeholder + Vitest/Playwright config + 2 个 CI workflows + 5 个安全 guard regression 测试 + OpenAPI ↔ TS pipeline + dev 文档 + branch protection 指引。预估 1-1.5 周。
 - 后续路径（renumber）：**B021 Cloud Deploy & Auth**（Google OAuth + SQLite + Dockerfile + nginx vhost for trade.guangai.ai + CI/CD push→SSH→deploy + 备份 + 可观测性）→ **B022 Workbench Phase 1**（14 features，原 B020 spec 重命名，cloud 适配后修订）→ **B023 Workbench Phase 2**（manual execution UI）。
