@@ -1,0 +1,19 @@
+# Next.js
+.next/
+out/
+
+# Dependencies
+node_modules/
+
+# Test artifacts
+playwright-report/
+test-results/
+coverage/
+
+# TypeScript build
+*.tsbuildinfo
+next-env.d.ts
+
+# Editor / OS
+.DS_Store
+*.log

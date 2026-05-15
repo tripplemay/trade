@@ -6,7 +6,7 @@
       "title": "Workbench skeleton + Python/Node 工具链 bootstrap",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "建立 workbench/{backend,frontend} 目录骨架。Backend：pyproject.toml (FastAPI + Pydantic v2 + Uvicorn + pytest + httpx + ruff + mypy)；workbench_api/app.py 暴露 /health endpoint 返回 {status:ok, version:<git_sha>}；workbench_api/settings.py 含 env var 显式 allowlist（B020 为空）；ruff + mypy 全清；pytest 通过。Frontend：Next.js 14 + React 18 + TypeScript strict + Tailwind 3 + ESLint + Prettier + Vitest + Playwright config (chromium only)。Placeholder Home page 渲染 'Workbench scaffold OK' 卡 + Footer 含 canonical disclaimer (DISCLAIMER_TEXT 常量来自 lib/disclaimer.ts)。scripts/start_workbench.sh 并发启 backend (uvicorn 127.0.0.1:8723) + frontend (next dev 3000)。workbench/README.md 含 prerequisites + 一键 boot + dev/test/lint commands + 10 分钟 zero-to-running 承诺。验收：clean clone + boot ≤ 10 min；curl /health 返回正确 JSON；http://localhost:3000 显示 placeholder + disclaimer；pytest workbench/backend/tests/ + ruff workbench/backend + mypy workbench/backend 全清；npm test/lint/typecheck/playwright 全清；trade/ 既有 592+ 测试无回归。**禁止引入：** broker SDK / paper API / live URL / auth / DB / Docker / nginx / cloud（这些是 B021）；shadcn 模板 / 金融配色 / Inter / JetBrains Mono / AG Grid / charts（这些是 B022）。"
     },
     {
