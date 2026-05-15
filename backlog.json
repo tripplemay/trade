@@ -53,18 +53,5 @@
     "confirmed_at": "2026-05-14",
     "priority": "low",
     "source": "B013 research material analysis (institutional tail-risk hedging papers)"
-  },
-  {
-    "id": "BL-B018-S1",
-    "title": "B010 cadence / vol-target retune candidate",
-    "description": "B018 real-data sweep shows B010 quarterly cadence is the clearest balanced follow-up point, and the 10%~12% vol-target neighborhood is the next sensible search band. Quarterly improves 2022 DD from -1.06% to about -0.12% while keeping calm-window ending value above 103k; 10%~12% vol-target raises ending value further but increases drawdown. Keep B018 defaults unchanged; evaluate this in a follow-up batch.",
-    "decisions": [
-      "B018 does not change any strategy default parameter",
-      "Use the B014 real snapshot for any follow-up retune batch",
-      "Search around quarterly cadence and 10%~12% vol-target before any code change"
-    ],
-    "confirmed_at": "2026-05-15",
-    "priority": "low",
-    "source": "B018 gap attribution signoff"
   }
 ]

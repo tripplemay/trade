@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B019-b010-b013-cadence-vol-target-retune：`reverifying`**；F001-F004 已完成（B013 retune 到 quarterly/0.11；B010 不动；F004 sidecar 本机 synthetic fallback），Codex 接 F005（pytest+ruff+mypy+compileall + manifest 在场时数值确定性 ±0.1% sanity check + signoff + backlog 关 BL-B018-S1），共 5 features 完成 4，fix_rounds=1。
+- **B019-b010-b013-cadence-vol-target-retune：`done`**；F001-F005 全部完成（B013 retune 到 quarterly/0.11；B010 不动；B015 rerun 已补真实数据），Codex 已签收并关闭批次，共 5 features 完成 5，fix_rounds=1。
 - Spec：`docs/specs/B019-b010-b013-cadence-vol-target-retune-spec.md`
 - 两阶段执行：Stage 1 = sweep + Pareto + gate verdict（F001 generator + F002 codex）；Stage 2 conditional = default mutation + 联动（F003+F004 generator）+ 回归 signoff（F005 codex）。
 - 网格：vol_target ∈ {0.09, 0.10, 0.11, 0.12, 0.13} × cadence ∈ {monthly, quarterly}，60 cells/3 windows，复用 B014 snapshot `regime-adaptive:b69883b08eedea7d`。
@@ -30,7 +30,7 @@ type: project
 - No deployment, DB, broker API, secrets, paper/live trading, or live-money operation.
 
 ## 已知 gap（非阻塞）
-- Backlog: BL-B010-S1 / BL-B011-S2 / BL-B013-D1 / BL-B013-D2；BL-B018-S1 由 B019 直接执行中（resolved 待 F005）。
+- Backlog: BL-B010-S1 / BL-B011-S2 / BL-B013-D1 / BL-B013-D2；BL-B018-S1 已由 B019 resolved。
 - 本机 system `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
 - framework/proposed-learnings.md 当前为空（v0.9.21 已沉淀 2 条 5/15 候选：fixture-vs-real reversal + gap-attribution methodology）。
 
