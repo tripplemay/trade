@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B020-dev-infrastructure：`building`**；Generator 接 F001（workbench skeleton + Python/Node 工具链 bootstrap），共 5 features 完成 0。
+- **B020-dev-infrastructure：`building`**；Generator 完成 F001（workbench skeleton + Python/Node 工具链 bootstrap，commit dc0c4c6），当前 sprint F002（CI workflows）。5 features 完成 1。
 - Spec：`docs/specs/B020-dev-infrastructure-spec.md`
 - 范围：纯 dev tooling 批次——workbench/{backend,frontend} 骨架 + FastAPI hello-world + Next.js 14 placeholder + Vitest/Playwright config + 2 个 CI workflows + 5 个安全 guard regression 测试 + OpenAPI ↔ TS pipeline + dev 文档 + branch protection 指引。预估 1-1.5 周。
 - 后续路径（renumber）：**B021 Cloud Deploy & Auth**（Google OAuth + SQLite + Dockerfile + nginx vhost for trade.guangai.ai + CI/CD push→SSH→deploy + 备份 + 可观测性）→ **B022 Workbench Phase 1**（14 features，原 B020 spec 重命名，cloud 适配后修订）→ **B023 Workbench Phase 2**（manual execution UI）。
