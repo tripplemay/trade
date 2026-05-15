@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B021-cloud-deploy-auth：`verifying`**；F001-F005 五个 generator feature 全部完成（commits 2a53c89 + b46d098 + e04376f + 6c2f33f + F005 pending below，CI 全绿）。Codex 接 F006（observability enrich + L1 + L2 真 VM 验收 + signoff）。**用户 manual prereq 必须先做（L2 前）：** (1) certbot 一次性 issuance 于 trade.guangai.ai；(2) VM SA scope 扩展 `--scopes=cloud-platform`，~30-60s 跨服务下线；(3) 首次部署后装 systemd units + logrotate。详见 progress.json generator_handoff。
+- **B021-cloud-deploy-auth：`fixing`**；Codex F006 复验发现两个 blocking gap：observability 层未实现（缺 `workbench_api/observability/`、缺 `/api/health` uptime/backup/user-count 字段、缺 JSON logging / Sentry gate），且 `mypy workbench/backend` 因 `workbench/backend/tests/unit/test_health.py` 未标注参数失败。已回传 generator 修复。
 - Spec：`docs/specs/B021-cloud-deploy-auth-spec.md`
 - 范围：cloud infra 层——Google OAuth（F001）+ SQLite + Alembic + Repository 数据层（F002）+ systemd workbench-{backend,frontend}.service + nginx vhost trade.guangai.ai + certbot（F003）+ GitHub Actions push→SSH→deploy→healthcheck→rollback（F004）+ SQLite→GCS daily backup + 30 daily/12 monthly retention + restore（F005，需用户先 VM SA scope 扩展）+ Codex L1+L2 真 VM 验收 + 可观测性 + signoff（F006）。
 - 后续路径：**B022 Workbench Phase 1**（14 features，原 spec B022-workbench-phase1，cloud 适配后修订）→ **B023 Workbench Phase 2**（manual execution UI）。
@@ -33,6 +33,7 @@ type: project
 ## 已知 gap（非阻塞）
 - Backlog: BL-B010-S1 low / **BL-B011-S2 high (workbench Phase 1 后衔接 satellite)** / BL-B013-D1 low / BL-B013-D2 low；BL-B018-S1 已 resolved。
 - 本机 system `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
+- L1 已跑：backend pytest/ruff/frontend test/lint/build/E2E 通过；mypy 未过。L2 真 VM 未执行，因为先要 observability / mypy 修复。
 - framework/proposed-learnings.md 当前为空（v0.9.21 + v0.9.22 + v0.9.23 已沉淀 6 条 5/15 候选）。
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->
