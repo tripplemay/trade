@@ -4,14 +4,12 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B019-b010-b013-cadence-vol-target-retune：`done`**；F001-F005 全部完成（B013 retune 到 quarterly/0.11；B010 不动；B015 rerun 已补真实数据），Codex 已签收并关闭批次，共 5 features 完成 5，fix_rounds=1。
-- Spec：`docs/specs/B019-b010-b013-cadence-vol-target-retune-spec.md`
-- 两阶段执行：Stage 1 = sweep + Pareto + gate verdict（F001 generator + F002 codex）；Stage 2 conditional = default mutation + 联动（F003+F004 generator）+ 回归 signoff（F005 codex）。
-- 网格：vol_target ∈ {0.09, 0.10, 0.11, 0.12, 0.13} × cadence ∈ {monthly, quarterly}，60 cells/3 windows，复用 B014 snapshot `regime-adaptive:b69883b08eedea7d`。
-- 4 条 gate（同时满足才进 Stage 2）：calm ending value +1% / calm gap vs 60/40 缩窄 5pp / stress 双窗口 max DD do-no-harm / turnover ≤ +15%。
-- B018 已签收：`docs/test-reports/B018-gap-attribution-signoff-2026-05-15.md`；attribution 结论 `l2_vol_scaling` 是主拖累驱动 B019 选 vol_target+cadence 两轴。
-- 硬边界：默认 CI 仍 fixture/mock-first；`trade/` 模块零第三方依赖；no-broker/no-paper/no-AI/no-secret-in-strategy；所有输出 research-only；framework v0.9.21 #1 强制 real-data reverify。
-- **下一批次决策（B019 done 后启动）：B020 Workbench Phase 1**（覆盖原 Manual Execution Helper 计划，详见 `docs/adr/2026-05-15-workbench-direction.md`）。技术栈 FastAPI + Next.js/React + shadcn/ui + AG Grid + lightweight-charts；7 页 read-mostly + 最小必要 write；Level 2 图表交互/导出；预估 5-6 周。Phase 2 (B021) = 手动执行 UI。auto-broker 永久非 MVP。PRD §7/§12 修订计划在 B019 done wrap-up 同 session 完成。
+- **B020-dev-infrastructure：`building`**；Generator 接 F001（workbench skeleton + Python/Node 工具链 bootstrap），共 5 features 完成 0。
+- Spec：`docs/specs/B020-dev-infrastructure-spec.md`
+- 范围：纯 dev tooling 批次——workbench/{backend,frontend} 骨架 + FastAPI hello-world + Next.js 14 placeholder + Vitest/Playwright config + 2 个 CI workflows + 5 个安全 guard regression 测试 + OpenAPI ↔ TS pipeline + dev 文档 + branch protection 指引。预估 1-1.5 周。
+- 后续路径（renumber）：**B021 Cloud Deploy & Auth**（Google OAuth + SQLite + Dockerfile + nginx vhost for trade.guangai.ai + CI/CD push→SSH→deploy + 备份 + 可观测性）→ **B022 Workbench Phase 1**（14 features，原 B020 spec 重命名，cloud 适配后修订）→ **B023 Workbench Phase 2**（manual execution UI）。
+- 关键决策（详见 `docs/adr/2026-05-15-workbench-direction.md` + cloud addendum）：技术栈 Next.js + shadcn/ui + AG Grid + lightweight-charts；模板 shadcn-dashboard-landing-template；P&L 色 #00c853/#ff3b30；部署到现有 GCP VM；OAuth allowlist 单 email；nginx 复用 aigcgateway 现有反代。
+- 硬边界：`trade/` 模块零第三方依赖；workbench/ 独立依赖图；no-broker/no-paper/no-live/no-secret-in-strategy；workbench cloud 暴露限 trade.guangai.ai + Google OAuth allowlist；framework v0.9.21 #1 强制 real-data reverify；framework v0.9.22 强制 T+1 snapshot tail headroom。
 
 ## 已完成签收
 - B001-B008: strategy roadmap through research-grade data expansion all signed off.
@@ -25,13 +23,14 @@ type: project
 - B016 risk parity HRP upgrade: `docs/test-reports/B016-risk-parity-hrp-upgrade-signoff-2026-05-15.md`
 - B017 B015+B016 real-data validation: `docs/test-reports/B017-real-data-validation-signoff-2026-05-15.md`
 - B018 gap root-cause attribution: `docs/test-reports/B018-gap-attribution-signoff-2026-05-15.md`
+- B019 B010/B013 cadence + vol-target retune: `docs/test-reports/B019-retune-signoff-2026-05-15.md`
 
 ## 生产状态
-- No deployment, DB, broker API, secrets, paper/live trading, or live-money operation.
+- 当前：本地 dev only。云部署 = B021 后 trade.guangai.ai（与 aigcgateway 共住 GCP VM）。
 
 ## 已知 gap（非阻塞）
-- Backlog: BL-B010-S1 / BL-B011-S2 / BL-B013-D1 / BL-B013-D2；BL-B018-S1 已由 B019 resolved。
+- Backlog: BL-B010-S1 low / **BL-B011-S2 high (workbench Phase 1 后衔接 satellite)** / BL-B013-D1 low / BL-B013-D2 low；BL-B018-S1 已由 B019 resolved。
 - 本机 system `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
-- framework/proposed-learnings.md 当前为空（v0.9.21 已沉淀 2 条 5/15 候选：fixture-vs-real reversal + gap-attribution methodology）。
+- framework/proposed-learnings.md 当前为空（v0.9.21 + v0.9.22 已沉淀 3 条 5/15 候选）。
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->

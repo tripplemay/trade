@@ -1,45 +1,45 @@
 {
-  "sprint": "B019-b010-b013-cadence-vol-target-retune",
+  "sprint": "B020-dev-infrastructure",
   "features": [
     {
       "id": "F001",
-      "title": "Sweep harness fine-grid extension + 单元测试",
+      "title": "Workbench skeleton + Python/Node 工具链 bootstrap",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "扩展 trade/analysis/parameter_sweep.py（pure stdlib）：(1) 确认 run_vol_target_sweep 已接受任意 Sequence[float]；若有硬编码限制则放宽（任何正 vol_target 接受）。(2) 新增公共 helper run_cadence_vs_default_sweep(records, strategy_name, cadences, vol_targets, windows, *, default_baseline=True) -> list[SweepRunResult]，对 (cadence, vol_target) 笛卡尔积 + 策略当前 default 基线返回 deterministic 结果列表（默认基线作为额外 cell 含真实 default 值，不写死）。(3) 新增公共 helper evaluate_retune_gate(results, strategy_name, gate=DEFAULT_GATE) -> RetuneGateVerdict 返回 typed verdict 含 per-cell 4 条 gate pass/fail flags + top-level gate_met: bool + winning_cell: tuple[str, float] | None。DEFAULT_GATE 是 frozen dataclass: min_calm_uplift_pct=1.0 / min_calm_gap_narrowing_pp=5.0 / do_no_harm_on_stress=True / max_turnover_increase_pct=15.0。(4) 新增 tests/unit/test_parameter_sweep_b019.py 覆盖：cell 数量 = len(cadences)*len(vol_targets)+1；default baseline cell 携带策略真实 default 值不是 hardcoded 常量；evaluate_retune_gate 正确识别 all-pass / fails-gate-3 / fails-gate-4 / no-cell-qualifies 4 种 case；两次连续 run 返回字节相同 verdict（determinism）；运行后策略 default 未被 mutate。(5) winner tie-breaker 顺序：calm ending value > stress2 max DD > turnover。.venv/bin/python -m pytest / ruff check trade tests scripts / mypy trade / compileall -q trade tests scripts 全清。**B018 已有的 parameter_sweep 测试全部继续通过，不得回归**。"
+      "status": "pending",
+      "acceptance": "建立 workbench/{backend,frontend} 目录骨架。Backend：pyproject.toml (FastAPI + Pydantic v2 + Uvicorn + pytest + httpx + ruff + mypy)；workbench_api/app.py 暴露 /health endpoint 返回 {status:ok, version:<git_sha>}；workbench_api/settings.py 含 env var 显式 allowlist（B020 为空）；ruff + mypy 全清；pytest 通过。Frontend：Next.js 14 + React 18 + TypeScript strict + Tailwind 3 + ESLint + Prettier + Vitest + Playwright config (chromium only)。Placeholder Home page 渲染 'Workbench scaffold OK' 卡 + Footer 含 canonical disclaimer (DISCLAIMER_TEXT 常量来自 lib/disclaimer.ts)。scripts/start_workbench.sh 并发启 backend (uvicorn 127.0.0.1:8723) + frontend (next dev 3000)。workbench/README.md 含 prerequisites + 一键 boot + dev/test/lint commands + 10 分钟 zero-to-running 承诺。验收：clean clone + boot ≤ 10 min；curl /health 返回正确 JSON；http://localhost:3000 显示 placeholder + disclaimer；pytest workbench/backend/tests/ + ruff workbench/backend + mypy workbench/backend 全清；npm test/lint/typecheck/playwright 全清；trade/ 既有 592+ 测试无回归。**禁止引入：** broker SDK / paper API / live URL / auth / DB / Docker / nginx / cloud（这些是 B021）；shadcn 模板 / 金融配色 / Inter / JetBrains Mono / AG Grid / charts（这些是 B022）。"
     },
     {
       "id": "F002",
-      "title": "Stage 1 真实数据细 sweep + Pareto 报告 + gate 裁决",
+      "title": "CI workflows (workbench-backend + workbench-frontend)",
       "priority": "high",
-      "executor": "codex",
-      "status": "completed",
-      "acceptance": "Codex 在 B014 manifest 在场时调用 trade/analysis/parameter_sweep.run_cadence_vs_default_sweep + evaluate_retune_gate 对 B010 与 B013 在 calm window 2020-06-01..2022-12-31 + stress 2020-02-01..2020-12-31 + stress 2022-01-01..2022-12-31 上跑 60 cells（5 vol_targets × 2 cadences × 2 strategies × 3 windows）+ 2 default baselines。输出：(1) docs/test-reports/B019-retune-sweep-2026-MM-DD.json 含完整 sweep matrix + per-cell 6 指标（ending_value/gap_vs_60_40/max_drawdown/turnover/transaction_costs/sharpe）+ per-cell gate verdict + top-level per-strategy gate_met + winning_cell（or null）。(2) docs/test-reports/B019-retune-sweep-2026-MM-DD.md 含 6 sections：背景（链接 B018 + BL-B018-S1 + framework v0.9.21 #1）/ 双策略 sweep matrix table / per-cell gate verdict table / Pareto 推荐（low-DD/balanced/high-return per strategy 含具体 trade-off 数字）/ 顶层 verdict / snapshot 回顾 + research-only disclaimer。(3) progress.json.evaluator_feedback 写入 verdict 摘要（per-strategy gate_met + winning cell + 关键数字），让下游 Generator 不需重 parse JSON。manifest 缺失时 fallback 合成 9 资产 fixture（B018 路径），real_data_status='skipped'，gate_met=False reason='manifest absent — fixture-only run 不满足 framework v0.9.21 #1 real-data reverify 要求'。"
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "新增 .github/workflows/workbench-backend.yml + workbench-frontend.yml。两个 workflow 都跑 PR + push to main，按 path filter 触发（workbench/backend/** 与 workbench/frontend/**）。workbench-backend：Python 3.11 setup + pip cache + install workbench/backend[dev] + pytest + ruff + mypy + 安全 guard 测试单独 step（让失败 surface 标识违反的边界）。workbench-frontend：Node 20 setup + npm cache + Playwright browser cache (chromium only) + npm ci + npm run lint/typecheck/test + start-server-and-test 并发跑 backend → Playwright E2E smoke；失败时上传 Playwright HTML report + screenshots/video artifact。验收：(1) 两 workflow 在 F002 commit 全绿；(2) 二跑命中 cache (workflow log 验证)；(3) 故意 throwaway commit 让 backend test 红 → workbench-backend fail (branch protection 下阻 merge)；(4) 故意 throwaway commit 让 frontend test 红 → workbench-frontend fail with artifact uploaded；(5) python-ci.yml 仍绿；(6) 典型 PR CI wall time ≤ 10 min（backend + frontend 并行 job）。"
     },
     {
       "id": "F003",
-      "title": "Stage 2 conditional：default mutation + 单测更新",
+      "title": "测试策略文档 + 安全 guard 脚手架",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "**仅当 F002 verdict 至少一个策略 gate_met 时执行；两策略均 not met 则 mark skipped 并在 status 字段记录 reason；若仅一个策略 gate met 则只动该策略**。Per qualifying strategy: (1) 修改对应 trade/strategies/*.py config dataclass field defaults 到 F002 winning (cadence, vol_target)。(2) 若策略模块暴露 DEFAULT_* 常量（cadence/vol_target）一并更新。(3) 跑 rg 'target_volatility\\s*[=:]\\s*0\\.0?8|rebalance_frequency\\s*[=:]\\s*[\"\\']monthly[\"\\']' trade tests 审计 hits；tests/unit/ 中作为 baseline 断言 prior default 的位置一并更新；明确豁免 tests/unit/test_parameter_sweep.py / test_parameter_sweep_b019.py 中显式 vol_target=0.08 override 测试用例（这些测的是 override 行为不是 default）+ docs/specs/ + docs/test-reports/ 历史记录（不可改）。(4) B018 已有测试 + B011 测试全部继续通过；任何更新过的测试断言需反映新 default deterministic 数字。.venv/bin/python -m pytest / ruff check trade tests scripts / mypy trade / compileall -q trade tests scripts 全清。"
+      "status": "pending",
+      "acceptance": "(1) 新增 docs/dev/workbench-testing-strategy.md ≤ 200 行，覆盖 L1 unit (pytest/Vitest 默认 CI 跑 / 无 network)、L2 integration (httpx TestClient 后端 / Vitest mocked API 前端 / Playwright against running backend)、L3 E2E (Playwright + start-server-and-test pattern, chromium only B020)、安全 regression 测试（独立目录、CI 跑、视为边界违反 guard）、fixture/mock-first 默认 + framework v0.9.21 #1 (synthetic-vs-real reversal) 引用。(2) 实现 5 个安全 regression 测试：tests/safety/test_no_broker_sdk_imports.py (backend 全树 grep ib_insync/alpaca/alpaca_trade_api/futu/tiger/tradier/polygon/oandapy/tradeapi)、tests/safety/test_no_paper_or_live_urls.py (backend 全树 grep paper-api.alpaca.markets/api.alpaca.markets/paper.gateway.ibkr.com/gw.gateway.ibkr.com/api.futu.com/api.tigerbrokers.com)、tests/safety/test_settings_env_allowlist.py (workbench_api.settings 仅读 allowlist 内的 env，B020 allowlist 为空)、tests/safety/no-broker-sdk-imports.spec.ts (frontend 全树 + package.json grep @alpaca-/ib-insync/futu-api/tiger-securities)、tests/safety/disclaimer-present.spec.ts (Playwright 加载每个 navigable route，B020 = 仅 / ，断言 DISCLAIMER_TEXT 可见)。(3) 5 个测试在 F003 commit 全绿；每个测试在故意 throwaway 违反 commit 上必须红（Codex F005 trip-test 验证）；测试名自解释（如 test_alpaca_not_imported_anywhere）。两个测试在 workbench-backend yml 跑（3 个 backend），两个在 workbench-frontend yml 跑（2 个 frontend），按 yml step 分清。"
     },
     {
       "id": "F004",
-      "title": "Stage 2 conditional：B011/B014/B015 联动同步",
+      "title": "OpenAPI ↔ TypeScript types pipeline + CI drift check",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "**仅当 F003 完成且至少一个策略 default 已修改时执行；F003 全 skipped 则一并 skipped**。(1) B011 Master Portfolio：若 sleeve config hardcode vol_target/cadence 给 risk_parity sleeve，改为 consume B010 新 default（normal config-loading path）；任何 B011 单测/fixture hardcode prior 数字一并更新。(2) 新增 docs/test-reports/B019-default-change-baseline-2026-MM-DD.{json,md}：在新 default 下 re-run B010+B013 跨 3 个窗口，记录新 baseline 数字。(3) 新增 docs/test-reports/B019-b015-activation-policy-rerun-2026-MM-DD.{json,md}：在新 B013 default 下 re-run B015 activation policy comparison harness。(4) docs/specs/B014-regime-adaptive-stress-validation-spec.md Background 加 1 行 cross-link 指向 B019 default-change baseline（**不重写 B014 sidecar 历史记录**）。(5) docs/specs/B015-regime-adaptive-activation-policy-spec.md Background 加 1 行 cross-link 指向 B019 activation policy rerun。(6) docs/strategy/02-risk-parity-vol-target.md（必须）+ docs/strategy/00-master-portfolio-allocation.md（若有 quote prior B010 default）更新文档 default 数字与代码一致。.venv/bin/python -m pytest / ruff / mypy / compileall 全清。"
+      "status": "pending",
+      "acceptance": "新增 workbench/frontend/scripts/generate-types.sh 脚本：(1) 后台启 backend uvicorn；(2) curl /openapi.json 到临时文件；(3) npx openapi-typescript /tmp/openapi.json -o workbench/frontend/src/types/api.ts；(4) 杀 backend；(5) git diff --exit-code workbench/frontend/src/types/api.ts（CI 用此 detect drift）。在 workbench-frontend.yml 加 CI step：跑 generate-types.sh + git diff，drift 时 fail。Placeholder Home page (F001) 必须 consume 生成的 /health type 验证 pipeline 全链路连通（TypeScript 编译器自动验证类型被消费）。验收：(1) generate-types.sh idempotent (跑两次产物字节相同)；(2) F004 commit CI drift check 通过；(3) 故意 throwaway commit 改 backend /health 响应 schema 但不重新跑 generate-types → CI fail（Codex F005 trip-test 验证）；(4) Home page 渲染来自 /health 的 typed data。"
     },
     {
       "id": "F005",
-      "title": "Stage 2 Codex 回归验证 + signoff",
+      "title": "Dev 文档 + branch protection 指引 + Codex L1 验收 + signoff",
       "priority": "high",
       "executor": "codex",
       "status": "pending",
-      "acceptance": "Codex 执行：(1) .venv/bin/python -m pytest tests/ -q 全 PASS；(2) .venv/bin/python -m mypy trade clean；(3) .venv/bin/python -m ruff check trade tests scripts clean；(4) .venv/bin/python -m compileall -q trade tests scripts clean；(5) 若 F003/F004 ran（gate met）：在新 default 下 re-execute winning configuration 在 snapshot 上，每个指标必须与 F002 prediction 匹配 ±0.1%（数值确定性 sanity check）；任何 drift > 0.1% 阻断 signoff 并把 F003/F004 退回 fixing。(6) 若 F003/F004 skipped（gate not met）：跳过确定性 check。(7) Backlog: 在 backlog.json 标记 BL-B018-S1 为 resolved（链 B019 signoff）；若 gate not met 新增 BL-B019-S1 含具体 (cadence, vol_target) cells 测过 + 哪条 gate 失败，避免未来重复盲跑。(8) 写 docs/test-reports/B019-retune-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md 模板：Scope（Stage 1 always / Stage 2 conditional）+ Verification commands & 结果 + High-level findings（per-strategy winning cell or 'gate not met'）+ Backlog updates + Disclaimer。(9) 更新 progress.json：status → done / docs.signoff 设值 / evaluator_feedback 总结两阶段。**所有 B019 artifact 必须含 research-only disclaimer**。"
+      "acceptance": "(1) 写 docs/dev/branch-protection-guidance.md：列出用户在 GitHub Settings → Branches 应配的规则——main require status check (python-ci/workbench-backend/workbench-frontend) + require linear history + force push 禁 + 可选 1 review。(2) 写 docs/dev/workbench-architecture.md skeleton：项目结构 + 后端 app factory + settings allowlist + 安全 guard + 前端 App Router placeholder + Footer + types/api.ts pipeline + CI workflows + 与 ADR + B021/B022/B023 spec 的 cross-link（B021/B022 spec 可能未存在，前向引用 OK）+ 边界重申。(3) Codex 8 项验收 checklist 全过：① clean clone 起 ≤ 10 min；② pytest/ruff/mypy backend 全清；③ npm test/lint/typecheck frontend 全清；④ npx playwright test 全清 + HTML report 渲染；⑤ CI 两 workflow 在验收 commit 全绿；⑥ Trip-test 5 个安全 regression（throwaway commit 故意违反，每条都触发对应测试 fail，revert）；⑦ Trip-test OpenAPI drift（throwaway commit 改 backend /health schema 不 regenerate types，CI fail，revert）；⑧ trade/ 既有测试无回归全绿。(4) 写 docs/test-reports/B020-dev-infrastructure-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md 模板：Scope + 8 项验收命令 & 结果 + 5 trip-test 结果 + Disclaimer。(5) 更新 progress.json：status → done / docs.signoff 设值 / evaluator_feedback 总结 8 项验收概要。"
     }
   ]
 }

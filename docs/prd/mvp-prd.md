@@ -242,11 +242,17 @@ MVP 输出 Markdown/JSON 报告，不实现正式前端 dashboard。
 
 > 2026-05-15 修订：MVP 完工路径包含一个本地 graphical workbench。原 §7 文本（"MVP 不实现正式前端 dashboard"）已被推翻，理由是当时引用的 4 条阻塞原因中 3 条已通过 B007 / B009 / B010 / B011 / B012 解决（回测 schema、策略配置 schema、数据质量输出均已稳定），第 4 条（execution 层 schema 不稳）通过 Phase 1 / Phase 2 拆分被规避（execution 工作流推迟到 Phase 2）。完整背景见 `docs/adr/2026-05-15-workbench-direction.md`。
 
-### Workbench 路径
+### Workbench 路径（cloud-deployed multi-device addendum 2026-05-15）
 
-- **B020 Workbench Phase 1**：本地浏览器 SPA（FastAPI + Next.js 14 + TypeScript + shadcn/ui + Tailwind + AG Grid Community + TradingView lightweight-charts + ECharts），read-mostly 7 页（Home / Strategies / Backtest / Reports / Recommendations / Snapshots / Backlog）+ 最小必要 write 操作（snapshot refresh / backlog CRUD / 触发 backtest / 导出 target positions Markdown），预估 5-6 周。
-- **B021 Workbench Phase 2**：在 Phase 1 之上加 manual execution UI（target positions diff / order ticket / fill journal）。
-- 所有 workbench 操作仅在 `localhost` 暴露；不引入 broker SDK / paper API / live endpoint / secret；下单永远由用户在券商客户端手动完成。
+> 二次修订：原 §7 (commit `522e34a`) 描述 workbench 为 localhost-only 单机应用。用户后续要求**多设备访问**（笔记本 + 手机 + iPad），决定 deploy 到现有 GCP VM (`trade.guangai.ai`) 加 Google OAuth gating。完整背景见 ADR `docs/adr/2026-05-15-workbench-direction.md` §"Addendum 2026-05-15 — Cloud Deploy Pivot + Renumber"。
+
+- **B020 Dev Infrastructure**（5 features，~1.5 周）：workbench skeleton + Python/Node 工具链 + CI workflows + 测试策略 + 安全 guard 脚手架 + OpenAPI ↔ TS pipeline + 文档。无云依赖，纯本地 dev tooling。
+- **B021 Cloud Deploy & Auth Infrastructure**（6 features，~2-3 周）：Google OAuth (NextAuth + 后端验证 + 单 email allowlist) + SQLite + Alembic + Repository 数据层 + Dockerfile + systemd + nginx vhost + cert (certbot for trade.guangai.ai) + CI/CD (GitHub Actions push→SSH deploy→health check→rollback) + 备份 (SQLite snapshot → GCS) + 可观测性 (healthcheck + 结构化 log)。
+- **B022 Workbench Phase 1**（14 features，~5-6 周）：FastAPI + Next.js 15 + TypeScript + shadcn/ui + Tailwind + AG Grid Community + TradingView lightweight-charts + ECharts；read-mostly 7 页（Home / Strategies / Backtest / Reports / Recommendations / Snapshots / Backlog）+ 最小必要 write 操作（snapshot refresh / backlog CRUD / 触发 backtest / 导出 target positions Markdown）。
+- **B023 Workbench Phase 2**：在 Phase 1 之上加 manual execution UI（target positions diff / order ticket / fill journal）。
+- 部署位置：用户已有 GCP VM（与 aigcgateway 共住）；resource quota via systemd `CPUQuota=200%` + `MemoryMax=2G` 隔离。
+- 公网访问：仅 `https://trade.guangai.ai`，OAuth allowlist 单 email；非 allowlisted user 拒绝。
+- 安全约束保持：不引入 broker SDK / paper API / live endpoint；不存付费行情；下单永远由用户在券商客户端手动完成。
 
 ### Workbench 与 CLI 并行
 
@@ -257,26 +263,34 @@ MVP 输出 Markdown/JSON 报告，不实现正式前端 dashboard。
 ### 仍属非 MVP（PRD §5 范围）
 
 - 自动连接 broker / paper API（`BrokerAdapter` ABC 在 B012 留作扩展锚点，永久延后）；
-- 多用户 / 外部客户 / 云端部署；
+- 多用户 / 外部客户 / 注册流程（OAuth allowlist 仅含单 email）；
 - 桌面打包（Tauri / Electron）；
 - 实时数据流 / 自动调仓 / 多 panel dockable / 命令面板 / i18n；
 - PDF 报告组装 / 自包含 HTML 快照（浏览器 print-to-PDF 是 0 成本兜底）。
 
 ## 8. 云部署边界
 
-MVP 不要求云端生产部署。
+> 2026-05-15 修订：原 §8 描述 MVP "不要求云端生产部署"。用户 2026-05-15 决定 workbench 部署到现有 GCP VM (`trade.guangai.ai`)，复用与 aigcgateway 的共享基础设施。详见 ADR `docs/adr/2026-05-15-workbench-direction.md` 云部署 addendum。
 
-MVP 可以在本地和 CI 环境运行。
+### Workbench 云部署（B021 落地）
 
-云部署后置到 Paper Trading 或定时任务阶段。
+- **平台：** 用户已有 GCP VM（与 aigcgateway 共住）；不另购云资源。
+- **隔离：** systemd unit 显式 `CPUQuota=200%` + `MemoryMax=2G` 把 workbench 资源消耗封顶；不与 aigcgateway 抢资源。
+- **域名 / TLS：** `trade.guangai.ai` via 现有 nginx + certbot Let's Encrypt 自动续。
+- **数据：** SQLite 在 `/var/lib/workbench/workbench.db`，Alembic 管理 schema；不与 aigcgateway DB 共享。
+- **Secrets：** 通过 systemd `EnvironmentFile=` 加载（GOOGLE_OAUTH_CLIENT_SECRET / NEXTAUTH_SECRET / ALLOWED_USER_EMAIL / 可选 SENTRY_DSN）；GitHub Actions Secrets 持有 SSH 部署私钥；**不入 git**。
+- **日志：** uvicorn access log → 文件 + systemd journald；结构化 application log 含 request_id；可选 Sentry。
+- **备份：** systemd timer 触发 SQLite snapshot → gzip → GCS bucket（30 daily + 12 monthly retention + restore script）。
+- **CI/CD：** push to main → GitHub Actions 跑测试 → build 产物 → SSH deploy → health check → 失败 rollback symlink。
+- **资源成本：** 边际 $0（VM 已存在）；GCS backup ≤ 10 GB ≈ $0.20/月。
 
-后续云部署前必须具备：
+### 仍属非 MVP
 
-- 环境隔离。
-- secrets 管理。
-- 数据目录策略。
-- 日志策略。
-- 定时任务策略。
+- 多 region / HA / auto-scaling；
+- 多 VM / k8s / Cloud Run；
+- 多用户 SaaS；
+- 实时行情接入（WebSocket）；
+- 商用 broker/paper API 接入（PRD §5 永久禁止）。
 
 ## 9. 安全与合规要求
 
@@ -292,6 +306,17 @@ MVP 可以在本地和 CI 环境运行。
 - AI 不直接控制交易。
 
 真实 broker 或 live-money 测试必须单独授权，且授权需包含 broker、账户、策略、金额和时间窗口。
+
+### Workbench cloud-deployment 安全约束（B021 落地）
+
+- 所有 workbench 路由（除 `/api/health` 与 OAuth 回调）必须经 Google OAuth + 单 email allowlist 鉴权；非 allowlist 用户返回 403。
+- Secrets（OAuth client secret / NextAuth secret / 部署 SSH key）通过 systemd `EnvironmentFile=` 或 GitHub Actions Secrets 注入；**不入 git**；regression test 验证 `.env` / 私钥文件不在 commit。
+- TLS 强制：`trade.guangai.ai` 仅 HTTPS；HTTP 重定向到 HTTPS；HSTS 头开。
+- 资源隔离：systemd `CPUQuota=200%` + `MemoryMax=2G` 防止 backtest 失控拖死 aigcgateway。
+- 数据隔离：SQLite 数据库 + 文件存储独立目录 `/var/lib/workbench/`；与 aigcgateway 数据 0 共享。
+- 不允许 broker SDK / paper API URL / live API URL 出现在 workbench 任何代码或配置中（regression test 守住）。
+- 备份：SQLite snapshot 含账户状态 + journal，作为敏感数据，加密存 GCS（GCS server-side encryption + bucket-level access control）。
+- 审计：所有 mutation 操作（snapshot refresh / backlog CRUD / target positions export）记结构化 log（user_id + request_id + action + timestamp）。
 
 ## 10. 成功指标
 
@@ -322,7 +347,7 @@ MVP 整体验收要求：
 
 ## 12. 里程碑
 
-> 2026-05-15 修订：原 B009 Broker Adapter Paper 移除 MVP 范围，替换为 B020 / B021 Workbench 双阶段交付。详见 `docs/adr/2026-05-15-workbench-direction.md`。
+> 2026-05-15 修订（二次）：原 B009 Broker Adapter Paper 已移除；workbench 路径从 2 个批次（B020/B021）扩为 4 个批次（B020 Dev Infra + B021 Cloud Deploy + B022 Workbench Phase 1 + B023 Workbench Phase 2）以容纳 cloud-deployed 多设备访问需求。详见 ADR `docs/adr/2026-05-15-workbench-direction.md` 及云部署 addendum。
 
 | PRD 编号 | 目标 | 状态 / 实际批次 |
 |---|---|---|
@@ -331,12 +356,14 @@ MVP 整体验收要求：
 | B006 Risk Parity Backtest MVP | 风险平价、目标波动率、组合风险稳定器 | ✅ 已完成（B010；B019 retune 收口） |
 | B007 Portfolio Allocation and Risk | 多策略资金分配、组合级风控 | ✅ 已完成（B011） |
 | B008 Paper Trading / Mock Broker | 目标仓位输出 + 抽象 BrokerAdapter + Mock | ✅ 已完成（B012） |
-| **B020 Research Workbench (Phase 1)** | 本地 SPA：策略浏览 / 回测查看 / 研究报告渲染 / 推荐组合 / snapshots / backlog | 🚧 计划中 |
-| **B021 Workbench Phase 2** | 手动执行 UI：position diff / order ticket / fill journal | ⏳ Phase 1 完成后 |
+| **B020 Workbench Dev Infrastructure** | workbench skeleton + Python/Node 工具链 + CI workflows + 测试策略 + 安全 guard 脚手架 + OpenAPI ↔ TS pipeline + 文档 | 🚧 计划中（next batch） |
+| **B021 Workbench Cloud Deploy & Auth** | Google OAuth + SQLite + Repository 数据层 + Dockerfile + systemd + nginx vhost + cert + CI/CD + 备份 + 可观测性 | ⏳ B020 完成后 |
+| **B022 Research Workbench (Phase 1)** | cloud SPA: 7 页 read-mostly + 最小 write，部署到 trade.guangai.ai | ⏳ B021 完成后 |
+| **B023 Workbench Phase 2** | 手动执行 UI：position diff / order ticket / fill journal | ⏳ B022 完成后 |
 
 > 注：原 "B009 Broker Adapter Paper（IBKR/Alpaca paper adapter，仍不做 live）" 已移除。
 > PRD §5 已将"实际 broker API 接入"明确划入非 MVP；用户路线选择 manual execution，
-> 由 B021 工作台 UI 服务，不做自动 paper / live 接入。`BrokerAdapter` ABC（B012）保留为
+> 由 B023 工作台 UI 服务，不做自动 paper / live 接入。`BrokerAdapter` ABC（B012）保留为
 > 未来扩展锚点，永久延后到非 MVP 范围。
 
 ## 13. 风险清单

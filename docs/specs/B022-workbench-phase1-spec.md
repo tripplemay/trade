@@ -1,10 +1,12 @@
-# B020 Research Workbench (Phase 1) Spec
+# B022 Research Workbench (Phase 1) Spec
+
+> **Status (2026-05-15):** This spec has been renumbered from B020 to B022 after the introduction of two infrastructure batches (B020 Dev Infrastructure + B021 Cloud Deploy & Auth). It also pre-dates the cloud-deployment + Google OAuth architectural pivot (`docs/adr/2026-05-15-workbench-direction.md` cloud addendum). **The page-level / feature-level decomposition stays valid; the localhost-only / no-auth / file-based-data assumptions are stale and will be revised at B021 done wrap-up** (Recommendations / Snapshots / Backlog API endpoints will then be wired through SQLite + Repository layer instead of direct file reads, every page will gate-check the OAuth session, and the deployment context will be the GCP VM at `trade.guangai.ai`). The current content is preserved as the page-design baseline and is not yet executable as-is.
 
 ## Background
 
 B019 closes the strategy-research loop on B010 / B013 (cadence + vol_target retune, `docs/test-reports/B019-retune-signoff-2026-05-15.md`). PRD §10 / §11 success criteria are substantively met; PRD §12 originally listed "B009 Broker Adapter Paper" as the final MVP milestone but the user (single individual investor, USD 100k–500k personal account, monthly/quarterly cadence) elected manual execution over auto broker integration. Auto broker integration is permanently moved to PRD §5 non-MVP scope (see ADR `docs/adr/2026-05-15-workbench-direction.md`, commit `b7cba91`, and PRD §7 / §12 amendments in commit `522e34a`).
 
-PRD §12 has been rewritten so the remaining MVP path is **B020 Research Workbench (Phase 1)** + **B021 Workbench Phase 2 (manual execution UI)**. B020 is read-mostly with the minimum-necessary write actions; B021 layers manual-execution workflows on top.
+PRD §12 has been rewritten so the remaining MVP path is **B020 Dev Infrastructure** + **B021 Cloud Deploy & Auth Infrastructure** + **B022 Research Workbench (Phase 1, this spec)** + **B023 Workbench Phase 2 (manual execution UI)**. B022 is read-mostly with the minimum-necessary write actions; B023 layers manual-execution workflows on top. B020 + B021 establish the dev tooling and cloud / auth infrastructure that B022 + B023 then ship features on top of.
 
 The workbench is the new canonical user surface. The CLI remains supported for automation, CI, and headless reproducibility — every UI action must have an equivalent CLI command. The workbench never connects to a broker, never holds a credential, and never places an order.
 
@@ -307,7 +309,7 @@ Executor: generator.
 
 Backend: `GET /api/recommendations/current` loads `accounts/me.json` + latest snapshot + master portfolio config, runs the master portfolio at the latest signal date, returns `TargetPositions` + diff vs current account + gate check results + wash-sale flags (heuristic: same symbol bought within last 30 days from journal). `POST /api/recommendations/export-ticket` writes a Markdown checklist to `docs/runs/<date>/order-ticket-<date>.md` and returns the path; does **not** place any order. Frontend: AllocationPie + AllocationBar + positions table + rationale + gate panel + wash-sale flags + Export Markdown Ticket button. If `accounts/me.json` is missing, empty state with instructions.
 
-Acceptance: with a committed sample `accounts/me.json` fixture, end-to-end run produces a valid target portfolio with stable numbers; export ticket button creates a Markdown file matching the B020 ticket template; literal disclaimer "research-only; this is a manual review checklist, not a trading instruction" is asserted in the exported Markdown by unit test.
+Acceptance: with a committed sample `accounts/me.json` fixture, end-to-end run produces a valid target portfolio with stable numbers; export ticket button creates a Markdown file matching the B022 ticket template; literal disclaimer "research-only; this is a manual review checklist, not a trading instruction" is asserted in the exported Markdown by unit test.
 
 ### F011 — Snapshots page (vertical slice)
 
@@ -348,12 +350,12 @@ Phase 1 verification checklist:
 7. Existing `trade/` test suite still passes unchanged.
 8. CI passes on the final F014 commit.
 
-Codex writes `docs/test-reports/B020-workbench-phase1-signoff-2026-MM-DD.md` using `framework/templates/signoff-report.md`. Signoff documents scope, verification commands and results, screenshots referenced, known limitations (Phase 2 gaps: execution UI, account journal, in-UI account editing), and the standard research-only disclaimer. Update `progress.json` (`status → done`, `docs.signoff` set, `evaluator_feedback` summarizes), close `BL-B011-S2` if a satellite implementation batch has been opened in the interim (not required), otherwise leave it as high-priority backlog.
+Codex writes `docs/test-reports/B022-workbench-phase1-signoff-2026-MM-DD.md` using `framework/templates/signoff-report.md`. Signoff documents scope, verification commands and results, screenshots referenced, known limitations (Phase 2 gaps: execution UI, account journal, in-UI account editing), and the standard research-only disclaimer. Update `progress.json` (`status → done`, `docs.signoff` set, `evaluator_feedback` summarizes), close `BL-B011-S2` if a satellite implementation batch has been opened in the interim (not required), otherwise leave it as high-priority backlog.
 
 ## Out Of Scope
 
-- **Execution UI** — diff / order-ticket / fill-upload UIs all deferred to B021. Phase 1 Recommendations page exports a Markdown checklist only.
-- **Account journal viewer** — historical fill log, slippage trends, kill-switch event log all in B021.
+- **Execution UI** — diff / order-ticket / fill-upload UIs all deferred to B023. Phase 1 Recommendations page exports a Markdown checklist only.
+- **Account journal viewer** — historical fill log, slippage trends, kill-switch event log all in B023.
 - **In-UI editing of `accounts/me.json`** — Phase 1 expects manual edits + reload.
 - **Multi-panel dockable layouts** (`react-grid-layout` style — user adds/removes/saves panels across the workbench) — deferred to Phase 3+. **Exception:** F008 Backtest viewer uses a single shadcn `<ResizablePanelGroup>` horizontal split, confined to that one page; this is not the deferred capability.
 - **Command palette** (⌘K cmdk), **theme toggle**, **i18n**, **real-time data streams (WebSocket / SSE for live prices)**, **desktop packaging (Tauri / Electron)** — deferred to Phase 3+ or never.
