@@ -9,7 +9,15 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["tests/unit/**/*.{spec,test}.ts"],
-    exclude: ["tests/e2e/**", "tests/safety/**", "node_modules/**", ".next/**"],
+    include: [
+      "tests/unit/**/*.{spec,test}.ts",
+      "tests/safety/no-broker-sdk-imports.spec.ts",
+    ],
+    exclude: [
+      "tests/e2e/**",
+      "tests/safety/disclaimer-present.spec.ts",
+      "node_modules/**",
+      ".next/**",
+    ],
   },
 });

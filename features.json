@@ -22,7 +22,7 @@
       "title": "测试策略文档 + 安全 guard 脚手架",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "(1) 新增 docs/dev/workbench-testing-strategy.md ≤ 200 行，覆盖 L1 unit (pytest/Vitest 默认 CI 跑 / 无 network)、L2 integration (httpx TestClient 后端 / Vitest mocked API 前端 / Playwright against running backend)、L3 E2E (Playwright + start-server-and-test pattern, chromium only B020)、安全 regression 测试（独立目录、CI 跑、视为边界违反 guard）、fixture/mock-first 默认 + framework v0.9.21 #1 (synthetic-vs-real reversal) 引用。(2) 实现 5 个安全 regression 测试：tests/safety/test_no_broker_sdk_imports.py (backend 全树 grep ib_insync/alpaca/alpaca_trade_api/futu/tiger/tradier/polygon/oandapy/tradeapi)、tests/safety/test_no_paper_or_live_urls.py (backend 全树 grep paper-api.alpaca.markets/api.alpaca.markets/paper.gateway.ibkr.com/gw.gateway.ibkr.com/api.futu.com/api.tigerbrokers.com)、tests/safety/test_settings_env_allowlist.py (workbench_api.settings 仅读 allowlist 内的 env，B020 allowlist 为空)、tests/safety/no-broker-sdk-imports.spec.ts (frontend 全树 + package.json grep @alpaca-/ib-insync/futu-api/tiger-securities)、tests/safety/disclaimer-present.spec.ts (Playwright 加载每个 navigable route，B020 = 仅 / ，断言 DISCLAIMER_TEXT 可见)。(3) 5 个测试在 F003 commit 全绿；每个测试在故意 throwaway 违反 commit 上必须红（Codex F005 trip-test 验证）；测试名自解释（如 test_alpaca_not_imported_anywhere）。两个测试在 workbench-backend yml 跑（3 个 backend），两个在 workbench-frontend yml 跑（2 个 frontend），按 yml step 分清。"
     },
     {
