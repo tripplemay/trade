@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B021-cloud-deploy-auth：`building`**；Generator 接 F001（Google OAuth + NextAuth.js v5 + 后端 JWT cookie 验证 + 单 email allowlist），共 6 features 完成 0。预估 2-3 周。
+- **B021-cloud-deploy-auth：`building`**；F001 OAuth 已完成（commit 2a53c89，CI 全绿），共 6 features 完成 1。Generator 接 F002（SQLite + Alembic + Repository + workbench-bootstrap CLI + /api/health 扩 db_connectivity）。预估剩余 1.5-2.5 周。
 - Spec：`docs/specs/B021-cloud-deploy-auth-spec.md`
 - 范围：cloud infra 层——Google OAuth（F001）+ SQLite + Alembic + Repository 数据层（F002）+ systemd workbench-{backend,frontend}.service + nginx vhost trade.guangai.ai + certbot（F003）+ GitHub Actions push→SSH→deploy→healthcheck→rollback（F004）+ SQLite→GCS daily backup + 30 daily/12 monthly retention + restore（F005，需用户先 VM SA scope 扩展）+ Codex L1+L2 真 VM 验收 + 可观测性 + signoff（F006）。
 - 后续路径：**B022 Workbench Phase 1**（14 features，原 spec B022-workbench-phase1，cloud 适配后修订）→ **B023 Workbench Phase 2**（manual execution UI）。

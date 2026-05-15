@@ -6,7 +6,7 @@
       "title": "Google OAuth integration (NextAuth + 后端 session 验证)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Frontend：装 next-auth@5 + @auth/core；Google provider 用 GOOGLE_OAUTH_CLIENT_ID + _SECRET + NEXTAUTH_SECRET；redirect URI `https://trade.guangai.ai/api/auth/callback/google`。/api/auth/[...nextauth]/route.ts mount NextAuth；/lib/auth.ts 含 signIn callback 检查 `profile.email === ALLOWED_USER_EMAIL`，非 allowlist 返回 false。middleware.ts enforce JWT cookie 于 /(protected)/ + /api/(backend-proxy)/ 路由。/login 页面只渲染 Google 登录按钮，无 register UI。Backend：装 python-jose[cryptography]；workbench_api/auth/{jwt_validator,dependency}.py；read JWT cookie + verify with NEXTAUTH_SECRET + extract email + check allowlist；require_authenticated_user() FastAPI Depends；settings allowlist 加 NEXTAUTH_SECRET + ALLOWED_USER_EMAIL。/api/health 保持无 auth（nginx upstream + uptime monitor 需要）。安全 regression 新增：production env 下 NextAuth callback URL 必须含 trade.guangai.ai 字符串。验收：(1) 匿名访问 / 跳 /login；(2) 点 Google 登录走完 OAuth flow 回到 /；(3) 非 allowlist 邮箱 → NextAuth signIn callback 拒 → error 页 'restricted to a single authorized user'；(4) authenticated /api/protected-test → 200 + email；匿名 → 401；非 allowlist 手造 JWT → 403；(5) /api/health 仍 200 无 auth；(6) B020 既有测试 + 新 auth 测试全绿；(7) safety regression assert callback URL prod env 含 trade.guangai.ai。"
     },
     {
