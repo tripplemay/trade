@@ -72,6 +72,7 @@ STATUS_SKIPPED = "skipped"
 DIMENSION_VOL_TARGET = "vol_target"
 DIMENSION_UNIVERSE = "universe"
 DIMENSION_CADENCE = "cadence"
+DIMENSION_CADENCE_VOL_TARGET = "cadence_vol_target"
 
 
 @dataclass(frozen=True, slots=True)
@@ -86,7 +87,14 @@ class SweepWindow:
 
 @dataclass(frozen=True, slots=True)
 class SweepRunResult:
-    """One sweep cell: strategy × dimension-value × window."""
+    """One sweep cell: strategy × dimension-value × window.
+
+    The trailing optional fields ``cadence`` / ``vol_target`` / ``is_baseline``
+    were added in B019 for the joint cadence×vol-target sweep so the gate
+    evaluator can group cells by typed (cadence, vol_target) keys without
+    re-parsing the ``value`` string. They default to ``None`` / ``False`` so
+    B018 callsites continue to work unchanged.
+    """
 
     strategy: str
     dimension: str
@@ -101,6 +109,9 @@ class SweepRunResult:
     transaction_costs: float
     sharpe: float
     rebalance_count: int = 0
+    cadence: str | None = None
+    vol_target: float | None = None
+    is_baseline: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -136,6 +147,61 @@ DEFAULT_CADENCES: tuple[str, ...] = (
     CADENCE_SEMIANNUAL,
     CADENCE_ANNUAL,
 )
+
+
+# --------------------------------------------------------------------------- #
+# B019 — joint cadence × vol-target sweep + retune-gate dataclasses
+# --------------------------------------------------------------------------- #
+
+
+@dataclass(frozen=True, slots=True)
+class RetuneGate:
+    """Four-condition acceptance gate for a (cadence, vol_target) candidate."""
+
+    min_calm_uplift_pct: float = 1.0
+    min_calm_gap_narrowing_pp: float = 5.0
+    do_no_harm_on_stress: bool = True
+    max_turnover_increase_pct: float = 15.0
+
+
+DEFAULT_GATE: RetuneGate = RetuneGate()
+
+
+@dataclass(frozen=True, slots=True)
+class CellGateVerdict:
+    """Per-(cadence, vol_target) gate outcome with all four condition flags."""
+
+    cadence: str
+    vol_target: float
+    calm_ending_value: float
+    baseline_calm_ending_value: float
+    calm_uplift_pct: float
+    calm_gap_narrowing_pp: float
+    stress_max_dd_deltas: tuple[tuple[str, float], ...]
+    calm_turnover: float
+    baseline_calm_turnover: float
+    turnover_increase_pct: float
+    pass_calm_uplift: bool
+    pass_calm_gap_narrowing: bool
+    pass_stress_do_no_harm: bool
+    pass_turnover: bool
+    all_pass: bool
+
+
+@dataclass(frozen=True, slots=True)
+class RetuneGateVerdict:
+    """Top-level retune verdict for one strategy on one snapshot."""
+
+    strategy: str
+    gate: RetuneGate
+    default_cadence: str
+    default_vol_target: float
+    calm_window: str
+    stress_windows: tuple[str, ...]
+    cells: tuple[CellGateVerdict, ...]
+    gate_met: bool
+    winning_cell: tuple[str, float] | None
+
 
 # --------------------------------------------------------------------------- #
 # Public sweep entry points
@@ -269,6 +335,147 @@ def run_cadence_sweep(
     return results
 
 
+def run_cadence_vs_default_sweep(
+    records: tuple[PriceBar, ...],
+    strategy_name: str,
+    cadences: Sequence[str],
+    vol_targets: Sequence[float],
+    windows: Sequence[SweepWindow],
+    *,
+    default_baseline: bool = True,
+    backtest_parameters: BacktestParameters | None = None,
+) -> list[SweepRunResult]:
+    """Joint (cadence × vol_target) sweep plus the strategy default baseline.
+
+    Returns one row per (cadence, vol_target, window) for the explicit grid
+    plus, when ``default_baseline=True``, one extra row per window that
+    holds the strategy's *current* default ``(cadence, vol_target)``. The
+    default values are read from the live ``RiskParityParameters()`` /
+    ``RegimeAdaptiveConfig()`` instance so the gate evaluator always
+    compares deltas against the real on-disk default rather than a
+    hard-coded constant.
+
+    Cell rows carry ``cadence``, ``vol_target``, and ``is_baseline=False``.
+    Baseline rows carry the same metadata with ``is_baseline=True``.
+    """
+
+    _validate_strategy(strategy_name)
+    parameters = backtest_parameters or BacktestParameters()
+    results: list[SweepRunResult] = []
+
+    for cadence in cadences:
+        for target in vol_targets:
+            for window in windows:
+                results.append(
+                    _run_cadence_vol_target_cell(
+                        records=records,
+                        strategy_name=strategy_name,
+                        cadence=cadence,
+                        vol_target=target,
+                        window=window,
+                        parameters=parameters,
+                        is_baseline=False,
+                    )
+                )
+
+    if default_baseline:
+        default_cadence, default_vt = _default_cadence_vol_target(strategy_name)
+        for window in windows:
+            results.append(
+                _run_cadence_vol_target_cell(
+                    records=records,
+                    strategy_name=strategy_name,
+                    cadence=default_cadence,
+                    vol_target=default_vt,
+                    window=window,
+                    parameters=parameters,
+                    is_baseline=True,
+                )
+            )
+
+    return results
+
+
+def evaluate_retune_gate(
+    results: Sequence[SweepRunResult],
+    strategy_name: str,
+    *,
+    calm_window: str,
+    stress_windows: Sequence[str],
+    gate: RetuneGate = DEFAULT_GATE,
+    starting_capital: float | None = None,
+) -> RetuneGateVerdict:
+    """Evaluate the four-condition retune gate over a cadence-vs-default sweep.
+
+    The verdict is deterministic: cells are iterated in sorted
+    ``(cadence, vol_target)`` order, and the winning cell (when multiple
+    candidates pass) is selected by the spec-mandated tiebreaker
+    ``(highest calm ending value, lowest stress-2 max DD, lowest turnover)``.
+    """
+
+    _validate_strategy(strategy_name)
+    if starting_capital is None:
+        starting_capital = BacktestParameters().starting_capital
+    stress_window_tuple = tuple(stress_windows)
+
+    strategy_rows = [row for row in results if row.strategy == strategy_name]
+    baseline_rows = [
+        row for row in strategy_rows if row.is_baseline and row.status == STATUS_RAN
+    ]
+    sweep_rows = [
+        row for row in strategy_rows if not row.is_baseline and row.status == STATUS_RAN
+    ]
+
+    baseline_by_window: dict[str, SweepRunResult] = {}
+    for row in baseline_rows:
+        baseline_by_window[row.window] = row
+
+    default_cadence = ""
+    default_vt = 0.0
+    if baseline_rows:
+        first = baseline_rows[0]
+        if first.cadence is not None:
+            default_cadence = first.cadence
+        if first.vol_target is not None:
+            default_vt = float(first.vol_target)
+
+    grouped: dict[tuple[str, float], dict[str, SweepRunResult]] = {}
+    for row in sweep_rows:
+        if row.cadence is None or row.vol_target is None:
+            continue
+        key = (row.cadence, float(row.vol_target))
+        grouped.setdefault(key, {})[row.window] = row
+
+    verdicts: list[CellGateVerdict] = []
+    for key in sorted(grouped.keys()):
+        cadence, vt = key
+        verdicts.append(
+            _compute_cell_verdict(
+                cadence=cadence,
+                vol_target=vt,
+                cell_results=grouped[key],
+                baseline_results=baseline_by_window,
+                calm_window=calm_window,
+                stress_windows=stress_window_tuple,
+                gate=gate,
+                starting_capital=starting_capital,
+            )
+        )
+
+    winning_cell = _pick_winning_cell(verdicts, stress_window_tuple)
+    return RetuneGateVerdict(
+        strategy=strategy_name,
+        gate=gate,
+        default_cadence=default_cadence,
+        default_vol_target=default_vt,
+        calm_window=calm_window,
+        stress_windows=stress_window_tuple,
+        cells=tuple(verdicts),
+        gate_met=winning_cell is not None,
+        winning_cell=winning_cell,
+    )
+
+
 # --------------------------------------------------------------------------- #
 # Window-runner: dispatches to B010 / B013 entry, computes metrics
 # --------------------------------------------------------------------------- #
@@ -342,6 +549,222 @@ def _run_window(
         sharpe=metrics["sharpe"],
         rebalance_count=metrics["rebalance_count"],
     )
+
+
+def _run_cadence_vol_target_cell(
+    *,
+    records: tuple[PriceBar, ...],
+    strategy_name: str,
+    cadence: str,
+    vol_target: float,
+    window: SweepWindow,
+    parameters: BacktestParameters,
+    is_baseline: bool,
+) -> SweepRunResult:
+    value_str = "default" if is_baseline else f"{cadence}@{vol_target:.4f}"
+    if cadence not in SUPPORTED_CADENCES:
+        return replace(
+            _skipped(
+                strategy=strategy_name,
+                dimension=DIMENSION_CADENCE_VOL_TARGET,
+                value=value_str,
+                window=window.name,
+                reason=(
+                    f"cadence {cadence!r} not in supported set "
+                    f"{sorted(SUPPORTED_CADENCES)!r}"
+                ),
+            ),
+            cadence=cadence,
+            vol_target=vol_target,
+            is_baseline=is_baseline,
+        )
+    if vol_target <= 0:
+        return replace(
+            _skipped(
+                strategy=strategy_name,
+                dimension=DIMENSION_CADENCE_VOL_TARGET,
+                value=value_str,
+                window=window.name,
+                reason=f"target_volatility must be positive; got {vol_target}",
+            ),
+            cadence=cadence,
+            vol_target=vol_target,
+            is_baseline=is_baseline,
+        )
+    config = _build_config_with_vol_target(strategy_name, vol_target)
+    base = _run_window(
+        records=records,
+        strategy=strategy_name,
+        dimension=DIMENSION_CADENCE_VOL_TARGET,
+        value=value_str,
+        window=window,
+        config=config,
+        cadence=cadence,
+        parameters=parameters,
+    )
+    return replace(
+        base,
+        cadence=cadence,
+        vol_target=vol_target,
+        is_baseline=is_baseline,
+    )
+
+
+def _default_cadence_vol_target(strategy_name: str) -> tuple[str, float]:
+    """Read the strategy's *current* default (cadence, vol_target).
+
+    For B010 the cadence is ``RiskParityParameters().rebalance_frequency``.
+    For B013 the config dataclass currently has no ``rebalance_frequency``
+    field — the harness builds monthly signal dates by default — so the
+    default cadence is ``CADENCE_MONTHLY``.
+    """
+
+    if strategy_name == STRATEGY_B010:
+        cfg = RiskParityParameters()
+        return (cfg.rebalance_frequency, float(cfg.target_volatility))
+    cfg_b013 = RegimeAdaptiveConfig()
+    return (CADENCE_MONTHLY, float(cfg_b013.target_volatility))
+
+
+def _compute_cell_verdict(
+    *,
+    cadence: str,
+    vol_target: float,
+    cell_results: Mapping[str, SweepRunResult],
+    baseline_results: Mapping[str, SweepRunResult],
+    calm_window: str,
+    stress_windows: tuple[str, ...],
+    gate: RetuneGate,
+    starting_capital: float,
+) -> CellGateVerdict:
+    calm_cell = cell_results.get(calm_window)
+    calm_base = baseline_results.get(calm_window)
+
+    if (
+        calm_cell is None
+        or calm_base is None
+        or calm_cell.status != STATUS_RAN
+        or calm_base.status != STATUS_RAN
+        or starting_capital <= 0
+    ):
+        return CellGateVerdict(
+            cadence=cadence,
+            vol_target=vol_target,
+            calm_ending_value=0.0,
+            baseline_calm_ending_value=0.0,
+            calm_uplift_pct=0.0,
+            calm_gap_narrowing_pp=0.0,
+            stress_max_dd_deltas=tuple((sw, 0.0) for sw in stress_windows),
+            calm_turnover=0.0,
+            baseline_calm_turnover=0.0,
+            turnover_increase_pct=0.0,
+            pass_calm_uplift=False,
+            pass_calm_gap_narrowing=False,
+            pass_stress_do_no_harm=False,
+            pass_turnover=False,
+            all_pass=False,
+        )
+
+    if calm_base.ending_value <= 0:
+        calm_uplift_pct = 0.0
+    else:
+        calm_uplift_pct = (
+            (calm_cell.ending_value - calm_base.ending_value)
+            / calm_base.ending_value
+            * 100.0
+        )
+
+    base_gap_pp = calm_base.gap_vs_60_40 / starting_capital * 100.0
+    cell_gap_pp = calm_cell.gap_vs_60_40 / starting_capital * 100.0
+    calm_gap_narrowing_pp = abs(base_gap_pp) - abs(cell_gap_pp)
+
+    if calm_base.turnover <= 0:
+        turnover_increase_pct = 0.0 if calm_cell.turnover <= 0 else float("inf")
+    else:
+        turnover_increase_pct = (
+            (calm_cell.turnover - calm_base.turnover) / calm_base.turnover * 100.0
+        )
+
+    stress_deltas: list[tuple[str, float]] = []
+    do_no_harm = True
+    for stress_name in stress_windows:
+        cell_s = cell_results.get(stress_name)
+        base_s = baseline_results.get(stress_name)
+        if (
+            cell_s is None
+            or base_s is None
+            or cell_s.status != STATUS_RAN
+            or base_s.status != STATUS_RAN
+        ):
+            stress_deltas.append((stress_name, 0.0))
+            do_no_harm = False
+            continue
+        delta = cell_s.max_drawdown - base_s.max_drawdown
+        stress_deltas.append((stress_name, delta))
+        if cell_s.max_drawdown < base_s.max_drawdown - 1e-9:
+            do_no_harm = False
+
+    pass_calm_uplift = calm_uplift_pct >= gate.min_calm_uplift_pct
+    pass_calm_gap_narrowing = calm_gap_narrowing_pp >= gate.min_calm_gap_narrowing_pp
+    pass_stress_do_no_harm = do_no_harm if gate.do_no_harm_on_stress else True
+    pass_turnover = turnover_increase_pct <= gate.max_turnover_increase_pct
+    all_pass = (
+        pass_calm_uplift
+        and pass_calm_gap_narrowing
+        and pass_stress_do_no_harm
+        and pass_turnover
+    )
+
+    return CellGateVerdict(
+        cadence=cadence,
+        vol_target=vol_target,
+        calm_ending_value=calm_cell.ending_value,
+        baseline_calm_ending_value=calm_base.ending_value,
+        calm_uplift_pct=calm_uplift_pct,
+        calm_gap_narrowing_pp=calm_gap_narrowing_pp,
+        stress_max_dd_deltas=tuple(stress_deltas),
+        calm_turnover=calm_cell.turnover,
+        baseline_calm_turnover=calm_base.turnover,
+        turnover_increase_pct=turnover_increase_pct,
+        pass_calm_uplift=pass_calm_uplift,
+        pass_calm_gap_narrowing=pass_calm_gap_narrowing,
+        pass_stress_do_no_harm=pass_stress_do_no_harm,
+        pass_turnover=pass_turnover,
+        all_pass=all_pass,
+    )
+
+
+def _pick_winning_cell(
+    cells: Sequence[CellGateVerdict],
+    stress_windows: tuple[str, ...],
+) -> tuple[str, float] | None:
+    passing = [cell for cell in cells if cell.all_pass]
+    if not passing:
+        return None
+    if len(stress_windows) >= 2:
+        tiebreak_window: str | None = stress_windows[1]
+    elif len(stress_windows) >= 1:
+        tiebreak_window = stress_windows[0]
+    else:
+        tiebreak_window = None
+
+    def _sort_key(cell: CellGateVerdict) -> tuple[float, float, float, str, float]:
+        stress_dd_delta = 0.0
+        if tiebreak_window is not None:
+            for window_name, delta in cell.stress_max_dd_deltas:
+                if window_name == tiebreak_window:
+                    stress_dd_delta = delta
+                    break
+        return (
+            -cell.calm_ending_value,
+            -stress_dd_delta,
+            cell.turnover_increase_pct,
+            cell.cadence,
+            cell.vol_target,
+        )
+
+    winner = min(passing, key=_sort_key)
+    return (winner.cadence, winner.vol_target)
 
 
 def _metrics_from_risk_parity(
@@ -565,9 +988,11 @@ __all__ = (
     "CADENCE_QUARTERLY",
     "CADENCE_SEMIANNUAL",
     "DEFAULT_CADENCES",
+    "DEFAULT_GATE",
     "DEFAULT_UNIVERSE_VARIANTS",
     "DEFAULT_VOL_TARGETS",
     "DIMENSION_CADENCE",
+    "DIMENSION_CADENCE_VOL_TARGET",
     "DIMENSION_UNIVERSE",
     "DIMENSION_VOL_TARGET",
     "STATUS_RAN",
@@ -575,12 +1000,17 @@ __all__ = (
     "STRATEGY_B010",
     "STRATEGY_B013",
     "SUPPORTED_CADENCES",
+    "CellGateVerdict",
+    "RetuneGate",
+    "RetuneGateVerdict",
     "SweepRunResult",
     "SweepWindow",
     "UniverseVariant",
     "VALID_STRATEGIES",
     "build_monthly_signal_dates",
+    "evaluate_retune_gate",
     "run_cadence_sweep",
+    "run_cadence_vs_default_sweep",
     "run_universe_ablation_sweep",
     "run_vol_target_sweep",
 )

@@ -6,7 +6,7 @@
       "title": "Sweep harness fine-grid extension + 单元测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "扩展 trade/analysis/parameter_sweep.py（pure stdlib）：(1) 确认 run_vol_target_sweep 已接受任意 Sequence[float]；若有硬编码限制则放宽（任何正 vol_target 接受）。(2) 新增公共 helper run_cadence_vs_default_sweep(records, strategy_name, cadences, vol_targets, windows, *, default_baseline=True) -> list[SweepRunResult]，对 (cadence, vol_target) 笛卡尔积 + 策略当前 default 基线返回 deterministic 结果列表（默认基线作为额外 cell 含真实 default 值，不写死）。(3) 新增公共 helper evaluate_retune_gate(results, strategy_name, gate=DEFAULT_GATE) -> RetuneGateVerdict 返回 typed verdict 含 per-cell 4 条 gate pass/fail flags + top-level gate_met: bool + winning_cell: tuple[str, float] | None。DEFAULT_GATE 是 frozen dataclass: min_calm_uplift_pct=1.0 / min_calm_gap_narrowing_pp=5.0 / do_no_harm_on_stress=True / max_turnover_increase_pct=15.0。(4) 新增 tests/unit/test_parameter_sweep_b019.py 覆盖：cell 数量 = len(cadences)*len(vol_targets)+1；default baseline cell 携带策略真实 default 值不是 hardcoded 常量；evaluate_retune_gate 正确识别 all-pass / fails-gate-3 / fails-gate-4 / no-cell-qualifies 4 种 case；两次连续 run 返回字节相同 verdict（determinism）；运行后策略 default 未被 mutate。(5) winner tie-breaker 顺序：calm ending value > stress2 max DD > turnover。.venv/bin/python -m pytest / ruff check trade tests scripts / mypy trade / compileall -q trade tests scripts 全清。**B018 已有的 parameter_sweep 测试全部继续通过，不得回归**。"
     },
     {
