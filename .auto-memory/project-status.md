@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B020-dev-infrastructure：`verifying`**；Generator 全部 4 个 executor:generator 功能完成 F001 (dc0c4c6) + F002 (d5c1ba7) + F003 (6184a1b) + F004 (393e180)。5 features 完成 4，F005 (executor:codex) 待 Codex 接手：写 branch-protection-guidance.md + workbench-architecture.md skeleton + 执行 8 项验收 checklist（含 5 trip-test 安全 guard + 1 trip-test OpenAPI drift）+ 写 signoff 报告。详见 progress.json.generator_handoff。
+- **B020-dev-infrastructure：`fixing`**；Generator 全部 4 个 executor:generator 功能完成 F001 (dc0c4c6) + F002 (d5c1ba7) + F003 (6184a1b) + F004 (393e180)。F005 已由 Codex 完成独立验收，但发现阻塞：`workbench/scripts/start_workbench.sh` 在本机默认 `/bin/bash` 3.2.57 上因 `wait -n` 失败，导致一键 boot 命令不可用；已回传 generator 修复。详见 progress.json.evaluator_feedback / generator_handoff。
 - Spec：`docs/specs/B020-dev-infrastructure-spec.md`
 - 范围：纯 dev tooling 批次——workbench/{backend,frontend} 骨架 + FastAPI hello-world + Next.js 14 placeholder + Vitest/Playwright config + 2 个 CI workflows + 5 个安全 guard regression 测试 + OpenAPI ↔ TS pipeline + dev 文档 + branch protection 指引。预估 1-1.5 周。
 - 后续路径（renumber）：**B021 Cloud Deploy & Auth**（Google OAuth + SQLite + Dockerfile + nginx vhost for trade.guangai.ai + CI/CD push→SSH→deploy + 备份 + 可观测性）→ **B022 Workbench Phase 1**（14 features，原 B020 spec 重命名，cloud 适配后修订）→ **B023 Workbench Phase 2**（manual execution UI）。
@@ -31,6 +31,7 @@ type: project
 ## 已知 gap（非阻塞）
 - Backlog: BL-B010-S1 low / **BL-B011-S2 high (workbench Phase 1 后衔接 satellite)** / BL-B013-D1 low / BL-B013-D2 low；BL-B018-S1 已由 B019 resolved。
 - 本机 system `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
+- B020 本地验收：backend lint/type/tests、frontend lint/type/tests/build、Playwright E2E、OpenAPI drift、5 个安全 guard trip-test 均完成；唯一 blocking issue 是 boot 脚本 Bash 3.2 兼容性。
 - framework/proposed-learnings.md 当前为空（v0.9.21 + v0.9.22 已沉淀 3 条 5/15 候选）。
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->
