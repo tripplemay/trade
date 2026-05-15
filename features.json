@@ -22,7 +22,7 @@
       "title": "Deploy artifacts: systemd units + nginx vhost + certbot 准备",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "workbench/deploy/ 落地：(1) systemd/workbench-backend.service 跑 uvicorn 127.0.0.1:8723 as deploy:deploy + EnvironmentFile=/etc/workbench/workbench.env + CPUQuota=200% + MemoryMax=2G + OOMScoreAdjust=500 + Restart=on-failure；(2) systemd/workbench-frontend.service 跑 next .next/standalone/server.js on 127.0.0.1:3000 同样隔离 knob；(3) nginx/trade.guangai.ai.conf server block (ssl cert path placeholder + proxy_pass / → 3000 + /api/* → 8723 + 标准 proxy_set_header + gzip + client_max_body_size 10m)；(4) scripts/deploy.sh 拷贝 artifact + daemon-reload + restart 两个 service；(5) scripts/healthcheck.sh curl /api/health 10 次 2s 间隔，任一 200 with db_connectivity=ok 即过；(6) CERTBOT-SETUP.md 文档化用户一次性跑 `certbot --nginx -d trade.guangai.ai`；(7) 资源 quota 验证步骤（systemctl show CPUQuota MemoryMax OOMScoreAdjust）供 Codex F006 在 VM 跑。验收（部分 F006 在 VM 验）：nginx -t 过；systemctl status 两 service active；外网 curl /api/health 200；systemctl show 确认 quota；/ 跳 /login；htop 期间显示 workbench 受 quota 限制，邻居服务无干扰。"
     },
     {

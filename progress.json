@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "B020 dev infra 已签收（commit e47542b），按 ADR cloud addendum 路线起 B021 Cloud Deploy & Auth。本批次纯基础设施层：(F001) Google OAuth via NextAuth.js v5 + 后端 JWT cookie 验证 + 单 email allowlist；(F002) SQLite + Alembic migration + Repository 数据层 + workbench-bootstrap CLI 从 accounts/me.json + backlog.json 导入；(F003) systemd workbench-{backend,frontend}.service + nginx vhost trade.guangai.ai + certbot 准备 + CPUQuota=200% + MemoryMax=2G + OOMScoreAdjust=500 隔离邻居（kolquest / aigcgateway / apify-kol）；(F004) GitHub Actions workbench-deploy.yml workflow_run 链触发 + scp + SSH deploy + healthcheck + symlink rollback + PLACEHOLDER-REPLACE-ME pre-flight grep；(F005) systemd-timer 触发 SQLite snapshot → gzip → GCS 30 daily + 12 monthly retention + restore script，需用户先做 VM SA scope 扩展（manual prereq, ~30-60s 跨服务下线）；(F006) Codex L1 + L2 真 VM 验收 + observability (enriched /api/health + 结构化 log + 可选 Sentry) + signoff。**禁止引入：** 任何业务页面 / 执行 UI / 多用户 / 注册 / broker SDK / paper or live URL / Cloud SQL / Postgres。`trade/` 包保持纯 stdlib；workbench/ 独立。预估 2-3 周。用户已完 B021 prep 5/5（OAuth client + rotated secret + DNS A + VM deploy 用户 + GCS bucket + 7 GitHub Secrets 含 2 placeholder 已被替换）。下一个 manual action 是 F005 的 VM SA scope 扩展。",
   "total_features": 6,
-  "completed_features": 2,
+  "completed_features": 3,
   "fix_rounds": 0,
-  "current_sprint": "F003",
+  "current_sprint": "F004",
   "last_updated": "2026-05-15",
   "reference_docs": [
     "docs/specs/B021-cloud-deploy-auth-spec.md",
