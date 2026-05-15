@@ -1,0 +1,15 @@
+[Unit]
+Description=Daily workbench backup at 03:00 VM local time
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B021-cloud-deploy-auth-spec.md
+
+[Timer]
+# 03:00 is during the user's low-traffic window for the co-hosted services.
+# `Persistent=true` catches up missed runs after a reboot or maintenance
+# pause, so a downtime longer than 24h still yields exactly one backup
+# rather than zero on reboot.
+OnCalendar=*-*-* 03:00:00
+Persistent=true
+Unit=workbench-backup.service
+
+[Install]
+WantedBy=timers.target

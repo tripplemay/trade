@@ -38,7 +38,7 @@
       "title": "Backup automation (SQLite snapshot → GCS + retention + restore)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "workbench/deploy/backup/：(1) workbench-backup.sh as deploy 跑：sqlite3 .backup snapshot → gzip → gcloud storage cp gs://.../daily/ → 月初也 cp /monthly/ → prune 30 daily + 12 monthly → rm /tmp/wb-* → append /var/log/workbench/backup.log；(2) workbench-backup.service systemd one-shot User=deploy；(3) workbench-backup.timer daily 03:00 + Persistent=true；(4) workbench-restore.sh 接 backup filename arg + 下载 + ungzip + 替换 workbench.db + 交互确认（--force 可跳）。**前置 manual prereq（用户做，Generator 不能跑）：** VM SA scope 扩展 — gcloud compute instances stop kolmatrix-vps → set-service-account --scopes=cloud-platform → start；预计 30-60s 跨服务下线（kolquest / staging.kolmatrix / apify-kol / pm2 aigcgateway）。Generator 在 scope 扩完后 verify：metadata server 返回 cloud-platform scope；sudo -u deploy gcloud storage cp ... 写测试过。验收：(1) 用户完 manual prereq + scope 确认；(2) systemctl start backup.service 跑通 + gs://.../daily/ 见文件 + log 见行；(3) systemctl status backup.timer enabled + active + 次触发时间；(4) retention 测试：mtime hack 塞 35 daily 文件 + 触发 timer → 30 newest 留 / 5 oldest 删；(5) restore 测试：新 backup → 破坏 live DB → workbench-restore.sh --force → DB 复原；(6) backup.log 存在 + deploy:deploy + 644 + logrotate 月转。"
     },
     {
