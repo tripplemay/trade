@@ -5,6 +5,27 @@
 
 ---
 
+## v0.9.23 — 2026-05-15（B020 沉淀，3 条 learnings）
+
+**来源批次：**
+- B020-dev-infrastructure F001（workbench skeleton），首次本机 boot 卡 Playwright 系统库 + sudo 代理透传
+- B020 F002（CI workflows），GitHub Actions Node 20 → Node 24 forward-compat
+- B020 F003（safety guards），ruff SIM300 误判 uppercase const == frozenset()
+
+**触发原因：**
+- F001 本地 boot 90 分钟才发现是 sudo strip 了 user proxy env，提早写进 framework 防止后续 frontend 类批次重蹈
+- GHA 2026-06-02 changelog 给出 4 个月窗口；2026-09-16 后 Node 20 彻底移除。提前写硬规则避免集体红屏
+- ruff SIM300 + uppercase + 构造函数右值的组合是非显然陷阱，Generator 命中过一次值得固化
+
+**变更：**
+- `framework/harness/generator.md` 新增 §9 "Dev environment prerequisites — Playwright / Chromium 类前端项目"（含 WSL/Ubuntu 系统库清单 + sudo -E 代理透传 + 95proxies 持久化 + Spec/README 起草 checklist）
+- 同文件新增 §10 "GitHub Actions Node runtime forward-compat（2026-09-16 deadline）"（含强制要求新 workflow 加 `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` env var + 理由 + 实施 checklist）
+- 同文件新增 §11 "Python 编码约定 — ruff strict mode 常见陷阱"（含 SIM300 + uppercase const + frozenset() 反例 + 推荐写法 `len(...) == 0` / `not ...`）
+- 立即应用 §10 规则到 `.github/workflows/workbench-backend.yml` + `workbench-frontend.yml` 顶层 `env:` 块（不等 6 月被动切）
+- 归档 `framework/archive/proposed-learnings-archive-v0.9.23.md`
+
+---
+
 ## v0.9.22 — 2026-05-15（B019 沉淀，1 条 learning）
 
 **来源批次：**

@@ -1,45 +1,53 @@
 {
-  "sprint": "B020-dev-infrastructure",
+  "sprint": "B021-cloud-deploy-auth",
   "features": [
     {
       "id": "F001",
-      "title": "Workbench skeleton + Python/Node 工具链 bootstrap",
+      "title": "Google OAuth integration (NextAuth + 后端 session 验证)",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "建立 workbench/{backend,frontend} 目录骨架。Backend：pyproject.toml (FastAPI + Pydantic v2 + Uvicorn + pytest + httpx + ruff + mypy)；workbench_api/app.py 暴露 /health endpoint 返回 {status:ok, version:<git_sha>}；workbench_api/settings.py 含 env var 显式 allowlist（B020 为空）；ruff + mypy 全清；pytest 通过。Frontend：Next.js 14 + React 18 + TypeScript strict + Tailwind 3 + ESLint + Prettier + Vitest + Playwright config (chromium only)。Placeholder Home page 渲染 'Workbench scaffold OK' 卡 + Footer 含 canonical disclaimer (DISCLAIMER_TEXT 常量来自 lib/disclaimer.ts)。scripts/start_workbench.sh 并发启 backend (uvicorn 127.0.0.1:8723) + frontend (next dev 3000)。workbench/README.md 含 prerequisites + 一键 boot + dev/test/lint commands + 10 分钟 zero-to-running 承诺。验收：clean clone + boot ≤ 10 min；curl /health 返回正确 JSON；http://localhost:3000 显示 placeholder + disclaimer；pytest workbench/backend/tests/ + ruff workbench/backend + mypy workbench/backend 全清；npm test/lint/typecheck/playwright 全清；trade/ 既有 592+ 测试无回归。**禁止引入：** broker SDK / paper API / live URL / auth / DB / Docker / nginx / cloud（这些是 B021）；shadcn 模板 / 金融配色 / Inter / JetBrains Mono / AG Grid / charts（这些是 B022）。"
+      "status": "pending",
+      "acceptance": "Frontend：装 next-auth@5 + @auth/core；Google provider 用 GOOGLE_OAUTH_CLIENT_ID + _SECRET + NEXTAUTH_SECRET；redirect URI `https://trade.guangai.ai/api/auth/callback/google`。/api/auth/[...nextauth]/route.ts mount NextAuth；/lib/auth.ts 含 signIn callback 检查 `profile.email === ALLOWED_USER_EMAIL`，非 allowlist 返回 false。middleware.ts enforce JWT cookie 于 /(protected)/ + /api/(backend-proxy)/ 路由。/login 页面只渲染 Google 登录按钮，无 register UI。Backend：装 python-jose[cryptography]；workbench_api/auth/{jwt_validator,dependency}.py；read JWT cookie + verify with NEXTAUTH_SECRET + extract email + check allowlist；require_authenticated_user() FastAPI Depends；settings allowlist 加 NEXTAUTH_SECRET + ALLOWED_USER_EMAIL。/api/health 保持无 auth（nginx upstream + uptime monitor 需要）。安全 regression 新增：production env 下 NextAuth callback URL 必须含 trade.guangai.ai 字符串。验收：(1) 匿名访问 / 跳 /login；(2) 点 Google 登录走完 OAuth flow 回到 /；(3) 非 allowlist 邮箱 → NextAuth signIn callback 拒 → error 页 'restricted to a single authorized user'；(4) authenticated /api/protected-test → 200 + email；匿名 → 401；非 allowlist 手造 JWT → 403；(5) /api/health 仍 200 无 auth；(6) B020 既有测试 + 新 auth 测试全绿；(7) safety regression assert callback URL prod env 含 trade.guangai.ai。"
     },
     {
       "id": "F002",
-      "title": "CI workflows (workbench-backend + workbench-frontend)",
+      "title": "SQLite + Alembic 迁移 + Repository 数据层",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "新增 .github/workflows/workbench-backend.yml + workbench-frontend.yml。两个 workflow 都跑 PR + push to main，按 path filter 触发（workbench/backend/** 与 workbench/frontend/**）。workbench-backend：Python 3.11 setup + pip cache + install workbench/backend[dev] + pytest + ruff + mypy + 安全 guard 测试单独 step（让失败 surface 标识违反的边界）。workbench-frontend：Node 20 setup + npm cache + Playwright browser cache (chromium only) + npm ci + npm run lint/typecheck/test + start-server-and-test 并发跑 backend → Playwright E2E smoke；失败时上传 Playwright HTML report + screenshots/video artifact。验收：(1) 两 workflow 在 F002 commit 全绿；(2) 二跑命中 cache (workflow log 验证)；(3) 故意 throwaway commit 让 backend test 红 → workbench-backend fail (branch protection 下阻 merge)；(4) 故意 throwaway commit 让 frontend test 红 → workbench-frontend fail with artifact uploaded；(5) python-ci.yml 仍绿；(6) 典型 PR CI wall time ≤ 10 min（backend + frontend 并行 job）。"
+      "status": "pending",
+      "acceptance": "Backend workbench_api/db/：engine.py SQLAlchemy 2.x engine 工厂读 WORKBENCH_DB_URL；session.py FastAPI Depends 每请求一 session（commit on success / rollback on exception）；models/{account,backlog_entry,snapshot_meta}.py 三个 ORM 模型 mirror B012 accounts/me.json + backlog.json + snapshot 注册表；repositories/{base,account,backlog,snapshot}.py 薄包装 (get_by_id/list_all/upsert/delete)，纯 ORM 无业务逻辑。Alembic：migrations/env.py 配 engine；versions/0001_initial.py 建 3 表；scripts/migrate.sh 跑 alembic upgrade head。新增 workbench-bootstrap CLI（pyproject.toml entry point）：若仓库根有 accounts/me.json + backlog.json 则 upsert 到 DB，idempotent。验收：(1) alembic upgrade head 新库建 3 表，再跑 noop；(2) workbench-bootstrap 把 accounts/me.json + backlog.json 4 entries import 到 DB，再跑 idempotent；(3) Repository round-trip pytest 全过；(4) /api/health 加 db_connectivity:ok 字段（不通则 500）；(5) 本地 dev WORKBENCH_DB_URL=sqlite:///./workbench-dev.db 不依赖 /var/lib/workbench/；(6) safety regression：禁 psycopg2/mysqlclient/pymongo import。"
     },
     {
       "id": "F003",
-      "title": "测试策略文档 + 安全 guard 脚手架",
+      "title": "Deploy artifacts: systemd units + nginx vhost + certbot 准备",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "(1) 新增 docs/dev/workbench-testing-strategy.md ≤ 200 行，覆盖 L1 unit (pytest/Vitest 默认 CI 跑 / 无 network)、L2 integration (httpx TestClient 后端 / Vitest mocked API 前端 / Playwright against running backend)、L3 E2E (Playwright + start-server-and-test pattern, chromium only B020)、安全 regression 测试（独立目录、CI 跑、视为边界违反 guard）、fixture/mock-first 默认 + framework v0.9.21 #1 (synthetic-vs-real reversal) 引用。(2) 实现 5 个安全 regression 测试：tests/safety/test_no_broker_sdk_imports.py (backend 全树 grep ib_insync/alpaca/alpaca_trade_api/futu/tiger/tradier/polygon/oandapy/tradeapi)、tests/safety/test_no_paper_or_live_urls.py (backend 全树 grep paper-api.alpaca.markets/api.alpaca.markets/paper.gateway.ibkr.com/gw.gateway.ibkr.com/api.futu.com/api.tigerbrokers.com)、tests/safety/test_settings_env_allowlist.py (workbench_api.settings 仅读 allowlist 内的 env，B020 allowlist 为空)、tests/safety/no-broker-sdk-imports.spec.ts (frontend 全树 + package.json grep @alpaca-/ib-insync/futu-api/tiger-securities)、tests/safety/disclaimer-present.spec.ts (Playwright 加载每个 navigable route，B020 = 仅 / ，断言 DISCLAIMER_TEXT 可见)。(3) 5 个测试在 F003 commit 全绿；每个测试在故意 throwaway 违反 commit 上必须红（Codex F005 trip-test 验证）；测试名自解释（如 test_alpaca_not_imported_anywhere）。两个测试在 workbench-backend yml 跑（3 个 backend），两个在 workbench-frontend yml 跑（2 个 frontend），按 yml step 分清。"
+      "status": "pending",
+      "acceptance": "workbench/deploy/ 落地：(1) systemd/workbench-backend.service 跑 uvicorn 127.0.0.1:8723 as deploy:deploy + EnvironmentFile=/etc/workbench/workbench.env + CPUQuota=200% + MemoryMax=2G + OOMScoreAdjust=500 + Restart=on-failure；(2) systemd/workbench-frontend.service 跑 next .next/standalone/server.js on 127.0.0.1:3000 同样隔离 knob；(3) nginx/trade.guangai.ai.conf server block (ssl cert path placeholder + proxy_pass / → 3000 + /api/* → 8723 + 标准 proxy_set_header + gzip + client_max_body_size 10m)；(4) scripts/deploy.sh 拷贝 artifact + daemon-reload + restart 两个 service；(5) scripts/healthcheck.sh curl /api/health 10 次 2s 间隔，任一 200 with db_connectivity=ok 即过；(6) CERTBOT-SETUP.md 文档化用户一次性跑 `certbot --nginx -d trade.guangai.ai`；(7) 资源 quota 验证步骤（systemctl show CPUQuota MemoryMax OOMScoreAdjust）供 Codex F006 在 VM 跑。验收（部分 F006 在 VM 验）：nginx -t 过；systemctl status 两 service active；外网 curl /api/health 200；systemctl show 确认 quota；/ 跳 /login；htop 期间显示 workbench 受 quota 限制，邻居服务无干扰。"
     },
     {
       "id": "F004",
-      "title": "OpenAPI ↔ TypeScript types pipeline + CI drift check",
+      "title": "CI/CD pipeline (GitHub Actions push → SSH deploy → health check → rollback)",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "新增 workbench/frontend/scripts/generate-types.sh 脚本：(1) 后台启 backend uvicorn；(2) curl /openapi.json 到临时文件；(3) npx openapi-typescript /tmp/openapi.json -o workbench/frontend/src/types/api.ts；(4) 杀 backend；(5) git diff --exit-code workbench/frontend/src/types/api.ts（CI 用此 detect drift）。在 workbench-frontend.yml 加 CI step：跑 generate-types.sh + git diff，drift 时 fail。Placeholder Home page (F001) 必须 consume 生成的 /health type 验证 pipeline 全链路连通（TypeScript 编译器自动验证类型被消费）。验收：(1) generate-types.sh idempotent (跑两次产物字节相同)；(2) F004 commit CI drift check 通过；(3) 故意 throwaway commit 改 backend /health 响应 schema 但不重新跑 generate-types → CI fail（Codex F005 trip-test 验证）；(4) Home page 渲染来自 /health 的 typed data。"
+      "status": "pending",
+      "acceptance": ".github/workflows/workbench-deploy.yml：workflow_run 链触发（workbench-backend + workbench-frontend pass 后跑）；env 含 FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true（framework v0.9.23 #2）。Pre-flight grep 步：grep 仓库 + 待 SCP artifact 含 'PLACEHOLDER-REPLACE-ME' 字面串 fail（防 placeholder 进 prod 兜底）。Steps：checkout → python -m build backend → npm ci + npm run build frontend (.next/standalone)→ scp artifacts 到 deploy@$DEPLOY_HOST:/srv/workbench/releases/$GITHUB_SHA/ → ssh run deploy/scripts/deploy.sh 改 symlink /srv/workbench/current → $SHA + restart → ssh run healthcheck.sh；失败则 ssh run rollback.sh (symlink 回滚 + restart) + workflow fail。Post-success：find /srv/workbench/releases -mtime +30 GC。验收：(1) push to main 触发 workflow，全绿，< 10 min；(2) 日志含 build/scp/deploy/healthcheck 各 0 exit；(3) /api/health 返回 GITHUB_SHA = main HEAD；(4) 故意破坏 /api/health → workflow 跑 deploy → healthcheck fail → rollback 跑 → symlink 回旧 SHA → workflow non-zero exit；(5) 故意 throwaway commit 加 PLACEHOLDER-REPLACE-ME 字面 → pre-flight grep fail。"
     },
     {
       "id": "F005",
-      "title": "Dev 文档 + branch protection 指引 + Codex L1 验收 + signoff",
+      "title": "Backup automation (SQLite snapshot → GCS + retention + restore)",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "workbench/deploy/backup/：(1) workbench-backup.sh as deploy 跑：sqlite3 .backup snapshot → gzip → gcloud storage cp gs://.../daily/ → 月初也 cp /monthly/ → prune 30 daily + 12 monthly → rm /tmp/wb-* → append /var/log/workbench/backup.log；(2) workbench-backup.service systemd one-shot User=deploy；(3) workbench-backup.timer daily 03:00 + Persistent=true；(4) workbench-restore.sh 接 backup filename arg + 下载 + ungzip + 替换 workbench.db + 交互确认（--force 可跳）。**前置 manual prereq（用户做，Generator 不能跑）：** VM SA scope 扩展 — gcloud compute instances stop kolmatrix-vps → set-service-account --scopes=cloud-platform → start；预计 30-60s 跨服务下线（kolquest / staging.kolmatrix / apify-kol / pm2 aigcgateway）。Generator 在 scope 扩完后 verify：metadata server 返回 cloud-platform scope；sudo -u deploy gcloud storage cp ... 写测试过。验收：(1) 用户完 manual prereq + scope 确认；(2) systemctl start backup.service 跑通 + gs://.../daily/ 见文件 + log 见行；(3) systemctl status backup.timer enabled + active + 次触发时间；(4) retention 测试：mtime hack 塞 35 daily 文件 + 触发 timer → 30 newest 留 / 5 oldest 删；(5) restore 测试：新 backup → 破坏 live DB → workbench-restore.sh --force → DB 复原；(6) backup.log 存在 + deploy:deploy + 644 + logrotate 月转。"
+    },
+    {
+      "id": "F006",
+      "title": "Observability + healthcheck enrichment + Codex L1+L2 验收 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "(1) 写 docs/dev/branch-protection-guidance.md：列出用户在 GitHub Settings → Branches 应配的规则——main require status check (python-ci/workbench-backend/workbench-frontend) + require linear history + force push 禁 + 可选 1 review。(2) 写 docs/dev/workbench-architecture.md skeleton：项目结构 + 后端 app factory + settings allowlist + 安全 guard + 前端 App Router placeholder + Footer + types/api.ts pipeline + CI workflows + 与 ADR + B021/B022/B023 spec 的 cross-link（B021/B022 spec 可能未存在，前向引用 OK）+ 边界重申。(3) Codex 8 项验收 checklist 全过：① clean clone 起 ≤ 10 min；② pytest/ruff/mypy backend 全清；③ npm test/lint/typecheck frontend 全清；④ npx playwright test 全清 + HTML report 渲染；⑤ CI 两 workflow 在验收 commit 全绿；⑥ Trip-test 5 个安全 regression（throwaway commit 故意违反，每条都触发对应测试 fail，revert）；⑦ Trip-test OpenAPI drift（throwaway commit 改 backend /health schema 不 regenerate types，CI fail，revert）；⑧ trade/ 既有测试无回归全绿。(4) 写 docs/test-reports/B020-dev-infrastructure-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md 模板：Scope + 8 项验收命令 & 结果 + 5 trip-test 结果 + Disclaimer。(5) 更新 progress.json：status → done / docs.signoff 设值 / evaluator_feedback 总结 8 项验收概要。"
+      "status": "pending",
+      "acceptance": "Generator 先实施观测点：/api/health 加 uptime_seconds + last_backup_age_seconds + last_backup_size_bytes + active_user_count；workbench_api/observability/logging.py JSON formatter 含 request_id (ASGI mid) + user_id (auth dep) + event；logs 到 /var/log/workbench/{app.log,access.log} + logrotate 周转；可选 SENTRY_DSN env（unset 时 no-op）。Codex L1 checklist：npm test/pytest/ruff/mypy 全清；安全 regression 仍绿；Playwright E2E smoke 走 /login → mock Google OAuth → / → 见 disclaimer。Codex L2 checklist（在真 VM 上 6 项）：浏览器从 user laptop 走完 OAuth happy path；非 allowlist 邮箱登录拒；curl /api/health 200 version=git rev-parse HEAD；SSH systemctl show 确认 quota 200%/2G/500；gs://.../daily/ 至少一个 backup 文件（systemctl start backup.service 后）；邻居 nginx/kolquest/aigcgateway 仍 active 无 workbench 相关重启。Codex 写 docs/test-reports/B021-cloud-deploy-auth-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md；更新 progress.json status→done / docs.signoff / evaluator_feedback 概要。"
     }
   ]
 }

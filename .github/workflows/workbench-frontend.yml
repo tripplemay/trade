@@ -1,5 +1,12 @@
 name: Workbench Frontend CI
 
+# Forward-compat: GitHub Actions deprecates Node 20 on 2026-09-16.
+# Set runtime to Node 24 so JS-based actions (checkout/setup-node/cache/...)
+# run on Node 24 immediately and don't switch under us in September.
+# Source: framework v0.9.23 #2 + GHA changelog 2026-06-02.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 on:
   push:
     branches: [main]

@@ -4,12 +4,13 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B020-dev-infrastructure：`done`**；F005 复验 PASS。`workbench/scripts/start_workbench.sh` 已在 macOS 默认 `/bin/bash` 3.2.57 上复测通过；backend/frontend 一键 boot、`/health`、主页、Playwright E2E、OpenAPI drift 与 5 个安全 guard trip-test 全部闭环。签收报告已写入 `docs/test-reports/B020-dev-infrastructure-signoff-2026-05-15.md`。
-- Spec：`docs/specs/B020-dev-infrastructure-spec.md`
-- 范围：纯 dev tooling 批次——workbench/{backend,frontend} 骨架 + FastAPI hello-world + Next.js 14 placeholder + Vitest/Playwright config + 2 个 CI workflows + 5 个安全 guard regression 测试 + OpenAPI ↔ TS pipeline + dev 文档 + branch protection 指引。预估 1-1.5 周。
-- 后续路径（renumber）：**B021 Cloud Deploy & Auth**（Google OAuth + SQLite + Dockerfile + nginx vhost for trade.guangai.ai + CI/CD push→SSH→deploy + 备份 + 可观测性）→ **B022 Workbench Phase 1**（14 features，原 B020 spec 重命名，cloud 适配后修订）→ **B023 Workbench Phase 2**（manual execution UI）。
-- 关键决策（详见 `docs/adr/2026-05-15-workbench-direction.md` + cloud addendum）：技术栈 Next.js + shadcn/ui + AG Grid + lightweight-charts；模板 shadcn-dashboard-landing-template；P&L 色 #00c853/#ff3b30；部署到现有 GCP VM；OAuth allowlist 单 email；nginx 复用 aigcgateway 现有反代。
-- 硬边界：`trade/` 模块零第三方依赖；workbench/ 独立依赖图；no-broker/no-paper/no-live/no-secret-in-strategy；workbench cloud 暴露限 trade.guangai.ai + Google OAuth allowlist；framework v0.9.21 #1 强制 real-data reverify；framework v0.9.22 强制 T+1 snapshot tail headroom。
+- **B021-cloud-deploy-auth：`building`**；Generator 接 F001（Google OAuth + NextAuth.js v5 + 后端 JWT cookie 验证 + 单 email allowlist），共 6 features 完成 0。预估 2-3 周。
+- Spec：`docs/specs/B021-cloud-deploy-auth-spec.md`
+- 范围：cloud infra 层——Google OAuth（F001）+ SQLite + Alembic + Repository 数据层（F002）+ systemd workbench-{backend,frontend}.service + nginx vhost trade.guangai.ai + certbot（F003）+ GitHub Actions push→SSH→deploy→healthcheck→rollback（F004）+ SQLite→GCS daily backup + 30 daily/12 monthly retention + restore（F005，需用户先 VM SA scope 扩展）+ Codex L1+L2 真 VM 验收 + 可观测性 + signoff（F006）。
+- 后续路径：**B022 Workbench Phase 1**（14 features，原 spec B022-workbench-phase1，cloud 适配后修订）→ **B023 Workbench Phase 2**（manual execution UI）。
+- B021 prep 5/5 ✅（OAuth + rotated secret + DNS A trade.guangai.ai + VM deploy 用户/dirs/key/sudoers + GCS bucket + 7 GitHub Secrets）。仍剩 1 manual prereq（F005 时做）：VM SA scope 扩展 `devstorage.read_only → cloud-platform`，~30-60s 跨服务下线（kolquest / aigcgateway / apify-kol 共住），用户低峰窗口做。
+- 关键决策（详见 `docs/adr/2026-05-15-workbench-direction.md` + cloud addendum）：技术栈 Next.js + shadcn/ui + AG Grid + lightweight-charts；模板 shadcn-dashboard-landing-template；P&L 色 #00c853/#ff3b30；部署 GCP VM 复用现有 nginx；OAuth allowlist 单 email；SQLite + 持久盘 `/var/lib/workbench/db/`。
+- 硬边界：`trade/` 零第三方依赖；workbench/ 独立依赖图；no-broker/no-paper/no-live/no-secret-in-strategy；CPUQuota=200% + MemoryMax=2G + OOMScoreAdjust=500 隔离邻居；framework v0.9.21 #1 real-data reverify + v0.9.22 T+1 headroom + v0.9.23 GHA Node 24 forward-compat。
 
 ## 已完成签收
 - B001-B008: strategy roadmap through research-grade data expansion all signed off.
@@ -24,14 +25,14 @@ type: project
 - B017 B015+B016 real-data validation: `docs/test-reports/B017-real-data-validation-signoff-2026-05-15.md`
 - B018 gap root-cause attribution: `docs/test-reports/B018-gap-attribution-signoff-2026-05-15.md`
 - B019 B010/B013 cadence + vol-target retune: `docs/test-reports/B019-retune-signoff-2026-05-15.md`
+- B020 workbench dev infrastructure: `docs/test-reports/B020-dev-infrastructure-signoff-2026-05-15.md`
 
 ## 生产状态
-- 当前：本地 dev only。云部署 = B021 后 trade.guangai.ai（与 aigcgateway 共住 GCP VM）。
+- 本地 dev only；trade.guangai.ai 待 B021 部署。
 
 ## 已知 gap（非阻塞）
-- Backlog: BL-B010-S1 low / **BL-B011-S2 high (workbench Phase 1 后衔接 satellite)** / BL-B013-D1 low / BL-B013-D2 low；BL-B018-S1 已由 B019 resolved。
+- Backlog: BL-B010-S1 low / **BL-B011-S2 high (workbench Phase 1 后衔接 satellite)** / BL-B013-D1 low / BL-B013-D2 low；BL-B018-S1 已 resolved。
 - 本机 system `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
-- B020 已签收；无已知阻塞。
-- framework/proposed-learnings.md 当前为空（v0.9.21 + v0.9.22 已沉淀 3 条 5/15 候选）。
+- framework/proposed-learnings.md 当前为空（v0.9.21 + v0.9.22 + v0.9.23 已沉淀 6 条 5/15 候选）。
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->

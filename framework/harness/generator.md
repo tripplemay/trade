@@ -237,3 +237,90 @@ fontSize={(d: WordcloudDatum) => d.value}
 ```
 
 来源：KOLMatrix B5 fixing-1（commit f8fca4b）。
+
+---
+
+## 9. Dev environment prerequisites — Playwright / Chromium 类前端项目
+
+**背景：** 项目首次 boot 含 Playwright 测试链时，本机依赖缺失 + 用户级代理设置常常打架。
+
+**WSL / Ubuntu 22.04+ 上 Playwright Chromium 必装系统库：**
+
+```bash
+sudo apt-get install -y libnss3 libnspr4 libasound2t64
+# 24.04+ 是 libasound2t64；22.04 可能仍是 libasound2，按 distro 调
+npx playwright install chromium
+```
+
+**用户代理 + sudo env 透传陷阱：**
+
+很多开发本机配 `http_proxy=127.0.0.1:10808` / `https_proxy=...`（Clash / v2rayN / mihomo 类）。`sudo` 默认 sanitize 环境变量（`env_reset`），代理被剥掉 → `apt-get` 直连墙外的 ports.ubuntu.com 卡死超时。**首次安装会被误判为环境损坏。**
+
+修复 2 选 1：
+
+```bash
+# 选项 A（推荐）：sudo -E 让 sudo 透传当前 env
+sudo -E apt-get install -y libnss3 libnspr4 libasound2t64
+
+# 选项 B：写 /etc/apt/apt.conf.d/95proxies（持久化）
+echo 'Acquire::http::Proxy "http://127.0.0.1:10808";' | sudo tee /etc/apt/apt.conf.d/95proxies
+echo 'Acquire::https::Proxy "http://127.0.0.1:10808";' | sudo tee -a /etc/apt/apt.conf.d/95proxies
+```
+
+**Spec / README 起草 checklist：** 任何引入 Playwright（或 Cypress / chromedriver 等带 headless Chromium 依赖）的批次，spec 必须在 prerequisites 段显式列：
+
+- [ ] 系统库列表（含 distro 差异说明）
+- [ ] sudo 代理透传提示（`sudo -E ...` 或 95proxies）
+- [ ] `npx playwright install <browser>` 默认仅装 chromium（CI 配置一致）
+
+来源：B020 F001（commit `dc0c4c6`）首次本机 boot 卡 90 分钟才发现是 sudo 剥代理。
+
+---
+
+## 10. GitHub Actions Node runtime forward-compat（2026-09-16 deadline）
+
+**背景：** GHA 2026-06-02 changelog 宣布 `actions/checkout@v4` / `actions/setup-node@v4` / `actions/setup-python@v5` / `actions/cache@v4` 等 JS-based actions **默认运行时从 Node 20 切到 Node 24**。
+
+- 2026-06-02：可通过 env var `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` 强制 Node 24（手动 opt-in，测兼容）
+- 2026-09-16：完全移除 Node 20 runtime；不显式 opt-in 但仍依赖 Node 20 的 action 红屏
+
+**Spec / workflow 起草强制要求：**
+
+任何新增 `.github/workflows/*.yml` 必须在顶层 `env:` 块加：
+
+```yaml
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+```
+
+理由：
+
+1. 6 月即可切到 Node 24，让你提前 3 个月发现兼容性问题
+2. 9 月 deadline 之前所有 workflow 都走过 Node 24，零突发
+3. 显式标注 = 后人 review 时知道这是有意识的版本决策
+
+**Generator 实施 checklist：** 添加新 workflow 时 grep `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24`；缺则补；CI 第一次跑就跑在 Node 24 上。
+
+来源：B020 F002（commit `393e180`）；GHA changelog 2026-06-02。
+
+---
+
+## 11. Python 编码约定 — ruff strict mode 常见陷阱
+
+**ruff `SIM300` (Yoda condition detection) + uppercase const + 构造函数右值：**
+
+```python
+# ❌ ruff SIM300 误判：UPPERCASE 在左 + frozenset() 调用在右 → 推断为 "constant on right"
+assert ALLOWED_ENV_VARS == frozenset()
+
+# 正确写法（任选）：
+assert len(ALLOWED_ENV_VARS) == 0
+assert not ALLOWED_ENV_VARS
+assert ALLOWED_ENV_VARS == frozenset[str]()  # PEP 585 typed constructor 不算 Yoda
+```
+
+ruff 的 SIM300 把"右侧是 callable（`frozenset()` / `set()` / `dict()`）"判为 constant，提示反着写。但常量在左本来就是符合阅读习惯（"check X equals empty"）。改用 `len(...) == 0` / `not ...` 更稳健。
+
+**Generator 实战习惯：** 凡是 strict ruff（含 SIM 规则集）的项目，对集合/字典 emptiness 断言一律用 `len(...) == 0` 或 truthiness `not ...`，不写 `X == Collection()`。
+
+来源：B020 F003（commit `6184a1b`）`test_settings_env_allowlist.py`。
