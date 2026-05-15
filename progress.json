@@ -36,7 +36,7 @@
   "evaluator_feedback": "B018 F003-F005 PASS. Real-data attribution and sweep report completed on snapshot regime-adaptive:b69883b08eedea7d. Dominant drag is l2_vol_scaling; l1_gating is secondary. vol_target and cadence are the actionable axes; universe ablation is mostly constrained by defensive invariants. Report and signoff written, and backlog candidate BL-B018-S1 added for a follow-up B010 cadence / vol-target retune.",
   "generator_handoff": null,
   "session_notes": {
-    "planner": null,
+    "planner": "2026-05-15 B018 done wrap-up: (1) project-status.md 校验：BL-B018-S1 已入 backlog 那行刷新；framework 候选清零提示行刷新。(2) framework/proposed-learnings.md 2 条 5/15 候选用户确认 Accept：#1 fixture-vs-real signal reversal → 写入 docs/engineering/testing-and-fixture-policy.md §Fixture vs Real-Data Signal Reversal + .auto-memory/role-context/evaluator.md §Fixture-only PASS 不构成策略性能 conclusion；#2 原 'open research question' 修订为 'gap attribution methodology' → 新增 docs/engineering/gap-attribution-methodology.md（4-step 协议 + B017→B018 实证 + 硬边界）。CHANGELOG v0.9.21 + archive v0.9.21.md 已写。(3) role_assignments 本来就 null。(4) 等待用户决定下一批次方向。候选：(a) 执行 BL-B018-S1（B010 quarterly cadence + 10-12% vol-target retune，唯一 actionable 后续）；(b) BL-B011-S2（US Quality Momentum 或 HK-China ETF satellite，priority medium）；(c) BL-B013-D1（smoothed vol targeting）/ BL-B013-D2（VIX overlay），都是 priority low；(d) MVP PRD §12 最后一个 milestone Broker Adapter Paper（注意：跨 §5 non-MVP line，需用户确认是否纳入）。",
     "generator": null,
     "evaluator": null
   },

@@ -5,6 +5,24 @@
 
 ---
 
+## v0.9.21 — 2026-05-15（B017 + B018 沉淀，2 条 learnings）
+
+**来源批次：**
+- B017-real-data-validation 跨批次 negative findings（B015 / B016 在真实数据上反转或不改进）
+- B018-gap-root-cause-attribution（per-asset + per-layer attribution + 三轴 sweep 方法论落地）
+
+**触发原因：**
+- B016 synthetic-fixture 上 HRP 略优 → B017 真实 yfinance snapshot 上 HRP `-$496` + turnover `+41%`，方向完全反转。Fixture-only PASS 被错误用作策略性能 conclusion 的风险显现，需要在 framework 一层固化"fixture 仅证明实现正确性"的边界
+- B017 两条 negative findings 后，Planner 险些直接再开"新 weighting / 新 gating 假设"批次。B018 反向选择"先归因再决策"，结果发现 root cause 是 `l2_vol_scaling`（不是 weighting，不是 gating），actionable axes 是 `vol_target` + `cadence` —— 这套方法论值得固化，避免未来再走盲目变体回路
+
+**变更：**
+- 新增 `docs/engineering/testing-and-fixture-policy.md` §"Fixture vs Real-Data Signal Reversal"（含 B016→B017 实证表 + 必须真实数据 reverify 的 acceptance gate 规则）
+- 新增 `.auto-memory/role-context/evaluator.md` §"Fixture-only PASS 不构成策略性能 conclusion"
+- 新增 `docs/engineering/gap-attribution-methodology.md`（4-step 协议 + 引用 B017→B018 实例 + 硬边界 + reference implementation 路径）
+- 归档 `framework/archive/proposed-learnings-archive-v0.9.21.md`
+
+---
+
 ## v0.9.20 — 2026-05-10（BL-060 沉淀，2 条 learnings）
 
 **来源批次：**

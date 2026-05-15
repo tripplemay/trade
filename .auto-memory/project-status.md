@@ -28,8 +28,8 @@ type: project
 - No deployment, DB, broker API, secrets, paper/live trading, or live-money operation.
 
 ## 已知 gap（非阻塞）
-- BL-B010-S1 + BL-B011-S2 + BL-B013-D1 + BL-B013-D2 仍在 backlog；B018 完成后可能新增 BL-B018-* retune 候选。
+- Backlog: BL-B010-S1 / BL-B011-S2 / BL-B013-D1 / BL-B013-D2 / BL-B018-S1（B018 新增：B010 quarterly cadence + 10–12% vol-target retune 候选）。
 - 本机 system `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
-- framework/proposed-learnings.md 有 2 条 2026-05-15 待确认条目（synthetic-vs-real reversal warning + gap source unknown），待用户某次 done wrap-up 时一并 sign off。
+- framework/proposed-learnings.md 当前为空（v0.9.21 已沉淀 2 条 5/15 候选：fixture-vs-real reversal + gap-attribution methodology）。
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->

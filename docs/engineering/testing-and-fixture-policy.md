@@ -45,3 +45,21 @@ Implementation acceptance should include tests that prove:
 ## Optional Public Data Scripts
 
 Optional public data download scripts may be useful for manual research, but they must not become required CI dependencies. They should write to ignored local paths unless a later spec explicitly approves committed sample data.
+
+## Fixture vs Real-Data Signal Reversal
+
+Fixtures prove implementation correctness. They do **not** establish strategy performance conclusions. Synthetic-fixture rankings between two strategy variants can flip on real data, and the magnitude of the flip can be material.
+
+**Reference incident — B016 → B017 (2026-05-15):**
+
+| Comparison | Synthetic fixture (B016) | Real yfinance snapshot (B017) |
+|---|---|---|
+| HRP vs inverse-vol on B010 | HRP marginally better | HRP `-$496` ending value, turnover `+41%` |
+
+The synthetic fixture happened to favor HRP; real correlations and volatility paths reversed the sign and amplified turnover.
+
+**Required practice for performance-sensitive batches:**
+
+1. Fixture-only PASS is acceptance for *implementation correctness*, not for *strategy performance*. Spec acceptance gates that compare returns, drawdown, turnover, or Sharpe between variants must be re-verified on a real-data snapshot (e.g. a B009 / B014-style yfinance manifest) before the batch is considered conclusive.
+2. When drafting strategy-class specs, explicitly mark the acceptance gate that requires real-data re-verification, and call out that any conclusion drawn from fixture-only evidence is provisional.
+3. If the real-data snapshot reverses the fixture verdict, the next batch is a Gap-Attribution batch (see `gap-attribution-methodology.md`), not a re-tune of the losing variant.

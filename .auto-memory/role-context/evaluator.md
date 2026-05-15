@@ -28,3 +28,10 @@ type: feedback
 - reverifying → done 前必须写 `docs/test-reports/[批次名]-signoff-YYYY-MM-DD.md`
 - 使用 `framework/templates/signoff-report.md` 模板
 - progress.json 的 `docs.signoff` 为空不得置 done
+
+## Fixture-only PASS 不构成策略性能 conclusion
+
+- L1 fixture 测试 PASS 仅证明实现正确性（schema、数学、guards、可重复性），**不构成策略性能 / 收益 / DD / turnover 的 conclusion**
+- 任何对比性收益 acceptance（"variant A 优于 variant B"、"gap 缩窄 N%"、"turnover 改善"）必须在真实数据 snapshot 上 reverify 才能签收 PASS
+- 来源：B016 → B017 反转（synthetic 上 HRP 略优 → real-data 上 HRP `-$496` + turnover +41%）
+- 详见 `docs/engineering/testing-and-fixture-policy.md` §Fixture vs Real-Data Signal Reversal

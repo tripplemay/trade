@@ -35,29 +35,4 @@
 
 <!-- 2026-05-12: IA refactor redirect scope learning 已按用户确认沉淀到 .auto-memory/role-context/generator.md + .auto-memory/role-context/planner.md。 -->
 
-## [2026-05-15] Claude CLI — 来源：B017 real-data validation cross-batch finding
-
-**类型：** 新坑（backtest evaluation discipline）
-
-**内容：** Synthetic-fixture 信号可能与真实数据信号反向。B016 HRP vs inverse-vol 在 synthetic fixture 上 HRP 略优；B017 真实 yfinance snapshot 上 HRP -$496 + turnover +41%（完全反转）。此类反转风险在任何 fixture-first MVP 框架下都存在 —— fixture 仅证明实现正确性，不能用作策略 conclusion。
-
-**建议写入：**
-- `docs/engineering/testing-and-fixture-policy.md` 新增 §"Fixture vs real-data signal reversal" 警示段
-- `.auto-memory/role-context/evaluator.md` 加入"fixture-only PASS 不构成策略性能 conclusion"提醒
-- 未来策略类批次 spec 起草模板：acceptance gate 涉及性能/收益比较时，应在 real-data 上 reverify，而非依赖 synthetic 结果
-
-**状态：** 待确认
-
----
-
-## [2026-05-15] Claude CLI — 来源：B017 negative findings × 2
-
-**类型：** 新规律（research debt）
-
-**内容：** B013/B010 vs static 60/40 的 absolute-return gap（B013 calm window 让 60/40 ~25pp / B010 calm window 让 60/40 ~53pp）**经验上证明根源不是 L1 trend gating 也不是 weighting method**：B015 三种 activation policy 都不缩窄（only_non_normal 反而更差），B016 HRP 反而比 inverse-vol 还差。Gap 的真实来源是 open research question，候选包括：vol_target 8% 太保守、defensive sleeve（SGOV/IEF/TLT 等）drag 太重、universe 资产选择不利 calm-period upside、rebalance cadence 不适配。
-
-**建议写入：**
-- `framework/research-patterns.md`（如有）或新增策略研究批次 spec 起草模板：当批次结论是"假设的修复方案 X 没有效果"时，明确写下"已排除 X"并把 root cause investigation 作为后续候选
-- 可考虑新开 B018 = Gap root-cause attribution batch（vol target sweep / universe ablation / defensive drag 量化）作为最高 ROI 后续
-
-**状态：** 待确认
+<!-- 2026-05-15: v0.9.21 沉淀完成（2 条 learnings 来源 B017 cross-batch finding + B018 attribution methodology），写入 docs/engineering/testing-and-fixture-policy.md §Fixture vs Real-Data Signal Reversal + .auto-memory/role-context/evaluator.md §Fixture-only PASS 不构成策略性能 conclusion + 新增 docs/engineering/gap-attribution-methodology.md + CHANGELOG。归档：framework/archive/proposed-learnings-archive-v0.9.21.md。 -->
