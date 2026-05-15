@@ -11,6 +11,7 @@ type: project
 - 4 条 gate（同时满足才进 Stage 2）：calm ending value +1% / calm gap vs 60/40 缩窄 5pp / stress 双窗口 max DD do-no-harm / turnover ≤ +15%。
 - B018 已签收：`docs/test-reports/B018-gap-attribution-signoff-2026-05-15.md`；attribution 结论 `l2_vol_scaling` 是主拖累驱动 B019 选 vol_target+cadence 两轴。
 - 硬边界：默认 CI 仍 fixture/mock-first；`trade/` 模块零第三方依赖；no-broker/no-paper/no-AI/no-secret-in-strategy；所有输出 research-only；framework v0.9.21 #1 强制 real-data reverify。
+- **下一批次决策（B019 done 后启动）：B020 Manual Execution Helper**（position diff + order ticket + manual fill journal），用户 2026-05-15 决定走手动下单路线，PRD §12 原 B009 Broker Adapter Paper 修订为此批次（spec 调整在 B020 立项时一并做），auto-broker 接入永久延后到 PRD §5 非 MVP 范围。
 
 ## 已完成签收
 - B001-B008: strategy roadmap through research-grade data expansion all signed off.
