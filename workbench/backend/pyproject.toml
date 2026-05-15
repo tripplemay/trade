@@ -14,6 +14,9 @@ build-backend = "hatchling.build"
 # alembic upgrade (was: venv bare from bootstrap, alembic not importable).
 # Retry 5: after deploy.sh split systemctl restart into per-service calls
 # (sudoers whitelists each service name individually; combined call fails).
+# Retry 6: after /etc/workbench/ chmod 750→755 (deploy user needed
+# traverse bit to read uvicorn-logging.json — file was 644 but dir was
+# 750 root:root). Services now active + healthcheck passing externally.
 
 [project]
 name = "workbench_api"
