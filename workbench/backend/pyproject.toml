@@ -8,6 +8,8 @@ build-backend = "hatchling.build"
 # env file / SA scope) all completed prior to this commit by Planner.
 # Retry 2: after fix(B021-F004) commit 7227688 scoped pre-flight grep
 # to workbench/ source only (was tripping on doc references).
+# Retry 3: after DEPLOY_SSH_KNOWN_HOSTS secret added (was missing from
+# B021 prep #5 — only 7 of 8 needed secrets uploaded).
 
 [project]
 name = "workbench_api"
