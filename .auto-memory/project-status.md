@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B019-b010-b013-cadence-vol-target-retune：`verifying`**；F001 已完成（sweep harness + retune-gate evaluator + 19 单测），Codex 接 F002（real-data sweep + Pareto + gate verdict），共 5 features 完成 1。
+- **B019-b010-b013-cadence-vol-target-retune：`fixing`**；F001 已完成，F002 已完成（real-data sweep + Pareto + gate verdict），B013 gate_met=True / winning_cell=('quarterly', 0.11)，B010 gate_met=False；Generator 接 F003（仅 B013 retune + conditional linkage），共 5 features 完成 2。
 - Spec：`docs/specs/B019-b010-b013-cadence-vol-target-retune-spec.md`
 - 两阶段执行：Stage 1 = sweep + Pareto + gate verdict（F001 generator + F002 codex）；Stage 2 conditional = default mutation + 联动（F003+F004 generator）+ 回归 signoff（F005 codex）。
 - 网格：vol_target ∈ {0.09, 0.10, 0.11, 0.12, 0.13} × cadence ∈ {monthly, quarterly}，60 cells/3 windows，复用 B014 snapshot `regime-adaptive:b69883b08eedea7d`。

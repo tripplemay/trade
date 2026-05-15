@@ -14,7 +14,7 @@
       "title": "Stage 1 真实数据细 sweep + Pareto 报告 + gate 裁决",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Codex 在 B014 manifest 在场时调用 trade/analysis/parameter_sweep.run_cadence_vs_default_sweep + evaluate_retune_gate 对 B010 与 B013 在 calm window 2020-06-01..2022-12-31 + stress 2020-02-01..2020-12-31 + stress 2022-01-01..2022-12-31 上跑 60 cells（5 vol_targets × 2 cadences × 2 strategies × 3 windows）+ 2 default baselines。输出：(1) docs/test-reports/B019-retune-sweep-2026-MM-DD.json 含完整 sweep matrix + per-cell 6 指标（ending_value/gap_vs_60_40/max_drawdown/turnover/transaction_costs/sharpe）+ per-cell gate verdict + top-level per-strategy gate_met + winning_cell（or null）。(2) docs/test-reports/B019-retune-sweep-2026-MM-DD.md 含 6 sections：背景（链接 B018 + BL-B018-S1 + framework v0.9.21 #1）/ 双策略 sweep matrix table / per-cell gate verdict table / Pareto 推荐（low-DD/balanced/high-return per strategy 含具体 trade-off 数字）/ 顶层 verdict / snapshot 回顾 + research-only disclaimer。(3) progress.json.evaluator_feedback 写入 verdict 摘要（per-strategy gate_met + winning cell + 关键数字），让下游 Generator 不需重 parse JSON。manifest 缺失时 fallback 合成 9 资产 fixture（B018 路径），real_data_status='skipped'，gate_met=False reason='manifest absent — fixture-only run 不满足 framework v0.9.21 #1 real-data reverify 要求'。"
     },
     {
