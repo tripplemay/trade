@@ -14,7 +14,7 @@
       "title": "SQLite + Alembic 迁移 + Repository 数据层",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Backend workbench_api/db/：engine.py SQLAlchemy 2.x engine 工厂读 WORKBENCH_DB_URL；session.py FastAPI Depends 每请求一 session（commit on success / rollback on exception）；models/{account,backlog_entry,snapshot_meta}.py 三个 ORM 模型 mirror B012 accounts/me.json + backlog.json + snapshot 注册表；repositories/{base,account,backlog,snapshot}.py 薄包装 (get_by_id/list_all/upsert/delete)，纯 ORM 无业务逻辑。Alembic：migrations/env.py 配 engine；versions/0001_initial.py 建 3 表；scripts/migrate.sh 跑 alembic upgrade head。新增 workbench-bootstrap CLI（pyproject.toml entry point）：若仓库根有 accounts/me.json + backlog.json 则 upsert 到 DB，idempotent。验收：(1) alembic upgrade head 新库建 3 表，再跑 noop；(2) workbench-bootstrap 把 accounts/me.json + backlog.json 4 entries import 到 DB，再跑 idempotent；(3) Repository round-trip pytest 全过；(4) /api/health 加 db_connectivity:ok 字段（不通则 500）；(5) 本地 dev WORKBENCH_DB_URL=sqlite:///./workbench-dev.db 不依赖 /var/lib/workbench/；(6) safety regression：禁 psycopg2/mysqlclient/pymongo import。"
     },
     {
