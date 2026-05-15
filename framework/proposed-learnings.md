@@ -36,3 +36,19 @@
 <!-- 2026-05-12: IA refactor redirect scope learning 已按用户确认沉淀到 .auto-memory/role-context/generator.md + .auto-memory/role-context/planner.md。 -->
 
 <!-- 2026-05-15: v0.9.21 沉淀完成（2 条 learnings 来源 B017 cross-batch finding + B018 attribution methodology），写入 docs/engineering/testing-and-fixture-policy.md §Fixture vs Real-Data Signal Reversal + .auto-memory/role-context/evaluator.md §Fixture-only PASS 不构成策略性能 conclusion + 新增 docs/engineering/gap-attribution-methodology.md + CHANGELOG。归档：framework/archive/proposed-learnings-archive-v0.9.21.md。 -->
+
+---
+
+## [2026-05-15] Claude CLI — 来源：B019 F005 signoff §Framework Learnings + Soft-watch S1
+
+**类型：** 新规律（snapshot consumption discipline）
+
+**内容：** 当 monthly T+1 execution 模型消费 snapshot 尾部数据时，必须为 last signal date 保留至少 1 个交易日的 trading-day headroom。否则即使数据点存在，T+1 execution 模型在 last signal date 之后找不到下一个 trading day，触发 `no trading date exists after signal_date` 类边界错误。B019 F004 中 `scripts/generate_b015_activation_policy_report.py` 默认全量 snapshot 路径就撞到这条边界，Codex 通过显式 trim 尾部 1 交易日（保留 one-trading-day headroom）绕过；Soft-watch S1 已记录但属 low risk。
+
+**建议写入（三选一或组合）：**
+
+- **首选** `docs/engineering/backtest-report-schema.md` 新增 §"Snapshot tail headroom for T+1 execution" 警示段，明确 sweep / report 类 script 的默认窗口必须 reserve 至少 1 trading day headroom（或显式截断最后一个 signal date）。
+- 或新增独立 policy 文件 `docs/engineering/snapshot-consumption-policy.md`（覆盖更广，包括 snapshot 起始边界、调仓 boundary、T+N execution 通用约定）。
+- 修订 `scripts/generate_b015_activation_policy_report.py` 与同类 sweep / report CLI 的默认窗口逻辑：自动 trim 最后一个 signal date，或在 CLI 输出里显式记录 tail headroom 参数。
+
+**状态：** 待确认

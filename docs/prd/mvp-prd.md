@@ -240,22 +240,27 @@ MVP 输出 Markdown/JSON 报告，不实现正式前端 dashboard。
 
 ## 7. 前端边界
 
-MVP 不实现正式前端 dashboard。
+> 2026-05-15 修订：MVP 完工路径包含一个本地 graphical workbench。原 §7 文本（"MVP 不实现正式前端 dashboard"）已被推翻，理由是当时引用的 4 条阻塞原因中 3 条已通过 B007 / B009 / B010 / B011 / B012 解决（回测 schema、策略配置 schema、数据质量输出均已稳定），第 4 条（execution 层 schema 不稳）通过 Phase 1 / Phase 2 拆分被规避（execution 工作流推迟到 Phase 2）。完整背景见 `docs/adr/2026-05-15-workbench-direction.md`。
 
-原因：
+### Workbench 路径
 
-- 回测结果 schema 尚未稳定。
-- 策略配置 schema 尚未稳定。
-- 数据质量输出尚未实现。
-- 过早做 UI 容易形成假数据 dashboard 和返工。
+- **B020 Workbench Phase 1**：本地浏览器 SPA（FastAPI + Next.js 14 + TypeScript + shadcn/ui + Tailwind + AG Grid Community + TradingView lightweight-charts + ECharts），read-mostly 7 页（Home / Strategies / Backtest / Reports / Recommendations / Snapshots / Backlog）+ 最小必要 write 操作（snapshot refresh / backlog CRUD / 触发 backtest / 导出 target positions Markdown），预估 5-6 周。
+- **B021 Workbench Phase 2**：在 Phase 1 之上加 manual execution UI（target positions diff / order ticket / fill journal）。
+- 所有 workbench 操作仅在 `localhost` 暴露；不引入 broker SDK / paper API / live endpoint / secret；下单永远由用户在券商客户端手动完成。
 
-MVP 只要求报告文件：
+### Workbench 与 CLI 并行
 
-- Markdown。
-- JSON。
-- 可选 CSV。
+- 报告文件依旧落 Markdown / JSON / CSV，CLI 入口完整保留以支持自动化、CI、headless 复现；
+- 工作台是用户可发现性的主要 surface，CLI 是可重现性、自动化与 audit 的主要 surface；
+- 任何在工作台中可触发的操作必须有等价的 CLI 命令。
 
-前端架构规划可在工程基线批次中作为文档出现，但不创建 Next.js/React app。
+### 仍属非 MVP（PRD §5 范围）
+
+- 自动连接 broker / paper API（`BrokerAdapter` ABC 在 B012 留作扩展锚点，永久延后）；
+- 多用户 / 外部客户 / 云端部署；
+- 桌面打包（Tauri / Electron）；
+- 实时数据流 / 自动调仓 / 多 panel dockable / 命令面板 / i18n；
+- PDF 报告组装 / 自包含 HTML 快照（浏览器 print-to-PDF 是 0 成本兜底）。
 
 ## 8. 云部署边界
 
@@ -317,16 +322,22 @@ MVP 整体验收要求：
 
 ## 12. 里程碑
 
-建议后续批次：
+> 2026-05-15 修订：原 B009 Broker Adapter Paper 移除 MVP 范围，替换为 B020 / B021 Workbench 双阶段交付。详见 `docs/adr/2026-05-15-workbench-direction.md`。
 
-| 批次 | 目标 |
-|---|---|
-| B004 Core Engineering Foundation | Python 包结构、测试、CI、配置、接口边界、前端规划文档 |
-| B005 Global ETF Backtest MVP | ETF universe、数据加载、动量信号、月度回测、报告 |
-| B006 Risk Parity Backtest MVP | 风险平价、目标波动率、组合风险稳定器 |
-| B007 Portfolio Allocation and Risk | 多策略资金分配、组合级风控 |
-| B008 Paper Trading / Mock Broker | 目标仓位转模拟订单，Mock/Paper 流程 |
-| B009 Broker Adapter Paper | IBKR/Alpaca paper adapter，仍不做 live |
+| PRD 编号 | 目标 | 状态 / 实际批次 |
+|---|---|---|
+| B004 Core Engineering Foundation | Python 包结构、测试、CI、配置、接口边界、前端规划文档 | ✅ 已完成（项目实际批次 B003-B004） |
+| B005 Global ETF Backtest MVP | ETF universe、数据加载、动量信号、月度回测、报告 | ✅ 已完成（项目实际批次 B005-B007） |
+| B006 Risk Parity Backtest MVP | 风险平价、目标波动率、组合风险稳定器 | ✅ 已完成（B010；B019 retune 收口） |
+| B007 Portfolio Allocation and Risk | 多策略资金分配、组合级风控 | ✅ 已完成（B011） |
+| B008 Paper Trading / Mock Broker | 目标仓位输出 + 抽象 BrokerAdapter + Mock | ✅ 已完成（B012） |
+| **B020 Research Workbench (Phase 1)** | 本地 SPA：策略浏览 / 回测查看 / 研究报告渲染 / 推荐组合 / snapshots / backlog | 🚧 计划中 |
+| **B021 Workbench Phase 2** | 手动执行 UI：position diff / order ticket / fill journal | ⏳ Phase 1 完成后 |
+
+> 注：原 "B009 Broker Adapter Paper（IBKR/Alpaca paper adapter，仍不做 live）" 已移除。
+> PRD §5 已将"实际 broker API 接入"明确划入非 MVP；用户路线选择 manual execution，
+> 由 B021 工作台 UI 服务，不做自动 paper / live 接入。`BrokerAdapter` ABC（B012）保留为
+> 未来扩展锚点，永久延后到非 MVP 范围。
 
 ## 13. 风险清单
 
