@@ -38,3 +38,35 @@
 <!-- 2026-05-15: v0.9.21 沉淀完成（2 条 learnings 来源 B017 cross-batch finding + B018 attribution methodology），写入 docs/engineering/testing-and-fixture-policy.md §Fixture vs Real-Data Signal Reversal + .auto-memory/role-context/evaluator.md §Fixture-only PASS 不构成策略性能 conclusion + 新增 docs/engineering/gap-attribution-methodology.md + CHANGELOG。归档：framework/archive/proposed-learnings-archive-v0.9.21.md。 -->
 
 <!-- 2026-05-15: v0.9.22 沉淀完成（1 条 learning 来源 B019 F005 signoff §Framework Learnings + Soft-watch S1），写入 docs/engineering/backtest-report-schema.md §"Snapshot Tail Headroom for T+1 Execution" + Non-Goals 段刷新（删除"No formal frontend dashboard"绝对禁令、改为指向 PRD §7）+ CHANGELOG。归档：framework/archive/proposed-learnings-archive-v0.9.22.md。 -->
+
+---
+
+## [2026-05-15] Claude CLI — 来源：B020-F001 Playwright 本机 boot
+
+**类型：** 新坑
+
+**内容：** WSL/Ubuntu 24.04 上跑 Playwright 必须先装 `libnss3 libnspr4 libasound2t64`，但常见用户配置 `http_proxy=127.0.0.1:10808`（Clash/v2rayN 之类）会因 sudo 默认 sanitize env 导致 `sudo apt-get install` 直连超时卡死；解决方式 `sudo -E apt-get ...` 或写 `/etc/apt/apt.conf.d/95proxies`。本机 dev environment 模板若引入 Playwright，需在 README prerequisites 显式标注此点，否则首次安装卡死会被误判为环境损坏。
+
+**建议写入：** `.auto-memory/role-context/generator.md` §"Playwright 本机 dev prerequisites" 或 `framework/harness/environment-patterns.md`（如果存在）。也可作为 frontend 类项目 template README 标准段。
+
+**状态：** 待确认
+
+## [2026-05-15] Claude CLI — 来源：B020-F002 CI workflow
+
+**类型：** 新坑
+
+**内容：** GitHub Actions `actions/checkout@v4` / `actions/setup-node@v4` / `actions/setup-python@v5` / `actions/cache@v4` 仍跑 Node.js 20。2026-06-02 起 GHA 默认强制 Node 24，2026-09-16 完全移除 Node 20。每条 workflow 添加 `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` 或等待官方升级版本。框架级 checklist：任何新 workflow 模板都应预置 Node 24 兼容性配置，免得 6 月后突然集体红屏。
+
+**建议写入：** `framework/harness/ci-patterns.md` §"GitHub Actions Node runtime forward-compat"（或类似），或 `framework/README.md` §经验教训。
+
+**状态：** 待确认
+
+## [2026-05-15] Claude CLI — 来源：B020-F003 backend safety test ruff SIM300
+
+**类型：** 新坑
+
+**内容：** Ruff 规则 `SIM300`（Yoda condition detection）会把 `UPPERCASE_CONSTANT == frozenset()` 视为 Yoda（uppercase + frozenset() 调用 → ruff 推断常量在左），suggest 反着写。对 `frozenset()` / `set()` / `dict()` 这种构造函数右值场景，改用 `len(...) == 0` 或 `not ...` 更稳健。Generator 在 strict ruff (SIM 选中) 项目里写 assertion 时应该默认避开 `const == Constructor()` 形式。
+
+**建议写入：** `.auto-memory/role-context/generator.md` §"编码约定"（或类似），追加一条 "ruff SIM300 + uppercase const 陷阱"。
+
+**状态：** 待确认
