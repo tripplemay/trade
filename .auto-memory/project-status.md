@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B021-cloud-deploy-auth：`fixing`**；observability 已落地，L1 全绿，但 L2 真 VM 被 `deploy@34.180.93.185` 的 SSH `publickey` 拒绝卡住，需恢复访问后再做 signoff。
+- **B021-cloud-deploy-auth：`fixing`**；observability 已落地，L1 全绿，但生产 host 仍有两项 L2 gap：`/api/auth/*` 404 导致 OAuth 路径不可达，`/api/health` 的 `version=dev` 未对齐 git SHA。
 - Spec：`docs/specs/B021-cloud-deploy-auth-spec.md`
 - 范围：cloud infra 层——Google OAuth（F001）+ SQLite/Alembic/Repository（F002）+ systemd/nginx/certbot（F003）+ GitHub Actions deploy/rollback（F004）+ SQLite→GCS backup/restore（F005）+ Codex L1+L2 + observability + signoff（F006）。
 - 后续路径：**B022 Workbench Phase 1** → **B023 Workbench Phase 2**。
@@ -20,4 +20,4 @@ type: project
 ## 已知 gap（非阻塞）
 - Backlog: BL-B010-S1 low / BL-B011-S2 high / BL-B013-D1 low / BL-B013-D2 low；BL-B018-S1 已 resolved。
 - 本机 `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
-- L1 fix-round 1 全绿：backend pytest 67/67 + ruff/mypy 51 files；frontend vitest 20 + lint/typecheck/build/Playwright 2/2。
+- L1 fix-round 1 全绿：backend pytest 67/67 + ruff/mypy 51 files；frontend vitest 20 + lint/typecheck/build/Playwright 2/2；public health fields齐全但 version 仍为 dev。
