@@ -55,19 +55,25 @@ jobs:
           cache: "npm"
           cache-dependency-path: workbench/frontend/package-lock.json
 
-      # Safety belt: anywhere in the staged tree (workflow file itself, scripts,
-      # source) carrying the literal string `PLACEHOLDER-REPLACE-ME` means a
-      # bootstrap value escaped review. Fail loud before SCPing anything.
-      - name: Pre-flight — refuse to deploy placeholder values
+      # Safety belt: refuse to ship if deployable source under workbench/
+      # contains the literal string `PLACEHOLDER-REPLACE-ME` — that would
+      # mean a bootstrap value escaped review into runtime code. Scoped to
+      # workbench/{backend,frontend} only; excludes lockfiles + markdown
+      # docs so the check doesn't trip on safety mechanism documentation in
+      # spec files, runbooks, this workflow itself, or progress.json /
+      # features.json text that may describe the check semantically.
+      - name: Pre-flight — refuse placeholder values in workbench/ source
         run: |
           set -euo pipefail
           if grep --recursive --line-number --fixed-strings \
-              --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=.next \
+              --exclude-dir=node_modules --exclude-dir=.next \
               --exclude-dir=__pycache__ --exclude-dir=.venv \
-              "PLACEHOLDER-REPLACE-ME" .; then
-            echo "::error::Refusing to deploy: PLACEHOLDER-REPLACE-ME found above." >&2
+              --exclude="*.md" --exclude="*.lock" --exclude="package-lock.json" \
+              "PLACEHOLDER-REPLACE-ME" workbench/; then
+            echo "::error::Refusing to deploy: PLACEHOLDER-REPLACE-ME found in workbench/ deployable source." >&2
             exit 1
           fi
+          echo "✓ no PLACEHOLDER-REPLACE-ME in workbench/{backend,frontend} source"
 
       - name: Build backend (sdist + wheel)
         working-directory: workbench/backend
