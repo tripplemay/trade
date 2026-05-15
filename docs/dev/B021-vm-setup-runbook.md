@@ -10,7 +10,7 @@
 | 2 | DNS `trade.guangai.ai` A record | DNS provider | User | ✅ done (per user 2026-05-15) |
 | 3 | VM `deploy` user + dirs + SSH key | GCP VM (SSH session) | User | ✅ done 2026-05-15 (executed by Planner under user authorization — see "Item #3 — executed" section below) |
 | 4 | GCS bucket for SQLite backups | Google Cloud Console | User | ✅ done 2026-05-15 (executed by Planner via `gcloud` on VM after user `gcloud auth login`; bucket `gs://trade-workbench-backups-gen-lang-client-0229748590/`, region `ASIA-NORTHEAST1`, versioning ON, lifecycle 365d delete, public access prevention enforced, uniform IAM, VM SA pre-granted `roles/storage.objectAdmin`) |
-| 5 | GitHub Secrets uploaded | GitHub repo Settings | User | 🟡 5/7 done 2026-05-15 (Planner uploaded 5 via `gh secret set` from local sources; user must add 2 remaining via UI: `GOOGLE_OAUTH_CLIENT_ID` + `GOOGLE_OAUTH_CLIENT_SECRET` after rotating the leaked one) |
+| 5 | GitHub Secrets uploaded | GitHub repo Settings | User | 🟡 7/7 slots filled 2026-05-15 — **but `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` hold `PLACEHOLDER-REPLACE-ME...` strings**. User must replace with real values via UI before B021 F004 CI/CD ships. The placeholder strings will cause Google OAuth `invalid_client` error if used as-is — by design, to prevent silent acceptance. |
 
 ---
 
@@ -413,17 +413,21 @@ Planner used the local `gh` CLI (auth `tripplemay` token with `repo` scope) to u
 | `DEPLOY_USER` | `deploy` | 06:33:32Z |
 | `DEPLOY_HOST` | `34.180.93.185` | 06:33:34Z |
 
-**Remaining 2 — user must add manually via UI** at https://github.com/tripplemay/trade/settings/secrets/actions:
+**Remaining 2 — pre-staged with placeholder values 2026-05-15 06:45 UTC** at user's request. Slots exist; user must **replace values** via UI before B021 F004 CI/CD ships.
 
-- `GOOGLE_OAUTH_CLIENT_ID` — from Google Cloud Console OAuth client detail page (string starting with the project number, ending in `.apps.googleusercontent.com`).
-- `GOOGLE_OAUTH_CLIENT_SECRET` — the **rotated** secret (the original `GOCSPX-...` value leaked in conversation 2026-05-15 must be revoked + replaced before upload).
+| Secret | Current placeholder | Why placeholder ≠ silent acceptance |
+|---|---|---|
+| `GOOGLE_OAUTH_CLIENT_ID` | `PLACEHOLDER-REPLACE-ME.apps.googleusercontent.com` | Wrong format for real `<project-number>-<random>.apps.googleusercontent.com`; Google OAuth library will not even accept it as a valid client ID at parse time. |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | `PLACEHOLDER-REPLACE-ME-WITH-ROTATED-SECRET` | Wrong prefix (real secrets start with `GOCSPX-`); Google's token endpoint will return `invalid_client` immediately. The literal text `PLACEHOLDER-REPLACE-ME` appears in CI logs, making the cause obvious. |
 
 **Sequence to complete item #5 from here:**
 
-1. User opens Google Cloud Console → Credentials → the OAuth client → "Reset client secret" (deletes old, generates new).
-2. User opens https://github.com/tripplemay/trade/settings/secrets/actions → "New repository secret" → add `GOOGLE_OAUTH_CLIENT_ID` with the client_id value.
-3. User clicks "New repository secret" again → add `GOOGLE_OAUTH_CLIENT_SECRET` with the rotated secret. Once entered and saved, GitHub UI shows `*****`; value cannot be read back.
-4. Verify: `gh secret list --repo tripplemay/trade` (or refresh the UI page) shows all 7 names. Done.
+1. User opens Google Cloud Console → Credentials → the OAuth client → "Reset client secret" (deletes the old leaked secret, generates a new one).
+2. User opens https://github.com/tripplemay/trade/settings/secrets/actions → click `GOOGLE_OAUTH_CLIENT_ID` → "Update value" → paste real client_id → save.
+3. Same UI → click `GOOGLE_OAUTH_CLIENT_SECRET` → "Update value" → paste the **rotated** secret → save.
+4. Verify: `gh secret list --repo tripplemay/trade` shows updated timestamps (newer than `2026-05-15T06:45`) on both. Done.
+
+> **Hard rule for B021 F004 CI workflow:** must include a pre-flight step that grep-checks the inflated secrets for the literal text `PLACEHOLDER-REPLACE-ME` and fails the workflow with a clear error message if matched. This is cheap belt-and-braces against the placeholders accidentally going to production.
 
 ---
 
