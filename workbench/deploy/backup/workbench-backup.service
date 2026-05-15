@@ -10,14 +10,29 @@ Wants=network-online.target
 Type=oneshot
 User=deploy
 Group=deploy
+# gcloud must be the apt-installed version at /usr/bin/gcloud (package
+# google-cloud-cli). The /snap/bin/gcloud variant fails under systemd:
+# snap-confine needs CAP_DAC_OVERRIDE during init, which systemd strips
+# from non-root services. We deliberately do NOT prepend /snap/bin to
+# PATH here so systemd's default PATH picks up /usr/bin/gcloud first.
 EnvironmentFile=-/etc/workbench/workbench.env
-ExecStart=/srv/workbench/current/deploy/backup/workbench-backup.sh
+# Backup script lives at /opt/workbench/ (infra path, not per-release)
+# because the script doesn't change with release SHA and the workflow's
+# release tarball doesn't ship workbench/deploy/backup/. First-time VM
+# bootstrap installs the script to /opt/workbench/workbench-backup.sh.
+ExecStart=/opt/workbench/workbench-backup.sh
 TimeoutStartSec=15min
 
 # The script writes only to /tmp, /var/log/workbench, and GCS. No new
 # privileges required.
+#
+# PrivateTmp was originally enabled but snap-confined gcloud cannot
+# see files in systemd's private /tmp namespace, so the upload step
+# fails silently mid-script. The single-VM single-tenant nature of
+# the workbench means /tmp isolation is low-value here, and the
+# script's `trap cleanup_stage EXIT` removes /tmp/wb-* on every exit.
 NoNewPrivileges=true
-PrivateTmp=true
+PrivateTmp=false
 
 [Install]
 WantedBy=multi-user.target

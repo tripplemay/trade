@@ -17,6 +17,12 @@ build-backend = "hatchling.build"
 # Retry 6: after /etc/workbench/ chmod 750→755 (deploy user needed
 # traverse bit to read uvicorn-logging.json — file was 644 but dir was
 # 750 root:root). Services now active + healthcheck passing externally.
+# Retry 7: after backup unit hardened (no /snap/bin in PATH —
+# snap-confine fails under systemd; PrivateTmp=false — snap can't see
+# private tmp; ExecStart=/opt/workbench/workbench-backup.sh — script
+# is infra not per-release). google-cloud-cli installed via apt to
+# /usr/bin/gcloud as replacement for snap. Backup verified: 2 objects
+# in gs://.../daily/ — one direct test + one via systemd.
 
 [project]
 name = "workbench_api"
