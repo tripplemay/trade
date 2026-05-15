@@ -2,6 +2,11 @@
 requires = ["hatchling>=1.26"]
 build-backend = "hatchling.build"
 
+# B021 first deploy trigger: 2026-05-16 — touch file to flow through
+# workbench-backend.yml + workbench-frontend.yml → workbench-deploy.yml
+# chain. VM bootstrap (dirs / venv / systemd units / nginx vhost / cert /
+# env file / SA scope) all completed prior to this commit by Planner.
+
 [project]
 name = "workbench_api"
 version = "0.1.0"
