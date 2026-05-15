@@ -38,7 +38,7 @@
       "title": "Dev 文档 + branch protection 指引 + Codex L1 验收 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "(1) 写 docs/dev/branch-protection-guidance.md：列出用户在 GitHub Settings → Branches 应配的规则——main require status check (python-ci/workbench-backend/workbench-frontend) + require linear history + force push 禁 + 可选 1 review。(2) 写 docs/dev/workbench-architecture.md skeleton：项目结构 + 后端 app factory + settings allowlist + 安全 guard + 前端 App Router placeholder + Footer + types/api.ts pipeline + CI workflows + 与 ADR + B021/B022/B023 spec 的 cross-link（B021/B022 spec 可能未存在，前向引用 OK）+ 边界重申。(3) Codex 8 项验收 checklist 全过：① clean clone 起 ≤ 10 min；② pytest/ruff/mypy backend 全清；③ npm test/lint/typecheck frontend 全清；④ npx playwright test 全清 + HTML report 渲染；⑤ CI 两 workflow 在验收 commit 全绿；⑥ Trip-test 5 个安全 regression（throwaway commit 故意违反，每条都触发对应测试 fail，revert）；⑦ Trip-test OpenAPI drift（throwaway commit 改 backend /health schema 不 regenerate types，CI fail，revert）；⑧ trade/ 既有测试无回归全绿。(4) 写 docs/test-reports/B020-dev-infrastructure-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md 模板：Scope + 8 项验收命令 & 结果 + 5 trip-test 结果 + Disclaimer。(5) 更新 progress.json：status → done / docs.signoff 设值 / evaluator_feedback 总结 8 项验收概要。"
     }
   ]
