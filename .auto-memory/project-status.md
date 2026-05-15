@@ -4,12 +4,13 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B018-gap-root-cause-attribution：`verifying`**；Generator 完成 F001+F002（2/5），交接给 Codex F003-F005 独立验收。
-- Spec: `docs/specs/B018-gap-root-cause-attribution-spec.md`
-- 交付：trade/analysis/__init__.py + trade/analysis/pnl_attribution.py (PeriodAttribution/AttributionInput/AttributionReport + B010_LAYERS/B013_LAYERS + per-asset/per-layer/summary/compute_period_asset_returns) + trade/analysis/parameter_sweep.py (SweepWindow/SweepRunResult/UniverseVariant + DEFAULT_VOL_TARGETS=(0.05/0.08/0.10/0.12/0.15) + 5 universe variants + 4 cadences + run_vol_target_sweep/run_universe_ablation_sweep/run_cadence_sweep)，纯 stdlib，override config 用 dataclasses.replace 内联构造，绝不 mutate 默认。
-- 测试：573 PASS（23 attribution + 24 sweep + 526 prior），mypy strict / ruff / compileall 全清。F003-F005 Codex 域：真实数据 attribution + 三轴 sweep + 诊断报告 + Pareto 推荐 + signoff。
-- 起因：B017 经验两个负面发现（B015 regime activation 不缩窄 B013 gap；B016 HRP 不缩窄 B010 gap，HRP -$496 + turnover +41%）。MVP PRD 5/6 §12 里程碑过；继续盲目加策略变体有放大错误风险，先归因。
-- 硬边界：默认 CI 仍 fixture/mock-first；`trade/` 模块零第三方依赖；no-broker/no-paper/no-AI/no-secret-in-strategy；report 含 research-only disclaimer。
+- **B018-gap-root-cause-attribution：`done`**；Codex 已完成 F003-F005 独立验收、写入签收报告并收口。
+- 报告：`docs/test-reports/B018-gap-attribution-2026-05-15.md`
+- 签收：`docs/test-reports/B018-gap-attribution-signoff-2026-05-15.md`
+- Snapshot：`regime-adaptive:b69883b08eedea7d`，`real_data_status=ran`
+- 结论：`l2_vol_scaling` 是主拖累，`l1_gating` 次之；`vol_target` / `cadence` 是主要可调轴，`universe` ablation 多数受 defensive 不变量限制。
+- 后续建议：`BL-B018-S1` 进入 backlog，追踪 `B010` quarterly cadence / 10%~12% vol-target 联合 retune。
+- 硬边界：默认 CI 仍 fixture/mock-first；`trade/` 模块零第三方依赖；no-broker/no-paper/no-AI/no-secret-in-strategy；所有输出 research-only。
 
 ## 已完成签收
 - B001-B008: strategy roadmap through research-grade data expansion all signed off.

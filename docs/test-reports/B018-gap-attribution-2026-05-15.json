@@ -1,0 +1,518 @@
+{
+  "run": {
+    "batch": "B018",
+    "description": "B013/B010 vs static 60/40 gap root-cause attribution and parameter sweep.",
+    "report_date": "2026-05-15",
+    "run_id": "B018-gap-attribution-2026-05-15"
+  },
+  "real_data_status": {
+    "date_range": "2018-01-01..2025-12-31",
+    "manifest_path": "data/public-cache/regime-adaptive-prices-manifest.json",
+    "snapshot_id": "regime-adaptive:b69883b08eedea7d",
+    "status": "ran",
+    "window_scope": "calm window 2020-06-01..2022-12-31 with 2020/2022 overlap subwindows"
+  },
+  "baseline_recap": {
+    "b010": {
+      "calm": {
+        "absolute_gap_vs_60_40": 2201.000882725275,
+        "benchmark_ending": 101796.76574613138,
+        "max_drawdown": -0.010606278785263878,
+        "signed_gap_vs_60_40": 2201.000882725275,
+        "strategy_ending": 103997.76662885665,
+        "status": "ran"
+      },
+      "stress_2020": {
+        "absolute_gap_vs_60_40": 9436.457078056526,
+        "benchmark_ending": 110810.35937559433,
+        "max_drawdown": -0.0018923007448654605,
+        "signed_gap_vs_60_40": -9436.457078056526,
+        "strategy_ending": 101373.9022975378,
+        "status": "ran"
+      },
+      "stress_2022": {
+        "absolute_gap_vs_60_40": 2201.000882725275,
+        "benchmark_ending": 101796.76574613138,
+        "max_drawdown": -0.010606278785263878,
+        "signed_gap_vs_60_40": 2201.000882725275,
+        "strategy_ending": 103997.76662885665,
+        "status": "ran"
+      }
+    },
+    "b013": {
+      "calm": {
+        "absolute_gap_vs_60_40": 471.7869243966852,
+        "benchmark_ending": 101796.76574613138,
+        "max_drawdown": -0.02247596659450435,
+        "signed_gap_vs_60_40": 471.7869243966852,
+        "strategy_ending": 102268.55267052806,
+        "status": "ran"
+      },
+      "stress_2020": {
+        "absolute_gap_vs_60_40": 8831.670663375204,
+        "benchmark_ending": 110810.35937559433,
+        "max_drawdown": -0.0161943661757189,
+        "signed_gap_vs_60_40": -8831.670663375204,
+        "strategy_ending": 101978.68871221913,
+        "status": "ran"
+      },
+      "stress_2022": {
+        "absolute_gap_vs_60_40": 471.7869243966852,
+        "benchmark_ending": 101796.76574613138,
+        "max_drawdown": -0.005053295345878506,
+        "signed_gap_vs_60_40": 471.7869243966852,
+        "strategy_ending": 102268.55267052806,
+        "status": "ran"
+      }
+    }
+  },
+  "sweeps": {
+    "vol_target": [
+      {
+        "axis": "vol_target",
+        "strategy": "b010",
+        "value": 0.05,
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 102484.58795824552,
+          "signed_gap_vs_60_40": 687.8222121141443,
+          "max_drawdown": -0.006519346550407312
+        },
+        "stress_2020": {"max_drawdown": -0.001220192420664734},
+        "stress_2022": {"max_drawdown": -0.006519346550407312},
+        "turnover": 2.1306621041,
+        "transaction_costs": 64.35558965137442,
+        "rebalance_count": 31,
+        "sharpe": 893.3253561494785
+      },
+      {
+        "axis": "vol_target",
+        "strategy": "b010",
+        "value": 0.08,
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 103997.76662885665,
+          "signed_gap_vs_60_40": 2201.000882725275,
+          "max_drawdown": -0.010606278785263878
+        },
+        "stress_2020": {"max_drawdown": -0.0018923007448654605},
+        "stress_2022": {"max_drawdown": -0.010606278785263878},
+        "turnover": 2.8090593655999996,
+        "transaction_costs": 85.40599434789775,
+        "rebalance_count": 31,
+        "sharpe": 2515.971972900181
+      },
+      {
+        "axis": "vol_target",
+        "strategy": "b010",
+        "value": 0.10,
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 105013.31931792475,
+          "signed_gap_vs_60_40": 3216.553571793367,
+          "max_drawdown": -0.01332910312973623
+        },
+        "stress_2020": {"max_drawdown": -0.0023403728950079916},
+        "stress_2022": {"max_drawdown": -0.01332910312973623},
+        "turnover": 3.261324209700001,
+        "transaction_costs": 95.96431810982837,
+        "rebalance_count": 31,
+        "sharpe": 3309.690516688175
+      },
+      {
+        "axis": "vol_target",
+        "strategy": "b010",
+        "value": 0.12,
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 106034.20138358884,
+          "signed_gap_vs_60_40": 4237.435637457456,
+          "max_drawdown": -0.016050489990363292
+        },
+        "stress_2020": {"max_drawdown": -0.0027884450442773323},
+        "stress_2022": {"max_drawdown": -0.016050489990363292},
+        "turnover": 3.6693320255,
+        "transaction_costs": 107.4158932604277,
+        "rebalance_count": 31,
+        "sharpe": 4098.331607171365
+      },
+      {
+        "axis": "vol_target",
+        "strategy": "b010",
+        "value": 0.15,
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 107494.09712485848,
+          "signed_gap_vs_60_40": 5697.331378727104,
+          "max_drawdown": -0.020129874906729794
+        },
+        "stress_2020": {"max_drawdown": -0.003460553169598035},
+        "stress_2022": {"max_drawdown": -0.020129874906729794},
+        "turnover": 3.3665509848000004,
+        "transaction_costs": 117.16505855334265,
+        "rebalance_count": 31,
+        "sharpe": 5075.432383300482
+      },
+      {
+        "axis": "vol_target",
+        "strategy": "b013",
+        "value": 0.05,
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 101872.29861696697,
+          "signed_gap_vs_60_40": 75.53287083559553,
+          "max_drawdown": -0.00957241560923916
+        },
+        "stress_2020": {"max_drawdown": -0.008676310171445878},
+        "stress_2022": {"max_drawdown": -0.0024099558198470428},
+        "turnover": 4.362439008049999,
+        "transaction_costs": 89.54122456582274,
+        "rebalance_count": 31,
+        "sharpe": 451.89278536365025
+      },
+      {
+        "axis": "vol_target",
+        "strategy": "b013",
+        "value": 0.08,
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 102268.55267052806,
+          "signed_gap_vs_60_40": 471.7869243966852,
+          "max_drawdown": -0.02247596659450435
+        },
+        "stress_2020": {"max_drawdown": -0.0161943661757189},
+        "stress_2022": {"max_drawdown": -0.005053295345878506},
+        "turnover": 6.95442839695,
+        "transaction_costs": 136.7017787472667,
+        "rebalance_count": 31,
+        "sharpe": 2518.437285156266
+      },
+      {
+        "axis": "vol_target",
+        "strategy": "b013",
+        "value": 0.10,
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 102891.28069330308,
+          "signed_gap_vs_60_40": 1094.5149471717014,
+          "max_drawdown": -0.023420055820950525
+        },
+        "stress_2020": {"max_drawdown": -0.020518419458876225},
+        "stress_2022": {"max_drawdown": -0.006814295532474923},
+        "turnover": 8.399448082775,
+        "transaction_costs": 158.27864657380292,
+        "rebalance_count": 31,
+        "sharpe": 3308.974016299409
+      },
+      {
+        "axis": "vol_target",
+        "strategy": "b013",
+        "value": 0.12,
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 103366.8590728459,
+          "signed_gap_vs_60_40": 1570.0933267145156,
+          "max_drawdown": -0.026812437710328374
+        },
+        "stress_2020": {"max_drawdown": -0.026812437710328374},
+        "stress_2022": {"max_drawdown": -0.008574311757883257},
+        "turnover": 9.769891822399998,
+        "transaction_costs": 183.47601729354452,
+        "rebalance_count": 31,
+        "sharpe": 4098.567329044035
+      },
+      {
+        "axis": "vol_target",
+        "strategy": "b013",
+        "value": 0.15,
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 104904.5093855758,
+          "signed_gap_vs_60_40": 3107.743639444423,
+          "max_drawdown": -0.03266311944563394
+        },
+        "stress_2020": {"max_drawdown": -0.03266311944563394},
+        "stress_2022": {"max_drawdown": -0.011212485312410037},
+        "turnover": 10.63942033475,
+        "transaction_costs": 331.9236596737035,
+        "rebalance_count": 31,
+        "sharpe": 5074.986487286743
+      }
+    ],
+    "universe": [
+      {
+        "axis": "universe",
+        "strategy": "b010",
+        "value": "full",
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 102947.5737289013,
+          "signed_gap_vs_60_40": 1150.8079827699257,
+          "max_drawdown": -0.007003347779610314
+        },
+        "stress_2020": {"max_drawdown": -0.002918812828956896},
+        "stress_2022": {"max_drawdown": -0.007003347779610314},
+        "turnover": 3.1520151500999996,
+        "transaction_costs": 95.48586719334995,
+        "rebalance_count": 31,
+        "sharpe": 1348.990325622508
+      },
+      {
+        "axis": "universe",
+        "strategy": "b010",
+        "value": "drop_stabilizers",
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 103230.77691541526,
+          "signed_gap_vs_60_40": 1434.0111692838836,
+          "max_drawdown": -0.01287932184878915
+        },
+        "stress_2020": {"max_drawdown": -0.004188125845224322},
+        "stress_2022": {"max_drawdown": -0.01107078097366665},
+        "turnover": 2.8133403008999998,
+        "transaction_costs": 88.76723049414017,
+        "rebalance_count": 31,
+        "sharpe": 1777.204311061127
+      },
+      {
+        "axis": "universe",
+        "strategy": "b013",
+        "value": "full",
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 102268.55267052806,
+          "signed_gap_vs_60_40": 471.7869243966852,
+          "max_drawdown": -0.02247596659450435
+        },
+        "stress_2020": {"max_drawdown": -0.0161943661757189},
+        "stress_2022": {"max_drawdown": -0.005053295345878506},
+        "turnover": 6.95442839695,
+        "transaction_costs": 136.7017787472667,
+        "rebalance_count": 31,
+        "sharpe": 2518.437285156266
+      },
+      {
+        "axis": "universe",
+        "strategy": "b013",
+        "value": "drop_stabilizers",
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 103430.1876088479,
+          "signed_gap_vs_60_40": 1633.4218627165246,
+          "max_drawdown": -0.045142796609479174
+        },
+        "stress_2020": {"max_drawdown": -0.016283497928157975},
+        "stress_2022": {"max_drawdown": -0.01452720391974549},
+        "turnover": 5.10596418455,
+        "transaction_costs": 121.88211827428647,
+        "rebalance_count": 31,
+        "sharpe": 2849.218788618113
+      }
+    ],
+    "cadence": [
+      {
+        "axis": "cadence",
+        "strategy": "b010",
+        "value": "monthly",
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 103997.76662885665,
+          "signed_gap_vs_60_40": 2201.000882725275,
+          "max_drawdown": -0.010606278785263878
+        },
+        "stress_2020": {"max_drawdown": -0.0018923007448654605},
+        "stress_2022": {"max_drawdown": -0.010606278785263878},
+        "turnover": 2.8090593655999996,
+        "transaction_costs": 85.40599434789775,
+        "rebalance_count": 31,
+        "sharpe": 2515.971972900181
+      },
+      {
+        "axis": "cadence",
+        "strategy": "b010",
+        "value": "quarterly",
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 103036.39340890861,
+          "signed_gap_vs_60_40": 1239.6276627772313,
+          "max_drawdown": -0.0033208094381526054
+        },
+        "stress_2020": {"max_drawdown": -0.0019012850555251148},
+        "stress_2022": {"max_drawdown": -0.0012208175283137113},
+        "turnover": 2.4393479927999997,
+        "transaction_costs": 73.47677332519815,
+        "rebalance_count": 10,
+        "sharpe": 1239.6276627772313
+      },
+      {
+        "axis": "cadence",
+        "strategy": "b010",
+        "value": "semiannual",
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 100527.06494114974,
+          "signed_gap_vs_60_40": -1269.7008049816359,
+          "max_drawdown": -0.0015257875122441922
+        },
+        "stress_2020": {"max_drawdown": 0.0},
+        "stress_2022": {"max_drawdown": -0.0013146093643038315},
+        "turnover": 2.3550060774,
+        "transaction_costs": 70.17032862712294,
+        "rebalance_count": 5,
+        "sharpe": 842.4060151380634
+      },
+      {
+        "axis": "cadence",
+        "strategy": "b010",
+        "value": "annual",
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 100422.8564347557,
+          "signed_gap_vs_60_40": -1373.9093113756826,
+          "max_drawdown": -0.0012767219399539842
+        },
+        "stress_2020": {"max_drawdown": 0.0},
+        "stress_2022": {"max_drawdown": 0.0},
+        "turnover": 2.0848140236,
+        "transaction_costs": 62.63636902632798,
+        "rebalance_count": 2,
+        "sharpe": 712.1184957732148
+      },
+      {
+        "axis": "cadence",
+        "strategy": "b013",
+        "value": "monthly",
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 102268.55267052806,
+          "signed_gap_vs_60_40": 471.7869243966852,
+          "max_drawdown": -0.02247596659450435
+        },
+        "stress_2020": {"max_drawdown": -0.0161943661757189},
+        "stress_2022": {"max_drawdown": -0.005053295345878506},
+        "turnover": 6.95442839695,
+        "transaction_costs": 136.7017787472667,
+        "rebalance_count": 31,
+        "sharpe": 2518.437285156266
+      },
+      {
+        "axis": "cadence",
+        "strategy": "b013",
+        "value": "quarterly",
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 105842.62367928916,
+          "signed_gap_vs_60_40": 4045.8579331577785,
+          "max_drawdown": -0.025808502814980927
+        },
+        "stress_2020": {"max_drawdown": 0.0},
+        "stress_2022": {"max_drawdown": -0.012830640615637656},
+        "turnover": 4.513384668524999,
+        "transaction_costs": 110.54236878131951,
+        "rebalance_count": 10,
+        "sharpe": 4045.8579331577785
+      },
+      {
+        "axis": "cadence",
+        "strategy": "b013",
+        "value": "semiannual",
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 101366.65184576252,
+          "signed_gap_vs_60_40": -430.1139003688586,
+          "max_drawdown": -0.055273498272561006
+        },
+        "stress_2020": {"max_drawdown": 0.0},
+        "stress_2022": {"max_drawdown": 0.0},
+        "turnover": 3.5894401751249996,
+        "transaction_costs": 98.33110425550386,
+        "rebalance_count": 5,
+        "sharpe": 1627.741098250651
+      },
+      {
+        "axis": "cadence",
+        "strategy": "b013",
+        "value": "annual",
+        "status": "ran",
+        "calm": {
+          "strategy_ending": 99568.17929875385,
+          "signed_gap_vs_60_40": -2228.586447377529,
+          "max_drawdown": -0.016778341960985932
+        },
+        "stress_2020": {"max_drawdown": 0.0},
+        "stress_2022": {"max_drawdown": 0.0},
+        "turnover": 1.9555653074750001,
+        "transaction_costs": 57.161442864607635,
+        "rebalance_count": 2,
+        "sharpe": 1027.314897503442
+      }
+    ]
+  },
+  "pareto_recommendations": [
+    {
+      "strategy": "b010",
+      "axis": "cadence",
+      "value": "annual",
+      "tier": "low_dd",
+      "calm": {
+        "strategy_ending": 100422.8564347557,
+        "absolute_gap_vs_60_40": 1373.9093113756826,
+        "signed_gap_vs_60_40": -1373.9093113756826,
+        "max_drawdown_2020": 0.0,
+        "max_drawdown_2022": 0.0,
+        "turnover": 2.0848140236,
+        "transaction_costs": 62.63636902632798,
+        "benchmark_ending": 101796.76574613138
+      }
+    },
+    {
+      "strategy": "b010",
+      "axis": "cadence",
+      "value": "quarterly",
+      "tier": "balanced",
+      "calm": {
+        "strategy_ending": 103036.39340890861,
+        "absolute_gap_vs_60_40": 1239.6276627772313,
+        "signed_gap_vs_60_40": 1239.6276627772313,
+        "max_drawdown_2020": -0.0019012850555251148,
+        "max_drawdown_2022": -0.0012208175283137113,
+        "turnover": 2.4393479927999997,
+        "transaction_costs": 73.47677332519815,
+        "benchmark_ending": 101796.76574613138
+      }
+    },
+    {
+      "strategy": "b013",
+      "axis": "vol_target",
+      "value": 0.15,
+      "tier": "high_return",
+      "calm": {
+        "strategy_ending": 104904.5093855758,
+        "absolute_gap_vs_60_40": 3107.743639444423,
+        "signed_gap_vs_60_40": 3107.743639444423,
+        "max_drawdown_2020": -0.03266311944563394,
+        "max_drawdown_2022": -0.011212485312410037,
+        "turnover": 10.63942033475,
+        "transaction_costs": 331.9236596737035,
+        "benchmark_ending": 101796.76574613138
+      }
+    }
+  ],
+  "conclusion": {
+    "dominant_drag": "l2_vol_scaling",
+    "secondary_drag": "l1_gating",
+    "tunable_axes": [
+      "vol_target",
+      "cadence"
+    ],
+    "universe_ablation_note": "drop_sgov and similar variants are mostly blocked by defensive-asset invariants; the meaningful levers are cadence and vol_target."
+  },
+  "research_limitations": {
+    "disclaimer": "research-only",
+    "limitations": [
+      "No default strategy parameter was mutated.",
+      "No broker, live, paper, or AI execution was performed.",
+      "Universe ablation is partially constrained by invariants, so not every theoretical variant is runnable."
+    ]
+  }
+}
