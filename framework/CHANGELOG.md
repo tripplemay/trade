@@ -5,6 +5,22 @@
 
 ---
 
+## v0.9.22 — 2026-05-15（B019 沉淀，1 条 learning）
+
+**来源批次：**
+- B019-b010-b013-cadence-vol-target-retune F005 signoff §Framework Learnings + Soft-watch S1
+
+**触发原因：**
+- B019 F004 中 `scripts/generate_b015_activation_policy_report.py` 默认全量 snapshot 路径撞到 T+1 execution 边界——last signal date 在 snapshot 尾部，没有下一个 trading day 可用作 T+1 execution，触发 `no trading date exists after signal_date` 类错误。Codex 用显式窗口 + 1 交易日 headroom 绕过，但作为 Soft-watch S1 记录建议永久 script 侧修复。
+- 这条规律不只对 B015 适用：任何 sweep / comparison / report CLI 在 snapshot 尾部触发 T+1 execution 都会遇到。需要 framework 一层固化以避免后续批次重复踩。
+
+**变更：**
+- 新增 `docs/engineering/backtest-report-schema.md` §"Snapshot Tail Headroom for T+1 Execution"（含 reference incident + 必须 trim 最后一个 signal date 或文档化 headroom 的硬规则 + 新 script 必须遵守 / 旧 script 顺手回填的约定）
+- 同文件 §"Non-Goals" 段刷新："No formal frontend dashboard" 已被 PRD §7 修订（commit 522e34a）推翻，本节改为指向 PRD §7 作为 dashboard 边界的权威源。
+- 归档 `framework/archive/proposed-learnings-archive-v0.9.22.md`
+
+---
+
 ## v0.9.21 — 2026-05-15（B017 + B018 沉淀，2 条 learnings）
 
 **来源批次：**

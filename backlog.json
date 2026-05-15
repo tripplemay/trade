@@ -23,7 +23,11 @@
       "数据范围参照 docs/strategy/03-us-quality-momentum.md 与 docs/strategy/04-hk-china-etf-small-allocation.md"
     ],
     "confirmed_at": "2026-05-13",
-    "priority": "medium",
+    "priority": "high",
+    "priority_history": [
+      {"priority": "medium", "since": "2026-05-13", "until": "2026-05-15", "reason": "原 B011 signoff soft-watch S2 默认"},
+      {"priority": "high", "since": "2026-05-15", "reason": "B019 done wrap-up：workbench Phase 1 (B020) 会展示全部 4 个 sleeve，satellite stub fall-through 在 UI 里直观可见；用户决策提升优先级以便 workbench 后续批次衔接，避免长期 stub-only 展示。"}
+    ],
     "source": "B011 signoff soft-watch S2"
   },
   {
