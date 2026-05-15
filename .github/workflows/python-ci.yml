@@ -3,7 +3,29 @@ name: Python CI
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "workbench/**"
+      - ".github/workflows/workbench-*.yml"
+      - "docs/**"
+      - ".auto-memory/**"
+      - "progress.json"
+      - "features.json"
+      - "backlog.json"
+      - "README.md"
+      - "AGENTS.md"
+      - "CLAUDE.md"
   pull_request:
+    paths-ignore:
+      - "workbench/**"
+      - ".github/workflows/workbench-*.yml"
+      - "docs/**"
+      - ".auto-memory/**"
+      - "progress.json"
+      - "features.json"
+      - "backlog.json"
+      - "README.md"
+      - "AGENTS.md"
+      - "CLAUDE.md"
 
 jobs:
   python-checks:

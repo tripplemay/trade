@@ -14,7 +14,7 @@
       "title": "CI workflows (workbench-backend + workbench-frontend)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新增 .github/workflows/workbench-backend.yml + workbench-frontend.yml。两个 workflow 都跑 PR + push to main，按 path filter 触发（workbench/backend/** 与 workbench/frontend/**）。workbench-backend：Python 3.11 setup + pip cache + install workbench/backend[dev] + pytest + ruff + mypy + 安全 guard 测试单独 step（让失败 surface 标识违反的边界）。workbench-frontend：Node 20 setup + npm cache + Playwright browser cache (chromium only) + npm ci + npm run lint/typecheck/test + start-server-and-test 并发跑 backend → Playwright E2E smoke；失败时上传 Playwright HTML report + screenshots/video artifact。验收：(1) 两 workflow 在 F002 commit 全绿；(2) 二跑命中 cache (workflow log 验证)；(3) 故意 throwaway commit 让 backend test 红 → workbench-backend fail (branch protection 下阻 merge)；(4) 故意 throwaway commit 让 frontend test 红 → workbench-frontend fail with artifact uploaded；(5) python-ci.yml 仍绿；(6) 典型 PR CI wall time ≤ 10 min（backend + frontend 并行 job）。"
     },
     {
