@@ -68,9 +68,13 @@ echo "→ symlink ${CURRENT_LINK} → ${RELEASE_DIR}"
 ln -sfn "${RELEASE_DIR}" "${CURRENT_LINK}"
 
 # 3. Restart both workbench services. The deploy user's sudoers grant
-# (B021 prep #3) is locked to these two unit names + daemon-reload.
+# (B021 prep #3) whitelists each service name individually, so we MUST
+# call systemctl restart once per service. A single combined call
+# (`systemctl restart backend frontend`) doesn't match any sudoers rule
+# and falls through to "password required".
 echo "→ systemctl daemon-reload + restart workbench-{backend,frontend}.service"
 sudo /bin/systemctl daemon-reload
-sudo /bin/systemctl restart workbench-backend.service workbench-frontend.service
+sudo /bin/systemctl restart workbench-backend.service
+sudo /bin/systemctl restart workbench-frontend.service
 
 echo "✓ deploy complete: ${RELEASE_DIR}"

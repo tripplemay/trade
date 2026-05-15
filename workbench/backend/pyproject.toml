@@ -12,6 +12,8 @@ build-backend = "hatchling.build"
 # B021 prep #5 — only 7 of 8 needed secrets uploaded).
 # Retry 4: after deploy.sh updated to pip install backend wheel before
 # alembic upgrade (was: venv bare from bootstrap, alembic not importable).
+# Retry 5: after deploy.sh split systemctl restart into per-service calls
+# (sudoers whitelists each service name individually; combined call fails).
 
 [project]
 name = "workbench_api"
