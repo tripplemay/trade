@@ -30,7 +30,7 @@
       "title": "OpenAPI ↔ TypeScript types pipeline + CI drift check",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新增 workbench/frontend/scripts/generate-types.sh 脚本：(1) 后台启 backend uvicorn；(2) curl /openapi.json 到临时文件；(3) npx openapi-typescript /tmp/openapi.json -o workbench/frontend/src/types/api.ts；(4) 杀 backend；(5) git diff --exit-code workbench/frontend/src/types/api.ts（CI 用此 detect drift）。在 workbench-frontend.yml 加 CI step：跑 generate-types.sh + git diff，drift 时 fail。Placeholder Home page (F001) 必须 consume 生成的 /health type 验证 pipeline 全链路连通（TypeScript 编译器自动验证类型被消费）。验收：(1) generate-types.sh idempotent (跑两次产物字节相同)；(2) F004 commit CI drift check 通过；(3) 故意 throwaway commit 改 backend /health 响应 schema 但不重新跑 generate-types → CI fail（Codex F005 trip-test 验证）；(4) Home page 渲染来自 /health 的 typed data。"
     },
     {
