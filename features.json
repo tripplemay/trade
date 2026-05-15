@@ -1,45 +1,45 @@
 {
-  "sprint": "B018-gap-root-cause-attribution",
+  "sprint": "B019-b010-b013-cadence-vol-target-retune",
   "features": [
     {
       "id": "F001",
-      "title": "P&L attribution 模块 + 单元测试",
+      "title": "Sweep harness fine-grid extension + 单元测试",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "新增 trade/analysis/pnl_attribution.py（纯 stdlib：math + statistics + dataclasses + typing + collections.abc，**禁** scipy/numpy/pandas/sklearn/networkx）：compute_per_asset_contribution（per-asset 累计收益 contribution gap）+ compute_per_layer_contribution（B010: L2 vol_scaling + defensive_routing；B013: L1 gating + L2 + L3 crisis_cut + defensive_routing）+ attribution_summary（合 per-asset + per-layer + total gap）。新增 tests/unit/test_pnl_attribution.py 含 canned backtest result + canned benchmark curve；覆盖 per-asset 符号正确性、per-layer 加和近似 total、empty result / missing periods / single-asset / missing benchmark dates 等 edge cases。pytest / ruff / compileall / mypy 全过"
+      "status": "pending",
+      "acceptance": "扩展 trade/analysis/parameter_sweep.py（pure stdlib）：(1) 确认 run_vol_target_sweep 已接受任意 Sequence[float]；若有硬编码限制则放宽（任何正 vol_target 接受）。(2) 新增公共 helper run_cadence_vs_default_sweep(records, strategy_name, cadences, vol_targets, windows, *, default_baseline=True) -> list[SweepRunResult]，对 (cadence, vol_target) 笛卡尔积 + 策略当前 default 基线返回 deterministic 结果列表（默认基线作为额外 cell 含真实 default 值，不写死）。(3) 新增公共 helper evaluate_retune_gate(results, strategy_name, gate=DEFAULT_GATE) -> RetuneGateVerdict 返回 typed verdict 含 per-cell 4 条 gate pass/fail flags + top-level gate_met: bool + winning_cell: tuple[str, float] | None。DEFAULT_GATE 是 frozen dataclass: min_calm_uplift_pct=1.0 / min_calm_gap_narrowing_pp=5.0 / do_no_harm_on_stress=True / max_turnover_increase_pct=15.0。(4) 新增 tests/unit/test_parameter_sweep_b019.py 覆盖：cell 数量 = len(cadences)*len(vol_targets)+1；default baseline cell 携带策略真实 default 值不是 hardcoded 常量；evaluate_retune_gate 正确识别 all-pass / fails-gate-3 / fails-gate-4 / no-cell-qualifies 4 种 case；两次连续 run 返回字节相同 verdict（determinism）；运行后策略 default 未被 mutate。(5) winner tie-breaker 顺序：calm ending value > stress2 max DD > turnover。.venv/bin/python -m pytest / ruff check trade tests scripts / mypy trade / compileall -q trade tests scripts 全清。**B018 已有的 parameter_sweep 测试全部继续通过，不得回归**。"
     },
     {
       "id": "F002",
-      "title": "参数 sweep harness（vol_target / universe / cadence）+ 单元测试",
+      "title": "Stage 1 真实数据细 sweep + Pareto 报告 + gate 裁决",
       "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "新增 trade/analysis/parameter_sweep.py（纯 stdlib）：run_vol_target_sweep（target_volatility ∈ {0.05, 0.08, 0.10, 0.12, 0.15}）+ run_universe_ablation_sweep（≥4 个 variant：full / drop_SGOV / drop_stabilizers / SPY+IEF only / SPY only）+ run_cadence_sweep（monthly / quarterly / semiannual / annual）。每个 sweep 接收预加载 snapshot records、strategy name、参数值、窗口元组，返回 deterministic SweepRunResult list（含 ending_value / gap_vs_60_40 / max_drawdown / turnover / transaction_costs / sharpe）。**override config 内联构造，绝不 mutate strategy 默认参数**；不支持的 cadence 显式 skip with diagnostic。tests/unit/test_parameter_sweep.py 用 mocked snapshot records 覆盖：每 sweep 返回预期数量、deterministic 跨 run、override 不泄漏到默认、unsupported cadence skip。pytest / ruff / compileall / mypy 全过"
+      "executor": "codex",
+      "status": "pending",
+      "acceptance": "Codex 在 B014 manifest 在场时调用 trade/analysis/parameter_sweep.run_cadence_vs_default_sweep + evaluate_retune_gate 对 B010 与 B013 在 calm window 2020-06-01..2022-12-31 + stress 2020-02-01..2020-12-31 + stress 2022-01-01..2022-12-31 上跑 60 cells（5 vol_targets × 2 cadences × 2 strategies × 3 windows）+ 2 default baselines。输出：(1) docs/test-reports/B019-retune-sweep-2026-MM-DD.json 含完整 sweep matrix + per-cell 6 指标（ending_value/gap_vs_60_40/max_drawdown/turnover/transaction_costs/sharpe）+ per-cell gate verdict + top-level per-strategy gate_met + winning_cell（or null）。(2) docs/test-reports/B019-retune-sweep-2026-MM-DD.md 含 6 sections：背景（链接 B018 + BL-B018-S1 + framework v0.9.21 #1）/ 双策略 sweep matrix table / per-cell gate verdict table / Pareto 推荐（low-DD/balanced/high-return per strategy 含具体 trade-off 数字）/ 顶层 verdict / snapshot 回顾 + research-only disclaimer。(3) progress.json.evaluator_feedback 写入 verdict 摘要（per-strategy gate_met + winning cell + 关键数字），让下游 Generator 不需重 parse JSON。manifest 缺失时 fallback 合成 9 资产 fixture（B018 路径），real_data_status='skipped'，gate_met=False reason='manifest absent — fixture-only run 不满足 framework v0.9.21 #1 real-data reverify 要求'。"
     },
     {
       "id": "F003",
-      "title": "真实数据 P&L attribution 跑通",
+      "title": "Stage 2 conditional：default mutation + 单测更新",
       "priority": "high",
-      "executor": "codex",
+      "executor": "generator",
       "status": "pending",
-      "acceptance": "Codex 在 B014 manifest 在场时调用 trade/analysis/pnl_attribution 对 B013 与 B010 vs static 60/40（B014 sidecar 加载）做 per-asset + per-layer attribution；窗口覆盖 calm window 2020-06-01..2022-12-31 + 2020-02-01..2020-12-31 + 2022-01-01..2022-12-31。输出 docs/test-reports/B018-gap-attribution-2026-MM-DD.json sections 1-3（per-asset 表 + per-layer 表 + 跨窗口对比）。manifest 缺失时 fallback 到合成 9 资产 fixture 并标 real_data_status='skipped'"
+      "acceptance": "**仅当 F002 verdict 至少一个策略 gate_met 时执行；两策略均 not met 则 mark skipped 并在 status 字段记录 reason；若仅一个策略 gate met 则只动该策略**。Per qualifying strategy: (1) 修改对应 trade/strategies/*.py config dataclass field defaults 到 F002 winning (cadence, vol_target)。(2) 若策略模块暴露 DEFAULT_* 常量（cadence/vol_target）一并更新。(3) 跑 rg 'target_volatility\\s*[=:]\\s*0\\.0?8|rebalance_frequency\\s*[=:]\\s*[\"\\']monthly[\"\\']' trade tests 审计 hits；tests/unit/ 中作为 baseline 断言 prior default 的位置一并更新；明确豁免 tests/unit/test_parameter_sweep.py / test_parameter_sweep_b019.py 中显式 vol_target=0.08 override 测试用例（这些测的是 override 行为不是 default）+ docs/specs/ + docs/test-reports/ 历史记录（不可改）。(4) B018 已有测试 + B011 测试全部继续通过；任何更新过的测试断言需反映新 default deterministic 数字。.venv/bin/python -m pytest / ruff check trade tests scripts / mypy trade / compileall -q trade tests scripts 全清。"
     },
     {
       "id": "F004",
-      "title": "真实数据三轴参数 sweep 跑通",
+      "title": "Stage 2 conditional：B011/B014/B015 联动同步",
       "priority": "high",
-      "executor": "codex",
+      "executor": "generator",
       "status": "pending",
-      "acceptance": "Codex 在 B014 manifest 在场时对 B013 与 B010 分别执行 vol_target sweep（5 个值）+ universe ablation（≥4 variant）+ rebalance cadence sweep（3-4 个值）；每个 variant 在 calm window + 两个 stress sub-window 上跑 backtest 并记录 ending_value / gap_vs_60_40 / 2020 max DD / 2022 max DD / turnover / costs / Sharpe。Append 到 B018 JSON sidecar sections 4-6。manifest 缺失时 fallback synthetic fixture + skipped 标识"
+      "acceptance": "**仅当 F003 完成且至少一个策略 default 已修改时执行；F003 全 skipped 则一并 skipped**。(1) B011 Master Portfolio：若 sleeve config hardcode vol_target/cadence 给 risk_parity sleeve，改为 consume B010 新 default（normal config-loading path）；任何 B011 单测/fixture hardcode prior 数字一并更新。(2) 新增 docs/test-reports/B019-default-change-baseline-2026-MM-DD.{json,md}：在新 default 下 re-run B010+B013 跨 3 个窗口，记录新 baseline 数字。(3) 新增 docs/test-reports/B019-b015-activation-policy-rerun-2026-MM-DD.{json,md}：在新 B013 default 下 re-run B015 activation policy comparison harness。(4) docs/specs/B014-regime-adaptive-stress-validation-spec.md Background 加 1 行 cross-link 指向 B019 default-change baseline（**不重写 B014 sidecar 历史记录**）。(5) docs/specs/B015-regime-adaptive-activation-policy-spec.md Background 加 1 行 cross-link 指向 B019 activation policy rerun。(6) docs/strategy/02-risk-parity-vol-target.md（必须）+ docs/strategy/00-master-portfolio-allocation.md（若有 quote prior B010 default）更新文档 default 数字与代码一致。.venv/bin/python -m pytest / ruff / mypy / compileall 全清。"
     },
     {
       "id": "F005",
-      "title": "诊断报告 + Pareto 推荐 + Codex signoff",
+      "title": "Stage 2 Codex 回归验证 + signoff",
       "priority": "high",
       "executor": "codex",
       "status": "pending",
-      "acceptance": "Codex 产出 docs/test-reports/B018-gap-attribution-2026-MM-DD.md 含 9 节（real-data baseline recap / per-asset attribution / per-layer attribution / vol target sweep / universe ablation / cadence sweep / Pareto 推荐 / 结论 / disclaimer）+ 至少 3 个 Pareto-style 配置推荐（low-DD / balanced / high-return）含具体 trade-off 数字（'config X: gap 缩窄 Y%, 2022 max DD 从 -A% 到 -B%'）。同时写 docs/test-reports/B018-gap-attribution-signoff-2026-MM-DD.md（scope / verification / high-level findings / 可选 BL-B018-* backlog entry）。更新 progress.json 的 evaluator_feedback 与 docs.signoff。**B018 不修改 B010 / B013 默认参数** — 任何 retune 候选只入 backlog 不入 spec。pytest / ruff / compileall / mypy 全过"
+      "acceptance": "Codex 执行：(1) .venv/bin/python -m pytest tests/ -q 全 PASS；(2) .venv/bin/python -m mypy trade clean；(3) .venv/bin/python -m ruff check trade tests scripts clean；(4) .venv/bin/python -m compileall -q trade tests scripts clean；(5) 若 F003/F004 ran（gate met）：在新 default 下 re-execute winning configuration 在 snapshot 上，每个指标必须与 F002 prediction 匹配 ±0.1%（数值确定性 sanity check）；任何 drift > 0.1% 阻断 signoff 并把 F003/F004 退回 fixing。(6) 若 F003/F004 skipped（gate not met）：跳过确定性 check。(7) Backlog: 在 backlog.json 标记 BL-B018-S1 为 resolved（链 B019 signoff）；若 gate not met 新增 BL-B019-S1 含具体 (cadence, vol_target) cells 测过 + 哪条 gate 失败，避免未来重复盲跑。(8) 写 docs/test-reports/B019-retune-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md 模板：Scope（Stage 1 always / Stage 2 conditional）+ Verification commands & 结果 + High-level findings（per-strategy winning cell or 'gate not met'）+ Backlog updates + Disclaimer。(9) 更新 progress.json：status → done / docs.signoff 设值 / evaluator_feedback 总结两阶段。**所有 B019 artifact 必须含 research-only disclaimer**。"
     }
   ]
 }

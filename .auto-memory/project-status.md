@@ -4,13 +4,13 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B018-gap-root-cause-attribution：`done`**；Codex 已完成 F003-F005 独立验收、写入签收报告并收口。
-- 报告：`docs/test-reports/B018-gap-attribution-2026-05-15.md`
-- 签收：`docs/test-reports/B018-gap-attribution-signoff-2026-05-15.md`
-- Snapshot：`regime-adaptive:b69883b08eedea7d`，`real_data_status=ran`
-- 结论：`l2_vol_scaling` 是主拖累，`l1_gating` 次之；`vol_target` / `cadence` 是主要可调轴，`universe` ablation 多数受 defensive 不变量限制。
-- 后续建议：`BL-B018-S1` 进入 backlog，追踪 `B010` quarterly cadence / 10%~12% vol-target 联合 retune。
-- 硬边界：默认 CI 仍 fixture/mock-first；`trade/` 模块零第三方依赖；no-broker/no-paper/no-AI/no-secret-in-strategy；所有输出 research-only。
+- **B019-b010-b013-cadence-vol-target-retune：`building`**；Generator 接 F001（sweep harness fine-grid extension + 单测），共 5 features。
+- Spec：`docs/specs/B019-b010-b013-cadence-vol-target-retune-spec.md`
+- 两阶段执行：Stage 1 = sweep + Pareto + gate verdict（F001 generator + F002 codex）；Stage 2 conditional = default mutation + 联动（F003+F004 generator）+ 回归 signoff（F005 codex）。
+- 网格：vol_target ∈ {0.09, 0.10, 0.11, 0.12, 0.13} × cadence ∈ {monthly, quarterly}，60 cells/3 windows，复用 B014 snapshot `regime-adaptive:b69883b08eedea7d`。
+- 4 条 gate（同时满足才进 Stage 2）：calm ending value +1% / calm gap vs 60/40 缩窄 5pp / stress 双窗口 max DD do-no-harm / turnover ≤ +15%。
+- B018 已签收：`docs/test-reports/B018-gap-attribution-signoff-2026-05-15.md`；attribution 结论 `l2_vol_scaling` 是主拖累驱动 B019 选 vol_target+cadence 两轴。
+- 硬边界：默认 CI 仍 fixture/mock-first；`trade/` 模块零第三方依赖；no-broker/no-paper/no-AI/no-secret-in-strategy；所有输出 research-only；framework v0.9.21 #1 强制 real-data reverify。
 
 ## 已完成签收
 - B001-B008: strategy roadmap through research-grade data expansion all signed off.
@@ -23,12 +23,13 @@ type: project
 - B015 regime-adaptive activation policy: `docs/test-reports/B015-regime-adaptive-activation-policy-signoff-2026-05-14.md`
 - B016 risk parity HRP upgrade: `docs/test-reports/B016-risk-parity-hrp-upgrade-signoff-2026-05-15.md`
 - B017 B015+B016 real-data validation: `docs/test-reports/B017-real-data-validation-signoff-2026-05-15.md`
+- B018 gap root-cause attribution: `docs/test-reports/B018-gap-attribution-signoff-2026-05-15.md`
 
 ## 生产状态
 - No deployment, DB, broker API, secrets, paper/live trading, or live-money operation.
 
 ## 已知 gap（非阻塞）
-- Backlog: BL-B010-S1 / BL-B011-S2 / BL-B013-D1 / BL-B013-D2 / BL-B018-S1（B018 新增：B010 quarterly cadence + 10–12% vol-target retune 候选）。
+- Backlog: BL-B010-S1 / BL-B011-S2 / BL-B013-D1 / BL-B013-D2；BL-B018-S1 由 B019 直接执行中（resolved 待 F005）。
 - 本机 system `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
 - framework/proposed-learnings.md 当前为空（v0.9.21 已沉淀 2 条 5/15 候选：fixture-vs-real reversal + gap-attribution methodology）。
 
