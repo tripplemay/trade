@@ -6,11 +6,11 @@
 
 | # | Item | Where | Who | Status (fill as you complete) |
 |---|---|---|---|---|
-| 1 | Google OAuth 2.0 client created | Google Cloud Console | User | ✅ done (rotate after secret was shared in chat 2026-05-15) |
+| 1 | Google OAuth 2.0 client created | Google Cloud Console | User | ✅ done; secret rotated 2026-05-15 06:53Z (user reported; verified indirectly via GitHub Secret update timestamp) |
 | 2 | DNS `trade.guangai.ai` A record | DNS provider | User | ✅ done (per user 2026-05-15) |
 | 3 | VM `deploy` user + dirs + SSH key | GCP VM (SSH session) | User | ✅ done 2026-05-15 (executed by Planner under user authorization — see "Item #3 — executed" section below) |
 | 4 | GCS bucket for SQLite backups | Google Cloud Console | User | ✅ done 2026-05-15 (executed by Planner via `gcloud` on VM after user `gcloud auth login`; bucket `gs://trade-workbench-backups-gen-lang-client-0229748590/`, region `ASIA-NORTHEAST1`, versioning ON, lifecycle 365d delete, public access prevention enforced, uniform IAM, VM SA pre-granted `roles/storage.objectAdmin`) |
-| 5 | GitHub Secrets uploaded | GitHub repo Settings | User | 🟡 7/7 slots filled 2026-05-15 — **but `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` hold `PLACEHOLDER-REPLACE-ME...` strings**. User must replace with real values via UI before B021 F004 CI/CD ships. The placeholder strings will cause Google OAuth `invalid_client` error if used as-is — by design, to prevent silent acceptance. |
+| 5 | GitHub Secrets uploaded | GitHub repo Settings | User | ✅ 7/7 done — `GOOGLE_OAUTH_CLIENT_ID` updated 06:52:40Z + `GOOGLE_OAUTH_CLIENT_SECRET` updated 06:53:24Z (both > placeholder timestamps 06:45). User-update confirmed via `gh secret list` timestamp shift. |
 
 ---
 
@@ -433,13 +433,17 @@ Planner used the local `gh` CLI (auth `tripplemay` token with `repo` scope) to u
 
 ## Done checklist
 
-- [ ] #1 OAuth client (rotated after chat leak)
-- [ ] #2 DNS A record `trade.guangai.ai` → VM IP
-- [ ] #3 VM deploy user + dirs + authorized_keys + sudoers
-- [ ] #4 GCS backup bucket + IAM grant + write test passed
-- [ ] #5 GitHub Secrets uploaded (7 secrets)
+- [x] #1 OAuth client (rotated 2026-05-15 06:53Z)
+- [x] #2 DNS A record `trade.guangai.ai` → VM IP
+- [x] #3 VM deploy user + dirs + authorized_keys + sudoers (Planner executed under user auth)
+- [x] #4 GCS backup bucket + IAM grant + write test passed (Planner executed via user `gcloud auth login`)
+- [x] #5 GitHub Secrets uploaded (7 secrets total: 5 by Planner via `gh`, 2 by user via UI after rotation)
 
-When all 5 are ✅, you're ready for B021 F001 to start. Tell the planner so it knows.
+**All 5 prep items ✅ as of 2026-05-15 06:53Z.** B021 F001 prerequisites are complete; spec drafting can proceed when B020 reaches done wrap-up.
+
+### Outstanding B021 F005 prerequisite (separate from prep)
+
+VM service account scope expansion (`devstorage.read_only` → `cloud-platform` or `devstorage.read_write`) requires VM stop / set-scopes / start (~30-60s downtime for kolquest.com + staging.kolmatrix + apify-kol + pm2 aigcgateway). This is **not part of these 5 prep items** — it's part of B021 F005 (backup automation) and will be flagged as a planned-downtime step in that feature's spec.
 
 ---
 
