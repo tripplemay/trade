@@ -8,6 +8,8 @@ The natural follow-up question: **can the strategy keep its low-drawdown crisis 
 
 B015 is research validation, not a new strategy. The default configuration preserves B013's signoff behavior exactly — backwards compatibility is a hard requirement.
 
+> Cross-link (B019, 2026-05-15): the activation-policy comparison sidecars produced by B015 were captured under the prior B013 default `target_volatility=0.08`. After B019 F003 retuned B013 to `target_volatility=0.11`, a re-run of the activation-policy comparison harness under the new default is recorded in `docs/test-reports/B019-b015-activation-policy-rerun-2026-05-15.{json,md}`. The historical B015 sidecars are immutable; consult the B019 rerun for the current default behavior.
+
 ## Goal
 
 Implement a minimal, testable Regime-Adaptive Activation Policy extension that:

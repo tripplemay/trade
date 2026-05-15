@@ -1,0 +1,114 @@
+{
+  "defaults": {
+    "b010": {
+      "changed_in_b019": false,
+      "rebalance_frequency": "monthly",
+      "target_volatility": 0.08
+    },
+    "b013": {
+      "cadence": "quarterly",
+      "changed_in_b019": true,
+      "previous_cadence": "monthly",
+      "previous_target_volatility": 0.08,
+      "target_volatility": 0.11
+    }
+  },
+  "disclaimer": "Research-only sidecar; this run does not authorize paper or live trading.",
+  "matrix": {
+    "b010": {
+      "calm": {
+        "cadence": "monthly",
+        "ending_value": 102960.17855943949,
+        "gap_vs_60_40": -56018.20497403253,
+        "max_drawdown": -0.018466252609293465,
+        "rebalance_count": 31,
+        "sharpe": 0.600980291200773,
+        "skipped_reason": null,
+        "status": "ran",
+        "transaction_costs": 29.999999999999996,
+        "turnover": 1.0,
+        "vol_target": 0.08
+      },
+      "stress_2020": {
+        "cadence": "monthly",
+        "ending_value": 100672.8956563852,
+        "gap_vs_60_40": 0.0,
+        "max_drawdown": -0.014565690716483837,
+        "rebalance_count": 11,
+        "sharpe": 0.3807623733414789,
+        "skipped_reason": null,
+        "status": "ran",
+        "transaction_costs": 29.999999999999996,
+        "turnover": 1.0,
+        "vol_target": 0.08
+      },
+      "stress_2022": {
+        "cadence": "monthly",
+        "ending_value": 100247.6344347294,
+        "gap_vs_60_40": 0.0,
+        "max_drawdown": -0.016814200688615277,
+        "rebalance_count": 12,
+        "sharpe": 0.12898627451416636,
+        "skipped_reason": null,
+        "status": "ran",
+        "transaction_costs": 29.999999999999996,
+        "turnover": 1.0,
+        "vol_target": 0.08
+      }
+    },
+    "b013": {
+      "calm": {
+        "cadence": "quarterly",
+        "ending_value": 116159.42919330373,
+        "gap_vs_60_40": -42818.95434016829,
+        "max_drawdown": 0.0,
+        "rebalance_count": 11,
+        "sharpe": 3.1870289146149107,
+        "skipped_reason": null,
+        "status": "ran",
+        "transaction_costs": 30.000000006021082,
+        "turnover": 1.0000000002,
+        "vol_target": 0.11
+      },
+      "stress_2020": {
+        "cadence": "quarterly",
+        "ending_value": 117386.26072775546,
+        "gap_vs_60_40": 0.0,
+        "max_drawdown": 0.0,
+        "rebalance_count": 4,
+        "sharpe": 2.618080840603755,
+        "skipped_reason": null,
+        "status": "ran",
+        "transaction_costs": 30.00000000602656,
+        "turnover": 1.0000000002,
+        "vol_target": 0.11
+      },
+      "stress_2022": {
+        "cadence": "quarterly",
+        "ending_value": 109770.52296278157,
+        "gap_vs_60_40": 0.0,
+        "max_drawdown": 0.0,
+        "rebalance_count": 4,
+        "sharpe": 3.1403713177078365,
+        "skipped_reason": null,
+        "status": "ran",
+        "transaction_costs": 30.000000006020315,
+        "turnover": 1.0000000002,
+        "vol_target": 0.11
+      }
+    }
+  },
+  "real_data_status": {
+    "manifest_path": "data/public-cache/regime-adaptive-prices-manifest.json",
+    "reason": "manifest absent at data/public-cache/regime-adaptive-prices-manifest.json; ran on a synthetic 9-asset fixture as a schema example only. Re-run after `scripts/fetch_yfinance_regime_adaptive_csvs.py` populates the manifest to obtain real-data findings.",
+    "snapshot_id": null,
+    "status": "skipped"
+  },
+  "run": {
+    "batch": "B019",
+    "description": "B010 + B013 default-change baseline (post-F003) on three B019 windows. Reference snapshot for future batches; supersedes the historical B014 cross-strategy sidecar for the post-F003 default values only.",
+    "feature": "F004",
+    "report_date": "2026-05-15",
+    "run_id": "B019-default-change-baseline-2026-05-15"
+  }
+}

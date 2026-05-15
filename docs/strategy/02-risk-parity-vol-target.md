@@ -49,6 +49,8 @@
 
 这些目标是研发评价标准，不构成收益承诺。
 
+> B019 retune note (2026-05-15): B010 (Risk Parity，本文档主体) defaults remain unchanged at `target_volatility=0.08` / `rebalance_frequency=monthly` after the B019 cadence × vol-target sweep (gate verdict: B010 `gate_met=False`). The sister B013 Regime-Adaptive Multi-Asset strategy — which reuses the vol-targeting machinery described in §6/§7 of this document — was retuned to `(quarterly, target_volatility=0.11)`. Post-retune reference baseline: `docs/test-reports/B019-default-change-baseline-2026-05-15.{json,md}`. See `docs/test-reports/B019-retune-sweep-2026-05-15.md` for the full sweep matrix and gate verdict.
+
 ## 4. 资产类别与标的池
 
 ### 4.1 核心资产类别

@@ -8,6 +8,8 @@ B013 therefore landed as **code-correct and safety-bounded but the strategy's cr
 
 B014 does not change strategy code. Its purpose is empirical validation of the existing B013 claim. If the empirical max DD breaches 15% on either window, that is a research finding (parameter tuning candidate), not a code defect.
 
+> Cross-link (B019, 2026-05-15): the cross-strategy comparison sidecars below were captured under the prior B013 default `(monthly, target_volatility=0.08)`. After B019 F003 retuned B013 to `(quarterly, target_volatility=0.11)`, a fresh post-retune baseline is recorded in `docs/test-reports/B019-default-change-baseline-2026-05-15.{json,md}`. The historical B014 sidecars are immutable; consult the B019 baseline for the current default behavior.
+
 ## Goal
 
 Implement a minimal, testable Regime-Adaptive Stress Validation Extension that:

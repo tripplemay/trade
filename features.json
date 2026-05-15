@@ -30,7 +30,7 @@
       "title": "Stage 2 conditional：B011/B014/B015 联动同步",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "**仅当 F003 完成且至少一个策略 default 已修改时执行；F003 全 skipped 则一并 skipped**。(1) B011 Master Portfolio：若 sleeve config hardcode vol_target/cadence 给 risk_parity sleeve，改为 consume B010 新 default（normal config-loading path）；任何 B011 单测/fixture hardcode prior 数字一并更新。(2) 新增 docs/test-reports/B019-default-change-baseline-2026-MM-DD.{json,md}：在新 default 下 re-run B010+B013 跨 3 个窗口，记录新 baseline 数字。(3) 新增 docs/test-reports/B019-b015-activation-policy-rerun-2026-MM-DD.{json,md}：在新 B013 default 下 re-run B015 activation policy comparison harness。(4) docs/specs/B014-regime-adaptive-stress-validation-spec.md Background 加 1 行 cross-link 指向 B019 default-change baseline（**不重写 B014 sidecar 历史记录**）。(5) docs/specs/B015-regime-adaptive-activation-policy-spec.md Background 加 1 行 cross-link 指向 B019 activation policy rerun。(6) docs/strategy/02-risk-parity-vol-target.md（必须）+ docs/strategy/00-master-portfolio-allocation.md（若有 quote prior B010 default）更新文档 default 数字与代码一致。.venv/bin/python -m pytest / ruff / mypy / compileall 全清。"
     },
     {

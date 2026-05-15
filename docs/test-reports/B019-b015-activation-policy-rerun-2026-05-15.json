@@ -1,0 +1,279 @@
+{
+  "activation_policy_comparison": {
+    "policy_rows": [
+      {
+        "annualized_return": 0.30071710168958843,
+        "annualized_volatility": 0.03418610250492395,
+        "cost_amount": 89.98199999999999,
+        "ending_value": 169186.49786277628,
+        "l1_firing_rate": 1.0,
+        "max_drawdown": -0.00029999999999996696,
+        "policy": "always_on",
+        "rebalance_count": 24,
+        "regime_distribution": {
+          "BEAR": 3,
+          "NORMAL": 21
+        },
+        "sharpe": 8.796472240328509,
+        "stress_window_max_drawdowns": {
+          "2020_q1_q4": 0.0,
+          "2022_full_year": -0.00029999999999996696
+        },
+        "stress_window_status": {
+          "2020_q1_q4": "skipped",
+          "2022_full_year": "pass"
+        },
+        "turnover": 3.0
+      },
+      {
+        "annualized_return": 0.30071710168958843,
+        "annualized_volatility": 0.03418610250492395,
+        "cost_amount": 89.98199999999999,
+        "ending_value": 169186.49786277628,
+        "l1_firing_rate": 0.125,
+        "max_drawdown": -0.00029999999999996696,
+        "policy": "only_non_normal",
+        "rebalance_count": 24,
+        "regime_distribution": {
+          "BEAR": 3,
+          "NORMAL": 21
+        },
+        "sharpe": 8.796472240328509,
+        "stress_window_max_drawdowns": {
+          "2020_q1_q4": 0.0,
+          "2022_full_year": -0.00029999999999996696
+        },
+        "stress_window_status": {
+          "2020_q1_q4": "skipped",
+          "2022_full_year": "pass"
+        },
+        "turnover": 3.0
+      },
+      {
+        "annualized_return": 0.37025302581127595,
+        "annualized_volatility": 0.020515831048350888,
+        "cost_amount": 30.73878915302693,
+        "ending_value": 187759.33547449572,
+        "l1_firing_rate": 0.0,
+        "max_drawdown": 0.0,
+        "policy": "only_crisis",
+        "rebalance_count": 24,
+        "regime_distribution": {
+          "BEAR": 3,
+          "NORMAL": 21
+        },
+        "sharpe": 18.04718633813461,
+        "stress_window_max_drawdowns": {
+          "2020_q1_q4": 0.0,
+          "2022_full_year": 0.0
+        },
+        "stress_window_status": {
+          "2020_q1_q4": "skipped",
+          "2022_full_year": "pass"
+        },
+        "turnover": 1.0222096638
+      }
+    ],
+    "starting_capital": 100000.0,
+    "stress_windows": [
+      {
+        "key": "2020_q1_q4",
+        "window_end": "2020-12-31",
+        "window_start": "2020-02-01"
+      },
+      {
+        "key": "2022_full_year",
+        "window_end": "2022-12-31",
+        "window_start": "2022-01-01"
+      }
+    ]
+  },
+  "baselines": {
+    "global_etf_momentum": {
+      "CAGR": 0.0037175201969457117,
+      "Sharpe": 0.18766528093068546,
+      "annualized_volatility": 0.02091183150961996,
+      "ending_value": 100963.18779949828,
+      "max_drawdown": -0.030626564701251136,
+      "transaction_costs": 944.5776965081254,
+      "turnover": 40.0
+    },
+    "risk_parity": {
+      "CAGR": 0.014803422851811465,
+      "Sharpe": 1.0558292159122624,
+      "annualized_volatility": 0.014016156534459633,
+      "ending_value": 103869.16382166126,
+      "max_drawdown": -0.008360811544914304,
+      "transaction_costs": 105.08666758288857,
+      "turnover": 3.4569573223999996
+    },
+    "static_60_40": {
+      "CAGR": 0.19656782313500476,
+      "Sharpe": 0.6268265576820613,
+      "annualized_volatility": 0.3694704509063286,
+      "ending_value": 158978.38353347202,
+      "equity_curve": [
+        {
+          "date": "2020-06-30",
+          "value": 100000.0
+        },
+        {
+          "date": "2020-07-31",
+          "value": 103848.40741408145
+        },
+        {
+          "date": "2020-08-31",
+          "value": 107483.92472635215
+        },
+        {
+          "date": "2020-09-30",
+          "value": 104887.80477679386
+        },
+        {
+          "date": "2020-10-30",
+          "value": 102592.5966940872
+        },
+        {
+          "date": "2020-11-30",
+          "value": 108934.33540239192
+        },
+        {
+          "date": "2020-12-31",
+          "value": 110810.35937559433
+        },
+        {
+          "date": "2021-01-29",
+          "value": 109593.06194152594
+        },
+        {
+          "date": "2021-02-26",
+          "value": 110065.64525829034
+        },
+        {
+          "date": "2021-03-31",
+          "value": 111690.83068558844
+        },
+        {
+          "date": "2021-04-30",
+          "value": 115089.57923121486
+        },
+        {
+          "date": "2021-05-28",
+          "value": 115250.36553992455
+        },
+        {
+          "date": "2021-06-30",
+          "value": 116768.95836864322
+        },
+        {
+          "date": "2021-07-30",
+          "value": 118875.13755390845
+        },
+        {
+          "date": "2021-08-31",
+          "value": 120569.94883407462
+        },
+        {
+          "date": "2021-09-30",
+          "value": 116551.33059396222
+        },
+        {
+          "date": "2021-10-29",
+          "value": 121065.3255235061
+        },
+        {
+          "date": "2021-11-30",
+          "value": 120576.0767991344
+        },
+        {
+          "date": "2021-12-31",
+          "value": 122894.16240415614
+        },
+        {
+          "date": "2022-01-31",
+          "value": 118000.01561593727
+        },
+        {
+          "date": "2022-02-28",
+          "value": 115243.3003573672
+        },
+        {
+          "date": "2022-03-31",
+          "value": 116645.94823118455
+        },
+        {
+          "date": "2022-04-29",
+          "value": 108741.2235057411
+        },
+        {
+          "date": "2022-05-31",
+          "value": 109366.25150359006
+        },
+        {
+          "date": "2022-06-30",
+          "value": 102906.84624557037
+        },
+        {
+          "date": "2022-07-29",
+          "value": 109465.34154850892
+        },
+        {
+          "date": "2022-08-31",
+          "value": 105841.716411078
+        },
+        {
+          "date": "2022-09-30",
+          "value": 98728.77749250802
+        },
+        {
+          "date": "2022-10-31",
+          "value": 102040.39505918093
+        },
+        {
+          "date": "2022-11-30",
+          "value": 106095.62213535057
+        },
+        {
+          "date": "2022-12-30",
+          "value": 101796.76574613138
+        },
+        {
+          "date": "2025-12-31",
+          "value": 158978.38353347202
+        }
+      ],
+      "label": "static_60_40_etf_defensive_quarterly_rebalance",
+      "max_drawdown": -0.19663574281239315,
+      "note": "static_quarterly_rebalance_using_master_signal_dates",
+      "weights": {
+        "AGG": 0.4,
+        "SPY": 0.6
+      }
+    }
+  },
+  "narrative": {
+    "note": "Real B014 yfinance snapshot was not present; only the in-memory comparison ran. Re-run with the snapshot manifest available to populate the real-data narrative.",
+    "status": "real_data_skipped"
+  },
+  "real_data_status": {
+    "manifest_id": null,
+    "reason": "B014 yfinance manifest not found at data/public-cache/regime-adaptive-prices-manifest.json; ran on a synthetic 9-asset fixture as a smoke check only. Re-run after `scripts/fetch_yfinance_regime_adaptive_csvs.py` populates the manifest to obtain real-data findings.",
+    "status": "skipped"
+  },
+  "research_limitations": {
+    "disclaimer": "research-only B015 activation-policy comparison; never authorizes paper or production order flow.",
+    "limitations": [
+      "research-only B015 activation-policy comparison; never authorizes paper or production order flow.",
+      "no_paper_or_production_order_flow_authorized",
+      "fixture_or_research_snapshot_only",
+      "stress_gates_require_real_historical_snapshot_to_meaningfully_compare",
+      "B013 strategy code unchanged in B015; activation policy is an opt-in config knob"
+    ]
+  },
+  "run": {
+    "batch": "B015",
+    "description": "Comparative backtest of B013 regime-adaptive strategy under three regime_activation_policy values: always_on (baseline), only_non_normal, only_crisis. B013 strategy code is unchanged; only the activation policy config knob varies between rows.",
+    "report_date": "2026-05-15",
+    "run_id": "B019-b015-activation-policy-rerun-2026-05-15"
+  }
+}
