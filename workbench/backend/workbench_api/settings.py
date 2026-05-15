@@ -19,6 +19,9 @@ ALLOWED_ENV_VARS: frozenset[str] = frozenset(
         "NEXTAUTH_SECRET",
         "ALLOWED_USER_EMAIL",
         "WORKBENCH_DB_URL",
+        "SENTRY_DSN",
+        "WORKBENCH_BACKUP_LOG",
+        "WORKBENCH_LOG_DIR",
     }
 )
 """Environment variables the workbench backend is permitted to read.
@@ -34,6 +37,9 @@ Production sets ``WORKBENCH_DB_URL=sqlite:////var/lib/workbench/db/workbench.db`
 via the systemd EnvironmentFile (B021 F003).
 """
 
+DEFAULT_BACKUP_LOG_PATH: str = "/var/log/workbench/backup.log"
+DEFAULT_LOG_DIR: str = "/var/log/workbench"
+
 
 class Settings(BaseSettings):
     """Typed runtime configuration for the workbench backend.
@@ -47,6 +53,12 @@ class Settings(BaseSettings):
     NEXTAUTH_SECRET: str | None = None
     ALLOWED_USER_EMAIL: str | None = None
     WORKBENCH_DB_URL: str = DEFAULT_DEV_DB_URL
+    # Observability (B021 F006). Sentry DSN is opt-in — unset is no-op so
+    # the dev path stays vendor-free. The backup log path is parsed by
+    # `observability.backup_status` to surface `last_backup_*` on /api/health.
+    SENTRY_DSN: str | None = None
+    WORKBENCH_BACKUP_LOG: str = DEFAULT_BACKUP_LOG_PATH
+    WORKBENCH_LOG_DIR: str = DEFAULT_LOG_DIR
 
     model_config = SettingsConfigDict(
         env_file=None,

@@ -48,8 +48,8 @@ jobs:
       - name: Ruff
         run: python -m ruff check .
 
-      - name: Mypy (strict)
-        run: python -m mypy workbench_api
+      - name: Mypy (strict — workbench_api + tests, per pyproject)
+        run: python -m mypy
 
       - name: Pytest — unit
         run: python -m pytest tests/unit -q

@@ -53,6 +53,14 @@ export interface components {
             version: string;
             /** Db Connectivity */
             db_connectivity: string;
+            /** Uptime Seconds */
+            uptime_seconds: number;
+            /** Last Backup Age Seconds */
+            last_backup_age_seconds: number | null;
+            /** Last Backup Size Bytes */
+            last_backup_size_bytes: number | null;
+            /** Active User Count */
+            active_user_count: number;
         };
         /**
          * ProtectedTestResponse

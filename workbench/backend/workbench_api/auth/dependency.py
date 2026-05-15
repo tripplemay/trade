@@ -24,6 +24,8 @@ from workbench_api.auth.jwt_validator import (
     MissingSessionCookieError,
     authenticate,
 )
+from workbench_api.observability.active_users import active_users
+from workbench_api.observability.logging import USER_ID_VAR
 from workbench_api.settings import Settings, get_settings
 
 SettingsDep = Annotated[Settings, Depends(get_settings)]
@@ -51,7 +53,7 @@ def require_authenticated_user(
         )
 
     try:
-        return authenticate(
+        user = authenticate(
             dict(request.cookies),
             secret=cfg.NEXTAUTH_SECRET,
             allowed_email=cfg.ALLOWED_USER_EMAIL,
@@ -67,3 +69,12 @@ def require_authenticated_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=str(exc),
         ) from exc
+
+    # Observability side-channels — request.state for handlers / templates,
+    # USER_ID_VAR for the JSON log formatter, active_users for the
+    # /api/health metric. None of these can raise; failures here would be
+    # an auth-success path silently appearing as auth-failure.
+    request.state.user_id = user.email
+    USER_ID_VAR.set(user.email)
+    active_users.touch(user.email)
+    return user

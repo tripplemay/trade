@@ -45,7 +45,11 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 
 [tool.mypy]
 python_version = "3.11"
-files = ["workbench_api"]
+# Test files run in CI and were also scanned by Codex F006; including
+# `tests` here keeps the surfaces in lockstep so a stray `monkeypatch`
+# without an annotation cannot pass local mypy and then trip evaluator
+# review (B021-F006-2 was exactly that drift).
+files = ["workbench_api", "tests"]
 strict = true
 warn_unused_ignores = true
 warn_redundant_casts = true
