@@ -1,0 +1,203 @@
+name: Workbench Deploy
+
+# Forward-compat: GitHub Actions deprecates Node 20 on 2026-09-16. Force the
+# Node 24 runtime on every JS-based action so this workflow does not switch
+# under us in September. Source: framework v0.9.23 #2.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+# Chained trigger: only run after BOTH workbench-backend and workbench-frontend
+# pipelines have finished green on `main`. We re-check the conclusion inside
+# the job because `workflow_run` always fires regardless of result.
+on:
+  workflow_run:
+    workflows:
+      - "Workbench Backend CI"
+      - "Workbench Frontend CI"
+    types:
+      - completed
+    branches:
+      - main
+
+concurrency:
+  group: workbench-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: deploy
+      RELEASE_ROOT: /srv/workbench/releases
+      CURRENT_LINK: /srv/workbench/current
+
+    steps:
+      - name: Check out the commit that produced the green CI
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: workbench/backend/pyproject.toml
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: workbench/frontend/package-lock.json
+
+      # Safety belt: anywhere in the staged tree (workflow file itself, scripts,
+      # source) carrying the literal string `PLACEHOLDER-REPLACE-ME` means a
+      # bootstrap value escaped review. Fail loud before SCPing anything.
+      - name: Pre-flight — refuse to deploy placeholder values
+        run: |
+          set -euo pipefail
+          if grep --recursive --line-number --fixed-strings \
+              --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=.next \
+              --exclude-dir=__pycache__ --exclude-dir=.venv \
+              "PLACEHOLDER-REPLACE-ME" .; then
+            echo "::error::Refusing to deploy: PLACEHOLDER-REPLACE-ME found above." >&2
+            exit 1
+          fi
+
+      - name: Build backend (sdist + wheel)
+        working-directory: workbench/backend
+        run: |
+          python -m pip install --upgrade pip build
+          python -m pip install -e ".[dev]"
+          python -m build
+
+      - name: Install frontend deps
+        working-directory: workbench/frontend
+        run: npm ci
+
+      - name: Build frontend (next build → standalone)
+        working-directory: workbench/frontend
+        env:
+          # Auth.js requires NEXTAUTH_URL to point at the production apex at
+          # build time so the issued cookies are scoped correctly. The
+          # production secret values stay on the VM in /etc/workbench/
+          # workbench.env; only the URL travels with the build.
+          NEXTAUTH_URL: https://trade.guangai.ai
+          NODE_ENV: production
+        run: npm run build
+
+      - name: Stage release artifacts
+        run: |
+          set -euo pipefail
+          STAGE_DIR="${RUNNER_TEMP}/release-${RELEASE_SHA}"
+          mkdir -p "${STAGE_DIR}/backend" "${STAGE_DIR}/frontend"
+
+          # Backend: ship the editable source the systemd unit expects.
+          rsync -a --delete \
+            --exclude '__pycache__' \
+            --exclude '*.pyc' \
+            --exclude '.pytest_cache' \
+            --exclude '.ruff_cache' \
+            --exclude '.mypy_cache' \
+            --exclude 'tests/' \
+            --exclude 'workbench-dev.db' \
+            workbench/backend/ "${STAGE_DIR}/backend/"
+
+          # Frontend: standalone server + static assets + public/ (if present).
+          mkdir -p "${STAGE_DIR}/frontend/.next"
+          rsync -a workbench/frontend/.next/standalone/ "${STAGE_DIR}/frontend/"
+          rsync -a workbench/frontend/.next/static "${STAGE_DIR}/frontend/.next/"
+          if [ -d workbench/frontend/public ]; then
+            rsync -a workbench/frontend/public "${STAGE_DIR}/frontend/"
+          fi
+
+          # Deploy helpers — deploy.sh / rollback.sh / healthcheck.sh.
+          rsync -a workbench/deploy/scripts "${STAGE_DIR}/"
+
+          # Record the SHA so /api/health (B021 F004 acceptance §3) can echo it
+          # alongside whatever git rev-parse returns.
+          echo "${RELEASE_SHA}" > "${STAGE_DIR}/RELEASE_SHA"
+
+          # Tar so SCP is one file (faster on a single TCP connection).
+          tar -C "${RUNNER_TEMP}" -czf "${RUNNER_TEMP}/release.tar.gz" "release-${RELEASE_SHA}"
+          echo "STAGE_DIR=${STAGE_DIR}" >> "$GITHUB_ENV"
+          echo "RELEASE_TARBALL=${RUNNER_TEMP}/release.tar.gz" >> "$GITHUB_ENV"
+
+      - name: Configure SSH
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          echo "${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: SCP release tarball to the VM
+        run: |
+          set -euo pipefail
+          scp -i ~/.ssh/id_deploy -o IdentitiesOnly=yes \
+            "${RELEASE_TARBALL}" "${DEPLOY_USER}@${DEPLOY_HOST}:/tmp/release-${RELEASE_SHA}.tar.gz"
+
+      - name: SSH — unpack + alembic + symlink flip + restart
+        id: deploy
+        run: |
+          set -euo pipefail
+          # The workflow_run trigger fires once per upstream workflow that
+          # completes (backend + frontend = 2 events for each push). With
+          # `concurrency.cancel-in-progress: false`, both runs land — the
+          # second sees the release dir already exists and is idempotent.
+          ssh -i ~/.ssh/id_deploy -o IdentitiesOnly=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" bash -se <<EOF
+          set -euo pipefail
+          if [ ! -d "${RELEASE_ROOT}/${RELEASE_SHA}" ]; then
+            tar -xzf /tmp/release-${RELEASE_SHA}.tar.gz -C ${RELEASE_ROOT}/
+            mv ${RELEASE_ROOT}/release-${RELEASE_SHA} ${RELEASE_ROOT}/${RELEASE_SHA}
+          else
+            echo "Release ${RELEASE_SHA} already unpacked; re-running deploy.sh idempotently."
+          fi
+          rm -f /tmp/release-${RELEASE_SHA}.tar.gz
+          bash ${RELEASE_ROOT}/${RELEASE_SHA}/scripts/deploy.sh ${RELEASE_ROOT}/${RELEASE_SHA}
+          EOF
+
+      - name: SSH — post-deploy healthcheck
+        id: healthcheck
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/id_deploy -o IdentitiesOnly=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" bash -se <<EOF
+          set -euo pipefail
+          bash ${CURRENT_LINK}/scripts/healthcheck.sh
+          EOF
+
+      - name: SSH — rollback on healthcheck failure
+        if: failure() && steps.deploy.outcome == 'success' && steps.healthcheck.outcome != 'success'
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/id_deploy -o IdentitiesOnly=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" bash -se <<EOF
+          set -euo pipefail
+          bash ${CURRENT_LINK}/scripts/rollback.sh
+          EOF
+
+      - name: SSH — GC releases older than 30 days
+        if: success()
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/id_deploy -o IdentitiesOnly=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" bash -se <<EOF
+          set -euo pipefail
+          find ${RELEASE_ROOT} -mindepth 1 -maxdepth 1 -type d -mtime +30 \
+            ! -wholename "\$(readlink -f ${CURRENT_LINK})" \
+            -exec rm -rf {} +
+          EOF
+
+      - name: Tear down SSH key
+        if: always()
+        run: |
+          rm -f ~/.ssh/id_deploy ~/.ssh/known_hosts
