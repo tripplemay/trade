@@ -30,7 +30,7 @@
       "title": "CI/CD pipeline (GitHub Actions push → SSH deploy → health check → rollback)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": ".github/workflows/workbench-deploy.yml：workflow_run 链触发（workbench-backend + workbench-frontend pass 后跑）；env 含 FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true（framework v0.9.23 #2）。Pre-flight grep 步：grep 仓库 + 待 SCP artifact 含 'PLACEHOLDER-REPLACE-ME' 字面串 fail（防 placeholder 进 prod 兜底）。Steps：checkout → python -m build backend → npm ci + npm run build frontend (.next/standalone)→ scp artifacts 到 deploy@$DEPLOY_HOST:/srv/workbench/releases/$GITHUB_SHA/ → ssh run deploy/scripts/deploy.sh 改 symlink /srv/workbench/current → $SHA + restart → ssh run healthcheck.sh；失败则 ssh run rollback.sh (symlink 回滚 + restart) + workflow fail。Post-success：find /srv/workbench/releases -mtime +30 GC。验收：(1) push to main 触发 workflow，全绿，< 10 min；(2) 日志含 build/scp/deploy/healthcheck 各 0 exit；(3) /api/health 返回 GITHUB_SHA = main HEAD；(4) 故意破坏 /api/health → workflow 跑 deploy → healthcheck fail → rollback 跑 → symlink 回旧 SHA → workflow non-zero exit；(5) 故意 throwaway commit 加 PLACEHOLDER-REPLACE-ME 字面 → pre-flight grep fail。"
     },
     {
