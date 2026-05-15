@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 import pytest
@@ -81,8 +82,7 @@ def test_setup_logging_replaces_root_handlers(tmp_path: Path) -> None:
         file_handlers = [
             h
             for h in root.handlers
-            if isinstance(getattr(h, "baseFilename", None), str)
-            and getattr(h, "baseFilename").endswith("app.log")
+            if isinstance(h, RotatingFileHandler) and h.baseFilename.endswith("app.log")
         ]
         assert file_handlers, "expected a file handler pointing at app.log"
     finally:
