@@ -48,7 +48,11 @@ def test_default_regime_adaptive_config_parameter_defaults_match_spec() -> None:
 
     assert config.trend_window_days == 200
     assert config.vol_lookback_days == 120
-    assert config.target_volatility == pytest.approx(0.08)
+    # Updated 2026-05-15 by B019 F003: default raised 0.08 -> 0.11 after
+    # the cadence×vol-target retune verdict on the B014 snapshot
+    # (regime-adaptive:b69883b08eedea7d) gated B013 at quarterly / 0.11.
+    # See docs/test-reports/B019-retune-sweep-2026-05-15.md.
+    assert config.target_volatility == pytest.approx(0.11)
     assert config.regime_fast_vol_window_days == 20
     assert config.regime_slow_vol_window_days == 120
     assert config.regime_crisis_ratio == pytest.approx(1.5)

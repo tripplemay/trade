@@ -31,6 +31,15 @@ RegimeActivationPolicy = Literal["always_on", "only_non_normal", "only_crisis"]
 
 STRATEGY_ID = "regime_adaptive_multi_asset"
 
+# Doctrinal default rebalance cadence for B013. Updated 2026-05-15 per
+# B019 F002 verdict (winning_cell=('quarterly', 0.11) on B014 snapshot
+# regime-adaptive:b69883b08eedea7d). The cadence is not stored on
+# RegimeAdaptiveConfig — B013's monthly-backtest entry point applies
+# the cadence stride externally via the caller's signal_dates — so this
+# constant is the canonical reference for callers (parameter-sweep
+# baseline, production scripts, downstream sleeve wrappers).
+DEFAULT_REBALANCE_FREQUENCY: Final[str] = "quarterly"
+
 
 @dataclass(frozen=True, slots=True)
 class AssetEntry:
@@ -62,7 +71,7 @@ class RegimeAdaptiveConfig:
     universe: Sequence[AssetEntry] = field(default_factory=lambda: _DEFAULT_UNIVERSE)
     trend_window_days: int = 200
     vol_lookback_days: int = 120
-    target_volatility: float = 0.08
+    target_volatility: float = 0.11
     regime_fast_vol_window_days: int = 20
     regime_slow_vol_window_days: int = 120
     regime_crisis_ratio: float = 1.5

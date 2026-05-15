@@ -43,6 +43,9 @@ from trade.strategies.regime_adaptive.backtest import (
     run_regime_adaptive_monthly_backtest,
 )
 from trade.strategies.regime_adaptive.config import (
+    DEFAULT_REBALANCE_FREQUENCY as REGIME_DEFAULT_REBALANCE_FREQUENCY,
+)
+from trade.strategies.regime_adaptive.config import (
     AssetEntry,
     RegimeAdaptiveConfig,
 )
@@ -614,16 +617,18 @@ def _default_cadence_vol_target(strategy_name: str) -> tuple[str, float]:
     """Read the strategy's *current* default (cadence, vol_target).
 
     For B010 the cadence is ``RiskParityParameters().rebalance_frequency``.
-    For B013 the config dataclass currently has no ``rebalance_frequency``
-    field — the harness builds monthly signal dates by default — so the
-    default cadence is ``CADENCE_MONTHLY``.
+    For B013 the config dataclass has no ``rebalance_frequency`` field —
+    cadence is applied externally by the caller's signal_dates — so the
+    canonical default cadence is read from the module-level
+    ``DEFAULT_REBALANCE_FREQUENCY`` constant exposed by
+    ``trade.strategies.regime_adaptive.config``.
     """
 
     if strategy_name == STRATEGY_B010:
         cfg = RiskParityParameters()
         return (cfg.rebalance_frequency, float(cfg.target_volatility))
     cfg_b013 = RegimeAdaptiveConfig()
-    return (CADENCE_MONTHLY, float(cfg_b013.target_volatility))
+    return (REGIME_DEFAULT_REBALANCE_FREQUENCY, float(cfg_b013.target_volatility))
 
 
 def _compute_cell_verdict(

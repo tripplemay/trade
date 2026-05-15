@@ -35,7 +35,12 @@ from trade.analysis.parameter_sweep import (
     run_cadence_vs_default_sweep,
 )
 from trade.data.loader import PriceBar
-from trade.strategies.regime_adaptive.config import RegimeAdaptiveConfig
+from trade.strategies.regime_adaptive.config import (
+    DEFAULT_REBALANCE_FREQUENCY as REGIME_DEFAULT_REBALANCE_FREQUENCY,
+)
+from trade.strategies.regime_adaptive.config import (
+    RegimeAdaptiveConfig,
+)
 from trade.strategies.risk_parity import RiskParityParameters
 
 # --------------------------------------------------------------------------- #
@@ -207,11 +212,12 @@ def test_run_cadence_vs_default_sweep_baseline_uses_actual_b013_default() -> Non
     assert len(baseline_rows) == 1
     baseline = baseline_rows[0]
     default_b013 = RegimeAdaptiveConfig()
-    # B013's config has no rebalance_frequency field today; the harness
-    # default cadence is monthly. F003 may add such a field; if it does
-    # the helper should be updated to read it and this assertion will be
-    # the canary.
-    assert baseline.cadence == CADENCE_MONTHLY
+    # B013's config has no rebalance_frequency field — cadence is applied
+    # externally by the caller — so the canonical default cadence lives in
+    # the module-level DEFAULT_REBALANCE_FREQUENCY constant. Reading
+    # dynamically here means future retunes (e.g. another B019-style
+    # batch) only need to update the constant; the test follows.
+    assert baseline.cadence == REGIME_DEFAULT_REBALANCE_FREQUENCY
     assert baseline.vol_target == pytest.approx(default_b013.target_volatility)
 
 

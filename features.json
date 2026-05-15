@@ -22,7 +22,7 @@
       "title": "Stage 2 conditional：default mutation + 单测更新",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "**仅当 F002 verdict 至少一个策略 gate_met 时执行；两策略均 not met 则 mark skipped 并在 status 字段记录 reason；若仅一个策略 gate met 则只动该策略**。Per qualifying strategy: (1) 修改对应 trade/strategies/*.py config dataclass field defaults 到 F002 winning (cadence, vol_target)。(2) 若策略模块暴露 DEFAULT_* 常量（cadence/vol_target）一并更新。(3) 跑 rg 'target_volatility\\s*[=:]\\s*0\\.0?8|rebalance_frequency\\s*[=:]\\s*[\"\\']monthly[\"\\']' trade tests 审计 hits；tests/unit/ 中作为 baseline 断言 prior default 的位置一并更新；明确豁免 tests/unit/test_parameter_sweep.py / test_parameter_sweep_b019.py 中显式 vol_target=0.08 override 测试用例（这些测的是 override 行为不是 default）+ docs/specs/ + docs/test-reports/ 历史记录（不可改）。(4) B018 已有测试 + B011 测试全部继续通过；任何更新过的测试断言需反映新 default deterministic 数字。.venv/bin/python -m pytest / ruff check trade tests scripts / mypy trade / compileall -q trade tests scripts 全清。"
     },
     {
