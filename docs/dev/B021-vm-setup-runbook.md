@@ -9,7 +9,7 @@
 | 1 | Google OAuth 2.0 client created | Google Cloud Console | User | ✅ done (rotate after secret was shared in chat 2026-05-15) |
 | 2 | DNS `trade.guangai.ai` A record | DNS provider | User | ✅ done (per user 2026-05-15) |
 | 3 | VM `deploy` user + dirs + SSH key | GCP VM (SSH session) | User | ✅ done 2026-05-15 (executed by Planner under user authorization — see "Item #3 — executed" section below) |
-| 4 | GCS bucket for SQLite backups | Google Cloud Console | User | ⏳ |
+| 4 | GCS bucket for SQLite backups | Google Cloud Console | User | ✅ done 2026-05-15 (executed by Planner via `gcloud` on VM after user `gcloud auth login`; bucket `gs://trade-workbench-backups-gen-lang-client-0229748590/`, region `ASIA-NORTHEAST1`, versioning ON, lifecycle 365d delete, public access prevention enforced, uniform IAM, VM SA pre-granted `roles/storage.objectAdmin`) |
 | 5 | GitHub Secrets uploaded | GitHub repo Settings | User | ⏳ (depends on #1 rotated secret + #3 SSH private key) |
 
 ---
@@ -215,6 +215,70 @@ sudo: a password is required        # ✅ non-allowlisted command correctly bloc
 - "Reuse aigcgateway nginx" assumption holds (nginx is global, used by multiple services on this VM).
 - New nginx server block for `trade.guangai.ai` will sit alongside existing `kolquest.com` and `staging.kolmatrix` blocks. F003 should `nginx -t` validate before reload.
 - Resource quota (systemd `CPUQuota` + `MemoryMax`) must fence workbench from kolmatrix + apify-kol + pm2 aigcgateway — same intent as original ADR, just more concrete neighbor list.
+
+---
+
+## Item #4 — executed 2026-05-15 (Planner ran it after user `gcloud auth login`)
+
+> Planner executed via `gcloud` from VM after user completed interactive `gcloud auth login --no-launch-browser` on the VM. User's credentials cached at `~/.config/gcloud/legacy_credentials/tripplezhou@gmail.com/`; user can `gcloud auth revoke tripplezhou@gmail.com` on VM after B021 setup if desired.
+
+**Bucket configuration (verified):**
+
+```
+location: ASIA-NORTHEAST1                  # same as VM zone asia-northeast1-b → zero egress
+versioning_enabled: True                   # delete-recovery safety net
+public_access_prevention: enforced         # bucket can never be made public
+uniform_bucket_level_access: True          # IAM-only, no legacy ACLs
+storage_class: STANDARD                    # appropriate for hot-access backups
+lifecycle_config:
+  rule:
+    - action: { type: Delete }
+      condition: { age: 365 }              # 365-day auto-delete safety net beyond B021 F005 retention script
+```
+
+**IAM bindings on bucket:**
+
+```
+serviceAccount:1044753973286-compute@developer.gserviceaccount.com
+  → roles/storage.objectAdmin
+```
+
+(plus default project-level Owner/Editor/Viewer bindings — standard)
+
+**Write test (via user `tripplezhou@gmail.com` auth, project owner):**
+
+```
+$ echo "test" | gcloud storage cp - gs://trade-workbench-backups-gen-lang-client-0229748590/.planner-verify-*.txt
+$ gcloud storage ls gs://trade-workbench-backups-gen-lang-client-0229748590/   # showed the file
+$ gcloud storage rm gs://trade-workbench-backups-gen-lang-client-0229748590/.planner-verify-*.txt
+Write/list/delete: OK
+```
+
+**⚠️ Outstanding scope issue (B021 F005 will fix):**
+
+The VM's default service account has OAuth scope `devstorage.read_only`:
+
+```
+$ curl -s -H "Metadata-Flavor: Google" \
+    http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/scopes
+https://www.googleapis.com/auth/devstorage.read_only
+https://www.googleapis.com/auth/logging.write
+https://www.googleapis.com/auth/monitoring.write
+https://www.googleapis.com/auth/service.management.readonly
+https://www.googleapis.com/auth/servicecontrol
+https://www.googleapis.com/auth/trace.append
+```
+
+Instance scopes are an upper bound on what a SA can do via instance metadata — IAM grants beyond scope are ignored. **The IAM `objectAdmin` grant added above will only become effective once the scope is expanded to `devstorage.read_write` (or `cloud-platform`).**
+
+Expansion requires VM stop → modify scopes → start. Operation impact: kolquest.com + staging.kolmatrix + apify-kol-service + pm2 aigcgateway briefly offline (~30-60s for stop+start). B021 F005 will include this as a planned-downtime manual step before deploying backup automation.
+
+**B021 spec impact:** F005 (backup automation) prerequisites section must add:
+
+1. User performs VM scope expansion (`gcloud compute instances stop kolmatrix-vps && gcloud compute instances set-service-account kolmatrix-vps --service-account=$VM_SA --scopes=cloud-platform && gcloud compute instances start kolmatrix-vps`) — with explicit "this causes ~60s downtime for all VM-hosted services" warning.
+2. After restart, verify scope via metadata server.
+3. Verify VM SA can write to bucket (`gcloud storage cp` from VM as deploy user).
+4. Then proceed with backup cron + restore script implementation.
 
 ## Item #4 — GCS bucket for SQLite backups
 
