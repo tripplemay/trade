@@ -10,7 +10,7 @@
 | 2 | DNS `trade.guangai.ai` A record | DNS provider | User | ✅ done (per user 2026-05-15) |
 | 3 | VM `deploy` user + dirs + SSH key | GCP VM (SSH session) | User | ✅ done 2026-05-15 (executed by Planner under user authorization — see "Item #3 — executed" section below) |
 | 4 | GCS bucket for SQLite backups | Google Cloud Console | User | ✅ done 2026-05-15 (executed by Planner via `gcloud` on VM after user `gcloud auth login`; bucket `gs://trade-workbench-backups-gen-lang-client-0229748590/`, region `ASIA-NORTHEAST1`, versioning ON, lifecycle 365d delete, public access prevention enforced, uniform IAM, VM SA pre-granted `roles/storage.objectAdmin`) |
-| 5 | GitHub Secrets uploaded | GitHub repo Settings | User | ⏳ (depends on #1 rotated secret + #3 SSH private key) |
+| 5 | GitHub Secrets uploaded | GitHub repo Settings | User | 🟡 5/7 done 2026-05-15 (Planner uploaded 5 via `gh secret set` from local sources; user must add 2 remaining via UI: `GOOGLE_OAUTH_CLIENT_ID` + `GOOGLE_OAUTH_CLIENT_SECRET` after rotating the leaked one) |
 
 ---
 
@@ -398,6 +398,32 @@ If permission denied: check that VM's service account has the role + that `gclou
 ### Verify
 
 There's no programmatic way to read back a secret. The verification is when B021 F004 (CI/CD pipeline) ships and the GitHub Actions workflow runs successfully against the VM.
+
+---
+
+## Item #5 — partial executed 2026-05-15 (Planner uploaded 5/7 via `gh` CLI)
+
+Planner used the local `gh` CLI (auth `tripplemay` token with `repo` scope) to upload the 5 secrets whose values exist on the local WSL or can be safely generated locally. Values were piped via stdin to `gh secret set` so they never appeared in stdout/stderr/shell-history/git.
+
+| Secret name | Source | Set at |
+|---|---|---|
+| `NEXTAUTH_SECRET` | `openssl rand -hex 32` generated fresh; not retained anywhere outside GitHub vault | 2026-05-15 06:33:27Z |
+| `DEPLOY_SSH_PRIVATE_KEY` | `~/.ssh/trade-deploy` (local WSL only) | 06:33:29Z |
+| `ALLOWED_USER_EMAIL` | `tripplezhou@gmail.com` | 06:33:30Z |
+| `DEPLOY_USER` | `deploy` | 06:33:32Z |
+| `DEPLOY_HOST` | `34.180.93.185` | 06:33:34Z |
+
+**Remaining 2 — user must add manually via UI** at https://github.com/tripplemay/trade/settings/secrets/actions:
+
+- `GOOGLE_OAUTH_CLIENT_ID` — from Google Cloud Console OAuth client detail page (string starting with the project number, ending in `.apps.googleusercontent.com`).
+- `GOOGLE_OAUTH_CLIENT_SECRET` — the **rotated** secret (the original `GOCSPX-...` value leaked in conversation 2026-05-15 must be revoked + replaced before upload).
+
+**Sequence to complete item #5 from here:**
+
+1. User opens Google Cloud Console → Credentials → the OAuth client → "Reset client secret" (deletes old, generates new).
+2. User opens https://github.com/tripplemay/trade/settings/secrets/actions → "New repository secret" → add `GOOGLE_OAUTH_CLIENT_ID` with the client_id value.
+3. User clicks "New repository secret" again → add `GOOGLE_OAUTH_CLIENT_SECRET` with the rotated secret. Once entered and saved, GitHub UI shows `*****`; value cannot be read back.
+4. Verify: `gh secret list --repo tripplemay/trade` (or refresh the UI page) shows all 7 names. Done.
 
 ---
 
