@@ -10,6 +10,8 @@ build-backend = "hatchling.build"
 # to workbench/ source only (was tripping on doc references).
 # Retry 3: after DEPLOY_SSH_KNOWN_HOSTS secret added (was missing from
 # B021 prep #5 — only 7 of 8 needed secrets uploaded).
+# Retry 4: after deploy.sh updated to pip install backend wheel before
+# alembic upgrade (was: venv bare from bootstrap, alembic not importable).
 
 [project]
 name = "workbench_api"
