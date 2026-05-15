@@ -115,8 +115,15 @@ workbench/
 
 ### Style / UX defaults
 
-- **Theme:** dark by default (financial tool convention). A theme toggle is out of Phase 1 (deferred to Phase 3+).
-- **Density:** "compact" rather than "comfortable" — tables and cards minimize white space per Bloomberg / Koyfin convention.
+- **Theme:** dark by default (financial tool convention). A theme toggle is out of Phase 1 (deferred to Phase 3+). Base color palette: Zinc or Slate via `tweakcn` (build-time theme editor, dev-only — generated CSS variables are committed; `tweakcn` adds no runtime dependency).
+- **Density:** "compact" rather than "comfortable" — global Tailwind padding / margin defaults reduced from SaaS-comfort (`p-4`) to high-density (`p-2`); Button and AG Grid row default heights also reduced.
+- **Typography:**
+  - UI text: **Inter** (variable font, loaded via `next/font/google`).
+  - Numeric content (PnL, weights, ratios, drawdowns, Sharpe, table cells with numbers): **JetBrains Mono** (variable font, loaded via `next/font/google`) with `font-variant-numeric: tabular-nums` enforced globally on `.numeric` className. This eliminates digit-width jitter on streaming refresh — non-negotiable in financial UIs.
+- **P&L color tokens:**
+  - Up / profit / gain: `#00c853` (Material Green A700)
+  - Down / loss: `#ff3b30` (iOS system red)
+  - Tokens registered as `--color-up` / `--color-down` CSS variables in the Zinc/Slate theme; can be re-tuned at F001 time via `tweakcn` if contrast against the dark surface needs adjustment. shadcn `destructive` token reserved for system errors (validation failure / API error), not P&L losses.
 - **Accessibility:** shadcn/ui inherits Radix primitives → keyboard-accessible by default. Phase 1 does not introduce a command palette; basic keyboard navigation is shipped as a side effect.
 - **Loading:** every async route uses `loading.tsx` in App Router for instant skeletons.
 - **Errors:** every async route uses `error.tsx` for graceful degradation; uncaught backend errors surface as toast notifications, not full-screen blanks.
@@ -185,13 +192,37 @@ Both jobs are independent from the existing `trade/` CI and add no dependencies 
 
 ## Feature Requirements
 
-### F001 — Workbench monorepo scaffolding
+### F001 — Workbench monorepo scaffolding (template-based)
 
 Executor: generator.
 
-Establish the `workbench/{backend,frontend}` directory layout. Backend: `pyproject.toml` with FastAPI / Pydantic v2 / Uvicorn / pytest / httpx / ruff / mypy, a minimal FastAPI app with `/health` endpoint, localhost-only binding, ruff + mypy clean, pytest passing. Frontend: Next.js 14 + TypeScript strict + Tailwind + shadcn/ui init (Button, Card, Dialog, Toast, Tabs imported; rest on-demand) + ESLint + Prettier + Vitest + Playwright config + sample test passing. CI: add `workbench-backend` and `workbench-frontend` jobs to `.github/workflows/`; both jobs green on this feature's commit. `workbench/README.md` covers dev / build / test commands.
+Establish the `workbench/{backend,frontend}` directory layout. Backend: `pyproject.toml` with FastAPI / Pydantic v2 / Uvicorn / pytest / httpx / ruff / mypy, a minimal FastAPI app with `/health` endpoint, localhost-only binding, ruff + mypy clean, pytest passing.
 
-Acceptance: backend `uvicorn workbench_api.app:app --host 127.0.0.1 --port 8723` boots; `curl http://127.0.0.1:8723/health` returns `{"status":"ok"}`; frontend `npm run dev` boots Next.js dev server at `http://localhost:3000`; both `pytest workbench/backend/tests/` and `npm test --prefix workbench/frontend` pass; both `ruff check workbench/backend` and `mypy workbench/backend` clean; CI green on PR; `trade/` test suite unaffected (all 592 existing tests still pass).
+**Frontend: vendor `shadcn-dashboard-landing-template` (by ShadcnStore, MIT) and pre-configure for financial use.** Per `docs/research/2026-05-15-workbench-template-research.md`, this template is the chosen starting point. Execution sequence:
+
+1. **Day 1 pre-flight check** (Next.js 15 + React 19 + Tailwind v4 ecosystem viability):
+   - Create a throwaway Next.js 15 + Tailwind v4 project.
+   - Install **AG Grid Community** (latest), **TradingView lightweight-charts** (latest), **ECharts** + `echarts-for-react` (latest); render one minimal example of each (≤ 50 lines apiece).
+   - Run `npm run build`; confirm no peer-dep `npm WARN` for any of the three; confirm runtime no console errors.
+   - **Pass criterion:** all three demos render and build cleanly.
+   - **Fall-back:** if any of the three has a peer-dep blocker or runtime error not resolvable in ≤ 2 hours, drop Next.js 15 / React 19 / Tailwind v4 and use Next.js 14 + React 18 + Tailwind 3 as the template baseline. Record the decision and which package blocked in an ADR addendum (`docs/adr/2026-05-15-workbench-direction.md` §"Stack version downgrade decision").
+2. **Vendor the template** into `workbench/frontend/`. The template's git history is not preserved; this is a snapshot copy under the project's own license. License notation: append the template's `LICENSE` content to `workbench/frontend/LICENSE-third-party.md`.
+3. **Cleanup demo / dummy apps.** Delete every demo route and component not on the 7-page list (Mail, Tasks, E-commerce, Calendar, etc.). After cleanup run:
+   - `npx unimported` — no orphan files
+   - `npx depcheck` — no unused dependencies
+   - `npx ts-unused-exports tsconfig.json --excludePathsFromReport='src/types/api.ts'` — no orphan exports
+   - Manual `tree workbench/frontend/src/` — every subdirectory must trace to a page on the 7-page list or be one of `components/{ui,chart,table,shell}`, `lib/`, `types/`, `styles/`.
+4. **Apply financial pre-configuration:**
+   - Tailwind config: reduce default spacing scale (e.g. `p-4` defaults map to `0.5rem`).
+   - Fonts: load Inter and JetBrains Mono via `next/font/google`; apply Inter to `<body>`, JetBrains Mono + `tabular-nums` to `.numeric` className.
+   - Theme: run `tweakcn` once during F001, lock a Zinc-based dark palette with `--color-up: #00c853` and `--color-down: #ff3b30`; commit the generated `globals.css` variable block.
+   - Default `<Button size>` reduced to `sm` everywhere; default `<Table>` row height set to `compact`.
+   - Top-level `app/layout.tsx`: shell + dark class on `<html>` + disclaimer footer.
+5. **TypeScript strict + ESLint + Prettier + Vitest + Playwright config + sample tests passing.**
+
+CI: add `workbench-backend` and `workbench-frontend` jobs to `.github/workflows/`; both jobs green on this feature's commit. `workbench/README.md` covers dev / build / test commands plus a "template provenance" note pointing at the research report + the upstream template URL + the cleanup audit report.
+
+Acceptance: backend `uvicorn workbench_api.app:app --host 127.0.0.1 --port 8723` boots; `curl http://127.0.0.1:8723/health` returns `{"status":"ok"}`; frontend `npm run dev` boots Next.js dev server at `http://localhost:3000`; the cleanup audit commands all pass (no unimported / no depcheck warnings / no orphan ts-unused-exports); `next build` succeeds without peer-dep warnings for AG Grid / lightweight-charts / ECharts; both `pytest workbench/backend/tests/` and `npm test --prefix workbench/frontend` pass; both `ruff check workbench/backend` and `mypy workbench/backend` clean; CI green on PR; `trade/` test suite unaffected (all 592 existing tests still pass); `workbench/frontend/LICENSE-third-party.md` contains the template's upstream MIT text.
 
 ### F002 — OpenAPI → TypeScript types pipeline + CI drift check
 
@@ -256,9 +287,11 @@ Acceptance: strategy registry from `trade/` surfaces all 4 sleeves with current 
 
 Executor: generator.
 
-Backend: `POST /api/backtests/run` accepts `{strategyId, snapshotId, startDate, endDate, parameters}` and synchronously runs `trade.master.run_backtest()` (or per-strategy equivalent), returns the standard result object. `GET /api/backtests/{run_id}` retrieves a cached result. Frontend: selector (strategy / snapshot / window) + run button + result panel with metrics card + EquityCurveChart + DrawdownChart + allocation history table + trades table. Comparison toggle: layer SPY and static 60/40 on the equity curve.
+Backend: `POST /api/backtests/run` accepts `{strategyId, snapshotId, startDate, endDate, parameters}` and synchronously runs `trade.master.run_backtest()` (or per-strategy equivalent), returns the standard result object. `GET /api/backtests/{run_id}` retrieves a cached result. Frontend: **layout uses shadcn `<ResizablePanelGroup>` for a single horizontal split — left pane holds the selector (strategy / snapshot / window + run button); right pane holds the result area** (metrics card stack on top, EquityCurveChart + DrawdownChart in the middle, allocation history + trades AG Grid tables at the bottom). Comparison toggle: layer SPY and static 60/40 on the equity curve.
 
-Acceptance: end-to-end smoke from selector → run → chart render; metrics card values match `trade/` backtest output to the cent; Playwright smoke test runs a canned B010 backtest on a fixture snapshot in < 5 s.
+Hard scope boundary on the ResizablePanel: this is a **single horizontal split confined to F008 alone**. We are **not** introducing `react-grid-layout`, **not** persisting panel sizes across reloads, **not** allowing the user to add / remove panels, **not** synchronizing splits across pages. The full "multi-panel dockable layout" remains in §Out Of Scope (Phase 3+). The intent is solely to give the Backtest viewer a Bloomberg-style left-list + right-detail feel without committing to a layout-engine.
+
+Acceptance: end-to-end smoke from selector → run → chart render; metrics card values match `trade/` backtest output to the cent; Playwright smoke test runs a canned B010 backtest on a fixture snapshot in < 5 s; ResizablePanel drag works with mouse + keyboard (Radix primitive handles both); other 6 pages have **no** ResizablePanel (regression assertion).
 
 ### F009 — Reports page (vertical slice)
 
@@ -322,7 +355,8 @@ Codex writes `docs/test-reports/B020-workbench-phase1-signoff-2026-MM-DD.md` usi
 - **Execution UI** — diff / order-ticket / fill-upload UIs all deferred to B021. Phase 1 Recommendations page exports a Markdown checklist only.
 - **Account journal viewer** — historical fill log, slippage trends, kill-switch event log all in B021.
 - **In-UI editing of `accounts/me.json`** — Phase 1 expects manual edits + reload.
-- **Multi-panel dockable layouts**, **command palette**, **theme toggle**, **i18n**, **real-time data streams**, **desktop packaging (Tauri / Electron)** — deferred to Phase 3+ or never.
+- **Multi-panel dockable layouts** (`react-grid-layout` style — user adds/removes/saves panels across the workbench) — deferred to Phase 3+. **Exception:** F008 Backtest viewer uses a single shadcn `<ResizablePanelGroup>` horizontal split, confined to that one page; this is not the deferred capability.
+- **Command palette** (⌘K cmdk), **theme toggle**, **i18n**, **real-time data streams (WebSocket / SSE for live prices)**, **desktop packaging (Tauri / Electron)** — deferred to Phase 3+ or never.
 - **PDF report assembly** and **self-contained HTML snapshots** — rejected per ADR §决策 4 (browser print-to-PDF is the free fallback).
 - **Multi-account support** — single account in Phase 1.
 - **AI-assisted features** — no LLM integration in this batch. May appear later under PRD §14 boundaries (explanation only, never auto-decision).
