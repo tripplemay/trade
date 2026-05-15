@@ -6,6 +6,8 @@ build-backend = "hatchling.build"
 # workbench-backend.yml + workbench-frontend.yml → workbench-deploy.yml
 # chain. VM bootstrap (dirs / venv / systemd units / nginx vhost / cert /
 # env file / SA scope) all completed prior to this commit by Planner.
+# Retry 2: after fix(B021-F004) commit 7227688 scoped pre-flight grep
+# to workbench/ source only (was tripping on doc references).
 
 [project]
 name = "workbench_api"
