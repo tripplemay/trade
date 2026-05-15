@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B021-cloud-deploy-auth：`fixing`**；Codex F006 复验发现两个 blocking gap：observability 层未实现（缺 `workbench_api/observability/`、缺 `/api/health` uptime/backup/user-count 字段、缺 JSON logging / Sentry gate），且 `mypy workbench/backend` 因 `workbench/backend/tests/unit/test_health.py` 未标注参数失败。已回传 generator 修复。
+- **B021-cloud-deploy-auth：`reverifying`**；Generator fix-round 1 完成（commits 1bc6386 + e5fac77，CI 全绿）。observability 包 5 模块落地 + /api/health 加 4 字段 + auth dep stash user_id + Settings allowlist 加 3 字段 + mypy 扩到 tests 防 drift。等 Codex F006 复验 L1（CI 已绿）+ L2 真 VM（依赖用户完成 3 prereq：certbot + VM SA scope + systemd units 装）+ signoff。
 - Spec：`docs/specs/B021-cloud-deploy-auth-spec.md`
 - 范围：cloud infra 层——Google OAuth（F001）+ SQLite + Alembic + Repository 数据层（F002）+ systemd workbench-{backend,frontend}.service + nginx vhost trade.guangai.ai + certbot（F003）+ GitHub Actions push→SSH→deploy→healthcheck→rollback（F004）+ SQLite→GCS daily backup + 30 daily/12 monthly retention + restore（F005，需用户先 VM SA scope 扩展）+ Codex L1+L2 真 VM 验收 + 可观测性 + signoff（F006）。
 - 后续路径：**B022 Workbench Phase 1**（14 features，原 spec B022-workbench-phase1，cloud 适配后修订）→ **B023 Workbench Phase 2**（manual execution UI）。
@@ -33,7 +33,7 @@ type: project
 ## 已知 gap（非阻塞）
 - Backlog: BL-B010-S1 low / **BL-B011-S2 high (workbench Phase 1 后衔接 satellite)** / BL-B013-D1 low / BL-B013-D2 low；BL-B018-S1 已 resolved。
 - 本机 system `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
-- L1 已跑：backend pytest/ruff/frontend test/lint/build/E2E 通过；mypy 未过。L2 真 VM 未执行，因为先要 observability / mypy 修复。
+- L1 fix-round 1 全绿：backend pytest 67/67 (含 22 obs 新测) + ruff/mypy 51 files；frontend vitest 20 + lint/typecheck/build/Playwright 2/2。L2 真 VM 等 Codex F006 + 3 用户 prereq。
 - framework/proposed-learnings.md 当前为空（v0.9.21 + v0.9.22 + v0.9.23 已沉淀 6 条 5/15 候选）。
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->
