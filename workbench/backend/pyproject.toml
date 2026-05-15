@@ -8,12 +8,17 @@ version = "0.1.0"
 description = "Workbench backend API (B020 dev infrastructure skeleton)."
 requires-python = ">=3.11"
 dependencies = [
+  "alembic>=1.13,<2",
   "fastapi>=0.115,<0.116",
   "pydantic>=2.7,<3",
   "pydantic-settings>=2.3,<3",
   "python-jose[cryptography]>=3.3,<4",
+  "sqlalchemy>=2.0,<3",
   "uvicorn[standard]>=0.30,<0.31",
 ]
+
+[project.scripts]
+workbench-bootstrap = "workbench_api.cli.bootstrap:main"
 
 [project.optional-dependencies]
 dev = [

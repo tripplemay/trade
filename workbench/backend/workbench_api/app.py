@@ -1,25 +1,34 @@
 """Workbench FastAPI app factory.
 
-B020 shipped a single ``/health`` route. B021 F001 moves the public surface
+B020 shipped a single ``/health`` route. B021 F001 moved the public surface
 under the ``/api`` prefix that nginx (`proxy_pass /api/* → 127.0.0.1:8723`)
-will route to in production, and adds the first auth-gated route used by the
-acceptance suite. Public ``/api/health`` stays unauthenticated so the nginx
-upstream probe and external uptime monitors keep working.
+routes to in production, and added the first auth-gated route. F002
+extends ``/api/health`` with a ``db_connectivity`` probe so the deploy
+healthcheck (B021 F003) can tell the difference between "app boots" and
+"app boots *and* can read its DB". The endpoint stays unauthenticated —
+nginx upstream probes and external uptime monitors call it without a
+session cookie.
 """
 
 from __future__ import annotations
 
+import logging
 import subprocess
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, FastAPI
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
 from pydantic import BaseModel
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 from workbench_api.auth.dependency import require_authenticated_user
 from workbench_api.auth.jwt_validator import AuthenticatedUser
+from workbench_api.db.session import SessionDep
 
 AuthenticatedUserDep = Annotated[AuthenticatedUser, Depends(require_authenticated_user)]
+
+_health_logger = logging.getLogger("workbench.health")
 
 
 class HealthResponse(BaseModel):
@@ -27,6 +36,7 @@ class HealthResponse(BaseModel):
 
     status: str
     version: str
+    db_connectivity: str
 
 
 class ProtectedTestResponse(BaseModel):
@@ -74,8 +84,19 @@ def create_app() -> FastAPI:
     api = APIRouter(prefix="/api")
 
     @api.get("/health", response_model=HealthResponse)
-    def health() -> HealthResponse:
-        return HealthResponse(status="ok", version=VERSION)
+    def health(session: SessionDep) -> HealthResponse:
+        try:
+            session.execute(text("SELECT 1"))
+        except SQLAlchemyError as exc:
+            # Log the underlying error so the operator can see it in
+            # `journalctl -u workbench-backend`; the response carries only a
+            # short token so the public probe never leaks DB internals.
+            _health_logger.exception("health: SELECT 1 failed: %s", exc)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="db_unreachable",
+            ) from exc
+        return HealthResponse(status="ok", version=VERSION, db_connectivity="ok")
 
     @api.get("/protected-test", response_model=ProtectedTestResponse)
     def protected_test(user: AuthenticatedUserDep) -> ProtectedTestResponse:

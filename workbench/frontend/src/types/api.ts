@@ -51,6 +51,8 @@ export interface components {
             status: string;
             /** Version */
             version: string;
+            /** Db Connectivity */
+            db_connectivity: string;
         };
         /**
          * ProtectedTestResponse

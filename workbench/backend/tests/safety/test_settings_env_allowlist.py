@@ -17,6 +17,7 @@ EXPECTED_ALLOWLIST: frozenset[str] = frozenset(
     {
         "NEXTAUTH_SECRET",
         "ALLOWED_USER_EMAIL",
+        "WORKBENCH_DB_URL",
     }
 )
 

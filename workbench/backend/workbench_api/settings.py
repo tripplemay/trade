@@ -18,12 +18,20 @@ ALLOWED_ENV_VARS: frozenset[str] = frozenset(
     {
         "NEXTAUTH_SECRET",
         "ALLOWED_USER_EMAIL",
+        "WORKBENCH_DB_URL",
     }
 )
 """Environment variables the workbench backend is permitted to read.
 
 Each entry has a matching typed field on ``Settings`` below. Adding a new
 variable requires a deliberate review of the safety boundary it widens.
+"""
+
+DEFAULT_DEV_DB_URL: str = "sqlite:///./workbench-dev.db"
+"""Local dev fallback so a fresh clone runs without ``/var/lib/workbench/``.
+
+Production sets ``WORKBENCH_DB_URL=sqlite:////var/lib/workbench/db/workbench.db``
+via the systemd EnvironmentFile (B021 F003).
 """
 
 
@@ -38,6 +46,7 @@ class Settings(BaseSettings):
 
     NEXTAUTH_SECRET: str | None = None
     ALLOWED_USER_EMAIL: str | None = None
+    WORKBENCH_DB_URL: str = DEFAULT_DEV_DB_URL
 
     model_config = SettingsConfigDict(
         env_file=None,
