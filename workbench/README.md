@@ -36,6 +36,7 @@ database. Those land in later batches:
 | Python | **3.11+** (the repo-root `.venv/bin/python` works). |
 | Node.js | **20+** |
 | npm | **10+** |
+| Bash | **3.2+** — works on macOS default `/bin/bash` (3.2.57); no Homebrew bash upgrade required. |
 
 ### One-time host setup for Playwright on Linux
 

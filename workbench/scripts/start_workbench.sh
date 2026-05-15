@@ -63,4 +63,15 @@ echo "workbench backend  → http://${BACKEND_HOST}:${BACKEND_PORT}/health"
 echo "workbench frontend → http://127.0.0.1:${FRONTEND_PORT}/"
 echo "Ctrl-C to stop both."
 
-wait -n
+# Wait until either child exits, then let the EXIT trap tear down the survivor.
+# We poll instead of using `wait -n`, which is Bash 4.3+ only — macOS ships
+# GNU bash 3.2.57 as /bin/bash, and `wait -n` aborts with "invalid option"
+# there. The 1-second cadence is fine for a dev-time boot script.
+while :; do
+  for pid in "${pids[@]}"; do
+    if ! kill -0 "${pid}" 2>/dev/null; then
+      exit 0
+    fi
+  done
+  sleep 1
+done
