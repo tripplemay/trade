@@ -483,36 +483,72 @@ Planner ran the missing first-time bootstrap. Files copied / installed / verifie
 - Final placement uses tripplezhou's full sudo (not deploy's narrow sudoers). Deploy's sudoers (B021 prep #3) remains locked to systemctl restart/status only.
 - Workflow file (`.github/workflows/bootstrap-env.yml`) is kept in repo for future re-bootstrap scenarios (e.g., if env file is accidentally lost, just re-trigger). Manual dispatch only — does not run on push.
 
-## nginx vhost re-sync (2026-05-16, B021 F006 fix-round 2)
+## nginx vhost re-sync
 
 `workbench/deploy/nginx/trade.guangai.ai.conf` gained a `location /api/auth/`
-block that routes `/api/auth/*` to the Next.js frontend (127.0.0.1:3000)
-instead of the FastAPI backend (127.0.0.1:8723). Without this, every
-Auth.js callback URL returns 404 from the backend and the OAuth happy
-path is unreachable (Codex L2 blocker, see
-`docs/test-reports/B021-cloud-deploy-auth-blocker-2026-05-16.md`).
+block in B021 F006 fix-round 2 (commit `e5020ea`) that routes
+`/api/auth/*` to the Next.js frontend (127.0.0.1:3000) instead of the
+FastAPI backend (127.0.0.1:8723). Without this, every Auth.js callback
+URL returns 404 from the backend and the OAuth happy path is unreachable
+(see `docs/test-reports/B021-cloud-deploy-auth-blocker-2026-05-16.md`).
 
-CI does not push nginx config — the `deploy` user has no permission to
-touch `/etc/nginx/`. After this commit lands on `main`, sync the file to
-the VM once:
+CI does not push nginx config — the `deploy` user's narrow sudoers
+(B021 prep #3) is intentionally locked to `systemctl restart workbench-*`
+only and cannot touch `/etc/nginx/`. The repo therefore ships two
+synchronisation paths; pick whichever fits the moment.
+
+### Path A — automated staging via `nginx-sync.yml` (recommended)
+
+`.github/workflows/nginx-sync.yml` is a `workflow_dispatch` workflow that
+follows the same staging-then-manual pattern as `bootstrap-env.yml`:
+
+1. **Trigger**: GitHub → Actions → "Sync nginx vhost (manual, on demand)"
+   → Run workflow → type `nginx-sync` in the confirm box.
+2. The workflow runs `actions/checkout`, sanity-checks the config
+   (`server_name trade.guangai.ai`, `location /api/auth/`, no
+   `PLACEHOLDER-REPLACE-ME`), SSHes via `DEPLOY_SSH_PRIVATE_KEY`, and
+   SCPs the file to `deploy@VM:~/.bootstrap/trade.guangai.ai.conf`
+   (chmod 644, deploy:deploy).
+3. The workflow log prints the admin install commands.
+
+After the workflow finishes, run on the VM as an account with full sudo
+(e.g. tripplezhou, **not** the deploy user):
 
 ```bash
-# As tripplezhou (full sudo), from the repo checkout on the VM or after
-# scp'ing the file from any host:
-sudo cp workbench/deploy/nginx/trade.guangai.ai.conf \
-        /etc/nginx/sites-available/trade.guangai.ai.conf
-sudo nginx -t                       # must report "syntax is ok" + "test is successful"
+sudo install -m 644 -o root -g root \
+  /home/deploy/.bootstrap/trade.guangai.ai.conf \
+  /etc/nginx/sites-available/trade.guangai.ai.conf
+sudo nginx -t                       # MUST report "syntax is ok" + "test is successful"
 sudo systemctl reload nginx         # zero-downtime; kolquest + staging.kolmatrix unaffected
-curl -sSf https://trade.guangai.ai/api/auth/providers | head
-# expect a JSON body listing the configured providers; previously this was 404
+sudo rm /home/deploy/.bootstrap/trade.guangai.ai.conf
 ```
 
-`nginx -t` checks the file in place; if it fails, the previous symlink
-target still serves traffic and you can re-edit before the reload step.
+Verify from any external host:
 
-If nginx config syncs become a recurring need, lift the pattern from
-`.github/workflows/bootstrap-env.yml` into a dedicated `nginx-sync.yml`
-workflow_dispatch — out of scope for B021 F006 fix-round 2.
+```bash
+curl -sSf https://trade.guangai.ai/api/auth/providers | head -c 200
+# expect JSON listing OAuth providers; previously this was 404
+```
+
+If `nginx -t` reports an error, the previous symlink target still serves
+traffic and the reload step is skipped. Re-edit
+`workbench/deploy/nginx/trade.guangai.ai.conf`, commit, push, re-trigger
+the workflow.
+
+### Path B — fully manual fallback
+
+If GitHub Actions is unavailable (e.g. outage) or the SSH key has been
+rotated, scp the file from any host directly:
+
+```bash
+# As tripplezhou (full sudo), from a local clone of the repo:
+scp workbench/deploy/nginx/trade.guangai.ai.conf tripplezhou@VM:/tmp/
+ssh tripplezhou@VM
+sudo install -m 644 -o root -g root /tmp/trade.guangai.ai.conf \
+    /etc/nginx/sites-available/trade.guangai.ai.conf
+sudo nginx -t && sudo systemctl reload nginx
+rm /tmp/trade.guangai.ai.conf
+```
 
 ---
 

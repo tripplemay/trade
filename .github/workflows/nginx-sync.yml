@@ -1,0 +1,130 @@
+name: Sync nginx vhost (manual, on demand)
+
+# Stage `workbench/deploy/nginx/trade.guangai.ai.conf` onto the production VM
+# without leaning on the local operator's `sudo cp`. The deploy user's
+# narrow sudoers (B021 prep #3) does not allow it to touch /etc/nginx/, so
+# this workflow follows the same staging-then-manual pattern that
+# `bootstrap-env.yml` uses for /etc/workbench/workbench.env:
+#
+#   1. SCP the repo's nginx config to `deploy@VM:~/.bootstrap/`
+#      (chmod 644, deploy:deploy — same content the install step will move).
+#   2. Print the exact `sudo install + nginx -t + reload + rm` block the
+#      admin account (tripplezhou, full sudo) runs in a terminal.
+#
+# This keeps every secret-bearing step inside GitHub Actions while leaving
+# privileged filesystem mutation under explicit human review.
+#
+# Triggered: workflow_dispatch only. A confirm input guards against
+# accidental dispatch from the Actions UI.
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type 'nginx-sync' to confirm (prevents accidental dispatch)"
+        required: true
+        type: string
+
+jobs:
+  sync:
+    if: ${{ github.event.inputs.confirm == 'nginx-sync' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Pre-flight — nginx config sanity checks
+        # Cheap static checks before we touch the VM. nginx itself only
+        # gets to validate (`nginx -t`) on the VM after the admin install
+        # step, but these guards catch the obvious shape regressions.
+        run: |
+          set -euo pipefail
+          conf=workbench/deploy/nginx/trade.guangai.ai.conf
+
+          if [ ! -f "$conf" ]; then
+            echo "::error::Missing $conf in the checked-out tree." >&2
+            exit 1
+          fi
+          if ! grep -q "server_name trade.guangai.ai" "$conf"; then
+            echo "::error::$conf missing 'server_name trade.guangai.ai'." >&2
+            exit 1
+          fi
+          if ! grep -q "location /api/auth/" "$conf"; then
+            echo "::error::$conf missing 'location /api/auth/' block." >&2
+            echo "::error::Without it OAuth callbacks return 404 — refusing to sync." >&2
+            exit 1
+          fi
+          if grep -q "PLACEHOLDER-REPLACE-ME" "$conf"; then
+            echo "::error::$conf still contains literal 'PLACEHOLDER-REPLACE-ME'." >&2
+            exit 1
+          fi
+          echo "✓ Local nginx config sanity checks passed."
+          echo "  $(wc -l < "$conf") lines, $(stat -c '%s' "$conf") bytes."
+
+      - name: Set up SSH key
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: SCP nginx vhost to deploy user's staging area
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: deploy
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/deploy_key "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "mkdir -p ~/.bootstrap && chmod 700 ~/.bootstrap"
+          scp -i ~/.ssh/deploy_key workbench/deploy/nginx/trade.guangai.ai.conf \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:~/.bootstrap/trade.guangai.ai.conf"
+          ssh -i ~/.ssh/deploy_key "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "chmod 644 ~/.bootstrap/trade.guangai.ai.conf && stat -c '%a %U:%G %s bytes %y' ~/.bootstrap/trade.guangai.ai.conf"
+          echo ""
+          echo "✓ nginx vhost staged at deploy@VM:~/.bootstrap/trade.guangai.ai.conf"
+
+      - name: Print admin install instructions
+        # Mirrors the printout style used by bootstrap-env.yml so operators
+        # see one consistent post-staging contract.
+        run: |
+          cat <<'INSTRUCTIONS'
+
+          ==========================================================================
+          Workflow has SCPed the nginx vhost to the VM staging area.
+
+          NEXT STEP — run on the VM as an account with full sudo
+          (e.g. tripplezhou, NOT the deploy user):
+
+              sudo install -m 644 -o root -g root \
+                /home/deploy/.bootstrap/trade.guangai.ai.conf \
+                /etc/nginx/sites-available/trade.guangai.ai.conf
+              sudo nginx -t                          # MUST report "syntax ok"
+              sudo systemctl reload nginx            # zero-downtime; neighbors unaffected
+              sudo rm /home/deploy/.bootstrap/trade.guangai.ai.conf
+
+          VERIFY from any external host:
+
+              curl -sSf https://trade.guangai.ai/api/auth/providers | head -c 200
+              # expect JSON listing OAuth providers; previously this was 404.
+
+          If `nginx -t` reports an error, the previous symlink still serves
+          traffic and the reload step is skipped. Re-edit
+          `workbench/deploy/nginx/trade.guangai.ai.conf`, commit, push,
+          re-trigger this workflow.
+          ==========================================================================
+          INSTRUCTIONS
+
+      - name: Tear down SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key ~/.ssh/known_hosts
