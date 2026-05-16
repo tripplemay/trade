@@ -61,13 +61,40 @@ class ProtectedTestResponse(BaseModel):
     email: str
 
 
-def _resolve_version() -> str:
-    """Best-effort short git SHA; ``dev`` when unavailable.
+DEFAULT_RELEASE_SHA_FILE: Path = Path("/srv/workbench/current/RELEASE_SHA")
+"""Production: ``workbench-deploy.yml`` writes the head SHA into this file
+at the release dir root (Stage release artifacts step, line 130). The
+``current`` symlink the deploy script flips makes this path stable across
+releases, so the backend can read the active commit without depending on
+a ``.git`` tree (the release tarball ships no git metadata).
+"""
 
-    Resolution failure is non-fatal — /api/health remains responsive — and
-    signals an out-of-tree deployment. B021 F004 will replace this with a
-    build-time injected value.
+
+def _resolve_version(release_sha_file: Path = DEFAULT_RELEASE_SHA_FILE) -> str:
+    """Identify the running commit for ``/api/health``.
+
+    Three-stage fallback:
+
+    1. **Production marker** — the deploy workflow stages a ``RELEASE_SHA``
+       file alongside ``backend/`` and ``frontend/``; deploy.sh flips
+       ``/srv/workbench/current`` to point at it. Reading that file is the
+       authoritative path on the VM because the wheel-installed
+       workbench_api package lives in the shared venv, not in the release
+       dir, so ``Path(__file__).parents[N]`` cannot locate the release.
+    2. **Local git** — dev workstations have ``.git`` reachable from the
+       repo root; ``git rev-parse --short HEAD`` resolves the live commit.
+    3. **``dev``** — neither path produced a usable SHA; this is the
+       expected value in fresh CI containers and one-off shell sessions.
+
+    Failure is non-fatal — /api/health remains responsive in every case.
     """
+
+    try:
+        sha = release_sha_file.read_text(encoding="utf-8").strip()
+    except OSError:
+        sha = ""
+    if sha:
+        return sha
 
     repo_root = Path(__file__).resolve().parents[3]
     try:
@@ -80,8 +107,7 @@ def _resolve_version() -> str:
         )
     except (subprocess.SubprocessError, FileNotFoundError, OSError):
         return "dev"
-    sha = result.stdout.strip()
-    return sha or "dev"
+    return result.stdout.strip() or "dev"
 
 
 VERSION: str = _resolve_version()

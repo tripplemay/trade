@@ -483,6 +483,37 @@ Planner ran the missing first-time bootstrap. Files copied / installed / verifie
 - Final placement uses tripplezhou's full sudo (not deploy's narrow sudoers). Deploy's sudoers (B021 prep #3) remains locked to systemctl restart/status only.
 - Workflow file (`.github/workflows/bootstrap-env.yml`) is kept in repo for future re-bootstrap scenarios (e.g., if env file is accidentally lost, just re-trigger). Manual dispatch only — does not run on push.
 
+## nginx vhost re-sync (2026-05-16, B021 F006 fix-round 2)
+
+`workbench/deploy/nginx/trade.guangai.ai.conf` gained a `location /api/auth/`
+block that routes `/api/auth/*` to the Next.js frontend (127.0.0.1:3000)
+instead of the FastAPI backend (127.0.0.1:8723). Without this, every
+Auth.js callback URL returns 404 from the backend and the OAuth happy
+path is unreachable (Codex L2 blocker, see
+`docs/test-reports/B021-cloud-deploy-auth-blocker-2026-05-16.md`).
+
+CI does not push nginx config — the `deploy` user has no permission to
+touch `/etc/nginx/`. After this commit lands on `main`, sync the file to
+the VM once:
+
+```bash
+# As tripplezhou (full sudo), from the repo checkout on the VM or after
+# scp'ing the file from any host:
+sudo cp workbench/deploy/nginx/trade.guangai.ai.conf \
+        /etc/nginx/sites-available/trade.guangai.ai.conf
+sudo nginx -t                       # must report "syntax is ok" + "test is successful"
+sudo systemctl reload nginx         # zero-downtime; kolquest + staging.kolmatrix unaffected
+curl -sSf https://trade.guangai.ai/api/auth/providers | head
+# expect a JSON body listing the configured providers; previously this was 404
+```
+
+`nginx -t` checks the file in place; if it fails, the previous symlink
+target still serves traffic and you can re-edit before the reload step.
+
+If nginx config syncs become a recurring need, lift the pattern from
+`.github/workflows/bootstrap-env.yml` into a dedicated `nginx-sync.yml`
+workflow_dispatch — out of scope for B021 F006 fix-round 2.
+
 ---
 
 _Disclaimer: research-only; never authorizes paper or live trading._
