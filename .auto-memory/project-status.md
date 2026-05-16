@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B021-cloud-deploy-auth：`fixing`**；fix-round 2 完成（commit e5020ea）。Ver-1 自动修（生产 `/api/health` 现返回 version=e5020ea395d7ab…）；Auth-1 仍需用户手动同步 nginx config（`sudo cp + nginx -t + reload`，详见 docs/dev/B021-vm-setup-runbook.md "nginx vhost re-sync"）后 `/api/auth/*` 恢复路由 frontend。
+- **B021-cloud-deploy-auth：`fixing`**；fix-round 3：新增 `.github/workflows/nginx-sync.yml` workflow_dispatch（commit 5f6ad5d），自动 SCP nginx config 到 VM staging，user 跑 admin sudo install + nginx -t + reload 一行后 `/api/auth/*` 恢复。详见 docs/dev/B021-vm-setup-runbook.md §nginx vhost re-sync §Path A。Ver-1 ✅（fix-round 2，自动修）。
 - Spec：`docs/specs/B021-cloud-deploy-auth-spec.md`
 - 范围：cloud infra 层——Google OAuth（F001）+ SQLite/Alembic/Repository（F002）+ systemd/nginx/certbot（F003）+ GitHub Actions deploy/rollback（F004）+ SQLite→GCS backup/restore（F005）+ Codex L1+L2 + observability + signoff（F006）。
 - 后续路径：**B022 Workbench Phase 1** → **B023 Workbench Phase 2**。
