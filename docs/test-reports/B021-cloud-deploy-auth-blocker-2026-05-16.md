@@ -13,7 +13,7 @@ Covered:
 ## Result
 
 L1 is green. Public L2 checks now show one remaining gap:
-- `https://trade.guangai.ai/api/auth/*` returns 404, so the OAuth path is not reachable through the production proxy
+- `https://trade.guangai.ai/api/auth/signin/google` responds with `error=Configuration`, so OAuth cannot complete even though the route is now reachable.
 
 ## Evidence
 
@@ -49,8 +49,8 @@ ssh -o BatchMode=yes -o ConnectTimeout=10 -i ~/.ssh/aidash_deploy deploy@34.180.
 ## Blocker
 
 The current public evidence is enough to block signoff:
-- browser OAuth happy path cannot start because `/api/auth` is 404
-- non-allowlist rejection cannot be exercised without a reachable auth endpoint
+- browser OAuth happy path cannot complete because the sign-in endpoint returns a configuration error
+- non-allowlist rejection cannot be exercised until sign-in succeeds
 
 The rest of the public health fields are present and healthy:
 - `status=ok`
@@ -64,10 +64,16 @@ The rest of the public health fields are present and healthy:
 ## Required Action
 
 Required fix path:
-- sync the production nginx vhost so `/api/auth/*` is proxied to the NextAuth handler in the frontend
+- verify the production frontend has a valid Auth.js runtime configuration on the VM:
+  - `GOOGLE_OAUTH_CLIENT_ID`
+  - `GOOGLE_OAUTH_CLIENT_SECRET`
+  - `NEXTAUTH_SECRET`
+  - `NEXTAUTH_URL=https://trade.guangai.ai`
+  - `ALLOWED_USER_EMAIL`
+- restart the frontend service after syncing the env/config if needed
 - then rerun browser OAuth happy path and non-allowlist rejection checks
 
 ## Conclusion
 
 Do not sign off B021 yet.
-The implementation is locally green, but production still fails the auth-route requirement.
+The implementation is locally green, but production still fails the Auth.js runtime configuration requirement.

@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B021-cloud-deploy-auth：`reverifying`**；fix-round 3 全部生产 host 验证 ✅（5 commits 5f6ad5d → 10c7994 → 0f15d3d → 92b6b6f → 04b0e50）。揪出 4 个潜伏 bug：F003 frontend ExecStart 路径错（standalone 平铺不嵌套）、PM2 kolmatrix 占 3000-3002（spec 邻居端口表缺）、Auth.js v5 不 fallback NEXTAUTH_SECRET（必须显式 secret 字段）、Auth.js v5 默认 trustHost=false（反向代理后必须显式 opt-in）。生产 `/api/auth/providers` 返 Google provider JSON；`/api/auth/csrf` `session` 都 200；`/api/health` 6 字段全 + version=04b0e50。邻居 pm2 / kolma-staging / nginx 全活。等 Codex L2 reverify（browser OAuth + non-allowlist reject + signoff）。
+- **B021-cloud-deploy-auth：`fixing`**；生产 `/api/auth/providers` 返 Google provider JSON、`/api/auth/csrf` `session` 都 200、`/api/health` 6 字段全 + version=04b0e50，但 `https://trade.guangai.ai/api/auth/signin/google` 仍回 `error=Configuration`。当前 blocker 是 production Auth.js 运行时配置没闭环（env / secret / restart），不是 nginx 路由。
 - Spec：`docs/specs/B021-cloud-deploy-auth-spec.md`
 - 范围：cloud infra 层——Google OAuth（F001）+ SQLite/Alembic/Repository（F002）+ systemd/nginx/certbot（F003）+ GitHub Actions deploy/rollback（F004）+ SQLite→GCS backup/restore（F005）+ Codex L1+L2 + observability + signoff（F006）。
 - 后续路径：**B022 Workbench Phase 1** → **B023 Workbench Phase 2**。
