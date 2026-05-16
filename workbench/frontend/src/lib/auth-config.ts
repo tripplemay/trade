@@ -67,6 +67,17 @@ export const authConfig = {
   // the FastAPI backend reads via python-jose), with `AUTH_SECRET` as
   // an alternate spelling if someone re-bootstraps the env file.
   secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
+  // Auth.js v5 refuses to trust the X-Forwarded-Host header behind a
+  // reverse proxy unless the deployer says so explicitly. nginx on the
+  // production VM sets that header from the public hostname
+  // (trade.guangai.ai); without `trustHost: true`, every /api/auth/*
+  // endpoint that needs the URL — csrf, session, providers, callbacks —
+  // returns the same opaque "server configuration" 500 as a missing
+  // secret. The dev path on localhost also benefits because Next.js dev
+  // server uses the request Host header without a proxy. (Auth.js docs
+  // suggest `AUTH_TRUST_HOST=true` env var; setting it on the config
+  // keeps the contract visible in the repo.)
+  trustHost: true,
   providers: [
     Google({
       clientId: process.env.GOOGLE_OAUTH_CLIENT_ID,
