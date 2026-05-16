@@ -57,6 +57,16 @@ function _resolveSecret(secret: string | Buffer | (string | Buffer)[] | undefine
 }
 
 export const authConfig = {
+  // Auth.js v5 switched the canonical env var prefix from `NEXTAUTH_*` to
+  // `AUTH_*` and no longer auto-falls-back to NEXTAUTH_SECRET inside
+  // `next-auth@5.0.0-beta`. Without this explicit pass, every endpoint
+  // that touches the JWT (csrf, session, providers) returns 500
+  // "There was a problem with the server configuration" because the
+  // resolved secret is undefined. Keep `NEXTAUTH_SECRET` as the
+  // primary key (it's what /etc/workbench/workbench.env ships and what
+  // the FastAPI backend reads via python-jose), with `AUTH_SECRET` as
+  // an alternate spelling if someone re-bootstraps the env file.
+  secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
   providers: [
     Google({
       clientId: process.env.GOOGLE_OAUTH_CLIENT_ID,
