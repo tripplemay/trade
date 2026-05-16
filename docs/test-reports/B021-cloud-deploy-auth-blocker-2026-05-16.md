@@ -12,8 +12,7 @@ Covered:
 
 ## Result
 
-L1 is green. Public L2 checks show two remaining gaps:
-- `version` on `GET /api/health` is `dev`, not the current `git rev-parse --short HEAD`
+L1 is green. Public L2 checks now show one remaining gap:
 - `https://trade.guangai.ai/api/auth/*` returns 404, so the OAuth path is not reachable through the production proxy
 
 ## Evidence
@@ -52,10 +51,10 @@ ssh -o BatchMode=yes -o ConnectTimeout=10 -i ~/.ssh/aidash_deploy deploy@34.180.
 The current public evidence is enough to block signoff:
 - browser OAuth happy path cannot start because `/api/auth` is 404
 - non-allowlist rejection cannot be exercised without a reachable auth endpoint
-- `version=dev` does not satisfy the spec's `git rev-parse HEAD` check
 
 The rest of the public health fields are present and healthy:
 - `status=ok`
+- `version` now matches the deployed release SHA
 - `db_connectivity=ok`
 - `uptime_seconds` present
 - `last_backup_age_seconds` present
@@ -65,11 +64,10 @@ The rest of the public health fields are present and healthy:
 ## Required Action
 
 Required fix path:
-- route `/api/auth/*` to the NextAuth handler in the frontend, or otherwise make the auth handler reachable on the production host
-- inject the real release SHA into the deployed backend so `/api/health` reports the commit instead of `dev`
+- sync the production nginx vhost so `/api/auth/*` is proxied to the NextAuth handler in the frontend
 - then rerun browser OAuth happy path and non-allowlist rejection checks
 
 ## Conclusion
 
 Do not sign off B021 yet.
-The implementation is locally green, but production still fails the auth-route and version-field requirements.
+The implementation is locally green, but production still fails the auth-route requirement.
