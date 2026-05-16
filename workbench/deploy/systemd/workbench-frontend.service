@@ -1,5 +1,5 @@
 [Unit]
-Description=Workbench frontend (Next.js standalone on 127.0.0.1:3000)
+Description=Workbench frontend (Next.js standalone on 127.0.0.1:3003)
 Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B021-cloud-deploy-auth-spec.md
 After=network-online.target workbench-backend.service
 Wants=network-online.target
@@ -11,7 +11,12 @@ Group=deploy
 WorkingDirectory=/srv/workbench/current/frontend
 
 EnvironmentFile=/etc/workbench/workbench.env
-Environment=PORT=3000
+# Port 3000 + 3001 + 3002 are owned by the co-hosted PM2-managed
+# kolmatrix Next.js instances (kolmatrix + kolmatrix-staging). The
+# workbench picks 3003 — first free loopback port above the kolmatrix
+# range. nginx vhost (workbench/deploy/nginx/trade.guangai.ai.conf)
+# proxies `/` and `/api/auth/` here; both must move together.
+Environment=PORT=3003
 Environment=HOSTNAME=127.0.0.1
 Environment=NODE_ENV=production
 
