@@ -15,10 +15,14 @@ Environment=PORT=3000
 Environment=HOSTNAME=127.0.0.1
 Environment=NODE_ENV=production
 
-# `npm run build` (with output:'standalone') emits .next/standalone/server.js
-# plus a minimal node_modules. The deploy.sh symlink chain points
-# /srv/workbench/current → the active release.
-ExecStart=/usr/bin/node /srv/workbench/current/frontend/.next/standalone/server.js
+# `npm run build` (with output:'standalone') emits `.next/standalone/`
+# containing server.js + node_modules + standalone-internal .next/. The
+# B021 F004 workflow stage_release step rsyncs the *contents* of
+# .next/standalone/ (note trailing slash) into the release frontend/
+# directory, so on the VM `server.js` lives at the frontend/ root, not
+# under .next/standalone/. WorkingDirectory above keeps Next.js's
+# relative requires (.next/server/...) resolvable.
+ExecStart=/usr/bin/node /srv/workbench/current/frontend/server.js
 
 Restart=on-failure
 RestartSec=5s
