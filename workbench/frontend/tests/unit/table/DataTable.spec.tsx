@@ -19,17 +19,24 @@
 import { createRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render } from "@testing-library/react";
+import type { ColDef } from "ag-grid-community";
 
-let lastProps: { rowData?: unknown[]; columnDefs?: unknown[]; onGridReady?: (e: { api: unknown }) => void } = {};
+interface MockGridProps {
+  rowData?: unknown[];
+  columnDefs?: unknown[];
+  // Use a permissive `unknown` for `api` so the mock signature stays
+  // assignment-compatible with the real AgGridReactProps.onGridReady
+  // (which passes a full GridReadyEvent). The mock provides a narrower
+  // shape at runtime; the test casts back when reading.
+  onGridReady?: (e: { api: unknown }) => void;
+}
+
+let lastProps: MockGridProps = {};
 
 const exportDataAsCsv = vi.fn();
 
 vi.mock("ag-grid-react", () => ({
-  AgGridReact: function MockAgGrid(props: {
-    rowData?: unknown[];
-    columnDefs?: unknown[];
-    onGridReady?: (e: { api: { exportDataAsCsv: typeof exportDataAsCsv } }) => void;
-  }) {
+  AgGridReact: function MockAgGrid(props: MockGridProps) {
     lastProps = props;
     setTimeout(() => props.onGridReady?.({ api: { exportDataAsCsv } }), 0);
     return null;
@@ -63,7 +70,7 @@ function seed(rows: number): Row[] {
 describe("DataTable", () => {
   it("renders the host container and forwards rowData/columnDefs", () => {
     const data = seed(1000);
-    const columnDefs = [
+    const columnDefs: ColDef<Row>[] = [
       { field: "id", headerName: "ID" },
       { field: "value", headerName: "Value" },
     ];
@@ -76,7 +83,8 @@ describe("DataTable", () => {
 
   it("exportCsv ref method forwards to api.exportDataAsCsv with the supplied filename", async () => {
     const ref = createRef<DataTableHandle>();
-    render(<DataTable<Row> ref={ref} rowData={seed(10)} columnDefs={[{ field: "id" }]} />);
+    const columnDefs: ColDef<Row>[] = [{ field: "id" }];
+    render(<DataTable<Row> ref={ref} rowData={seed(10)} columnDefs={columnDefs} />);
     // Wait for the mocked onGridReady microtask to register the api.
     await new Promise((resolve) => setTimeout(resolve, 1));
     const dispatched = ref.current?.exportCsv("my-export.csv");
@@ -88,7 +96,8 @@ describe("DataTable", () => {
     // Skip the mocked onGridReady microtask: call exportCsv synchronously
     // before the setTimeout fires.
     const ref = createRef<DataTableHandle>();
-    render(<DataTable<Row> ref={ref} rowData={seed(10)} columnDefs={[{ field: "id" }]} />);
+    const columnDefs: ColDef<Row>[] = [{ field: "id" }];
+    render(<DataTable<Row> ref={ref} rowData={seed(10)} columnDefs={columnDefs} />);
     expect(ref.current?.exportCsv()).toBe(false);
     expect(exportDataAsCsv).not.toHaveBeenCalled();
   });
