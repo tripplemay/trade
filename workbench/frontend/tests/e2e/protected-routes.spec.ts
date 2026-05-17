@@ -31,6 +31,13 @@ for (const item of NAV_ITEMS) {
   });
 }
 
+test("Backtest viewer renders ResizablePanel + Run button (B022 F008)", async ({ page }) => {
+  await page.goto("/backtest");
+  await expect(page.getByTestId("backtest-resizable-group")).toBeVisible();
+  await expect(page.getByTestId("backtest-run")).toBeVisible();
+  await expect(page.getByTestId("backtest-state")).toHaveText(/idle|running|run /);
+});
+
 test("Strategies page renders the list card + export button (B022 F007)", async ({ page }) => {
   await page.goto("/strategies");
   await expect(page.getByTestId("strategies-list-card")).toBeVisible();

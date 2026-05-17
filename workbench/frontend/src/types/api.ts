@@ -104,8 +104,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Run Backtest */
-        post: operations["run_backtest_api_backtests_run_post"];
+        /** Run Backtest Route */
+        post: operations["run_backtest_route_api_backtests_run_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -119,8 +119,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Backtest */
-        get: operations["get_backtest_api_backtests__run_id__get"];
+        /** Get Backtest Route */
+        get: operations["get_backtest_route_api_backtests__run_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1110,7 +1110,7 @@ export interface operations {
             };
         };
     };
-    run_backtest_api_backtests_run_post: {
+    run_backtest_route_api_backtests_run_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -1143,7 +1143,7 @@ export interface operations {
             };
         };
     };
-    get_backtest_api_backtests__run_id__get: {
+    get_backtest_route_api_backtests__run_id__get: {
         parameters: {
             query?: never;
             header?: never;

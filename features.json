@@ -62,7 +62,7 @@
       "title": "Backtest viewer page vertical slice + ResizablePanel split",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Backend POST /api/backtests/run (auth) 同步跑 trade.master.run_backtest()；GET /api/backtests/{run_id} cache。Frontend (protected)/backtest/page.tsx **layout 用 shadcn <ResizablePanelGroup> single horizontal split**：左 = 选择器（strategy / snapshot / window + run button），右 = 结果（metrics card + EquityCurveChart + DrawdownChart + allocation history + trades AG Grid）。**硬边界：仅此页用 ResizablePanel；不引入 react-grid-layout；不持久化 panel size；不跨页同步；其它 6 页无 ResizablePanel（regression assert）。** Comparison toggle layer SPY + static 60/40。Playwright smoke 跑 canned B010 backtest on fixture snapshot < 5s；ResizablePanel 鼠标 + 键盘可拖（Radix 原生）。"
     },
     {

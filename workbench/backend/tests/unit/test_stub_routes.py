@@ -61,20 +61,8 @@ STUB_ROUTES: list[tuple[str, str, dict[str, Any] | None, str, int]] = [
     # /api/strategies + /api/docs are no longer stubs — B022 F007 ships
     # the handlers; targeted coverage lives in tests/unit/test_strategies.py
     # and tests/unit/test_docs.py respectively.
-    (
-        "post",
-        "/api/backtests/run",
-        {
-            "strategy_id": "B013-quarterly",
-            "snapshot_id": "snap-1",
-            "start_date": "2020-01-01",
-            "end_date": "2024-12-31",
-            "parameters": {},
-        },
-        "F008",
-        501,
-    ),
-    ("get", "/api/backtests/run-1", None, "F008", 501),
+    # /api/backtests are no longer stubs — B022 F008 ships the synthetic
+    # runner; targeted coverage lives in tests/unit/test_backtests.py.
     ("get", "/api/reports", None, "F009", 501),
     ("get", "/api/reports/B019-retune", None, "F009", 501),
     ("get", "/api/recommendations/current", None, "F010", 501),
