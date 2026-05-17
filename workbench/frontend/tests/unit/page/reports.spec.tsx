@@ -86,27 +86,34 @@ describe("ReportsPage (list)", () => {
 });
 
 describe("ReportDetailPage (heavy-table swap-in)", () => {
-  it("fetches the detail and renders AG Grid for the ≥10-row table", async () => {
-    paramsRef.value = { slug: "B019-retune-signoff" };
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => jsonResponse(DETAIL_PAYLOAD)) as unknown as typeof fetch,
-    );
-    const { default: ReportDetailPage } = await import(
-      "@/app/(protected)/reports/[slug]/page"
-    );
-    const { getByTestId } = render(<ReportDetailPage />);
-    await waitFor(() => {
-      expect(getByTestId("report-detail-state")).toHaveTextContent(/B019.*signoff.*2026-05-15/);
-    });
-    // The 12-row markdown table should swap into AG Grid (12 ≥ 10).
-    await waitFor(() => {
-      expect(getByTestId("markdown-heavy-table")).toBeInTheDocument();
-      expect(getByTestId("ag-grid-mock")).toHaveTextContent(/rows=12/);
-    });
-    // Cross-links Card renders with the spec path.
-    expect(getByTestId("report-detail-cross-links")).toHaveTextContent(
-      "docs/specs/B015-regime-adaptive-activation-policy-spec.md",
-    );
-  });
+  // react-markdown + remark-gfm + the table parser are noticeably slower
+  // than the chart-mock specs; bump the per-test timeout above the 5s
+  // vitest default so the run survives load on a cold CI runner.
+  it(
+    "fetches the detail and renders AG Grid for the ≥10-row table",
+    async () => {
+      paramsRef.value = { slug: "B019-retune-signoff" };
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async () => jsonResponse(DETAIL_PAYLOAD)) as unknown as typeof fetch,
+      );
+      const { default: ReportDetailPage } = await import(
+        "@/app/(protected)/reports/[slug]/page"
+      );
+      const { getByTestId } = render(<ReportDetailPage />);
+      await waitFor(() => {
+        expect(getByTestId("report-detail-state")).toHaveTextContent(/B019.*signoff.*2026-05-15/);
+      });
+      // The 12-row markdown table should swap into AG Grid (12 ≥ 10).
+      await waitFor(() => {
+        expect(getByTestId("markdown-heavy-table")).toBeInTheDocument();
+        expect(getByTestId("ag-grid-mock")).toHaveTextContent(/rows=12/);
+      });
+      // Cross-links Card renders with the spec path.
+      expect(getByTestId("report-detail-cross-links")).toHaveTextContent(
+        "docs/specs/B015-regime-adaptive-activation-policy-spec.md",
+      );
+    },
+    15_000,
+  );
 });

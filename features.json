@@ -102,7 +102,7 @@
       "title": "Workbench docs + screenshots + runbook + branch protection 指引刷新",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "workbench/README.md 刷新含 prereq (Python 3.11+ + Node 20+) + 一键 boot (scripts/start_workbench.sh) + dev/build/test 命令 + troubleshooting (端口冲突 / snapshot refresh / type drift) + production URL trade.guangai.ai。新增 7 页截图（PNG ≤ 300 KB each）放 docs/screenshots/。docs/dev/workbench-architecture.md 更新含 7 页架构图 + 请求生命周期 + cloud deploy 流 + 安全 guard。CLAUDE.md reference-docs 段刷新指向新文档。docs/dev/branch-protection-guidance.md 加上 workbench-deploy.yml workflow 入 required status check 候选。"
     },
     {

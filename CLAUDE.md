@@ -47,9 +47,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 涉及对应模块时再读，不需要每次启动都加载：
 
-- **架构详情：** → `docs/dev/architecture.md`（系统架构、请求管道、认证、数据库等）
-- **开发规则：** → `docs/dev/rules.md`（Migration 规则、[框架]开发规则、设计决策、CI/CD）
-- **规格文档：** → `docs/specs/`（开发时优先查阅）
+- **Workbench 架构（B022 当前态）：** → `docs/dev/workbench-architecture.md`
+  （7 页表、请求/写入生命周期、SSE、cloud deploy 链、安全 guard 全清单）
+- **Workbench README：** → `workbench/README.md`（prereqs / 一键 boot /
+  dev/test 命令 / troubleshooting / 生产 URL）
+- **测试策略：** → `docs/dev/workbench-testing-strategy.md`（vitest / Playwright /
+  pytest / Codex L2 分层）+ `docs/dev/codex-policies.md`（Codex L1/L2 矩阵）
+- **branch protection：** → `docs/dev/branch-protection-guidance.md`
+  （workbench-backend/frontend/deploy 必查 checks）
+- **VM 运行手册：** → `docs/dev/B021-vm-setup-runbook.md`
+- **截图说明：** → `docs/screenshots/README.md`（F013 capture 清单）
+- **规格文档：** → `docs/specs/`（开发时优先查阅；当前 active 批次 B022）
 - **设计稿：** → `design-draft/`（UI 页面还原时参考）
 
 <!--
