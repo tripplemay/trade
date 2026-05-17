@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B021-cloud-deploy-auth：`fixing`**；Codex 2026-05-17 复验：allowlisted browser OAuth ✅（Chrome remote debugging，session=`tripplezhou@gmail.com`，`/api/protected-test` 200），但登录后生产首页仍显示 `Backend unreachable: Failed to fetch`，因为前端浏览器 health probe 默认 `http://127.0.0.1:8723/api/health`。需修为 same-origin `/api/health` 或注入生产 public URL。
+- **B021-cloud-deploy-auth：`reverifying`**；fix-round 5（commit 4eb9c48）：HEALTH_URL 改为 same-origin `/api/health` + dev-only Next.js rewrites 代理 backend + safety guard 防硬编码 localhost。CI 全绿、deploy 自动跑、生产 `/api/health` version=4eb9c48。等 Codex 重跑浏览器登录后看首页 Backend OK。
 - Spec：`docs/specs/B021-cloud-deploy-auth-spec.md`
 - 范围：cloud infra 层——Google OAuth（F001）+ SQLite/Alembic/Repository（F002）+ systemd/nginx/certbot（F003）+ GitHub Actions deploy/rollback（F004）+ SQLite→GCS backup/restore（F005）+ Codex L1+L2 + observability + signoff（F006）。
 - 后续路径：**B022 Workbench Phase 1** → **B023 Workbench Phase 2**。
@@ -20,4 +20,4 @@ type: project
 ## 已知 gap（非阻塞）
 - Backlog: BL-B010-S1 low / BL-B011-S2 high / BL-B013-D1 low / BL-B013-D2 low；BL-B018-S1 已 resolved。
 - 本机 `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
-- L1 fix-round 4 全绿：backend pytest 73/73 + ruff/mypy 52 files；frontend vitest 20 + lint/typecheck/build/Playwright 2/2。生产 OAuth happy path 已用真实浏览器跑通；剩余 blocker 是生产首页 health fetch 仍指向 localhost。
+- L1 fix-round 5 全绿：backend pytest 73/73 + ruff/mypy 52 files；frontend vitest 21（含新 no-hardcoded-backend-host safety）+ lint/typecheck/build/Playwright 2/2 + 本地 dev rewrite smoke probe（curl /api/health via Next.js → backend JSON）。生产 OAuth happy path + 首页 health probe 都应通。
