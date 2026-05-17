@@ -7,8 +7,14 @@ import type { components } from "@/types/api";
 
 type HealthResponse = components["schemas"]["HealthResponse"];
 
-const HEALTH_URL =
-  process.env.NEXT_PUBLIC_WORKBENCH_HEALTH_URL ?? "http://127.0.0.1:8723/api/health";
+// Same-origin probe. In production nginx routes `/api/*` to the FastAPI
+// backend before the request reaches the Next.js standalone server (see
+// workbench/deploy/nginx/trade.guangai.ai.conf). In dev, `next.config.mjs`
+// rewrites this path to the backend loopback so the browser keeps
+// fetching same-origin against the Next.js dev server. A loopback URL
+// baked into the client bundle would target the USER's machine in
+// production — exactly the gap B021 F006 reverify 2026-05-17 surfaced.
+const HEALTH_URL = "/api/health";
 
 export default function HomePage() {
   const [health, setHealth] = useState<HealthResponse | null>(null);
