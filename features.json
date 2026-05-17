@@ -14,7 +14,7 @@
       "title": "OpenAPI ↔ TypeScript types pipeline 复用 + extend（B020 F004 已有）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "B020 F004 已交付 workbench/frontend/scripts/generate-types.sh + CI drift check（仅含 /api/health 类型）。F002 在此基础上 (1) 触发新 /api/dashboard /api/strategies /api/backtests /api/reports /api/recommendations /api/snapshots /api/backlog 全部 endpoint schema 写入 OpenAPI；(2) generate-types.sh 跑后 src/types/api.ts 含所有新 schemas；(3) CI drift 自动失败若 backend schema 改而 types 未 regen；(4) 任意 frontend page 跨 fetch 必须 import types 而非 hardcoded interface。"
     },
     {

@@ -38,10 +38,552 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Dashboard */
+        get: operations["get_dashboard_api_dashboard_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/strategies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Strategies */
+        get: operations["list_strategies_api_strategies_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/strategies/{strategy_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Strategy */
+        get: operations["get_strategy_api_strategies__strategy_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/backtests/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Run Backtest */
+        post: operations["run_backtest_api_backtests_run_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/backtests/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Backtest */
+        get: operations["get_backtest_api_backtests__run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Reports */
+        get: operations["list_reports_api_reports_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Report */
+        get: operations["get_report_api_reports__slug__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/docs/{file_path}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Docs */
+        get: operations["get_docs_api_docs__file_path__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/recommendations/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Current Recommendations */
+        get: operations["get_current_recommendations_api_recommendations_current_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/recommendations/export-ticket": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Export Ticket */
+        post: operations["export_ticket_api_recommendations_export_ticket_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/snapshots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Snapshots */
+        get: operations["list_snapshots_api_snapshots_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/snapshots/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refresh Snapshots */
+        post: operations["refresh_snapshots_api_snapshots_refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/backlog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Backlog */
+        get: operations["list_backlog_api_backlog_get"];
+        put?: never;
+        /** Create Backlog Entry */
+        post: operations["create_backlog_entry_api_backlog_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/backlog/{entry_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Backlog Entry */
+        delete: operations["delete_backlog_entry_api_backlog__entry_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Backlog Entry */
+        patch: operations["update_backlog_entry_api_backlog__entry_id__patch"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * ActionItem
+         * @description Single attention-required entry in the home action panel.
+         */
+        ActionItem: {
+            /** Id */
+            id: string;
+            /**
+             * Severity
+             * @description One of 'info' / 'warning' / 'critical' (UI convention).
+             */
+            severity: string;
+            /** Message */
+            message: string;
+        };
+        /**
+         * AllocationBar
+         * @description One row in the allocation-history time series.
+         */
+        AllocationBar: {
+            /** Date */
+            date: string;
+            /**
+             * Weights
+             * @description Symbol → weight in [0, 1].
+             */
+            weights: {
+                [key: string]: number;
+            };
+        };
+        /**
+         * BacklogCreateRequest
+         * @description POST /api/backlog body.
+         */
+        BacklogCreateRequest: {
+            /** Title */
+            title: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * Priority
+             * @default medium
+             */
+            priority: string;
+        };
+        /**
+         * BacklogDeleteResponse
+         * @description DELETE /api/backlog/{id} response.
+         */
+        BacklogDeleteResponse: {
+            /** Id */
+            id: string;
+            /** Deleted */
+            deleted: boolean;
+        };
+        /**
+         * BacklogEntry
+         * @description One entry in the backlog list.
+         */
+        BacklogEntry: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Description */
+            description: string;
+            /**
+             * Priority
+             * @description 'high' / 'medium' / 'low'.
+             */
+            priority: string;
+            /**
+             * Status
+             * @description 'open' / 'in_progress' / 'done' / 'parked'.
+             */
+            status: string;
+            /**
+             * Created At
+             * @description ISO-8601 timestamp.
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * @description ISO-8601 timestamp.
+             */
+            updated_at: string;
+        };
+        /** BacklogListResponse */
+        BacklogListResponse: {
+            /** Entries */
+            entries: components["schemas"]["BacklogEntry"][];
+        };
+        /**
+         * BacklogUpdateRequest
+         * @description PATCH /api/backlog/{id} body — all fields optional for partial update.
+         */
+        BacklogUpdateRequest: {
+            /** Title */
+            title?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Priority */
+            priority?: string | null;
+            /** Status */
+            status?: string | null;
+        };
+        /**
+         * BacktestMetrics
+         * @description Headline metrics for the result card stack.
+         */
+        BacktestMetrics: {
+            /** Cagr */
+            cagr: number;
+            /** Sharpe */
+            sharpe: number;
+            /** Sortino */
+            sortino?: number | null;
+            /** Max Drawdown */
+            max_drawdown: number;
+            /** Turnover */
+            turnover: number;
+            /** Win Rate */
+            win_rate?: number | null;
+        };
+        /**
+         * BacktestRunRequest
+         * @description POST /api/backtests/run body.
+         */
+        BacktestRunRequest: {
+            /** Strategy Id */
+            strategy_id: string;
+            /**
+             * Snapshot Id
+             * @description SnapshotMeta.id from /api/snapshots.
+             */
+            snapshot_id: string;
+            /**
+             * Start Date
+             * @description ISO-8601.
+             */
+            start_date: string;
+            /**
+             * End Date
+             * @description ISO-8601.
+             */
+            end_date: string;
+            /**
+             * Parameters
+             * @description Strategy-specific overrides; merged into the locked spec defaults.
+             */
+            parameters?: {
+                [key: string]: unknown;
+            };
+        };
+        /**
+         * BacktestRunResponse
+         * @description Full POST /api/backtests/run + GET /api/backtests/{run_id} payload.
+         */
+        BacktestRunResponse: {
+            /** Run Id */
+            run_id: string;
+            /**
+             * Status
+             * @description 'ok' / 'queued' / 'error'.
+             */
+            status: string;
+            metrics: components["schemas"]["BacktestMetrics"];
+            /** Equity */
+            equity: components["schemas"]["EquitySample"][];
+            /** Allocations */
+            allocations: components["schemas"]["AllocationBar"][];
+            /** Trades */
+            trades: components["schemas"]["BacktestTrade"][];
+        };
+        /**
+         * BacktestTrade
+         * @description One row in the trades AG Grid.
+         */
+        BacktestTrade: {
+            /** Date */
+            date: string;
+            /** Symbol */
+            symbol: string;
+            /**
+             * Side
+             * @description 'buy' or 'sell'.
+             */
+            side: string;
+            /** Quantity */
+            quantity: number;
+            /** Price */
+            price: number;
+            /** Notional */
+            notional: number;
+        };
+        /**
+         * DashboardResponse
+         * @description Composite response for the home/dashboard page.
+         */
+        DashboardResponse: {
+            /**
+             * Nav
+             * @description Latest known net asset value in account currency.
+             */
+            nav: number;
+            /**
+             * Master Drawdown
+             * @description Current drawdown vs equity peak, as a ratio (-0.05 = -5%).
+             */
+            master_drawdown: number;
+            /**
+             * Kill Switch Threshold
+             * @description Drawdown threshold (ratio) that arms the kill switch.
+             */
+            kill_switch_threshold: number;
+            /** Days To Next Rebalance */
+            days_to_next_rebalance: number;
+            last_rebalance?: components["schemas"]["LastRebalance"] | null;
+            /** Recent Reports */
+            recent_reports: components["schemas"]["RecentReport"][];
+            /** Action Items */
+            action_items: components["schemas"]["ActionItem"][];
+        };
+        /**
+         * DocsResponse
+         * @description GET /api/docs/{path} — shared resolver for spec/code/report deep links.
+         */
+        DocsResponse: {
+            /** Path */
+            path: string;
+            /**
+             * Content Type
+             * @description 'markdown' / 'python' / 'json' / 'text'.
+             */
+            content_type: string;
+            /**
+             * Body
+             * @description Raw file contents (markdown rendered client-side).
+             */
+            body: string;
+        };
+        /** EquitySample */
+        EquitySample: {
+            /** Date */
+            date: string;
+            /** Nav */
+            nav: number;
+            /** Benchmark Spy */
+            benchmark_spy?: number | null;
+            /** Benchmark 6040 */
+            benchmark_6040?: number | null;
+        };
+        /**
+         * ExportTicketRequest
+         * @description POST /api/recommendations/export-ticket body.
+         */
+        ExportTicketRequest: {
+            /** As Of Date */
+            as_of_date: string;
+        };
+        /**
+         * ExportTicketResponse
+         * @description POST /api/recommendations/export-ticket response.
+         */
+        ExportTicketResponse: {
+            /**
+             * Path
+             * @description Repo-relative path of the written markdown checklist.
+             */
+            path: string;
+            /**
+             * Disclaimer
+             * @description Always 'research-only; this is a manual review checklist, not a trading instruction'.
+             */
+            disclaimer: string;
+        };
+        /**
+         * GateCheck
+         * @description One pre-trade gate evaluation surfaced in the gate panel.
+         */
+        GateCheck: {
+            /**
+             * Name
+             * @description Gate identifier, e.g. 'kill_switch' / 'max_drawdown'.
+             */
+            name: string;
+            /**
+             * Status
+             * @description 'pass' / 'warn' / 'fail'.
+             */
+            status: string;
+            /** Detail */
+            detail?: string | null;
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
         /**
          * HealthResponse
          * @description Response schema for ``GET /api/health``.
@@ -63,6 +605,37 @@ export interface components {
             active_user_count: number;
         };
         /**
+         * LastRebalance
+         * @description Most recent rebalance summary surfaced on the home card.
+         */
+        LastRebalance: {
+            /**
+             * Date
+             * @description ISO-8601 date the master portfolio was rebalanced.
+             */
+            date: string;
+            /**
+             * Fill Count
+             * @description Number of fills generated by the rebalance.
+             */
+            fill_count: number;
+            /**
+             * Slippage Bps
+             * @description Realised slippage vs the target prices, in bps.
+             */
+            slippage_bps: number;
+        };
+        /**
+         * PerformancePoint
+         * @description One (date, value) sample on a time series.
+         */
+        PerformancePoint: {
+            /** Date */
+            date: string;
+            /** Value */
+            value: number;
+        };
+        /**
          * ProtectedTestResponse
          * @description Response schema for ``GET /api/protected-test`` (auth probe).
          */
@@ -71,6 +644,345 @@ export interface components {
             status: string;
             /** Email */
             email: string;
+        };
+        /**
+         * RecentReport
+         * @description Compact link surfaced in the recent-reports rail.
+         */
+        RecentReport: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Date
+             * @description ISO-8601 date the report was filed.
+             */
+            date: string;
+            /**
+             * Status
+             * @description Free-form status string, e.g. 'PASS' / 'PARTIAL' / 'FAIL'.
+             */
+            status: string;
+            /**
+             * Path
+             * @description Repo-relative path; deep-linked via /api/docs/{path}.
+             */
+            path: string;
+        };
+        /**
+         * RecommendationsResponse
+         * @description GET /api/recommendations/current payload.
+         */
+        RecommendationsResponse: {
+            /**
+             * As Of Date
+             * @description Signal date the recommendation was generated for.
+             */
+            as_of_date: string;
+            /** Target Positions */
+            target_positions: components["schemas"]["TargetPosition"][];
+            /** Gate Checks */
+            gate_checks: components["schemas"]["GateCheck"][];
+            /** Wash Sale Flags */
+            wash_sale_flags?: components["schemas"]["WashSaleFlag"][];
+            /**
+             * Account Present
+             * @description False when accounts/me.json is missing — the page renders an empty state.
+             */
+            account_present: boolean;
+        };
+        /**
+         * ReportDetail
+         * @description GET /api/reports/{slug} payload.
+         */
+        ReportDetail: {
+            /** Slug */
+            slug: string;
+            /** Title */
+            title: string;
+            /** Date */
+            date: string;
+            /** Batch */
+            batch: string;
+            /** Kind */
+            kind: string;
+            /**
+             * Body Markdown
+             * @description Original markdown source for react-markdown.
+             */
+            body_markdown: string;
+            /**
+             * Tables
+             * @description Tables >= 10 rows pre-extracted so the page can swap them for AG Grid.
+             */
+            tables?: components["schemas"]["ReportTable"][];
+            /**
+             * Cross Links
+             * @description Internal repo paths the report references (resolved to /reports/* / /docs/*).
+             */
+            cross_links?: string[];
+        };
+        /** ReportListResponse */
+        ReportListResponse: {
+            /** Reports */
+            reports: components["schemas"]["ReportSummary"][];
+        };
+        /**
+         * ReportSummary
+         * @description Row in the report-list view.
+         */
+        ReportSummary: {
+            /**
+             * Slug
+             * @description Stable identifier; deep-linked at /reports/<slug>.
+             */
+            slug: string;
+            /** Title */
+            title: string;
+            /**
+             * Date
+             * @description ISO-8601 date the report was filed.
+             */
+            date: string;
+            /**
+             * Batch
+             * @description Batch label, e.g. 'B019'.
+             */
+            batch: string;
+            /**
+             * Kind
+             * @description 'signoff' / 'sweep' / 'research' / 'adr'.
+             */
+            kind: string;
+            /**
+             * Path
+             * @description Repo-relative path under docs/test-reports/ or docs/research/.
+             */
+            path: string;
+        };
+        /**
+         * ReportTable
+         * @description Markdown table extracted for AG Grid re-rendering (>= 10 rows).
+         */
+        ReportTable: {
+            /** Caption */
+            caption?: string | null;
+            /** Columns */
+            columns: string[];
+            /** Rows */
+            rows: string[][];
+        };
+        /** SnapshotListResponse */
+        SnapshotListResponse: {
+            /** Snapshots */
+            snapshots: components["schemas"]["SnapshotSummary"][];
+        };
+        /**
+         * SnapshotRefreshResponse
+         * @description POST /api/snapshots/refresh acknowledgement (SSE streams progress).
+         */
+        SnapshotRefreshResponse: {
+            /** Job Id */
+            job_id: string;
+            /**
+             * Status
+             * @description 'started' / 'failed_to_start'.
+             */
+            status: string;
+            /** Detail */
+            detail?: string | null;
+        };
+        /**
+         * SnapshotSummary
+         * @description Row in the snapshots list view.
+         */
+        SnapshotSummary: {
+            /**
+             * Id
+             * @description SnapshotMeta primary key (matches DB row).
+             */
+            id: string;
+            /**
+             * As Of Date
+             * @description ISO-8601 date the snapshot represents.
+             */
+            as_of_date: string;
+            /**
+             * Created At
+             * @description ISO-8601 timestamp the file landed on disk.
+             */
+            created_at: string;
+            /**
+             * Quality Status
+             * @description 'ok' / 'stale' / 'missing'.
+             */
+            quality_status: string;
+            /** File Path */
+            file_path: string;
+        };
+        /**
+         * StrategyDetail
+         * @description Detail view: summary + config + provenance + performance data.
+         */
+        StrategyDetail: {
+            /**
+             * Id
+             * @description Stable strategy id, e.g. 'B013-quarterly'.
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Sleeve
+             * @description Sleeve assignment, e.g. 'momentum' / 'value' / 'carry'.
+             */
+            sleeve: string;
+            /**
+             * Status
+             * @description Free-form, e.g. 'active' / 'paused' / 'retired'.
+             */
+            status: string;
+            /**
+             * Last Sweep Date
+             * @description ISO-8601.
+             */
+            last_sweep_date?: string | null;
+            /**
+             * Config
+             * @description Strategy-specific config bag (passed verbatim to trade.master).
+             */
+            config: {
+                [key: string]: unknown;
+            };
+            provenance: components["schemas"]["StrategyProvenance"];
+            /** Equity Curve */
+            equity_curve?: components["schemas"]["PerformancePoint"][];
+            /** Drawdown Series */
+            drawdown_series?: components["schemas"]["PerformancePoint"][];
+            /** Turnover Heatmap */
+            turnover_heatmap?: components["schemas"]["TurnoverCell"][];
+        };
+        /**
+         * StrategyListResponse
+         * @description Wrapper so the response stays a JSON object (extensible).
+         */
+        StrategyListResponse: {
+            /** Strategies */
+            strategies: components["schemas"]["StrategySummary"][];
+        };
+        /**
+         * StrategyProvenance
+         * @description Where the strategy's definition lives in the repo.
+         */
+        StrategyProvenance: {
+            /**
+             * Spec Path
+             * @description docs/specs/<batch>.md path that defines the strategy.
+             */
+            spec_path: string;
+            /**
+             * Code Path
+             * @description trade/<module>.py path that implements the strategy.
+             */
+            code_path: string;
+            /**
+             * Last Sweep Path
+             * @description Most recent parameter-sweep report path under docs/test-reports/, if any.
+             */
+            last_sweep_path?: string | null;
+        };
+        /**
+         * StrategySummary
+         * @description List-view row for a strategy.
+         */
+        StrategySummary: {
+            /**
+             * Id
+             * @description Stable strategy id, e.g. 'B013-quarterly'.
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Sleeve
+             * @description Sleeve assignment, e.g. 'momentum' / 'value' / 'carry'.
+             */
+            sleeve: string;
+            /**
+             * Status
+             * @description Free-form, e.g. 'active' / 'paused' / 'retired'.
+             */
+            status: string;
+            /**
+             * Last Sweep Date
+             * @description ISO-8601.
+             */
+            last_sweep_date?: string | null;
+        };
+        /**
+         * TargetPosition
+         * @description One target-weight entry in the recommended portfolio.
+         */
+        TargetPosition: {
+            /** Symbol */
+            symbol: string;
+            /** Target Weight */
+            target_weight: number;
+            /** Current Weight */
+            current_weight: number;
+            /**
+             * Diff
+             * @description target_weight - current_weight (can be negative).
+             */
+            diff: number;
+            /** Rationale */
+            rationale?: string | null;
+        };
+        /**
+         * TurnoverCell
+         * @description One cell on the strategy's turnover heatmap (week × month).
+         */
+        TurnoverCell: {
+            /**
+             * Period
+             * @description ISO-8601 period label, e.g. '2025-Q3'.
+             */
+            period: string;
+            /**
+             * Bucket
+             * @description Bucket label, e.g. 'month-of-year' index or 'rebalance #'.
+             */
+            bucket: string;
+            /**
+             * Turnover
+             * @description Turnover ratio in [0, 1].
+             */
+            turnover: number;
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+        };
+        /**
+         * WashSaleFlag
+         * @description Heuristic flag: same symbol bought within 30 days surfaces a warning.
+         */
+        WashSaleFlag: {
+            /** Symbol */
+            symbol: string;
+            /**
+             * Last Buy Date
+             * @description ISO-8601 date of the prior buy.
+             */
+            last_buy_date: string;
+            /** Days Since */
+            days_since: number;
         };
     };
     responses: never;
@@ -117,6 +1029,435 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProtectedTestResponse"];
+                };
+            };
+        };
+    };
+    get_dashboard_api_dashboard_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardResponse"];
+                };
+            };
+        };
+    };
+    list_strategies_api_strategies_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StrategyListResponse"];
+                };
+            };
+        };
+    };
+    get_strategy_api_strategies__strategy_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                strategy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StrategyDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_backtest_api_backtests_run_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BacktestRunRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BacktestRunResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_backtest_api_backtests__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BacktestRunResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_reports_api_reports_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportListResponse"];
+                };
+            };
+        };
+    };
+    get_report_api_reports__slug__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_docs_api_docs__file_path__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                file_path: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_current_recommendations_api_recommendations_current_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecommendationsResponse"];
+                };
+            };
+        };
+    };
+    export_ticket_api_recommendations_export_ticket_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExportTicketRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportTicketResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_snapshots_api_snapshots_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SnapshotListResponse"];
+                };
+            };
+        };
+    };
+    refresh_snapshots_api_snapshots_refresh_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SnapshotRefreshResponse"];
+                };
+            };
+        };
+    };
+    list_backlog_api_backlog_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BacklogListResponse"];
+                };
+            };
+        };
+    };
+    create_backlog_entry_api_backlog_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BacklogCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BacklogEntry"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_backlog_entry_api_backlog__entry_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entry_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BacklogDeleteResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_backlog_entry_api_backlog__entry_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entry_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BacklogUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BacklogEntry"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -34,6 +34,13 @@ from workbench_api.observability.backup_status import read_backup_status
 from workbench_api.observability.logging import setup_logging
 from workbench_api.observability.middleware import RequestIDMiddleware
 from workbench_api.observability.sentry import init_sentry
+from workbench_api.routes import backlog as backlog_routes
+from workbench_api.routes import backtests as backtests_routes
+from workbench_api.routes import dashboard as dashboard_routes
+from workbench_api.routes import recommendations as recommendations_routes
+from workbench_api.routes import reports as reports_routes
+from workbench_api.routes import snapshots as snapshots_routes
+from workbench_api.routes import strategies as strategies_routes
 from workbench_api.settings import Settings, get_settings
 
 AuthenticatedUserDep = Annotated[AuthenticatedUser, Depends(require_authenticated_user)]
@@ -173,6 +180,18 @@ def create_app() -> FastAPI:
     @api.get("/protected-test", response_model=ProtectedTestResponse)
     def protected_test(user: AuthenticatedUserDep) -> ProtectedTestResponse:
         return ProtectedTestResponse(status="ok", email=user.email)
+
+    # B022 F002 — register the 7 vertical-slice schemas + 501 stubs so the
+    # OpenAPI → TypeScript pipeline emits stable types for F006-F012. Real
+    # handler bodies replace these in their owning features; the route
+    # surface itself stays frozen here.
+    api.include_router(dashboard_routes.router)
+    api.include_router(strategies_routes.router)
+    api.include_router(backtests_routes.router)
+    api.include_router(reports_routes.router)
+    api.include_router(recommendations_routes.router)
+    api.include_router(snapshots_routes.router)
+    api.include_router(backlog_routes.router)
 
     app.include_router(api)
 
