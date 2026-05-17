@@ -46,7 +46,7 @@
       "title": "Observability + healthcheck enrichment + Codex L1+L2 验收 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Generator 先实施观测点：/api/health 加 uptime_seconds + last_backup_age_seconds + last_backup_size_bytes + active_user_count；workbench_api/observability/logging.py JSON formatter 含 request_id (ASGI mid) + user_id (auth dep) + event；logs 到 /var/log/workbench/{app.log,access.log} + logrotate 周转；可选 SENTRY_DSN env（unset 时 no-op）。Codex L1 checklist：npm test/pytest/ruff/mypy 全清；安全 regression 仍绿；Playwright E2E smoke 走 /login → mock Google OAuth → / → 见 disclaimer。Codex L2 checklist（在真 VM 上 6 项）：浏览器从 user laptop 走完 OAuth happy path；非 allowlist 邮箱登录拒；curl /api/health 200 version=git rev-parse HEAD；SSH systemctl show 确认 quota 200%/2G/500；gs://.../daily/ 至少一个 backup 文件（systemctl start backup.service 后）；邻居 nginx/kolquest/aigcgateway 仍 active 无 workbench 相关重启。Codex 写 docs/test-reports/B021-cloud-deploy-auth-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md；更新 progress.json status→done / docs.signoff / evaluator_feedback 概要。"
     }
   ]
