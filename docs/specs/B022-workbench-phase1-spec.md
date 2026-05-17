@@ -1,6 +1,47 @@
 # B022 Research Workbench (Phase 1) Spec
 
-> **Status (2026-05-15):** This spec has been renumbered from B020 to B022 after the introduction of two infrastructure batches (B020 Dev Infrastructure + B021 Cloud Deploy & Auth). It also pre-dates the cloud-deployment + Google OAuth architectural pivot (`docs/adr/2026-05-15-workbench-direction.md` cloud addendum). **The page-level / feature-level decomposition stays valid; the localhost-only / no-auth / file-based-data assumptions are stale and will be revised at B021 done wrap-up** (Recommendations / Snapshots / Backlog API endpoints will then be wired through SQLite + Repository layer instead of direct file reads, every page will gate-check the OAuth session, and the deployment context will be the GCP VM at `trade.guangai.ai`). The current content is preserved as the page-design baseline and is not yet executable as-is.
+> **Status (2026-05-17):** **READY TO EXECUTE.** B020 (`docs/test-reports/B020-dev-infrastructure-signoff-2026-05-15.md`) and B021 (`docs/test-reports/B021-cloud-deploy-auth-signoff-2026-05-17.md`) have landed. Workbench is live at `https://trade.guangai.ai` with Google OAuth gating, SQLite + Alembic + Repository data layer, systemd + nginx + Let's Encrypt cert, daily SQLite→GCS backup automation, GHA push→SSH deploy→healthcheck→rollback CI/CD pipeline. `/api/health` returns 6 observability fields including `version=<git_sha>`, `db_connectivity=ok`, `last_backup_age_seconds=<recent>`. This spec's original page-level decomposition (F001-F014) is preserved verbatim because the page contracts haven't changed; the implementation context now includes the cloud + auth + DB foundation, see §"Cloud + auth + Repository adaptation (2026-05-17 revision)" below for what each feature inherits from B020/B021 and must NOT re-implement. The shadcn-dashboard-landing-template path from the original §F001 was NOT executed in B020 — workbench shipped scaffold-from-scratch with Next.js 14 + Tailwind 3 + the disclaimer Footer; B022 F001 should now `shadcn-ui init` into that existing tree rather than clone a template wholesale. Framework v0.9.24 lessons apply throughout (same-origin paths for fetch / systemd + Linux infra gotchas / spec checklist for cloud-deploy / pre-flight grep scope).
+
+## Cloud + auth + Repository adaptation (2026-05-17 revision)
+
+**What B020 + B021 already shipped (Generator must not duplicate):**
+
+| Surface | What's live | Source |
+|---|---|---|
+| Workbench monorepo skeleton | `workbench/{backend,frontend}` with Python 3.11 venv-installable backend + Next.js 14 + TS strict + Tailwind 3 + Vitest + Playwright config | B020 F001 |
+| CI workflows | `workbench-backend.yml` + `workbench-frontend.yml` + `workbench-deploy.yml` + `bootstrap-env.yml` + 5 safety regression tests (no broker SDK / no paper-or-live URLs / disclaimer-present / settings env allowlist / no broker SDK in frontend) | B020 F002-F004 + B021 F004 |
+| OpenAPI ↔ TS pipeline | `workbench/frontend/scripts/generate-types.sh` + CI drift check | B020 F004 |
+| Google OAuth | NextAuth v5 in `lib/auth-config.ts` (env-deferred via `buildAuthConfig(env)`) + `lib/auth.ts` sync `NextAuth(authConfig)` form + `app/api/auth/[...nextauth]/route.ts` + `middleware.ts` enforces JWT cookie on `/(protected)/` routes + `/login` page with Google button + backend `auth/{jwt_validator,dependency}.py` + single-email allowlist (`ALLOWED_USER_EMAIL` env) | B021 F001 |
+| SQLite + Alembic + Repository | `workbench_api/db/{engine,session,models,repositories}` + alembic migrations + `workbench-bootstrap` CLI for one-off `accounts/me.json` + `backlog.json` import + `/api/health` includes `db_connectivity` | B021 F002 |
+| Deploy infra (cloud) | systemd `workbench-{backend,frontend,backup}.service` + `.timer` units (CPUQuota=200% + MemoryMax=2G + OOMScoreAdjust=500) + nginx vhost `trade.guangai.ai` + Let's Encrypt cert (webroot mode, renews via existing certbot timer) + GHA `workbench-deploy.yml` push→SSH→healthcheck→symlink rollback | B021 F003-F004 |
+| Backup automation | systemd timer daily 03:00 UTC → SQLite snapshot → gzip → GCS bucket `trade-workbench-backups-gen-lang-client-0229748590/daily/` + 30 daily + 12 monthly retention + restore script | B021 F005 |
+| Observability | `workbench_api/observability/{logging,middleware,active_users,backup_status,sentry}` + JSON formatter with request_id + user_id + enriched `/api/health` (uptime, db_connectivity, last_backup_age/size, active_user_count) + optional Sentry via `SENTRY_DSN` env | B021 F006 |
+| Existing layout shell | `app/layout.tsx` + `(protected)/layout.tsx` + `(protected)/page.tsx` placeholder + `components/shell/Footer.tsx` (canonical `DISCLAIMER_TEXT`) + `lib/disclaimer.ts` + `styles/globals.css` dark-mode stub | B020 F001 + B021 F001 |
+
+**What B022 F001 actually does (revised from original "template clone"):**
+
+The shadcn-dashboard-landing-template clone in the original spec was NOT executed in B020. Workbench shipped a from-scratch Next.js 14 + Tailwind 3 scaffold. B022 F001 should:
+
+1. `npx shadcn@latest init` inside `workbench/frontend/` against the existing tree (uses Tailwind config + tsconfig + components.json setup; preserves existing globals.css / layout.tsx / Footer).
+2. Selectively import the core shadcn components actually needed (Button, Card, Dialog, Toast, Tabs, Table, Sheet, Input, Select, Tooltip) using `npx shadcn@latest add <name>`.
+3. Apply financial pre-config: Inter UI + JetBrains Mono numeric (via `next/font/google`), tabular-nums on `.numeric` class, P&L color tokens `--color-up: #00c853` + `--color-down: #ff3b30`, compact density (Tailwind padding/Button heights reduced), Zinc dark theme palette.
+4. Install AG Grid Community + TradingView lightweight-charts + ECharts as `dependencies` in `package.json`.
+5. Verify `npm run build` clean + no peer-dep warnings + Playwright disclaimer regression still passing on every B021-existing route.
+
+If shadcn / Next 15 / Tailwind v4 ecosystem compat hits a blocker (per ADR §决策 1 pre-flight check), fall back to Next 14 + Tailwind 3 + shadcn-for-Tailwind-3 setup (already what we have). Document fall-back in ADR addendum.
+
+**All B022 vertical-slice features (F006-F012) must follow:**
+
+- Every fetch uses **same-origin paths** (`/api/...`); no `http://127.0.0.1:...` hardcoded for browser-fetched URLs. NEXT_PUBLIC_* env if cross-origin truly needed. Per framework v0.9.24 #3.
+- Every backend route is **behind** `require_authenticated_user()` FastAPI dependency from B021 F001 EXCEPT `/api/health` (kept public for uptime monitors and nginx upstream check).
+- Read APIs source data **from SQLite via the Repository layer** (B021 F002), not direct file reads. The `workbench-bootstrap` CLI seeds `accounts/me.json` + `backlog.json` into DB once at first deploy; runtime reads go through DB.
+- Snapshot ingestion (Snapshots page write action) writes to the snapshot file path AND inserts a `SnapshotMeta` row via the repository; subsequent reads list from the meta table.
+- New write endpoints (snapshot refresh, backlog CRUD, generate target positions) all go through the auth-gated middleware and DB persistence; no direct file mutation from API handler.
+
+**What B022 must NOT touch (B023 scope):**
+
+- target positions diff UI, order ticket UI, fill journal UI, account state editing UI — all execution-flow UIs deferred to B023.
+- The Recommendations page in B022 only exports a Markdown checklist (read-only); it does not move to a diff/ticket interactive UI.
 
 ## Background
 

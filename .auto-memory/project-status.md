@@ -4,20 +4,24 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B021-cloud-deploy-auth：`done`**；Codex F006 signoff：`docs/test-reports/B021-cloud-deploy-auth-signoff-2026-05-17.md`。L1 全绿；L2 生产 `/api/health` OK、登录后首页 `Backend: ok`、systemd quota/backup/邻居服务核验通过。
-- Spec：`docs/specs/B021-cloud-deploy-auth-spec.md`
-- 范围：cloud infra 层——Google OAuth（F001）+ SQLite/Alembic/Repository（F002）+ systemd/nginx/certbot（F003）+ GitHub Actions deploy/rollback（F004）+ SQLite→GCS backup/restore（F005）+ Codex L1+L2 + observability + signoff（F006）。
-- 后续路径：**B022 Workbench Phase 1** → **B023 Workbench Phase 2**。
-- B021 prep 5/5 ✅；`trade/` 零第三方依赖，workbench/ 独立依赖图。
-- 硬边界：no-broker / no-paper / no-live / no-secret-in-strategy；CPUQuota=200% + MemoryMax=2G + OOMScoreAdjust=500 隔离邻居。
+- **B022-workbench-phase1：`building`**；Generator 接 F001（shadcn/ui init + 金融预配 + 装 AG Grid Community + lightweight-charts + ECharts，保留 B021 已交付 Footer/middleware/auth），共 14 features 完成 0。预估 5-6 周。
+- Spec：`docs/specs/B022-workbench-phase1-spec.md`（2026-05-17 已加 §Status + §Cloud+auth+Repository adaptation 段，标 ready to execute）
+- 范围：7 read-mostly 业务页（Home / Strategies / Backtest / Reports / Recommendations / Snapshots / Backlog）+ 最小必要 write（snapshot refresh / backlog CRUD / 触发 backtest / 导出 target positions Markdown）+ 5 chart 组件 + AG Grid table 组件 + workbench 文档+截图 + Codex L1+L2 真 VM 10 项验收。
+- B020+B021 已交付的 8 surface F001 必须复用不重写：workbench skeleton / CI workflows / OpenAPI pipeline / NextAuth + 后端 JWT + allowlist / SQLite + Alembic + Repository + workbench-bootstrap CLI / systemd+nginx+cert / GHA deploy/rollback / SQLite→GCS backup / 观测层。
+- 后续路径：**B023 Workbench Phase 2**（manual execution UI：position diff / order ticket / fill journal）。
+- 关键决策：所有 frontend fetch 用 same-origin /api/* 路径（framework v0.9.24 #3 强制）；所有 API endpoint 在 require_authenticated_user gate 后；读 SQLite via Repository 非直读文件；ResizablePanel 仅 F008 Backtest 页用单页 split（不引 react-grid-layout）。
+- 硬边界：no-broker / no-paper / no-live / no-secret-in-strategy；workbench cloud 仅 trade.guangai.ai 暴露 + OAuth 单 email allowlist；任何 placeholder 字符串 PLACEHOLDER-REPLACE-ME 不许进 workbench/ 源码；framework v0.9.24 #1-4 + v0.9.21 #1 + v0.9.22 + v0.9.23 全部继续约束。
 
 ## 已完成签收
-- B001-B021 全部已签收；B021 cloud deploy/auth: `docs/test-reports/B021-cloud-deploy-auth-signoff-2026-05-17.md`
+- B001-B021 全部已签收；最近：B021 cloud deploy/auth `docs/test-reports/B021-cloud-deploy-auth-signoff-2026-05-17.md`
 
 ## 生产状态
-- `https://trade.guangai.ai` 已部署 B021 基础设施层；当前产品 artifact version `4eb9c48`，HEAD `ee9b4ce` 仅差状态机文件。
+- `https://trade.guangai.ai` live；OAuth gating 工作；/api/health 含 6 obs 字段；daily 03:00 UTC backup auto；nginx + pm2 aigcgateway + apify-kol 共住未受影响；workbench-deploy.yml CI/CD 全绿。
 
 ## 已知 gap（非阻塞）
-- Backlog: BL-B010-S1 low / BL-B011-S2 high / BL-B013-D1 low / BL-B013-D2 low；BL-B018-S1 已 resolved。
+- Backlog: BL-B010-S1 low / **BL-B011-S2 high (B022 后接 satellite)** / BL-B013-D1 low / BL-B013-D2 low。
 - 本机 `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
-- B021 soft-watch：真实浏览器非 allowlist Google 账号拒绝路径未实测（无可用交互账号）；L1 已覆盖 signIn callback reject + backend 403。
+- B021 soft-watch S1：非 allowlist 浏览器实测未做（无可用第二 Google 账号）；L1 已覆盖。
+- framework/proposed-learnings.md 为空（v0.9.21 + v0.9.22 + v0.9.23 + v0.9.24 已沉淀 9 条 5/15-5/17 候选）。
+
+<!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->

@@ -1,42 +1,43 @@
 {
-  "status": "done",
-  "user_goal": "B020 dev infra 已签收（commit e47542b），按 ADR cloud addendum 路线起 B021 Cloud Deploy & Auth。本批次纯基础设施层：(F001) Google OAuth via NextAuth.js v5 + 后端 JWT cookie 验证 + 单 email allowlist；(F002) SQLite + Alembic migration + Repository 数据层 + workbench-bootstrap CLI 从 accounts/me.json + backlog.json 导入；(F003) systemd workbench-{backend,frontend}.service + nginx vhost trade.guangai.ai + certbot 准备 + CPUQuota=200% + MemoryMax=2G + OOMScoreAdjust=500 隔离邻居（kolquest / aigcgateway / apify-kol）；(F004) GitHub Actions workbench-deploy.yml workflow_run 链触发 + scp + SSH deploy + healthcheck + symlink rollback + PLACEHOLDER-REPLACE-ME pre-flight grep；(F005) systemd-timer 触发 SQLite snapshot → gzip → GCS 30 daily + 12 monthly retention + restore script，需用户先做 VM SA scope 扩展（manual prereq, ~30-60s 跨服务下线）；(F006) Codex L1 + L2 真 VM 验收 + observability (enriched /api/health + 结构化 log + 可选 Sentry) + signoff。**禁止引入：** 任何业务页面 / 执行 UI / 多用户 / 注册 / broker SDK / paper or live URL / Cloud SQL / Postgres。`trade/` 包保持纯 stdlib；workbench/ 独立。预估 2-3 周。用户已完 B021 prep 5/5（OAuth client + rotated secret + DNS A + VM deploy 用户 + GCS bucket + 7 GitHub Secrets 含 2 placeholder 已被替换）。下一个 manual action 是 F005 的 VM SA scope 扩展。",
-  "total_features": 6,
-  "completed_features": 6,
-  "fix_rounds": 5,
-  "current_sprint": "F006",
+  "status": "building",
+  "user_goal": "B021 cloud deploy & auth 已签收（commit a02fb69，5 fix-rounds 后 PASS），workbench live at https://trade.guangai.ai 含 OAuth + SQLite + 系统化 deploy + 备份 + 可观测。按 ADR + B022 spec（已 2026-05-17 更新含 cloud + auth + Repository adaptation 段）起 B022 Research Workbench Phase 1。本批次 14 features 在 B020+B021 基础设施之上建 7 read-mostly 业务页 + 最小必要 write：(F001) shadcn/ui init + 金融预配 (Inter + JetBrains Mono + #00c853/#ff3b30 P&L 色 + Zinc dark + tabular-nums) + 装 AG Grid Community + lightweight-charts + ECharts；(F002) OpenAPI ↔ TS pipeline extend 覆盖 7 endpoint schemas；(F003) Shell layout extend：TopBar + SideNav + ThemeProvider（B021 已有 Footer + middleware + /(protected)/ 不重写）；(F004) Chart 组件库 wrappers（5 个：Equity/Drawdown/Heatmap/Pie/Bar）+ /dev/charts 页；(F005) AG Grid DataTable wrapper + CSV export + 5 reusable 列定义；(F006-F012) 7 个 vertical slice 页（Home / Strategies / Backtest with ResizablePanel 单页 split / Reports markdown 渲 / Recommendations 出 ticket 不下单 / Snapshots refresh SSE / Backlog CRUD + git auto-commit）；(F013) workbench README + 7 页截图 + architecture 文档 + branch protection 指引；(F014) Codex L1 (CI) + L2 真 VM 10 项验收 + signoff。**禁止引入：** 任何执行 UI / 订单 / 多用户 / 注册 / broker SDK / paper or live URL / Cloud SQL / Postgres（B023 + 永久 non-MVP）。所有 fetch 用 same-origin /api/* 路径（framework v0.9.24 #3）；所有 API endpoint 在 require_authenticated_user 后；读 SQLite via Repository（B021 F002 已有）非直读文件。F001-F013 generator，F014 codex。预估 5-6 周。",
+  "total_features": 14,
+  "completed_features": 0,
+  "fix_rounds": 0,
+  "current_sprint": "F001",
   "last_updated": "2026-05-17",
   "reference_docs": [
+    "docs/specs/B022-workbench-phase1-spec.md",
     "docs/specs/B021-cloud-deploy-auth-spec.md",
     "docs/specs/B020-dev-infrastructure-spec.md",
-    "docs/specs/B022-workbench-phase1-spec.md",
     "docs/adr/2026-05-15-workbench-direction.md",
     "docs/dev/B021-vm-setup-runbook.md",
     "docs/dev/workbench-architecture.md",
     "docs/dev/branch-protection-guidance.md",
+    "docs/dev/codex-policies.md",
+    "docs/dev/workbench-testing-strategy.md",
     "docs/prd/mvp-prd.md",
-    "docs/test-reports/B020-dev-infrastructure-signoff-2026-05-15.md",
+    "docs/test-reports/B021-cloud-deploy-auth-signoff-2026-05-17.md",
+    "docs/research/2026-05-15-workbench-template-research.md",
     "docs/engineering/no-live-safety-guards.md",
     "docs/engineering/testing-and-fixture-policy.md",
     "framework/CHANGELOG.md",
-    "framework/harness/generator.md",
-    ".github/workflows/workbench-backend.yml",
-    ".github/workflows/workbench-frontend.yml"
+    "framework/harness/planner.md",
+    "framework/harness/generator.md"
   ],
   "docs": {
-    "spec": "docs/specs/B021-cloud-deploy-auth-spec.md",
+    "spec": "docs/specs/B022-workbench-phase1-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B021-cloud-deploy-auth-signoff-2026-05-17.md",
+    "signoff": null,
     "framework_reviewed": true
   },
   "role_assignments": null,
-  "evaluator_feedback": "B021 F006 signoff 2026-05-17: PASS. L1 green: backend pytest 73/73, ruff, mypy 52 files; frontend vitest 21/21, lint, typecheck, build, Playwright 2/2, dev rewrite /api/health probe 200 with --noproxy. L2 green: production /api/health 200 with enriched fields and version 4eb9c48; deployed SHA differs from HEAD ee9b4ce only by state files (.auto-memory/project-status.md, progress.json), so no product drift; Chrome production home after allowlisted login shows Backend ok build 4eb9c48; VM workbench services active with CPUQuota=200%, MemoryMax=2G, OOMScoreAdjust=500; GCS daily backups present; nginx and PM2 neighbors online. Soft-watch: real non-allowlist Google browser attempt unavailable; L1 allowlist rejection tests cover callback/JWT behavior.",
-  "generator_handoff": "Codex F006 复验请关注（commits 1bc6386 + e5fac77，CI 全绿）：(1) B021-F006-1 fix — workbench_api/observability/ 包落地（logging.py JSON formatter + REQUEST_ID_VAR/USER_ID_VAR contextvars；middleware.py 纯 ASGI RequestIDMiddleware 处理 X-Request-ID 透传 + contextvar reset；active_users.py 单进程 in-memory 15min window 注册表；backup_status.py 解析 backup.log 末尾 OK 行返回 (age, size)；sentry.py 可选 SENTRY_DSN gate，unset → no-op，SDK 缺失 → warn 不 crash）。/api/health 加 uptime_seconds + last_backup_age_seconds + last_backup_size_bytes + active_user_count；auth dep 成功时 stash request.state.user_id + USER_ID_VAR + active_users.touch(email)；app.py 用 asynccontextmanager lifespan（替 deprecated on_event）启动期 setup_logging + init_sentry。Settings allowlist 加 SENTRY_DSN / WORKBENCH_BACKUP_LOG / WORKBENCH_LOG_DIR。(2) B021-F006-2 fix — test_health.py:35 加 pytest.MonkeyPatch + Path 注解；pyproject [tool.mypy] files 扩为 [workbench_api, tests] 防 drift；CI workflow mypy 命令改为裸 `python -m mypy` 让 pyproject 控制 scope。L1 evidence: backend pytest 67/67 (含 22 个 observability 新测) + ruff/mypy 全清 51 files；frontend vitest 20/20 + lint/typecheck/build/Playwright 全绿。**L2 真 VM 现可推进**（用户已完成 3 manual prereq：certbot + VM SA scope + systemd units 装) — 验收覆盖浏览器 OAuth happy path / 非 allowlist 拒 / curl /api/health 含 6 字段 + version=git rev-parse HEAD / systemctl show 三隔离 knob / GCS 至少 1 backup / 邻居 nginx-kolquest-aigcgateway 未受影响。",
+  "evaluator_feedback": null,
+  "generator_handoff": null,
   "session_notes": {
-    "planner": "2026-05-15 B020 done wrap-up + B021 立项一气呵成。(1) project-status.md 校验：Codex F005 已更新；B021 转批一并把 completed_features 从陈旧的 4 重置为 B021 的 0。(2) framework/proposed-learnings.md 3 条 B020 候选全部 Accept + 沉淀到 framework/harness/generator.md §9-11（Playwright dev prereq / GHA Node 24 forward-compat / ruff SIM300 trap），同时立即把 FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true 应用到 .github/workflows/workbench-{backend,frontend}.yml 顶层 env；CHANGELOG v0.9.23 + archive v0.9.23 写完。(3) B021 spec docs/specs/B021-cloud-deploy-auth-spec.md，6 features 纯基础设施层。(4) features.json 6 features：F001 OAuth / F002 SQLite+Alembic+Repo / F003 systemd+nginx+certbot / F004 CI/CD push→SSH→healthcheck→rollback / F005 SQLite→GCS backup（需用户先做 scope 扩展）/ F006 Codex L1+L2+signoff。F001-F005 generator，F006 codex。(5) progress.json done → building / current_sprint=F001。(6) 用户 B021 prep 5/5 ✅：OAuth + rotated secret + DNS + VM deploy + GCS bucket + 7 GitHub Secrets（2 placeholder 已被 user 替换 06:52-53Z）。**Manual prereq B021 F005 还差 VM SA scope 扩展**，~30-60s 跨服务下线，用户低峰窗口做。Generator 接 F001（OAuth + NextAuth 装 + 后端 JWT 验证）。",
-    "generator": "2026-05-17 fix-round 5（commit 4eb9c48）。Codex 2026-05-17 reverify 用 Chrome remote debugging 跑通 OAuth happy path（session=tripplezhou@gmail.com / /api/protected-test 200），但发现登录后首页显示 'Backend unreachable: Failed to fetch'。根因：`src/app/(protected)/page.tsx` 默认 HEALTH_URL `http://127.0.0.1:8723/api/health`（NEXT_PUBLIC_WORKBENCH_HEALTH_URL 没注入），浏览器在 prod 把这条 URL 指向**用户本机**（不是 VM），所以连接失败。修法三连：(1) page.tsx HEALTH_URL 改为 same-origin 相对路径 `/api/health`，删除 env-var override（不再需要）；(2) next.config.mjs 加 dev-only `rewrites()` 把 `/api/health` + `/api/protected-test` 代理到 backend loopback——/api/auth/* 绝不在 rewrite 列表（仍是 Next.js Route Handler）；production 不受影响（nginx /api/ 先抓直转 backend）；(3) 新 safety regression `tests/safety/no-hardcoded-backend-host.spec.ts` 扫 src/ 任何 `http://127.0.0.1:872X` 或 `http://localhost:872X` literal 即 fail，vitest.config.ts include 同步。本地 typecheck/lint/vitest 21/21（+1 新 safety）/build/dev probe（curl http://127.0.0.1:3221/api/health → backend JSON via rewrite）全绿。CI 全绿 → workbench-deploy.yml 自动跑，production /api/health 现 `version=4eb9c48`。浏览器登录后首页应显示 `Backend: ok (build 4eb9c48...)`。**整批回顾（5 rounds）：** F006 observability（round-1）/ nginx /api/auth 拆 + RELEASE_SHA marker（round-2）/ nginx-sync workflow + ExecStart 路径 + PORT 3003 + Auth.js secret/trustHost（round-3）/ buildAuthConfig + Auth.js v5 GET sign-in = UnknownAction（round-4）/ same-origin health probe + dev rewrites + no-hardcoded-host safety guard（round-5）。Codex L2 待重跑：浏览器登录后看首页 Backend OK + 非 allowlist reject（如有 non-allowlisted Google 账号可用）。",
-    "evaluator": "2026-05-17 B021 F006 signed off. L1 green: backend pytest 73/73 + ruff + mypy 52 files; frontend vitest 21/21 + lint/typecheck/build + Playwright 2/2; local dev rewrite /api/health returned backend JSON when curl bypassed local proxy via --noproxy. L2 green: production /api/health 200 version=4eb9c48 with enriched fields; HEAD ee9b4ce differs only in state files, so deployed artifact equivalent; production Chrome page after allowlisted login shows Backend ok build 4eb9c48; VM systemd limits active (CPUQuotaPerSecUSec=2s, MemoryMax=2147483648, OOMScoreAdjust=500); GCS daily backups present; nginx + PM2 neighbors online. Soft-watch only: no non-allowlisted interactive Google account available for real browser rejection test; L1 covers non-allowlist callback/JWT rejection.",
-    "planner_2": "2026-05-16 Planner unblocked B021 F006 L2 under user authorization. The blocker was deeper than 'Codex missing SSH key' — B021 spec implicitly assumed first-time VM bootstrap had already happened, but the workflow only handles incremental redeploys. Bootstrap journey: (1) Installed Python 3.11 + dirs + systemd units + nginx vhost + Let's Encrypt cert (webroot, non-interactive) + logrotate + uvicorn-logging.json + deploy scripts on VM via SSH as tripplezhou. (2) Populated /etc/workbench/workbench.env via new .github/workflows/bootstrap-env.yml workflow_dispatch — reads 4 sensitive secrets from GitHub vault (OAuth client_id, OAuth client_secret, NEXTAUTH_SECRET, ALLOWED_USER_EMAIL) + 4 non-sensitive literals, SCPs to deploy@:~/.bootstrap/workbench.env, Planner moves to /etc/workbench/workbench.env via sudo install -m 640 root:deploy. Zero leak path: secrets never transit chat / CLI args / git. (3) VM SA scope devstorage.read_only → cloud-platform via Compute REST API (stop / setServiceAccount / start, used VM-issued access token from gcloud auth print-access-token; ~70s cross-service downtime, all neighbors recovered). (4) First-deploy CI chain had 6 retry rounds (each Planner fix below); finally clean on retry-7. **Framework candidates queued (7 items for B021 done wrap-up):** [#1] First-time VM bootstrap is not specced anywhere in B021; future cloud-deploy batches need an explicit F0XX-bootstrap feature with apt deps / dirs / venv / unit install / cert / env file. [#2] /etc/<app>/ dir traversal — if app user is not root and not in the file owner group, dir needs chmod 755 (or 750 root:appgroup) to let the app `open()` config files. We had dir 750 root:root, file 644, app user deploy → uvicorn 'config file does not exist'. [#3] systemctl restart of multiple services in ONE command must each be in sudoers; per-service whitelist requires per-service invocation. Spec the deploy.sh accordingly. [#4] PrivateTmp=true + snap-confined binaries don't mix; snap can't see systemd private /tmp namespace. [#5] snap-confine fails under systemd non-root services (needs cap_dac_override stripped by NoNewPrivileges); install Cloud CLI tools via apt, not snap, for systemd consumption. [#6] DEPLOY_SSH_KNOWN_HOSTS was missing from the B021 prep #5 checklist (only 7 of 8 secrets listed); the deploy workflow needs known_hosts to scp without interactive trust prompt. [#7] Pre-flight PLACEHOLDER-REPLACE-ME grep should be scoped to deployable source (workbench/) not whole repo — docs/specs/runbooks discussing the check semantically trip the check. **Generator-domain soft-watch:** /api/health 'version' field returns 'dev' instead of git_sha; either deploy.sh should write the SHA into a file the app reads, or systemd unit should `Environment=GIT_SHA=...` (workflow_run has head_sha available). Codex can flag as F006 soft-watch S1 or close as out-of-scope for B021. Codex L2 has full reachability now: deploy@VM via ~/.ssh/trade-deploy (= DEPLOY_SSH_PRIVATE_KEY secret); external https://trade.guangai.ai/api/health 200 with 6 obs fields; gs://.../daily/ has 2 backup objects; systemctl show quota knobs all confirmed; nginx + pm2 + docker neighbors all unaffected (verified post-reboot)."
+    "planner": "2026-05-17 B021 done wrap-up + B022 立项一气呵成。(1) project-status.md 校验：Codex 已更新到 done（progress.json status=done + signoff 路径）。(2) framework/proposed-learnings.md 8 候选归并为 3 groups + 1 sub-pattern，用户全 accept：Group A → planner.md §Cloud-deploy spec checklist（first-time bootstrap feature 必含 + 8 GitHub Secrets 含 DEPLOY_SSH_KNOWN_HOSTS）；Group B → generator.md §12 systemd+Linux infra gotchas 四子节（/etc/<app>/ traversal / systemctl 多 service vs sudoers / PrivateTmp+snap / snap-confine+systemd → apt 装 cloud CLI）；Group C → generator.md §13 Frontend SSR vs Browser context（same-origin + NEXT_PUBLIC_ build-time + regression test 守 build artifact）；Sub-pattern 扩 generator.md §10（PLACEHOLDER grep scope to deployable source）。CHANGELOG v0.9.24 + archive v0.9.24 写完。(3) B021 signoff Soft-watch S2 处理：创建 3 stub 文件解 AGENTS.md dangling refs — docs/dev/codex-policies.md (6 节 Codex testing policy matrix) + scripts/test/codex-{setup,wait}.sh (workbench foreground PTY boot + health-poll wait)。(4) B022 spec docs/specs/B022-workbench-phase1-spec.md 头加 2026-05-17 Status 修订 + §Cloud+auth+Repository adaptation 段（详列 B020+B021 已交付的 8 surface + F001 改为 shadcn/ui init on existing tree 不 clone template + 所有 F006-F012 vertical slice 必须 same-origin fetch + auth-gated + Repository read）。(5) features.json 14 features rewrite for B022。F001 改为 shadcn/ui init + 财务预配 + 组件库装；F002 OpenAPI extend；F003 Shell extend加 TopBar/SideNav；F004 charts；F005 table；F006-F012 7 vertical slices；F013 docs；F014 codex L1+L2 10 项。(6) progress.json done → building / current_sprint=F001。Generator 接 F001（shadcn init + 财务预配 + 组件库装）。注：B022 不需新增 user-side prep — cloud + OAuth + DB + deploy 全在 B021 prep 已就位；只剩 F001 install + 业务 page 建。",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",
@@ -44,6 +45,14 @@
     "F003",
     "F004",
     "F005",
-    "F006"
+    "F006",
+    "F007",
+    "F008",
+    "F009",
+    "F010",
+    "F011",
+    "F012",
+    "F013",
+    "F014"
   ]
 }
