@@ -31,6 +31,12 @@ for (const item of NAV_ITEMS) {
   });
 }
 
+test("Strategies page renders the list card + export button (B022 F007)", async ({ page }) => {
+  await page.goto("/strategies");
+  await expect(page.getByTestId("strategies-list-card")).toBeVisible();
+  await expect(page.getByTestId("strategies-export-csv")).toBeVisible();
+});
+
 test("Home page surfaces the 4 dashboard cards (B022 F006)", async ({ page }) => {
   await page.goto("/");
   // Cards render synchronously with skeleton "—" values; the F006

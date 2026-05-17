@@ -58,8 +58,9 @@ def _authed_client() -> TestClient:
 # keep auth-gate coverage there (anon → 401) so the boundary doesn't
 # silently regress when the handler grows.
 STUB_ROUTES: list[tuple[str, str, dict[str, Any] | None, str, int]] = [
-    ("get", "/api/strategies", None, "F007", 501),
-    ("get", "/api/strategies/B013-quarterly", None, "F007", 501),
+    # /api/strategies + /api/docs are no longer stubs — B022 F007 ships
+    # the handlers; targeted coverage lives in tests/unit/test_strategies.py
+    # and tests/unit/test_docs.py respectively.
     (
         "post",
         "/api/backtests/run",
@@ -76,7 +77,6 @@ STUB_ROUTES: list[tuple[str, str, dict[str, Any] | None, str, int]] = [
     ("get", "/api/backtests/run-1", None, "F008", 501),
     ("get", "/api/reports", None, "F009", 501),
     ("get", "/api/reports/B019-retune", None, "F009", 501),
-    ("get", "/api/docs/docs/specs/B019.md", None, "F009", 501),
     ("get", "/api/recommendations/current", None, "F010", 501),
     (
         "post",

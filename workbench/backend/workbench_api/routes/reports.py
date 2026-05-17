@@ -1,15 +1,20 @@
-"""Stub router for ``/api/reports`` + ``/api/docs/{path}`` — F002 schema, F009 body."""
+"""Router for ``/api/reports`` (F009 stubs) + ``/api/docs/{path}`` (F007 body)."""
 
 from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from workbench_api.auth.dependency import require_authenticated_user
 from workbench_api.auth.jwt_validator import AuthenticatedUser
 from workbench_api.routes._stub import not_implemented
 from workbench_api.schemas.reports import DocsResponse, ReportDetail, ReportListResponse
+from workbench_api.services.docs import (
+    DocsNotFoundError,
+    InvalidDocsPathError,
+    load_doc,
+)
 
 router = APIRouter(tags=["reports"])
 
@@ -28,9 +33,13 @@ def get_report(slug: str, _user: AuthenticatedUserDep) -> ReportDetail:
 
 
 # /api/docs/{path:path} captures nested repo paths (e.g. docs/specs/B019.md).
-# Per spec the handler sanitises path traversal; the stub returns 501 so the
-# attack surface is not live until F009 ships the sanitiser.
+# B022 F007 ships the sanitiser so the Strategies page's spec/code buttons
+# resolve; F009 reuses this endpoint for the Reports page's body rendering.
 @router.get("/docs/{file_path:path}", response_model=DocsResponse)
 def get_docs(file_path: str, _user: AuthenticatedUserDep) -> DocsResponse:
-    del file_path
-    raise not_implemented("F009")
+    try:
+        return load_doc(file_path)
+    except InvalidDocsPathError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    except DocsNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc

@@ -21,7 +21,21 @@ export default defineConfig({
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "retain-on-failure",
+    // Dev-mode `next dev` compiles routes on first hit; the strategies
+    // page in particular pulls in AG Grid + 3 chart wrappers and easily
+    // pushes first-paint past Playwright's default 30s. The production
+    // build doesn't have this lag but we run E2E against the dev server
+    // (so the rewrite proxy + HMR are intact). Bumping the per-test
+    // navigation timeout absorbs the cold compile without slowing the
+    // happy path; warm hits stay sub-second.
+    navigationTimeout: 90_000,
+    actionTimeout: 15_000,
   },
+  timeout: 120_000,
+  // `expect(...)` matchers default to 5s; the click-navigation test
+  // hops across 7 routes where some need a cold compile, so bump the
+  // matcher timeout to match `actionTimeout`.
+  expect: { timeout: 15_000 },
   projects: [
     // 1. Mint the session storageState used by the authed project below.
     //    Lives in its own project so the storage file is regenerated

@@ -68,8 +68,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Strategies */
-        get: operations["list_strategies_api_strategies_get"];
+        /** List Strategies Route */
+        get: operations["list_strategies_route_api_strategies_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -85,8 +85,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Strategy */
-        get: operations["get_strategy_api_strategies__strategy_id__get"];
+        /** Get Strategy Route */
+        get: operations["get_strategy_route_api_strategies__strategy_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1059,7 +1059,7 @@ export interface operations {
             };
         };
     };
-    list_strategies_api_strategies_get: {
+    list_strategies_route_api_strategies_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -1079,7 +1079,7 @@ export interface operations {
             };
         };
     };
-    get_strategy_api_strategies__strategy_id__get: {
+    get_strategy_route_api_strategies__strategy_id__get: {
         parameters: {
             query?: never;
             header?: never;

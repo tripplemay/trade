@@ -54,7 +54,7 @@
       "title": "Strategies page vertical slice",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Backend GET /api/strategies + /api/strategies/{id}（auth gated）返 sleeve 列表 + per-strategy 详情含 provenance（spec / code / last sweep 链接）。Frontend (protected)/strategies/page.tsx：DataTable 列表 + per-strategy detail panel（config card + equity curve + drawdown + turnover heatmap + perf comparison）。可 ?selected=B013 URL param。strategy registry 从 trade/ 通过 backend adapter 暴露 4 sleeves with B019 默认（B013 quarterly/0.11，其它不变）。CSV export 工作；spec/code 链按钮经 /api/docs/{path} 后端服务（含 path traversal sanitization）。"
     },
     {
