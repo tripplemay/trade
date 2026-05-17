@@ -22,6 +22,7 @@ EXPECTED_ALLOWLIST: frozenset[str] = frozenset(
         "WORKBENCH_BACKUP_LOG",
         "WORKBENCH_LOG_DIR",
         "WORKBENCH_REPORTS_DIR",
+        "WORKBENCH_RUNS_DIR",
     }
 )
 

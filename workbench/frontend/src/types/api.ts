@@ -187,8 +187,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Current Recommendations */
-        get: operations["get_current_recommendations_api_recommendations_current_get"];
+        /** Get Current Recommendations Route */
+        get: operations["get_current_recommendations_route_api_recommendations_current_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -206,8 +206,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Export Ticket */
-        post: operations["export_ticket_api_recommendations_export_ticket_post"];
+        /** Export Ticket Route */
+        post: operations["export_ticket_route_api_recommendations_export_ticket_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1256,7 +1256,7 @@ export interface operations {
             };
         };
     };
-    get_current_recommendations_api_recommendations_current_get: {
+    get_current_recommendations_route_api_recommendations_current_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -1276,7 +1276,7 @@ export interface operations {
             };
         };
     };
-    export_ticket_api_recommendations_export_ticket_post: {
+    export_ticket_route_api_recommendations_export_ticket_post: {
         parameters: {
             query?: never;
             header?: never;

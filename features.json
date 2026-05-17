@@ -78,7 +78,7 @@
       "title": "Recommendations page vertical slice + export markdown ticket",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Backend GET /api/recommendations/current（auth）：从 SQLite via Repository 读 accounts/me.json 数据 + 最新 snapshot + master portfolio config → 跑 master 在最新 signal date → 返 TargetPositions + diff vs current + gate checks + wash-sale flags（启发式：journal 30 天内同 symbol 买入）。POST /api/recommendations/export-ticket 写 markdown checklist 到 docs/runs/<date>/order-ticket-<date>.md 返路径；**绝不下任何单**。Frontend (protected)/recommendations/page.tsx：AllocationPie + AllocationBar + positions table + rationale + gate panel + wash-sale flags + Export Markdown Ticket 按钮。Empty state if accounts/me.json 缺。Unit test 断言 export ticket 含字面字符串 'research-only; this is a manual review checklist, not a trading instruction'。"
     },
     {

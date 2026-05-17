@@ -23,6 +23,7 @@ ALLOWED_ENV_VARS: frozenset[str] = frozenset(
         "WORKBENCH_BACKUP_LOG",
         "WORKBENCH_LOG_DIR",
         "WORKBENCH_REPORTS_DIR",
+        "WORKBENCH_RUNS_DIR",
     }
 )
 """Environment variables the workbench backend is permitted to read.
@@ -48,6 +49,13 @@ override via systemd EnvironmentFile when reports are staged elsewhere.
 A missing or empty directory degrades to an empty list (the handler
 treats "no reports surfaced" as a valid empty state, not an error).
 """
+DEFAULT_RUNS_DIR: str = "docs/runs"
+"""B022 F010 — Recommendations export-ticket writes here.
+
+Exported markdown checklists land under ``<runs>/<date>/order-ticket-<date>.md``.
+The directory is created on demand. Production deploy may override to
+point at a writeable mount outside the read-only release tarball.
+"""
 
 
 class Settings(BaseSettings):
@@ -70,6 +78,8 @@ class Settings(BaseSettings):
     WORKBENCH_LOG_DIR: str = DEFAULT_LOG_DIR
     # B022 F006 — directory the Dashboard scans for `recent_reports`.
     WORKBENCH_REPORTS_DIR: str = DEFAULT_REPORTS_DIR
+    # B022 F010 — directory the Recommendations export-ticket writes to.
+    WORKBENCH_RUNS_DIR: str = DEFAULT_RUNS_DIR
 
     model_config = SettingsConfigDict(
         env_file=None,

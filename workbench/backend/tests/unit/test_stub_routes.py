@@ -65,14 +65,9 @@ STUB_ROUTES: list[tuple[str, str, dict[str, Any] | None, str, int]] = [
     # runner; targeted coverage lives in tests/unit/test_backtests.py.
     # /api/reports are no longer stubs — B022 F009 ships the list + detail
     # handlers; coverage in tests/unit/test_reports.py.
-    ("get", "/api/recommendations/current", None, "F010", 501),
-    (
-        "post",
-        "/api/recommendations/export-ticket",
-        {"as_of_date": "2026-05-17"},
-        "F010",
-        501,
-    ),
+    # /api/recommendations are no longer stubs — B022 F010 ships the
+    # current + export-ticket handlers; coverage in
+    # tests/unit/test_recommendations.py.
     ("get", "/api/snapshots", None, "F011", 501),
     ("post", "/api/snapshots/refresh", None, "F011", 501),
     ("get", "/api/backlog", None, "F012", 501),
