@@ -2,13 +2,65 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: dark;
+/*
+ * Zinc-based dark palette committed in B022 F001.
+ *
+ * `<html class="dark">` is hardcoded in app/layout.tsx (workbench ships
+ * dark-first; ThemeProvider switching lands in F003), so the `.dark`
+ * block carries the canonical token values. `:root` mirrors them so
+ * pages that render before hydration still use the dark surface.
+ *
+ * P&L tokens (--color-up / --color-down) are direct hex per the design
+ * decision in docs/specs/B022-workbench-phase1-spec.md §Style / UX
+ * defaults; they are not part of the HSL theme triplet but ride along
+ * here so Tailwind's `text-up` / `bg-down` utilities work without an
+ * extra var-to-hsl conversion.
+ */
+:root,
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 240 5.9% 10%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --ring: 240 4.9% 83.9%;
+  --radius: 0.5rem;
+  --color-up: #00c853;
+  --color-down: #ff3b30;
 }
 
-html,
-body {
-  background-color: #0a0a0a;
-  color: #e5e5e5;
-  min-height: 100vh;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    color-scheme: dark;
+  }
+}
+
+@layer utilities {
+  /*
+   * Apply to any element rendering numeric data (prices, percentages,
+   * basis points, quantities). Forces JetBrains Mono + tabular-nums
+   * so column alignment is exact in AG Grid / Charts / KPI cards.
+   */
+  .numeric {
+    font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
 }

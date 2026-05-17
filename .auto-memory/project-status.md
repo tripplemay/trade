@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B022-workbench-phase1：`building`**；Generator 接 F001（shadcn/ui init + 金融预配 + 装 AG Grid Community + lightweight-charts + ECharts，保留 B021 已交付 Footer/middleware/auth），共 14 features 完成 0。预估 5-6 周。
+- **B022-workbench-phase1：`building`**；F001 已 完成（shadcn for TW3 手装 + 10 UI 组件 + Inter/JetBrains Mono next/font + Zinc dark + --color-up/down + AG Grid + lightweight-charts + ECharts；lint/tsc/21 vitest/build 全绿），Generator 接 F002（OpenAPI ↔ TS pipeline extend 7 endpoint schemas）。共 14 features 完成 1。预估 5-6 周。
 - Spec：`docs/specs/B022-workbench-phase1-spec.md`（2026-05-17 已加 §Status + §Cloud+auth+Repository adaptation 段，标 ready to execute）
 - 范围：7 read-mostly 业务页（Home / Strategies / Backtest / Reports / Recommendations / Snapshots / Backlog）+ 最小必要 write（snapshot refresh / backlog CRUD / 触发 backtest / 导出 target positions Markdown）+ 5 chart 组件 + AG Grid table 组件 + workbench 文档+截图 + Codex L1+L2 真 VM 10 项验收。
 - B020+B021 已交付的 8 surface F001 必须复用不重写：workbench skeleton / CI workflows / OpenAPI pipeline / NextAuth + 后端 JWT + allowlist / SQLite + Alembic + Repository + workbench-bootstrap CLI / systemd+nginx+cert / GHA deploy/rollback / SQLite→GCS backup / 观测层。

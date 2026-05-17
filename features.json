@@ -6,7 +6,7 @@
       "title": "shadcn/ui init + financial pre-config + component library install（重写自原 template-clone）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "在 workbench/frontend/ 上 (1) npx shadcn@latest init 保留现有 Footer/layout/middleware（B021 已交付不重写）；(2) selectively add 核心组件 Button/Card/Dialog/Toast/Tabs/Table/Sheet/Input/Select/Tooltip；(3) 金融预配置：Inter UI + JetBrains Mono numeric via next/font/google + tabular-nums on .numeric class + P&L tokens --color-up=#00c853 / --color-down=#ff3b30 + compact density (Tailwind padding/Button heights) + Zinc dark theme；(4) 装 AG Grid Community + TradingView lightweight-charts + ECharts；(5) npm run build clean + 无 peer-dep warning + B021 既有 Playwright disclaimer regression 全过；(6) 若 shadcn/Next 15/Tailwind v4 ecosystem 不兼容 fall back to Next 14 + Tailwind 3 + shadcn-for-tw3（已有）+ 文档化 fall-back 到 ADR addendum。详见 docs/specs/B022-workbench-phase1-spec.md §F001 + §Status §Cloud+auth+Repository adaptation。"
     },
     {
