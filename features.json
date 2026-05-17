@@ -86,7 +86,7 @@
       "title": "Snapshots page vertical slice + refresh with SSE progress",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Backend GET /api/snapshots（auth）从 SnapshotMeta repo 读列表 + quality status；POST /api/snapshots/refresh 跑 scripts/refresh_public_snapshot subprocess 经 SSE 流式 progress；完成后 insert SnapshotMeta row 同时 file 写盘。Frontend (protected)/snapshots/page.tsx：DataTable + Refresh 按钮触发 modal 流 SSE events；完成 list re-fetch + toast 成功/失败。Vitest mock subprocess (2-second canned)；SSE events 渲染。失败 toast 含底层 error message。"
     },
     {

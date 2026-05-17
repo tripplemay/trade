@@ -68,8 +68,8 @@ STUB_ROUTES: list[tuple[str, str, dict[str, Any] | None, str, int]] = [
     # /api/recommendations are no longer stubs — B022 F010 ships the
     # current + export-ticket handlers; coverage in
     # tests/unit/test_recommendations.py.
-    ("get", "/api/snapshots", None, "F011", 501),
-    ("post", "/api/snapshots/refresh", None, "F011", 501),
+    # /api/snapshots are no longer stubs — B022 F011 ships list + SSE
+    # refresh; coverage in tests/unit/test_snapshots.py.
     ("get", "/api/backlog", None, "F012", 501),
     ("post", "/api/backlog", {"title": "X"}, "F012", 501),
     ("patch", "/api/backlog/BL-1", {"title": "Y"}, "F012", 501),
@@ -161,7 +161,9 @@ def test_openapi_registers_all_b022_schemas(initialised_db: str) -> None:
         "ExportTicketResponse",
         "SnapshotListResponse",
         "SnapshotSummary",
-        "SnapshotRefreshResponse",
+        # SnapshotRefreshResponse 不再 registered — B022 F011 changed
+        # POST /snapshots/refresh to return text/event-stream (SSE), so
+        # the JSON response_model is no longer wired into OpenAPI.
         "BacklogListResponse",
         "BacklogEntry",
         "BacklogCreateRequest",

@@ -221,8 +221,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Snapshots */
-        get: operations["list_snapshots_api_snapshots_get"];
+        /** List Snapshots Route */
+        get: operations["list_snapshots_route_api_snapshots_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -240,8 +240,15 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Refresh Snapshots */
-        post: operations["refresh_snapshots_api_snapshots_refresh_post"];
+        /**
+         * Refresh Snapshots Route
+         * @description POST /api/snapshots/refresh — streams SSE progress events.
+         *
+         *     The synthetic generator yields 5 stages; the final ``complete``
+         *     stage inserts/updates a SnapshotMeta row before the event reaches
+         *     the client so a subsequent GET shows the refreshed entry.
+         */
+        post: operations["refresh_snapshots_route_api_snapshots_refresh_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -785,21 +792,6 @@ export interface components {
             snapshots: components["schemas"]["SnapshotSummary"][];
         };
         /**
-         * SnapshotRefreshResponse
-         * @description POST /api/snapshots/refresh acknowledgement (SSE streams progress).
-         */
-        SnapshotRefreshResponse: {
-            /** Job Id */
-            job_id: string;
-            /**
-             * Status
-             * @description 'started' / 'failed_to_start'.
-             */
-            status: string;
-            /** Detail */
-            detail?: string | null;
-        };
-        /**
          * SnapshotSummary
          * @description Row in the snapshots list view.
          */
@@ -1309,7 +1301,7 @@ export interface operations {
             };
         };
     };
-    list_snapshots_api_snapshots_get: {
+    list_snapshots_route_api_snapshots_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -1329,7 +1321,7 @@ export interface operations {
             };
         };
     };
-    refresh_snapshots_api_snapshots_refresh_post: {
+    refresh_snapshots_route_api_snapshots_refresh_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -1344,7 +1336,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SnapshotRefreshResponse"];
+                    "application/json": unknown;
                 };
             };
         };
