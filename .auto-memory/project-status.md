@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B022-workbench-phase1：`building`**；F001-F003 完成（shadcn TW3 + 10 UI 组件 / 7 endpoint group schemas + 37 Pydantic models + 16 stub routes / TopBar+SideNav+ThemeProvider+SessionProvider shell + 6 stub pages + Playwright authed project；backend 106 pytest / frontend 21 vitest + 11 Playwright / 全套 lint/tsc/build 全绿）。Generator 接 F004（5 chart wrappers Equity/Drawdown/Heatmap/Pie/Bar + /dev/charts route）。共 14 features 完成 3。预估 5-6 周。
+- **B022-workbench-phase1：`building`**；F001-F004 完成（shadcn TW3 + 10 UI / 7 endpoint group schemas + 16 stub routes / TopBar+SideNav+ThemeProvider shell + 6 stub pages + Playwright authed project / 5 chart wrappers Equity/Drawdown/Heatmap/Pie/Bar + ChartHandle 接口 + /dev/charts gated showcase；backend 106 pytest / frontend 32 vitest + 11 Playwright / 全套 lint/tsc/build 全绿）。Generator 接 F005（DataTable AG Grid wrapper + 5 reusable columnDefs + CSV export + 1000-row 虚拟化测试）。共 14 features 完成 4。预估 5-6 周。
 - Spec：`docs/specs/B022-workbench-phase1-spec.md`（2026-05-17 已加 §Status + §Cloud+auth+Repository adaptation 段，标 ready to execute）
 - 范围：7 read-mostly 业务页（Home / Strategies / Backtest / Reports / Recommendations / Snapshots / Backlog）+ 最小必要 write（snapshot refresh / backlog CRUD / 触发 backtest / 导出 target positions Markdown）+ 5 chart 组件 + AG Grid table 组件 + workbench 文档+截图 + Codex L1+L2 真 VM 10 项验收。
 - B020+B021 已交付的 8 surface F001 必须复用不重写：workbench skeleton / CI workflows / OpenAPI pipeline / NextAuth + 后端 JWT + allowlist / SQLite + Alembic + Repository + workbench-bootstrap CLI / systemd+nginx+cert / GHA deploy/rollback / SQLite→GCS backup / 观测层。

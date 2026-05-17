@@ -30,7 +30,7 @@
       "title": "Chart component library wrappers（lightweight-charts + ECharts）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新建 workbench/frontend/src/components/chart/{EquityCurveChart,DrawdownChart,SweepHeatmap,AllocationPie,AllocationBar}.tsx：(1) EquityCurveChart lightweight-charts area + 多 series overlay (legend 切换) + brush 选区 emit [startDate,endDate] callback + 十字光标 + PNG 导出（chart.takeScreenshot()）；(2) DrawdownChart lightweight-charts histogram 与 EquityCurveChart 共享 time axis；(3) SweepHeatmap ECharts heatmap；(4) AllocationPie + AllocationBar ECharts；(5) Vitest 单测：每组件 mock props 渲染 + assert DOM 基本存在 + PNG export emits blob (mocked)；(6) /dev/charts 路由（NEXT_PUBLIC_DEV_ROUTES gate）含全部组件示例数据，不可在 production shell 导航。"
     },
     {
