@@ -5,6 +5,26 @@
 
 ---
 
+## v0.9.24 — 2026-05-17（B021 沉淀，3 grouped learnings + PLACEHOLDER scope sub-pattern）
+
+**来源批次：**
+- B021-cloud-deploy-auth F003-F006 fix-round 1-7（commits `e5020ea` 起到 `4eb9c48` 止）
+- Planner 在 user 授权下执行 first-time VM bootstrap 历险（5 个 commit）
+- signoff `docs/test-reports/B021-cloud-deploy-auth-signoff-2026-05-17.md`
+
+**触发原因：**
+- B021 spec 只覆盖 incremental redeploy 流，**没把"第一次把基础设施安到一台空 VM 上"作为 feature**。Codex L2 reverify 时 VM 上 zero 安装，触发 Planner ~2-3h ad-hoc bootstrap，跑通用了 7 轮 retry。每一轮揭一个 spec 缺项（缺 DEPLOY_SSH_KNOWN_HOSTS、缺 pip install、systemctl 多 service 命令对不上 sudoers、/etc/<app>/ 目录权限缺 traversal、snap+systemd 不兼容、frontend hardcode localhost）。
+- 多数都是「spec 一句话」可预防的，但需要 framework 一层固化避免下次 cloud-deploy batch 再踩。
+
+**变更：**
+- 新增 `framework/harness/planner.md` §"Cloud-deploy spec checklist"（覆盖：必含 first-time bootstrap feature 的 7 必做项表格 + workflow_run deploy 必需 8 个 GitHub Secrets 含 DEPLOY_SSH_KNOWN_HOSTS + B021 F006 反面案例时间线）
+- 新增 `framework/harness/generator.md` §12 "systemd + Linux infra 部署 gotchas" 四子节：(12.1) /etc/<app>/ 目录 traversal、(12.2) systemctl restart 多 service vs sudoers、(12.3) PrivateTmp + snap-confined 不兼容、(12.4) snap-confine + systemd capabilities → cloud CLI 走 apt
+- 新增 `framework/harness/generator.md` §13 "Frontend SSR vs Browser context"（NEXT_PUBLIC_* 必须 build-time + same-origin path + regression test 守 build artifact + dev rewrite proxy）
+- 扩 `framework/harness/generator.md` §10 加 "Pre-flight PLACEHOLDER-REPLACE-ME grep 必须 scope to deployable source" sub-pattern
+- 归档 `framework/archive/proposed-learnings-archive-v0.9.24.md`
+
+---
+
 ## v0.9.23 — 2026-05-15（B020 沉淀，3 条 learnings）
 
 **来源批次：**
