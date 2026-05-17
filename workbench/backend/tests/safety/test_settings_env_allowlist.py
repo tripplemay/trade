@@ -21,6 +21,7 @@ EXPECTED_ALLOWLIST: frozenset[str] = frozenset(
         "SENTRY_DSN",
         "WORKBENCH_BACKUP_LOG",
         "WORKBENCH_LOG_DIR",
+        "WORKBENCH_REPORTS_DIR",
     }
 )
 

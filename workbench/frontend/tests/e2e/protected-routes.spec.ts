@@ -31,6 +31,21 @@ for (const item of NAV_ITEMS) {
   });
 }
 
+test("Home page surfaces the 4 dashboard cards (B022 F006)", async ({ page }) => {
+  await page.goto("/");
+  // Cards render synchronously with skeleton "—" values; the F006
+  // contract says all four are present regardless of whether the
+  // /api/dashboard fetch resolves successfully.
+  for (const testId of [
+    "dashboard-card-nav",
+    "dashboard-card-drawdown",
+    "dashboard-card-killswitch",
+    "dashboard-card-rebalance",
+  ]) {
+    await expect(page.getByTestId(testId)).toBeVisible();
+  }
+});
+
 test("clicking each SideNav link navigates without losing the shell", async ({ page }) => {
   // Start at the home route, then walk the nav by clicking each link.
   await page.goto("/");

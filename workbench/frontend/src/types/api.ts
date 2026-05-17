@@ -45,7 +45,13 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Dashboard */
+        /**
+         * Get Dashboard
+         * @description B022 F006 vertical slice — see services.dashboard for the field-by-field
+         *     aggregation rationale. The route stays thin so it can be exercised
+         *     end-to-end via httpx without monkeypatching anything beyond the auth
+         *     + settings dependency overrides.
+         */
         get: operations["get_dashboard_api_dashboard_get"];
         put?: never;
         post?: never;

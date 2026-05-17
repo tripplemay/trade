@@ -52,8 +52,12 @@ def _authed_client() -> TestClient:
 
 
 # (method, path, body, expected feature marker, expected success status_code)
+#
+# /api/dashboard is no longer a stub — B022 F006 ships the real handler.
+# Its end-to-end coverage lives in tests/unit/test_dashboard.py; we still
+# keep auth-gate coverage there (anon → 401) so the boundary doesn't
+# silently regress when the handler grows.
 STUB_ROUTES: list[tuple[str, str, dict[str, Any] | None, str, int]] = [
-    ("get", "/api/dashboard", None, "F006", 501),
     ("get", "/api/strategies", None, "F007", 501),
     ("get", "/api/strategies/B013-quarterly", None, "F007", 501),
     (

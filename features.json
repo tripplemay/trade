@@ -46,7 +46,7 @@
       "title": "Home / Dashboard page vertical slice (auth-gated)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Backend route GET /api/dashboard (require_authenticated_user) 返 {nav, masterDrawdown, killSwitchThreshold, daysToNextRebalance, lastRebalance:{date,fillCount,slippageBps}, recentReports:[{id,title,date,status,path}], actionItems:[{id,severity,message}]}。读 SQLite via Repository（不直读 file）。Frontend (protected)/page.tsx 替换现有 placeholder：4 top cards + recent reports list（链 /reports/[id]）+ action items + empty states。Fetch via same-origin /api/dashboard（per framework v0.9.24 #3）。Vitest mock API；Playwright smoke 加载 + 4 cards 可见；httpx TestClient schema 契约。"
     },
     {

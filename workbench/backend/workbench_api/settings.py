@@ -22,6 +22,7 @@ ALLOWED_ENV_VARS: frozenset[str] = frozenset(
         "SENTRY_DSN",
         "WORKBENCH_BACKUP_LOG",
         "WORKBENCH_LOG_DIR",
+        "WORKBENCH_REPORTS_DIR",
     }
 )
 """Environment variables the workbench backend is permitted to read.
@@ -39,6 +40,14 @@ via the systemd EnvironmentFile (B021 F003).
 
 DEFAULT_BACKUP_LOG_PATH: str = "/var/log/workbench/backup.log"
 DEFAULT_LOG_DIR: str = "/var/log/workbench"
+DEFAULT_REPORTS_DIR: str = "docs/test-reports"
+"""B022 F006 — Dashboard's recent-reports scanner roots here.
+
+Resolved relative to the backend's CWD on the VM; production deploy can
+override via systemd EnvironmentFile when reports are staged elsewhere.
+A missing or empty directory degrades to an empty list (the handler
+treats "no reports surfaced" as a valid empty state, not an error).
+"""
 
 
 class Settings(BaseSettings):
@@ -59,6 +68,8 @@ class Settings(BaseSettings):
     SENTRY_DSN: str | None = None
     WORKBENCH_BACKUP_LOG: str = DEFAULT_BACKUP_LOG_PATH
     WORKBENCH_LOG_DIR: str = DEFAULT_LOG_DIR
+    # B022 F006 — directory the Dashboard scans for `recent_reports`.
+    WORKBENCH_REPORTS_DIR: str = DEFAULT_REPORTS_DIR
 
     model_config = SettingsConfigDict(
         env_file=None,
