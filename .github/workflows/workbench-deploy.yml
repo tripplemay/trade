@@ -125,6 +125,26 @@ jobs:
           # Deploy helpers — deploy.sh / rollback.sh / healthcheck.sh.
           rsync -a workbench/deploy/scripts "${STAGE_DIR}/"
 
+          # B022 F009-1 fix: ship docs/test-reports so the Reports page can
+          # render B019 retune sweep matrix + cross-link to the spec tree.
+          # Without this the production `WORKBENCH_REPORTS_DIR` fallback
+          # (services/dashboard._resolve_reports_dir) cannot find any
+          # markdown reports under the release root and the page returns
+          # an empty list. Sweep matrix sortability + ≥10-row swap to AG
+          # Grid are F009 acceptance items pinned at L2 — they need the
+          # files. Shipping the markdown is small (~50 files, tens of KB
+          # each) so the tarball stays cheap.
+          mkdir -p "${STAGE_DIR}/docs"
+          if [ -d docs/test-reports ]; then
+            rsync -a docs/test-reports "${STAGE_DIR}/docs/"
+          fi
+          # Specs land alongside reports so the docs viewer can resolve
+          # `[B019](docs/specs/B015-…spec.md)` cross-links to /docs/[...path]
+          # without an out-of-release fetch.
+          if [ -d docs/specs ]; then
+            rsync -a docs/specs "${STAGE_DIR}/docs/"
+          fi
+
           # Record the SHA so /api/health (B021 F004 acceptance §3) can echo it
           # alongside whatever git rev-parse returns.
           echo "${RELEASE_SHA}" > "${STAGE_DIR}/RELEASE_SHA"

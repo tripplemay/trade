@@ -34,11 +34,20 @@ class DocsNotFoundError(LookupError):
     """The sanitised path did not resolve to an existing file."""
 
 
-# Walk up from ``workbench_api/services/docs.py`` four ``parents`` levels
-# to land at the repo root. The deploy layout keeps the package at
-# ``workbench/backend/workbench_api/`` so the same arithmetic holds in
-# production (no ``parents[N]`` drift between dev / VM).
-DEFAULT_REPO_ROOT: Path = Path(__file__).resolve().parents[3]
+# Walk up from ``workbench_api/services/docs.py`` five ``parents`` levels
+# to land at the repo root: services/ → workbench_api/ → backend/ →
+# workbench/ → repo. Mirrored from ``workbench_api/cli/bootstrap.py``
+# which uses parents[4] from a file at the same depth. The B022 F014
+# blocker fix corrected the prior parents[3] anchor, which silently
+# stopped at ``workbench/`` and made docs/ / trade/ files inaccessible
+# through ``/api/docs/{path}``.
+#
+# Production note: when the package is installed as a wheel into
+# ``/opt/workbench/.venv``, ``__file__`` points inside site-packages
+# and parents[4] no longer reaches the release tree. The route handler
+# is permitted to pass an explicit ``root=`` to override; B023 may
+# need a settings field if the docs viewer is reused in production.
+DEFAULT_REPO_ROOT: Path = Path(__file__).resolve().parents[4]
 
 
 _CONTENT_TYPE_MAP: dict[str, str] = {

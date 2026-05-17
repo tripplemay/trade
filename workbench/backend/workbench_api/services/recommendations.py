@@ -123,13 +123,44 @@ def get_current_recommendations(session: Session) -> RecommendationsResponse:
     )
 
 
+PROD_RELEASE_CURRENT: Path = Path("/srv/workbench/current")
+"""B021 deploy symlink; presence is the prod marker for _resolve_runs_dir."""
+
+PROD_RUNS_DIR: Path = Path("/var/lib/workbench/runs")
+"""Production-writable runs directory.
+
+The workbench systemd unit (workbench/deploy/systemd/workbench-backend.service)
+declares ``ReadWritePaths=/var/lib/workbench /var/log/workbench /tmp``, so the
+backend can mkdir under ``/var/lib/workbench`` without sudo. B022 F014
+blocker rejected the prior default (``docs/runs`` under the read-only release
+tree) because the export-ticket write path didn't exist in production.
+"""
+
+
 def _resolve_runs_dir(configured: str) -> Path:
+    """Pick the writable directory the export-ticket lands in.
+
+    Resolution order:
+
+    1. ``configured`` is absolute → use as-is.
+    2. ``/srv/workbench/current`` exists (prod) → ``/var/lib/workbench/runs``.
+       The systemd unit's ReadWritePaths grant covers this path; the
+       service can mkdir its own subdirs on demand.
+    3. Otherwise (dev / source checkout) → ``<repo_root>/<configured>``.
+
+    A future operator override is still honoured by passing an absolute
+    ``WORKBENCH_RUNS_DIR``; the chain only kicks in for the default
+    relative value.
+    """
+
     candidate = Path(configured)
     if candidate.is_absolute():
         return candidate
-    # Anchor relative paths at the repo root — same arithmetic as
-    # services.dashboard / services.docs (four ``parents`` from this file).
-    repo_root = Path(__file__).resolve().parents[3]
+    if PROD_RELEASE_CURRENT.exists():
+        return PROD_RUNS_DIR
+    # parents[4] reaches the repo root from services/recommendations.py;
+    # parents[3] (prior value) stopped at `workbench/` and missed docs/.
+    repo_root = Path(__file__).resolve().parents[4]
     return repo_root / candidate
 
 
@@ -211,9 +242,10 @@ def export_ticket(
     target_file.write_text(body_md, encoding="utf-8")
 
     # Try to express the path repo-relative so the response stays
-    # portable across environments.
+    # portable across environments. parents[4] reaches the repo root
+    # (services/ → workbench_api/ → backend/ → workbench/ → repo).
     try:
-        repo_root = Path(__file__).resolve().parents[3]
+        repo_root = Path(__file__).resolve().parents[4]
         rel_path = str(target_file.relative_to(repo_root.resolve()))
     except ValueError:
         rel_path = str(target_file)

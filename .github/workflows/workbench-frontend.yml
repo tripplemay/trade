@@ -97,6 +97,35 @@ jobs:
       - name: Vitest unit
         run: npm test
 
+      - name: Start FastAPI backend (for dev rewrites + API monitor)
+        env:
+          # B022 F014 fix: Playwright's dev-rewrite proxy targets the
+          # FastAPI backend on 127.0.0.1:8723. Without the backend
+          # running, every `/api/*` rewrite returns ECONNREFUSED / 500
+          # and the new protected-routes diagnostic listener (catches
+          # unexpected 4xx/5xx) fails — which is exactly what the
+          # F014 acceptance asks for. Boot uvicorn before Playwright so
+          # the proxied requests round-trip with the same NEXTAUTH_SECRET
+          # the auth-setup project mints against.
+          NEXTAUTH_SECRET: ci-playwright-secret-do-not-use-in-prod
+          ALLOWED_USER_EMAIL: ci-playwright@example.com
+        working-directory: workbench/backend
+        run: |
+          set -euxo pipefail
+          ${{ env.pythonLocation }}/bin/python -m uvicorn workbench_api.app:app \
+            --host 127.0.0.1 --port 8723 --log-level warning \
+            > /tmp/uvicorn-e2e.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8723/api/health > /dev/null 2>&1; then
+              echo "backend ready after ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::FastAPI backend did not start after 30s" >&2
+          cat /tmp/uvicorn-e2e.log >&2
+          exit 1
+
       - name: Playwright E2E smoke (boots dev server via start-server-and-test)
         env:
           # B022 F003 — Playwright's `setup` project mints an HS256 JWS

@@ -25,9 +25,12 @@ export default defineConfig({
       "tests/unit/**/*.{spec,test}.{ts,tsx}",
       "tests/safety/no-broker-sdk-imports.spec.ts",
       "tests/safety/no-hardcoded-backend-host.spec.ts",
+      "tests/safety/no-resizable-panel-outside-backtest.spec.ts",
+      "tests/safety/dev-rewrites-cover-backend-api.spec.ts",
       "tests/safety/production-callback-url.spec.ts",
     ],
     exclude: [
+      // disclaimer-present runs in Playwright (anon project) only.
       "tests/e2e/**",
       "tests/safety/disclaimer-present.spec.ts",
       "node_modules/**",

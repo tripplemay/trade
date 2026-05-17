@@ -33,12 +33,18 @@ AuthenticatedUserDep = Annotated[AuthenticatedUser, Depends(require_authenticate
 
 
 def _default_config() -> BacklogServiceConfig:
-    """Anchor repo_root at four-parents-up like other services. The route
-    constructs the config per-request so dependency_overrides can swap
-    git_runner in tests without monkeypatching globals.
+    """Anchor repo_root at the actual repo root. The route constructs
+    the config per-request so dependency_overrides can swap git_runner
+    in tests without monkeypatching globals.
+
+    routes/backlog.py lives 5 levels deep under the repo
+    (routes/ → workbench_api/ → backend/ → workbench/ → repo), so
+    parents[4] is the repo root. The B022 F014 fix corrected the
+    prior parents[3] anchor, which pointed at ``workbench/`` and
+    therefore wrote ``backlog.json`` outside the tracked source tree.
     """
 
-    repo_root = Path(__file__).resolve().parents[3]
+    repo_root = Path(__file__).resolve().parents[4]
     return BacklogServiceConfig(
         repo_root=repo_root,
         backlog_file=repo_root / "backlog.json",

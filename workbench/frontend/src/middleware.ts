@@ -15,7 +15,21 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
 
-const PUBLIC_PATH_PREFIXES = ["/login", "/api/auth", "/api/health"] as const;
+// Every `/api/*` path is either:
+//   - owned by NextAuth (the `/api/auth/*` handlers under app/api/auth/)
+//     and handles its own session establishment, or
+//   - proxied to the FastAPI backend (production via nginx, dev via the
+//     next.config.mjs rewrites) where `require_authenticated_user`
+//     re-checks the session cookie and emits 401 on missing auth.
+//
+// Either way, the Next.js middleware does not need to second-guess auth
+// for `/api/*` — its redirect-to-`/login` is for browser navigation
+// only. B022 F014 fix: the prior `/api/health` + `/api/auth` allowlist
+// dropped every B022 backend route into the redirect path, which
+// short-circuited next.config.mjs rewrites and produced `/api/strategies
+// → 404` in Playwright once the dev-rewrite list grew (the rewrite
+// never got a chance to fire because middleware returned a 307 first).
+const PUBLIC_PATH_PREFIXES = ["/login", "/api/"] as const;
 
 function isPublic(pathname: string): boolean {
   return PUBLIC_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix));

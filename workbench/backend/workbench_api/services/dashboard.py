@@ -46,17 +46,53 @@ spec/ADR pipeline rather than the runtime.
 """
 
 
+PROD_RELEASE_CURRENT: Path = Path("/srv/workbench/current")
+"""B021 deploy.sh keeps this symlink pointing at the live release root.
+
+Used by `_resolve_reports_dir` to fall back to the VM release tree when
+the repo-root anchor (dev path) does not contain the configured docs.
+"""
+
+
 def _resolve_reports_dir(configured: str) -> Path:
+    """Pick the directory that actually holds the reports we want to scan.
+
+    Resolution order:
+
+    1. ``configured`` is absolute → use as-is.
+    2. ``configured`` is relative + ``<repo_root>/<configured>`` exists
+       → dev / source checkout.
+    3. ``configured`` is relative + ``/srv/workbench/current/<configured>``
+       exists → production, where B022 F009-1 fix ships ``docs/test-reports/``
+       inside the release tarball.
+    4. None of the above → return the repo-root candidate so the scanner's
+       ``Path.exists()`` check degrades cleanly to an empty list (the
+       Dashboard's empty-state path).
+
+    The two-stage fallback lets a single default (`docs/test-reports`)
+    work in both dev (where files live at the repo root) and prod (where
+    the deploy step copies them under the release directory). B022 F014
+    blocker rejected the single-anchor behaviour because prod had
+    ``reports_count=0``.
+    """
+
     candidate = Path(configured)
     if candidate.is_absolute():
         return candidate
-    # When the path is relative, anchor it at the repo root so the
-    # default ``docs/test-reports`` resolves regardless of where uvicorn
-    # was invoked from. The backend package lives at
-    # ``workbench/backend/workbench_api/services/dashboard.py``; walking
-    # up 4 ``parents`` lands at the repo root.
-    repo_root = Path(__file__).resolve().parents[3]
-    return repo_root / candidate
+    # parents arithmetic from a 5-level path
+    # (services/dashboard.py → repo root). cli/bootstrap.py uses the
+    # same depth + already documents the parents[4] anchor. The prior
+    # parents[3] anchor resolved to `workbench/` (not the repo root)
+    # and silently returned an empty list in dev because the configured
+    # default `docs/test-reports` only exists at the actual repo root.
+    repo_root = Path(__file__).resolve().parents[4]
+    dev_path = repo_root / candidate
+    prod_path = PROD_RELEASE_CURRENT / candidate
+    if dev_path.is_dir():
+        return dev_path
+    if prod_path.is_dir():
+        return prod_path
+    return dev_path
 
 
 def _aggregate_nav(session: Session) -> float:

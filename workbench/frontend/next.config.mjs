@@ -16,16 +16,40 @@ const nextConfig = {
   //
   // `/api/auth/*` must NOT be rewritten — those are NextAuth route
   // handlers owned by this Next.js app (workbench/frontend/src/app/api/
-  // auth/[...nextauth]/route.ts).
+  // auth/[...nextauth]/route.ts). The wildcard rewrite below uses an
+  // explicit-prefix list so a future page that adds a new server route
+  // under `/api/auth/...` cannot accidentally collide with the proxy.
+  //
+  // B022 F014 blocker fix: the prior rewrite list only covered F006's
+  // /api/health + the F001 auth probe. Codex L1 saw the Next dev server
+  // log 404s for every B022 page (`/api/dashboard`, `/api/strategies`,
+  // `/api/backtests`, `/api/reports`, `/api/recommendations`,
+  // `/api/snapshots`, `/api/backlog`, `/api/docs`) — Playwright passed
+  // because the page tests only asserted shell/card presence. The list
+  // below covers every backend route shipped through B022 F012 so dev
+  // matches prod's nginx routing.
   async rewrites() {
     if (process.env.NODE_ENV !== "development") {
       return [];
     }
     const target = process.env.WORKBENCH_BACKEND_ORIGIN ?? "http://127.0.0.1:8723";
-    return [
-      { source: "/api/health", destination: `${target}/api/health` },
-      { source: "/api/protected-test", destination: `${target}/api/protected-test` },
+    // Every prefix below must NOT collide with /api/auth (NextAuth own).
+    const PROXIED_PREFIXES = [
+      "health",
+      "protected-test",
+      "dashboard",
+      "strategies",
+      "backtests",
+      "reports",
+      "recommendations",
+      "snapshots",
+      "backlog",
+      "docs",
     ];
+    return PROXIED_PREFIXES.flatMap((prefix) => [
+      { source: `/api/${prefix}`, destination: `${target}/api/${prefix}` },
+      { source: `/api/${prefix}/:path*`, destination: `${target}/api/${prefix}/:path*` },
+    ]);
   },
 };
 
