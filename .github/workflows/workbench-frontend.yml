@@ -109,9 +109,17 @@ jobs:
           # the auth-setup project mints against.
           NEXTAUTH_SECRET: ci-playwright-secret-do-not-use-in-prod
           ALLOWED_USER_EMAIL: ci-playwright@example.com
+          # B022 F014 fixing-round 1: F006 dashboard / F010 recommendations
+          # / F011 snapshots / F012 backlog all hit the SQLite schema.
+          # Pin the DB to a known path under workbench/backend/ + apply
+          # Alembic migrations before launching uvicorn so the routes
+          # surface 200 (with empty data) instead of 500 (table missing).
+          WORKBENCH_DB_URL: sqlite:///./e2e-workbench.db
         working-directory: workbench/backend
         run: |
           set -euxo pipefail
+          rm -f e2e-workbench.db
+          ${{ env.pythonLocation }}/bin/python -m alembic upgrade head
           ${{ env.pythonLocation }}/bin/python -m uvicorn workbench_api.app:app \
             --host 127.0.0.1 --port 8723 --log-level warning \
             > /tmp/uvicorn-e2e.log 2>&1 &
