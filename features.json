@@ -38,7 +38,7 @@
       "title": "Table component AG Grid wrapper + CSV export + 列定义",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "components/table/DataTable<T>.tsx：(1) AG Grid Community wrapper 默认 sortable + filterable + resizable + sticky header；(2) ref exposes exportCsv() 方法；(3) reusable 列定义 dateColumn / currencyColumn / percentColumn / basisPointsColumn / weightColumn 各有 formatter + right-align + tabular-nums；(4) Vitest 渲染 1000 行 mock 数据虚拟化（DOM ≤ ~30 行同时存在）；(5) CSV export 测试产 mock blob valid CSV；(6) snapshot 测试每列定义 formatting 稳定。"
     },
     {
