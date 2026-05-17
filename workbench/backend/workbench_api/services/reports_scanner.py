@@ -90,13 +90,29 @@ def recent_reports(
         reverse=True,
     )
 
+    # B022 F014 fixing-round 1: `_slug_from_name` strips the trailing
+    # date so deep-links to /reports/{slug} stay stable when a report is
+    # re-stamped. But docs/test-reports/ legitimately holds multiple
+    # files that share the un-dated stem (e.g. B016-risk-parity-hrp-
+    # comparison-2026-05-13.md alongside the -2026-05-14.md variant).
+    # The frontend list rendered them with the same React key and the
+    # new Playwright console-error guard rightly flagged it as a real
+    # bug. Dedup here keeps only the most recent file per slug (the
+    # sort above puts the freshest first).
+    seen_slugs: set[str] = set()
     out: list[dict[str, str]] = []
-    for path, mtime in candidates[:limit]:
+    for path, mtime in candidates:
+        if len(out) >= limit:
+            break
         name = path.name
+        slug = _slug_from_name(name)
+        if slug in seen_slugs:
+            continue
+        seen_slugs.add(slug)
         out.append(
             {
-                "id": _slug_from_name(name),
-                "title": _slug_from_name(name).replace("-", " ").strip(),
+                "id": slug,
+                "title": slug.replace("-", " ").strip(),
                 "date": _date_from_name(name, mtime),
                 # Status is best-effort metadata. Real status (PASS / FAIL /
                 # PARTIAL) lives inside the report body; F009 will parse it.
