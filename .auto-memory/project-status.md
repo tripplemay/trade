@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B022-workbench-phase1：`building`**；**F001-F012 全部 vertical slice 完毕**：shadcn TW3 + 5 charts + DataTable + Home Dashboard + Strategies + Backtest ResizablePanel + Reports markdown + Recommendations safety-disclaimer ticket + Snapshots SSE refresh + Backlog CRUD + git auto-commit。backend 118 pytest + 2 skipped (STUB_ROUTES 已空) / frontend 67 vitest + 14 Playwright / 全套 lint/tsc/build 全绿。Generator 接 F013（workbench README + architecture 文档 + branch protection 刷新）或交 F014 Codex。共 14 features 完成 12。预估 5-6 周。
+- **B022-workbench-phase1：`fixing`**；Codex F014 首轮阻塞：L1 static/unit 全绿，但 Playwright 14/14 未捕获 Next dev 下新 B022 API 404（next.config 只 rewrite health/protected-test）；生产 release 未部署 `docs/test-reports`（reports_count=0）、`WORKBENCH_RUNS_DIR` 指向缺失 release `docs/runs`、Chrome 无有效 session 且 macOS 禁止自动点 Google 登录、npm audit 报 Next/Playwright high advisories。报告：`docs/test-reports/B022-workbench-phase1-blocker-2026-05-18.md`。
 - Spec：`docs/specs/B022-workbench-phase1-spec.md`（2026-05-17 已加 §Status + §Cloud+auth+Repository adaptation 段，标 ready to execute）
 - 范围：7 read-mostly 业务页（Home / Strategies / Backtest / Reports / Recommendations / Snapshots / Backlog）+ 最小必要 write（snapshot refresh / backlog CRUD / 触发 backtest / 导出 target positions Markdown）+ 5 chart 组件 + AG Grid table 组件 + workbench 文档+截图 + Codex L1+L2 真 VM 10 项验收。
 - B020+B021 已交付的 8 surface F001 必须复用不重写：workbench skeleton / CI workflows / OpenAPI pipeline / NextAuth + 后端 JWT + allowlist / SQLite + Alembic + Repository + workbench-bootstrap CLI / systemd+nginx+cert / GHA deploy/rollback / SQLite→GCS backup / 观测层。
