@@ -70,7 +70,7 @@
       "title": "Reports page vertical slice + markdown rendering",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Backend GET /api/reports + /api/reports/{slug}（auth）返 docs/test-reports/ markdown 列表 + 渲染后 structured JSON（tables 提取以便 frontend AG Grid 重渲）。Frontend (protected)/reports/page.tsx + reports/[id]/page.tsx：列表 + 详情页用 react-markdown + remark-gfm + custom code-block + table renderer（tables ≥ 10 行用 AG Grid）。Cross-links docs/specs/B0*.md + docs/test-reports/B0*.md 解析为内部 route。新增 /api/docs/{path} backend 共享路径解析 endpoint（sanitize traversal）。B017/B018/B019 reports 全部能干净渲染；B019 retune sweep matrix 可交互排序；smoke 测试加载 B019 报告确认 matrix 表存在。"
     },
     {

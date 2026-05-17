@@ -63,8 +63,8 @@ STUB_ROUTES: list[tuple[str, str, dict[str, Any] | None, str, int]] = [
     # and tests/unit/test_docs.py respectively.
     # /api/backtests are no longer stubs — B022 F008 ships the synthetic
     # runner; targeted coverage lives in tests/unit/test_backtests.py.
-    ("get", "/api/reports", None, "F009", 501),
-    ("get", "/api/reports/B019-retune", None, "F009", 501),
+    # /api/reports are no longer stubs — B022 F009 ships the list + detail
+    # handlers; coverage in tests/unit/test_reports.py.
     ("get", "/api/recommendations/current", None, "F010", 501),
     (
         "post",

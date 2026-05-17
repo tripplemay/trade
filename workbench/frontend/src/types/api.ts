@@ -136,8 +136,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Reports */
-        get: operations["list_reports_api_reports_get"];
+        /** List Reports Route */
+        get: operations["list_reports_route_api_reports_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -153,8 +153,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Report */
-        get: operations["get_report_api_reports__slug__get"];
+        /** Get Report Route */
+        get: operations["get_report_route_api_reports__slug__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1174,7 +1174,7 @@ export interface operations {
             };
         };
     };
-    list_reports_api_reports_get: {
+    list_reports_route_api_reports_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -1194,7 +1194,7 @@ export interface operations {
             };
         };
     };
-    get_report_api_reports__slug__get: {
+    get_report_route_api_reports__slug__get: {
         parameters: {
             query?: never;
             header?: never;
