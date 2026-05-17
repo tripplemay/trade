@@ -262,11 +262,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Backlog */
-        get: operations["list_backlog_api_backlog_get"];
+        /** List Backlog Route */
+        get: operations["list_backlog_route_api_backlog_get"];
         put?: never;
-        /** Create Backlog Entry */
-        post: operations["create_backlog_entry_api_backlog_post"];
+        /** Create Backlog Route */
+        post: operations["create_backlog_route_api_backlog_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -283,12 +283,12 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Delete Backlog Entry */
-        delete: operations["delete_backlog_entry_api_backlog__entry_id__delete"];
+        /** Delete Backlog Route */
+        delete: operations["delete_backlog_route_api_backlog__entry_id__delete"];
         options?: never;
         head?: never;
-        /** Update Backlog Entry */
-        patch: operations["update_backlog_entry_api_backlog__entry_id__patch"];
+        /** Update Backlog Route */
+        patch: operations["update_backlog_route_api_backlog__entry_id__patch"];
         trace?: never;
     };
 }
@@ -1341,7 +1341,7 @@ export interface operations {
             };
         };
     };
-    list_backlog_api_backlog_get: {
+    list_backlog_route_api_backlog_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -1361,7 +1361,7 @@ export interface operations {
             };
         };
     };
-    create_backlog_entry_api_backlog_post: {
+    create_backlog_route_api_backlog_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -1394,7 +1394,7 @@ export interface operations {
             };
         };
     };
-    delete_backlog_entry_api_backlog__entry_id__delete: {
+    delete_backlog_route_api_backlog__entry_id__delete: {
         parameters: {
             query?: never;
             header?: never;
@@ -1425,7 +1425,7 @@ export interface operations {
             };
         };
     };
-    update_backlog_entry_api_backlog__entry_id__patch: {
+    update_backlog_route_api_backlog__entry_id__patch: {
         parameters: {
             query?: never;
             header?: never;

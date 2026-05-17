@@ -94,7 +94,7 @@
       "title": "Backlog page vertical slice + CRUD + auto-commit",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Backend GET/POST/PATCH/DELETE /api/backlog（auth）经 BacklogEntry repo 持久化；mutation 后自动 `git add backlog.json && git commit -m 'chore(backlog): <action>'`（commit author = workbench；user 可后续 amend）。Frontend (protected)/backlog/page.tsx：DataTable + priority filter + Add/Edit/Delete actions（Dialog modals + form validation）。验收：(1) list 加载现 4 entries 反映 BL-B011-S2 high；(2) create/edit/delete e2e 工作；(3) 每 mutation 产生 git commit；(4) commit message 匹配 `chore(backlog): add|edit|delete BL-<id>`；(5) git error (conflict 等) → mutation fail closed + toast 显示底层错误。"
     },
     {

@@ -70,10 +70,8 @@ STUB_ROUTES: list[tuple[str, str, dict[str, Any] | None, str, int]] = [
     # tests/unit/test_recommendations.py.
     # /api/snapshots are no longer stubs — B022 F011 ships list + SSE
     # refresh; coverage in tests/unit/test_snapshots.py.
-    ("get", "/api/backlog", None, "F012", 501),
-    ("post", "/api/backlog", {"title": "X"}, "F012", 501),
-    ("patch", "/api/backlog/BL-1", {"title": "Y"}, "F012", 501),
-    ("delete", "/api/backlog/BL-1", None, "F012", 501),
+    # /api/backlog are no longer stubs — B022 F012 ships CRUD + git
+    # auto-commit; coverage in tests/unit/test_backlog.py.
 ]
 
 
