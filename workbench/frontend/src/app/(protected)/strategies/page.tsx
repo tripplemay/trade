@@ -134,7 +134,9 @@ export default function StrategiesPage() {
     };
   }, [effectiveSelected]);
 
-  const heatmapData = detail?.turnover_heatmap ?? [];
+  // Memo each derived array so downstream useMemos receive a stable
+  // reference; without this the heatmap recomputes on every render.
+  const heatmapData = useMemo(() => detail?.turnover_heatmap ?? [], [detail]);
   const equityData = useMemo(
     () => (detail?.equity_curve ?? []).map((p) => ({ time: p.date, value: p.value })),
     [detail],
