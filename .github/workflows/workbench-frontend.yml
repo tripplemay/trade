@@ -98,6 +98,16 @@ jobs:
         run: npm test
 
       - name: Playwright E2E smoke (boots dev server via start-server-and-test)
+        env:
+          # B022 F003 — Playwright's `setup` project mints an HS256 JWS
+          # session cookie against this secret + email pair (see
+          # tests/e2e/auth-setup.ts). The dev server must boot with the
+          # same values so middleware/auth-config decode the cookie and
+          # let the authed project visit /(protected)/* routes. These
+          # are test-only fixtures; production uses the systemd-injected
+          # workbench.env values on the VM.
+          NEXTAUTH_SECRET: ci-playwright-secret-do-not-use-in-prod
+          ALLOWED_USER_EMAIL: ci-playwright@example.com
         run: npx start-server-and-test "npm run dev -- --port 3000" http://127.0.0.1:3000 "npx playwright test --reporter=list"
 
       - name: Upload Playwright report on failure

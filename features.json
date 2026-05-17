@@ -22,7 +22,7 @@
       "title": "Shell layout extend：TopBar + SideNav + dark theme tokens（在 B020/B021 既有 Footer 上加）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "B020+B021 已交付 components/shell/Footer + lib/disclaimer + middleware + /(protected)/ layout。F003 加 (1) components/shell/TopBar.tsx 含项目名 + snapshot indicator + nav links + user email/avatar (来自 useSession)；(2) components/shell/SideNav.tsx 含 7 page links + active state；(3) ThemeProvider + dark mode CSS variables；(4) (protected)/layout 包 TopBar + SideNav + Footer；(5) 安全 regression：所有 7 routes Playwright 覆盖含 disclaimer + TopBar + SideNav 链接可点开。B020 既有 5 个安全 guard 测试全部继续过。"
     },
     {
