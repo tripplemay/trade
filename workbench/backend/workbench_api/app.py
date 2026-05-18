@@ -21,7 +21,8 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -47,6 +48,7 @@ AuthenticatedUserDep = Annotated[AuthenticatedUser, Depends(require_authenticate
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 
 _health_logger = logging.getLogger("workbench.health")
+_unhandled_logger = logging.getLogger("workbench.unhandled")
 
 
 class HealthResponse(BaseModel):
@@ -143,6 +145,32 @@ def create_app() -> FastAPI:
         lifespan=_lifespan,
     )
     app.add_middleware(RequestIDMiddleware)
+
+    # B022 F014 fixing-round 2: capture every route exception with a full
+    # traceback into the structured logger so journalctl shows the
+    # underlying cause. The default FastAPI 500 handler discards the
+    # exception silently, which is what made dashboard/recommendations/
+    # backlog 500s opaque during Codex L2 reverify. Returning the same
+    # `{"detail": "Internal Server Error"}` shape keeps the public
+    # surface unchanged — we only add the journal entry.
+    @app.exception_handler(Exception)
+    async def _log_unhandled_exception(
+        request: Request, exc: Exception
+    ) -> JSONResponse:
+        _unhandled_logger.exception(
+            "unhandled route exception",
+            extra={
+                "event": "unhandled_route_exception",
+                "method": request.method,
+                "path": request.url.path,
+                "exception_type": exc.__class__.__name__,
+                "exception_message": str(exc),
+            },
+        )
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal Server Error"},
+        )
 
     api = APIRouter(prefix="/api")
 

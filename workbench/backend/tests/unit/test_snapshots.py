@@ -92,13 +92,22 @@ def test_snapshots_list_returns_repo_rows(initialised_db: str) -> None:
 def test_snapshots_refresh_streams_sse_events_and_inserts_row(
     initialised_db: str,
 ) -> None:
+    """B022 F014 fixing-round 2 regression: the SSE generator must own
+    its session, not FastAPI's request-scoped one. The prior wiring was
+    sliced by the dependency teardown — the streaming response began
+    only after ``get_session`` had already closed the session, and the
+    first ORM call inside ``_persist_snapshot`` raised against a
+    closed session. Codex L2 surfaced this as the Snapshots refresh
+    modal `unreachable: HTTP 500`. This test pins both (a) the stream
+    completes with a ``stage: complete`` and no ``stage: error``,
+    and (b) the row actually lands in the DB.
+    """
+
     client = _authed_client()
     response = client.post("/api/snapshots/refresh")
     assert response.status_code == 200, response.text
     assert response.headers["content-type"].startswith("text/event-stream")
     body = response.text
-    # Split into events by the blank-line delimiter; each event must
-    # start with `data: `.
     events: list[dict[str, object]] = []
     for raw in body.split("\n\n"):
         line = raw.strip()
@@ -107,7 +116,7 @@ def test_snapshots_refresh_streams_sse_events_and_inserts_row(
         events.append(json.loads(line[len("data: "):]))
     stages = [event["stage"] for event in events]
     assert "complete" in stages, stages
-    # The complete stage persists a SnapshotMeta row → next GET surfaces it.
+    assert "error" not in stages, f"stream emitted error event: {events}"
     follow_up = client.get("/api/snapshots").json()
     assert len(follow_up["snapshots"]) >= 1
     snapshot_ids = [row["id"] for row in follow_up["snapshots"]]

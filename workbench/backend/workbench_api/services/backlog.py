@@ -23,6 +23,7 @@ API contract).
 from __future__ import annotations
 
 import json
+import logging
 import subprocess
 import uuid
 from collections.abc import Iterable
@@ -31,6 +32,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Protocol
 
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from workbench_api.db.models.backlog_entry import BacklogEntry as BacklogEntryModel
@@ -42,6 +44,8 @@ from workbench_api.schemas.backlog import (
     BacklogListResponse,
     BacklogUpdateRequest,
 )
+
+_logger = logging.getLogger("workbench.backlog")
 
 
 class BacklogNotFoundError(LookupError):
@@ -112,8 +116,27 @@ def _row_to_schema(row: BacklogEntryModel) -> BacklogEntry:
 
 
 def list_backlog(session: Session) -> BacklogListResponse:
+    """Return the BacklogEntry rows shaped into the F002 API schema.
+
+    DB failure → log + return an empty list so the Backlog page can
+    render its "no entries" state. B022 F014 fixing-round 2: Codex L2
+    observed /api/backlog 500 with no journal entry; defensive degrade
+    + the new app-level exception logger surface the SQLAlchemy cause
+    without crashing the route. Mutations (POST/PATCH/DELETE) still
+    fail loud — degrading writes would silently drop user input.
+    """
+
     repo = BacklogRepository(session)
-    rows = repo.list_all()
+    try:
+        rows = repo.list_all()
+    except SQLAlchemyError as exc:
+        _logger.warning(
+            "backlog list skipped due to DB error",
+            extra={"event": "backlog_list_db_error", "exception_message": str(exc)},
+            exc_info=True,
+        )
+        session.rollback()
+        return BacklogListResponse(entries=[])
     return BacklogListResponse(entries=[_row_to_schema(row) for row in rows])
 
 

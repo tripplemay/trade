@@ -6,9 +6,11 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
+from sqlalchemy.orm import Session, sessionmaker
 
 from workbench_api.auth.dependency import require_authenticated_user
 from workbench_api.auth.jwt_validator import AuthenticatedUser
+from workbench_api.db.engine import get_engine
 from workbench_api.db.session import SessionDep
 from workbench_api.schemas.snapshots import SnapshotListResponse
 from workbench_api.services.snapshots import (
@@ -29,20 +31,37 @@ def list_snapshots_route(
     return list_snapshots(session)
 
 
+def _streaming_session_factory() -> sessionmaker[Session]:
+    """B022 F014 fixing-round 2: SSE handler owns its session.
+
+    FastAPI's ``get_session`` dependency tears down its session before
+    the StreamingResponse body actually streams — the SSE generator
+    then operates on a closed session and 500s on the first ORM call.
+    The handler builds its own sessionmaker bound to the same engine
+    and hands the factory to the generator, which opens / closes the
+    session inside its own try/finally.
+    """
+
+    return sessionmaker(bind=get_engine(), autoflush=False, autocommit=False, future=True)
+
+
 @router.post("/refresh")
 def refresh_snapshots_route(
     _user: AuthenticatedUserDep,
-    session: SessionDep,
 ) -> StreamingResponse:
     """POST /api/snapshots/refresh — streams SSE progress events.
 
     The synthetic generator yields 5 stages; the final ``complete``
     stage inserts/updates a SnapshotMeta row before the event reaches
-    the client so a subsequent GET shows the refreshed entry.
+    the client so a subsequent GET shows the refreshed entry. The
+    session is owned by the generator (see ``_streaming_session_factory``
+    docstring) — passing FastAPI's request-scoped session would close
+    it before the first ORM call.
     """
 
+    factory = _streaming_session_factory()
     return StreamingResponse(
-        refresh_event_stream(session),
+        refresh_event_stream(factory),
         media_type="text/event-stream",
         headers={"cache-control": "no-cache"},
     )

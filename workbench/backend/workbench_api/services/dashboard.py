@@ -22,9 +22,11 @@ empty list (no source yet — F010 wash-sale flags + B023 alerts populate).
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from workbench_api.db.models.account import Account
@@ -37,6 +39,8 @@ from workbench_api.schemas.dashboard import (
 )
 from workbench_api.services.reports_scanner import recent_reports
 from workbench_api.settings import Settings
+
+_logger = logging.getLogger("workbench.dashboard")
 
 DEFAULT_KILL_SWITCH_THRESHOLD: float = 0.20
 """Workbench-wide manual-halt threshold (drawdown ratio).
@@ -96,9 +100,27 @@ def _resolve_reports_dir(configured: str) -> Path:
 
 
 def _aggregate_nav(session: Session) -> float:
-    """Sum cash + equity_value across all accounts (single row in MVP)."""
+    """Sum cash + equity_value across all accounts (single row in MVP).
 
-    accounts = list(session.execute(select(Account)).scalars())
+    Returns 0.0 (and logs at WARNING) when the DB read raises so the
+    Dashboard page still renders with a zeroed NAV card rather than
+    blowing up the whole endpoint. B022 F014 fixing-round 2:
+    Codex L2 observed /api/dashboard 500ing in production with no
+    journal entry; the missing log was added at the app level, and
+    this graceful-degradation lets the rest of the dashboard surface
+    (kill-switch / recent reports / action items) still render.
+    """
+
+    try:
+        accounts = list(session.execute(select(Account)).scalars())
+    except SQLAlchemyError as exc:
+        _logger.warning(
+            "dashboard NAV aggregation skipped due to DB error",
+            extra={"event": "dashboard_nav_db_error", "exception_message": str(exc)},
+            exc_info=True,
+        )
+        session.rollback()
+        return 0.0
     if not accounts:
         return 0.0
     total = 0.0

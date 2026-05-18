@@ -21,7 +21,7 @@ from __future__ import annotations
 import asyncio
 import json
 import uuid
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Callable
 from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
@@ -86,23 +86,39 @@ async def _iter_stages(job_id: str) -> AsyncIterator[dict[str, object]]:
         }
 
 
-async def refresh_event_stream(session: Session) -> AsyncIterator[str]:
+async def refresh_event_stream(
+    session_factory: Callable[[], Session],
+) -> AsyncIterator[str]:
     """Run the synthetic refresh and yield SSE-encoded events.
+
+    **B022 F014 fixing-round 2:** the previous signature took a Session
+    from FastAPI's ``get_session`` dependency. That session is torn
+    down by the dependency generator the moment the route handler
+    returns its StreamingResponse — i.e. *before* this async generator
+    starts streaming. The first ORM call inside ``_persist_snapshot``
+    then raised against a closed session and Codex L2 saw
+    ``unreachable: HTTP 500`` in the Snapshots refresh modal.
+
+    Fix: the route passes a ``session_factory`` (an unbound
+    sessionmaker call) and we own the session inside this generator's
+    ``try/finally``, outliving the streaming response and any other
+    FastAPI cleanup.
 
     The final ``complete`` stage commits a SnapshotMeta row so the
     Snapshots page's list refresh shows the new entry. Failures inside
-    the loop yield a ``stage: error`` event and re-raise so FastAPI
-    closes the connection — the frontend treats lack of ``complete``
-    as a failed run and surfaces a toast.
+    the loop yield a ``stage: error`` event and re-raise so the
+    client treats lack of ``complete`` as a failed run.
     """
 
     job_id = uuid.uuid4().hex[:12]
+    session = session_factory()
     try:
         async for event in _iter_stages(job_id):
             if event["stage"] == "complete":
                 _persist_snapshot(session, job_id, str(event["detail"]))
             yield _format_sse(event)
-    except Exception as exc:  # pragma: no cover - safety net
+    except Exception as exc:
+        session.rollback()
         yield _format_sse(
             {
                 "job_id": job_id,
@@ -112,6 +128,8 @@ async def refresh_event_stream(session: Session) -> AsyncIterator[str]:
             }
         )
         raise
+    finally:
+        session.close()
 
 
 def _persist_snapshot(session: Session, job_id: str, detail: str) -> None:

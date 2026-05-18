@@ -17,10 +17,12 @@ frontend's empty state.
 
 from __future__ import annotations
 
+import logging
 from datetime import date
 from pathlib import Path
 
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from workbench_api.db.models.account import Account
@@ -32,6 +34,8 @@ from workbench_api.schemas.recommendations import (
     TargetPosition,
 )
 from workbench_api.services.strategies import list_strategies
+
+_logger = logging.getLogger("workbench.recommendations")
 
 DISCLAIMER_LITERAL: str = (
     "research-only; this is a manual review checklist, not a trading instruction"
@@ -47,9 +51,29 @@ DEFAULT_KILL_SWITCH_THRESHOLD: float = 0.20
 
 
 def _aggregate_account_state(session: Session) -> tuple[bool, float]:
-    """Return (account_present, total_equity)."""
+    """Return (account_present, total_equity).
 
-    accounts = list(session.execute(select(Account)).scalars())
+    DB failure → treat as "no account on file" and let the
+    Recommendations page render its empty-state. B022 F014
+    fixing-round 2: prod observed /api/recommendations/current 500
+    with no journal entry; defensive degrade + the new app-level
+    exception logger surface the SQLAlchemy cause without crashing
+    the route.
+    """
+
+    try:
+        accounts = list(session.execute(select(Account)).scalars())
+    except SQLAlchemyError as exc:
+        _logger.warning(
+            "recommendations account aggregation skipped due to DB error",
+            extra={
+                "event": "recommendations_account_db_error",
+                "exception_message": str(exc),
+            },
+            exc_info=True,
+        )
+        session.rollback()
+        return False, 0.0
     if not accounts:
         return False, 0.0
     total = 0.0
