@@ -55,11 +55,59 @@ fi
 # we do not need a separate migrate worker — applying inline is the simplest
 # safe ordering (migrate before symlink flip prevents the new server code
 # from hitting an older schema mid-deploy).
+#
+# B022 F014 fixing-round 4 — load the systemd EnvironmentFile first so
+# alembic sees the production WORKBENCH_DB_URL
+# (sqlite:////var/lib/workbench/db/workbench.db). Without this, Settings
+# falls back to DEFAULT_DEV_DB_URL = "sqlite:///./workbench-dev.db",
+# which created a per-release scratch DB inside ${RELEASE_DIR}/backend/
+# that was thrown away on the next deploy; the real prod DB was never
+# migrated and B022 routes hit "no such table: snapshot_meta /
+# backlog_entry" at runtime (Codex round-3 reverification surfaced the
+# OperationalError via /api/debug/recent-errors). The systemd service
+# itself does load the same file via EnvironmentFile=, so the running
+# backend always saw the correct URL — the bug was purely in this
+# deploy-time alembic invocation. `set -a` + source + `set +a` puts the
+# variables into the environment of the alembic subprocess only.
+ENV_FILE="${WORKBENCH_ENV_FILE:-/etc/workbench/workbench.env}"
+if [[ -r "${ENV_FILE}" ]]; then
+  echo "→ loading env from ${ENV_FILE} for alembic"
+  set -a
+  # shellcheck disable=SC1090
+  . "${ENV_FILE}"
+  set +a
+else
+  echo "  warning: ${ENV_FILE} not readable; alembic will use DEFAULT_DEV_DB_URL" >&2
+fi
 echo "→ alembic upgrade head"
 (
   cd "${RELEASE_DIR}/backend"
   exec "${VENV_PYTHON}" -m alembic upgrade head
 )
+
+# 2b. Post-alembic safety check — assert the 3 B021/B022 tables exist
+# in the DB alembic just migrated. Catches future regressions where
+# the env file silently changes path or WORKBENCH_DB_URL drifts to a
+# wrong location. Reads WORKBENCH_DB_URL from the env we just sourced.
+if [[ -n "${WORKBENCH_DB_URL:-}" ]]; then
+  echo "→ verifying schema (account / backlog_entry / snapshot_meta)"
+  "${VENV_PYTHON}" - <<'PY'
+import os
+import sys
+
+from sqlalchemy import create_engine, inspect
+
+url = os.environ["WORKBENCH_DB_URL"]
+engine = create_engine(url)
+present = set(inspect(engine).get_table_names())
+required = {"account", "backlog_entry", "snapshot_meta"}
+missing = required - present
+if missing:
+    print(f"  ✗ schema check FAILED: missing tables {sorted(missing)} in {url}", file=sys.stderr)
+    sys.exit(1)
+print(f"  ✓ schema check passed: {sorted(required)} present in {url}")
+PY
+fi
 
 # 2. Flip the active release symlink atomically. `ln -sfn` is one syscall
 # and survives the brief window where both services are reading from the
