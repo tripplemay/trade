@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B023-workbench-phase2-manual-execution：`building`**；F001 完成（3 张新表 + Alembic 0002 + Repository + deploy.sh schema-assert 6 表 per v0.9.25 #1b，全部本地验证：6 表 + idempotent；pytest 142/142；ruff+mypy 清；safety regression 仍绿）。Generator 接 F002（Position diff page + Account state edit UI）。共 8 features 完成 1。预估 4-5 周。
+- **B023-workbench-phase2-manual-execution：`building`**；F001+F002 完成（DB 3 表 + Alembic 0002 + Repository + deploy.sh 6 表；execution 路由 3 端点 + position-diff + account 两页 + NAV 扩 + dev rewrite，本地 verify 全清）。Generator 接 F003（Order ticket generation + viewer + Markdown export）。共 8 features 完成 2。预估 4-5 周。
 - Spec：`docs/specs/B023-workbench-phase2-manual-execution-spec.md`
 - 范围：闭合 monthly rebalance manual workflow — 5 新页（position-diff / ticket / fills / journal-history / account 编辑）+ slippage analytics + risk panel/kill-switch alert + Codex L2 18 项验收。**永久不连 broker**（B012 BrokerAdapter ABC 永久 unwired）。
 - 后续路径：**B023 done = MVP 全 PRD §10/§11/§12 substantively 完成 for single-user manual-execution workbench**。之后是 BL-B011-S2（satellites 实现）+ BL-B013-D1/D2 等 post-MVP backlog。

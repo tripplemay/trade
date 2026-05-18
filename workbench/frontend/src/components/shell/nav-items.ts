@@ -1,11 +1,13 @@
 import {
   BookOpen,
+  ClipboardList,
   Compass,
   DatabaseBackup,
   FileText,
   LayoutDashboard,
   LineChart,
   ListTodo,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 
@@ -17,10 +19,11 @@ export interface NavItem {
 }
 
 /**
- * Single source of truth for the workbench's 7-page nav. TopBar and
- * SideNav both render from this array; F006-F012 do not need to touch
- * the nav surface — adding the 8th page only happens when the spec
- * grows past Phase 1 (see B023 follow-up).
+ * Single source of truth for the workbench nav. TopBar and SideNav both
+ * render from this array. B023 Phase 2 (F002+) grows the original 7-page
+ * Phase 1 nav by the execution-workflow surface; F003/F004/F005 will
+ * append `/execution/ticket`, `/execution/fills`, and
+ * `/execution/journal-history` in their respective features.
  */
 export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/", label: "Home", icon: LayoutDashboard, testId: "nav-home" },
@@ -32,6 +35,18 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: "Recommendations",
     icon: Compass,
     testId: "nav-recommendations",
+  },
+  {
+    href: "/execution/position-diff",
+    label: "Position diff",
+    icon: ClipboardList,
+    testId: "nav-position-diff",
+  },
+  {
+    href: "/execution/account",
+    label: "Account",
+    icon: Wallet,
+    testId: "nav-account",
   },
   { href: "/snapshots", label: "Snapshots", icon: DatabaseBackup, testId: "nav-snapshots" },
   { href: "/backlog", label: "Backlog", icon: ListTodo, testId: "nav-backlog" },

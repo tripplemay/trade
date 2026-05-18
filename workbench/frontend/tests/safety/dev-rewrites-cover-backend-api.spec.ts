@@ -34,6 +34,8 @@ const REQUIRED_PREFIXES = [
   "snapshots",
   "backlog",
   "docs",
+  // B023 F002+: the manual-execution workflow surface.
+  "execution",
 ];
 
 describe("next.config dev rewrites cover all B022 backend prefixes", () => {

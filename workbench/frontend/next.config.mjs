@@ -34,6 +34,10 @@ const nextConfig = {
     }
     const target = process.env.WORKBENCH_BACKEND_ORIGIN ?? "http://127.0.0.1:8723";
     // Every prefix below must NOT collide with /api/auth (NextAuth own).
+    // B023 F002 added the `execution` prefix for the manual-execution
+    // workflow surface (position-diff / account / tickets / fills /
+    // reconcile). Keep the list alphabetised within each phase so the
+    // safety test below stays a simple substring grep.
     const PROXIED_PREFIXES = [
       "health",
       "protected-test",
@@ -45,6 +49,7 @@ const nextConfig = {
       "snapshots",
       "backlog",
       "docs",
+      "execution",
     ];
     return PROXIED_PREFIXES.flatMap((prefix) => [
       { source: `/api/${prefix}`, destination: `${target}/api/${prefix}` },

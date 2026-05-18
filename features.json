@@ -14,7 +14,7 @@
       "title": "Position diff page + Account state edit UI",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Backend：GET /api/execution/position-diff?as_of=<date> 返 {current:AccountSnapshot, target:TargetPositions, diff:[{symbol, current_shares, target_shares, delta_shares(signed +买-卖), delta_weight, delta_dollar, reason}], unmatched}；GET /api/execution/account/latest 返最新 snapshot；PUT /api/execution/account 接 {cash, base_currency, positions} 插新 AccountSnapshot(source=ui_edit)。Frontend：(protected)/execution/position-diff/page.tsx — AllocationBar 当前 vs target + 每行 diff DataTable（signed delta with --color-up/--color-down tokens 来自 B022 F001）；(protected)/execution/account/page.tsx — 表单编辑账户提交→PUT→toast。验收：fixture account + fixture target 渲染正确（无需真 OAuth）；diff 符号正确（delta_shares>0 当 target>current）；account 表单 validate（weights ≤1、cash≥0、无重复 symbol）；提交后 Recommendations + Position-diff 立刻反映新状态；CSV export 工作；Vitest+Playwright+httpx 全过；same-origin fetch（v0.9.24 #3）。"
     },
     {

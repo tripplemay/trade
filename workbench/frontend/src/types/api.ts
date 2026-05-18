@@ -320,10 +320,102 @@ export interface paths {
         patch: operations["update_backlog_route_api_backlog__entry_id__patch"];
         trace?: never;
     };
+    "/api/execution/position-diff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Position Diff Route */
+        get: operations["get_position_diff_route_api_execution_position_diff_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/execution/account/latest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Latest Account Route */
+        get: operations["get_latest_account_route_api_execution_account_latest_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/execution/account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Put Account Route */
+        put: operations["put_account_route_api_execution_account_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AccountSnapshotPayload
+         * @description Wire shape for an ``account_snapshot`` row.
+         *
+         *     ``id`` and ``snapshot_at`` are server-assigned (the bootstrap or PUT
+         *     handler writes them); clients can leave them ``None`` when posting.
+         */
+        AccountSnapshotPayload: {
+            /** Id */
+            id?: string | null;
+            /** Snapshot At */
+            snapshot_at?: string | null;
+            /** Cash */
+            cash: number;
+            /** Base Currency */
+            base_currency: string;
+            /** Positions */
+            positions?: components["schemas"]["PositionEntry"][];
+            /**
+             * Source
+             * @default ui_edit
+             * @enum {string}
+             */
+            source: "bootstrap" | "ui_edit" | "fill_reconcile";
+        };
+        /**
+         * AccountUpdateRequest
+         * @description PUT /api/execution/account body.
+         *
+         *     The handler inserts a fresh ``account_snapshot`` row with
+         *     ``source=ui_edit``; the request itself omits ``id`` / ``snapshot_at``
+         *     so the wire format matches what the React form posts.
+         */
+        AccountUpdateRequest: {
+            /** Cash */
+            cash: number;
+            /** Base Currency */
+            base_currency: string;
+            /** Positions */
+            positions?: components["schemas"]["PositionEntry"][];
+        };
         /**
          * ActionItem
          * @description Single attention-required entry in the home action panel.
@@ -692,6 +784,77 @@ export interface components {
             date: string;
             /** Value */
             value: number;
+        };
+        /**
+         * PositionDiffEntry
+         * @description One row in the position-diff table.
+         *
+         *     ``delta_*`` are signed so a positive value means "buy" and a negative
+         *     value means "sell". Reference price is the per-symbol ``avg_cost``
+         *     from the latest snapshot — workbench is research-only and does not
+         *     fetch live market data; F002 uses the cost basis as a placeholder
+         *     price reference. When the symbol has no current price reference
+         *     (target-only symbol with no prior position), ``reference_price`` is
+         *     ``None`` and the row is mirrored into ``unmatched`` so the frontend
+         *     can flag it.
+         */
+        PositionDiffEntry: {
+            /** Symbol */
+            symbol: string;
+            /** Current Shares */
+            current_shares: number;
+            /** Target Shares */
+            target_shares: number;
+            /** Delta Shares */
+            delta_shares: number;
+            /** Current Weight */
+            current_weight: number;
+            /** Target Weight */
+            target_weight: number;
+            /** Delta Weight */
+            delta_weight: number;
+            /** Delta Dollar */
+            delta_dollar: number;
+            /** Reference Price */
+            reference_price: number | null;
+            /** Reason */
+            reason?: string | null;
+        };
+        /**
+         * PositionDiffResponse
+         * @description GET /api/execution/position-diff payload.
+         */
+        PositionDiffResponse: {
+            /** As Of Date */
+            as_of_date: string;
+            /** Total Equity */
+            total_equity: number;
+            /** @description Latest AccountSnapshot, or None if no snapshot is on file. */
+            current?: components["schemas"]["AccountSnapshotPayload"] | null;
+            /**
+             * Target
+             * @description Snapshot-equivalent shape for the target portfolio (shares computed from target_weight × total_equity ÷ reference_price).
+             */
+            target?: components["schemas"]["PositionEntry"][];
+            /** Diff */
+            diff?: components["schemas"]["PositionDiffEntry"][];
+            /**
+             * Unmatched
+             * @description Target rows with no current price reference (target-only symbols whose share calculation falls back to the cash basis).
+             */
+            unmatched?: components["schemas"]["PositionDiffEntry"][];
+        };
+        /**
+         * PositionEntry
+         * @description One entry in an AccountSnapshot's ``positions`` list.
+         */
+        PositionEntry: {
+            /** Symbol */
+            symbol: string;
+            /** Shares */
+            shares: number;
+            /** Avg Cost */
+            avg_cost: number;
         };
         /**
          * ProtectedTestResponse
@@ -1525,6 +1688,91 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BacklogEntry"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_position_diff_route_api_execution_position_diff_get: {
+        parameters: {
+            query?: {
+                /** @description ISO-8601 date the diff is reported for; defaults to today. */
+                as_of?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PositionDiffResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_latest_account_route_api_execution_account_latest_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountSnapshotPayload"] | null;
+                };
+            };
+        };
+    };
+    put_account_route_api_execution_account_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountSnapshotPayload"];
                 };
             };
             /** @description Validation Error */
