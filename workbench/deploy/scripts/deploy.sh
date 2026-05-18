@@ -85,12 +85,18 @@ echo "→ alembic upgrade head"
   exec "${VENV_PYTHON}" -m alembic upgrade head
 )
 
-# 2b. Post-alembic safety check — assert the 3 B021/B022 tables exist
-# in the DB alembic just migrated. Catches future regressions where
-# the env file silently changes path or WORKBENCH_DB_URL drifts to a
-# wrong location. Reads WORKBENCH_DB_URL from the env we just sourced.
+# 2b. Post-alembic safety check — assert the workbench tables exist in
+# the DB alembic just migrated. Catches future regressions where the
+# env file silently changes path or WORKBENCH_DB_URL drifts to a wrong
+# location. Reads WORKBENCH_DB_URL from the env we just sourced.
+#
+# B023 F001 (v0.9.25 #1b enforcement): the `required` set now lists
+# 6 tables — the 3 B021/B022 tables plus the 3 B023 execution-workflow
+# tables (order_ticket / fill_journal_entry / account_snapshot). Any
+# migration drift that leaves the schema short of these 6 tables fails
+# the deploy here, before the symlink flip + service restart.
 if [[ -n "${WORKBENCH_DB_URL:-}" ]]; then
-  echo "→ verifying schema (account / backlog_entry / snapshot_meta)"
+  echo "→ verifying schema (account / backlog_entry / snapshot_meta / order_ticket / fill_journal_entry / account_snapshot)"
   "${VENV_PYTHON}" - <<'PY'
 import os
 import sys
@@ -100,7 +106,14 @@ from sqlalchemy import create_engine, inspect
 url = os.environ["WORKBENCH_DB_URL"]
 engine = create_engine(url)
 present = set(inspect(engine).get_table_names())
-required = {"account", "backlog_entry", "snapshot_meta"}
+required = {
+    "account",
+    "backlog_entry",
+    "snapshot_meta",
+    "order_ticket",
+    "fill_journal_entry",
+    "account_snapshot",
+}
 missing = required - present
 if missing:
     print(f"  ✗ schema check FAILED: missing tables {sorted(missing)} in {url}", file=sys.stderr)

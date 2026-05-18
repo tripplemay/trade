@@ -6,7 +6,7 @@
       "title": "DB schema extension：order_ticket + fill_journal_entry + account_snapshot 3 表 + Alembic + Repository",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "workbench/backend/workbench_api/db/models/ 加 3 个 SQLAlchemy 模型（OrderTicket / FillJournalEntry / AccountSnapshot）+ 配套 repositories/ 含 latest() / list_by_ticket() / reconcile() helpers（沿 B021 F002 base.py 通用 5 方法 pattern）。新 Alembic migration versions/0002_b023_execution_workflow.py 建 3 表 + 索引（fills.ticket_id + snapshots.snapshot_at desc）。**v0.9.25 #1b 强制：** 改 workbench/deploy/scripts/deploy.sh schema-assert `required` 集为 {account, backlog_entry, snapshot_meta, order_ticket, fill_journal_entry, account_snapshot}（6 表）。验收：alembic upgrade head 新库建 6 表，再跑 noop；Repository round-trip pytest 每模型；本地 dev WORKBENCH_DB_URL=sqlite:///./workbench-dev.db 工作；deploy.sh schema-assert 列 6 表 + 故意 throwaway commit 漏一表 → CI fail；安全 regression（禁 psycopg2/mysqlclient/pymongo/broker SDK）仍绿；backend pytest+ruff+mypy 全清。"
     },
     {

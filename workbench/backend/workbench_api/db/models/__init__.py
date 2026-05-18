@@ -2,13 +2,26 @@
 
 The B021 baseline ships three tables — Account, BacklogEntry, SnapshotMeta —
 mirroring the repo-root bootstrap files (`accounts/me.json`, `backlog.json`)
-and the snapshot registry that B009/B017 produced. Re-exports keep the
-import surface flat for Alembic auto-generate and the bootstrap CLI.
+and the snapshot registry that B009/B017 produced. B023 F001 adds three
+execution-workflow tables (OrderTicket, FillJournalEntry, AccountSnapshot)
+that record the manual rebalance loop. Re-exports keep the import surface
+flat for Alembic auto-generate and the bootstrap CLI.
 """
 
 from workbench_api.db.models.account import Account
+from workbench_api.db.models.account_snapshot import AccountSnapshot
 from workbench_api.db.models.backlog_entry import BacklogEntry
 from workbench_api.db.models.base import Base
+from workbench_api.db.models.fill_journal_entry import FillJournalEntry
+from workbench_api.db.models.order_ticket import OrderTicket
 from workbench_api.db.models.snapshot_meta import SnapshotMeta
 
-__all__ = ["Account", "BacklogEntry", "Base", "SnapshotMeta"]
+__all__ = [
+    "Account",
+    "AccountSnapshot",
+    "BacklogEntry",
+    "Base",
+    "FillJournalEntry",
+    "OrderTicket",
+    "SnapshotMeta",
+]

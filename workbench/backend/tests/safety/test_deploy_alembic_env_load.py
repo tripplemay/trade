@@ -76,11 +76,22 @@ def test_deploy_script_references_alembic_after_env_load() -> None:
 
 def test_deploy_script_verifies_required_tables_post_alembic() -> None:
     """Catches the future regression where the env path drifts again.
-    The post-alembic schema check must reference all three tables that
-    B021+B022 depend on."""
+    The post-alembic schema check must reference every workbench table
+    that production code depends on. B023 F001 (v0.9.25 #1b) extended
+    the asserted set from the original 3 B021/B022 tables to the full
+    6 — the new B023 execution-workflow tables (order_ticket,
+    fill_journal_entry, account_snapshot) must also be present."""
 
     text = DEPLOY_SH.read_text(encoding="utf-8")
-    for table in ("account", "backlog_entry", "snapshot_meta"):
+    required = (
+        "account",
+        "backlog_entry",
+        "snapshot_meta",
+        "order_ticket",
+        "fill_journal_entry",
+        "account_snapshot",
+    )
+    for table in required:
         assert table in text, (
             f"deploy.sh post-alembic check must verify presence of '{table}' "
             f"table — missing reference"
