@@ -318,6 +318,18 @@ env:
 
 来源：B020 F002（commit `393e180`）；GHA changelog 2026-06-02；B021 F004 fix（commit `7227688`）。
 
+**`npm audit --omit=dev` 必须进 CI gate（v0.9.25 sub-pattern）：** 任何含 npm 依赖的项目，frontend CI 必须加 `npm audit --omit=dev --audit-level=high` step。high 及以上 severity 上游 advisory 立即 fail workflow。
+
+```yaml
+- name: npm audit (production deps only, high-severity gate)
+  working-directory: workbench/frontend
+  run: npm audit --omit=dev --audit-level=high
+```
+
+理由：B022 F014 fix-round 2 Codex reverify 才发现 Next.js + Playwright direct deps 各有 high severity advisory，但本地开发没看到。CI 早点 fail 让 Generator 立即升级，比 reverify 时被 Codex 截到再 fix 省一轮。
+
+来源：B022 F014 fix-round 2 blocker #5。
+
 ---
 
 ## 11. Python 编码约定 — ruff strict mode 常见陷阱
@@ -425,6 +437,57 @@ systemd unit 不需要 `Environment=PATH=/snap/bin:...`，让默认 PATH 选 /us
 
 来源：B021 F005 fix-round 7（commit `7a50804`）。
 
+### 12.5 deploy.sh 必须 source systemd EnvironmentFile 才跑 alembic（v0.9.25 — B022 沉淀）
+
+**触发（B022 F014 fix-round 4 最严重 prod bug）：** SSH session 跑 alembic 的环境变量集合**不等于** systemd service 启动时加载的环境变量集合。systemd unit 通过 `EnvironmentFile=/etc/workbench/workbench.env` 显式 inject 给 backend service；但 deploy.sh 通过 SSH 调进来的 shell 没有这个文件 sourced，Settings 类回退到 `DEFAULT_DEV_DB_URL = "sqlite:///./workbench-dev.db"`，alembic 在 release 目录里建一个 scratch DB（每个 release SHA 一个），**真正的生产 DB 从未被迁移**。Runtime backend service 看到的是正确 DB URL（因为 systemd 加了 env），但 schema 来不到。结果：B022 page 写路径 hit `no such table: snapshot_meta / backlog_entry`。
+
+**规约：** 任何 cloud deploy 脚本在跑 migration 之前必须**显式 source 生产 env file**：
+
+```bash
+ENV_FILE="${WORKBENCH_ENV_FILE:-/etc/workbench/workbench.env}"
+if [[ -r "${ENV_FILE}" ]]; then
+  echo "→ loading env from ${ENV_FILE} for alembic"
+  set -a
+  # shellcheck disable=SC1090
+  . "${ENV_FILE}"
+  set +a
+else
+  echo "  warning: ${ENV_FILE} not readable; alembic will use DEFAULT_DEV_DB_URL" >&2
+fi
+
+echo "→ alembic upgrade head"
+(cd "${RELEASE_DIR}/backend" && "${VENV_PYTHON}" -m alembic upgrade head)
+```
+
+`set -a` + source + `set +a` 让 env 变量只对 alembic 子进程可见，不污染父 shell。
+
+### 12.6 deploy.sh 必须 post-alembic schema-assert（v0.9.25 — B022 沉淀）
+
+**配套（同源 B022 F014 fix-round 4）：** 即便 12.5 修了 env source，仍可能因未来的 env file 路径 drift / WORKBENCH_DB_URL 写错而 silent fail。加 post-alembic schema assert 在 release symlink flip 之前立即捕捉。
+
+```bash
+if [[ -n "${WORKBENCH_DB_URL:-}" ]]; then
+  echo "→ verifying schema (account / backlog_entry / snapshot_meta)"
+  "${VENV_PYTHON}" - <<'PY'
+import os, sys
+from sqlalchemy import create_engine, inspect
+url = os.environ["WORKBENCH_DB_URL"]
+engine = create_engine(url)
+present = set(inspect(engine).get_table_names())
+required = {"account", "backlog_entry", "snapshot_meta"}
+missing = required - present
+if missing:
+    print(f"  ✗ schema check FAILED: missing tables {sorted(missing)} in {url}", file=sys.stderr)
+    sys.exit(1)
+print(f"  ✓ schema check passed: {sorted(required)} present in {url}")
+PY
+fi
+```
+
+**Generator 规约：** 任何含 DB migration 的 deploy.sh 必须同时 (12.5) source env file + (12.6) post-migration schema-assert。`required` 表名集合需要随 spec 演化（B022 是 3 表，B023 / 后续可能加），acceptance 应要求 assert 列表与 alembic 当前 head 实际表名一致。
+
+来源：B022 F014 fix-round 4（commit `8d9a948`），deploy.sh 实际改动作为 reference impl。
+
 ---
 
 ## 13. Frontend SSR vs Browser context（v0.9.24 — B021 沉淀）
@@ -464,4 +527,79 @@ systemd unit 不需要 `Environment=PATH=/snap/bin:...`，让默认 PATH 选 /us
    };
    ```
 
-来源：B021 F006 fix-round 5（commit `4eb9c48`）`workbench/frontend/src/app/(protected)/page.tsx` + `next.config.mjs`。
+5. **Dev rewrite 必须覆盖生产 nginx `/api/*` 路由全集（v0.9.25 sub-pattern）：** 上面的 catch-all `/api/:path*` 是好做法。如果 next.config 用了 explicit per-route rewrites（如 `/api/health` + `/api/protected-test` 单独列），**加新 API endpoint 时必须同时**：
+
+   - 扩 `next.config.mjs` 的 rewrites 列表（或换 catch-all）
+   - 加 E2E 断言新 endpoint 不返 404（仅 200/401/422 等业务码合法）
+
+   B022 fix-round 1 第 3 个 blocker 就是 dev rewrite 只配了 health + protected-test 2 个 endpoint，新加的 6 个 page API 全 404，但 Playwright E2E 不在 API 错误上 fail，让 bug 漏到 reverify 阶段才暴露。规约：**生产 API 路径与 dev rewrite 配置必须 1:1 对应**，加一个 endpoint 必须扩两处。
+
+来源：B021 F006 fix-round 5（commit `4eb9c48`）`workbench/frontend/src/app/(protected)/page.tsx` + `next.config.mjs`；B022 F014 fix-round 1 blocker #3。
+
+---
+
+## 14. FastAPI 运行时观测 ergonomics（v0.9.25 — B022 沉淀）
+
+### 14.1 SSE long-lived 请求需独立 session lifecycle
+
+**症状（B022 F011 fix-round 2）：** SnapshotRefresh 用 SSE 流式 progress 给前端。FastAPI 默认 dependency-injected DB session 在请求结束时 close。但 SSE 请求"永远不结束"直到 stream 完，期间任何 DB write 会被 close 一次后再 reopen，导致并发问题 + connection pool 漏。
+
+**规约：** 任何 SSE / WebSocket / long-polling endpoint **必须显式管理 DB session**（不用 FastAPI Depends），手动 open at start of stream + close in finally clause + 短小事务模式：
+
+```python
+@router.post("/api/snapshots/refresh")
+async def refresh(...):
+    async def stream():
+        try:
+            yield "event: start\n\n"
+            # ... subprocess ...
+            with SessionLocal() as session:  # short transaction
+                session.add(SnapshotMeta(...))
+                session.commit()
+            yield "event: done\n\n"
+        finally:
+            # cleanup
+            ...
+    return StreamingResponse(stream(), media_type="text/event-stream")
+```
+
+### 14.2 全局未捕获异常 logger + /api/debug/recent-errors
+
+**触发（B022 F014 fix-round 2 → fix-round 4）：** 生产 backend 出 `no such table: snapshot_meta` 等 OperationalError，但用户只看到 frontend 500，无法回溯。/api/health 全绿（health 不查这些表）。Codex L2 reverify 没工具找根因。
+
+**规约：** FastAPI app 启动期注册全局异常 hook + 环形缓冲 + 只读 debug endpoint：
+
+```python
+# observability/error_buffer.py
+from collections import deque
+from datetime import datetime, timezone
+_RING = deque(maxlen=50)
+
+def record(exc: BaseException, request_path: str) -> None:
+    _RING.append({
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "path": request_path,
+        "exc_type": type(exc).__name__,
+        "exc_msg": str(exc)[:500],
+        "request_id": REQUEST_ID_VAR.get(""),
+    })
+
+def snapshot() -> list[dict]:
+    return list(_RING)
+
+# app.py
+@app.exception_handler(Exception)
+async def all_exception_handler(request: Request, exc: Exception):
+    error_buffer.record(exc, request.url.path)
+    logger.exception(...)
+    return JSONResponse({"detail": "internal error"}, status_code=500)
+
+# routes/debug.py — auth-gated, single-allowlist
+@router.get("/api/debug/recent-errors", dependencies=[Depends(require_authenticated_user)])
+def recent_errors():
+    return {"count": len(snapshot()), "errors": snapshot()}
+```
+
+**Generator 规约：** 任何 FastAPI cloud app 起 spec 时必须含这 3 件套（global handler + ring buffer + auth-gated debug endpoint）。Codex L2 reverify 用 `GET /api/debug/recent-errors` 在每个真实写路径后核 `count=0`。
+
+来源：B022 F014 fix-round 2 `c2f22d5` + fix-round 4 `8d9a948`。Codex L2 用此 endpoint 验证缺表修复后写路径不再触发 OperationalError。

@@ -91,6 +91,29 @@
 
 ---
 
+## Production / HEAD 等价性（v0.9.25 — B022 沉淀）
+
+> 本节由 Evaluator 在签收时填写：对比生产 deployed SHA 与签收时 `main` HEAD SHA。
+> 适用对象：任何 cloud-deployed 批次（B021 及以后含 cloud deploy 的批次）。
+> 纯本地研究批次（B017/B018/B019 等无 deploy step）本节可写"批次不含 cloud deploy"。
+
+| 项 | 值 |
+|---|---|
+| Production version (from `/api/health.version`) | [SHA] |
+| Main HEAD (`git rev-parse HEAD`) | [SHA] |
+| Diff (`git log --oneline <deployed>..HEAD`) | [N commits 或 "0 commits"] |
+
+**等价性判断规则：**
+
+- **同 SHA：** 直接 PASS。
+- **不同 SHA**：检查 `git diff <deployed>..HEAD --name-only`：
+  - 仅含状态机文件（`progress.json` / `features.json` / `.auto-memory/**` / `docs/test-reports/**-blocker-*.md` 等签收周期产生的元数据） → **接受不同步**，标注"产品代码无漂移"。
+  - 含任何 `workbench/**` / `trade/**` / `docs/specs/**` / `docs/prd/**` / framework 类产品/spec 文件 → **必须重新触发 deploy**（push commit 或 manual workflow_dispatch）让 production 与 HEAD 对齐后再签 PASS。
+
+来源：B022 F014 round-4 signoff Codex 模板修订建议（commit `3543abf`）。
+
+---
+
 ## Soft-watch（不阻塞 done，需后续跟进）
 
 > 本节由 Evaluator 在签收时填写。低-中风险或边界条件遗留事项列入此处，记录"非 bug 但要记账"的事实。每条声明 ID / 描述 / 风险等级 / 建议处置。

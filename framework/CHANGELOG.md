@@ -5,6 +5,27 @@
 
 ---
 
+## v0.9.25 — 2026-05-18（B022 沉淀，4 grouped learnings 涵盖 9 items）
+
+**来源批次：**
+- B022-workbench-phase1 F014 fix-round 1-4（commits `c2f22d5` / `6c0d282` / `8d9a948` / `3543abf` + blocker reports）
+- signoff `docs/test-reports/B022-workbench-phase1-signoff-2026-05-18.md` 官方 §Framework Learnings 3 条 + Planner 从 fix-round commits 提的 6 条 fix-round-derived learnings
+
+**触发原因：**
+- B022 F014 fix-round 4 最严重 prod bug：deploy.sh 跑 alembic 时没 source systemd EnvironmentFile，scratch DB 替代真 DB，业务路径全 hit `no such table`
+- fix-round 1-3 暴露多个独立短板：Next dev rewrite 只覆盖 health + protected-test 不含新增 page API → 404；npm audit Next.js + Playwright high severity advisory；production release 没 ship docs/test-reports 让 /reports 页空；SSE long-lived session 复用 FastAPI Depends 默认 session 漏 connection；prod 500 无回溯工具
+
+**变更：**
+- `framework/harness/planner.md` §"Cloud-deploy spec checklist" 加 v0.9.25 扩展 2 子条：(c) production release tarball 必须 ship 业务 page 引用的所有 docs 类静态资源；(d) L2 acceptance 必须含真实读表 + 真实写表（schema drift 不在 health 暴露）
+- `framework/harness/generator.md` §12 systemd 扩 12.5 deploy.sh source EnvironmentFile + 12.6 post-alembic schema-assert（含 reference impl）
+- `framework/harness/generator.md` §13 Frontend SSR vs Browser context 扩 sub-pattern #5：dev rewrite 必须 1:1 mirror 生产 nginx /api/* 路由全集
+- `framework/harness/generator.md` §10 GHA 扩 npm audit --omit=dev --audit-level=high CI gate
+- `framework/harness/generator.md` 新 §14 "FastAPI 运行时观测 ergonomics"：14.1 SSE 独立 session lifecycle / 14.2 全局未捕获异常 logger + /api/debug/recent-errors auth-gated debug endpoint（含完整代码示例）
+- `framework/templates/signoff-report.md` 加 §"Production / HEAD 等价性"（Codex 提的模板修订）：deployed SHA vs HEAD 判断规则（仅状态机文件 diff = 接受；产品/spec/framework 文件 diff = 必须重 deploy 后再签）
+- 归档 `framework/archive/proposed-learnings-archive-v0.9.25.md`
+
+---
+
 ## v0.9.24 — 2026-05-17（B021 沉淀，3 grouped learnings + PLACEHOLDER scope sub-pattern）
 
 **来源批次：**

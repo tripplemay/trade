@@ -1,117 +1,69 @@
 {
-  "sprint": "B022-workbench-phase1",
+  "sprint": "B023-workbench-phase2-manual-execution",
   "features": [
     {
       "id": "F001",
-      "title": "shadcn/ui init + financial pre-config + component library install（重写自原 template-clone）",
+      "title": "DB schema extension：order_ticket + fill_journal_entry + account_snapshot 3 表 + Alembic + Repository",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "在 workbench/frontend/ 上 (1) npx shadcn@latest init 保留现有 Footer/layout/middleware（B021 已交付不重写）；(2) selectively add 核心组件 Button/Card/Dialog/Toast/Tabs/Table/Sheet/Input/Select/Tooltip；(3) 金融预配置：Inter UI + JetBrains Mono numeric via next/font/google + tabular-nums on .numeric class + P&L tokens --color-up=#00c853 / --color-down=#ff3b30 + compact density (Tailwind padding/Button heights) + Zinc dark theme；(4) 装 AG Grid Community + TradingView lightweight-charts + ECharts；(5) npm run build clean + 无 peer-dep warning + B021 既有 Playwright disclaimer regression 全过；(6) 若 shadcn/Next 15/Tailwind v4 ecosystem 不兼容 fall back to Next 14 + Tailwind 3 + shadcn-for-tw3（已有）+ 文档化 fall-back 到 ADR addendum。详见 docs/specs/B022-workbench-phase1-spec.md §F001 + §Status §Cloud+auth+Repository adaptation。"
+      "status": "pending",
+      "acceptance": "workbench/backend/workbench_api/db/models/ 加 3 个 SQLAlchemy 模型（OrderTicket / FillJournalEntry / AccountSnapshot）+ 配套 repositories/ 含 latest() / list_by_ticket() / reconcile() helpers（沿 B021 F002 base.py 通用 5 方法 pattern）。新 Alembic migration versions/0002_b023_execution_workflow.py 建 3 表 + 索引（fills.ticket_id + snapshots.snapshot_at desc）。**v0.9.25 #1b 强制：** 改 workbench/deploy/scripts/deploy.sh schema-assert `required` 集为 {account, backlog_entry, snapshot_meta, order_ticket, fill_journal_entry, account_snapshot}（6 表）。验收：alembic upgrade head 新库建 6 表，再跑 noop；Repository round-trip pytest 每模型；本地 dev WORKBENCH_DB_URL=sqlite:///./workbench-dev.db 工作；deploy.sh schema-assert 列 6 表 + 故意 throwaway commit 漏一表 → CI fail；安全 regression（禁 psycopg2/mysqlclient/pymongo/broker SDK）仍绿；backend pytest+ruff+mypy 全清。"
     },
     {
       "id": "F002",
-      "title": "OpenAPI ↔ TypeScript types pipeline 复用 + extend（B020 F004 已有）",
+      "title": "Position diff page + Account state edit UI",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "B020 F004 已交付 workbench/frontend/scripts/generate-types.sh + CI drift check（仅含 /api/health 类型）。F002 在此基础上 (1) 触发新 /api/dashboard /api/strategies /api/backtests /api/reports /api/recommendations /api/snapshots /api/backlog 全部 endpoint schema 写入 OpenAPI；(2) generate-types.sh 跑后 src/types/api.ts 含所有新 schemas；(3) CI drift 自动失败若 backend schema 改而 types 未 regen；(4) 任意 frontend page 跨 fetch 必须 import types 而非 hardcoded interface。"
+      "status": "pending",
+      "acceptance": "Backend：GET /api/execution/position-diff?as_of=<date> 返 {current:AccountSnapshot, target:TargetPositions, diff:[{symbol, current_shares, target_shares, delta_shares(signed +买-卖), delta_weight, delta_dollar, reason}], unmatched}；GET /api/execution/account/latest 返最新 snapshot；PUT /api/execution/account 接 {cash, base_currency, positions} 插新 AccountSnapshot(source=ui_edit)。Frontend：(protected)/execution/position-diff/page.tsx — AllocationBar 当前 vs target + 每行 diff DataTable（signed delta with --color-up/--color-down tokens 来自 B022 F001）；(protected)/execution/account/page.tsx — 表单编辑账户提交→PUT→toast。验收：fixture account + fixture target 渲染正确（无需真 OAuth）；diff 符号正确（delta_shares>0 当 target>current）；account 表单 validate（weights ≤1、cash≥0、无重复 symbol）；提交后 Recommendations + Position-diff 立刻反映新状态；CSV export 工作；Vitest+Playwright+httpx 全过；same-origin fetch（v0.9.24 #3）。"
     },
     {
       "id": "F003",
-      "title": "Shell layout extend：TopBar + SideNav + dark theme tokens（在 B020/B021 既有 Footer 上加）",
+      "title": "Order ticket 生成 + viewer + Markdown 导出",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "B020+B021 已交付 components/shell/Footer + lib/disclaimer + middleware + /(protected)/ layout。F003 加 (1) components/shell/TopBar.tsx 含项目名 + snapshot indicator + nav links + user email/avatar (来自 useSession)；(2) components/shell/SideNav.tsx 含 7 page links + active state；(3) ThemeProvider + dark mode CSS variables；(4) (protected)/layout 包 TopBar + SideNav + Footer；(5) 安全 regression：所有 7 routes Playwright 覆盖含 disclaimer + TopBar + SideNav 链接可点开。B020 既有 5 个安全 guard 测试全部继续过。"
+      "status": "pending",
+      "acceptance": "Backend：POST /api/execution/tickets 消费 position-diff 生成新 ticket，写 Markdown 到 docs/runs/<YYYY-MM-DD>/order-ticket-<id>.md（已 ship release tarball per v0.9.25 #1c）+ 插 order_ticket 行；GET /api/execution/tickets 列表 paginated；GET /api/execution/tickets/{id} 详情；POST /api/execution/tickets/{id}/void 翻 status→voided。Markdown 模板含 disclaimer 字面串 'research-only; this is a manual review checklist, not a trading instruction'（unit test 断言）+ 'Trades to place' 表 + 'After execution checklist' 段。Frontend：(protected)/execution/ticket/page.tsx 显最新 ticket + Generate/Void 按钮 + Markdown preview + Download；(protected)/execution/ticket/[id]/page.tsx 历史只读。验收：generate 端到端产 DB row + Markdown 文件；list+detail viewer 工作 ≥3 历史 tickets seeded；void 不可 reconcile；任何按钮 labelled 'execute'/'place order'/'send to broker' 禁（Vitest grep + Playwright assert）；same-origin path、build artifact 无 127.0.0.1（v0.9.24 #3 regression）。"
     },
     {
       "id": "F004",
-      "title": "Chart component library wrappers（lightweight-charts + ECharts）",
+      "title": "Fill journal upload (CSV + 手工) + preview",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "新建 workbench/frontend/src/components/chart/{EquityCurveChart,DrawdownChart,SweepHeatmap,AllocationPie,AllocationBar}.tsx：(1) EquityCurveChart lightweight-charts area + 多 series overlay (legend 切换) + brush 选区 emit [startDate,endDate] callback + 十字光标 + PNG 导出（chart.takeScreenshot()）；(2) DrawdownChart lightweight-charts histogram 与 EquityCurveChart 共享 time axis；(3) SweepHeatmap ECharts heatmap；(4) AllocationPie + AllocationBar ECharts；(5) Vitest 单测：每组件 mock props 渲染 + assert DOM 基本存在 + PNG export emits blob (mocked)；(6) /dev/charts 路由（NEXT_PUBLIC_DEV_ROUTES gate）含全部组件示例数据，不可在 production shell 导航。"
+      "status": "pending",
+      "acceptance": "Backend：POST /api/execution/fills 接 multipart CSV 或 JSON {ticket_id, fills:[...]}；validate 每 fill matches ticket order_seq 或 flag --unmatched；插 fill_journal_entry 行。CSV 解析用 csv stdlib + Pydantic per-row validation；错误返 400 含 row-level 详情 {row:N, error:'...'}。GET /api/execution/fills?ticket_id=<id> 返该 ticket 全部 fills。Frontend：(protected)/execution/fills/page.tsx 上传 CSV（shadcn input type=file）+ 手工 entry table 单行 fill；上传后 preview view 每 fill match ticket 行用户 confirm before commit。验收：上传 3 fixture CSV（Schwab/IBKR/generic）每个 ≤5 LOC adapter glue parse 成功；手工 entry validate 客户端+服务端（positive shares / valid date / ticket 中已知 symbol）；unmatched fills flag user prompt 不 auto-reject；Vitest+Playwright+contract test。"
     },
     {
       "id": "F005",
-      "title": "Table component AG Grid wrapper + CSV export + 列定义",
+      "title": "Reconciliation + journal history + slippage analytics",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "components/table/DataTable<T>.tsx：(1) AG Grid Community wrapper 默认 sortable + filterable + resizable + sticky header；(2) ref exposes exportCsv() 方法；(3) reusable 列定义 dateColumn / currencyColumn / percentColumn / basisPointsColumn / weightColumn 各有 formatter + right-align + tabular-nums；(4) Vitest 渲染 1000 行 mock 数据虚拟化（DOM ≤ ~30 行同时存在）；(5) CSV export 测试产 mock blob valid CSV；(6) snapshot 测试每列定义 formatting 稳定。"
+      "status": "pending",
+      "acceptance": "Backend：POST /api/execution/reconcile/{ticket_id} 匹配 fills 算 slippage 插新 account_snapshot(source=fill_reconcile)+ flip ticket.status=executed+executed_at；GET /api/execution/journal-history?since=<date> 返过去 tickets + fills + slippage 摘要（per-ticket avg bps + fill count）；GET /api/execution/slippage-analytics?window=<3m|6m|1y> 返 rolling avg slippage bps + outliers + trend。Frontend：(protected)/execution/journal-history/page.tsx — DataTable 过去 tickets + expand-row 见 fills + slippage；sortable/filterable/CSV export；per-ticket detail AllocationBar intended vs realized + slippage 折线图（lightweight-charts area）。验收：reconcile 端到端 fixture ticket+fills 插正确新 snapshot + slippage；idempotent（跑两次不 dupe snapshot）；journal history 渲 12 月 fixture data 可 sortable；slippage bps = (fill_price - reference_close) / reference_close * 10000 signed per trade direction 正确算；Vitest+Playwright+contract。"
     },
     {
       "id": "F006",
-      "title": "Home / Dashboard page vertical slice (auth-gated)",
+      "title": "Risk panel + kill-switch alert UI",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "Backend route GET /api/dashboard (require_authenticated_user) 返 {nav, masterDrawdown, killSwitchThreshold, daysToNextRebalance, lastRebalance:{date,fillCount,slippageBps}, recentReports:[{id,title,date,status,path}], actionItems:[{id,severity,message}]}。读 SQLite via Repository（不直读 file）。Frontend (protected)/page.tsx 替换现有 placeholder：4 top cards + recent reports list（链 /reports/[id]）+ action items + empty states。Fetch via same-origin /api/dashboard（per framework v0.9.24 #3）。Vitest mock API；Playwright smoke 加载 + 4 cards 可见；httpx TestClient schema 契约。"
+      "status": "pending",
+      "acceptance": "Backend：GET /api/execution/risk-panel 返 {master_dd, kill_switch_threshold(0.15 per B011), kill_switch_triggered:bool, per_sleeve_dd:{...}, slippage_trend_3m_bps}；若 triggered 同时返 alternative_defensive_ticket（全 defensive sleeve 的另一 ticket）。Frontend：Recommendations page header banner（B022 F010 extension）—— 绿=全 OK / 黄=任一 sleeve DD>8% / 红=kill-switch triggered。红时 page 显示并排「normal ticket」vs「defensive ticket」+ radio button 让用户选；generate-ticket honor 选择。验收：3 fixture state 渲染正确（all-OK / yellow per-sleeve DD / red kill-switch with alternative ticket visible）；generate-ticket honors user 选择；Vitest+Playwright。"
     },
     {
       "id": "F007",
-      "title": "Strategies page vertical slice",
+      "title": "Docs refresh + manual-execution runbook + 截图",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "Backend GET /api/strategies + /api/strategies/{id}（auth gated）返 sleeve 列表 + per-strategy 详情含 provenance（spec / code / last sweep 链接）。Frontend (protected)/strategies/page.tsx：DataTable 列表 + per-strategy detail panel（config card + equity curve + drawdown + turnover heatmap + perf comparison）。可 ?selected=B013 URL param。strategy registry 从 trade/ 通过 backend adapter 暴露 4 sleeves with B019 默认（B013 quarterly/0.11，其它不变）。CSV export 工作；spec/code 链按钮经 /api/docs/{path} 后端服务（含 path traversal sanitization）。"
+      "status": "pending",
+      "acceptance": "(1) docs/dev/workbench-architecture.md 更新含 B023 5 新页 + workflow state machine 图 + DB schema 图（6 表）；(2) 新 docs/dev/workbench-manual-execution-runbook.md：端到端用户流（open Recommendations → generate ticket → 在 broker app 执行 → upload fills → reconcile → 看 slippage），每步含命令/点击/预期结果 + 3 CSV format 示例（Schwab/IBKR/generic）；(3) docs/screenshots/ 加 B023 5 新页截图（PNG ≤ 300 KB each）；(4) workbench/README.md reference docs 段刷新；(5) CLAUDE.md reference-docs 段刷新 引 manual-execution runbook。验收：单用户 follow runbook 能跑完整流程；截图 fresh；CLAUDE.md 反映新文档。"
     },
     {
       "id": "F008",
-      "title": "Backtest viewer page vertical slice + ResizablePanel split",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "Backend POST /api/backtests/run (auth) 同步跑 trade.master.run_backtest()；GET /api/backtests/{run_id} cache。Frontend (protected)/backtest/page.tsx **layout 用 shadcn <ResizablePanelGroup> single horizontal split**：左 = 选择器（strategy / snapshot / window + run button），右 = 结果（metrics card + EquityCurveChart + DrawdownChart + allocation history + trades AG Grid）。**硬边界：仅此页用 ResizablePanel；不引入 react-grid-layout；不持久化 panel size；不跨页同步；其它 6 页无 ResizablePanel（regression assert）。** Comparison toggle layer SPY + static 60/40。Playwright smoke 跑 canned B010 backtest on fixture snapshot < 5s；ResizablePanel 鼠标 + 键盘可拖（Radix 原生）。"
-    },
-    {
-      "id": "F009",
-      "title": "Reports page vertical slice + markdown rendering",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "Backend GET /api/reports + /api/reports/{slug}（auth）返 docs/test-reports/ markdown 列表 + 渲染后 structured JSON（tables 提取以便 frontend AG Grid 重渲）。Frontend (protected)/reports/page.tsx + reports/[id]/page.tsx：列表 + 详情页用 react-markdown + remark-gfm + custom code-block + table renderer（tables ≥ 10 行用 AG Grid）。Cross-links docs/specs/B0*.md + docs/test-reports/B0*.md 解析为内部 route。新增 /api/docs/{path} backend 共享路径解析 endpoint（sanitize traversal）。B017/B018/B019 reports 全部能干净渲染；B019 retune sweep matrix 可交互排序；smoke 测试加载 B019 报告确认 matrix 表存在。"
-    },
-    {
-      "id": "F010",
-      "title": "Recommendations page vertical slice + export markdown ticket",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "Backend GET /api/recommendations/current（auth）：从 SQLite via Repository 读 accounts/me.json 数据 + 最新 snapshot + master portfolio config → 跑 master 在最新 signal date → 返 TargetPositions + diff vs current + gate checks + wash-sale flags（启发式：journal 30 天内同 symbol 买入）。POST /api/recommendations/export-ticket 写 markdown checklist 到 docs/runs/<date>/order-ticket-<date>.md 返路径；**绝不下任何单**。Frontend (protected)/recommendations/page.tsx：AllocationPie + AllocationBar + positions table + rationale + gate panel + wash-sale flags + Export Markdown Ticket 按钮。Empty state if accounts/me.json 缺。Unit test 断言 export ticket 含字面字符串 'research-only; this is a manual review checklist, not a trading instruction'。"
-    },
-    {
-      "id": "F011",
-      "title": "Snapshots page vertical slice + refresh with SSE progress",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "Backend GET /api/snapshots（auth）从 SnapshotMeta repo 读列表 + quality status；POST /api/snapshots/refresh 跑 scripts/refresh_public_snapshot subprocess 经 SSE 流式 progress；完成后 insert SnapshotMeta row 同时 file 写盘。Frontend (protected)/snapshots/page.tsx：DataTable + Refresh 按钮触发 modal 流 SSE events；完成 list re-fetch + toast 成功/失败。Vitest mock subprocess (2-second canned)；SSE events 渲染。失败 toast 含底层 error message。"
-    },
-    {
-      "id": "F012",
-      "title": "Backlog page vertical slice + CRUD + auto-commit",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "Backend GET/POST/PATCH/DELETE /api/backlog（auth）经 BacklogEntry repo 持久化；mutation 后自动 `git add backlog.json && git commit -m 'chore(backlog): <action>'`（commit author = workbench；user 可后续 amend）。Frontend (protected)/backlog/page.tsx：DataTable + priority filter + Add/Edit/Delete actions（Dialog modals + form validation）。验收：(1) list 加载现 4 entries 反映 BL-B011-S2 high；(2) create/edit/delete e2e 工作；(3) 每 mutation 产生 git commit；(4) commit message 匹配 `chore(backlog): add|edit|delete BL-<id>`；(5) git error (conflict 等) → mutation fail closed + toast 显示底层错误。"
-    },
-    {
-      "id": "F013",
-      "title": "Workbench docs + screenshots + runbook + branch protection 指引刷新",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "workbench/README.md 刷新含 prereq (Python 3.11+ + Node 20+) + 一键 boot (scripts/start_workbench.sh) + dev/build/test 命令 + troubleshooting (端口冲突 / snapshot refresh / type drift) + production URL trade.guangai.ai。新增 7 页截图（PNG ≤ 300 KB each）放 docs/screenshots/。docs/dev/workbench-architecture.md 更新含 7 页架构图 + 请求生命周期 + cloud deploy 流 + 安全 guard。CLAUDE.md reference-docs 段刷新指向新文档。docs/dev/branch-protection-guidance.md 加上 workbench-deploy.yml workflow 入 required status check 候选。"
-    },
-    {
-      "id": "F014",
-      "title": "Codex L1 + L2 真 VM 验收 + workbench signoff",
+      "title": "Codex L1 + L2 真 VM 18 项验收 + workbench Phase 2 signoff",
       "priority": "high",
       "executor": "codex",
       "status": "pending",
-      "acceptance": "L1 (CI 内)：npm test + pytest + ruff + mypy backend 全清；frontend lint+typecheck+build+vitest 全清；Playwright E2E smoke walks 全 7 routes + 断言 disclaimer 可见 + 无 console errors；安全 regression 测试全过（含 NEXT_PUBLIC_/localhost build artifact regression 守 v0.9.24 #3）。L2 (真 VM trade.guangai.ai 浏览器)：(1) 7 页 OAuth gating 工作；(2) Home dashboard 显示真实 NAV/DD/recent reports；(3) Strategies 浏览 4 sleeves + 历史曲线；(4) Backtest viewer ResizablePanel split + 跑 B013 backtest 出图；(5) Reports 渲染 B019 retune sweep 表 + 跨链接到 spec；(6) Recommendations 用 fixture accounts/me.json 产 target portfolio + export markdown ticket；(7) Snapshots refresh 经 SSE；(8) Backlog CRUD + git commit；(9) /api/health 仍返 6 字段；(10) 邻居服务 (nginx+pm2 aigcgateway+apify-kol) 完全不受影响。Codex 写 docs/test-reports/B022-workbench-phase1-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md。更新 progress.json status→done / docs.signoff 设值 / evaluator_feedback 含 10 项验收概要。"
+      "acceptance": "L1 (CI 内 6 项)：pytest + ruff + mypy backend / npm test + lint + typecheck frontend / Playwright E2E walks 5 新页 + 断言 disclaimer 可见 + build artifact 无 127.0.0.1（v0.9.24 #3 regression）/ 安全 regression（禁 broker SDK + paper/live URL + 按钮 labelled execute/place order/send to broker）/ npm audit --omit=dev --audit-level=high 全清（v0.9.25 #3a）/ deploy.sh schema-assert 列 6 表故意漏一表 → CI fail。L2 (真 VM 12 项 含 v0.9.25 #1d 强制真读+真写)：OAuth → Home → position-diff 渲 fixture → account 编辑+$1000 持久 → ticket 生成 Markdown 文件落 docs/runs/ + DB row → fills 上传 Schwab CSV preview commit → reconcile ticket → journal-history 看 slippage → risk panel 绿 → /api/health 6 字段 + db_connectivity=ok → systemctl quota + 邻居服务未受影响 → Production/HEAD 等价性（per signoff template v0.9.25 §Production/HEAD 等价性，diff workbench/** 必须重 deploy 再签）→ /api/debug/recent-errors count=0 after full flow（v0.9.25 #3c）。Codex 写 docs/test-reports/B023-workbench-phase2-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（含新 §Production/HEAD 等价性 段）。更新 progress.json status→done / docs.signoff 设值 / evaluator_feedback 总结 L1+L2 18 项。**B023 done = MVP 全 PRD §10/§11/§12 substantively 完成 for single-user manual-execution workbench。**"
     }
   ]
 }

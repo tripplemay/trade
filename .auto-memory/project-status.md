@@ -4,24 +4,25 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B022-workbench-phase1：`done`**（2026-05-18 signoff）。Codex 完成 fix-round 4 最终复验并签收：本地 targeted L1 回归 `18 passed` + `ruff` + `mypy` 全绿；生产 authenticated L2 关键链路通过，`/api/debug/recent-errors` 在 Backlog create 与 Snapshots refresh 后均保持 `count=0`，证明 round-3 暴露的 `no such table: backlog_entry / snapshot_meta` 已被 round-4 deploy 修复。关键证据：`POST /api/backlog` 返回 `201` 且页面出现新增项 `BL-WB-4D3D0968`；Snapshots refresh 完成并落出 `snap-dc2fda15f825`；Recommendations export UI 成功写 `/var/lib/workbench/runs/2026-05-18/order-ticket-2026-05-18.md`；Reports 明细页重表格 `markdown-heavy-table=4`；Backtest run `c5f6dc2dfe28` 成功。签收报告：`docs/test-reports/B022-workbench-phase1-signoff-2026-05-18.md`。
-- Spec：`docs/specs/B022-workbench-phase1-spec.md`（2026-05-17 已加 §Status + §Cloud+auth+Repository adaptation 段，标 ready to execute）
-- 范围：7 read-mostly 业务页（Home / Strategies / Backtest / Reports / Recommendations / Snapshots / Backlog）+ 最小必要 write（snapshot refresh / backlog CRUD / 触发 backtest / 导出 target positions Markdown）+ 5 chart 组件 + AG Grid table 组件 + workbench 文档+截图 + Codex L1+L2 真 VM 10 项验收。
-- B020+B021 已交付的 8 surface F001 必须复用不重写：workbench skeleton / CI workflows / OpenAPI pipeline / NextAuth + 后端 JWT + allowlist / SQLite + Alembic + Repository + workbench-bootstrap CLI / systemd+nginx+cert / GHA deploy/rollback / SQLite→GCS backup / 观测层。
-- 后续路径：**B023 Workbench Phase 2**（manual execution UI：position diff / order ticket / fill journal）。
-- 关键决策：所有 frontend fetch 用 same-origin /api/* 路径（framework v0.9.24 #3 强制）；所有 API endpoint 在 require_authenticated_user gate 后；读 SQLite via Repository 非直读文件；ResizablePanel 仅 F008 Backtest 页用单页 split（不引 react-grid-layout）。
-- 硬边界：no-broker / no-paper / no-live / no-secret-in-strategy；workbench cloud 仅 trade.guangai.ai 暴露 + OAuth 单 email allowlist；任何 placeholder 字符串 PLACEHOLDER-REPLACE-ME 不许进 workbench/ 源码；framework v0.9.24 #1-4 + v0.9.21 #1 + v0.9.22 + v0.9.23 全部继续约束。
+- **B023-workbench-phase2-manual-execution：`building`**；Generator 接 F001（3 张新表 order_ticket / fill_journal_entry / account_snapshot + Alembic migration 0002 + Repository + deploy.sh schema-assert 扩为 6 表 per v0.9.25 #1b），共 8 features 完成 0。预估 4-5 周。
+- Spec：`docs/specs/B023-workbench-phase2-manual-execution-spec.md`
+- 范围：闭合 monthly rebalance manual workflow — 5 新页（position-diff / ticket / fills / journal-history / account 编辑）+ slippage analytics + risk panel/kill-switch alert + Codex L2 18 项验收。**永久不连 broker**（B012 BrokerAdapter ABC 永久 unwired）。
+- 后续路径：**B023 done = MVP 全 PRD §10/§11/§12 substantively 完成 for single-user manual-execution workbench**。之后是 BL-B011-S2（satellites 实现）+ BL-B013-D1/D2 等 post-MVP backlog。
+- 关键决策（B023 加 / B021+B022 继承）：3 新表跟 B021 Repository 同 pattern；reconciliation 端到端 idempotent；CSV 上传 + 手工 entry 双轨；reconcile 后插 account_snapshot(source=fill_reconcile)；risk panel 红色时并排 normal+defensive ticket 让用户选。
+- 硬边界：no-broker SDK / no-paper or live URL / no-credential / no-auto-execution / 多用户禁 / Cloud SQL 禁；任何按钮 labelled execute/place order/send to broker 禁；same-origin /api/* (v0.9.24 #3)；auth-gated；Repository 读写非直 file；framework v0.9.21-v0.9.25 全约束继续。
+- L2 含 v0.9.25 #1d 真读+真写、新 §Production/HEAD 等价性、#3c /api/debug/recent-errors count=0 verify。
 
 ## 已完成签收
-- B001-B021 全部已签收；最近：B021 cloud deploy/auth `docs/test-reports/B021-cloud-deploy-auth-signoff-2026-05-17.md`
+- B001-B022 全部已签收；最近：B022 workbench Phase 1 `docs/test-reports/B022-workbench-phase1-signoff-2026-05-18.md`
 
 ## 生产状态
-- `https://trade.guangai.ai` live；OAuth gating 工作；/api/health 含 6 obs 字段；daily 03:00 UTC backup auto；nginx + pm2 aigcgateway + apify-kol 共住未受影响；workbench-deploy.yml CI/CD 全绿。
+- `https://trade.guangai.ai` live with B022 7 read-mostly 页 + 最小 write；OAuth gating；/api/health 6 字段；daily 03:00 UTC backup auto；workbench-deploy.yml CI/CD 全绿。B023 上线后再加 5 执行 workflow 页 + 3 新表。
 
 ## 已知 gap（非阻塞）
-- Backlog: BL-B010-S1 low / **BL-B011-S2 high (B022 后接 satellite)** / BL-B013-D1 low / BL-B013-D2 low。
+- Backlog: BL-B010-S1 low / **BL-B011-S2 high (MVP 完成后接 satellite)** / BL-B013-D1 low / BL-B013-D2 low。
 - 本机 `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
 - B021 soft-watch S1：非 allowlist 浏览器实测未做（无可用第二 Google 账号）；L1 已覆盖。
-- framework/proposed-learnings.md 为空（v0.9.21 + v0.9.22 + v0.9.23 + v0.9.24 已沉淀 9 条 5/15-5/17 候选）。
+- B022 soft-watch S1：production version 与 HEAD 同步策略由 v0.9.25 §Production/HEAD 等价性 规则统管。
+- framework/proposed-learnings.md 为空（v0.9.21-v0.9.25 共沉淀 13 条 5/15-5/18 候选）。
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->
