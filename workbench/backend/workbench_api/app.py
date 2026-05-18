@@ -32,6 +32,11 @@ from workbench_api.auth.jwt_validator import AuthenticatedUser
 from workbench_api.db.session import SessionDep
 from workbench_api.observability.active_users import active_users
 from workbench_api.observability.backup_status import read_backup_status
+from workbench_api.observability.error_buffer import (
+    ErrorRecord,
+    get_recent_errors,
+    record_error,
+)
 from workbench_api.observability.logging import setup_logging
 from workbench_api.observability.middleware import RequestIDMiddleware
 from workbench_api.observability.sentry import init_sentry
@@ -68,6 +73,17 @@ class ProtectedTestResponse(BaseModel):
 
     status: str
     email: str
+
+
+class RecentErrorsResponse(BaseModel):
+    """Response schema for ``GET /api/debug/recent-errors``.
+
+    B022 F014 fixing-round 3 diagnostic surface. See
+    ``observability/error_buffer.py`` for the rationale.
+    """
+
+    count: int
+    records: list[ErrorRecord]
 
 
 DEFAULT_RELEASE_SHA_FILE: Path = Path("/srv/workbench/current/RELEASE_SHA")
@@ -167,6 +183,15 @@ def create_app() -> FastAPI:
                 "exception_message": str(exc),
             },
         )
+        # B022 F014 fixing-round 3: also stash a compact record in the
+        # process-local ring buffer so /api/debug/recent-errors can
+        # surface the cause when journalctl is unavailable.
+        record_error(
+            method=request.method,
+            path=request.url.path,
+            exception_type=exc.__class__.__name__,
+            exception_message=str(exc),
+        )
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Internal Server Error"},
@@ -208,6 +233,20 @@ def create_app() -> FastAPI:
     @api.get("/protected-test", response_model=ProtectedTestResponse)
     def protected_test(user: AuthenticatedUserDep) -> ProtectedTestResponse:
         return ProtectedTestResponse(status="ok", email=user.email)
+
+    @api.get("/debug/recent-errors", response_model=RecentErrorsResponse)
+    def debug_recent_errors(_user: AuthenticatedUserDep) -> RecentErrorsResponse:
+        """B022 F014 fixing-round 3: in-process error buffer surface.
+
+        Auth-gated (same allowlisted email as every other workbench
+        route) so it never leaks publicly. Returns the most recent N
+        unhandled-exception events captured by the global handler so
+        the evaluator can diagnose 500s without journalctl. See
+        ``observability/error_buffer.py``.
+        """
+
+        records = get_recent_errors()
+        return RecentErrorsResponse(count=len(records), records=records)
 
     # B022 F002 — register the 7 vertical-slice schemas + 501 stubs so the
     # OpenAPI → TypeScript pipeline emits stable types for F006-F012. Real

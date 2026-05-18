@@ -38,6 +38,32 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/debug/recent-errors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Debug Recent Errors
+         * @description B022 F014 fixing-round 3: in-process error buffer surface.
+         *
+         *     Auth-gated (same allowlisted email as every other workbench
+         *     route) so it never leaks publicly. Returns the most recent N
+         *     unhandled-exception events captured by the global handler so
+         *     the evaluator can diagnose 500s without journalctl. See
+         *     ``observability/error_buffer.py``.
+         */
+        get: operations["debug_recent_errors_api_debug_recent_errors_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/dashboard": {
         parameters: {
             query?: never;
@@ -554,6 +580,22 @@ export interface components {
             benchmark_6040?: number | null;
         };
         /**
+         * ErrorRecord
+         * @description Single captured unhandled-exception event.
+         */
+        ErrorRecord: {
+            /** Ts */
+            ts: string;
+            /** Method */
+            method: string;
+            /** Path */
+            path: string;
+            /** Exception Type */
+            exception_type: string;
+            /** Exception Message */
+            exception_message: string;
+        };
+        /**
          * ExportTicketRequest
          * @description POST /api/recommendations/export-ticket body.
          */
@@ -660,6 +702,19 @@ export interface components {
             status: string;
             /** Email */
             email: string;
+        };
+        /**
+         * RecentErrorsResponse
+         * @description Response schema for ``GET /api/debug/recent-errors``.
+         *
+         *     B022 F014 fixing-round 3 diagnostic surface. See
+         *     ``observability/error_buffer.py`` for the rationale.
+         */
+        RecentErrorsResponse: {
+            /** Count */
+            count: number;
+            /** Records */
+            records: components["schemas"]["ErrorRecord"][];
         };
         /**
          * RecentReport
@@ -1030,6 +1085,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProtectedTestResponse"];
+                };
+            };
+        };
+    };
+    debug_recent_errors_api_debug_recent_errors_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecentErrorsResponse"];
                 };
             };
         };

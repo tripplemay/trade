@@ -167,6 +167,34 @@ def _commit(action: str, entry_id: str, config: BacklogServiceConfig) -> None:
     )
 
 
+def _log_phase_failure(
+    operation: str, entry_id: str, phase: str, exc: BaseException
+) -> None:
+    """Emit a structured log line tagging which phase blew up.
+
+    B022 F014 fixing-round 3: backlog mutations were returning a
+    generic 500 (caught by the app-level handler) with no per-phase
+    context, and the operator could not pull journalctl to see the
+    exception class. Per-phase logging here gives both the journal
+    *and* the in-memory error buffer (app.py) enough breadcrumbs to
+    identify which of repo.upsert / session.commit /
+    _dump_rows_to_json / _commit failed without SSH access.
+    """
+
+    _logger.exception(
+        "backlog %s phase '%s' failed",
+        operation,
+        phase,
+        extra={
+            "event": f"backlog_{operation}_phase_error",
+            "entry_id": entry_id,
+            "phase": phase,
+            "exception_type": exc.__class__.__name__,
+            "exception_message": str(exc),
+        },
+    )
+
+
 def create_backlog(
     session: Session,
     request: BacklogCreateRequest,
@@ -182,10 +210,22 @@ def create_backlog(
         confirmed_at=_now_iso(),
         source="workbench",
     )
-    repo.upsert(entry)
-    session.commit()
-    _dump_rows_to_json(repo.list_all(), config.backlog_file)
-    _commit("add", entry.id, config)
+    try:
+        repo.upsert(entry)
+        session.commit()
+    except Exception as exc:
+        _log_phase_failure("create", entry.id, "db_upsert_commit", exc)
+        raise
+    try:
+        _dump_rows_to_json(repo.list_all(), config.backlog_file)
+    except Exception as exc:
+        _log_phase_failure("create", entry.id, "json_dump", exc)
+        raise
+    try:
+        _commit("add", entry.id, config)
+    except Exception as exc:
+        _log_phase_failure("create", entry.id, "git_commit", exc)
+        raise
     return _row_to_schema(entry)
 
 
@@ -207,10 +247,22 @@ def update_backlog(
         existing.priority = request.priority
     # request.status is not stored in the model (synthesised at read time).
     existing.confirmed_at = _now_iso()
-    session.flush()
-    session.commit()
-    _dump_rows_to_json(repo.list_all(), config.backlog_file)
-    _commit("edit", entry_id, config)
+    try:
+        session.flush()
+        session.commit()
+    except Exception as exc:
+        _log_phase_failure("update", entry_id, "db_flush_commit", exc)
+        raise
+    try:
+        _dump_rows_to_json(repo.list_all(), config.backlog_file)
+    except Exception as exc:
+        _log_phase_failure("update", entry_id, "json_dump", exc)
+        raise
+    try:
+        _commit("edit", entry_id, config)
+    except Exception as exc:
+        _log_phase_failure("update", entry_id, "git_commit", exc)
+        raise
     return _row_to_schema(existing)
 
 
@@ -223,7 +275,19 @@ def delete_backlog(
     existed = repo.delete(entry_id)
     if not existed:
         raise BacklogNotFoundError(entry_id)
-    session.commit()
-    _dump_rows_to_json(repo.list_all(), config.backlog_file)
-    _commit("delete", entry_id, config)
+    try:
+        session.commit()
+    except Exception as exc:
+        _log_phase_failure("delete", entry_id, "db_commit", exc)
+        raise
+    try:
+        _dump_rows_to_json(repo.list_all(), config.backlog_file)
+    except Exception as exc:
+        _log_phase_failure("delete", entry_id, "json_dump", exc)
+        raise
+    try:
+        _commit("delete", entry_id, config)
+    except Exception as exc:
+        _log_phase_failure("delete", entry_id, "git_commit", exc)
+        raise
     return BacklogDeleteResponse(id=entry_id, deleted=True)

@@ -20,10 +20,12 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import uuid
 from collections.abc import AsyncIterator, Callable
 from datetime import UTC, datetime
 
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from workbench_api.db.models.snapshot_meta import SnapshotMeta
@@ -33,6 +35,8 @@ from workbench_api.schemas.snapshots import (
     SnapshotSummary,
 )
 
+_logger = logging.getLogger("workbench.snapshots")
+
 # Sleep between synthetic stages. Kept very short so the modal feels
 # responsive in dev and tests finish quickly; F014 Codex L2 runs the
 # real subprocess on the VM where the cadence is dictated by I/O.
@@ -40,10 +44,30 @@ _STAGE_DELAY_SECONDS: float = 0.05
 
 
 def list_snapshots(session: Session) -> SnapshotListResponse:
-    """Return SnapshotMeta rows reshaped into the page's row schema."""
+    """Return SnapshotMeta rows reshaped into the page's row schema.
+
+    DB failure → log + return an empty list so the Snapshots page can
+    render its empty state. B022 F014 fixing-round 3: Codex L2 still
+    observed /api/snapshots 500 after round-2 because only the SSE
+    refresh path was rewritten — this read path mirrored the
+    dashboard / recommendations / backlog list shape that already got
+    the degrade and was missed.
+    """
 
     repo = SnapshotMetaRepository(session)
-    rows = repo.list_all()
+    try:
+        rows = repo.list_all()
+    except SQLAlchemyError as exc:
+        _logger.warning(
+            "snapshots list skipped due to DB error",
+            extra={
+                "event": "snapshots_list_db_error",
+                "exception_message": str(exc),
+            },
+            exc_info=True,
+        )
+        session.rollback()
+        return SnapshotListResponse(snapshots=[])
     summaries: list[SnapshotSummary] = []
     for row in rows:
         created_at = row.created_at

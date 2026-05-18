@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Annotated
 
@@ -31,23 +32,83 @@ router = APIRouter(prefix="/backlog", tags=["backlog"])
 
 AuthenticatedUserDep = Annotated[AuthenticatedUser, Depends(require_authenticated_user)]
 
+_logger = logging.getLogger("workbench.backlog")
 
-def _default_config() -> BacklogServiceConfig:
-    """Anchor repo_root at the actual repo root. The route constructs
-    the config per-request so dependency_overrides can swap git_runner
-    in tests without monkeypatching globals.
+PROD_RELEASE_CURRENT: Path = Path("/srv/workbench/current")
+"""B021 deploy symlink; presence marks the production VM."""
 
-    routes/backlog.py lives 5 levels deep under the repo
-    (routes/ → workbench_api/ → backend/ → workbench/ → repo), so
-    parents[4] is the repo root. The B022 F014 fix corrected the
-    prior parents[3] anchor, which pointed at ``workbench/`` and
-    therefore wrote ``backlog.json`` outside the tracked source tree.
+PROD_BACKLOG_DIR: Path = Path("/var/lib/workbench/backlog")
+"""Writable prod home for backlog.json.
+
+The systemd unit (workbench/deploy/systemd/workbench-backend.service)
+grants ``ReadWritePaths=/var/lib/workbench``; the service can mkdir
+``backlog/`` on demand.
+"""
+
+
+def _noop_git_runner(args: list[str], cwd: Path) -> None:
+    """Production git_runner — log and skip.
+
+    Production runs from a wheel install under
+    ``/srv/workbench/.../site-packages``; there is no git working tree
+    rooted at the prod backlog dir, so the dev-time
+    ``git add backlog.json && git commit`` step has nothing to commit
+    against. We persist the JSON file (durable on the systemd-managed
+    data dir + the daily SQLite backup) and skip the commit instead of
+    failing closed. The dev workflow keeps the git auto-commit trail
+    via ``_real_git_runner``.
+
+    Documented limitation: prod backlog mutations don't surface in the
+    repo's git history. B023 owns proper auditable persistence; for
+    B022 the durability guarantees come from the SQLite row + the
+    daily backup, not from git.
     """
 
+    del cwd
+    _logger.info(
+        "skipping git commit in production",
+        extra={
+            "event": "backlog_git_skipped_prod",
+            "git_args": " ".join(args),
+        },
+    )
+
+
+def _default_config() -> BacklogServiceConfig:
+    """Anchor repo_root + backlog.json depending on environment.
+
+    Two environments:
+
+    1. **Production** (``/srv/workbench/current`` exists). The backend
+       runs from a wheel-installed package whose path is unrelated to
+       any git working tree; ``Path(__file__).parents[N]`` resolves
+       somewhere under the venv. Falling back to a system writable dir
+       (``/var/lib/workbench/backlog``) + a no-op git_runner lets the
+       feature work; the SQLite row is the durable record.
+
+    2. **Dev / source checkout**. ``routes/backlog.py`` lives 5 levels
+       deep under the repo (routes/ → workbench_api/ → backend/ →
+       workbench/ → repo); ``parents[4]`` is the repo root. The
+       dev-time real git runner keeps the auto-commit trail.
+
+    The route constructs the config per-request so dependency_overrides
+    can swap git_runner in tests without monkeypatching globals.
+    """
+
+    from workbench_api.services.backlog import _real_git_runner
+
+    if PROD_RELEASE_CURRENT.exists():
+        PROD_BACKLOG_DIR.mkdir(parents=True, exist_ok=True)
+        return BacklogServiceConfig(
+            repo_root=PROD_BACKLOG_DIR,
+            backlog_file=PROD_BACKLOG_DIR / "backlog.json",
+            git_runner=_noop_git_runner,
+        )
     repo_root = Path(__file__).resolve().parents[4]
     return BacklogServiceConfig(
         repo_root=repo_root,
         backlog_file=repo_root / "backlog.json",
+        git_runner=_real_git_runner,
     )
 
 

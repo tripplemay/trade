@@ -27,6 +27,7 @@ from sqlalchemy.exc import OperationalError
 from workbench_api.services import backlog as backlog_service
 from workbench_api.services import dashboard as dashboard_service
 from workbench_api.services import recommendations as recommendations_service
+from workbench_api.services import snapshots as snapshots_service
 from workbench_api.settings import Settings
 
 
@@ -93,3 +94,23 @@ def test_backlog_list_degrades_to_empty_on_db_error(
     caplog.set_level(logging.WARNING, logger="workbench.backlog")
     response = backlog_service.list_backlog(_RaisingSession())  # type: ignore[arg-type]
     assert response.entries == []
+
+
+def test_snapshots_list_degrades_to_empty_on_db_error(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """B022 F014 fixing-round 3: SnapshotMetaRepository.list_all
+    raises OperationalError → list_snapshots logs + rolls back +
+    returns an empty SnapshotListResponse so the /snapshots page
+    renders its empty state instead of 500ing."""
+
+    caplog.set_level(logging.WARNING, logger="workbench.snapshots")
+    session = _RaisingSession()
+    response = snapshots_service.list_snapshots(session)  # type: ignore[arg-type]
+    assert response.snapshots == []
+    assert session.rolled_back is True
+    assert any(
+        "snapshots_list_db_error" in record.message
+        or "snapshots_list_db_error" in (record.__dict__.get("event") or "")
+        for record in caplog.records
+    ), caplog.records
