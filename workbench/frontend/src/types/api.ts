@@ -246,7 +246,10 @@ export interface paths {
          *
          *     The synthetic generator yields 5 stages; the final ``complete``
          *     stage inserts/updates a SnapshotMeta row before the event reaches
-         *     the client so a subsequent GET shows the refreshed entry.
+         *     the client so a subsequent GET shows the refreshed entry. The
+         *     session is owned by the generator (see ``_streaming_session_factory``
+         *     docstring) — passing FastAPI's request-scoped session would close
+         *     it before the first ORM call.
          */
         post: operations["refresh_snapshots_route_api_snapshots_refresh_post"];
         delete?: never;
