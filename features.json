@@ -22,7 +22,7 @@
       "title": "Order ticket 生成 + viewer + Markdown 导出",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Backend：POST /api/execution/tickets 消费 position-diff 生成新 ticket，写 Markdown 到 docs/runs/<YYYY-MM-DD>/order-ticket-<id>.md（已 ship release tarball per v0.9.25 #1c）+ 插 order_ticket 行；GET /api/execution/tickets 列表 paginated；GET /api/execution/tickets/{id} 详情；POST /api/execution/tickets/{id}/void 翻 status→voided。Markdown 模板含 disclaimer 字面串 'research-only; this is a manual review checklist, not a trading instruction'（unit test 断言）+ 'Trades to place' 表 + 'After execution checklist' 段。Frontend：(protected)/execution/ticket/page.tsx 显最新 ticket + Generate/Void 按钮 + Markdown preview + Download；(protected)/execution/ticket/[id]/page.tsx 历史只读。验收：generate 端到端产 DB row + Markdown 文件；list+detail viewer 工作 ≥3 历史 tickets seeded；void 不可 reconcile；任何按钮 labelled 'execute'/'place order'/'send to broker' 禁（Vitest grep + Playwright assert）；same-origin path、build artifact 无 127.0.0.1（v0.9.24 #3 regression）。"
     },
     {

@@ -28,6 +28,7 @@ export default defineConfig({
       "tests/safety/no-resizable-panel-outside-backtest.spec.ts",
       "tests/safety/dev-rewrites-cover-backend-api.spec.ts",
       "tests/safety/production-callback-url.spec.ts",
+      "tests/safety/no-execution-buttons.spec.ts",
     ],
     exclude: [
       // disclaimer-present runs in Playwright (anon project) only.

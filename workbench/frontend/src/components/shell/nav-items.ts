@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   LineChart,
   ListTodo,
+  Receipt,
   Wallet,
   type LucideIcon,
 } from "lucide-react";
@@ -41,6 +42,12 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: "Position diff",
     icon: ClipboardList,
     testId: "nav-position-diff",
+  },
+  {
+    href: "/execution/ticket",
+    label: "Ticket",
+    icon: Receipt,
+    testId: "nav-ticket",
   },
   {
     href: "/execution/account",

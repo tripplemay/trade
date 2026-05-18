@@ -371,6 +371,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/execution/tickets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Tickets Route */
+        get: operations["list_tickets_route_api_execution_tickets_get"];
+        put?: never;
+        /** Post Ticket Route */
+        post: operations["post_ticket_route_api_execution_tickets_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/execution/tickets/{ticket_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Ticket Route */
+        get: operations["get_ticket_route_api_execution_tickets__ticket_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/execution/tickets/{ticket_id}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Void Ticket Route */
+        post: operations["void_ticket_route_api_execution_tickets__ticket_id__void_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -728,6 +780,63 @@ export interface components {
             status: string;
             /** Detail */
             detail?: string | null;
+        };
+        /**
+         * GenerateTicketRequest
+         * @description POST /api/execution/tickets body.
+         *
+         *     Both fields optional: ``as_of_date`` defaults to today, and
+         *     ``notes`` is reserved for the user-supplied free-form annotation
+         *     surfaced in the Markdown header (F003 keeps it empty by default).
+         */
+        GenerateTicketRequest: {
+            /** As Of Date */
+            as_of_date?: string | null;
+            /** Notes */
+            notes?: string | null;
+        };
+        /**
+         * GenerateTicketResponse
+         * @description POST /api/execution/tickets response — same shape as a detail
+         *     GET so the frontend can drop the response straight into its
+         *     cached state without a follow-up fetch.
+         */
+        GenerateTicketResponse: {
+            /** Id */
+            id: string;
+            /**
+             * Ticket Date
+             * Format: date
+             */
+            ticket_date: string;
+            /** Snapshot Id */
+            snapshot_id: string;
+            /** Target Positions Id */
+            target_positions_id: string;
+            /** Markdown Path */
+            markdown_path: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "generated" | "executed" | "voided";
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Executed At */
+            executed_at?: string | null;
+            /**
+             * Markdown Body
+             * @description The Markdown checklist served from disk (or re-rendered if missing).
+             */
+            markdown_body: string;
+            /**
+             * Disclaimer
+             * @description Always 'research-only; this is a manual review checklist, not a trading instruction'.
+             */
+            disclaimer: string;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -1157,6 +1266,89 @@ export interface components {
             diff: number;
             /** Rationale */
             rationale?: string | null;
+        };
+        /**
+         * TicketDetail
+         * @description A ticket summary + its rendered Markdown body.
+         */
+        TicketDetail: {
+            /** Id */
+            id: string;
+            /**
+             * Ticket Date
+             * Format: date
+             */
+            ticket_date: string;
+            /** Snapshot Id */
+            snapshot_id: string;
+            /** Target Positions Id */
+            target_positions_id: string;
+            /** Markdown Path */
+            markdown_path: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "generated" | "executed" | "voided";
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Executed At */
+            executed_at?: string | null;
+            /**
+             * Markdown Body
+             * @description The Markdown checklist served from disk (or re-rendered if missing).
+             */
+            markdown_body: string;
+            /**
+             * Disclaimer
+             * @description Always 'research-only; this is a manual review checklist, not a trading instruction'.
+             */
+            disclaimer: string;
+        };
+        /** TicketListResponse */
+        TicketListResponse: {
+            /** Items */
+            items: components["schemas"]["TicketSummary"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /**
+         * TicketSummary
+         * @description One row in the ticket list (no rendered Markdown body).
+         */
+        TicketSummary: {
+            /** Id */
+            id: string;
+            /**
+             * Ticket Date
+             * Format: date
+             */
+            ticket_date: string;
+            /** Snapshot Id */
+            snapshot_id: string;
+            /** Target Positions Id */
+            target_positions_id: string;
+            /** Markdown Path */
+            markdown_path: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "generated" | "executed" | "voided";
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Executed At */
+            executed_at?: string | null;
         };
         /**
          * TurnoverCell
@@ -1773,6 +1965,133 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AccountSnapshotPayload"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_tickets_route_api_execution_tickets_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_ticket_route_api_execution_tickets_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenerateTicketRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GenerateTicketResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_ticket_route_api_execution_tickets__ticket_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticket_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    void_ticket_route_api_execution_tickets__ticket_id__void_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticket_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketSummary"];
                 };
             };
             /** @description Validation Error */
