@@ -26,6 +26,11 @@ from workbench_api.schemas.fills import (
     FillSubmitRequest,
     FillSubmitResponse,
 )
+from workbench_api.schemas.reconcile import (
+    JournalHistoryResponse,
+    ReconcileResponse,
+    SlippageAnalyticsResponse,
+)
 from workbench_api.schemas.tickets import (
     GenerateTicketRequest,
     GenerateTicketResponse,
@@ -40,6 +45,11 @@ from workbench_api.services.execution import (
 )
 from workbench_api.services.fills import list_fills, submit_csv, submit_fills
 from workbench_api.services.recommendations import _resolve_runs_dir
+from workbench_api.services.reconcile import (
+    get_journal_history,
+    get_slippage_analytics,
+    reconcile_ticket,
+)
 from workbench_api.services.tickets import (
     generate_ticket,
     get_ticket_detail,
@@ -177,3 +187,33 @@ def list_fills_route(
     ticket_id: str = Query(min_length=1),
 ) -> FillsListResponse:
     return list_fills(session, ticket_id)
+
+
+@router.post("/reconcile/{ticket_id}", response_model=ReconcileResponse)
+def reconcile_ticket_route(
+    ticket_id: str,
+    _user: AuthenticatedUserDep,
+    session: SessionDep,
+) -> ReconcileResponse:
+    return reconcile_ticket(session, ticket_id)
+
+
+@router.get("/journal-history", response_model=JournalHistoryResponse)
+def journal_history_route(
+    _user: AuthenticatedUserDep,
+    session: SessionDep,
+    since: str | None = Query(
+        default=None,
+        description="ISO date. Only tickets with ticket_date >= since are returned.",
+    ),
+) -> JournalHistoryResponse:
+    return get_journal_history(session, since=since)
+
+
+@router.get("/slippage-analytics", response_model=SlippageAnalyticsResponse)
+def slippage_analytics_route(
+    _user: AuthenticatedUserDep,
+    session: SessionDep,
+    window: str = Query(default="3m", pattern="^(3m|6m|1y)$"),
+) -> SlippageAnalyticsResponse:
+    return get_slippage_analytics(session, window=window)

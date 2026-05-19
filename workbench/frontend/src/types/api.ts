@@ -471,6 +471,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/execution/reconcile/{ticket_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reconcile Ticket Route */
+        post: operations["reconcile_ticket_route_api_execution_reconcile__ticket_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/execution/journal-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Journal History Route */
+        get: operations["journal_history_route_api_execution_journal_history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/execution/slippage-analytics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Slippage Analytics Route */
+        get: operations["slippage_analytics_route_api_execution_slippage_analytics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -922,6 +973,29 @@ export interface components {
              */
             matched: boolean;
         };
+        /** FillSlippage */
+        FillSlippage: {
+            /** Fill Id */
+            fill_id: string;
+            /** Symbol */
+            symbol: string;
+            /**
+             * Side
+             * @enum {string}
+             */
+            side: "buy" | "sell";
+            /** Shares */
+            shares: number;
+            /** Fill Price */
+            fill_price: number;
+            /** Reference Price */
+            reference_price: number | null;
+            /**
+             * Slippage Bps
+             * @description Signed basis-points slippage vs reference_price. None when the reference price could not be sourced from the ticket's snapshot.
+             */
+            slippage_bps?: number | null;
+        };
         /**
          * FillSubmitRequest
          * @description JSON body for POST /api/execution/fills.
@@ -1065,6 +1139,48 @@ export interface components {
             last_backup_size_bytes: number | null;
             /** Active User Count */
             active_user_count: number;
+        };
+        /** JournalHistoryItem */
+        JournalHistoryItem: {
+            /** Ticket Id */
+            ticket_id: string;
+            /**
+             * Ticket Date
+             * Format: date
+             */
+            ticket_date: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "generated" | "executed" | "voided";
+            /** Snapshot Id */
+            snapshot_id: string;
+            /** Markdown Path */
+            markdown_path: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Executed At */
+            executed_at?: string | null;
+            /** Fill Count */
+            fill_count: number;
+            /** Avg Bps */
+            avg_bps?: number | null;
+            /**
+             * Total Dollar
+             * @default 0
+             */
+            total_dollar: number;
+        };
+        /** JournalHistoryResponse */
+        JournalHistoryResponse: {
+            /** Since */
+            since?: string | null;
+            /** Items */
+            items: components["schemas"]["JournalHistoryItem"][];
         };
         /**
          * LastRebalance
@@ -1238,6 +1354,27 @@ export interface components {
              */
             account_present: boolean;
         };
+        /** ReconcileResponse */
+        ReconcileResponse: {
+            /** Snapshot Id */
+            snapshot_id: string;
+            /** Ticket Id */
+            ticket_id: string;
+            slippage_summary: components["schemas"]["SlippageSummary"];
+            /** Fill Slippages */
+            fill_slippages: components["schemas"]["FillSlippage"][];
+            /**
+             * Unmatched Lines
+             * @description Symbols present in the ticket diff but never filled. Surfaced so the journal-history viewer can flag missing executions.
+             */
+            unmatched_lines?: string[];
+            /**
+             * Already Reconciled
+             * @description True when the ticket was already in `executed` status; the response then describes the existing post-reconcile snapshot without inserting a duplicate (idempotency guarantee per F005 acceptance #2).
+             * @default false
+             */
+            already_reconciled: boolean;
+        };
         /**
          * ReportDetail
          * @description GET /api/reports/{slug} payload.
@@ -1318,6 +1455,65 @@ export interface components {
             columns: string[];
             /** Rows */
             rows: string[][];
+        };
+        /** SlippageAnalyticsResponse */
+        SlippageAnalyticsResponse: {
+            /**
+             * Window
+             * @enum {string}
+             */
+            window: "3m" | "6m" | "1y";
+            /** Rolling Avg Bps */
+            rolling_avg_bps: number | null;
+            /** Outliers */
+            outliers: components["schemas"]["SlippageOutlier"][];
+            /** Trend */
+            trend: components["schemas"]["SlippageTrendPoint"][];
+        };
+        /** SlippageOutlier */
+        SlippageOutlier: {
+            /** Ticket Id */
+            ticket_id: string;
+            /**
+             * Ticket Date
+             * Format: date
+             */
+            ticket_date: string;
+            /** Avg Bps */
+            avg_bps: number;
+        };
+        /**
+         * SlippageSummary
+         * @description Per-ticket aggregate used by both reconcile and journal-history.
+         */
+        SlippageSummary: {
+            /** Ticket Id */
+            ticket_id: string;
+            /** Fill Count */
+            fill_count: number;
+            /**
+             * Avg Bps
+             * @description Equally-weighted average bps across fills with a reference price.
+             */
+            avg_bps?: number | null;
+            /**
+             * Total Dollar
+             * @description Sum of signed dollar slippage = sum(slippage_bps/10000 × fill_dollar).
+             * @default 0
+             */
+            total_dollar: number;
+        };
+        /** SlippageTrendPoint */
+        SlippageTrendPoint: {
+            /**
+             * Month
+             * @description ISO year-month, e.g. '2026-04'.
+             */
+            month: string;
+            /** Avg Bps */
+            avg_bps: number;
+            /** Fill Count */
+            fill_count: number;
         };
         /** SnapshotListResponse */
         SnapshotListResponse: {
@@ -2392,6 +2588,100 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FillSubmitResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reconcile_ticket_route_api_execution_reconcile__ticket_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticket_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconcileResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    journal_history_route_api_execution_journal_history_get: {
+        parameters: {
+            query?: {
+                /** @description ISO date. Only tickets with ticket_date >= since are returned. */
+                since?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JournalHistoryResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    slippage_analytics_route_api_execution_slippage_analytics_get: {
+        parameters: {
+            query?: {
+                window?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SlippageAnalyticsResponse"];
                 };
             };
             /** @description Validation Error */

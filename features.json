@@ -38,7 +38,7 @@
       "title": "Reconciliation + journal history + slippage analytics",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Backend：POST /api/execution/reconcile/{ticket_id} 匹配 fills 算 slippage 插新 account_snapshot(source=fill_reconcile)+ flip ticket.status=executed+executed_at；GET /api/execution/journal-history?since=<date> 返过去 tickets + fills + slippage 摘要（per-ticket avg bps + fill count）；GET /api/execution/slippage-analytics?window=<3m|6m|1y> 返 rolling avg slippage bps + outliers + trend。Frontend：(protected)/execution/journal-history/page.tsx — DataTable 过去 tickets + expand-row 见 fills + slippage；sortable/filterable/CSV export；per-ticket detail AllocationBar intended vs realized + slippage 折线图（lightweight-charts area）。验收：reconcile 端到端 fixture ticket+fills 插正确新 snapshot + slippage；idempotent（跑两次不 dupe snapshot）；journal history 渲 12 月 fixture data 可 sortable；slippage bps = (fill_price - reference_close) / reference_close * 10000 signed per trade direction 正确算；Vitest+Playwright+contract。"
     },
     {

@@ -4,6 +4,7 @@ import {
   Compass,
   DatabaseBackup,
   FileText,
+  History,
   LayoutDashboard,
   LineChart,
   ListTodo,
@@ -55,6 +56,12 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: "Fills",
     icon: Upload,
     testId: "nav-fills",
+  },
+  {
+    href: "/execution/journal-history",
+    label: "Journal",
+    icon: History,
+    testId: "nav-journal",
   },
   {
     href: "/execution/account",
