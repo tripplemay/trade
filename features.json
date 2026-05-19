@@ -46,7 +46,7 @@
       "title": "Risk panel + kill-switch alert UI",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Backend：GET /api/execution/risk-panel 返 {master_dd, kill_switch_threshold(0.15 per B011), kill_switch_triggered:bool, per_sleeve_dd:{...}, slippage_trend_3m_bps}；若 triggered 同时返 alternative_defensive_ticket（全 defensive sleeve 的另一 ticket）。Frontend：Recommendations page header banner（B022 F010 extension）—— 绿=全 OK / 黄=任一 sleeve DD>8% / 红=kill-switch triggered。红时 page 显示并排「normal ticket」vs「defensive ticket」+ radio button 让用户选；generate-ticket honor 选择。验收：3 fixture state 渲染正确（all-OK / yellow per-sleeve DD / red kill-switch with alternative ticket visible）；generate-ticket honors user 选择；Vitest+Playwright。"
     },
     {

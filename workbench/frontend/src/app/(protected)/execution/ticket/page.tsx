@@ -5,6 +5,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 import MarkdownRenderer from "@/components/markdown/MarkdownRenderer";
+import { RiskBanner, useRiskPanel } from "@/components/risk/RiskBanner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,6 +20,8 @@ import type { components } from "@/types/api";
 type TicketSummary = components["schemas"]["TicketSummary"];
 type TicketListResponse = components["schemas"]["TicketListResponse"];
 type GenerateTicketResponse = components["schemas"]["GenerateTicketResponse"];
+
+type TicketMode = "normal" | "defensive";
 
 const LIST_URL = "/api/execution/tickets";
 const GENERATE_URL = "/api/execution/tickets";
@@ -47,6 +50,19 @@ export default function TicketPage() {
   const [generating, setGenerating] = useState(false);
   const [voiding, setVoiding] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [mode, setMode] = useState<TicketMode>("normal");
+  const { data: risk } = useRiskPanel();
+  // Default to defensive when kill-switch is triggered so the user has to
+  // explicitly opt back into the normal ticket. The state flips only on
+  // the first risk-panel read so a later refetch can't quietly drop a
+  // user's manual selection.
+  const [riskAcknowledged, setRiskAcknowledged] = useState(false);
+  useEffect(() => {
+    if (!riskAcknowledged && risk?.state === "red") {
+      setMode("defensive");
+      setRiskAcknowledged(true);
+    }
+  }, [risk, riskAcknowledged]);
 
   const refresh = useCallback(async () => {
     try {
@@ -81,7 +97,7 @@ export default function TicketPage() {
       const response = await fetch(GENERATE_URL, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ defensive: mode === "defensive" }),
       });
       if (!response.ok) {
         const detail = await response.text();
@@ -89,7 +105,9 @@ export default function TicketPage() {
       }
       const payload = (await response.json()) as GenerateTicketResponse;
       setLatest(payload);
-      toast.success(`Generated ticket ${payload.id}`);
+      toast.success(
+        `Generated ${mode === "defensive" ? "defensive" : "normal"} ticket ${payload.id}`,
+      );
       await refresh();
     } catch (reason: unknown) {
       toast.error(reason instanceof Error ? reason.message : String(reason));
@@ -144,6 +162,52 @@ export default function TicketPage() {
         </span>
       </header>
 
+      <RiskBanner data={risk} noFetch />
+
+      {risk?.state === "red" ? (
+        <Card data-testid="ticket-mode-card" className="border-destructive/60">
+          <CardHeader>
+            <CardTitle>Pick ticket mode</CardTitle>
+            <CardDescription>
+              The kill-switch tripped. The defensive ticket rotates fully into the B011
+              defensive sleeve; the normal ticket follows the current target portfolio.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <label className="flex items-start gap-2 text-sm">
+              <input
+                type="radio"
+                name="ticket-mode"
+                value="normal"
+                data-testid="ticket-mode-normal"
+                checked={mode === "normal"}
+                onChange={() => setMode("normal")}
+              />
+              <span>
+                <strong>Normal</strong> — follow current Recommendations target portfolio.
+              </span>
+            </label>
+            <label className="flex items-start gap-2 text-sm">
+              <input
+                type="radio"
+                name="ticket-mode"
+                value="defensive"
+                data-testid="ticket-mode-defensive"
+                checked={mode === "defensive"}
+                onChange={() => setMode("defensive")}
+              />
+              <span>
+                <strong>Defensive</strong> — rotate 100% to{" "}
+                <code>
+                  {risk.alternative_defensive_ticket?.target_positions[0]?.symbol ?? "SGOV"}
+                </code>{" "}
+                until master DD recovers.
+              </span>
+            </label>
+          </CardContent>
+        </Card>
+      ) : null}
+
       <Card data-testid="ticket-actions-card">
         <CardHeader>
           <CardTitle>Latest ticket</CardTitle>
@@ -159,7 +223,9 @@ export default function TicketPage() {
             onClick={handleGenerate}
             disabled={generateDisabled}
           >
-            {generating ? "Generating…" : "Generate new ticket"}
+            {generating
+              ? "Generating…"
+              : `Generate ${mode === "defensive" ? "defensive" : "new"} ticket`}
           </Button>
           <Button
             data-testid="ticket-void"

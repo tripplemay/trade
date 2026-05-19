@@ -31,6 +31,7 @@ from workbench_api.schemas.reconcile import (
     ReconcileResponse,
     SlippageAnalyticsResponse,
 )
+from workbench_api.schemas.risk_panel import RiskPanelResponse
 from workbench_api.schemas.tickets import (
     GenerateTicketRequest,
     GenerateTicketResponse,
@@ -50,6 +51,7 @@ from workbench_api.services.reconcile import (
     get_slippage_analytics,
     reconcile_ticket,
 )
+from workbench_api.services.risk_panel import get_risk_panel
 from workbench_api.services.tickets import (
     generate_ticket,
     get_ticket_detail,
@@ -217,3 +219,11 @@ def slippage_analytics_route(
     window: str = Query(default="3m", pattern="^(3m|6m|1y)$"),
 ) -> SlippageAnalyticsResponse:
     return get_slippage_analytics(session, window=window)
+
+
+@router.get("/risk-panel", response_model=RiskPanelResponse)
+def risk_panel_route(
+    _user: AuthenticatedUserDep,
+    session: SessionDep,
+) -> RiskPanelResponse:
+    return get_risk_panel(session)

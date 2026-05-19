@@ -8,6 +8,7 @@ import {
   type AllocationBarItem,
   type AllocationSlice,
 } from "@/components/chart";
+import { RiskBanner } from "@/components/risk/RiskBanner";
 import {
   DataTable,
   percentColumn,
@@ -121,6 +122,8 @@ export default function RecommendationsPage() {
               : "loading…"}
         </span>
       </header>
+
+      <RiskBanner />
 
       <Card data-testid="recommendations-disclaimer-card" className="border-amber-700/40 bg-amber-950/20">
         <CardContent className="py-3 text-xs text-amber-100">

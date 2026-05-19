@@ -51,13 +51,16 @@ class TicketListResponse(BaseModel):
 class GenerateTicketRequest(BaseModel):
     """POST /api/execution/tickets body.
 
-    Both fields optional: ``as_of_date`` defaults to today, and
-    ``notes`` is reserved for the user-supplied free-form annotation
-    surfaced in the Markdown header (F003 keeps it empty by default).
+    ``defensive`` (B023 F006) flips the diff source from the normal
+    recommendations.target_positions to the defensive proxy emitted by
+    ``services.risk_panel.defensive_target_positions``. The frontend
+    sets this when the user picks the defensive radio under a red
+    risk-panel banner.
     """
 
     as_of_date: str | None = None
     notes: str | None = None
+    defensive: bool = False
 
 
 class GenerateTicketResponse(TicketDetail):

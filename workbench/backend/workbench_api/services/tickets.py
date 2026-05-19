@@ -176,6 +176,67 @@ def render_ticket_markdown(
     return "\n".join(lines)
 
 
+def _defensive_diff_rows(
+    total_equity: float,
+    snapshot: Any,
+) -> list[dict[str, Any]]:
+    """B023 F006 — compute the diff rows for a 100%-defensive rotation.
+
+    Every existing position sells to zero; the defensive symbol (SGOV)
+    buys to consume the full equity. Reference prices fall back to
+    each symbol's cost basis from the prior snapshot so the ticket's
+    Markdown table can show the same `Limit hint` / `Reference close`
+    columns as the normal flow.
+    """
+
+    from workbench_api.services.risk_panel import DEFENSIVE_SYMBOL
+
+    rows: list[dict[str, Any]] = []
+    for entry in snapshot.positions or []:
+        symbol = entry.symbol if hasattr(entry, "symbol") else entry.get("symbol")
+        shares = float(entry.shares if hasattr(entry, "shares") else entry.get("shares", 0))
+        avg_cost = float(
+            entry.avg_cost if hasattr(entry, "avg_cost") else entry.get("avg_cost", 0)
+        )
+        if shares <= 0:
+            continue
+        rows.append(
+            {
+                "symbol": symbol,
+                "current_shares": shares,
+                "target_shares": 0.0,
+                "delta_shares": -shares,
+                "current_weight": 0.0,
+                "target_weight": 0.0,
+                "delta_weight": 0.0,
+                "delta_dollar": -shares * avg_cost,
+                "reference_price": avg_cost or None,
+                "reason": "Defensive rotation — sell to zero.",
+            }
+        )
+    # The defensive symbol buy line. Without a real reference price we
+    # leave reference_price None; the Markdown renderer surfaces "—".
+    if total_equity > 0:
+        rows.append(
+            {
+                "symbol": DEFENSIVE_SYMBOL,
+                "current_shares": 0.0,
+                "target_shares": total_equity,
+                "delta_shares": total_equity,
+                "current_weight": 0.0,
+                "target_weight": 1.0,
+                "delta_weight": 1.0,
+                "delta_dollar": total_equity,
+                "reference_price": None,
+                "reason": (
+                    "Defensive rotation — allocate full equity to the "
+                    "defensive sleeve."
+                ),
+            }
+        )
+    return rows
+
+
 def _repo_relative(path: Path) -> str:
     try:
         repo_root = Path(__file__).resolve().parents[4]
@@ -239,7 +300,14 @@ def generate_ticket(
     date_dir.mkdir(parents=True, exist_ok=True)
     markdown_path = date_dir / f"order-ticket-{ticket_id}.md"
 
-    diff_rows = [entry.model_dump() for entry in diff_response.diff]
+    if body.defensive:
+        # B023 F006: defensive mode swaps the normal diff for a "rotate
+        # to the defensive sleeve" target, computed against the current
+        # cash + holdings. The diff rows then drive _render_ticket_markdown
+        # the same way the normal flow does.
+        diff_rows = _defensive_diff_rows(diff_response.total_equity, snapshot)
+    else:
+        diff_rows = [entry.model_dump() for entry in diff_response.diff]
     flags = [flag.model_dump() for flag in recommendations.wash_sale_flags]
     cash_before = float(snapshot.cash)
     body_md = render_ticket_markdown(

@@ -522,6 +522,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/execution/risk-panel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Risk Panel Route */
+        get: operations["risk_panel_route_api_execution_risk_panel_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -596,6 +613,16 @@ export interface components {
             weights: {
                 [key: string]: number;
             };
+        };
+        /** AlternativeDefensiveTicket */
+        AlternativeDefensiveTicket: {
+            /** Target Positions */
+            target_positions: components["schemas"]["DefensivePosition"][];
+            /**
+             * Rationale
+             * @description Plain-English justification surfaced under the radio choice — for example, 'kill-switch tripped at 15% master DD; rotate to 100% defensive sleeve.'
+             */
+            rationale: string;
         };
         /**
          * BacklogCreateRequest
@@ -808,6 +835,18 @@ export interface components {
             recent_reports: components["schemas"]["RecentReport"][];
             /** Action Items */
             action_items: components["schemas"]["ActionItem"][];
+        };
+        /**
+         * DefensivePosition
+         * @description One row in the alternative defensive ticket's target portfolio.
+         */
+        DefensivePosition: {
+            /** Symbol */
+            symbol: string;
+            /** Target Weight */
+            target_weight: number;
+            /** Rationale */
+            rationale?: string | null;
         };
         /**
          * DocsResponse
@@ -1062,15 +1101,22 @@ export interface components {
          * GenerateTicketRequest
          * @description POST /api/execution/tickets body.
          *
-         *     Both fields optional: ``as_of_date`` defaults to today, and
-         *     ``notes`` is reserved for the user-supplied free-form annotation
-         *     surfaced in the Markdown header (F003 keeps it empty by default).
+         *     ``defensive`` (B023 F006) flips the diff source from the normal
+         *     recommendations.target_positions to the defensive proxy emitted by
+         *     ``services.risk_panel.defensive_target_positions``. The frontend
+         *     sets this when the user picks the defensive radio under a red
+         *     risk-panel banner.
          */
         GenerateTicketRequest: {
             /** As Of Date */
             as_of_date?: string | null;
             /** Notes */
             notes?: string | null;
+            /**
+             * Defensive
+             * @default false
+             */
+            defensive: boolean;
         };
         /**
          * GenerateTicketResponse
@@ -1455,6 +1501,50 @@ export interface components {
             columns: string[];
             /** Rows */
             rows: string[][];
+        };
+        /** RiskPanelResponse */
+        RiskPanelResponse: {
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "green" | "yellow" | "red";
+            /**
+             * Master Dd
+             * @description Master drawdown as a positive fraction (0.07 = 7%).
+             */
+            master_dd: number;
+            /**
+             * Kill Switch Threshold
+             * @default 0.15
+             */
+            kill_switch_threshold: number;
+            /**
+             * Per Sleeve Threshold
+             * @default 0.08
+             */
+            per_sleeve_threshold: number;
+            /** Kill Switch Triggered */
+            kill_switch_triggered: boolean;
+            /** Per Sleeve Dd */
+            per_sleeve_dd: components["schemas"]["SleeveDrawdown"][];
+            /**
+             * Slippage Trend 3M Bps
+             * @description Rolling 3-month avg slippage bps from /slippage-analytics.
+             */
+            slippage_trend_3m_bps?: number | null;
+            /** @description Populated only when state == 'red'. The defensive target portfolio the user can choose instead of the normal ticket. */
+            alternative_defensive_ticket?: components["schemas"]["AlternativeDefensiveTicket"] | null;
+        };
+        /** SleeveDrawdown */
+        SleeveDrawdown: {
+            /** Sleeve */
+            sleeve: string;
+            /**
+             * Drawdown
+             * @description Per-sleeve drawdown as a positive fraction (0.08 = 8%).
+             */
+            drawdown: number;
         };
         /** SlippageAnalyticsResponse */
         SlippageAnalyticsResponse: {
@@ -2691,6 +2781,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    risk_panel_route_api_execution_risk_panel_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RiskPanelResponse"];
                 };
             };
         };
