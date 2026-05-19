@@ -57,5 +57,31 @@
     "confirmed_at": "2026-05-14",
     "priority": "low",
     "source": "B013 research material analysis (institutional tail-risk hedging papers)"
+  },
+  {
+    "id": "BL-B023-S1",
+    "title": "生产 recommendation-driven ticket 冒烟（非 defensive 路径）",
+    "description": "B023 L2 验收时生产 `recommendations/current.target_positions=[]` 且 `account/latest=null`，evaluator 只能走 `defensive=true` 路径完成真写闭环；常规 recommendation-driven ticket 的端到端真 VM 路径未物理覆盖。后续 operator 例行演练前，先在 workbench 写入最小 target positions seed（或 wait Recommendations 出非空 target），再补一次非 defensive 票据 → fills → reconcile 冒烟，确认 prod 路径无回归。",
+    "decisions": [
+      "不引入 fixture seed automation；用 workbench UI 手动 PUT account + 准备 target positions",
+      "仅做一次冒烟即可，不需要持续测试基建",
+      "成功后把 ticket void / account 恢复，留 journal 作证据"
+    ],
+    "confirmed_at": "2026-05-20",
+    "priority": "low",
+    "source": "B023 signoff soft-watch S1"
+  },
+  {
+    "id": "BL-B023-S2",
+    "title": "risk-panel kill-switch UI 演练（red 样本）",
+    "description": "B023 L2 时 `risk-panel` 在空风险信号下返回 `risk_state=null`，未命中 red kill-switch 场景。F006 UI 红态 + 并排 normal/defensive ticket + radio button 路径在真 VM 上未实际触发。后续若准备 staging/rnd 风险样本（人为 PUT 一段持仓使 master DD > 15% 或 sleeve DD > 8%），单独做一次 UI 演练 + 截图，确认红 banner + 并排 ticket + radio 选择 → generate-ticket honors 选择全链路。",
+    "decisions": [
+      "不进真 VM 风险样本生成自动化；用 workbench account 编辑临时触发再恢复",
+      "演练后留一张红态 risk-banner 截图归入 docs/screenshots/（B023 F007 13 张以外）",
+      "不引入新功能，纯验证已有 F006 UI 红态逻辑"
+    ],
+    "confirmed_at": "2026-05-20",
+    "priority": "low",
+    "source": "B023 signoff soft-watch S2"
   }
 ]

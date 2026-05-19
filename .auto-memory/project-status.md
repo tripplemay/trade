@@ -4,25 +4,27 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B023-workbench-phase2-manual-execution：`reverifying`**（Generator fix-round-3 已 push）；F001-F007 完成；F008 fix-round-3 解 2 blocker：1) frontend 升 next ^14→^15.5.18 + postcss 8.5.10 + login 搜 params async 化 → `npm audit --omit=dev --audit-level=high` exit=0；2) `scripts/test/codex-setup.sh` 在 venv probe 后自动 `alembic upgrade head`，idempotent，把 dev DB 从 0001 升到 0002 含 6 workbench 表。验证：vitest 117 / lint 0 / typecheck 0 / build 0 / build artifact 无 127.0.0.1 / pytest 202 passed 2 skipped / ruff+mypy 清。共 8 features 完成 7，fix_rounds=3，等 Codex 复验 F008 L1+L2。
-- Spec：`docs/specs/B023-workbench-phase2-manual-execution-spec.md`
-- 范围：闭合 monthly rebalance manual workflow — 5 新页（position-diff / ticket / fills / journal-history / account 编辑）+ slippage analytics + risk panel/kill-switch alert + Codex L2 18 项验收。**永久不连 broker**（B012 BrokerAdapter ABC 永久 unwired）。
-- 后续路径：**B023 done = MVP 全 PRD §10/§11/§12 substantively 完成 for single-user manual-execution workbench**。之后是 BL-B011-S2（satellites 实现）+ BL-B013-D1/D2 等 post-MVP backlog。
-- 关键决策（B023 加 / B021+B022 继承）：3 新表跟 B021 Repository 同 pattern；reconciliation 端到端 idempotent；CSV 上传 + 手工 entry 双轨；reconcile 后插 account_snapshot(source=fill_reconcile)；risk panel 红色时并排 normal+defensive ticket 让用户选。
-- 硬边界：no-broker SDK / no-paper or live URL / no-credential / no-auto-execution / 多用户禁 / Cloud SQL 禁；任何按钮 labelled execute/place order/send to broker 禁；same-origin /api/* (v0.9.24 #3)；auth-gated；Repository 读写非直 file；framework v0.9.21-v0.9.25 全约束继续。
-- L2 含 v0.9.25 #1d 真读+真写、新 §Production/HEAD 等价性、#3c /api/debug/recent-errors count=0 verify。
+- **B023-workbench-phase2-manual-execution：`done` ✅**（2026-05-19 Codex 签收 `docs/test-reports/B023-workbench-phase2-signoff-2026-05-19.md`，3 fix-rounds）。L1 全绿 + L2 真 VM 18 项含真读+真写闭环（seed account → defensive ticket `tkt-20260519-99d04c95` → CSV fill → reconcile → journal/slippage → debug recent-errors count=0 → 副作用恢复 cash=0/positions=[]）。Production HEAD 与 main 完全同 SHA `d0ae21f`。0 新 framework learnings（v0.9.25 仍是最后版本）。
+- **MVP substantively 完成** ✅ — PRD §10/§11/§12 全部达标 for single-user manual-execution workbench。完工声明：`docs/mvp-completion-declaration-2026-05-20.md`。
 
 ## 已完成签收
-- B001-B022 全部已签收；最近：B022 workbench Phase 1 `docs/test-reports/B022-workbench-phase1-signoff-2026-05-18.md`
+- B001-B023 全部已签收。最近 3 批：B021 (cloud deploy + auth)、B022 (workbench phase 1)、B023 (manual execution UI)。
+- MVP 实际批次链路：B001/B002 规划 → B003-B007 engine + global ETF backtest → B010 risk parity → B011 master portfolio → B012 paper-trading prep（BrokerAdapter ABC 永久 unwired）→ B013/B015/B016 strat refinements → B018/B019 attribution + retune → B020-B023 workbench 4 批次 → 落 cloud。
 
 ## 生产状态
-- `https://trade.guangai.ai` live with B022 7 read-mostly 页 + 最小 write；OAuth gating；/api/health 6 字段；daily 03:00 UTC backup auto；workbench-deploy.yml CI/CD 全绿。B023 上线后再加 5 执行 workflow 页 + 3 新表。
+- `https://trade.guangai.ai` live，B022 7 read-mostly 页 + B023 5 execution workflow 页 + 6 表 + OAuth gating + /api/health 6 字段 + /api/debug/recent-errors 全部健康。daily 03:00 UTC backup auto；workbench-deploy.yml 全绿。生产 HEAD = main HEAD（v0.9.25 §Production/HEAD 等价性 规则统管）。
+
+## 永久硬边界（MVP 后继续）
+no-broker SDK / no-paper-or-live URL / no-credential / no-auto-execution / 多用户禁 / Cloud SQL 禁 / 任何按钮 labelled execute/place order/send to broker 禁 / same-origin /api/* / auth-gated / Repository 读写非直 file / framework v0.9.21-v0.9.25 全约束。
+
+## post-MVP backlog（按优先级）
+- **BL-B011-S2 high**（US Quality Momentum + HK-China ETF satellite 实现 — 两个独立 spec）— 用户已标 high 等接 satellite。
+- BL-B010-S1 low / BL-B013-D1 low (smoothed vol) / BL-B013-D2 low (VIX overlay)。
+- 新加：BL-B023-S1 low（生产 target_positions 空 → 准备最小 seed 后跑常规非 defensive 票据冒烟）+ BL-B023-S2 low（risk-panel kill-switch UI 演练 with red sample fixture）。
 
 ## 已知 gap（非阻塞）
-- Backlog: BL-B010-S1 low / **BL-B011-S2 high (MVP 完成后接 satellite)** / BL-B013-D1 low / BL-B013-D2 low。
 - 本机 `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
-- B021 soft-watch S1：非 allowlist 浏览器实测未做（无可用第二 Google 账号）；L1 已覆盖。
-- B022 soft-watch S1：production version 与 HEAD 同步策略由 v0.9.25 §Production/HEAD 等价性 规则统管。
-- framework/proposed-learnings.md 为空（v0.9.21-v0.9.25 共沉淀 13 条 5/15-5/18 候选）。
+- B021 soft-watch S1：非 allowlist 浏览器实测未做（无可用第二 Google 账号）。
+- framework/proposed-learnings.md 当前空（v0.9.21-v0.9.25 沉淀完成；B023 零新候选）。
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->
