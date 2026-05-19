@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B023-workbench-phase2-manual-execution：`reverifying`**（Generator fix-round-2 已 push）；F001-F007 完成；F008 fix-round-2：`scripts/test/codex-setup.sh` probe 失败时自动 `pip install -e workbench/backend[dev]` + re-probe，把 .venv 同步纳入脚本职责（AGENTS.md §3 唯一入口）。本地 sanity-check：uninstall python-multipart → bash codex-setup → auto-install → re-probe success → pytest 202 passed 2 skipped。共 8 features 完成 7，fix_rounds=2，等 Codex 复验 F008 L1+L2。
+- **B023-workbench-phase2-manual-execution：`fixing`**（Codex reverify-2 仍阻塞）；F001-F007 完成；F008 fix-round-2 已解开 `.venv` 依赖阻塞，backend/ frontend 基线与带测试 env 的 Playwright auth 都恢复，但 L1 仍有 2 blocker：`npm audit --omit=dev --audit-level=high` 仍红（`next` high + `postcss` moderate），且 canonical local boot 未确保 `workbench/backend/workbench-dev.db` 升到 `0002_b023_execution_workflow`，execution 4 页会因 `account_snapshot` 缺表报 500；手动 `bash workbench/backend/scripts/migrate.sh` 后 protected-route + disclaimer Playwright 全量 19 passed。Blocker 报告：`docs/test-reports/B023-workbench-phase2-reverify2-blocker-2026-05-19.md`。共 8 features 完成 7，fix_rounds=2。
 - Spec：`docs/specs/B023-workbench-phase2-manual-execution-spec.md`
 - 范围：闭合 monthly rebalance manual workflow — 5 新页（position-diff / ticket / fills / journal-history / account 编辑）+ slippage analytics + risk panel/kill-switch alert + Codex L2 18 项验收。**永久不连 broker**（B012 BrokerAdapter ABC 永久 unwired）。
 - 后续路径：**B023 done = MVP 全 PRD §10/§11/§12 substantively 完成 for single-user manual-execution workbench**。之后是 BL-B011-S2（satellites 实现）+ BL-B013-D1/D2 等 post-MVP backlog。
