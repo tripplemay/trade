@@ -19,9 +19,14 @@ workbench/
 The legacy `trade/` package at the repo root stays pure-stdlib and is
 untouched by anything in this directory.
 
-## Status — B022 Phase 1 shipped
+## Status — B023 Phase 2 in progress
 
-All seven research pages are live behind OAuth on `trade.guangai.ai`:
+B022 Phase 1 shipped 7 research pages on 2026-05-18; B023 layers the
+manual-execution workflow on the same shell. F001-F006 are live behind
+OAuth on `trade.guangai.ai`; F007 (docs + screenshots — this commit) and
+F008 (Codex L1+L2 signoff) close the batch.
+
+### B022 Phase 1 — research pages
 
 | Page | Purpose | Vertical-slice feature |
 |---|---|---|
@@ -29,15 +34,30 @@ All seven research pages are live behind OAuth on `trade.guangai.ai`:
 | Strategies (`/strategies`) | 4-sleeve registry + per-strategy config + provenance + charts | F007 |
 | Backtest (`/backtest`) | ResizablePanel split: selector + metrics + equity/drawdown + trades CSV | F008 |
 | Reports (`/reports`, `/reports/[slug]`) | Markdown rendering + ≥10-row tables → AG Grid | F009 |
-| Recommendations (`/recommendations`) | Target weights + gate checks + **Export markdown ticket** (with research-only disclaimer literal) | F010 |
+| Recommendations (`/recommendations`) | Target weights + gate checks + **Export markdown ticket** (with research-only disclaimer literal) + B023 F006 RiskBanner | F010 |
 | Snapshots (`/snapshots`) | Inventory + SSE-streamed refresh modal | F011 |
 | Backlog (`/backlog`) | CRUD + git auto-commit (`chore(backlog): add\|edit\|delete BL-WB-XXXX`) | F012 |
 
-See `docs/dev/workbench-architecture.md` for surface-by-surface details, the
-request lifecycle, deploy chain, and safety-guard inventory.
+### B023 Phase 2 — manual-execution pages
 
-History: B020 (infrastructure) → B021 (cloud + auth) → B022 (this Phase 1).
-B023 lands manual-execution UI on top of the same shell.
+| Page | Purpose | Vertical-slice feature |
+|---|---|---|
+| Position diff (`/execution/position-diff`) | Current vs target AllocationBar + 9-col signed Δ DataTable + CSV export + Unmatched flag | F002 |
+| Account (`/execution/account`) | Cash + positions form → inserts `account_snapshot(source=ui_edit)` | F002 |
+| Ticket (`/execution/ticket`) | Generate Markdown + History list + F006 RiskBanner + normal/defensive radio when red | F003 + F006 |
+| Ticket detail (`/execution/ticket/[id]`) | Read-only past-ticket viewer + Download Markdown | F003 |
+| Fills (`/execution/fills`) | CSV upload (generic / Schwab / IBKR) or manual entry; row-level errors; `allow_unmatched` gate | F004 |
+| Journal (`/execution/journal-history`) | Past tickets + slippage analytics (3m/6m/1y trend + outliers); sortable / CSV export | F005 |
+
+See `docs/dev/workbench-architecture.md` for surface-by-surface details, the
+request lifecycle, deploy chain (including the B023 6-table schema-assert),
+and safety-guard inventory. The end-to-end user flow (Recommendations →
+diff → ticket → broker app → fills → reconcile → journal) lives in
+`docs/dev/workbench-manual-execution-runbook.md`.
+
+History: B020 (infrastructure) → B021 (cloud + auth) → B022 (research
+pages, signed off 2026-05-18) → **B023 (this batch — manual-execution
+UI).**
 
 ## Prerequisites
 

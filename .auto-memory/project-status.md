@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B023-workbench-phase2-manual-execution：`building`**；F001-F006 完成（DB 3 表 + Alembic 0002；execution 13 端点 含 risk-panel；5 execution 页 + RiskBanner 组件 + ticket page 含 normal/defensive 单选 + 默认 red→defensive；GenerateTicketRequest.defensive flag 端到端，defensive mode 改 diff 为 SGOV 100% rotation；recommendations page 加被动 banner；reconcile 端到端 idempotent + signed slippage bps + 月度趋势；CSV adapters generic/Schwab/IBKR + allow_unmatched 守门 + 行级错误；safety grep 禁 execute/place order/send to broker；本地 verify 全清）。Generator 接 F007（Docs refresh + manual-execution runbook + 截图）。共 8 features 完成 6。预估 4-5 周。
+- **B023-workbench-phase2-manual-execution：`verifying`**（Codex 接手 F008）；F001-F007 完成（DB 3 表 + Alembic 0002；execution 13 端点；5 execution 页 + RiskBanner + ticket normal/defensive radio；defensive ticket mode 端到端；reconcile idempotent + signed slippage bps；CSV adapters generic/Schwab/IBKR；safety grep 禁 execute/place order/send to broker；workbench-architecture.md + manual-execution-runbook.md + workbench/README.md + docs/screenshots/README.md + CLAUDE.md 全部刷新到 B023 当前态）。Codex 接 F008（Codex L1+L2 真 VM 18 项验收 + signoff）。共 8 features 完成 7。
 - Spec：`docs/specs/B023-workbench-phase2-manual-execution-spec.md`
 - 范围：闭合 monthly rebalance manual workflow — 5 新页（position-diff / ticket / fills / journal-history / account 编辑）+ slippage analytics + risk panel/kill-switch alert + Codex L2 18 项验收。**永久不连 broker**（B012 BrokerAdapter ABC 永久 unwired）。
 - 后续路径：**B023 done = MVP 全 PRD §10/§11/§12 substantively 完成 for single-user manual-execution workbench**。之后是 BL-B011-S2（satellites 实现）+ BL-B013-D1/D2 等 post-MVP backlog。

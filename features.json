@@ -54,7 +54,7 @@
       "title": "Docs refresh + manual-execution runbook + 截图",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "(1) docs/dev/workbench-architecture.md 更新含 B023 5 新页 + workflow state machine 图 + DB schema 图（6 表）；(2) 新 docs/dev/workbench-manual-execution-runbook.md：端到端用户流（open Recommendations → generate ticket → 在 broker app 执行 → upload fills → reconcile → 看 slippage），每步含命令/点击/预期结果 + 3 CSV format 示例（Schwab/IBKR/generic）；(3) docs/screenshots/ 加 B023 5 新页截图（PNG ≤ 300 KB each）；(4) workbench/README.md reference docs 段刷新；(5) CLAUDE.md reference-docs 段刷新 引 manual-execution runbook。验收：单用户 follow runbook 能跑完整流程；截图 fresh；CLAUDE.md 反映新文档。"
     },
     {

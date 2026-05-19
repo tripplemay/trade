@@ -47,17 +47,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 涉及对应模块时再读，不需要每次启动都加载：
 
-- **Workbench 架构（B022 当前态）：** → `docs/dev/workbench-architecture.md`
-  （7 页表、请求/写入生命周期、SSE、cloud deploy 链、安全 guard 全清单）
+- **Workbench 架构（B022 + B023 当前态）：** → `docs/dev/workbench-architecture.md`
+  （7 + 5 = 12 页表、请求/写入生命周期、SSE、manual-execution workflow 状态机、
+  6 表 schema、cloud deploy 链、安全 guard 全清单含 no-execution-buttons + 6 表 assert）
+- **Manual-execution runbook：** → `docs/dev/workbench-manual-execution-runbook.md`
+  （B023 Recommendations → diff → ticket → broker → fills → reconcile → journal
+  端到端用户流；3 broker CSV format；故障排除表）
 - **Workbench README：** → `workbench/README.md`（prereqs / 一键 boot /
-  dev/test 命令 / troubleshooting / 生产 URL）
+  dev/test 命令 / troubleshooting / 生产 URL / B022+B023 页表）
 - **测试策略：** → `docs/dev/workbench-testing-strategy.md`（vitest / Playwright /
   pytest / Codex L2 分层）+ `docs/dev/codex-policies.md`（Codex L1/L2 矩阵）
 - **branch protection：** → `docs/dev/branch-protection-guidance.md`
   （workbench-backend/frontend/deploy 必查 checks）
 - **VM 运行手册：** → `docs/dev/B021-vm-setup-runbook.md`
-- **截图说明：** → `docs/screenshots/README.md`（F013 capture 清单）
-- **规格文档：** → `docs/specs/`（开发时优先查阅；当前 active 批次 B022）
+- **截图说明：** → `docs/screenshots/README.md`（B022 F013 + B023 F007 capture 清单，
+  含 13 张 PNG：B022 1-7 + B023 8-13 含红态 risk-banner 单独一张）
+- **规格文档：** → `docs/specs/`（开发时优先查阅；当前 active 批次 B023）
 - **设计稿：** → `design-draft/`（UI 页面还原时参考）
 
 <!--
