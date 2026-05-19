@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B023-workbench-phase2-manual-execution：`fixing`**（Codex 复验仍阻塞）；F001-F007 完成；F008 fix-round-1 只改善诊断，不足以解锁本地验收：`scripts/test/codex-setup.sh` 的 fail-fast import probe 生效，但当前仓库 `.venv` 仍缺 `python-multipart`，因此 probe 继续在启动前失败，L1 smoke 仍无法开始，L2 未执行。复验 blocker：`docs/test-reports/B023-workbench-phase2-reverify-blocker-2026-05-19.md`。共 8 features 完成 7，fix_rounds=1，等待 Generator 解决真实依赖可用性后再次转 `reverifying`。
+- **B023-workbench-phase2-manual-execution：`reverifying`**（Generator fix-round-2 已 push）；F001-F007 完成；F008 fix-round-2：`scripts/test/codex-setup.sh` probe 失败时自动 `pip install -e workbench/backend[dev]` + re-probe，把 .venv 同步纳入脚本职责（AGENTS.md §3 唯一入口）。本地 sanity-check：uninstall python-multipart → bash codex-setup → auto-install → re-probe success → pytest 202 passed 2 skipped。共 8 features 完成 7，fix_rounds=2，等 Codex 复验 F008 L1+L2。
 - Spec：`docs/specs/B023-workbench-phase2-manual-execution-spec.md`
 - 范围：闭合 monthly rebalance manual workflow — 5 新页（position-diff / ticket / fills / journal-history / account 编辑）+ slippage analytics + risk panel/kill-switch alert + Codex L2 18 项验收。**永久不连 broker**（B012 BrokerAdapter ABC 永久 unwired）。
 - 后续路径：**B023 done = MVP 全 PRD §10/§11/§12 substantively 完成 for single-user manual-execution workbench**。之后是 BL-B011-S2（satellites 实现）+ BL-B013-D1/D2 等 post-MVP backlog。

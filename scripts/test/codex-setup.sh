@@ -30,20 +30,49 @@ if [[ ! -x "${VENV_PY}" ]]; then
   exit 1
 fi
 
-# Fail-fast: the .venv must satisfy every runtime dependency declared
-# in workbench/backend/pyproject.toml. A stale .venv that was last
-# populated before a new dep landed (e.g. B023 F008 blocker: missing
-# python-multipart after the F004 multipart upload route shipped)
-# silently lets the venv check above pass but crashes uvicorn at
-# import time. Importing the FastAPI app surfaces any such gap in a
-# single subprocess; non-zero → bail with the precise remediation
-# instead of the cryptic stacktrace 2 seconds into uvicorn startup.
+# Fail-fast + self-heal: the .venv must satisfy every runtime
+# dependency declared in workbench/backend/pyproject.toml. A stale
+# .venv that was last populated before a new dep landed (B023 F008
+# blocker: missing python-multipart after the F004 multipart upload
+# route shipped) lets the venv-existence check above pass but crashes
+# uvicorn at import time.
+#
+# The probe imports the FastAPI app. If it raises (most commonly a
+# missing dep that was added to pyproject.toml after the .venv was
+# created), we re-run `pip install -e workbench/backend[dev]` once to
+# sync the venv to the declared dependency set, then re-probe. AGENTS.md
+# §3 declares this script the only entry point Codex uses to bring up
+# the local stack — so the script must own venv-sync hygiene itself,
+# not delegate it back to the operator (round-1 of B023 F008 only
+# printed a remediation hint; Codex re-verified, the print still
+# couldn't unstick the run, and we caught a hard lesson: the only
+# state Codex is contracted to mutate is the one this script mutates
+# on its behalf). The install only touches the local .venv (untracked
+# by git) and is idempotent — running it on an already-synced venv is
+# a no-op `Requirement already satisfied`.
+#
+# A genuine import failure (typo, broken module, etc.) survives the
+# re-install and re-probe and still exits 1, so we never silently
+# launch a broken backend.
+_probe() {
+  (cd "${WORKBENCH_DIR}/backend" && "${VENV_PY}" -c "import workbench_api.app  # noqa: F401")
+}
 echo "[codex-setup] verifying backend imports under .venv…"
-if ! (cd "${WORKBENCH_DIR}/backend" && "${VENV_PY}" -c "import workbench_api.app  # noqa: F401" 2>&1); then
-  echo "error: backend import probe failed — the .venv is missing a declared dependency." >&2
-  echo "Re-sync the venv to match workbench/backend/pyproject.toml:" >&2
-  echo "  ${REPO_ROOT}/.venv/bin/pip install -e workbench/backend[dev]" >&2
-  exit 1
+if ! _probe 2>/dev/null; then
+  echo "[codex-setup] probe failed — syncing .venv to workbench/backend/pyproject.toml…"
+  if ! "${VENV_PY}" -m pip install --quiet --disable-pip-version-check -e "${WORKBENCH_DIR}/backend[dev]"; then
+    echo "error: pip install -e workbench/backend[dev] failed; cannot sync .venv." >&2
+    echo "Re-run manually:" >&2
+    echo "  ${VENV_PY} -m pip install -e ${WORKBENCH_DIR}/backend[dev]" >&2
+    exit 1
+  fi
+  if ! _probe; then
+    echo "error: backend import still fails after pip install; the breakage is in workbench_api itself, not a missing dep." >&2
+    echo "Reproduce locally:" >&2
+    echo "  (cd ${WORKBENCH_DIR}/backend && ${VENV_PY} -c 'import workbench_api.app')" >&2
+    exit 1
+  fi
+  echo "[codex-setup] .venv re-synced — probe now succeeds."
 fi
 
 if [[ ! -d "${WORKBENCH_DIR}/frontend/node_modules" ]]; then
