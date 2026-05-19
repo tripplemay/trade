@@ -35,6 +35,11 @@ dependencies = [
   "pydantic>=2.7,<3",
   "pydantic-settings>=2.3,<3",
   "python-jose[cryptography]>=3.3,<4",
+  # B023 F004 fills route accepts multipart CSV uploads via `UploadFile`;
+  # FastAPI raises RuntimeError at import time when `Form` / `UploadFile`
+  # appear in a route signature without this transitive dependency
+  # installed. Pin a known-good version range matching FastAPI 0.115.
+  "python-multipart>=0.0.9,<1",
   "sqlalchemy>=2.0,<3",
   "uvicorn[standard]>=0.30,<0.31",
 ]

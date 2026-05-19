@@ -30,7 +30,7 @@
       "title": "Fill journal upload (CSV + 手工) + preview",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Backend：POST /api/execution/fills 接 multipart CSV 或 JSON {ticket_id, fills:[...]}；validate 每 fill matches ticket order_seq 或 flag --unmatched；插 fill_journal_entry 行。CSV 解析用 csv stdlib + Pydantic per-row validation；错误返 400 含 row-level 详情 {row:N, error:'...'}。GET /api/execution/fills?ticket_id=<id> 返该 ticket 全部 fills。Frontend：(protected)/execution/fills/page.tsx 上传 CSV（shadcn input type=file）+ 手工 entry table 单行 fill；上传后 preview view 每 fill match ticket 行用户 confirm before commit。验收：上传 3 fixture CSV（Schwab/IBKR/generic）每个 ≤5 LOC adapter glue parse 成功；手工 entry validate 客户端+服务端（positive shares / valid date / ticket 中已知 symbol）；unmatched fills flag user prompt 不 auto-reject；Vitest+Playwright+contract test。"
     },
     {

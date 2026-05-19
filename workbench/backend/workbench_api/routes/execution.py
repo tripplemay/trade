@@ -11,7 +11,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 
 from workbench_api.auth.dependency import require_authenticated_user
 from workbench_api.auth.jwt_validator import AuthenticatedUser
@@ -20,6 +20,11 @@ from workbench_api.schemas.execution import (
     AccountSnapshotPayload,
     AccountUpdateRequest,
     PositionDiffResponse,
+)
+from workbench_api.schemas.fills import (
+    FillsListResponse,
+    FillSubmitRequest,
+    FillSubmitResponse,
 )
 from workbench_api.schemas.tickets import (
     GenerateTicketRequest,
@@ -33,6 +38,7 @@ from workbench_api.services.execution import (
     get_position_diff,
     update_account,
 )
+from workbench_api.services.fills import list_fills, submit_csv, submit_fills
 from workbench_api.services.recommendations import _resolve_runs_dir
 from workbench_api.services.tickets import (
     generate_ticket,
@@ -129,3 +135,45 @@ def void_ticket_route(
             ),
         )
     return summary
+
+
+@router.post("/fills", response_model=FillSubmitResponse)
+def post_fills_route(
+    body: FillSubmitRequest,
+    _user: AuthenticatedUserDep,
+    session: SessionDep,
+) -> FillSubmitResponse:
+    """JSON path: ``{ticket_id, fills:[...], allow_unmatched?}``.
+
+    The multipart CSV path is split into ``POST /fills/csv`` so each
+    route has a single content type and FastAPI can produce a clean
+    OpenAPI surface for the openapi-typescript pipeline.
+    """
+
+    return submit_fills(session, body, source="manual_entry")
+
+
+@router.post("/fills/csv", response_model=FillSubmitResponse)
+async def post_fills_csv_route(
+    _user: AuthenticatedUserDep,
+    session: SessionDep,
+    ticket_id: Annotated[str, Form(min_length=1)],
+    csv_file: Annotated[UploadFile, File(description="CSV file with broker fill rows")],
+    allow_unmatched: Annotated[bool, Form()] = False,
+) -> FillSubmitResponse:
+    """Multipart CSV upload path. Headers drive adapter detection
+    (generic / Schwab / IBKR); row-level validation errors return as
+    400 ``{detail: {errors: [{row, error}]}}`` so the frontend can
+    highlight which rows to fix."""
+
+    content = await csv_file.read()
+    return submit_csv(session, ticket_id, content, allow_unmatched=allow_unmatched)
+
+
+@router.get("/fills", response_model=FillsListResponse)
+def list_fills_route(
+    _user: AuthenticatedUserDep,
+    session: SessionDep,
+    ticket_id: str = Query(min_length=1),
+) -> FillsListResponse:
+    return list_fills(session, ticket_id)

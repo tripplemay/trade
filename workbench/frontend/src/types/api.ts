@@ -423,6 +423,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/execution/fills": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Fills Route */
+        get: operations["list_fills_route_api_execution_fills_get"];
+        put?: never;
+        /**
+         * Post Fills Route
+         * @description JSON path: ``{ticket_id, fills:[...], allow_unmatched?}``.
+         *
+         *     The multipart CSV path is split into ``POST /fills/csv`` so each
+         *     route has a single content type and FastAPI can produce a clean
+         *     OpenAPI surface for the openapi-typescript pipeline.
+         */
+        post: operations["post_fills_route_api_execution_fills_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/execution/fills/csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Fills Csv Route
+         * @description Multipart CSV upload path. Headers drive adapter detection
+         *     (generic / Schwab / IBKR); row-level validation errors return as
+         *     400 ``{detail: {errors: [{row, error}]}}`` so the frontend can
+         *     highlight which rows to fix.
+         */
+        post: operations["post_fills_csv_route_api_execution_fills_csv_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -666,6 +714,22 @@ export interface components {
             /** Notional */
             notional: number;
         };
+        /** Body_post_fills_csv_route_api_execution_fills_csv_post */
+        Body_post_fills_csv_route_api_execution_fills_csv_post: {
+            /** Ticket Id */
+            ticket_id: string;
+            /**
+             * Csv File
+             * Format: binary
+             * @description CSV file with broker fill rows
+             */
+            csv_file: string;
+            /**
+             * Allow Unmatched
+             * @default false
+             */
+            allow_unmatched: boolean;
+        };
         /**
          * DashboardResponse
          * @description Composite response for the home/dashboard page.
@@ -762,6 +826,145 @@ export interface components {
              * @description Always 'research-only; this is a manual review checklist, not a trading instruction'.
              */
             disclaimer: string;
+        };
+        /**
+         * FillRowIn
+         * @description One incoming fill — common shape regardless of CSV or JSON entry.
+         */
+        FillRowIn: {
+            /**
+             * Order Seq
+             * @description 1-indexed row from the ticket Markdown. Null means the user did not map this fill back to a specific ticket line.
+             */
+            order_seq?: number | null;
+            /** Symbol */
+            symbol: string;
+            /**
+             * Side
+             * @enum {string}
+             */
+            side: "buy" | "sell";
+            /** Shares */
+            shares: number;
+            /** Fill Price */
+            fill_price: number;
+            /**
+             * Commission
+             * @default 0
+             */
+            commission: number;
+            /**
+             * Fees
+             * @default 0
+             */
+            fees: number;
+            /**
+             * Currency
+             * @default USD
+             */
+            currency: string;
+            /**
+             * Filled At
+             * Format: date-time
+             */
+            filled_at: string;
+            /** Notes */
+            notes?: string | null;
+        };
+        /**
+         * FillRowOut
+         * @description A persisted ``fill_journal_entry`` row in wire form.
+         */
+        FillRowOut: {
+            /** Id */
+            id: string;
+            /** Ticket Id */
+            ticket_id: string;
+            /** Order Seq */
+            order_seq?: number | null;
+            /** Symbol */
+            symbol: string;
+            /**
+             * Side
+             * @enum {string}
+             */
+            side: "buy" | "sell";
+            /** Shares */
+            shares: number;
+            /** Fill Price */
+            fill_price: number;
+            /** Commission */
+            commission: number;
+            /** Fees */
+            fees: number;
+            /** Currency */
+            currency: string;
+            /**
+             * Filled At
+             * Format: date-time
+             */
+            filled_at: string;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "csv_upload" | "manual_entry";
+            /** Notes */
+            notes?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Matched
+             * @description Whether this fill matched a ticket line at insert time. False = the row was accepted under allow_unmatched=true.
+             */
+            matched: boolean;
+        };
+        /**
+         * FillSubmitRequest
+         * @description JSON body for POST /api/execution/fills.
+         */
+        FillSubmitRequest: {
+            /** Ticket Id */
+            ticket_id: string;
+            /** Fills */
+            fills: components["schemas"]["FillRowIn"][];
+            /**
+             * Allow Unmatched
+             * @description When false, fills whose order_seq is null AND whose (symbol, side) is not in the ticket are 400'd; when true, they are accepted with source='manual_entry'.
+             * @default false
+             */
+            allow_unmatched: boolean;
+        };
+        /**
+         * FillSubmitResponse
+         * @description Successful POST response: ``inserted`` is the new rows, ``errors``
+         *     is empty (any error in any row aborts the insert).
+         */
+        FillSubmitResponse: {
+            /** Ticket Id */
+            ticket_id: string;
+            /** Inserted */
+            inserted: components["schemas"]["FillRowOut"][];
+            /**
+             * Unmatched Count
+             * @default 0
+             */
+            unmatched_count: number;
+            /**
+             * Accepted Under Allow Unmatched
+             * @default false
+             */
+            accepted_under_allow_unmatched: boolean;
+        };
+        /** FillsListResponse */
+        FillsListResponse: {
+            /** Ticket Id */
+            ticket_id: string;
+            /** Items */
+            items: components["schemas"]["FillRowOut"][];
         };
         /**
          * GateCheck
@@ -2092,6 +2295,103 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TicketSummary"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_fills_route_api_execution_fills_get: {
+        parameters: {
+            query: {
+                ticket_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FillsListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_fills_route_api_execution_fills_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FillSubmitRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FillSubmitResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_fills_csv_route_api_execution_fills_csv_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_post_fills_csv_route_api_execution_fills_csv_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FillSubmitResponse"];
                 };
             };
             /** @description Validation Error */

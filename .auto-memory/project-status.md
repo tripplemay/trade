@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B023-workbench-phase2-manual-execution：`building`**；F001+F002+F003 完成（DB 3 表 + Alembic 0002；execution 7 端点；position-diff+account+ticket+ticket/[id] 4 页 + NAV 扩 9 项 + dev rewrite；render_ticket_markdown 含 DISCLAIMER_LITERAL pin + Trades/checklist 段；safety regression 禁 execute/place order/send to broker 按钮 label；本地 verify 全清）。Generator 接 F004（Fill journal upload CSV + 手工 entry）。共 8 features 完成 3。预估 4-5 周。
+- **B023-workbench-phase2-manual-execution：`building`**；F001-F004 完成（DB 3 表 + Alembic 0002；execution 9 端点 含 ticket 4 + fills 3 + position-diff/account 3；4 execution 页 + NAV 扩 10 项；render_ticket_markdown 含 DISCLAIMER_LITERAL pin；CSV adapters generic/Schwab/IBKR + allow_unmatched 守门 + 行级错误；safety grep 禁 execute/place order/send to broker；本地 verify 全清）。Generator 接 F005（Reconciliation + journal history + slippage analytics）。共 8 features 完成 4。预估 4-5 周。
 - Spec：`docs/specs/B023-workbench-phase2-manual-execution-spec.md`
 - 范围：闭合 monthly rebalance manual workflow — 5 新页（position-diff / ticket / fills / journal-history / account 编辑）+ slippage analytics + risk panel/kill-switch alert + Codex L2 18 项验收。**永久不连 broker**（B012 BrokerAdapter ABC 永久 unwired）。
 - 后续路径：**B023 done = MVP 全 PRD §10/§11/§12 substantively 完成 for single-user manual-execution workbench**。之后是 BL-B011-S2（satellites 实现）+ BL-B013-D1/D2 等 post-MVP backlog。

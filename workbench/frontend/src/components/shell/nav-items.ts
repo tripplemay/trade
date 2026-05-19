@@ -8,6 +8,7 @@ import {
   LineChart,
   ListTodo,
   Receipt,
+  Upload,
   Wallet,
   type LucideIcon,
 } from "lucide-react";
@@ -48,6 +49,12 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: "Ticket",
     icon: Receipt,
     testId: "nav-ticket",
+  },
+  {
+    href: "/execution/fills",
+    label: "Fills",
+    icon: Upload,
+    testId: "nav-fills",
   },
   {
     href: "/execution/account",
