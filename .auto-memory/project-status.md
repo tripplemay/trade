@@ -4,8 +4,8 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B023-workbench-phase2-manual-execution：`done` ✅**（2026-05-19 Codex 签收 `docs/test-reports/B023-workbench-phase2-signoff-2026-05-19.md`，3 fix-rounds）。L1 全绿 + L2 真 VM 18 项含真读+真写闭环（seed account → defensive ticket `tkt-20260519-99d04c95` → CSV fill → reconcile → journal/slippage → debug recent-errors count=0 → 副作用恢复 cash=0/positions=[]）。Production HEAD 与 main 完全同 SHA `d0ae21f`。0 新 framework learnings（v0.9.25 仍是最后版本）。
-- **MVP substantively 完成** ✅ — PRD §10/§11/§12 全部达标 for single-user manual-execution workbench。完工声明：`docs/mvp-completion-declaration-2026-05-20.md`。
+- **MVP `done` ✅ + 进入 observation 期（用户决策 2026-05-20）**。B023 Workbench Phase 2 已签收 `docs/test-reports/B023-workbench-phase2-signoff-2026-05-19.md`（3 fix-rounds，L1 全绿 + L2 真 VM 18 项真读+真写闭环；Production HEAD = main HEAD `d0ae21f`；0 新 framework learnings）。完工声明：`docs/prd/mvp-completion-declaration-2026-05-20.md`。
+- **下一批次：暂停**（用户决策）。让 MVP 在生产跑 1-2 个月度 rebalance 周期收集真实使用反馈，再决定 post-MVP 路径（候选 B024 = BL-B011-S2 US Quality / HK-China satellite）。Planner standby；无 active 批次。
 
 ## 已完成签收
 - B001-B023 全部已签收。最近 3 批：B021 (cloud deploy + auth)、B022 (workbench phase 1)、B023 (manual execution UI)。
