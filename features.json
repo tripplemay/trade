@@ -1,69 +1,53 @@
 {
-  "sprint": "B023-workbench-phase2-manual-execution",
+  "sprint": "B024-i18n-zh-cn",
   "features": [
     {
       "id": "F001",
-      "title": "DB schema extension：order_ticket + fill_journal_entry + account_snapshot 3 表 + Alembic + Repository",
+      "title": "i18n 基建：next-intl 装 + middleware chain + LocaleSwitcher + cookie 持久 + TS 类型链",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "workbench/backend/workbench_api/db/models/ 加 3 个 SQLAlchemy 模型（OrderTicket / FillJournalEntry / AccountSnapshot）+ 配套 repositories/ 含 latest() / list_by_ticket() / reconcile() helpers（沿 B021 F002 base.py 通用 5 方法 pattern）。新 Alembic migration versions/0002_b023_execution_workflow.py 建 3 表 + 索引（fills.ticket_id + snapshots.snapshot_at desc）。**v0.9.25 #1b 强制：** 改 workbench/deploy/scripts/deploy.sh schema-assert `required` 集为 {account, backlog_entry, snapshot_meta, order_ticket, fill_journal_entry, account_snapshot}（6 表）。验收：alembic upgrade head 新库建 6 表，再跑 noop；Repository round-trip pytest 每模型；本地 dev WORKBENCH_DB_URL=sqlite:///./workbench-dev.db 工作；deploy.sh schema-assert 列 6 表 + 故意 throwaway commit 漏一表 → CI fail；安全 regression（禁 psycopg2/mysqlclient/pymongo/broker SDK）仍绿；backend pytest+ruff+mypy 全清。"
+      "status": "pending",
+      "acceptance": "(1) workbench/frontend/package.json 加 next-intl@^3；(2) workbench/frontend/src/i18n.ts 配 locales=['zh-CN','en'] + defaultLocale='zh-CN' + loadMessages()；(3) workbench/frontend/messages/{zh-CN,en}.json 起始骨架（common namespace + nav ≥10 keys，zh-CN/en key set bit-identical）；(4) workbench/frontend/src/middleware.ts 加 next-intl locale detection 链到 NextAuth 之后（先 auth 后 locale 验证）；(5) workbench/frontend/src/components/LocaleSwitcher.tsx Header 右上角下拉 `中文 / English`，setLocaleCookie('NEXT_LOCALE', value, maxAge=365*24*3600)；(6) workbench/frontend/next.config.mjs 加 createNextIntlPlugin('./src/i18n.ts')；(7) TypeScript 类型链：`declare module 'next-intl'` 加 `IntlMessages = typeof zhCNMessages`，`t('common.foo.typo')` typecheck 报错。验收：首访 cookie 缺失 → zh-CN 默认；LocaleSwitcher 切 en → 整页英文 + cookie 写入；刷新保持；切回 zh-CN cookie 持久；`bash scripts/test/codex-setup.sh` 启动后 home 页验证；vitest 117 baseline + LocaleSwitcher + middleware 单测 ≥120；`npm audit --omit=dev --audit-level=high` exit=0；build artifact 无 127.0.0.1；NextAuth login 流仍工作（i18n middleware 不破坏 auth gating）。"
     },
     {
       "id": "F002",
-      "title": "Position diff page + Account state edit UI",
+      "title": "前端 UI 翻译 Pass A — Header / Sidebar / 9 read-mostly 页 + 共享组件",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "Backend：GET /api/execution/position-diff?as_of=<date> 返 {current:AccountSnapshot, target:TargetPositions, diff:[{symbol, current_shares, target_shares, delta_shares(signed +买-卖), delta_weight, delta_dollar, reason}], unmatched}；GET /api/execution/account/latest 返最新 snapshot；PUT /api/execution/account 接 {cash, base_currency, positions} 插新 AccountSnapshot(source=ui_edit)。Frontend：(protected)/execution/position-diff/page.tsx — AllocationBar 当前 vs target + 每行 diff DataTable（signed delta with --color-up/--color-down tokens 来自 B022 F001）；(protected)/execution/account/page.tsx — 表单编辑账户提交→PUT→toast。验收：fixture account + fixture target 渲染正确（无需真 OAuth）；diff 符号正确（delta_shares>0 当 target>current）；account 表单 validate（weights ≤1、cash≥0、无重复 symbol）；提交后 Recommendations + Position-diff 立刻反映新状态；CSV export 工作；Vitest+Playwright+httpx 全过；same-origin fetch（v0.9.24 #3）。"
+      "status": "pending",
+      "acceptance": "9 页全量翻译：Header / Sidebar / Home / Strategies / Recommendations / Risk / Logs / Backtest Runs / Data + 共享组件（AllocationBar / DataTable 表头 / Chart 标题 / Loader / Toast 框）。翻译 key 嵌套合理（按页 namespace，no flat keys >3 层）。专业术语保留英文（Sharpe / drawdown / slippage / bps / kill-switch / rebalance / sleeve / Top N / ETF / momentum 等）。zh-CN.json 与 en.json key set bit-identical（CI 跑 `diff <(jq -r 'paths(..) | join(\".\")' messages/zh-CN.json | sort) <(jq -r 'paths(..) | join(\".\")' messages/en.json | sort)` exit=0）。Playwright zh-CN + en 双 locale 跑 9 页 smoke：每页 H1 + 至少 3 个 nav/label 双 locale assertion。截图归 docs/screenshots/B024-i18n/zh-CN/ + en/ 9 × 2 = 18 PNG ≤300 KB。Codex L1 grep 残余英文 hardcode：≤5 白名单（技术术语）。验收：vitest + lint + typecheck + build 绿；same-origin regression 绿；build artifact 无 127.0.0.1。"
     },
     {
       "id": "F003",
-      "title": "Order ticket 生成 + viewer + Markdown 导出",
+      "title": "前端 UI 翻译 Pass B — 5 execution 页 + NextAuth login + toast/form/error pages + 中文按钮禁词",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "Backend：POST /api/execution/tickets 消费 position-diff 生成新 ticket，写 Markdown 到 docs/runs/<YYYY-MM-DD>/order-ticket-<id>.md（已 ship release tarball per v0.9.25 #1c）+ 插 order_ticket 行；GET /api/execution/tickets 列表 paginated；GET /api/execution/tickets/{id} 详情；POST /api/execution/tickets/{id}/void 翻 status→voided。Markdown 模板含 disclaimer 字面串 'research-only; this is a manual review checklist, not a trading instruction'（unit test 断言）+ 'Trades to place' 表 + 'After execution checklist' 段。Frontend：(protected)/execution/ticket/page.tsx 显最新 ticket + Generate/Void 按钮 + Markdown preview + Download；(protected)/execution/ticket/[id]/page.tsx 历史只读。验收：generate 端到端产 DB row + Markdown 文件；list+detail viewer 工作 ≥3 历史 tickets seeded；void 不可 reconcile；任何按钮 labelled 'execute'/'place order'/'send to broker' 禁（Vitest grep + Playwright assert）；same-origin path、build artifact 无 127.0.0.1（v0.9.24 #3 regression）。"
+      "status": "pending",
+      "acceptance": "5 execution 页全量：position-diff / ticket / fills / journal-history / account + NextAuth login（含 sign in with Google 文案）+ 所有 toast 消息 + form validate 消息（cash≥0 / weights≤1 / 无重复 symbol / positive shares / valid date 等）+ error page (404/500)。中文按钮禁词 Vitest 新规则：任何按钮 label 含 `['执行', '下单', '发送券商', '立即买入', '实盘', '真实交易', '自动交易', '一键交易']` 任一字面 → fail（与英文 execute/place order/send to broker 同级 enforced）。Toast 错误消息接 backend Accept-Language 协议（F004 完成后联调）。Playwright zh-CN + en 跑 manual execution 主链：position-diff → ticket → fills upload → reconcile → journal-history 至少 5 个 assertion 双 locale；fixture 走 PUT account → POST ticket {defensive:true} → POST fills/csv → POST reconcile/{id} → GET journal-history。截图 5 × 2 = 10 PNG 存 docs/screenshots/B024-i18n/{zh-CN,en}/execution/。验收：B024 全截图 zh + en 各 14 张（9+5）共 28 PNG；vitest 增量绿；lint+typecheck+build 绿；中文按钮禁词 Vitest 至少 10 个 spec 命中 0 案件 → exit 0；中文翻译完整覆盖所有 B023 5 页（grep 残余英文 hardcode ≤5）。"
     },
     {
       "id": "F004",
-      "title": "Fill journal upload (CSV + 手工) + preview",
+      "title": "后端 API error i18n — FastAPI dep injection + HTTPException 全量改造",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "Backend：POST /api/execution/fills 接 multipart CSV 或 JSON {ticket_id, fills:[...]}；validate 每 fill matches ticket order_seq 或 flag --unmatched；插 fill_journal_entry 行。CSV 解析用 csv stdlib + Pydantic per-row validation；错误返 400 含 row-level 详情 {row:N, error:'...'}。GET /api/execution/fills?ticket_id=<id> 返该 ticket 全部 fills。Frontend：(protected)/execution/fills/page.tsx 上传 CSV（shadcn input type=file）+ 手工 entry table 单行 fill；上传后 preview view 每 fill match ticket 行用户 confirm before commit。验收：上传 3 fixture CSV（Schwab/IBKR/generic）每个 ≤5 LOC adapter glue parse 成功；手工 entry validate 客户端+服务端（positive shares / valid date / ticket 中已知 symbol）；unmatched fills flag user prompt 不 auto-reject；Vitest+Playwright+contract test。"
+      "status": "pending",
+      "acceptance": "(1) workbench/backend/workbench_api/i18n/__init__.py + messages.py（dict-of-dict，无新 dep）；(2) `detect_locale(request: Request) -> str` FastAPI dep 优先级：`?locale=` query > Accept-Language header > 'zh-CN' 默认；(3) `t(key: str, locale: str, **kwargs) -> str` fmt 函数；(4) 所有 raise HTTPException 站点（grep `raise HTTPException` 全量，约 25 处）改造为 `raise HTTPException(status_code=..., detail=t('errors.xxx', locale, **kwargs))`；(5) API contract：前端 fetch wrapper 自动注入 `Accept-Language` header（基于 NEXT_LOCALE cookie）；(6) pytest parametrize `['zh-CN', 'en']` × 每 endpoint 至少 1 个 error 路径 → 验消息内容；(7) pytest 202 baseline + 新增 ≥30 测试 ≥232 passed；(8) ruff + mypy 清；(9) zh-CN.json 与 en.json key set bit-identical（backend i18n yaml/dict 同样要求）；(10) F003 toast 消息端到端联调：点击 invalid CSV upload → backend 返中文 detail → frontend toast 显示中文。"
     },
     {
       "id": "F005",
-      "title": "Reconciliation + journal history + slippage analytics",
+      "title": "Order ticket Markdown 双语 disclaimer + 模板字段双语",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "Backend：POST /api/execution/reconcile/{ticket_id} 匹配 fills 算 slippage 插新 account_snapshot(source=fill_reconcile)+ flip ticket.status=executed+executed_at；GET /api/execution/journal-history?since=<date> 返过去 tickets + fills + slippage 摘要（per-ticket avg bps + fill count）；GET /api/execution/slippage-analytics?window=<3m|6m|1y> 返 rolling avg slippage bps + outliers + trend。Frontend：(protected)/execution/journal-history/page.tsx — DataTable 过去 tickets + expand-row 见 fills + slippage；sortable/filterable/CSV export；per-ticket detail AllocationBar intended vs realized + slippage 折线图（lightweight-charts area）。验收：reconcile 端到端 fixture ticket+fills 插正确新 snapshot + slippage；idempotent（跑两次不 dupe snapshot）；journal history 渲 12 月 fixture data 可 sortable；slippage bps = (fill_price - reference_close) / reference_close * 10000 signed per trade direction 正确算；Vitest+Playwright+contract。"
+      "status": "pending",
+      "acceptance": "Markdown 模板按 spec §4.3 改造：(1) Disclaimer 双语并存——英文原句 `'research-only; this is a manual review checklist, not a trading instruction'` 保留 + 中文译句 `'仅供研究使用；这是一份人工核对清单，不构成交易指令'` 加在下一行；(2) 章节标题双语：`## Trades to place / 待下达交易` `## After execution checklist / 执行后核对清单`；(3) checklist item 双语：`- [ ] Recorded fills in workbench / 在 workbench 记录成交` 等。**Markdown 永远不按 locale cookie 切换内容**（避免按 locale 生成不同文件造成历史 diff 混乱）。Unit test：(a) 保留原英文断言 `assert 'research-only; this is a manual review checklist, not a trading instruction' in markdown`；(b) 新增中文断言 `assert '仅供研究使用；这是一份人工核对清单，不构成交易指令' in markdown`；(c) 新增双语字段断言 ≥3 个；(d) historical ticket（B023 留下 `tkt-20260519-99d04c95`）不动 DB schema、re-generate 测试新 ticket 产出双语 Markdown。验收：pytest 全绿；Playwright ticket detail page assert 双语 disclaimer 双块都可见（zh + en locale 都看到双语）；Markdown 文件名格式不变。"
     },
     {
       "id": "F006",
-      "title": "Risk panel + kill-switch alert UI",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "Backend：GET /api/execution/risk-panel 返 {master_dd, kill_switch_threshold(0.15 per B011), kill_switch_triggered:bool, per_sleeve_dd:{...}, slippage_trend_3m_bps}；若 triggered 同时返 alternative_defensive_ticket（全 defensive sleeve 的另一 ticket）。Frontend：Recommendations page header banner（B022 F010 extension）—— 绿=全 OK / 黄=任一 sleeve DD>8% / 红=kill-switch triggered。红时 page 显示并排「normal ticket」vs「defensive ticket」+ radio button 让用户选；generate-ticket honor 选择。验收：3 fixture state 渲染正确（all-OK / yellow per-sleeve DD / red kill-switch with alternative ticket visible）；generate-ticket honors user 选择；Vitest+Playwright。"
-    },
-    {
-      "id": "F007",
-      "title": "Docs refresh + manual-execution runbook + 截图",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "(1) docs/dev/workbench-architecture.md 更新含 B023 5 新页 + workflow state machine 图 + DB schema 图（6 表）；(2) 新 docs/dev/workbench-manual-execution-runbook.md：端到端用户流（open Recommendations → generate ticket → 在 broker app 执行 → upload fills → reconcile → 看 slippage），每步含命令/点击/预期结果 + 3 CSV format 示例（Schwab/IBKR/generic）；(3) docs/screenshots/ 加 B023 5 新页截图（PNG ≤ 300 KB each）；(4) workbench/README.md reference docs 段刷新；(5) CLAUDE.md reference-docs 段刷新 引 manual-execution runbook。验收：单用户 follow runbook 能跑完整流程；截图 fresh；CLAUDE.md 反映新文档。"
-    },
-    {
-      "id": "F008",
-      "title": "Codex L1 + L2 真 VM 18 项验收 + workbench Phase 2 signoff",
+      "title": "Codex L1 + L2 真 VM 验收 + workbench i18n signoff + framework v0.9.26 候选",
       "priority": "high",
       "executor": "codex",
       "status": "pending",
-      "acceptance": "L1 (CI 内 6 项)：pytest + ruff + mypy backend / npm test + lint + typecheck frontend / Playwright E2E walks 5 新页 + 断言 disclaimer 可见 + build artifact 无 127.0.0.1（v0.9.24 #3 regression）/ 安全 regression（禁 broker SDK + paper/live URL + 按钮 labelled execute/place order/send to broker）/ npm audit --omit=dev --audit-level=high 全清（v0.9.25 #3a）/ deploy.sh schema-assert 列 6 表故意漏一表 → CI fail。L2 (真 VM 12 项 含 v0.9.25 #1d 强制真读+真写)：OAuth → Home → position-diff 渲 fixture → account 编辑+$1000 持久 → ticket 生成 Markdown 文件落 docs/runs/ + DB row → fills 上传 Schwab CSV preview commit → reconcile ticket → journal-history 看 slippage → risk panel 绿 → /api/health 6 字段 + db_connectivity=ok → systemctl quota + 邻居服务未受影响 → Production/HEAD 等价性（per signoff template v0.9.25 §Production/HEAD 等价性，diff workbench/** 必须重 deploy 再签）→ /api/debug/recent-errors count=0 after full flow（v0.9.25 #3c）。Codex 写 docs/test-reports/B023-workbench-phase2-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（含新 §Production/HEAD 等价性 段）。更新 progress.json status→done / docs.signoff 设值 / evaluator_feedback 总结 L1+L2 18 项。**B023 done = MVP 全 PRD §10/§11/§12 substantively 完成 for single-user manual-execution workbench。**"
+      "acceptance": "L1 (CI 内)：F001-F005 全部 generator 验收脚本绿（vitest / lint / typecheck / build / pytest / ruff / mypy / npm audit --omit=dev --audit-level=high / same-origin regression / safety regression）；新加：(a) `diff jq paths-recursive zh-CN.json en.json` exit 0；(b) 中文按钮禁词 Vitest grep 通过；(c) 前端残余英文 hardcode ≤5 白名单；(d) backend i18n pytest parametrize zh-CN+en 全覆盖；(e) Playwright 双 locale `19 + N` passed。L2 (真 VM)：(1) OAuth → Home zh-CN 默认中文 ✓；(2) LocaleSwitcher 切 en → 整站英文 ✓；(3) 切回 zh-CN cookie 持久 ✓；(4) 全 manual execution 流跑一遍 zh-CN locale + 一遍 en locale（seed account → POST tickets {defensive:true} → POST fills/csv → POST reconcile/{id} → GET journal-history → GET slippage-analytics → GET debug/recent-errors count=0）；(5) Markdown ticket disclaimer 双语 + 字段双语都出现（验文件落 docs/runs/）；(6) `/api/execution/account` PUT 故意触发 validate error（cash<0）→ Accept-Language=zh 返中文 detail；?locale=en query 覆盖返英文 detail；(7) Production HEAD ≡ main HEAD（同 SHA）；(8) `/api/debug/recent-errors` count=0 after full L2 flow；(9) 副作用恢复（account 恢复 cash=0 / positions=[]，测试 ticket 留作证据）。Signoff：docs/test-reports/B024-i18n-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md 含 §Production/HEAD 等价性 段。Framework v0.9.26 候选记录到 framework/proposed-learnings.md：(α) i18n 中文按钮禁词扩集；(β) next-intl + NextAuth middleware chain pattern；(γ) bilingual disclaimer 双语永存策略（compliance 内容禁按 locale 分支）。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
 }
