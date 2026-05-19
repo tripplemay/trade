@@ -16,9 +16,17 @@ async function signInWithGoogle(formData: FormData): Promise<void> {
   });
 }
 
-export default function LoginPage({ searchParams }: { searchParams?: SearchParams }) {
-  const error = searchParams?.error;
-  const callbackUrl = searchParams?.callbackUrl ?? "/";
+// Next.js 15 made route-level `searchParams` a Promise on server components.
+// We must `await` it before destructuring; reading the prop synchronously
+// trips the dev-time warning and breaks in a future Next major.
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams?: Promise<SearchParams>;
+}) {
+  const resolved = (await searchParams) ?? {};
+  const error = resolved.error;
+  const callbackUrl = resolved.callbackUrl ?? "/";
   return (
     <>
       <main

@@ -75,6 +75,29 @@ if ! _probe 2>/dev/null; then
   echo "[codex-setup] .venv re-synced — probe now succeeds."
 fi
 
+# Schema gate: ensure the local dev DB the FastAPI app will open is on
+# the latest Alembic head. B023 F008 round-2 reverify caught this:
+# `bash codex-setup.sh` could start uvicorn against a `workbench-dev.db`
+# still stuck on `0001_initial`, and every /api/execution/* route then
+# 500'd at request time with `OperationalError: no such table:
+# account_snapshot`. Adding a `alembic upgrade head` here closes the gap
+# the same way the production deploy.sh script does for /var/lib/workbench/
+# db/workbench.db. Idempotent: re-running on an already-current DB is a
+# no-op log line; non-zero exit (real migration failure) bails before
+# uvicorn ever binds the port.
+#
+# We propagate the same env file alembic uses in CI / deploy: when
+# WORKBENCH_DB_URL is set, alembic uses it as-is; otherwise the backend
+# Settings model falls back to sqlite:///./workbench-dev.db (relative to
+# workbench/backend/, matching the migrate.sh contract).
+echo "[codex-setup] upgrading workbench dev DB to alembic head…"
+if ! (cd "${WORKBENCH_DIR}/backend" && "${VENV_PY}" -m alembic upgrade head); then
+  echo "error: alembic upgrade head failed; refusing to start uvicorn against a stale schema." >&2
+  echo "Reproduce locally:" >&2
+  echo "  (cd ${WORKBENCH_DIR}/backend && ${VENV_PY} -m alembic upgrade head)" >&2
+  exit 1
+fi
+
 if [[ ! -d "${WORKBENCH_DIR}/frontend/node_modules" ]]; then
   echo "error: ${WORKBENCH_DIR}/frontend/node_modules not found." >&2
   echo "Run: (cd workbench/frontend && npm ci)" >&2
