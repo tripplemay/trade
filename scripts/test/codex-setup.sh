@@ -30,6 +30,22 @@ if [[ ! -x "${VENV_PY}" ]]; then
   exit 1
 fi
 
+# Fail-fast: the .venv must satisfy every runtime dependency declared
+# in workbench/backend/pyproject.toml. A stale .venv that was last
+# populated before a new dep landed (e.g. B023 F008 blocker: missing
+# python-multipart after the F004 multipart upload route shipped)
+# silently lets the venv check above pass but crashes uvicorn at
+# import time. Importing the FastAPI app surfaces any such gap in a
+# single subprocess; non-zero → bail with the precise remediation
+# instead of the cryptic stacktrace 2 seconds into uvicorn startup.
+echo "[codex-setup] verifying backend imports under .venv…"
+if ! (cd "${WORKBENCH_DIR}/backend" && "${VENV_PY}" -c "import workbench_api.app  # noqa: F401" 2>&1); then
+  echo "error: backend import probe failed — the .venv is missing a declared dependency." >&2
+  echo "Re-sync the venv to match workbench/backend/pyproject.toml:" >&2
+  echo "  ${REPO_ROOT}/.venv/bin/pip install -e workbench/backend[dev]" >&2
+  exit 1
+fi
+
 if [[ ! -d "${WORKBENCH_DIR}/frontend/node_modules" ]]; then
   echo "error: ${WORKBENCH_DIR}/frontend/node_modules not found." >&2
   echo "Run: (cd workbench/frontend && npm ci)" >&2
