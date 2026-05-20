@@ -73,7 +73,7 @@
     "exportCsv": "Export CSV",
     "list": {
       "title": "Sleeves",
-      "deeplinkHint": "Append {param} to deep-link a detail panel.",
+      "deeplinkHint": "Append <param>?selected=B013-regime-quarterly</param> to deep-link a detail panel.",
       "columnId": "ID",
       "columnName": "Name",
       "columnSleeve": "Sleeve",
@@ -217,7 +217,7 @@
     "exportCard": {
       "title": "Export markdown ticket",
       "descriptionPrefix": "Writes a checklist to ",
-      "descriptionPath": "docs/runs/<date>/order-ticket-<date>.md",
+      "descriptionPath": "docs/runs/'<'date'>'/order-ticket-'<'date'>'.md",
       "descriptionSuffix": ". The exported file carries the same research-only disclaimer pinned in ",
       "descriptionTest": "tests/unit/test_recommendations.py",
       "descriptionEnd": ".",
@@ -269,7 +269,7 @@
       "descriptionPrefix": "Mirrors ",
       "descriptionFile": "backlog.json",
       "descriptionMidA": ". Mutations ",
-      "descriptionCmd": "chore(backlog): add|edit|delete <id>",
+      "descriptionCmd": "chore(backlog): add|edit|delete '<'id'>'",
       "descriptionMidB": " auto-commit through ",
       "descriptionSuffix": "so the durable record on disk stays in lockstep with the workbench's run-time view."
     , "columnId": "ID",

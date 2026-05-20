@@ -209,7 +209,7 @@ export default function StrategiesPage() {
           <CardTitle>{tList("title")}</CardTitle>
           <CardDescription>
             {tList.rich("deeplinkHint", {
-              param: () => <code>?selected=B013-regime-quarterly</code>,
+              param: (chunks) => <code>{chunks}</code>,
             })}
           </CardDescription>
         </CardHeader>

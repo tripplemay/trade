@@ -73,7 +73,7 @@
     "exportCsv": "导出 CSV",
     "list": {
       "title": "Sleeves",
-      "deeplinkHint": "在 URL 追加 {param} 即可深链至策略详情面板。",
+      "deeplinkHint": "在 URL 追加 <param>?selected=B013-regime-quarterly</param> 即可深链至策略详情面板。",
       "columnId": "ID",
       "columnName": "名称",
       "columnSleeve": "Sleeve",
@@ -217,7 +217,7 @@
     "exportCard": {
       "title": "导出 markdown 订单清单",
       "descriptionPrefix": "将一份核对清单写入 ",
-      "descriptionPath": "docs/runs/<date>/order-ticket-<date>.md",
+      "descriptionPath": "docs/runs/'<'date'>'/order-ticket-'<'date'>'.md",
       "descriptionSuffix": "。导出文件携带与 ",
       "descriptionTest": "tests/unit/test_recommendations.py",
       "descriptionEnd": " 中固定的相同 research-only 免责声明。",
@@ -269,7 +269,7 @@
       "descriptionPrefix": "镜像 ",
       "descriptionFile": "backlog.json",
       "descriptionMidA": "。变更将通过 ",
-      "descriptionCmd": "chore(backlog): add|edit|delete <id>",
+      "descriptionCmd": "chore(backlog): add|edit|delete '<'id'>'",
       "descriptionMidB": " 自动 commit,",
       "descriptionSuffix": "确保磁盘记录与工作台运行时视图保持同步。",
       "columnId": "ID",
