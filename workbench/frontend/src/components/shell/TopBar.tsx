@@ -2,7 +2,9 @@
 
 import { CircleUser, Database, LogOut } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 
+import LocaleSwitcher from "@/components/LocaleSwitcher";
 import { Button } from "@/components/ui/button";
 
 /**
@@ -19,6 +21,7 @@ import { Button } from "@/components/ui/button";
 export default function TopBar() {
   const { data: session, status } = useSession();
   const email = session?.user?.email ?? null;
+  const t = useTranslations("common");
 
   return (
     <header
@@ -27,9 +30,9 @@ export default function TopBar() {
     >
       <div className="flex items-center gap-4">
         <span className="text-sm font-semibold tracking-tight text-foreground">
-          Workbench
+          {t("appName")}
           <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase text-muted-foreground">
-            research-only
+            {t("researchOnly")}
           </span>
         </span>
         <span
@@ -42,6 +45,7 @@ export default function TopBar() {
       </div>
 
       <div className="flex items-center gap-2">
+        <LocaleSwitcher />
         {status === "authenticated" && email ? (
           <span
             data-testid="topbar-user-email"
@@ -60,7 +64,7 @@ export default function TopBar() {
           }}
         >
           <LogOut className="h-3.5 w-3.5" aria-hidden />
-          <span className="sr-only">Sign out</span>
+          <span className="sr-only">{t("signOut")}</span>
         </Button>
       </div>
     </header>

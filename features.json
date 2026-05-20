@@ -6,7 +6,7 @@
       "title": "i18n 基建：next-intl 装 + middleware chain + LocaleSwitcher + cookie 持久 + TS 类型链",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "(1) workbench/frontend/package.json 加 next-intl@^3；(2) workbench/frontend/src/i18n.ts 配 locales=['zh-CN','en'] + defaultLocale='zh-CN' + loadMessages()；(3) workbench/frontend/messages/{zh-CN,en}.json 起始骨架（common namespace + nav ≥10 keys，zh-CN/en key set bit-identical）；(4) workbench/frontend/src/middleware.ts 加 next-intl locale detection 链到 NextAuth 之后（先 auth 后 locale 验证）；(5) workbench/frontend/src/components/LocaleSwitcher.tsx Header 右上角下拉 `中文 / English`，setLocaleCookie('NEXT_LOCALE', value, maxAge=365*24*3600)；(6) workbench/frontend/next.config.mjs 加 createNextIntlPlugin('./src/i18n.ts')；(7) TypeScript 类型链：`declare module 'next-intl'` 加 `IntlMessages = typeof zhCNMessages`，`t('common.foo.typo')` typecheck 报错。验收：首访 cookie 缺失 → zh-CN 默认；LocaleSwitcher 切 en → 整页英文 + cookie 写入；刷新保持；切回 zh-CN cookie 持久；`bash scripts/test/codex-setup.sh` 启动后 home 页验证；vitest 117 baseline + LocaleSwitcher + middleware 单测 ≥120；`npm audit --omit=dev --audit-level=high` exit=0；build artifact 无 127.0.0.1；NextAuth login 流仍工作（i18n middleware 不破坏 auth gating）。"
     },
     {

@@ -1,3 +1,11 @@
+import createNextIntlPlugin from "next-intl/plugin";
+
+// B024 F001: route next-intl's request-config loader (server-side
+// message resolution + locale detection) through `src/i18n.ts`. The
+// plugin wraps the Next config so we don't have to thread it through
+// every dev/build entry point.
+const withNextIntl = createNextIntlPlugin("./src/i18n.ts");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -58,4 +66,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

@@ -1,0 +1,29 @@
+{
+  "common": {
+    "appName": "Workbench",
+    "researchOnly": "仅供研究",
+    "loading": "加载中…",
+    "empty": "—",
+    "live": "已连接",
+    "unreachable": "无法连接",
+    "signOut": "退出登录",
+    "signIn": "登录",
+    "switchLanguage": "切换语言",
+    "languageChinese": "中文",
+    "languageEnglish": "English"
+  },
+  "nav": {
+    "home": "首页",
+    "strategies": "策略",
+    "backtest": "回测",
+    "reports": "报告",
+    "recommendations": "推荐",
+    "positionDiff": "持仓差异",
+    "ticket": "订单清单",
+    "fills": "成交",
+    "journal": "日志",
+    "account": "账户",
+    "snapshots": "快照",
+    "backlog": "需求池"
+  }
+}

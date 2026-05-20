@@ -1,10 +1,19 @@
 /**
- * Workbench auth middleware.
+ * Workbench auth + locale middleware.
  *
- * Everything is private by default. Anonymous visitors get redirected to
- * `/login` unless they're already on `/login` or hitting NextAuth's own
- * route handlers / the public health probe. The matcher below excludes
- * static assets so Next.js can still serve `/favicon.ico`, `/_next/*`, etc.
+ * Two responsibilities, in order:
+ *
+ *   1. Auth gating (B021): everything is private by default. Anonymous
+ *      visitors get redirected to `/login` unless they're already on
+ *      `/login` or hitting NextAuth's own route handlers / the public
+ *      health probe. The matcher below excludes static assets so Next.js
+ *      can still serve `/favicon.ico`, `/_next/*`, etc.
+ *
+ *   2. Locale cookie (B024 F001): once auth has been decided, if
+ *      `NEXT_LOCALE` is absent we write the negotiated locale onto the
+ *      response so the first paint after sign-in renders in the user's
+ *      language. We do NOT touch the cookie when one is already
+ *      present — the LocaleSwitcher owns explicit user choice.
  *
  * In production nginx routes `/api/*` directly to FastAPI, so the
  * `/api/health` and `/api/protected-test` allowlist entries below are
@@ -14,6 +23,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
+import { ensureLocaleCookie } from "@/lib/locale-cookie";
 
 // Every `/api/*` path is either:
 //   - owned by NextAuth (the `/api/auth/*` handlers under app/api/auth/)
@@ -38,16 +48,18 @@ function isPublic(pathname: string): boolean {
 export default auth((req) => {
   const { nextUrl } = req;
   if (isPublic(nextUrl.pathname)) {
-    return NextResponse.next();
+    return ensureLocaleCookie(req, NextResponse.next());
   }
   if (!req.auth) {
     const loginUrl = new URL("/login", nextUrl);
     if (nextUrl.pathname !== "/") {
       loginUrl.searchParams.set("callbackUrl", nextUrl.pathname + nextUrl.search);
     }
-    return NextResponse.redirect(loginUrl);
+    // Cookie also applied to the redirect so the /login page renders
+    // in the negotiated language even before the user signs in.
+    return ensureLocaleCookie(req, NextResponse.redirect(loginUrl));
   }
-  return NextResponse.next();
+  return ensureLocaleCookie(req, NextResponse.next());
 });
 
 export const config = {

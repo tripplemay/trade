@@ -1,0 +1,29 @@
+{
+  "common": {
+    "appName": "Workbench",
+    "researchOnly": "research-only",
+    "loading": "loading…",
+    "empty": "—",
+    "live": "live",
+    "unreachable": "unreachable",
+    "signOut": "Sign out",
+    "signIn": "Sign in",
+    "switchLanguage": "Switch language",
+    "languageChinese": "中文",
+    "languageEnglish": "English"
+  },
+  "nav": {
+    "home": "Home",
+    "strategies": "Strategies",
+    "backtest": "Backtest",
+    "reports": "Reports",
+    "recommendations": "Recommendations",
+    "positionDiff": "Position diff",
+    "ticket": "Ticket",
+    "fills": "Fills",
+    "journal": "Journal",
+    "account": "Account",
+    "snapshots": "Snapshots",
+    "backlog": "Backlog"
+  }
+}
