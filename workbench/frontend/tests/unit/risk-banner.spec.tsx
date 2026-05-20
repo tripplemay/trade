@@ -6,6 +6,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 
+import { renderWithIntl } from "../test-utils/intl";
+
 import type { components } from "@/types/api";
 
 vi.mock("sonner", () => {
@@ -69,7 +71,7 @@ afterEach(() => {
 
 describe("RiskBanner standalone (B023 F006)", () => {
   it("green state — neutral banner, no defensive rationale", () => {
-    const { getByTestId, queryByTestId } = render(<RiskBanner data={GREEN} noFetch />);
+    const { getByTestId, queryByTestId } = renderWithIntl(<RiskBanner data={GREEN} noFetch />);
     const banner = getByTestId("risk-banner");
     expect(banner.getAttribute("data-state")).toBe("green");
     expect(banner).toHaveTextContent(/Risk: OK/);
@@ -77,7 +79,7 @@ describe("RiskBanner standalone (B023 F006)", () => {
   });
 
   it("yellow state — advisory banner without defensive payload", () => {
-    const { getByTestId, queryByTestId } = render(<RiskBanner data={YELLOW} noFetch />);
+    const { getByTestId, queryByTestId } = renderWithIntl(<RiskBanner data={YELLOW} noFetch />);
     const banner = getByTestId("risk-banner");
     expect(banner.getAttribute("data-state")).toBe("yellow");
     expect(banner).toHaveTextContent(/advisory threshold/);
@@ -85,7 +87,7 @@ describe("RiskBanner standalone (B023 F006)", () => {
   });
 
   it("red state — surfaces the alternative defensive rationale", () => {
-    const { getByTestId } = render(<RiskBanner data={RED} noFetch />);
+    const { getByTestId } = renderWithIntl(<RiskBanner data={RED} noFetch />);
     const banner = getByTestId("risk-banner");
     expect(banner.getAttribute("data-state")).toBe("red");
     expect(banner).toHaveTextContent(/kill-switch tripped/);
@@ -165,7 +167,7 @@ describe("TicketPage F006 integration", () => {
       posts: [],
     };
     vi.stubGlobal("fetch", buildTicketFetch(state));
-    const { getByTestId } = render(<TicketPage />);
+    const { getByTestId } = renderWithIntl(<TicketPage />);
     // The mode-card appears once the risk fetch resolves; the auto-flip
     // to defensive runs in a separate effect tick. Waiting on the
     // radio's `.checked` rather than just the card's presence avoids a
@@ -186,7 +188,7 @@ describe("TicketPage F006 integration", () => {
       posts: [],
     };
     vi.stubGlobal("fetch", buildTicketFetch(state));
-    const { getByTestId, queryByTestId } = render(<TicketPage />);
+    const { getByTestId, queryByTestId } = renderWithIntl(<TicketPage />);
     await waitFor(() => {
       expect(getByTestId("ticket-history-empty")).toBeInTheDocument();
     });
@@ -209,7 +211,7 @@ describe("TicketPage F006 integration", () => {
       posts: [],
     };
     vi.stubGlobal("fetch", buildTicketFetch(state));
-    const { getByTestId } = render(<TicketPage />);
+    const { getByTestId } = renderWithIntl(<TicketPage />);
     await waitFor(() => {
       expect(getByTestId("ticket-mode-card")).toBeInTheDocument();
     });
@@ -231,7 +233,7 @@ describe("TicketPage F006 integration", () => {
       posts: [],
     };
     vi.stubGlobal("fetch", buildTicketFetch(state));
-    const { getByTestId } = render(<TicketPage />);
+    const { getByTestId } = renderWithIntl(<TicketPage />);
     await waitFor(() => {
       expect(getByTestId("ticket-mode-card")).toBeInTheDocument();
     });

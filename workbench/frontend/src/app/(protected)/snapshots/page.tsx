@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -34,12 +35,16 @@ type SnapshotListResponse = components["schemas"]["SnapshotListResponse"];
 const LIST_URL = "/api/snapshots";
 const REFRESH_URL = "/api/snapshots/refresh";
 
-const COLUMNS: ColDef<SnapshotSummary>[] = [
-  { field: "id", headerName: "Snapshot id", flex: 1 },
-  dateColumn<SnapshotSummary>({ field: "as_of_date", headerName: "As-of", width: 130 }),
-  { field: "quality_status", headerName: "Quality", width: 120 },
-  { field: "file_path", headerName: "Manifest", flex: 2 },
-];
+function buildColumns(
+  t: ReturnType<typeof useTranslations<"snapshots.table">>,
+): ColDef<SnapshotSummary>[] {
+  return [
+    { field: "id", headerName: t("columnId"), flex: 1 },
+    dateColumn<SnapshotSummary>({ field: "as_of_date", headerName: t("columnAsOf"), width: 130 }),
+    { field: "quality_status", headerName: t("columnQuality"), width: 120 },
+    { field: "file_path", headerName: t("columnManifest"), flex: 2 },
+  ];
+}
 
 interface StageEvent {
   job_id?: string;
@@ -49,6 +54,12 @@ interface StageEvent {
 }
 
 export default function SnapshotsPage() {
+  const t = useTranslations("snapshots");
+  const tTable = useTranslations("snapshots.table");
+  const tModal = useTranslations("snapshots.modal");
+  const tToast = useTranslations("snapshots.toast");
+  const tCommon = useTranslations("common");
+
   const [snapshots, setSnapshots] = useState<SnapshotSummary[]>([]);
   const [listError, setListError] = useState<string | null>(null);
   const [refreshOpen, setRefreshOpen] = useState(false);
@@ -56,6 +67,8 @@ export default function SnapshotsPage() {
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const tableRef = useRef<DataTableHandle>(null);
+
+  const columns = useMemo(() => buildColumns(tTable), [tTable]);
 
   const loadList = useCallback(async () => {
     try {
@@ -89,15 +102,15 @@ export default function SnapshotsPage() {
         }
       });
       if (sawComplete) {
-        toast.success("Snapshot refreshed");
+        toast.success(tToast("success"));
         await loadList();
       } else {
-        toast.error("Refresh ended without a complete event");
+        toast.error(tToast("incomplete"));
       }
     } catch (reason: unknown) {
       const message = reason instanceof Error ? reason.message : String(reason);
       setRefreshError(message);
-      toast.error(`Refresh failed: ${message}`);
+      toast.error(`${tToast("failedPrefix")} ${message}`);
     } finally {
       setRefreshing(false);
     }
@@ -107,35 +120,37 @@ export default function SnapshotsPage() {
     <section data-testid="page-snapshots" className="space-y-6">
       <Toaster />
       <header className="flex items-baseline justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Snapshots</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("title")}</h1>
         <div className="flex items-center gap-2">
           <span data-testid="snapshots-state" className="text-xs text-muted-foreground">
-            {listError ? `unreachable: ${listError}` : `${snapshots.length} snapshots`}
+            {listError
+              ? tCommon("unreachableWithError", { error: listError })
+              : t("count", { count: snapshots.length })}
           </span>
           <Button
             data-testid="snapshots-refresh"
             onClick={handleRefresh}
             disabled={refreshing}
           >
-            {refreshing ? "Refreshing…" : "Refresh snapshot"}
+            {refreshing ? t("refreshing") : t("refresh")}
           </Button>
         </div>
       </header>
 
       <Card>
         <CardHeader>
-          <CardTitle>Public snapshot inventory</CardTitle>
+          <CardTitle>{tTable("title")}</CardTitle>
           <CardDescription>
-            Rows mirror the SnapshotMeta table; Refresh streams a synthetic 5-stage progress
-            modal until the real <code>scripts/refresh_public_snapshot</code> subprocess wires
-            in (B023).
+            {tTable("descriptionPrefix")}
+            <code>{tTable("descriptionScript")}</code>
+            {tTable("descriptionSuffix")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <DataTable<SnapshotSummary>
             ref={tableRef}
             rowData={snapshots}
-            columnDefs={COLUMNS}
+            columnDefs={columns}
             height={420}
           />
         </CardContent>
@@ -144,10 +159,8 @@ export default function SnapshotsPage() {
       <Dialog open={refreshOpen} onOpenChange={setRefreshOpen}>
         <DialogContent data-testid="snapshots-refresh-modal">
           <DialogHeader>
-            <DialogTitle>Refreshing snapshot…</DialogTitle>
-            <DialogDescription>
-              Stages stream via SSE; the modal stays open until you close it.
-            </DialogDescription>
+            <DialogTitle>{tModal("title")}</DialogTitle>
+            <DialogDescription>{tModal("description")}</DialogDescription>
           </DialogHeader>
           <ul className="space-y-1 text-xs">
             {events.map((event, i) => (

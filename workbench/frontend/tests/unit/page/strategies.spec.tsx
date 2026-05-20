@@ -10,6 +10,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, waitFor } from "@testing-library/react";
 
+import { renderWithIntl } from "../../test-utils/intl";
+
 import type { components } from "@/types/api";
 
 // Mock next/navigation's useSearchParams BEFORE importing the page so
@@ -116,7 +118,7 @@ describe("StrategiesPage (B022 F007)", () => {
         "/api/strategies/B013-regime-quarterly": DETAIL,
       }),
     );
-    const { getByTestId } = render(<StrategiesPage />);
+    const { getByTestId } = renderWithIntl(<StrategiesPage />);
     expect(getByTestId("page-strategies")).toBeInTheDocument();
     expect(getByTestId("strategies-list-card")).toBeInTheDocument();
     await waitFor(() => {
@@ -132,7 +134,7 @@ describe("StrategiesPage (B022 F007)", () => {
         "/api/strategies/B013-regime-quarterly": DETAIL,
       }),
     );
-    const { getByTestId } = render(<StrategiesPage />);
+    const { getByTestId } = renderWithIntl(<StrategiesPage />);
     await waitFor(() => {
       expect(getByTestId("strategy-detail")).toBeInTheDocument();
     });
@@ -167,7 +169,7 @@ describe("StrategiesPage (B022 F007)", () => {
         "/api/strategies/B016-risk-parity-hrp": altDetail,
       }),
     );
-    const { getByTestId } = render(<StrategiesPage />);
+    const { getByTestId } = renderWithIntl(<StrategiesPage />);
     await waitFor(() => {
       expect(getByTestId("strategy-detail")).toHaveTextContent("Risk Parity HRP");
       expect(getByTestId("strategy-detail-sweep-link-empty")).toBeInTheDocument();
@@ -179,7 +181,7 @@ describe("StrategiesPage (B022 F007)", () => {
       "fetch",
       vi.fn(async () => new Response("nope", { status: 500 })) as unknown as typeof fetch,
     );
-    const { getByTestId } = render(<StrategiesPage />);
+    const { getByTestId } = renderWithIntl(<StrategiesPage />);
     await waitFor(() => {
       expect(getByTestId("strategies-state")).toHaveTextContent(/unreachable/);
     });

@@ -9,6 +9,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 
+import { renderWithIntl } from "../../test-utils/intl";
+
 import type { components } from "@/types/api";
 
 const successToast = vi.fn();
@@ -122,7 +124,7 @@ describe("BacklogPage (B022 F012)", () => {
       "fetch",
       vi.fn(async () => jsonResponse(LIST_INITIAL)) as unknown as typeof fetch,
     );
-    const { getByTestId } = render(<BacklogPage />);
+    const { getByTestId } = renderWithIntl(<BacklogPage />);
     await waitFor(() => {
       expect(getByTestId("backlog-state")).toHaveTextContent(/1 entries/);
       expect(getByTestId("ag-grid-mock")).toHaveTextContent(/rows=1/);
@@ -146,7 +148,7 @@ describe("BacklogPage (B022 F012)", () => {
     );
     vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
 
-    const { getByTestId } = render(<BacklogPage />);
+    const { getByTestId } = renderWithIntl(<BacklogPage />);
     await waitFor(() => {
       expect(getByTestId("backlog-state")).toHaveTextContent(/1 entries/);
     });
@@ -166,7 +168,7 @@ describe("BacklogPage (B022 F012)", () => {
       "fetch",
       vi.fn(async () => jsonResponse(LIST_INITIAL)) as unknown as typeof fetch,
     );
-    const { getByTestId } = render(<BacklogPage />);
+    const { getByTestId } = renderWithIntl(<BacklogPage />);
     await waitFor(() => {
       expect(getByTestId("backlog-state")).toHaveTextContent(/1 entries/);
     });

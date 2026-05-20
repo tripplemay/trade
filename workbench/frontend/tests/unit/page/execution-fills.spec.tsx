@@ -7,6 +7,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 
+import { renderWithIntl } from "../../test-utils/intl";
+
 import type { components } from "@/types/api";
 
 vi.mock("sonner", () => {
@@ -140,7 +142,7 @@ describe("FillsPage (B023 F004)", () => {
       posts: [],
     };
     vi.stubGlobal("fetch", buildFetch(state));
-    const { getByTestId } = render(<FillsPage />);
+    const { getByTestId } = renderWithIntl(<FillsPage />);
     await waitFor(() => {
       expect((getByTestId("fills-ticket-select") as HTMLSelectElement).value).toBe(
         "tkt-20260519-aaaa",
@@ -158,7 +160,7 @@ describe("FillsPage (B023 F004)", () => {
       posts: [],
     };
     vi.stubGlobal("fetch", buildFetch(state));
-    const { getByTestId } = render(<FillsPage />);
+    const { getByTestId } = renderWithIntl(<FillsPage />);
     await waitFor(() => {
       expect((getByTestId("fills-ticket-select") as HTMLSelectElement).value).toBe(
         "tkt-20260519-aaaa",
@@ -203,7 +205,7 @@ describe("FillsPage (B023 F004)", () => {
       posts: [],
     };
     vi.stubGlobal("fetch", buildFetch(state));
-    const { getByTestId } = render(<FillsPage />);
+    const { getByTestId } = renderWithIntl(<FillsPage />);
     await waitFor(() => {
       expect((getByTestId("fills-ticket-select") as HTMLSelectElement).value).toBe(
         "tkt-20260519-aaaa",
@@ -235,7 +237,7 @@ describe("FillsPage (B023 F004)", () => {
       posts: [],
     };
     vi.stubGlobal("fetch", buildFetch(state));
-    const { getByTestId } = render(<FillsPage />);
+    const { getByTestId } = renderWithIntl(<FillsPage />);
     await waitFor(() => {
       expect((getByTestId("fills-ticket-select") as HTMLSelectElement).value).toBe(
         "tkt-20260519-aaaa",
@@ -263,7 +265,7 @@ describe("FillsPage (B023 F004)", () => {
     };
     const fetchMock = buildFetch(state);
     vi.stubGlobal("fetch", fetchMock);
-    render(<FillsPage />);
+    renderWithIntl(<FillsPage />);
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalled();
     });

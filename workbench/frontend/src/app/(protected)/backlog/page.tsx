@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -51,6 +52,12 @@ interface FormState {
 const EMPTY_FORM: FormState = { title: "", description: "", priority: "medium" };
 
 export default function BacklogPage() {
+  const t = useTranslations("backlog");
+  const tTable = useTranslations("backlog.table");
+  const tForm = useTranslations("backlog.form");
+  const tToast = useTranslations("backlog.toast");
+  const tCommon = useTranslations("common");
+
   const [entries, setEntries] = useState<BacklogEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [priorityFilter, setPriorityFilter] = useState<"all" | Priority>("all");
@@ -84,7 +91,7 @@ export default function BacklogPage() {
   const handleSubmit = async () => {
     if (!editing) return;
     if (!editing.title.trim()) {
-      toast.error("Title is required.");
+      toast.error(tToast("titleRequired"));
       return;
     }
     setSubmitting(true);
@@ -104,12 +111,12 @@ export default function BacklogPage() {
         const body = await response.text();
         throw new Error(`HTTP ${response.status}: ${body || response.statusText}`);
       }
-      toast.success(isUpdate ? "Backlog entry updated" : "Backlog entry created");
+      toast.success(isUpdate ? tToast("updated") : tToast("created"));
       setEditing(null);
       await loadList();
     } catch (reason: unknown) {
       toast.error(
-        `Submit failed: ${reason instanceof Error ? reason.message : String(reason)}`,
+        `${tToast("submitFailedPrefix")} ${reason instanceof Error ? reason.message : String(reason)}`,
       );
     } finally {
       setSubmitting(false);
@@ -118,7 +125,7 @@ export default function BacklogPage() {
 
   const handleDelete = useCallback(
     async (id: string) => {
-      if (!window.confirm(`Delete backlog entry ${id}?`)) return;
+      if (!window.confirm(tToast("confirmDelete", { id }))) return;
       try {
         const response = await fetch(`${LIST_URL}/${encodeURIComponent(id)}`, {
           method: "DELETE",
@@ -127,26 +134,30 @@ export default function BacklogPage() {
           const body = await response.text();
           throw new Error(`HTTP ${response.status}: ${body || response.statusText}`);
         }
-        toast.success(`Deleted ${id}`);
+        toast.success(`${tToast("deletedPrefix")}${id}`);
         await loadList();
       } catch (reason: unknown) {
         toast.error(
-          `Delete failed: ${reason instanceof Error ? reason.message : String(reason)}`,
+          `${tToast("deleteFailedPrefix")} ${reason instanceof Error ? reason.message : String(reason)}`,
         );
       }
     },
-    [loadList],
+    [loadList, tToast],
   );
 
   const columns: ColDef<BacklogEntry>[] = useMemo(
     () => [
-      { field: "id", headerName: "ID", width: 180 },
-      { field: "title", headerName: "Title", flex: 2 },
-      { field: "priority", headerName: "Priority", width: 110 },
-      { field: "status", headerName: "Status", width: 110 },
-      dateColumn<BacklogEntry>({ field: "updated_at", headerName: "Updated", width: 160 }),
+      { field: "id", headerName: tTable("columnId"), width: 180 },
+      { field: "title", headerName: tTable("columnTitle"), flex: 2 },
+      { field: "priority", headerName: tTable("columnPriority"), width: 110 },
+      { field: "status", headerName: tTable("columnStatus"), width: 110 },
+      dateColumn<BacklogEntry>({
+        field: "updated_at",
+        headerName: tTable("columnUpdated"),
+        width: 160,
+      }),
       {
-        headerName: "Actions",
+        headerName: tTable("columnActions"),
         width: 180,
         cellRenderer: (params: { data?: BacklogEntry }) => {
           const row = params.data;
@@ -166,7 +177,7 @@ export default function BacklogPage() {
                 }
                 data-testid={`backlog-edit-${row.id}`}
               >
-                Edit
+                {t("edit")}
               </button>
               <button
                 type="button"
@@ -174,34 +185,36 @@ export default function BacklogPage() {
                 onClick={() => void handleDelete(row.id)}
                 data-testid={`backlog-delete-${row.id}`}
               >
-                Delete
+                {t("delete")}
               </button>
             </div>
           );
         },
       },
     ],
-    [handleDelete],
+    [handleDelete, t, tTable],
   );
 
   return (
     <section data-testid="page-backlog" className="space-y-6">
       <Toaster />
       <header className="flex flex-wrap items-baseline justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Backlog</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("title")}</h1>
         <div className="flex items-center gap-2">
           <span data-testid="backlog-state" className="text-xs text-muted-foreground">
-            {error ? `unreachable: ${error}` : `${entries.length} entries (showing ${filtered.length})`}
+            {error
+              ? tCommon("unreachableWithError", { error })
+              : t("stateCount", { total: entries.length, visible: filtered.length })}
           </span>
           <Select
             value={priorityFilter}
             onValueChange={(value: string) => setPriorityFilter(value as "all" | Priority)}
           >
             <SelectTrigger className="w-36" data-testid="backlog-priority-filter">
-              <SelectValue placeholder="Priority" />
+              <SelectValue placeholder={tTable("columnPriority")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All priorities</SelectItem>
+              <SelectItem value="all">{t("allPriorities")}</SelectItem>
               {PRIORITIES.map((p) => (
                 <SelectItem key={p} value={p}>
                   {p}
@@ -210,18 +223,21 @@ export default function BacklogPage() {
             </SelectContent>
           </Select>
           <Button data-testid="backlog-add" onClick={() => setEditing({ ...EMPTY_FORM })}>
-            Add entry
+            {t("addEntry")}
           </Button>
         </div>
       </header>
 
       <Card>
         <CardHeader>
-          <CardTitle>Entries</CardTitle>
+          <CardTitle>{tTable("title")}</CardTitle>
           <CardDescription>
-            Mirrors <code>backlog.json</code>. Mutations <strong>auto-commit</strong> through
-            <code>chore(backlog): add|edit|delete &lt;id&gt;</code> so the durable record on disk
-            stays in lockstep with the workbench&apos;s run-time view.
+            {tTable("descriptionPrefix")}
+            <code>{tTable("descriptionFile")}</code>
+            {tTable("descriptionMidA")}
+            <code>{tTable("descriptionCmd")}</code>
+            {tTable("descriptionMidB")}
+            {tTable("descriptionSuffix")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -236,14 +252,16 @@ export default function BacklogPage() {
       <Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
         <DialogContent data-testid="backlog-edit-dialog">
           <DialogHeader>
-            <DialogTitle>{editing?.id ? "Edit backlog entry" : "Add backlog entry"}</DialogTitle>
+            <DialogTitle>{editing?.id ? tForm("titleEdit") : tForm("titleAdd")}</DialogTitle>
             <DialogDescription>
-              Saving runs <code>git add backlog.json && git commit</code> on the server.
+              {tForm("descriptionPrefix")}
+              <code>{tForm("descriptionCmd")}</code>
+              {tForm("descriptionSuffix")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <label className="block space-y-1 text-xs text-muted-foreground">
-              <span>Title</span>
+              <span>{tForm("fieldTitle")}</span>
               <Input
                 data-testid="backlog-form-title"
                 value={editing?.title ?? ""}
@@ -253,7 +271,7 @@ export default function BacklogPage() {
               />
             </label>
             <label className="block space-y-1 text-xs text-muted-foreground">
-              <span>Description</span>
+              <span>{tForm("fieldDescription")}</span>
               <textarea
                 data-testid="backlog-form-description"
                 value={editing?.description ?? ""}
@@ -269,7 +287,7 @@ export default function BacklogPage() {
               />
             </label>
             <label className="block space-y-1 text-xs text-muted-foreground">
-              <span>Priority</span>
+              <span>{tForm("fieldPriority")}</span>
               <Select
                 value={editing?.priority ?? "medium"}
                 onValueChange={(value) =>
@@ -279,7 +297,7 @@ export default function BacklogPage() {
                 }
               >
                 <SelectTrigger data-testid="backlog-form-priority">
-                  <SelectValue placeholder="Priority" />
+                  <SelectValue placeholder={tTable("columnPriority")} />
                 </SelectTrigger>
                 <SelectContent>
                   {PRIORITIES.map((p) => (
@@ -297,14 +315,14 @@ export default function BacklogPage() {
               onClick={() => setEditing(null)}
               disabled={submitting}
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               data-testid="backlog-form-submit"
               onClick={() => void handleSubmit()}
               disabled={submitting}
             >
-              {submitting ? "Saving…" : editing?.id ? "Save" : "Create"}
+              {submitting ? t("saving") : editing?.id ? t("save") : t("create")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,6 +42,8 @@ function DashboardCard({
 }
 
 export default function HomePage() {
+  const t = useTranslations("home");
+  const tCommon = useTranslations("common");
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,42 +73,55 @@ export default function HomePage() {
   const daysToRebalanceValue = data ? String(data.days_to_next_rebalance) : "—";
   const lastRebalance = data?.last_rebalance ?? null;
 
+  const stateLabel = data
+    ? tCommon("live")
+    : error
+      ? tCommon("unreachableWithError", { error })
+      : tCommon("loading");
+
   return (
     <section data-testid="workbench-home" className="space-y-6">
       <header className="flex items-baseline justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Home</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("title")}</h1>
         <span data-testid="dashboard-state" className="text-xs text-muted-foreground">
-          {data ? "live" : error ? `unreachable: ${error}` : "loading…"}
+          {stateLabel}
         </span>
       </header>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <DashboardCard
           testId="dashboard-card-nav"
-          label="NAV"
+          label={t("metrics.navLabel")}
           value={navValue}
-          description={lastRebalance ? `as of ${lastRebalance.date}` : "Cash + equity_value"}
+          description={
+            lastRebalance
+              ? tCommon("asOf", { date: lastRebalance.date })
+              : t("metrics.navDescriptionFallback")
+          }
         />
         <DashboardCard
           testId="dashboard-card-drawdown"
-          label="Master drawdown"
+          label={t("metrics.drawdownLabel")}
           value={drawdownValue}
-          description="From equity peak"
+          description={t("metrics.drawdownDescription")}
         />
         <DashboardCard
           testId="dashboard-card-killswitch"
-          label="Kill-switch threshold"
+          label={t("metrics.killSwitchLabel")}
           value={killSwitchValue}
-          description="Manual halt arms at this DD"
+          description={t("metrics.killSwitchDescription")}
         />
         <DashboardCard
           testId="dashboard-card-rebalance"
-          label="Days to next rebalance"
+          label={t("metrics.rebalanceLabel")}
           value={daysToRebalanceValue}
           description={
             lastRebalance
-              ? `Last: ${lastRebalance.date} · ${lastRebalance.fill_count} fills`
-              : "No rebalance recorded"
+              ? t("metrics.rebalanceLastWithFills", {
+                  date: lastRebalance.date,
+                  count: lastRebalance.fill_count,
+                })
+              : t("metrics.rebalanceLastEmpty")
           }
         />
       </div>
@@ -113,8 +129,8 @@ export default function HomePage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card data-testid="dashboard-recent-reports">
           <CardHeader>
-            <CardTitle>Recent reports</CardTitle>
-            <CardDescription>Sign-offs, sweeps, and reviews from docs/test-reports/.</CardDescription>
+            <CardTitle>{t("recentReports.title")}</CardTitle>
+            <CardDescription>{t("recentReports.description")}</CardDescription>
           </CardHeader>
           <CardContent>
             {data && data.recent_reports.length > 0 ? (
@@ -136,8 +152,9 @@ export default function HomePage() {
               </ul>
             ) : (
               <p data-testid="recent-reports-empty" className="text-sm text-muted-foreground">
-                No recent reports surfaced. Drop sign-off markdown files under{" "}
-                <code className="rounded bg-muted px-1 py-0.5">docs/test-reports/</code>.
+                {t("recentReports.emptyPrefix")}{" "}
+                <code className="rounded bg-muted px-1 py-0.5">{t("recentReports.emptyPath")}</code>
+                {t("recentReports.emptySuffix")}
               </p>
             )}
           </CardContent>
@@ -145,8 +162,8 @@ export default function HomePage() {
 
         <Card data-testid="dashboard-action-items">
           <CardHeader>
-            <CardTitle>Action items</CardTitle>
-            <CardDescription>Things the workbench wants you to look at.</CardDescription>
+            <CardTitle>{t("actionItems.title")}</CardTitle>
+            <CardDescription>{t("actionItems.description")}</CardDescription>
           </CardHeader>
           <CardContent>
             {data && data.action_items.length > 0 ? (
@@ -169,8 +186,7 @@ export default function HomePage() {
               </ul>
             ) : (
               <p data-testid="action-items-empty" className="text-sm text-muted-foreground">
-                Nothing flagged. Action items light up when a strategy gate trips or a wash-sale
-                heuristic fires (B022 F010).
+                {t("actionItems.empty")}
               </p>
             )}
           </CardContent>

@@ -11,6 +11,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 
+import { renderWithIntl } from "../../test-utils/intl";
+
 import type { components } from "@/types/api";
 
 const refreshEvents: Array<Record<string, unknown>> = [
@@ -107,7 +109,7 @@ describe("SnapshotsPage (B022 F011)", () => {
       "fetch",
       vi.fn(async () => jsonResponse(LIST_INITIAL)) as unknown as typeof fetch,
     );
-    const { getByTestId } = render(<SnapshotsPage />);
+    const { getByTestId } = renderWithIntl(<SnapshotsPage />);
     await waitFor(() => {
       expect(getByTestId("snapshots-state")).toHaveTextContent(/1 snapshots/);
       expect(getByTestId("ag-grid-mock")).toHaveTextContent(/rows=1/);
@@ -123,7 +125,7 @@ describe("SnapshotsPage (B022 F011)", () => {
         return jsonResponse(callCount === 1 ? LIST_INITIAL : LIST_AFTER);
       }) as unknown as typeof fetch,
     );
-    const { getByTestId } = render(<SnapshotsPage />);
+    const { getByTestId } = renderWithIntl(<SnapshotsPage />);
     await waitFor(() => {
       expect(getByTestId("snapshots-refresh")).not.toBeDisabled();
     });

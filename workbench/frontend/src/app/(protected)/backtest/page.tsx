@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
@@ -42,16 +43,21 @@ type BacktestTrade = components["schemas"]["BacktestTrade"];
 const STRATEGIES_URL = "/api/strategies";
 const RUN_URL = "/api/backtests/run";
 
-const TRADE_COLUMNS: ColDef<BacktestTrade>[] = [
-  dateColumn<BacktestTrade>({ field: "date", headerName: "Date", width: 130 }),
-  { field: "symbol", headerName: "Symbol", width: 110 },
-  { field: "side", headerName: "Side", width: 90 },
-  percentColumn<BacktestTrade>({ field: "quantity", headerName: "Qty", digits: 2 }),
-  currencyColumn<BacktestTrade>({ field: "price", headerName: "Price" }),
-  currencyColumn<BacktestTrade>({ field: "notional", headerName: "Notional" }),
-];
+function buildTradeColumns(
+  t: ReturnType<typeof useTranslations<"backtest.trades">>,
+): ColDef<BacktestTrade>[] {
+  return [
+    dateColumn<BacktestTrade>({ field: "date", headerName: t("columnDate"), width: 130 }),
+    { field: "symbol", headerName: t("columnSymbol"), width: 110 },
+    { field: "side", headerName: t("columnSide"), width: 90 },
+    percentColumn<BacktestTrade>({ field: "quantity", headerName: t("columnQty"), digits: 2 }),
+    currencyColumn<BacktestTrade>({ field: "price", headerName: t("columnPrice") }),
+    currencyColumn<BacktestTrade>({ field: "notional", headerName: t("columnNotional") }),
+  ];
+}
 
 function MetricsCard({ metrics }: { metrics: BacktestRunResponse["metrics"] | null }) {
+  const t = useTranslations("backtest.metrics");
   const Stat = ({ label, value }: { label: string; value: string }) => (
     <div>
       <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
@@ -61,17 +67,20 @@ function MetricsCard({ metrics }: { metrics: BacktestRunResponse["metrics"] | nu
   return (
     <Card data-testid="backtest-metrics">
       <CardHeader>
-        <CardTitle>Headline metrics</CardTitle>
-        <CardDescription>Synthetic engine in F008 — real numbers land in B023.</CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="grid grid-cols-3 gap-4 sm:grid-cols-6">
-        <Stat label="CAGR" value={metrics ? `${(metrics.cagr * 100).toFixed(2)}%` : "—"} />
-        <Stat label="Sharpe" value={metrics ? metrics.sharpe.toFixed(2) : "—"} />
-        <Stat label="Sortino" value={metrics?.sortino ? metrics.sortino.toFixed(2) : "—"} />
-        <Stat label="Max DD" value={metrics ? `${(metrics.max_drawdown * 100).toFixed(2)}%` : "—"} />
-        <Stat label="Turnover" value={metrics ? metrics.turnover.toFixed(2) : "—"} />
+        <Stat label={t("cagr")} value={metrics ? `${(metrics.cagr * 100).toFixed(2)}%` : "—"} />
+        <Stat label={t("sharpe")} value={metrics ? metrics.sharpe.toFixed(2) : "—"} />
+        <Stat label={t("sortino")} value={metrics?.sortino ? metrics.sortino.toFixed(2) : "—"} />
         <Stat
-          label="Win rate"
+          label={t("maxDrawdown")}
+          value={metrics ? `${(metrics.max_drawdown * 100).toFixed(2)}%` : "—"}
+        />
+        <Stat label={t("turnover")} value={metrics ? metrics.turnover.toFixed(2) : "—"} />
+        <Stat
+          label={t("winRate")}
           value={metrics?.win_rate ? `${(metrics.win_rate * 100).toFixed(2)}%` : "—"}
         />
       </CardContent>
@@ -80,6 +89,13 @@ function MetricsCard({ metrics }: { metrics: BacktestRunResponse["metrics"] | nu
 }
 
 export default function BacktestPage() {
+  const t = useTranslations("backtest");
+  const tSelector = useTranslations("backtest.selector");
+  const tEquity = useTranslations("backtest.equity");
+  const tDrawdown = useTranslations("backtest.drawdown");
+  const tTrades = useTranslations("backtest.trades");
+  const tCommon = useTranslations("common");
+
   const [strategies, setStrategies] = useState<StrategySummary[]>([]);
   const [strategyId, setStrategyId] = useState<string>("");
   const [snapshotId, setSnapshotId] = useState<string>("snap-fixture");
@@ -91,6 +107,8 @@ export default function BacktestPage() {
   const [error, setError] = useState<string | null>(null);
   const [sharedRange, setSharedRange] = useState<EquityCurveRange | null>(null);
   const tradesRef = useRef<DataTableHandle>(null);
+
+  const tradeColumns = useMemo(() => buildTradeColumns(tTrades), [tTrades]);
 
   useEffect(() => {
     let cancelled = false;
@@ -177,15 +195,23 @@ export default function BacktestPage() {
     });
   }, [result]);
 
+  const stateLabel = error
+    ? tCommon("errorPrefix", { error })
+    : running
+      ? t("stateRunning")
+      : result
+        ? t("stateRunWithId", { id: result.run_id })
+        : t("stateIdle");
+
   return (
     <section
       data-testid="page-backtest"
       className={cn("flex h-[calc(100vh-12rem)] flex-col gap-3")}
     >
       <header className="flex items-baseline justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Backtest viewer</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("title")}</h1>
         <span data-testid="backtest-state" className="text-xs text-muted-foreground">
-          {error ? `error: ${error}` : running ? "running…" : result ? `run ${result.run_id}` : "idle"}
+          {stateLabel}
         </span>
       </header>
 
@@ -200,15 +226,15 @@ export default function BacktestPage() {
         <ResizablePanel defaultSize={28} minSize={20} className="overflow-y-auto">
           <Card className="m-0 rounded-none border-0 shadow-none">
             <CardHeader>
-              <CardTitle>Selector</CardTitle>
-              <CardDescription>Pick a strategy + snapshot + window, then Run.</CardDescription>
+              <CardTitle>{tSelector("title")}</CardTitle>
+              <CardDescription>{tSelector("description")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <label className="block space-y-1 text-xs text-muted-foreground">
-                <span>Strategy</span>
+                <span>{tSelector("strategyLabel")}</span>
                 <Select value={strategyId} onValueChange={setStrategyId}>
                   <SelectTrigger data-testid="backtest-strategy-select">
-                    <SelectValue placeholder="Pick a strategy" />
+                    <SelectValue placeholder={tSelector("strategyPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     {strategies.map((s) => (
@@ -220,7 +246,7 @@ export default function BacktestPage() {
                 </Select>
               </label>
               <label className="block space-y-1 text-xs text-muted-foreground">
-                <span>Snapshot id</span>
+                <span>{tSelector("snapshotLabel")}</span>
                 <Input
                   data-testid="backtest-snapshot-input"
                   value={snapshotId}
@@ -229,7 +255,7 @@ export default function BacktestPage() {
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <label className="block space-y-1 text-xs text-muted-foreground">
-                  <span>Start date</span>
+                  <span>{tSelector("startDate")}</span>
                   <Input
                     type="date"
                     data-testid="backtest-start-date"
@@ -238,7 +264,7 @@ export default function BacktestPage() {
                   />
                 </label>
                 <label className="block space-y-1 text-xs text-muted-foreground">
-                  <span>End date</span>
+                  <span>{tSelector("endDate")}</span>
                   <Input
                     type="date"
                     data-testid="backtest-end-date"
@@ -254,7 +280,7 @@ export default function BacktestPage() {
                   checked={comparisonOn}
                   onChange={(e) => setComparisonOn(e.target.checked)}
                 />
-                <span>Compare to SPY + 60/40</span>
+                <span>{tSelector("compare")}</span>
               </label>
               <Button
                 data-testid="backtest-run"
@@ -262,7 +288,7 @@ export default function BacktestPage() {
                 disabled={running || !strategyId}
                 className="w-full"
               >
-                {running ? "Running…" : "Run backtest"}
+                {running ? tSelector("running") : tSelector("run")}
               </Button>
             </CardContent>
           </Card>
@@ -275,10 +301,8 @@ export default function BacktestPage() {
             <MetricsCard metrics={result?.metrics ?? null} />
             <Card>
               <CardHeader>
-                <CardTitle>Equity curve</CardTitle>
-                <CardDescription>
-                  Master vs benchmarks; pan/zoom syncs the drawdown chart below.
-                </CardDescription>
+                <CardTitle>{tEquity("title")}</CardTitle>
+                <CardDescription>{tEquity("description")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <EquityCurveChart
@@ -291,7 +315,7 @@ export default function BacktestPage() {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Drawdown</CardTitle>
+                <CardTitle>{tDrawdown("title")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <DrawdownChart
@@ -305,8 +329,10 @@ export default function BacktestPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Trades</CardTitle>
-                  <CardDescription>{result?.trades.length ?? 0} rows</CardDescription>
+                  <CardTitle>{tTrades("title")}</CardTitle>
+                  <CardDescription>
+                    {tTrades("rows", { count: result?.trades.length ?? 0 })}
+                  </CardDescription>
                 </div>
                 <Button
                   variant="outline"
@@ -315,14 +341,14 @@ export default function BacktestPage() {
                   onClick={() => tradesRef.current?.exportCsv("backtest-trades.csv")}
                   disabled={!result || result.trades.length === 0}
                 >
-                  Export trades CSV
+                  {tTrades("export")}
                 </Button>
               </CardHeader>
               <CardContent>
                 <DataTable<BacktestTrade>
                   ref={tradesRef}
                   rowData={result?.trades ?? []}
-                  columnDefs={TRADE_COLUMNS}
+                  columnDefs={tradeColumns}
                   height={320}
                 />
               </CardContent>

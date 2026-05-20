@@ -10,6 +10,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 
+import { renderWithIntl } from "../../test-utils/intl";
+
 import type { components } from "@/types/api";
 
 vi.mock("ag-grid-react", () => ({
@@ -78,7 +80,7 @@ afterEach(() => {
 describe("RecommendationsPage (B022 F010)", () => {
   it("renders disclaimer + state line + gate checks + positions table", async () => {
     vi.stubGlobal("fetch", buildFetch({ "/api/recommendations/current": RECS }));
-    const { getByTestId } = render(<RecommendationsPage />);
+    const { getByTestId } = renderWithIntl(<RecommendationsPage />);
     expect(getByTestId("recommendations-disclaimer-card")).toBeInTheDocument();
     await waitFor(() => {
       expect(getByTestId("recommendations-state")).toHaveTextContent(/account present/);
@@ -99,7 +101,7 @@ describe("RecommendationsPage (B022 F010)", () => {
         },
       }),
     );
-    const { getByTestId } = render(<RecommendationsPage />);
+    const { getByTestId } = renderWithIntl(<RecommendationsPage />);
     await waitFor(() => {
       expect(getByTestId("recommendations-empty")).toBeInTheDocument();
     });
@@ -113,7 +115,7 @@ describe("RecommendationsPage (B022 F010)", () => {
         "/api/recommendations/export-ticket": EXPORT,
       }),
     );
-    const { getByTestId } = render(<RecommendationsPage />);
+    const { getByTestId } = renderWithIntl(<RecommendationsPage />);
     await waitFor(() => {
       expect(getByTestId("recommendations-export")).not.toBeDisabled();
     });

@@ -6,11 +6,22 @@
     "empty": "—",
     "live": "已连接",
     "unreachable": "无法连接",
+    "unreachableWithError": "无法连接：{error}",
+    "errorPrefix": "错误：{error}",
+    "asOf": "更新于 {date}",
     "signOut": "退出登录",
     "signIn": "登录",
     "switchLanguage": "切换语言",
     "languageChinese": "中文",
-    "languageEnglish": "English"
+    "languageEnglish": "English",
+    "cancel": "取消",
+    "save": "保存",
+    "create": "新建",
+    "edit": "编辑",
+    "delete": "删除",
+    "saving": "保存中…",
+    "exporting": "导出中…",
+    "running": "运行中…"
   },
   "nav": {
     "home": "首页",
@@ -25,5 +36,280 @@
     "account": "账户",
     "snapshots": "快照",
     "backlog": "需求池"
+  },
+  "topbar": {
+    "snapshotIndicator": "快照：—",
+    "primaryNavAria": "工作台主导航"
+  },
+  "home": {
+    "title": "首页",
+    "metrics": {
+      "navLabel": "净值",
+      "navDescriptionFallback": "现金 + 持仓估值",
+      "drawdownLabel": "主组合回撤",
+      "drawdownDescription": "相对净值峰值",
+      "killSwitchLabel": "Kill-switch 阈值",
+      "killSwitchDescription": "手动停止在此回撤处武装",
+      "rebalanceLabel": "下次再平衡天数",
+      "rebalanceLastEmpty": "暂无再平衡记录",
+      "rebalanceLastWithFills": "上次：{date} · {count} 笔成交"
+    },
+    "recentReports": {
+      "title": "最新报告",
+      "description": "来自 docs/test-reports/ 的签收、扫盘与复盘。",
+      "emptyPrefix": "暂无最新报告。请将签收 markdown 文件放入",
+      "emptyPath": "docs/test-reports/",
+      "emptySuffix": "。"
+    },
+    "actionItems": {
+      "title": "待办事项",
+      "description": "工作台希望你关注的事项。",
+      "empty": "暂无标记。当策略门控触发或洗售规则命中时会出现待办（B022 F010）。"
+    }
+  },
+  "strategies": {
+    "title": "策略",
+    "sleeveCount": "{count} 个 sleeve",
+    "exportCsv": "导出 CSV",
+    "list": {
+      "title": "Sleeves",
+      "deeplinkHint": "在 URL 追加 {param} 即可深链至策略详情面板。",
+      "columnId": "ID",
+      "columnName": "名称",
+      "columnSleeve": "Sleeve",
+      "columnStatus": "状态",
+      "columnLastSweep": "上次扫盘"
+    },
+    "configEmpty": "暂无配置记录。",
+    "details": {
+      "spec": "Spec",
+      "code": "代码",
+      "lastSweep": "上次扫盘",
+      "linkUnavailable": "{label} — 暂无",
+      "selectHint": "从上方列表选择一个 sleeve，查看配置 + 来源 + 图表。"
+    },
+    "equity": {
+      "title": "净值曲线",
+      "description": "F008 回测运行器填充——封装 F004 EquityCurveChart。"
+    },
+    "drawdown": {
+      "title": "回撤",
+      "description": "与净值曲线共享时间轴（F008）。"
+    },
+    "heatmap": {
+      "title": "换手率热力图",
+      "description": "扫盘数据就绪后渲染（F008/F009 接入真实数据）。"
+    }
+  },
+  "backtest": {
+    "title": "回测浏览器",
+    "stateIdle": "空闲",
+    "stateRunning": "运行中…",
+    "stateRunWithId": "运行 {id}",
+    "selector": {
+      "title": "参数",
+      "description": "选择策略、快照、时间窗口后点击运行。",
+      "strategyLabel": "策略",
+      "strategyPlaceholder": "选择策略",
+      "snapshotLabel": "快照 ID",
+      "startDate": "开始日期",
+      "endDate": "结束日期",
+      "compare": "对比 SPY + 60/40",
+      "run": "运行回测",
+      "running": "运行中…"
+    },
+    "metrics": {
+      "title": "核心指标",
+      "description": "F008 合成引擎——B023 接入真实数据。",
+      "cagr": "CAGR",
+      "sharpe": "Sharpe",
+      "sortino": "Sortino",
+      "maxDrawdown": "最大回撤",
+      "turnover": "换手率",
+      "winRate": "胜率"
+    },
+    "equity": {
+      "title": "净值曲线",
+      "description": "主组合 vs 基准;平移/缩放与下方回撤图同步。"
+    },
+    "drawdown": {
+      "title": "回撤"
+    },
+    "trades": {
+      "title": "成交记录",
+      "rows": "{count} 行",
+      "export": "导出成交 CSV",
+      "columnDate": "日期",
+      "columnSymbol": "标的",
+      "columnSide": "方向",
+      "columnQty": "数量",
+      "columnPrice": "价格",
+      "columnNotional": "金额"
+    }
+  },
+  "reports": {
+    "title": "报告",
+    "count": "{count} 份报告",
+    "card": {
+      "title": "签收 / 扫盘 / 复盘",
+      "descriptionPrefix": "来源于 ",
+      "descriptionPath": "docs/test-reports/",
+      "descriptionSuffix": "。点击标题渲染 markdown;若表格 ≥10 行将使用 AG Grid 排序。"
+    },
+    "empty": "暂无报告。",
+    "detail": {
+      "back": "← 返回报告列表",
+      "bodyTitle": "正文",
+      "bodyDescription": "Markdown + GFM 表格;重型表格(≥10 行)以可排序 AG Grid 形式呈现。",
+      "bodyLoading": "加载中…",
+      "crossLinksTitle": "交叉链接",
+      "crossLinksDescriptionPrefix": "本报告引用的仓库路径。",
+      "crossLinksDescriptionA": "docs/test-reports/X.md",
+      "crossLinksDescriptionMid": " 解析为 ",
+      "crossLinksDescriptionB": "/reports/X",
+      "crossLinksDescriptionSuffix": ";其他解析为 ",
+      "crossLinksDescriptionC": "/docs/X",
+      "crossLinksDescriptionEnd": "。"
+    }
+  },
+  "recommendations": {
+    "title": "推荐",
+    "accountPresent": "已就绪",
+    "accountMissing": "缺失",
+    "statePrefix": "更新于 {date} · 账户 {accountStatus}",
+    "disclaimerBold": "仅供研究。",
+    "disclaimerBody": "本页生成的是人工核对清单;工作台从不下单。请导出 markdown 订单清单并在独立复核后人工执行。",
+    "emptyAccount": {
+      "title": "尚未配置账户",
+      "descriptionPrefix": "请放置一个含现金 + 持仓的 ",
+      "descriptionPath": "accounts/me.json",
+      "descriptionSuffix": "，目标持仓即可呈现。在此之前,门控会渲染但持仓为空。"
+    },
+    "targetWeights": {
+      "title": "目标 sleeve 权重",
+      "description": "F011 接入真实主组合权重。"
+    },
+    "deltas": {
+      "title": "再平衡偏离",
+      "description": "目标 − 当前(符号 = 买入/卖出方向)。"
+    },
+    "positions": {
+      "title": "目标持仓",
+      "subtitleCount": "{count} 个 sleeve",
+      "subtitleEmpty": "账户就绪后填充",
+      "columnSymbol": "标的",
+      "columnTarget": "目标",
+      "columnCurrent": "当前",
+      "columnDiff": "偏离",
+      "columnRationale": "说明"
+    },
+    "gates": {
+      "title": "门控检查",
+      "description": "下单前安全过滤器。需全部通过方可人工执行。",
+      "empty": "暂无门控记录。"
+    },
+    "wash": {
+      "title": "洗售标记",
+      "description": "来自交易日志的 30 天同标的买入启发式。",
+      "empty": "暂无标记。",
+      "lastBuy": "上次买入 {date}({days} 天)"
+    },
+    "exportCard": {
+      "title": "导出 markdown 订单清单",
+      "descriptionPrefix": "将一份核对清单写入 ",
+      "descriptionPath": "docs/runs/<date>/order-ticket-<date>.md",
+      "descriptionSuffix": "。导出文件携带与 ",
+      "descriptionTest": "tests/unit/test_recommendations.py",
+      "descriptionEnd": " 中固定的相同 research-only 免责声明。",
+      "button": "导出 markdown 订单清单",
+      "buttonExporting": "导出中…",
+      "resultPrefix": "已写入 ",
+      "resultSuffix": " — 任何执行前请先人工核对。",
+      "errorPrefix": "导出失败:"
+    }
+  },
+  "snapshots": {
+    "title": "快照",
+    "count": "{count} 个快照",
+    "refresh": "刷新快照",
+    "refreshing": "刷新中…",
+    "table": {
+      "title": "公共快照清单",
+      "descriptionPrefix": "行与 SnapshotMeta 表一致;刷新会通过 SSE 流式输出合成的 5 阶段进度,直至真实的 ",
+      "descriptionScript": "scripts/refresh_public_snapshot",
+      "descriptionSuffix": " 子进程接入(B023)。",
+      "columnId": "快照 ID",
+      "columnAsOf": "数据日期",
+      "columnQuality": "质量",
+      "columnManifest": "Manifest"
+    },
+    "modal": {
+      "title": "正在刷新快照…",
+      "description": "阶段通过 SSE 推送;弹窗保持打开,直到你手动关闭。"
+    },
+    "toast": {
+      "success": "快照已刷新",
+      "incomplete": "刷新结束但未收到完成事件",
+      "failedPrefix": "刷新失败:"
+    }
+  },
+  "backlog": {
+    "title": "需求池",
+    "stateCount": "{total} 条(显示 {visible} 条)",
+    "addEntry": "新建条目",
+    "edit": "编辑",
+    "delete": "删除",
+    "save": "保存",
+    "create": "新建",
+    "cancel": "取消",
+    "saving": "保存中…",
+    "allPriorities": "全部优先级",
+    "table": {
+      "title": "条目",
+      "descriptionPrefix": "镜像 ",
+      "descriptionFile": "backlog.json",
+      "descriptionMidA": "。变更将通过 ",
+      "descriptionCmd": "chore(backlog): add|edit|delete <id>",
+      "descriptionMidB": " 自动 commit,",
+      "descriptionSuffix": "确保磁盘记录与工作台运行时视图保持同步。",
+      "columnId": "ID",
+      "columnTitle": "标题",
+      "columnPriority": "优先级",
+      "columnStatus": "状态",
+      "columnUpdated": "更新时间",
+      "columnActions": "操作"
+    },
+    "form": {
+      "titleEdit": "编辑需求池条目",
+      "titleAdd": "新建需求池条目",
+      "descriptionPrefix": "保存时会在服务器上运行 ",
+      "descriptionCmd": "git add backlog.json && git commit",
+      "descriptionSuffix": "。",
+      "fieldTitle": "标题",
+      "fieldDescription": "描述",
+      "fieldPriority": "优先级"
+    },
+    "toast": {
+      "titleRequired": "标题为必填项。",
+      "updated": "需求池条目已更新",
+      "created": "需求池条目已新建",
+      "submitFailedPrefix": "提交失败:",
+      "confirmDelete": "确定删除需求池条目 {id} 吗?",
+      "deletedPrefix": "已删除 ",
+      "deleteFailedPrefix": "删除失败:"
+    }
+  },
+  "risk": {
+    "loading": "正在加载风险面板…",
+    "unreachablePrefix": "风险面板无法连接:",
+    "headlines": {
+      "green": "风险:正常",
+      "yellow": "风险:单 sleeve 回撤超出预警阈值",
+      "red": "风险:kill-switch 已触发"
+    },
+    "masterDd": "主组合回撤 {value}%",
+    "killSwitchThreshold": "Kill-switch 阈值 {value}%",
+    "perSleeveThreshold": "单 sleeve 预警 {value}%",
+    "slippageTrend": "近 3 个月滑点 {value} bps"
   }
 }

@@ -22,6 +22,7 @@ export default function TopBar() {
   const { data: session, status } = useSession();
   const email = session?.user?.email ?? null;
   const t = useTranslations("common");
+  const tBar = useTranslations("topbar");
 
   return (
     <header
@@ -40,7 +41,7 @@ export default function TopBar() {
           className="hidden items-center gap-1.5 text-xs text-muted-foreground sm:inline-flex"
         >
           <Database className="h-3.5 w-3.5" aria-hidden />
-          <span>Snapshot: —</span>
+          <span>{tBar("snapshotIndicator")}</span>
         </span>
       </div>
 

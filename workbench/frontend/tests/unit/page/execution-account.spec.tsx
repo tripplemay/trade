@@ -7,6 +7,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 
+import { renderWithIntl } from "../../test-utils/intl";
+
 import type { components } from "@/types/api";
 
 vi.mock("sonner", () => {
@@ -74,7 +76,7 @@ describe("AccountEditPage (B023 F002)", () => {
       putStatus: 200,
     };
     vi.stubGlobal("fetch", buildFetch(state));
-    const { getByTestId } = render(<AccountEditPage />);
+    const { getByTestId } = renderWithIntl(<AccountEditPage />);
     await waitFor(() => {
       expect(getByTestId("account-latest-state")).toHaveTextContent(/no snapshot/);
     });
@@ -90,7 +92,7 @@ describe("AccountEditPage (B023 F002)", () => {
       putStatus: 200,
     };
     vi.stubGlobal("fetch", buildFetch(state));
-    const { getByTestId } = render(<AccountEditPage />);
+    const { getByTestId } = renderWithIntl(<AccountEditPage />);
     await waitFor(() => {
       expect(getByTestId("account-latest-state")).toHaveTextContent(/no snapshot/);
     });
@@ -122,7 +124,7 @@ describe("AccountEditPage (B023 F002)", () => {
       putStatus: 200,
     };
     vi.stubGlobal("fetch", buildFetch(state));
-    const { getByTestId } = render(<AccountEditPage />);
+    const { getByTestId } = renderWithIntl(<AccountEditPage />);
     await waitFor(() => {
       expect(getByTestId("account-latest-state")).toHaveTextContent(/no snapshot/);
     });
@@ -151,7 +153,7 @@ describe("AccountEditPage (B023 F002)", () => {
       putStatus: 200,
     };
     vi.stubGlobal("fetch", buildFetch(state));
-    const { getByTestId } = render(<AccountEditPage />);
+    const { getByTestId } = renderWithIntl(<AccountEditPage />);
     await waitFor(() => {
       expect(getByTestId("account-latest-state")).toHaveTextContent(/no snapshot/);
     });
@@ -172,7 +174,7 @@ describe("AccountEditPage (B023 F002)", () => {
     };
     const fetchMock = buildFetch(state);
     vi.stubGlobal("fetch", fetchMock);
-    render(<AccountEditPage />);
+    renderWithIntl(<AccountEditPage />);
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalled();
     });

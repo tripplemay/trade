@@ -6,6 +6,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 
+import { renderWithIntl } from "../../test-utils/intl";
+
 import type { components } from "@/types/api";
 
 vi.mock("ag-grid-react", () => ({
@@ -112,7 +114,7 @@ describe("JournalHistoryPage (B023 F005)", () => {
       "fetch",
       buildFetch({ history: HISTORY, analytics: ANALYTICS_3M, analytics1y: ANALYTICS_1Y }),
     );
-    const { getByTestId } = render(<JournalHistoryPage />);
+    const { getByTestId } = renderWithIntl(<JournalHistoryPage />);
     await waitFor(() => {
       expect(getByTestId("journal-history-state")).toHaveTextContent("12 ticket(s) on file");
     });
@@ -131,7 +133,7 @@ describe("JournalHistoryPage (B023 F005)", () => {
         analytics1y: ANALYTICS_1Y,
       }),
     );
-    const { getByTestId } = render(<JournalHistoryPage />);
+    const { getByTestId } = renderWithIntl(<JournalHistoryPage />);
     await waitFor(() => {
       expect(getByTestId("journal-history-empty")).toBeInTheDocument();
       expect(getByTestId("journal-trend-empty")).toBeInTheDocument();
@@ -145,7 +147,7 @@ describe("JournalHistoryPage (B023 F005)", () => {
       analytics1y: ANALYTICS_1Y,
     });
     vi.stubGlobal("fetch", fetchMock);
-    const { getByTestId } = render(<JournalHistoryPage />);
+    const { getByTestId } = renderWithIntl(<JournalHistoryPage />);
     await waitFor(() => {
       expect(getByTestId("journal-history-state")).toHaveTextContent("12 ticket(s) on file");
     });
@@ -166,7 +168,7 @@ describe("JournalHistoryPage (B023 F005)", () => {
       analytics1y: ANALYTICS_1Y,
     });
     vi.stubGlobal("fetch", fetchMock);
-    render(<JournalHistoryPage />);
+    renderWithIntl(<JournalHistoryPage />);
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalled();
     });

@@ -11,6 +11,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, waitFor } from "@testing-library/react";
 
+import { renderWithIntl } from "../../test-utils/intl";
+
 import HomePage from "@/app/(protected)/page";
 import type { components } from "@/types/api";
 
@@ -61,7 +63,7 @@ afterEach(() => {
 describe("HomePage (B022 F006)", () => {
   it("renders the 4 dashboard cards immediately (skeleton-then-value)", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => jsonResponse(FULL_PAYLOAD)) as unknown as typeof fetch);
-    const { getByTestId } = render(<HomePage />);
+    const { getByTestId } = renderWithIntl(<HomePage />);
     // Cards render synchronously with placeholder "—" values.
     for (const id of [
       "dashboard-card-nav",
@@ -79,7 +81,7 @@ describe("HomePage (B022 F006)", () => {
 
   it("renders the recent reports list with Link → /reports/{slug}", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => jsonResponse(FULL_PAYLOAD)) as unknown as typeof fetch);
-    const { getByTestId } = render(<HomePage />);
+    const { getByTestId } = renderWithIntl(<HomePage />);
     await waitFor(() => {
       const link = getByTestId("recent-report-B019-retune-signoff");
       expect(link).toBeInTheDocument();
@@ -89,7 +91,7 @@ describe("HomePage (B022 F006)", () => {
 
   it("renders the empty-state copy when arrays are empty", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => jsonResponse(EMPTY_PAYLOAD)) as unknown as typeof fetch);
-    const { getByTestId } = render(<HomePage />);
+    const { getByTestId } = renderWithIntl(<HomePage />);
     await waitFor(() => {
       expect(getByTestId("recent-reports-empty")).toBeInTheDocument();
       expect(getByTestId("action-items-empty")).toBeInTheDocument();
@@ -101,7 +103,7 @@ describe("HomePage (B022 F006)", () => {
       "fetch",
       vi.fn(async () => new Response("nope", { status: 500 })) as unknown as typeof fetch,
     );
-    const { getByTestId } = render(<HomePage />);
+    const { getByTestId } = renderWithIntl(<HomePage />);
     await waitFor(() => {
       expect(getByTestId("dashboard-state")).toHaveTextContent(/unreachable/);
     });

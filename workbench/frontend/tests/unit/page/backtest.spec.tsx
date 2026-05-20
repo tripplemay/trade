@@ -12,6 +12,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 
+import { renderWithIntl } from "../../test-utils/intl";
+
 import type { components } from "@/types/api";
 
 vi.mock("ag-grid-react", () => ({ AgGridReact: () => null }));
@@ -114,7 +116,7 @@ afterEach(() => {
 describe("BacktestPage (B022 F008)", () => {
   it("renders the ResizablePanel scaffold + state line idle", async () => {
     vi.stubGlobal("fetch", buildFetch({ "/api/strategies": STRATEGY_LIST }));
-    const { getByTestId } = render(<BacktestPage />);
+    const { getByTestId } = renderWithIntl(<BacktestPage />);
     expect(getByTestId("page-backtest")).toBeInTheDocument();
     expect(getByTestId("backtest-resizable-group")).toBeInTheDocument();
     await waitFor(() => {
@@ -130,7 +132,7 @@ describe("BacktestPage (B022 F008)", () => {
         "/api/backtests/run": RUN_RESULT,
       }),
     );
-    const { getByTestId } = render(<BacktestPage />);
+    const { getByTestId } = renderWithIntl(<BacktestPage />);
     // Wait for the strategy list to land so the Run button is enabled.
     await waitFor(() => {
       expect(getByTestId("backtest-run")).not.toBeDisabled();
@@ -149,7 +151,7 @@ describe("BacktestPage (B022 F008)", () => {
     // Toggle behaviour is internal state — assert via the rendered control
     // since the chart wrapper is mocked. Default-on per F008 acceptance.
     vi.stubGlobal("fetch", buildFetch({ "/api/strategies": STRATEGY_LIST }));
-    const { getByTestId } = render(<BacktestPage />);
+    const { getByTestId } = renderWithIntl(<BacktestPage />);
     const toggle = getByTestId("backtest-comparison-toggle") as HTMLInputElement;
     expect(toggle.checked).toBe(true);
     fireEvent.click(toggle);
@@ -163,7 +165,7 @@ describe("BacktestPage (B022 F008)", () => {
         "/api/strategies": STRATEGY_LIST,
       }),
     );
-    const { getByTestId } = render(<BacktestPage />);
+    const { getByTestId } = renderWithIntl(<BacktestPage />);
     await waitFor(() => {
       expect(getByTestId("backtest-run")).not.toBeDisabled();
     });

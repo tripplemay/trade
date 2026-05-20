@@ -14,9 +14,29 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+/**
+ * Keys must mirror namespace `nav` in messages/{zh-CN,en}.json. Adding
+ * an entry here without the corresponding translation key trips the
+ * messages-key-parity unit test.
+ */
+export type NavKey =
+  | "home"
+  | "strategies"
+  | "backtest"
+  | "reports"
+  | "recommendations"
+  | "positionDiff"
+  | "ticket"
+  | "fills"
+  | "journal"
+  | "account"
+  | "snapshots"
+  | "backlog";
+
 export interface NavItem {
   href: string;
-  label: string;
+  /** i18n key under the `nav` namespace; rendered through next-intl. */
+  labelKey: NavKey;
   icon: LucideIcon;
   testId: string;
 }
@@ -24,51 +44,50 @@ export interface NavItem {
 /**
  * Single source of truth for the workbench nav. TopBar and SideNav both
  * render from this array. B023 Phase 2 (F002+) grows the original 7-page
- * Phase 1 nav by the execution-workflow surface; F003/F004/F005 will
- * append `/execution/ticket`, `/execution/fills`, and
- * `/execution/journal-history` in their respective features.
+ * Phase 1 nav by the execution-workflow surface; B024 F002 swapped the
+ * hardcoded labels for translation keys.
  */
 export const NAV_ITEMS: readonly NavItem[] = [
-  { href: "/", label: "Home", icon: LayoutDashboard, testId: "nav-home" },
-  { href: "/strategies", label: "Strategies", icon: BookOpen, testId: "nav-strategies" },
-  { href: "/backtest", label: "Backtest", icon: LineChart, testId: "nav-backtest" },
-  { href: "/reports", label: "Reports", icon: FileText, testId: "nav-reports" },
+  { href: "/", labelKey: "home", icon: LayoutDashboard, testId: "nav-home" },
+  { href: "/strategies", labelKey: "strategies", icon: BookOpen, testId: "nav-strategies" },
+  { href: "/backtest", labelKey: "backtest", icon: LineChart, testId: "nav-backtest" },
+  { href: "/reports", labelKey: "reports", icon: FileText, testId: "nav-reports" },
   {
     href: "/recommendations",
-    label: "Recommendations",
+    labelKey: "recommendations",
     icon: Compass,
     testId: "nav-recommendations",
   },
   {
     href: "/execution/position-diff",
-    label: "Position diff",
+    labelKey: "positionDiff",
     icon: ClipboardList,
     testId: "nav-position-diff",
   },
   {
     href: "/execution/ticket",
-    label: "Ticket",
+    labelKey: "ticket",
     icon: Receipt,
     testId: "nav-ticket",
   },
   {
     href: "/execution/fills",
-    label: "Fills",
+    labelKey: "fills",
     icon: Upload,
     testId: "nav-fills",
   },
   {
     href: "/execution/journal-history",
-    label: "Journal",
+    labelKey: "journal",
     icon: History,
     testId: "nav-journal",
   },
   {
     href: "/execution/account",
-    label: "Account",
+    labelKey: "account",
     icon: Wallet,
     testId: "nav-account",
   },
-  { href: "/snapshots", label: "Snapshots", icon: DatabaseBackup, testId: "nav-snapshots" },
-  { href: "/backlog", label: "Backlog", icon: ListTodo, testId: "nav-backlog" },
+  { href: "/snapshots", labelKey: "snapshots", icon: DatabaseBackup, testId: "nav-snapshots" },
+  { href: "/backlog", labelKey: "backlog", icon: ListTodo, testId: "nav-backlog" },
 ];

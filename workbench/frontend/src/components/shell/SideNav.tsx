@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { NAV_ITEMS } from "@/components/shell/nav-items";
 import { cn } from "@/lib/utils";
@@ -15,15 +16,17 @@ function isActive(currentPath: string, href: string): boolean {
 
 export default function SideNav() {
   const pathname = usePathname() ?? "/";
+  const t = useTranslations("nav");
+  const tBar = useTranslations("topbar");
 
   return (
     <nav
       data-testid="workbench-sidenav"
-      aria-label="Workbench primary navigation"
+      aria-label={tBar("primaryNavAria")}
       className="hidden w-56 shrink-0 border-r border-border bg-card/40 px-2 py-4 md:block"
     >
       <ul className="space-y-1">
-        {NAV_ITEMS.map(({ href, label, icon: Icon, testId }) => {
+        {NAV_ITEMS.map(({ href, labelKey, icon: Icon, testId }) => {
           const active = isActive(pathname, href);
           return (
             <li key={href}>
@@ -39,7 +42,7 @@ export default function SideNav() {
                 )}
               >
                 <Icon className="h-4 w-4" aria-hidden />
-                <span>{label}</span>
+                <span>{t(labelKey)}</span>
               </Link>
             </li>
           );

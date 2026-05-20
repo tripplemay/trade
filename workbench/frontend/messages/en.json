@@ -6,11 +6,22 @@
     "empty": "—",
     "live": "live",
     "unreachable": "unreachable",
+    "unreachableWithError": "unreachable: {error}",
+    "errorPrefix": "error: {error}",
+    "asOf": "as of {date}",
     "signOut": "Sign out",
     "signIn": "Sign in",
     "switchLanguage": "Switch language",
     "languageChinese": "中文",
-    "languageEnglish": "English"
+    "languageEnglish": "English",
+    "cancel": "Cancel",
+    "save": "Save",
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "saving": "Saving…",
+    "exporting": "Exporting…",
+    "running": "Running…"
   },
   "nav": {
     "home": "Home",
@@ -25,5 +36,280 @@
     "account": "Account",
     "snapshots": "Snapshots",
     "backlog": "Backlog"
+  },
+  "topbar": {
+    "snapshotIndicator": "Snapshot: —",
+    "primaryNavAria": "Workbench primary navigation"
+  },
+  "home": {
+    "title": "Home",
+    "metrics": {
+      "navLabel": "NAV",
+      "navDescriptionFallback": "Cash + equity_value",
+      "drawdownLabel": "Master drawdown",
+      "drawdownDescription": "From equity peak",
+      "killSwitchLabel": "Kill-switch threshold",
+      "killSwitchDescription": "Manual halt arms at this DD",
+      "rebalanceLabel": "Days to next rebalance",
+      "rebalanceLastEmpty": "No rebalance recorded",
+      "rebalanceLastWithFills": "Last: {date} · {count} fills"
+    },
+    "recentReports": {
+      "title": "Recent reports",
+      "description": "Sign-offs, sweeps, and reviews from docs/test-reports/.",
+      "emptyPrefix": "No recent reports surfaced. Drop sign-off markdown files under",
+      "emptyPath": "docs/test-reports/",
+      "emptySuffix": "."
+    },
+    "actionItems": {
+      "title": "Action items",
+      "description": "Things the workbench wants you to look at.",
+      "empty": "Nothing flagged. Action items light up when a strategy gate trips or a wash-sale heuristic fires (B022 F010)."
+    }
+  },
+  "strategies": {
+    "title": "Strategies",
+    "sleeveCount": "{count} sleeves",
+    "exportCsv": "Export CSV",
+    "list": {
+      "title": "Sleeves",
+      "deeplinkHint": "Append {param} to deep-link a detail panel.",
+      "columnId": "ID",
+      "columnName": "Name",
+      "columnSleeve": "Sleeve",
+      "columnStatus": "Status",
+      "columnLastSweep": "Last sweep"
+    },
+    "configEmpty": "No config recorded.",
+    "details": {
+      "spec": "Spec",
+      "code": "Code",
+      "lastSweep": "Last sweep",
+      "linkUnavailable": "{label} — n/a",
+      "selectHint": "Select a sleeve from the list above to see config + provenance + charts."
+    },
+    "equity": {
+      "title": "Equity curve",
+      "description": "Populated by the F008 backtest runner — wraps the F004 EquityCurveChart."
+    },
+    "drawdown": {
+      "title": "Drawdown",
+      "description": "Shares the time axis with the equity curve (F008)."
+    },
+    "heatmap": {
+      "title": "Turnover heatmap",
+      "description": "Cells appear when sweep data lands (F008/F009 wire real values)."
+    }
+  },
+  "backtest": {
+    "title": "Backtest viewer",
+    "stateIdle": "idle",
+    "stateRunning": "running…",
+    "stateRunWithId": "run {id}",
+    "selector": {
+      "title": "Selector",
+      "description": "Pick a strategy + snapshot + window, then Run.",
+      "strategyLabel": "Strategy",
+      "strategyPlaceholder": "Pick a strategy",
+      "snapshotLabel": "Snapshot id",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "compare": "Compare to SPY + 60/40",
+      "run": "Run backtest",
+      "running": "Running…"
+    },
+    "metrics": {
+      "title": "Headline metrics",
+      "description": "Synthetic engine in F008 — real numbers land in B023.",
+      "cagr": "CAGR",
+      "sharpe": "Sharpe",
+      "sortino": "Sortino",
+      "maxDrawdown": "Max DD",
+      "turnover": "Turnover",
+      "winRate": "Win rate"
+    },
+    "equity": {
+      "title": "Equity curve",
+      "description": "Master vs benchmarks; pan/zoom syncs the drawdown chart below."
+    },
+    "drawdown": {
+      "title": "Drawdown"
+    },
+    "trades": {
+      "title": "Trades",
+      "rows": "{count} rows",
+      "export": "Export trades CSV",
+      "columnDate": "Date",
+      "columnSymbol": "Symbol",
+      "columnSide": "Side",
+      "columnQty": "Qty",
+      "columnPrice": "Price",
+      "columnNotional": "Notional"
+    }
+  },
+  "reports": {
+    "title": "Reports",
+    "count": "{count} reports",
+    "card": {
+      "title": "Sign-offs, sweeps, reviews",
+      "descriptionPrefix": "Sourced from ",
+      "descriptionPath": "docs/test-reports/",
+      "descriptionSuffix": ". Click a title to render the markdown with sortable AG Grid for any table with 10+ rows."
+    },
+    "empty": "No reports surfaced yet.",
+    "detail": {
+      "back": "← back to reports",
+      "bodyTitle": "Body",
+      "bodyDescription": "Markdown + GFM tables; heavy tables (≥10 rows) render as sortable AG Grid.",
+      "bodyLoading": "Loading…",
+      "crossLinksTitle": "Cross-links",
+      "crossLinksDescriptionPrefix": "Repo paths referenced by this report. ",
+      "crossLinksDescriptionA": "docs/test-reports/X.md",
+      "crossLinksDescriptionMid": " resolves to ",
+      "crossLinksDescriptionB": "/reports/X",
+      "crossLinksDescriptionSuffix": "; others to ",
+      "crossLinksDescriptionC": "/docs/X",
+      "crossLinksDescriptionEnd": "."
+    }
+  },
+  "recommendations": {
+    "title": "Recommendations",
+    "accountPresent": "present",
+    "accountMissing": "missing",
+    "statePrefix": "as of {date} · account {accountStatus}",
+    "disclaimerBold": "Research-only.",
+    "disclaimerBody": "This page produces a manual review checklist; the workbench never places orders. Export the markdown ticket and execute manually after independent review.",
+    "emptyAccount": {
+      "title": "No account on file",
+      "descriptionPrefix": "Drop a ",
+      "descriptionPath": "accounts/me.json",
+      "descriptionSuffix": " with cash + equity to surface target positions. Until then, gate checks render but positions stay empty."
+    },
+    "targetWeights": {
+      "title": "Target sleeve weights",
+      "description": "F011 wires real master-portfolio weights."
+    },
+    "deltas": {
+      "title": "Rebalance deltas",
+      "description": "Target − current per sleeve (sign = buy/sell direction)."
+    },
+    "positions": {
+      "title": "Target positions",
+      "subtitleCount": "{count} sleeves",
+      "subtitleEmpty": "Empty until account lands",
+      "columnSymbol": "Symbol",
+      "columnTarget": "Target",
+      "columnCurrent": "Current",
+      "columnDiff": "Diff",
+      "columnRationale": "Rationale"
+    },
+    "gates": {
+      "title": "Gate checks",
+      "description": "Pre-trade safety filters. All must pass before manual execution.",
+      "empty": "No gate checks reported."
+    },
+    "wash": {
+      "title": "Wash-sale flags",
+      "description": "30-day same-symbol buy heuristic from the trade journal.",
+      "empty": "None flagged.",
+      "lastBuy": "last buy {date} ({days}d)"
+    },
+    "exportCard": {
+      "title": "Export markdown ticket",
+      "descriptionPrefix": "Writes a checklist to ",
+      "descriptionPath": "docs/runs/<date>/order-ticket-<date>.md",
+      "descriptionSuffix": ". The exported file carries the same research-only disclaimer pinned in ",
+      "descriptionTest": "tests/unit/test_recommendations.py",
+      "descriptionEnd": ".",
+      "button": "Export markdown ticket",
+      "buttonExporting": "Exporting…",
+      "resultPrefix": "Wrote ",
+      "resultSuffix": " — review manually before any execution.",
+      "errorPrefix": "Export failed:"
+    }
+  },
+  "snapshots": {
+    "title": "Snapshots",
+    "count": "{count} snapshots",
+    "refresh": "Refresh snapshot",
+    "refreshing": "Refreshing…",
+    "table": {
+      "title": "Public snapshot inventory",
+      "descriptionPrefix": "Rows mirror the SnapshotMeta table; Refresh streams a synthetic 5-stage progress modal until the real ",
+      "descriptionScript": "scripts/refresh_public_snapshot",
+      "descriptionSuffix": " subprocess wires in (B023).",
+      "columnId": "Snapshot id",
+      "columnAsOf": "As-of",
+      "columnQuality": "Quality",
+      "columnManifest": "Manifest"
+    },
+    "modal": {
+      "title": "Refreshing snapshot…",
+      "description": "Stages stream via SSE; the modal stays open until you close it."
+    },
+    "toast": {
+      "success": "Snapshot refreshed",
+      "incomplete": "Refresh ended without a complete event",
+      "failedPrefix": "Refresh failed:"
+    }
+  },
+  "backlog": {
+    "title": "Backlog",
+    "stateCount": "{total} entries (showing {visible})",
+    "addEntry": "Add entry",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "create": "Create",
+    "cancel": "Cancel",
+    "saving": "Saving…",
+    "allPriorities": "All priorities",
+    "table": {
+      "title": "Entries",
+      "descriptionPrefix": "Mirrors ",
+      "descriptionFile": "backlog.json",
+      "descriptionMidA": ". Mutations ",
+      "descriptionCmd": "chore(backlog): add|edit|delete <id>",
+      "descriptionMidB": " auto-commit through ",
+      "descriptionSuffix": "so the durable record on disk stays in lockstep with the workbench's run-time view."
+    , "columnId": "ID",
+      "columnTitle": "Title",
+      "columnPriority": "Priority",
+      "columnStatus": "Status",
+      "columnUpdated": "Updated",
+      "columnActions": "Actions"
+    },
+    "form": {
+      "titleEdit": "Edit backlog entry",
+      "titleAdd": "Add backlog entry",
+      "descriptionPrefix": "Saving runs ",
+      "descriptionCmd": "git add backlog.json && git commit",
+      "descriptionSuffix": " on the server.",
+      "fieldTitle": "Title",
+      "fieldDescription": "Description",
+      "fieldPriority": "Priority"
+    },
+    "toast": {
+      "titleRequired": "Title is required.",
+      "updated": "Backlog entry updated",
+      "created": "Backlog entry created",
+      "submitFailedPrefix": "Submit failed:",
+      "confirmDelete": "Delete backlog entry {id}?",
+      "deletedPrefix": "Deleted ",
+      "deleteFailedPrefix": "Delete failed:"
+    }
+  },
+  "risk": {
+    "loading": "Loading risk panel…",
+    "unreachablePrefix": "Risk panel unreachable:",
+    "headlines": {
+      "green": "Risk: OK",
+      "yellow": "Risk: per-sleeve drawdown over advisory threshold",
+      "red": "Risk: kill-switch tripped"
+    },
+    "masterDd": "master DD {value}%",
+    "killSwitchThreshold": "Kill-switch threshold {value}%",
+    "perSleeveThreshold": "per-sleeve advisory {value}%",
+    "slippageTrend": "3m slippage {value} bps"
   }
 }

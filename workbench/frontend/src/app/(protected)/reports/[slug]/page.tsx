@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import MarkdownRenderer from "@/components/markdown/MarkdownRenderer";
@@ -17,6 +18,9 @@ import type { components } from "@/types/api";
 type ReportDetail = components["schemas"]["ReportDetail"];
 
 export default function ReportDetailPage() {
+  const t = useTranslations("reports.detail");
+  const tCommon = useTranslations("common");
+
   const params = useParams<{ slug: string }>();
   const slug = params?.slug ?? "";
 
@@ -40,6 +44,12 @@ export default function ReportDetailPage() {
     };
   }, [slug]);
 
+  const stateLabel = error
+    ? tCommon("unreachableWithError", { error })
+    : detail
+      ? `${detail.batch} · ${detail.kind} · ${detail.date}`
+      : tCommon("loading");
+
   return (
     <section data-testid="page-report-detail" className="space-y-4">
       <header className="flex items-baseline justify-between">
@@ -48,34 +58,28 @@ export default function ReportDetailPage() {
             href="/reports"
             className="text-xs text-muted-foreground hover:underline"
           >
-            ← back to reports
+            {t("back")}
           </Link>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
             {detail?.title ?? slug}
           </h1>
         </div>
         <span data-testid="report-detail-state" className="text-xs text-muted-foreground">
-          {error
-            ? `unreachable: ${error}`
-            : detail
-              ? `${detail.batch} · ${detail.kind} · ${detail.date}`
-              : "loading…"}
+          {stateLabel}
         </span>
       </header>
 
       <Card>
         <CardHeader>
-          <CardTitle>Body</CardTitle>
-          <CardDescription>
-            Markdown + GFM tables; heavy tables (≥10 rows) render as sortable AG Grid.
-          </CardDescription>
+          <CardTitle>{t("bodyTitle")}</CardTitle>
+          <CardDescription>{t("bodyDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           {detail ? (
             <MarkdownRenderer body={detail.body_markdown} />
           ) : (
             <p data-testid="report-detail-loading" className="text-sm text-muted-foreground">
-              Loading…
+              {t("bodyLoading")}
             </p>
           )}
         </CardContent>
@@ -84,10 +88,15 @@ export default function ReportDetailPage() {
       {detail && detail.cross_links && detail.cross_links.length > 0 ? (
         <Card data-testid="report-detail-cross-links">
           <CardHeader>
-            <CardTitle>Cross-links</CardTitle>
+            <CardTitle>{t("crossLinksTitle")}</CardTitle>
             <CardDescription>
-              Repo paths referenced by this report. <code>docs/test-reports/X.md</code> resolves
-              to <code>/reports/X</code>; others to <code>/docs/X</code>.
+              {t("crossLinksDescriptionPrefix")}
+              <code>{t("crossLinksDescriptionA")}</code>
+              {t("crossLinksDescriptionMid")}
+              <code>{t("crossLinksDescriptionB")}</code>
+              {t("crossLinksDescriptionSuffix")}
+              <code>{t("crossLinksDescriptionC")}</code>
+              {t("crossLinksDescriptionEnd")}
             </CardDescription>
           </CardHeader>
           <CardContent>

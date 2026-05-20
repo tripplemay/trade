@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
@@ -31,18 +32,27 @@ type StrategyDetail = components["schemas"]["StrategyDetail"];
 
 const LIST_URL = "/api/strategies";
 
-const STRATEGY_COLUMNS: ColDef<StrategySummary>[] = [
-  { field: "id", headerName: "ID", flex: 1 },
-  { field: "name", headerName: "Name", flex: 2 },
-  { field: "sleeve", headerName: "Sleeve", width: 140 },
-  { field: "status", headerName: "Status", width: 120 },
-  dateColumn<StrategySummary>({ field: "last_sweep_date", headerName: "Last sweep", width: 140 }),
-];
+function buildStrategyColumns(
+  t: ReturnType<typeof useTranslations<"strategies.list">>,
+): ColDef<StrategySummary>[] {
+  return [
+    { field: "id", headerName: t("columnId"), flex: 1 },
+    { field: "name", headerName: t("columnName"), flex: 2 },
+    { field: "sleeve", headerName: t("columnSleeve"), width: 140 },
+    { field: "status", headerName: t("columnStatus"), width: 120 },
+    dateColumn<StrategySummary>({
+      field: "last_sweep_date",
+      headerName: t("columnLastSweep"),
+      width: 140,
+    }),
+  ];
+}
 
 function ConfigList({ config }: { config: StrategyDetail["config"] }) {
+  const t = useTranslations("strategies");
   const entries = Object.entries(config);
   if (entries.length === 0) {
-    return <p className="text-sm text-muted-foreground">No config recorded.</p>;
+    return <p className="text-sm text-muted-foreground">{t("configEmpty")}</p>;
   }
   return (
     <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-2 text-sm">
@@ -65,10 +75,11 @@ function DocsLinkButton({
   label: string;
   testId: string;
 }) {
+  const t = useTranslations("strategies.details");
   if (!path) {
     return (
       <Button variant="outline" disabled data-testid={`${testId}-empty`}>
-        {label} — n/a
+        {t("linkUnavailable", { label })}
       </Button>
     );
   }
@@ -83,6 +94,14 @@ function DocsLinkButton({
 }
 
 export default function StrategiesPage() {
+  const t = useTranslations("strategies");
+  const tList = useTranslations("strategies.list");
+  const tDetails = useTranslations("strategies.details");
+  const tEquity = useTranslations("strategies.equity");
+  const tDrawdown = useTranslations("strategies.drawdown");
+  const tHeatmap = useTranslations("strategies.heatmap");
+  const tCommon = useTranslations("common");
+
   const searchParams = useSearchParams();
   const selected = searchParams?.get("selected") ?? null;
 
@@ -90,6 +109,8 @@ export default function StrategiesPage() {
   const [detail, setDetail] = useState<StrategyDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const tableRef = useRef<DataTableHandle>(null);
+
+  const strategyColumns = useMemo(() => buildStrategyColumns(tList), [tList]);
 
   useEffect(() => {
     let cancelled = false;
@@ -166,33 +187,37 @@ export default function StrategiesPage() {
   return (
     <section data-testid="page-strategies" className="space-y-6">
       <header className="flex items-baseline justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Strategies</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("title")}</h1>
         <div className="flex items-center gap-2">
           <span data-testid="strategies-state" className="text-xs text-muted-foreground">
-            {error ? `unreachable: ${error}` : `${list.length} sleeves`}
+            {error
+              ? tCommon("unreachableWithError", { error })
+              : t("sleeveCount", { count: list.length })}
           </span>
           <Button
             variant="outline"
             data-testid="strategies-export-csv"
             onClick={() => tableRef.current?.exportCsv("strategies.csv")}
           >
-            Export CSV
+            {t("exportCsv")}
           </Button>
         </div>
       </header>
 
       <Card data-testid="strategies-list-card">
         <CardHeader>
-          <CardTitle>Sleeves</CardTitle>
+          <CardTitle>{tList("title")}</CardTitle>
           <CardDescription>
-            Append <code>?selected=B013-regime-quarterly</code> to deep-link a detail panel.
+            {tList.rich("deeplinkHint", {
+              param: () => <code>?selected=B013-regime-quarterly</code>,
+            })}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <DataTable<StrategySummary>
             ref={tableRef}
             rowData={list}
-            columnDefs={STRATEGY_COLUMNS}
+            columnDefs={strategyColumns}
             height={360}
           />
         </CardContent>
@@ -212,17 +237,17 @@ export default function StrategiesPage() {
               <div className="flex flex-wrap gap-2">
                 <DocsLinkButton
                   path={detail.provenance.spec_path}
-                  label="Spec"
+                  label={tDetails("spec")}
                   testId="strategy-detail-spec-link"
                 />
                 <DocsLinkButton
                   path={detail.provenance.code_path}
-                  label="Code"
+                  label={tDetails("code")}
                   testId="strategy-detail-code-link"
                 />
                 <DocsLinkButton
                   path={detail.provenance.last_sweep_path}
-                  label="Last sweep"
+                  label={tDetails("lastSweep")}
                   testId="strategy-detail-sweep-link"
                 />
               </div>
@@ -231,10 +256,8 @@ export default function StrategiesPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Equity curve</CardTitle>
-              <CardDescription>
-                Populated by the F008 backtest runner — wraps the F004 EquityCurveChart.
-              </CardDescription>
+              <CardTitle>{tEquity("title")}</CardTitle>
+              <CardDescription>{tEquity("description")}</CardDescription>
             </CardHeader>
             <CardContent>
               <EquityCurveChart
@@ -253,8 +276,8 @@ export default function StrategiesPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Drawdown</CardTitle>
-              <CardDescription>Shares the time axis with the equity curve (F008).</CardDescription>
+              <CardTitle>{tDrawdown("title")}</CardTitle>
+              <CardDescription>{tDrawdown("description")}</CardDescription>
             </CardHeader>
             <CardContent>
               <DrawdownChart data={drawdownData} height={160} />
@@ -263,10 +286,8 @@ export default function StrategiesPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Turnover heatmap</CardTitle>
-              <CardDescription>
-                Cells appear when sweep data lands (F008/F009 wire real values).
-              </CardDescription>
+              <CardTitle>{tHeatmap("title")}</CardTitle>
+              <CardDescription>{tHeatmap("description")}</CardDescription>
             </CardHeader>
             <CardContent>
               <SweepHeatmap
@@ -280,7 +301,7 @@ export default function StrategiesPage() {
         </div>
       ) : (
         <p data-testid="strategy-detail-empty" className="text-sm text-muted-foreground">
-          Select a sleeve from the list above to see config + provenance + charts.
+          {tDetails("selectHint")}
         </p>
       )}
     </section>

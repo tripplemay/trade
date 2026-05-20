@@ -14,7 +14,7 @@
       "title": "前端 UI 翻译 Pass A — Header / Sidebar / 9 read-mostly 页 + 共享组件",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "9 页全量翻译：Header / Sidebar / Home / Strategies / Recommendations / Risk / Logs / Backtest Runs / Data + 共享组件（AllocationBar / DataTable 表头 / Chart 标题 / Loader / Toast 框）。翻译 key 嵌套合理（按页 namespace，no flat keys >3 层）。专业术语保留英文（Sharpe / drawdown / slippage / bps / kill-switch / rebalance / sleeve / Top N / ETF / momentum 等）。zh-CN.json 与 en.json key set bit-identical（CI 跑 `diff <(jq -r 'paths(..) | join(\".\")' messages/zh-CN.json | sort) <(jq -r 'paths(..) | join(\".\")' messages/en.json | sort)` exit=0）。Playwright zh-CN + en 双 locale 跑 9 页 smoke：每页 H1 + 至少 3 个 nav/label 双 locale assertion。截图归 docs/screenshots/B024-i18n/zh-CN/ + en/ 9 × 2 = 18 PNG ≤300 KB。Codex L1 grep 残余英文 hardcode：≤5 白名单（技术术语）。验收：vitest + lint + typecheck + build 绿；same-origin regression 绿；build artifact 无 127.0.0.1。"
     },
     {

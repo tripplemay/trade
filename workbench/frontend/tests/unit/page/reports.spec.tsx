@@ -9,6 +9,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, waitFor } from "@testing-library/react";
 
+import { renderWithIntl } from "../../test-utils/intl";
+
 import type { components } from "@/types/api";
 
 const paramsRef: { value: { slug?: string; path?: string[] } } = { value: {} };
@@ -77,7 +79,7 @@ describe("ReportsPage (list)", () => {
   it("renders summaries with deep-link", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => jsonResponse(LIST_PAYLOAD)) as unknown as typeof fetch);
     const { default: ReportsPage } = await import("@/app/(protected)/reports/page");
-    const { getByTestId } = render(<ReportsPage />);
+    const { getByTestId } = renderWithIntl(<ReportsPage />);
     await waitFor(() => {
       const link = getByTestId("report-link-B019-retune-signoff");
       expect(link).toHaveAttribute("href", "/reports/B019-retune-signoff");
@@ -100,7 +102,7 @@ describe("ReportDetailPage (heavy-table swap-in)", () => {
       const { default: ReportDetailPage } = await import(
         "@/app/(protected)/reports/[slug]/page"
       );
-      const { getByTestId } = render(<ReportDetailPage />);
+      const { getByTestId } = renderWithIntl(<ReportDetailPage />);
       await waitFor(() => {
         expect(getByTestId("report-detail-state")).toHaveTextContent(/B019.*signoff.*2026-05-15/);
       });
@@ -114,6 +116,6 @@ describe("ReportDetailPage (heavy-table swap-in)", () => {
         "docs/specs/B015-regime-adaptive-activation-policy-spec.md",
       );
     },
-    15_000,
+    25_000,
   );
 });

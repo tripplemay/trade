@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +13,8 @@ type ReportListResponse = components["schemas"]["ReportListResponse"];
 const LIST_URL = "/api/reports";
 
 export default function ReportsPage() {
+  const t = useTranslations("reports");
+  const tCommon = useTranslations("common");
   const [reports, setReports] = useState<ReportSummary[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,25 +37,29 @@ export default function ReportsPage() {
   return (
     <section data-testid="page-reports" className="space-y-6">
       <header className="flex items-baseline justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Reports</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("title")}</h1>
         <span data-testid="reports-state" className="text-xs text-muted-foreground">
-          {error ? `unreachable: ${error}` : `${reports.length} reports`}
+          {error
+            ? tCommon("unreachableWithError", { error })
+            : t("count", { count: reports.length })}
         </span>
       </header>
 
       <Card>
         <CardHeader>
-          <CardTitle>Sign-offs, sweeps, reviews</CardTitle>
+          <CardTitle>{t("card.title")}</CardTitle>
           <CardDescription>
-            Sourced from
-            <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">docs/test-reports/</code>.
-            Click a title to render the markdown with sortable AG Grid for any table with 10+ rows.
+            {t("card.descriptionPrefix")}
+            <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">
+              {t("card.descriptionPath")}
+            </code>
+            {t("card.descriptionSuffix")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {reports.length === 0 ? (
             <p data-testid="reports-empty" className="text-sm text-muted-foreground">
-              No reports surfaced yet.
+              {t("empty")}
             </p>
           ) : (
             <ul className="space-y-2">

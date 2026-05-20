@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,12 +15,6 @@ const STATE_STYLES: Record<RiskPanelResponse["state"], string> = {
   green: "border-green-700/60 bg-green-950/30 text-green-200",
   yellow: "border-amber-700/60 bg-amber-950/40 text-amber-100",
   red: "border-destructive bg-destructive/20 text-destructive-foreground",
-};
-
-const STATE_HEADLINES: Record<RiskPanelResponse["state"], string> = {
-  green: "Risk: OK",
-  yellow: "Risk: per-sleeve drawdown over advisory threshold",
-  red: "Risk: kill-switch tripped",
 };
 
 export interface RiskBannerProps {
@@ -58,6 +53,7 @@ export function useRiskPanel(noFetch = false): {
 }
 
 export function RiskBanner({ data, noFetch, className }: RiskBannerProps) {
+  const t = useTranslations("risk");
   const { data: fetched, error } = useRiskPanel(noFetch || data != null);
   const payload = data ?? fetched;
   if (error && payload == null) {
@@ -67,7 +63,7 @@ export function RiskBanner({ data, noFetch, className }: RiskBannerProps) {
         className={cn("border-zinc-700/60 bg-zinc-900/40", className)}
       >
         <CardContent className="py-3 text-xs text-muted-foreground">
-          Risk panel unreachable: {error}
+          {t("unreachablePrefix")} {error}
         </CardContent>
       </Card>
     );
@@ -78,7 +74,7 @@ export function RiskBanner({ data, noFetch, className }: RiskBannerProps) {
         data-testid="risk-banner-loading"
         className={cn("border-border/60 bg-background", className)}
       >
-        <CardContent className="py-3 text-xs text-muted-foreground">Loading risk panel…</CardContent>
+        <CardContent className="py-3 text-xs text-muted-foreground">{t("loading")}</CardContent>
       </Card>
     );
   }
@@ -90,16 +86,21 @@ export function RiskBanner({ data, noFetch, className }: RiskBannerProps) {
     >
       <CardContent className="space-y-1 py-3 text-sm">
         <div className="flex items-center justify-between">
-          <strong>{STATE_HEADLINES[payload.state]}</strong>
+          <strong>{t(`headlines.${payload.state}`)}</strong>
           <span className="font-mono text-xs">
-            master DD {(payload.master_dd * 100).toFixed(2)}%
+            {t("masterDd", { value: (payload.master_dd * 100).toFixed(2) })}
           </span>
         </div>
         <p className="text-xs">
-          Kill-switch threshold {(payload.kill_switch_threshold * 100).toFixed(0)}% ·
-          per-sleeve advisory {(payload.per_sleeve_threshold * 100).toFixed(0)}%
+          {t("killSwitchThreshold", {
+            value: (payload.kill_switch_threshold * 100).toFixed(0),
+          })}{" "}
+          ·{" "}
+          {t("perSleeveThreshold", {
+            value: (payload.per_sleeve_threshold * 100).toFixed(0),
+          })}
           {payload.slippage_trend_3m_bps != null
-            ? ` · 3m slippage ${payload.slippage_trend_3m_bps.toFixed(1)} bps`
+            ? ` · ${t("slippageTrend", { value: payload.slippage_trend_3m_bps.toFixed(1) })}`
             : ""}
         </p>
         {payload.alternative_defensive_ticket ? (

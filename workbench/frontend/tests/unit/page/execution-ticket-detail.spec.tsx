@@ -6,6 +6,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, waitFor } from "@testing-library/react";
 
+import { renderWithIntl } from "../../test-utils/intl";
+
 import type { components } from "@/types/api";
 
 vi.mock("next/navigation", () => ({
@@ -58,7 +60,7 @@ afterEach(() => {
 describe("TicketDetailPage (B023 F003)", () => {
   it("renders metadata + Markdown body for the requested ticket", async () => {
     vi.stubGlobal("fetch", buildFetch(DETAIL));
-    const { getByTestId } = render(<TicketDetailPage />);
+    const { getByTestId } = renderWithIntl(<TicketDetailPage />);
     await waitFor(() => {
       expect(getByTestId("ticket-detail-state")).toHaveTextContent(/executed/);
     });
@@ -70,7 +72,7 @@ describe("TicketDetailPage (B023 F003)", () => {
   it("uses same-origin /api path", async () => {
     const fetchMock = buildFetch(DETAIL);
     vi.stubGlobal("fetch", fetchMock);
-    render(<TicketDetailPage />);
+    renderWithIntl(<TicketDetailPage />);
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalled();
     });

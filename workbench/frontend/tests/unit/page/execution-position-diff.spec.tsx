@@ -8,6 +8,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, waitFor } from "@testing-library/react";
 
+import { renderWithIntl } from "../../test-utils/intl";
+
 import type { components } from "@/types/api";
 
 vi.mock("ag-grid-react", () => ({
@@ -113,7 +115,7 @@ afterEach(() => {
 describe("PositionDiffPage (B023 F002)", () => {
   it("renders the diff table + state line + unmatched warning when seeded", async () => {
     vi.stubGlobal("fetch", buildFetch({ "/api/execution/position-diff": SEEDED }));
-    const { getByTestId } = render(<PositionDiffPage />);
+    const { getByTestId } = renderWithIntl(<PositionDiffPage />);
     await waitFor(() => {
       expect(getByTestId("position-diff-state")).toHaveTextContent(/as of 2026-05-18/);
     });
@@ -123,7 +125,7 @@ describe("PositionDiffPage (B023 F002)", () => {
 
   it("renders empty-state when no snapshot is on file", async () => {
     vi.stubGlobal("fetch", buildFetch({ "/api/execution/position-diff": EMPTY }));
-    const { getByTestId } = render(<PositionDiffPage />);
+    const { getByTestId } = renderWithIntl(<PositionDiffPage />);
     await waitFor(() => {
       expect(getByTestId("position-diff-empty")).toBeInTheDocument();
     });
@@ -133,7 +135,7 @@ describe("PositionDiffPage (B023 F002)", () => {
   it("uses same-origin /api path (no 127.0.0.1, no absolute URL)", async () => {
     const fetchMock = buildFetch({ "/api/execution/position-diff": SEEDED });
     vi.stubGlobal("fetch", fetchMock);
-    render(<PositionDiffPage />);
+    renderWithIntl(<PositionDiffPage />);
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalled();
     });

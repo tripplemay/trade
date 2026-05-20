@@ -10,6 +10,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 
+import { renderWithIntl } from "../../test-utils/intl";
+
 import type { components } from "@/types/api";
 
 vi.mock("sonner", () => {
@@ -138,7 +140,7 @@ describe("TicketPage (B023 F003)", () => {
       posts: [],
     };
     vi.stubGlobal("fetch", buildFetch(state));
-    const { getByTestId } = render(<TicketPage />);
+    const { getByTestId } = renderWithIntl(<TicketPage />);
     await waitFor(() => {
       expect(getByTestId("ticket-history-empty")).toBeInTheDocument();
     });
@@ -156,7 +158,7 @@ describe("TicketPage (B023 F003)", () => {
       posts: [],
     };
     vi.stubGlobal("fetch", buildFetch(state));
-    const { getByTestId } = render(<TicketPage />);
+    const { getByTestId } = renderWithIntl(<TicketPage />);
     await waitFor(() => {
       expect(getByTestId("ticket-history-empty")).toBeInTheDocument();
     });
@@ -182,7 +184,7 @@ describe("TicketPage (B023 F003)", () => {
       posts: [],
     };
     vi.stubGlobal("fetch", buildFetch(state));
-    const { getByTestId } = render(<TicketPage />);
+    const { getByTestId } = renderWithIntl(<TicketPage />);
     await waitFor(() => {
       expect(getByTestId("ticket-void")).not.toBeDisabled();
     });
@@ -206,7 +208,7 @@ describe("TicketPage (B023 F003)", () => {
     };
     const fetchMock = buildFetch(state);
     vi.stubGlobal("fetch", fetchMock);
-    render(<TicketPage />);
+    renderWithIntl(<TicketPage />);
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalled();
     });
