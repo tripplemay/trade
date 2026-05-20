@@ -166,12 +166,15 @@ describe("TicketPage F006 integration", () => {
     };
     vi.stubGlobal("fetch", buildTicketFetch(state));
     const { getByTestId } = render(<TicketPage />);
+    // The mode-card appears once the risk fetch resolves; the auto-flip
+    // to defensive runs in a separate effect tick. Waiting on the
+    // radio's `.checked` rather than just the card's presence avoids a
+    // CI-only race where the assertion fires between those two ticks.
     await waitFor(() => {
       expect(getByTestId("ticket-mode-card")).toBeInTheDocument();
+      const defensive = getByTestId("ticket-mode-defensive") as HTMLInputElement;
+      expect(defensive.checked).toBe(true);
     });
-    const defensive = getByTestId("ticket-mode-defensive") as HTMLInputElement;
-    expect(defensive.checked).toBe(true);
-    // Banner reflects red state.
     expect(getByTestId("risk-banner").getAttribute("data-state")).toBe("red");
   });
 
