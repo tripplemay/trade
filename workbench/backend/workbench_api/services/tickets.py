@@ -37,6 +37,7 @@ from workbench_api.schemas.tickets import (
 from workbench_api.services.execution import get_position_diff
 from workbench_api.services.recommendations import (
     DISCLAIMER_LITERAL,
+    DISCLAIMER_LITERAL_ZH,
     get_current_recommendations,
 )
 
@@ -46,6 +47,7 @@ _logger = logging.getLogger("workbench.tickets")
 # pulling in the recommendations service directly.
 __all__ = [
     "DISCLAIMER_LITERAL",
+    "DISCLAIMER_LITERAL_ZH",
     "generate_ticket",
     "get_ticket_detail",
     "list_tickets",
@@ -97,27 +99,38 @@ def render_ticket_markdown(
         "> ⚠️ Manual review checklist. The system does NOT place orders. You are the executor."
     )
     lines.append(
+        "> ⚠️ 人工核对清单。本系统不会下单,执行人是你。"
+    )
+    lines.append(
         f"> Reference prices = {snapshot_date.isoformat()} close; place LIMIT orders only."
+    )
+    lines.append(
+        f"> 参考价 = {snapshot_date.isoformat()} 收盘价;仅使用限价委托。"
     )
     lines.append("")
 
     if notes:
-        lines.append("## Notes")
+        lines.append("## Notes / 备注")
         lines.append("")
         lines.append(notes.strip())
         lines.append("")
 
-    lines.append("## Account snapshot")
+    lines.append("## Account snapshot / 账户快照")
     lines.append("")
-    lines.append(f"- Cash before trades: {_format_currency(cash_before)}")
-    lines.append(f"- Total NAV: {_format_currency(nav)}")
+    lines.append(
+        f"- Cash before trades / 操作前现金: {_format_currency(cash_before)}"
+    )
+    lines.append(f"- Total NAV / 总权益: {_format_currency(nav)}")
     lines.append("")
 
-    lines.append(f"## Trades to place ({len(trades)} lines, T+1)")
+    lines.append(
+        f"## Trades to place / 待下达交易 ({len(trades)} lines, T+1)"
+    )
     lines.append("")
     if trades:
         lines.append(
-            "| # | Action | Symbol | Shares | Reason | Limit hint | Reference close |"
+            "| # | Action / 方向 | Symbol / 标的 | Shares / 股数 "
+            "| Reason / 说明 | Limit hint / 限价提示 | Reference close / 参考收盘 |"
         )
         lines.append("|---|---|---|---:|---|---:|---:|")
         for index, row in enumerate(trades, start=1):
@@ -150,7 +163,7 @@ def render_ticket_markdown(
         lines.append("_No rebalance lines — the diff is flat._")
     lines.append("")
 
-    lines.append("## Tax / wash-sale flags")
+    lines.append("## Tax / wash-sale flags / 税务 / 洗售标记")
     lines.append("")
     if wash_sale_flags:
         for flag in wash_sale_flags:
@@ -162,16 +175,23 @@ def render_ticket_markdown(
         lines.append("- None flagged.")
     lines.append("")
 
-    lines.append("## After execution checklist")
+    lines.append("## After execution checklist / 执行后核对清单")
     lines.append("")
-    lines.append("- [ ] Record actual fills in workbench's Fill Journal (`/execution/fills`)")
-    lines.append("- [ ] Or upload CSV from broker")
-    lines.append("- [ ] Reconcile in `/execution/journal-history` once fills land")
+    lines.append(
+        "- [ ] Record actual fills in workbench's Fill Journal "
+        "(`/execution/fills`) / 在工作台的 Fill Journal 中录入实际成交"
+    )
+    lines.append("- [ ] Or upload CSV from broker / 或上传券商导出的 CSV")
+    lines.append(
+        "- [ ] Reconcile in `/execution/journal-history` once fills land / "
+        "成交记录完成后,在 `/execution/journal-history` 进行对账"
+    )
     lines.append("")
 
     lines.append(f"_Ticket id: {ticket_id}._")
     lines.append("")
     lines.append(f"_Disclaimer: {DISCLAIMER_LITERAL}._")
+    lines.append(f"_免责声明:{DISCLAIMER_LITERAL_ZH}。_")
     lines.append("")
 
     return "\n".join(lines)

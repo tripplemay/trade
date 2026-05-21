@@ -29,7 +29,10 @@ from workbench_api.auth.jwt_validator import JWT_ALGORITHM
 from workbench_api.db.engine import get_engine
 from workbench_api.db.models.account import Account
 from workbench_api.observability.active_users import active_users
-from workbench_api.services.recommendations import DISCLAIMER_LITERAL
+from workbench_api.services.recommendations import (
+    DISCLAIMER_LITERAL,
+    DISCLAIMER_LITERAL_ZH,
+)
 from workbench_api.settings import Settings, get_settings
 
 SECRET = "test-secret-do-not-use-in-prod"
@@ -143,6 +146,37 @@ def test_export_ticket_writes_markdown_with_disclaimer_literal(
     written = Path(payload["path"])
     assert written.is_file(), f"export-ticket path missing: {written}"
     assert DISCLAIMER_LITERAL in written.read_text(encoding="utf-8")
+
+
+def test_export_ticket_markdown_is_bilingual(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """B024 F005 — exported recommendation Markdown carries both
+    disclaimers and bilingual section titles. The English literal stays
+    immutable (see ``test_export_ticket_writes_markdown_with_disclaimer_literal``);
+    this spec layers the Chinese contract on top.
+    """
+
+    _seed_account()
+    client = _authed_client(tmp_path)
+    payload = client.post(
+        "/api/recommendations/export-ticket",
+        json={"as_of_date": "2026-05-17"},
+    ).json()
+    body = Path(payload["path"]).read_text(encoding="utf-8")
+
+    assert DISCLAIMER_LITERAL in body
+    assert DISCLAIMER_LITERAL_ZH in body
+
+    # ≥3 bilingual section titles.
+    assert "Order ticket — 2026-05-17 / 订单清单 — 2026-05-17" in body
+    assert "## Target positions / 目标持仓" in body
+    assert "## Gate checks / 门控检查" in body
+    assert "## Wash-sale flags / 洗售标记" in body
+
+    # Table headers carry both languages too.
+    assert "Symbol / 标的" in body
+    assert "Rationale / 说明" in body
 
 
 def test_export_ticket_path_includes_as_of_date(

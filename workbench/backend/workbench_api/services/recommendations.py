@@ -42,6 +42,19 @@ DISCLAIMER_LITERAL: str = (
 )
 """Verbatim string the export ticket must contain — F010 acceptance pin.
 
+The English literal stays immutable across releases; B024 F005 layers a
+Chinese translation **alongside** it (never replaces), so the rendered
+Markdown carries the same compliance assertion in both languages.
+"""
+
+DISCLAIMER_LITERAL_ZH: str = (
+    "仅供研究使用;这是一份人工核对清单,不构成交易指令"
+)
+"""B024 F005 bilingual disclaimer — emitted on the line immediately
+following ``DISCLAIMER_LITERAL``. The Markdown body is locale-agnostic:
+both languages are always present, so file history stays stable
+regardless of the user's UI locale.
+
 Changing this literal requires updating
 ``tests/unit/test_recommendations.py`` and the matching frontend
 copy. Treat as a contract surface, not an editable string.
@@ -193,15 +206,19 @@ def _render_ticket_markdown(
     as_of_date: str,
 ) -> str:
     lines: list[str] = []
-    lines.append(f"# Order ticket — {as_of_date}")
+    lines.append(f"# Order ticket — {as_of_date} / 订单清单 — {as_of_date}")
     lines.append("")
     lines.append(f"> **{DISCLAIMER_LITERAL}**")
+    lines.append(f"> **{DISCLAIMER_LITERAL_ZH}**")
     lines.append("")
 
-    lines.append("## Target positions")
+    lines.append("## Target positions / 目标持仓")
     lines.append("")
     if response.target_positions:
-        lines.append("| Symbol | Target | Current | Diff | Rationale |")
+        lines.append(
+            "| Symbol / 标的 | Target / 目标 | Current / 当前 "
+            "| Diff / 偏离 | Rationale / 说明 |"
+        )
         lines.append("|---|---:|---:|---:|---|")
         for position in response.target_positions:
             lines.append(
@@ -223,13 +240,13 @@ def _render_ticket_markdown(
         )
     lines.append("")
 
-    lines.append("## Gate checks")
+    lines.append("## Gate checks / 门控检查")
     lines.append("")
     for gate in response.gate_checks:
         lines.append(f"- **{gate.name}**: {gate.status} — {gate.detail or ''}")
     lines.append("")
 
-    lines.append("## Wash-sale flags")
+    lines.append("## Wash-sale flags / 洗售标记")
     lines.append("")
     if response.wash_sale_flags:
         for flag in response.wash_sale_flags:

@@ -38,7 +38,7 @@
       "title": "Order ticket Markdown 双语 disclaimer + 模板字段双语",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Markdown 模板按 spec §4.3 改造：(1) Disclaimer 双语并存——英文原句 `'research-only; this is a manual review checklist, not a trading instruction'` 保留 + 中文译句 `'仅供研究使用；这是一份人工核对清单，不构成交易指令'` 加在下一行；(2) 章节标题双语：`## Trades to place / 待下达交易` `## After execution checklist / 执行后核对清单`；(3) checklist item 双语：`- [ ] Recorded fills in workbench / 在 workbench 记录成交` 等。**Markdown 永远不按 locale cookie 切换内容**（避免按 locale 生成不同文件造成历史 diff 混乱）。Unit test：(a) 保留原英文断言 `assert 'research-only; this is a manual review checklist, not a trading instruction' in markdown`；(b) 新增中文断言 `assert '仅供研究使用；这是一份人工核对清单，不构成交易指令' in markdown`；(c) 新增双语字段断言 ≥3 个；(d) historical ticket（B023 留下 `tkt-20260519-99d04c95`）不动 DB schema、re-generate 测试新 ticket 产出双语 Markdown。验收：pytest 全绿；Playwright ticket detail page assert 双语 disclaimer 双块都可见（zh + en locale 都看到双语）；Markdown 文件名格式不变。"
     },
     {

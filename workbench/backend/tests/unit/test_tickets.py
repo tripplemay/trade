@@ -27,7 +27,7 @@ from workbench_api.db.models.account import Account
 from workbench_api.db.models.account_snapshot import AccountSnapshot
 from workbench_api.db.models.order_ticket import OrderTicket
 from workbench_api.observability.active_users import active_users
-from workbench_api.services.tickets import DISCLAIMER_LITERAL
+from workbench_api.services.tickets import DISCLAIMER_LITERAL, DISCLAIMER_LITERAL_ZH
 from workbench_api.settings import Settings, get_settings
 
 SECRET = "test-secret-do-not-use-in-prod"
@@ -284,3 +284,60 @@ def test_disclaimer_literal_is_pinned() -> None:
     assert DISCLAIMER_LITERAL == (
         "research-only; this is a manual review checklist, not a trading instruction"
     )
+
+
+def test_disclaimer_zh_literal_is_pinned() -> None:
+    """B024 F005 — Chinese translation of the immutable disclaimer.
+
+    Renders alongside (never instead of) the English literal. Keeping
+    both pinned lets the bilingual contract drift only via an explicit
+    spec change to both literals at once.
+    """
+
+    assert DISCLAIMER_LITERAL_ZH == (
+        "仅供研究使用;这是一份人工核对清单,不构成交易指令"
+    )
+
+
+def test_markdown_carries_bilingual_disclaimer_and_sections(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """B024 F005 — every generated ticket Markdown must carry both
+    disclaimers + bilingual section titles + bilingual checklist items.
+
+    The English literals stay pinned by `test_generate_ticket_*` above;
+    this spec adds the Chinese counterparts so future refactors can't
+    silently drop the bilingual contract.
+    """
+
+    _seed_account()
+    _seed_snapshot()
+    settings = _settings(tmp_path)
+    client = _authed_client(settings)
+    response = client.post("/api/execution/tickets", json={})
+    assert response.status_code == 200, response.text
+    body = response.json()["markdown_body"]
+
+    # English literal (existing contract — duplicated here so a
+    # regression flags both halves at once).
+    assert DISCLAIMER_LITERAL in body
+    # Chinese disclaimer renders on the line right below the English one.
+    assert DISCLAIMER_LITERAL_ZH in body
+    assert f"_Disclaimer: {DISCLAIMER_LITERAL}._" in body
+    assert f"_免责声明:{DISCLAIMER_LITERAL_ZH}。_" in body
+
+    # Bilingual section titles (≥3 distinct sections).
+    assert "## Account snapshot / 账户快照" in body
+    assert "## Trades to place / 待下达交易" in body
+    assert "## After execution checklist / 执行后核对清单" in body
+    assert "## Tax / wash-sale flags / 税务 / 洗售标记" in body
+
+    # Bilingual checklist items.
+    assert "Record actual fills in workbench's Fill Journal" in body
+    assert "在工作台的 Fill Journal 中录入实际成交" in body
+    assert "Or upload CSV from broker" in body
+    assert "或上传券商导出的 CSV" in body
+
+    # The manual-review warning also renders both languages.
+    assert "Manual review checklist" in body
+    assert "人工核对清单" in body
