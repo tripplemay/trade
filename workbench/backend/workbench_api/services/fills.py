@@ -31,6 +31,7 @@ from workbench_api.db.models.fill_journal_entry import FillJournalEntry
 from workbench_api.db.models.order_ticket import OrderTicket
 from workbench_api.db.repositories.fill_journal_entry import FillJournalEntryRepository
 from workbench_api.db.repositories.order_ticket import OrderTicketRepository
+from workbench_api.i18n import t
 from workbench_api.schemas.fills import (
     FillRowError,
     FillRowIn,
@@ -115,10 +116,7 @@ def _detect_adapter(headers: list[str]) -> dict[str, str]:
         # columns; if not even four overlap, the file is too far off-format.
         raise HTTPException(
             status_code=400,
-            detail=(
-                "Could not identify CSV adapter (generic / schwab / ibkr). "
-                f"Headers seen: {headers}"
-            ),
+            detail=t("csv.adapter_unknown", headers=str(headers)),
         )
     _logger.info("fills csv adapter chosen", extra={"event": "fills_csv_adapter", "adapter": name})
     return mapping
@@ -150,7 +148,9 @@ def parse_csv(content: bytes | str) -> tuple[list[FillRowIn], list[FillRowError]
     text = content.decode("utf-8") if isinstance(content, bytes) else content
     reader = csv.DictReader(io.StringIO(text))
     if reader.fieldnames is None:
-        raise HTTPException(status_code=400, detail="CSV missing header row.")
+        raise HTTPException(
+            status_code=400, detail=t("csv.missing_header_row")
+        )
     mapping = _detect_adapter(list(reader.fieldnames))
 
     rows: list[FillRowIn] = []
@@ -184,11 +184,17 @@ def _resolve_ticket(session: Session, ticket_id: str) -> OrderTicket:
     repo = OrderTicketRepository(session)
     ticket = repo.get_by_id(ticket_id)
     if ticket is None:
-        raise HTTPException(status_code=404, detail=f"ticket not found: {ticket_id}")
+        raise HTTPException(
+            status_code=404, detail=t("ticket.not_found", ticket_id=ticket_id)
+        )
     if ticket.status not in ("generated", "executed"):
         raise HTTPException(
             status_code=409,
-            detail=f"ticket {ticket_id} is {ticket.status}; fills cannot be appended.",
+            detail=t(
+                "ticket.status_blocks_fills",
+                ticket_id=ticket_id,
+                status=ticket.status,
+            ),
         )
     return ticket
 
@@ -309,7 +315,9 @@ def submit_csv(
             detail={"errors": [e.model_dump() for e in errors]},
         )
     if not rows:
-        raise HTTPException(status_code=400, detail="CSV had headers but no fill rows.")
+        raise HTTPException(
+            status_code=400, detail=t("csv.empty_rows")
+        )
     body = FillSubmitRequest(ticket_id=ticket_id, fills=rows, allow_unmatched=allow_unmatched)
     return submit_fills(session, body, source="csv_upload", now=now)
 

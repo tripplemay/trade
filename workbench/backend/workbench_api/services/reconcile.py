@@ -38,6 +38,7 @@ from workbench_api.db.models.order_ticket import OrderTicket
 from workbench_api.db.repositories.account_snapshot import AccountSnapshotRepository
 from workbench_api.db.repositories.fill_journal_entry import FillJournalEntryRepository
 from workbench_api.db.repositories.order_ticket import OrderTicketRepository
+from workbench_api.i18n import t
 from workbench_api.schemas.reconcile import (
     FillSlippage,
     JournalHistoryItem,
@@ -184,11 +185,13 @@ def reconcile_ticket(
     ticket_repo = OrderTicketRepository(session)
     ticket = ticket_repo.get_by_id(ticket_id)
     if ticket is None:
-        raise HTTPException(status_code=404, detail=f"ticket not found: {ticket_id}")
+        raise HTTPException(
+            status_code=404, detail=t("ticket.not_found", ticket_id=ticket_id)
+        )
     if ticket.status == "voided":
         raise HTTPException(
             status_code=409,
-            detail=f"ticket {ticket_id} is voided; cannot reconcile.",
+            detail=t("ticket.is_voided", ticket_id=ticket_id),
         )
 
     fills_repo = FillJournalEntryRepository(session)
@@ -196,7 +199,7 @@ def reconcile_ticket(
     if not fills:
         raise HTTPException(
             status_code=409,
-            detail=f"ticket {ticket_id} has no fills to reconcile.",
+            detail=t("ticket.no_fills_to_reconcile", ticket_id=ticket_id),
         )
 
     snapshot_repo = AccountSnapshotRepository(session)
@@ -322,7 +325,8 @@ def get_journal_history(
             since_date = date.fromisoformat(since)
         except ValueError as exc:
             raise HTTPException(
-                status_code=400, detail=f"invalid 'since' date: {since}"
+                status_code=400,
+                detail=t("reconcile.invalid_since", since=since),
             ) from exc
         stmt = stmt.where(OrderTicket.ticket_date >= since_date)
     tickets = list(session.execute(stmt).scalars().all())
@@ -381,7 +385,7 @@ def get_slippage_analytics(
     if window not in _WINDOW_DAYS:
         raise HTTPException(
             status_code=400,
-            detail=f"window must be one of 3m/6m/1y; got {window!r}",
+            detail=t("reconcile.invalid_window", window=repr(window)),
         )
     cutoff = (now or datetime.now(UTC).replace(tzinfo=None)) - timedelta(
         days=_WINDOW_DAYS[window]

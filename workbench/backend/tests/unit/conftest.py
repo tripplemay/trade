@@ -18,6 +18,26 @@ from workbench_api.db.models import Base
 from workbench_api.settings import get_settings
 
 
+@pytest.fixture(autouse=True)
+def _default_test_locale_en(monkeypatch: pytest.MonkeyPatch) -> None:
+    """B024 F004 — keep pre-i18n tests on their English assertions.
+
+    `workbench_api.i18n.DEFAULT_LOCALE` is `zh-CN` in production so
+    cookie-less / header-less browsers see the Chinese UI/error copy.
+    The 200+ pre-existing backend specs (B011-B023) assert English
+    fragments inside `HTTPException.detail` — translating them all would
+    decouple tests from the production contract. We flip the default to
+    `en` only for the test session so those assertions stay accurate;
+    F004 adds explicit zh-CN parametrized tests that send
+    `Accept-Language: zh-CN` to verify the Chinese branch.
+    """
+
+    import workbench_api.i18n as _i18n
+
+    monkeypatch.setattr(_i18n, "DEFAULT_LOCALE", "en")
+    _i18n._LOCALE_VAR.set("en")
+
+
 @pytest.fixture
 def tmp_db_url(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[str]:
     """Point the workbench at a fresh SQLite file for the test."""

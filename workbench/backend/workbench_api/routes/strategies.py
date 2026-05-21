@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from workbench_api.auth.dependency import require_authenticated_user
 from workbench_api.auth.jwt_validator import AuthenticatedUser
+from workbench_api.i18n import t
 from workbench_api.schemas.strategies import StrategyDetail, StrategyListResponse
 from workbench_api.services.strategies import get_strategy, list_strategies
 
@@ -27,6 +28,6 @@ def get_strategy_route(strategy_id: str, _user: AuthenticatedUserDep) -> Strateg
     if detail is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Unknown strategy id: {strategy_id}",
+            detail=t("strategy.unknown", strategy_id=strategy_id),
         )
     return detail

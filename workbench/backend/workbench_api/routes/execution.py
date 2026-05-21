@@ -16,6 +16,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Upload
 from workbench_api.auth.dependency import require_authenticated_user
 from workbench_api.auth.jwt_validator import AuthenticatedUser
 from workbench_api.db.session import SessionDep
+from workbench_api.i18n import t
 from workbench_api.schemas.execution import (
     AccountSnapshotPayload,
     AccountUpdateRequest,
@@ -127,7 +128,9 @@ def get_ticket_route(
 ) -> TicketDetail:
     detail = get_ticket_detail(session, ticket_id)
     if detail is None:
-        raise HTTPException(status_code=404, detail=f"ticket not found: {ticket_id}")
+        raise HTTPException(
+            status_code=404, detail=t("ticket.not_found", ticket_id=ticket_id)
+        )
     return detail
 
 
@@ -141,10 +144,7 @@ def void_ticket_route(
     if summary is None:
         raise HTTPException(
             status_code=409,
-            detail=(
-                f"ticket {ticket_id} cannot be voided "
-                f"(not found or already executed/voided)"
-            ),
+            detail=t("ticket.cannot_void", ticket_id=ticket_id),
         )
     return summary
 

@@ -24,6 +24,7 @@ from workbench_api.auth.jwt_validator import (
     MissingSessionCookieError,
     authenticate,
 )
+from workbench_api.i18n import t
 from workbench_api.observability.active_users import active_users
 from workbench_api.observability.logging import USER_ID_VAR
 from workbench_api.settings import Settings, get_settings
@@ -49,7 +50,7 @@ def require_authenticated_user(
         # auth-open state. Production secrets are pre-staged by B021 prep #5.
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Workbench auth not configured (NEXTAUTH_SECRET or ALLOWED_USER_EMAIL missing).",
+            detail=t("auth.misconfigured"),
         )
 
     try:
@@ -61,13 +62,13 @@ def require_authenticated_user(
     except (MissingSessionCookieError, InvalidSessionTokenError, MissingEmailClaimError) as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(exc),
+            detail=t("auth.unauthorized", detail=str(exc)),
             headers={"WWW-Authenticate": "Cookie"},
         ) from exc
     except EmailNotAllowedError as exc:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail=str(exc),
+            detail=t("auth.forbidden", detail=str(exc)),
         ) from exc
 
     # Observability side-channels — request.state for handlers / templates,

@@ -26,6 +26,7 @@ from sqlalchemy.orm import Session
 
 from workbench_api.db.models.order_ticket import OrderTicket
 from workbench_api.db.repositories.order_ticket import OrderTicketRepository
+from workbench_api.i18n import t
 from workbench_api.schemas.tickets import (
     GenerateTicketRequest,
     GenerateTicketResponse,
@@ -281,7 +282,7 @@ def generate_ticket(
     if snapshot is None:
         raise HTTPException(
             status_code=409,
-            detail="No account snapshot on file; seed one via /api/execution/account first.",
+            detail=t("ticket.no_snapshot"),
         )
 
     recommendations = get_current_recommendations(session)

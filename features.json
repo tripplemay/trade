@@ -30,7 +30,7 @@
       "title": "后端 API error i18n — FastAPI dep injection + HTTPException 全量改造",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "(1) workbench/backend/workbench_api/i18n/__init__.py + messages.py（dict-of-dict，无新 dep）；(2) `detect_locale(request: Request) -> str` FastAPI dep 优先级：`?locale=` query > Accept-Language header > 'zh-CN' 默认；(3) `t(key: str, locale: str, **kwargs) -> str` fmt 函数；(4) 所有 raise HTTPException 站点（grep `raise HTTPException` 全量，约 25 处）改造为 `raise HTTPException(status_code=..., detail=t('errors.xxx', locale, **kwargs))`；(5) API contract：前端 fetch wrapper 自动注入 `Accept-Language` header（基于 NEXT_LOCALE cookie）；(6) pytest parametrize `['zh-CN', 'en']` × 每 endpoint 至少 1 个 error 路径 → 验消息内容；(7) pytest 202 baseline + 新增 ≥30 测试 ≥232 passed；(8) ruff + mypy 清；(9) zh-CN.json 与 en.json key set bit-identical（backend i18n yaml/dict 同样要求）；(10) F003 toast 消息端到端联调：点击 invalid CSV upload → backend 返中文 detail → frontend toast 显示中文。"
     },
     {

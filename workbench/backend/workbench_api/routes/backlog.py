@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from workbench_api.auth.dependency import require_authenticated_user
 from workbench_api.auth.jwt_validator import AuthenticatedUser
 from workbench_api.db.session import SessionDep
+from workbench_api.i18n import t
 from workbench_api.schemas.backlog import (
     BacklogCreateRequest,
     BacklogDeleteResponse,
@@ -124,7 +125,7 @@ def _git_failed(exc: GitCommitError) -> HTTPException:
 
     return HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        detail=f"Backlog git commit failed: {exc}",
+        detail=t("backlog.git_commit_failed", detail=str(exc)),
     )
 
 
@@ -162,7 +163,7 @@ def update_backlog_route(
     except BacklogNotFoundError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Unknown backlog id: {exc}",
+            detail=t("backlog.not_found", id=str(exc)),
         ) from exc
     except GitCommitError as exc:
         raise _git_failed(exc) from exc
@@ -180,7 +181,7 @@ def delete_backlog_route(
     except BacklogNotFoundError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Unknown backlog id: {exc}",
+            detail=t("backlog.not_found", id=str(exc)),
         ) from exc
     except GitCommitError as exc:
         raise _git_failed(exc) from exc

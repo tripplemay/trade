@@ -30,6 +30,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from workbench_api.auth.dependency import require_authenticated_user
 from workbench_api.auth.jwt_validator import AuthenticatedUser
 from workbench_api.db.session import SessionDep
+from workbench_api.i18n import detect_locale, t
 from workbench_api.observability.active_users import active_users
 from workbench_api.observability.backup_status import read_backup_status
 from workbench_api.observability.error_buffer import (
@@ -160,6 +161,12 @@ def create_app() -> FastAPI:
         version=VERSION,
         description="Research-only workbench backend.",
         lifespan=_lifespan,
+        # B024 F004 — wire locale detection on every request so any
+        # downstream `raise HTTPException(detail=t(...))` resolves
+        # against the negotiated locale via the request-scoped
+        # ContextVar. Dep is read-only (no auth coupling) so it's safe
+        # to mount globally including on /api/health.
+        dependencies=[Depends(detect_locale)],
     )
     app.add_middleware(RequestIDMiddleware)
 
@@ -211,7 +218,7 @@ def create_app() -> FastAPI:
             _health_logger.exception("health: SELECT 1 failed: %s", exc)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="db_unreachable",
+                detail=t("health.db_unreachable"),
             ) from exc
 
         uptime = max(0.0, time.monotonic() - STARTED_AT_MONOTONIC)

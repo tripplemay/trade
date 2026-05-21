@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from workbench_api.auth.dependency import require_authenticated_user
 from workbench_api.auth.jwt_validator import AuthenticatedUser
+from workbench_api.i18n import t
 from workbench_api.schemas.backtests import BacktestRunRequest, BacktestRunResponse
 from workbench_api.services.backtests import (
     UnknownStrategyError,
@@ -30,7 +31,7 @@ def run_backtest_route(
     except UnknownStrategyError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Unknown strategy id: {exc}",
+            detail=t("backtest.unknown_strategy", id=str(exc)),
         ) from exc
 
 
@@ -40,6 +41,6 @@ def get_backtest_route(run_id: str, _user: AuthenticatedUserDep) -> BacktestRunR
     if result is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No cached backtest with run_id={run_id}",
+            detail=t("backtest.run_not_found", run_id=run_id),
         )
     return result
