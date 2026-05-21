@@ -118,6 +118,7 @@ def t(key: str, locale: str | None = None, /, **kwargs: object) -> str:
 __all__ = [
     "DEFAULT_LOCALE",
     "LOCALES",
+    "MESSAGES",
     "detect_locale",
     "get_current_locale",
     "negotiate_locale",
