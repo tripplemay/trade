@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { workbenchFetch } from "@/lib/api-fetch";
 import type { components } from "@/types/api";
 
 type AccountSnapshotPayload = components["schemas"]["AccountSnapshotPayload"];
@@ -66,19 +68,22 @@ interface ValidationResult {
   payload: AccountUpdateRequest | null;
 }
 
-function validate(form: FormState): ValidationResult {
+function validate(
+  form: FormState,
+  tValidation: ReturnType<typeof useTranslations<"form.validation">>,
+): ValidationResult {
   const errors: Record<string, string> = {};
 
   const cash = Number(form.cash);
   if (!form.cash.trim() || Number.isNaN(cash)) {
-    errors.cash = "Cash must be a number.";
+    errors.cash = tValidation("cashMustBeNumber");
   } else if (cash < 0) {
-    errors.cash = "Cash cannot be negative.";
+    errors.cash = tValidation("cashCannotBeNegative");
   }
 
   const base = form.base_currency.trim();
   if (base.length < 2) {
-    errors.base_currency = "Base currency required (e.g. USD).";
+    errors.base_currency = tValidation("baseCurrencyRequired");
   }
 
   const seenSymbols = new Set<string>();
@@ -91,20 +96,20 @@ function validate(form: FormState): ValidationResult {
       return; // empty row, skipped
     }
     if (!symbol) {
-      errors[`row-${index}-symbol`] = "Symbol required.";
+      errors[`row-${index}-symbol`] = tValidation("symbolRequired");
       return;
     }
     if (seenSymbols.has(symbol)) {
-      errors[`row-${index}-symbol`] = `Duplicate symbol: ${symbol}.`;
+      errors[`row-${index}-symbol`] = tValidation("duplicateSymbol", { symbol });
       return;
     }
     seenSymbols.add(symbol);
     if (Number.isNaN(shares) || shares < 0) {
-      errors[`row-${index}-shares`] = "Shares must be ≥ 0.";
+      errors[`row-${index}-shares`] = tValidation("sharesNonNegative");
       return;
     }
     if (Number.isNaN(avgCost) || avgCost < 0) {
-      errors[`row-${index}-avg_cost`] = "Avg cost must be ≥ 0.";
+      errors[`row-${index}-avg_cost`] = tValidation("avgCostNonNegative");
       return;
     }
     positions.push({ symbol, shares, avg_cost: avgCost });
@@ -121,7 +126,7 @@ function validate(form: FormState): ValidationResult {
       cumulativeWeight += (p.shares * p.avg_cost) / totalEquity;
     });
     if (cumulativeWeight > 1.0001) {
-      errors.weights = "Positions notional exceeds total equity — weights must be ≤ 1.0.";
+      errors.weights = tValidation("weightsExceedEquity");
     }
   }
 
@@ -136,6 +141,12 @@ function validate(form: FormState): ValidationResult {
 }
 
 export default function AccountEditPage() {
+  const t = useTranslations("execution.account");
+  const tCols = useTranslations("execution.account.columns");
+  const tCommon = useTranslations("common");
+  const tToast = useTranslations("toast");
+  const tValidation = useTranslations("form.validation");
+
   const [form, setForm] = useState<FormState>(() => toFormState(null));
   const [latest, setLatest] = useState<AccountSnapshotPayload | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -144,7 +155,7 @@ export default function AccountEditPage() {
 
   const reload = useCallback(async () => {
     try {
-      const response = await fetch(LATEST_URL);
+      const response = await workbenchFetch(LATEST_URL);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = (await response.json()) as AccountSnapshotPayload | null;
       setLatest(data);
@@ -178,15 +189,15 @@ export default function AccountEditPage() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const validation = validate(form);
+    const validation = validate(form, tValidation);
     setErrors(validation.errors);
     if (!validation.ok || validation.payload == null) {
-      toast.error("Form has errors — fix them before saving.");
+      toast.error(tValidation("formHasErrors"));
       return;
     }
     setSubmitting(true);
     try {
-      const response = await fetch(PUT_URL, {
+      const response = await workbenchFetch(PUT_URL, {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(validation.payload),
@@ -198,7 +209,7 @@ export default function AccountEditPage() {
       const saved = (await response.json()) as AccountSnapshotPayload;
       setLatest(saved);
       setForm(toFormState(saved));
-      toast.success(`Snapshot saved (id ${saved.id ?? "?"}).`);
+      toast.success(tToast("snapshotSaved", { id: saved.id ?? "?" }));
     } catch (reason: unknown) {
       toast.error(reason instanceof Error ? reason.message : String(reason));
     } finally {
@@ -206,35 +217,34 @@ export default function AccountEditPage() {
     }
   };
 
+  const stateLabel = loadError
+    ? tCommon("unreachableWithError", { error: loadError })
+    : latest
+      ? t("stateLatest", { id: latest.id ?? "", source: latest.source ?? "" })
+      : t("stateEmpty");
+
   return (
     <section data-testid="page-account-edit" className="space-y-6">
       <header className="flex items-baseline justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Account state</h1>
-          <p className="text-xs text-muted-foreground">
-            Edit cash + positions. Every save inserts a new snapshot (source = ui_edit) — old
-            snapshots stay on file for reconciliation history.
-          </p>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("title")}</h1>
+          <p className="text-xs text-muted-foreground">{t("description")}</p>
         </div>
         <span data-testid="account-latest-state" className="text-xs text-muted-foreground">
-          {loadError
-            ? `unreachable: ${loadError}`
-            : latest
-              ? `latest snapshot ${latest.id ?? ""} (${latest.source ?? ""})`
-              : "no snapshot yet"}
+          {stateLabel}
         </span>
       </header>
 
       <form onSubmit={handleSubmit} className="space-y-6" data-testid="account-edit-form">
         <Card>
           <CardHeader>
-            <CardTitle>Cash</CardTitle>
-            <CardDescription>Settled cash in the base currency.</CardDescription>
+            <CardTitle>{t("cashCardTitle")}</CardTitle>
+            <CardDescription>{t("cashCardDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground" htmlFor="cash">
-                Cash balance
+                {t("cashLabel")}
               </label>
               <Input
                 id="cash"
@@ -251,7 +261,7 @@ export default function AccountEditPage() {
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground" htmlFor="base-currency">
-                Base currency
+                {t("baseCurrencyLabel")}
               </label>
               <Input
                 id="base-currency"
@@ -269,22 +279,20 @@ export default function AccountEditPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Positions</CardTitle>
-              <CardDescription>
-                One row per held symbol; shares × avg cost contributes to equity.
-              </CardDescription>
+              <CardTitle>{t("positionsCardTitle")}</CardTitle>
+              <CardDescription>{t("positionsCardDescription")}</CardDescription>
             </div>
             <Button type="button" variant="secondary" onClick={addRow} data-testid="account-add-row">
-              Add row
+              {tCommon("addRow")}
             </Button>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-32">Symbol</TableHead>
-                  <TableHead className="w-32 text-right">Shares</TableHead>
-                  <TableHead className="w-40 text-right">Avg cost</TableHead>
+                  <TableHead className="w-32">{tCols("symbol")}</TableHead>
+                  <TableHead className="w-32 text-right">{tCols("shares")}</TableHead>
+                  <TableHead className="w-40 text-right">{tCols("avgCost")}</TableHead>
                   <TableHead className="w-20" />
                 </TableRow>
               </TableHeader>
@@ -333,7 +341,7 @@ export default function AccountEditPage() {
                         data-testid={`account-remove-${index}`}
                         onClick={() => removeRow(index)}
                       >
-                        Remove
+                        {tCommon("remove")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -350,7 +358,7 @@ export default function AccountEditPage() {
 
         <div className="flex items-center gap-3">
           <Button type="submit" data-testid="account-save" disabled={submitting}>
-            {submitting ? "Saving…" : "Save snapshot"}
+            {submitting ? tCommon("saving") : t("saveSnapshot")}
           </Button>
           <Button
             type="button"
@@ -361,7 +369,7 @@ export default function AccountEditPage() {
             }}
             disabled={submitting}
           >
-            Reset
+            {tCommon("reset")}
           </Button>
         </div>
       </form>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ColDef } from "ag-grid-community";
 
@@ -21,6 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { workbenchFetch } from "@/lib/api-fetch";
 import { cn } from "@/lib/utils";
 import type { components } from "@/types/api";
 
@@ -39,72 +41,82 @@ function sharesValueFormatter(params: { value: unknown }): string {
   return SHARE_FORMATTER.format(v);
 }
 
-const DIFF_COLUMNS: ColDef<PositionDiffEntry>[] = [
-  { field: "symbol", headerName: "Symbol", width: 110, pinned: "left" },
-  {
-    field: "current_shares",
-    headerName: "Current shares",
-    cellClass: "text-right",
-    headerClass: "text-right",
-    valueFormatter: sharesValueFormatter,
-    width: 140,
-  },
-  {
-    field: "target_shares",
-    headerName: "Target shares",
-    cellClass: "text-right",
-    headerClass: "text-right",
-    valueFormatter: sharesValueFormatter,
-    width: 140,
-  },
-  {
-    field: "delta_shares",
-    headerName: "Δ shares",
-    cellClass: (params) => {
-      const v = params.value as number | undefined;
-      if (typeof v !== "number") return "text-right";
-      if (v > 0) return "text-right text-[var(--color-up)]";
-      if (v < 0) return "text-right text-[var(--color-down)]";
-      return "text-right";
+function buildDiffColumns(
+  t: ReturnType<typeof useTranslations<"execution.positionDiff.columns">>,
+): ColDef<PositionDiffEntry>[] {
+  return [
+    { field: "symbol", headerName: t("symbol"), width: 110, pinned: "left" },
+    {
+      field: "current_shares",
+      headerName: t("currentShares"),
+      cellClass: "text-right",
+      headerClass: "text-right",
+      valueFormatter: sharesValueFormatter,
+      width: 140,
     },
-    headerClass: "text-right",
-    valueFormatter: (params) => {
-      const v = params.value as number | undefined;
-      if (typeof v !== "number" || Number.isNaN(v)) return "";
-      return (v > 0 ? "+" : "") + SHARE_FORMATTER.format(v);
+    {
+      field: "target_shares",
+      headerName: t("targetShares"),
+      cellClass: "text-right",
+      headerClass: "text-right",
+      valueFormatter: sharesValueFormatter,
+      width: 140,
     },
-    width: 140,
-  },
-  percentColumn<PositionDiffEntry>({
-    field: "current_weight",
-    headerName: "Current %",
-    digits: 2,
-  }),
-  percentColumn<PositionDiffEntry>({
-    field: "target_weight",
-    headerName: "Target %",
-    digits: 2,
-  }),
-  percentColumn<PositionDiffEntry>({
-    field: "delta_weight",
-    headerName: "Δ %",
-    digits: 2,
-  }),
-  currencyColumn<PositionDiffEntry>({
-    field: "delta_dollar",
-    headerName: "Δ $",
-  }),
-  { field: "reason", headerName: "Reason", flex: 2, minWidth: 240 },
-];
+    {
+      field: "delta_shares",
+      headerName: t("deltaShares"),
+      cellClass: (params) => {
+        const v = params.value as number | undefined;
+        if (typeof v !== "number") return "text-right";
+        if (v > 0) return "text-right text-[var(--color-up)]";
+        if (v < 0) return "text-right text-[var(--color-down)]";
+        return "text-right";
+      },
+      headerClass: "text-right",
+      valueFormatter: (params) => {
+        const v = params.value as number | undefined;
+        if (typeof v !== "number" || Number.isNaN(v)) return "";
+        return (v > 0 ? "+" : "") + SHARE_FORMATTER.format(v);
+      },
+      width: 140,
+    },
+    percentColumn<PositionDiffEntry>({
+      field: "current_weight",
+      headerName: t("currentWeight"),
+      digits: 2,
+    }),
+    percentColumn<PositionDiffEntry>({
+      field: "target_weight",
+      headerName: t("targetWeight"),
+      digits: 2,
+    }),
+    percentColumn<PositionDiffEntry>({
+      field: "delta_weight",
+      headerName: t("deltaWeight"),
+      digits: 2,
+    }),
+    currencyColumn<PositionDiffEntry>({
+      field: "delta_dollar",
+      headerName: t("deltaDollar"),
+    }),
+    { field: "reason", headerName: t("reason"), flex: 2, minWidth: 240 },
+  ];
+}
 
 export default function PositionDiffPage() {
+  const t = useTranslations("execution.positionDiff");
+  const tCols = useTranslations("execution.positionDiff.columns");
+  const tCommon = useTranslations("common");
+
   const [data, setData] = useState<PositionDiffResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const tableRef = useRef<DataTableHandle>(null);
 
+  const diffColumns = useMemo(() => buildDiffColumns(tCols), [tCols]);
+
   useEffect(() => {
     let cancelled = false;
-    fetch(DIFF_URL)
+    workbenchFetch(DIFF_URL)
       .then(async (response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const payload = (await response.json()) as PositionDiffResponse;
@@ -143,32 +155,35 @@ export default function PositionDiffPage() {
   const diffRows = data?.diff ?? [];
   const unmatchedRows = data?.unmatched ?? [];
 
+  const stateLabel = error
+    ? tCommon("unreachableWithError", { error })
+    : data
+      ? t("stateAsOfEquity", {
+          date: data.as_of_date,
+          equity: SHARE_FORMATTER.format(data.total_equity ?? 0),
+        })
+      : tCommon("loading");
+
   return (
     <section data-testid="page-position-diff" className="space-y-6">
       <header className="flex items-baseline justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Position diff</h1>
-          <p className="text-xs text-muted-foreground">
-            Current account state vs target portfolio. Workbench is research-only; review and execute
-            manually in your broker.
-          </p>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("title")}</h1>
+          <p className="text-xs text-muted-foreground">{t("description")}</p>
         </div>
         <span data-testid="position-diff-state" className="text-xs text-muted-foreground">
-          {error
-            ? `unreachable: ${error}`
-            : data
-              ? `as of ${data.as_of_date} · equity $${SHARE_FORMATTER.format(data.total_equity ?? 0)}`
-              : "loading…"}
+          {stateLabel}
         </span>
       </header>
 
       {data && !hasSnapshot ? (
         <Card data-testid="position-diff-empty">
           <CardHeader>
-            <CardTitle>No account snapshot on file</CardTitle>
+            <CardTitle>{t("emptyTitle")}</CardTitle>
             <CardDescription>
-              Edit your account on the <code>/execution/account</code> page to seed a baseline
-              snapshot. The diff renders once cash + positions are recorded.
+              {t("emptyDescriptionPrefix")}
+              <code>{t("emptyDescriptionPath")}</code>
+              {t("emptyDescriptionSuffix")}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -177,8 +192,8 @@ export default function PositionDiffPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Current allocation</CardTitle>
-            <CardDescription>$ per symbol from the latest snapshot.</CardDescription>
+            <CardTitle>{t("currentAllocationTitle")}</CardTitle>
+            <CardDescription>{t("currentAllocationDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <AllocationBar data={currentBarItems} height={240} />
@@ -186,8 +201,8 @@ export default function PositionDiffPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Target allocation</CardTitle>
-            <CardDescription>$ per symbol if rebalanced to target weights.</CardDescription>
+            <CardTitle>{t("targetAllocationTitle")}</CardTitle>
+            <CardDescription>{t("targetAllocationDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <AllocationBar data={targetBarItems} height={240} />
@@ -198,11 +213,8 @@ export default function PositionDiffPage() {
       <Card data-testid="position-diff-table-card">
         <CardHeader className="flex flex-row items-center justify-between gap-2">
           <div>
-            <CardTitle>Per-symbol diff</CardTitle>
-            <CardDescription>
-              Positive Δ = buy, negative Δ = sell. Reference price = position cost basis;
-              target-only symbols are flagged below.
-            </CardDescription>
+            <CardTitle>{t("perSymbolTitle")}</CardTitle>
+            <CardDescription>{t("perSymbolDescription")}</CardDescription>
           </div>
           <Button
             data-testid="position-diff-export-csv"
@@ -210,14 +222,14 @@ export default function PositionDiffPage() {
             onClick={handleExportCsv}
             disabled={diffRows.length === 0}
           >
-            Export CSV
+            {tCommon("exportCsv")}
           </Button>
         </CardHeader>
         <CardContent>
           <DataTable<PositionDiffEntry>
             ref={tableRef}
             rowData={diffRows}
-            columnDefs={DIFF_COLUMNS}
+            columnDefs={diffColumns}
             height={360}
           />
         </CardContent>
@@ -228,11 +240,8 @@ export default function PositionDiffPage() {
         className={cn(unmatchedRows.length === 0 && "opacity-70")}
       >
         <CardHeader>
-          <CardTitle>Unmatched targets</CardTitle>
-          <CardDescription>
-            Target symbols with no current position to anchor a price reference. Share calculations
-            for these rows fall back to the cash basis until the symbol has a cost-basis record.
-          </CardDescription>
+          <CardTitle>{t("unmatchedTitle")}</CardTitle>
+          <CardDescription>{t("unmatchedDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           {unmatchedRows.length > 0 ? (
@@ -245,14 +254,14 @@ export default function PositionDiffPage() {
                 >
                   <strong>{row.symbol}</strong>
                   <span className="ml-2 text-xs text-muted-foreground">
-                    target weight {(row.target_weight * 100).toFixed(2)}% — no cost basis on file
+                    {t("unmatchedLabel", { weight: (row.target_weight * 100).toFixed(2) })}
                   </span>
                 </li>
               ))}
             </ul>
           ) : (
             <p data-testid="position-diff-unmatched-empty" className="text-sm text-muted-foreground">
-              None — every target symbol has a price reference.
+              {t("unmatchedEmpty")}
             </p>
           )}
         </CardContent>

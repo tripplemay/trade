@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import type { ColDef } from "ag-grid-community";
 
 import {
@@ -23,6 +24,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { workbenchFetch } from "@/lib/api-fetch";
 import type { components } from "@/types/api";
 
 type JournalHistoryResponse = components["schemas"]["JournalHistoryResponse"];
@@ -40,48 +42,60 @@ const STATUS_BADGE: Record<JournalHistoryItem["status"], string> = {
   voided: "border-zinc-700/60 bg-zinc-900/40 text-muted-foreground",
 };
 
-const HISTORY_COLUMNS: ColDef<JournalHistoryItem>[] = [
-  {
-    field: "ticket_id",
-    headerName: "Ticket",
-    width: 220,
-    cellRenderer: (params: { value: string }) => params.value,
-  },
-  dateColumn<JournalHistoryItem>({ field: "ticket_date", headerName: "Date" }),
-  {
-    field: "status",
-    headerName: "Status",
-    width: 110,
-    valueFormatter: (params) => String(params.value ?? ""),
-  },
-  {
-    field: "fill_count",
-    headerName: "Fills",
-    width: 90,
-    cellClass: "text-right",
-    headerClass: "text-right",
-  },
-  basisPointsColumn<JournalHistoryItem>({
-    field: "avg_bps",
-    headerName: "Avg slippage (bps)",
-    digits: 1,
-  }),
-  currencyColumn<JournalHistoryItem>({
-    field: "total_dollar",
-    headerName: "Total slippage $",
-  }),
-];
+function buildHistoryColumns(
+  t: ReturnType<typeof useTranslations<"execution.journalHistory.columns">>,
+): ColDef<JournalHistoryItem>[] {
+  return [
+    {
+      field: "ticket_id",
+      headerName: t("ticket"),
+      width: 220,
+      cellRenderer: (params: { value: string }) => params.value,
+    },
+    dateColumn<JournalHistoryItem>({ field: "ticket_date", headerName: t("date") }),
+    {
+      field: "status",
+      headerName: t("status"),
+      width: 110,
+      valueFormatter: (params) => String(params.value ?? ""),
+    },
+    {
+      field: "fill_count",
+      headerName: t("fills"),
+      width: 90,
+      cellClass: "text-right",
+      headerClass: "text-right",
+    },
+    basisPointsColumn<JournalHistoryItem>({
+      field: "avg_bps",
+      headerName: t("avgBps"),
+      digits: 1,
+    }),
+    currencyColumn<JournalHistoryItem>({
+      field: "total_dollar",
+      headerName: t("totalDollar"),
+    }),
+  ];
+}
 
 export default function JournalHistoryPage() {
+  const t = useTranslations("execution.journalHistory");
+  const tCards = useTranslations("execution.journalHistory.cards");
+  const tCols = useTranslations("execution.journalHistory.columns");
+  const tWindow = useTranslations("execution.journalHistory.windowOptions");
+  const tCommon = useTranslations("common");
+
   const [history, setHistory] = useState<JournalHistoryResponse | null>(null);
   const [analytics, setAnalytics] = useState<SlippageAnalyticsResponse | null>(null);
   const [windowSel, setWindowSel] = useState<WindowOption>("3m");
   const [error, setError] = useState<string | null>(null);
   const tableRef = useRef<DataTableHandle>(null);
 
+  const historyColumns = useMemo(() => buildHistoryColumns(tCols), [tCols]);
+
   useEffect(() => {
     let cancelled = false;
-    fetch(HISTORY_URL)
+    workbenchFetch(HISTORY_URL)
       .then(async (response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const payload = (await response.json()) as JournalHistoryResponse;
@@ -97,7 +111,7 @@ export default function JournalHistoryPage() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`${ANALYTICS_URL}?window=${windowSel}`)
+    workbenchFetch(`${ANALYTICS_URL}?window=${windowSel}`)
       .then(async (response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const payload = (await response.json()) as SlippageAnalyticsResponse;
@@ -132,31 +146,29 @@ export default function JournalHistoryPage() {
   const overallAvgBps =
     validBps.length > 0 ? validBps.reduce((a, b) => a + b, 0) / validBps.length : null;
 
+  const stateLabel = error
+    ? tCommon("unreachableWithError", { error })
+    : history
+      ? t("ticketCount", { count: items.length })
+      : tCommon("loading");
+
   return (
     <section data-testid="page-journal-history" className="space-y-6">
       <header className="flex items-baseline justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Journal history
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            Past tickets, fills, and slippage analytics. Workbench is research-only.
-          </p>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("title")}</h1>
+          <p className="text-xs text-muted-foreground">{t("description")}</p>
         </div>
         <span data-testid="journal-history-state" className="text-xs text-muted-foreground">
-          {error
-            ? `unreachable: ${error}`
-            : history
-              ? `${items.length} ticket(s) on file`
-              : "loading…"}
+          {stateLabel}
         </span>
       </header>
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card data-testid="journal-card-count">
           <CardHeader>
-            <CardTitle>Tickets</CardTitle>
-            <CardDescription>All-time count.</CardDescription>
+            <CardTitle>{tCards("ticketsTitle")}</CardTitle>
+            <CardDescription>{tCards("ticketsDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-semibold tabular-nums">{items.length}</p>
@@ -164,8 +176,8 @@ export default function JournalHistoryPage() {
         </Card>
         <Card data-testid="journal-card-avg-bps">
           <CardHeader>
-            <CardTitle>Avg slippage</CardTitle>
-            <CardDescription>Mean of per-ticket avg bps.</CardDescription>
+            <CardTitle>{tCards("avgBpsTitle")}</CardTitle>
+            <CardDescription>{tCards("avgBpsDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-semibold tabular-nums">
@@ -175,8 +187,8 @@ export default function JournalHistoryPage() {
         </Card>
         <Card data-testid="journal-card-total-dollar">
           <CardHeader>
-            <CardTitle>Total slippage $</CardTitle>
-            <CardDescription>Signed sum across tickets.</CardDescription>
+            <CardTitle>{tCards("totalDollarTitle")}</CardTitle>
+            <CardDescription>{tCards("totalDollarDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-semibold tabular-nums">
@@ -189,10 +201,8 @@ export default function JournalHistoryPage() {
       <Card data-testid="journal-trend-card">
         <CardHeader className="flex flex-row items-center justify-between gap-2">
           <div>
-            <CardTitle>Slippage trend</CardTitle>
-            <CardDescription>
-              Per-month avg bps over the selected rolling window.
-            </CardDescription>
+            <CardTitle>{t("trendCardTitle")}</CardTitle>
+            <CardDescription>{t("trendCardDescription")}</CardDescription>
           </div>
           <select
             data-testid="journal-window-select"
@@ -200,9 +210,9 @@ export default function JournalHistoryPage() {
             onChange={(e) => setWindowSel(e.target.value as WindowOption)}
             className="h-9 rounded-md border border-input bg-background px-3 text-sm"
           >
-            <option value="3m">3 months</option>
-            <option value="6m">6 months</option>
-            <option value="1y">1 year</option>
+            <option value="3m">{tWindow("3m")}</option>
+            <option value="6m">{tWindow("6m")}</option>
+            <option value="1y">{tWindow("1y")}</option>
           </select>
         </CardHeader>
         <CardContent>
@@ -211,15 +221,17 @@ export default function JournalHistoryPage() {
               <AllocationBar data={trendBarItems} height={260} />
             ) : (
               <p data-testid="journal-trend-empty" className="text-sm text-muted-foreground">
-                No executed tickets in the {windowSel} window.
+                {t("trendEmpty", { window: tWindow(windowSel) })}
               </p>
             )
           ) : (
-            <p className="text-sm text-muted-foreground">Loading analytics…</p>
+            <p className="text-sm text-muted-foreground">{t("loadingAnalytics")}</p>
           )}
           {analytics && analytics.outliers.length > 0 ? (
             <div className="mt-4 space-y-1">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Outliers</p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                {t("outliersTitle")}
+              </p>
               <ul className="space-y-1 text-sm">
                 {analytics.outliers.map((row) => (
                   <li
@@ -229,7 +241,10 @@ export default function JournalHistoryPage() {
                   >
                     <strong>{row.ticket_id}</strong>{" "}
                     <span className="text-xs text-muted-foreground">
-                      {row.ticket_date} · {row.avg_bps.toFixed(1)} bps
+                      {t("outlierRowSuffix", {
+                        date: row.ticket_date,
+                        bps: row.avg_bps.toFixed(1),
+                      })}
                     </span>
                   </li>
                 ))}
@@ -242,8 +257,8 @@ export default function JournalHistoryPage() {
       <Card data-testid="journal-history-table-card">
         <CardHeader className="flex flex-row items-center justify-between gap-2">
           <div>
-            <CardTitle>Tickets</CardTitle>
-            <CardDescription>Sortable, filterable. Click a ticket id to open the read-only viewer.</CardDescription>
+            <CardTitle>{t("tableCardTitle")}</CardTitle>
+            <CardDescription>{t("tableCardDescription")}</CardDescription>
           </div>
           <Button
             data-testid="journal-history-export"
@@ -251,20 +266,24 @@ export default function JournalHistoryPage() {
             onClick={handleExportCsv}
             disabled={items.length === 0}
           >
-            Export CSV
+            {tCommon("exportCsv")}
           </Button>
         </CardHeader>
         <CardContent>
           {items.length === 0 ? (
             <p data-testid="journal-history-empty" className="text-sm text-muted-foreground">
-              No tickets recorded yet. Generate one in <Link href="/execution/ticket" className="underline">the ticket page</Link>.
+              {t("tableEmptyPrefix")}
+              <Link href="/execution/ticket" className="underline">
+                {t("tableEmptyLink")}
+              </Link>
+              {t("tableEmptySuffix")}
             </p>
           ) : (
             <div className="space-y-3">
               <DataTable<JournalHistoryItem>
                 ref={tableRef}
                 rowData={items}
-                columnDefs={HISTORY_COLUMNS}
+                columnDefs={historyColumns}
                 height={420}
               />
               <ul className="space-y-1 text-xs">
@@ -288,7 +307,7 @@ export default function JournalHistoryPage() {
                       {row.ticket_id}
                     </Link>
                     <span className="text-muted-foreground">
-                      {row.ticket_date} · {row.fill_count} fills
+                      {t("rowMeta", { date: row.ticket_date, count: row.fill_count })}
                     </span>
                   </li>
                 ))}

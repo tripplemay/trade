@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import MarkdownRenderer from "@/components/markdown/MarkdownRenderer";
@@ -15,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Toaster } from "@/components/ui/sonner";
+import { workbenchFetch } from "@/lib/api-fetch";
 import type { components } from "@/types/api";
 
 type TicketSummary = components["schemas"]["TicketSummary"];
@@ -45,6 +47,10 @@ function downloadMarkdown(filename: string, body: string): void {
 }
 
 export default function TicketPage() {
+  const t = useTranslations("execution.ticket");
+  const tCommon = useTranslations("common");
+  const tToast = useTranslations("toast");
+
   const [list, setList] = useState<TicketSummary[]>([]);
   const [latest, setLatest] = useState<GenerateTicketResponse | null>(null);
   const [generating, setGenerating] = useState(false);
@@ -66,7 +72,7 @@ export default function TicketPage() {
 
   const refresh = useCallback(async () => {
     try {
-      const response = await fetch(LIST_URL);
+      const response = await workbenchFetch(LIST_URL);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const payload = (await response.json()) as TicketListResponse;
       setList(payload.items);
@@ -76,7 +82,9 @@ export default function TicketPage() {
       // recent ticket's detail so the preview pane has something to show.
       const top = payload.items[0];
       if (latest == null && top != null) {
-        const detailResponse = await fetch(`${LIST_URL}/${encodeURIComponent(top.id)}`);
+        const detailResponse = await workbenchFetch(
+          `${LIST_URL}/${encodeURIComponent(top.id)}`,
+        );
         if (detailResponse.ok) {
           const detail = (await detailResponse.json()) as GenerateTicketResponse;
           setLatest(detail);
@@ -94,7 +102,7 @@ export default function TicketPage() {
   const handleGenerate = async () => {
     setGenerating(true);
     try {
-      const response = await fetch(GENERATE_URL, {
+      const response = await workbenchFetch(GENERATE_URL, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ defensive: mode === "defensive" }),
@@ -106,7 +114,9 @@ export default function TicketPage() {
       const payload = (await response.json()) as GenerateTicketResponse;
       setLatest(payload);
       toast.success(
-        `Generated ${mode === "defensive" ? "defensive" : "normal"} ticket ${payload.id}`,
+        mode === "defensive"
+          ? tToast("ticketGeneratedDefensive", { id: payload.id })
+          : tToast("ticketGeneratedNormal", { id: payload.id }),
       );
       await refresh();
     } catch (reason: unknown) {
@@ -120,7 +130,7 @@ export default function TicketPage() {
     if (!latest) return;
     setVoiding(true);
     try {
-      const response = await fetch(
+      const response = await workbenchFetch(
         `${LIST_URL}/${encodeURIComponent(latest.id)}/void`,
         { method: "POST" },
       );
@@ -130,7 +140,7 @@ export default function TicketPage() {
       }
       const summary = (await response.json()) as TicketSummary;
       setLatest({ ...latest, status: summary.status });
-      toast.success(`Ticket ${summary.id} voided`);
+      toast.success(tToast("ticketVoided", { id: summary.id }));
       await refresh();
     } catch (reason: unknown) {
       toast.error(reason instanceof Error ? reason.message : String(reason));
@@ -151,14 +161,13 @@ export default function TicketPage() {
     <section data-testid="page-ticket" className="space-y-6">
       <header className="flex items-baseline justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Order ticket</h1>
-          <p className="text-xs text-muted-foreground">
-            Generate a Markdown rebalance checklist. The workbench is research-only — review and
-            execute manually in your broker app.
-          </p>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("title")}</h1>
+          <p className="text-xs text-muted-foreground">{t("description")}</p>
         </div>
         <span data-testid="ticket-state" className="text-xs text-muted-foreground">
-          {loadError ? `unreachable: ${loadError}` : `${list.length} tickets on file`}
+          {loadError
+            ? tCommon("unreachableWithError", { error: loadError })
+            : t("ticketsOnFile", { count: list.length })}
         </span>
       </header>
 
@@ -167,11 +176,8 @@ export default function TicketPage() {
       {risk?.state === "red" ? (
         <Card data-testid="ticket-mode-card" className="border-destructive/60">
           <CardHeader>
-            <CardTitle>Pick ticket mode</CardTitle>
-            <CardDescription>
-              The kill-switch tripped. The defensive ticket rotates fully into the B011
-              defensive sleeve; the normal ticket follows the current target portfolio.
-            </CardDescription>
+            <CardTitle>{t("modeCardTitle")}</CardTitle>
+            <CardDescription>{t("modeCardDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             <label className="flex items-start gap-2 text-sm">
@@ -184,7 +190,7 @@ export default function TicketPage() {
                 onChange={() => setMode("normal")}
               />
               <span>
-                <strong>Normal</strong> — follow current Recommendations target portfolio.
+                <strong>{t("modeNormalLabel")}</strong> {t("modeNormalBody")}
               </span>
             </label>
             <label className="flex items-start gap-2 text-sm">
@@ -197,11 +203,11 @@ export default function TicketPage() {
                 onChange={() => setMode("defensive")}
               />
               <span>
-                <strong>Defensive</strong> — rotate 100% to{" "}
+                <strong>{t("modeDefensiveLabel")}</strong> {t("modeDefensivePrefix")}
                 <code>
                   {risk.alternative_defensive_ticket?.target_positions[0]?.symbol ?? "SGOV"}
-                </code>{" "}
-                until master DD recovers.
+                </code>
+                {t("modeDefensiveSuffix")}
               </span>
             </label>
           </CardContent>
@@ -210,11 +216,15 @@ export default function TicketPage() {
 
       <Card data-testid="ticket-actions-card">
         <CardHeader>
-          <CardTitle>Latest ticket</CardTitle>
+          <CardTitle>{t("latestCardTitle")}</CardTitle>
           <CardDescription>
             {latest
-              ? `${latest.id} · ${latest.status} · ticket_date ${latest.ticket_date}`
-              : "Nothing generated yet."}
+              ? t("latestCardSubtitleWithTicket", {
+                  id: latest.id,
+                  status: latest.status,
+                  date: latest.ticket_date,
+                })
+              : t("latestCardSubtitleEmpty")}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-wrap items-center gap-3">
@@ -224,8 +234,10 @@ export default function TicketPage() {
             disabled={generateDisabled}
           >
             {generating
-              ? "Generating…"
-              : `Generate ${mode === "defensive" ? "defensive" : "new"} ticket`}
+              ? tCommon("generating")
+              : mode === "defensive"
+                ? t("generateDefensive")
+                : t("generateNew")}
           </Button>
           <Button
             data-testid="ticket-void"
@@ -233,7 +245,7 @@ export default function TicketPage() {
             onClick={handleVoid}
             disabled={voidDisabled}
           >
-            {voiding ? "Voiding…" : "Void latest"}
+            {voiding ? tCommon("voiding") : t("voidLatest")}
           </Button>
           <Button
             data-testid="ticket-download"
@@ -241,7 +253,7 @@ export default function TicketPage() {
             onClick={handleDownload}
             disabled={!latest}
           >
-            Download Markdown
+            {t("downloadMarkdown")}
           </Button>
         </CardContent>
       </Card>
@@ -249,9 +261,11 @@ export default function TicketPage() {
       {latest ? (
         <Card data-testid="ticket-preview-card">
           <CardHeader>
-            <CardTitle>Markdown preview</CardTitle>
+            <CardTitle>{t("previewCardTitle")}</CardTitle>
             <CardDescription>
-              The body the workbench wrote to <code>{latest.markdown_path}</code>.
+              {t("previewCardDescriptionPrefix")}
+              <code>{latest.markdown_path}</code>
+              {t("previewCardDescriptionSuffix")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -262,13 +276,13 @@ export default function TicketPage() {
 
       <Card data-testid="ticket-history-card">
         <CardHeader>
-          <CardTitle>History</CardTitle>
-          <CardDescription>Newest first. Click a row to view the read-only ticket.</CardDescription>
+          <CardTitle>{t("historyCardTitle")}</CardTitle>
+          <CardDescription>{t("historyCardDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           {list.length === 0 ? (
             <p data-testid="ticket-history-empty" className="text-sm text-muted-foreground">
-              No tickets yet. Generate one above to seed the history.
+              {t("historyEmpty")}
             </p>
           ) : (
             <ul className="space-y-2">
@@ -294,7 +308,10 @@ export default function TicketPage() {
                       {row.id}
                     </Link>
                     <span className="text-xs text-muted-foreground">
-                      {row.ticket_date} · created {new Date(row.created_at).toLocaleString()}
+                      {t("historyRowMeta", {
+                        date: row.ticket_date,
+                        createdAt: new Date(row.created_at).toLocaleString(),
+                      })}
                     </span>
                   </div>
                 </li>

@@ -22,7 +22,7 @@
       "title": "前端 UI 翻译 Pass B — 5 execution 页 + NextAuth login + toast/form/error pages + 中文按钮禁词",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "5 execution 页全量：position-diff / ticket / fills / journal-history / account + NextAuth login（含 sign in with Google 文案）+ 所有 toast 消息 + form validate 消息（cash≥0 / weights≤1 / 无重复 symbol / positive shares / valid date 等）+ error page (404/500)。中文按钮禁词 Vitest 新规则：任何按钮 label 含 `['执行', '下单', '发送券商', '立即买入', '实盘', '真实交易', '自动交易', '一键交易']` 任一字面 → fail（与英文 execute/place order/send to broker 同级 enforced）。Toast 错误消息接 backend Accept-Language 协议（F004 完成后联调）。Playwright zh-CN + en 跑 manual execution 主链：position-diff → ticket → fills upload → reconcile → journal-history 至少 5 个 assertion 双 locale；fixture 走 PUT account → POST ticket {defensive:true} → POST fills/csv → POST reconcile/{id} → GET journal-history。截图 5 × 2 = 10 PNG 存 docs/screenshots/B024-i18n/{zh-CN,en}/execution/。验收：B024 全截图 zh + en 各 14 张（9+5）共 28 PNG；vitest 增量绿；lint+typecheck+build 绿；中文按钮禁词 Vitest 至少 10 个 spec 命中 0 案件 → exit 0；中文翻译完整覆盖所有 B023 5 页（grep 残余英文 hardcode ≤5）。"
     },
     {

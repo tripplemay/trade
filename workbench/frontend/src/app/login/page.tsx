@@ -1,7 +1,7 @@
+import { getTranslations } from "next-intl/server";
+
 import Footer from "@/components/shell/Footer";
 import { signIn } from "@/lib/auth";
-
-const RESTRICTED_NOTICE = "This workbench is restricted to a single authorized user.";
 
 type SearchParams = {
   error?: string;
@@ -24,6 +24,7 @@ export default async function LoginPage({
 }: {
   searchParams?: Promise<SearchParams>;
 }) {
+  const t = await getTranslations("login");
   const resolved = (await searchParams) ?? {};
   const error = resolved.error;
   const callbackUrl = resolved.callbackUrl ?? "/";
@@ -34,18 +35,15 @@ export default async function LoginPage({
         className="flex flex-1 flex-col items-center justify-center px-6 py-16"
       >
         <section className="w-full max-w-md rounded-lg border border-neutral-800 bg-neutral-900 p-8 shadow-lg">
-          <h1 className="text-2xl font-semibold text-neutral-100">Workbench sign-in</h1>
-          <p className="mt-3 text-sm text-neutral-400">
-            Google sign-in is the only entry point. Account creation is intentionally absent — the
-            workbench is single-user by design.
-          </p>
+          <h1 className="text-2xl font-semibold text-neutral-100">{t("title")}</h1>
+          <p className="mt-3 text-sm text-neutral-400">{t("description")}</p>
           {error ? (
             <p
               data-testid="login-restricted-notice"
               role="alert"
               className="mt-4 rounded border border-amber-700 bg-amber-950 px-3 py-2 text-sm text-amber-200"
             >
-              {RESTRICTED_NOTICE}
+              {t("restrictedNotice")}
             </p>
           ) : null}
           <form action={signInWithGoogle} className="mt-6">
@@ -55,7 +53,7 @@ export default async function LoginPage({
               data-testid="login-google-button"
               className="w-full rounded-md border border-neutral-700 bg-neutral-100 px-4 py-2 text-sm font-medium text-neutral-900 transition hover:bg-white"
             >
-              Sign in with Google
+              {t("signInWithGoogle")}
             </button>
           </form>
         </section>

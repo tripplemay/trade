@@ -1,21 +1,27 @@
 /**
- * B023 F003 acceptance #4 — Frontend regression: any button labelled
- * "execute" / "place order" / "send to broker" is forbidden.
+ * B023 F003 acceptance #4 + B024 F003 — Frontend regression: any button
+ * labelled "execute" / "place order" / "send to broker" (English) OR
+ * 「执行 / 下单 / 发送券商 / 立即买入 / 实盘 / 真实交易 / 自动交易 /
+ * 一键交易」 (Chinese) is forbidden.
  *
  * The workbench is research-only (B023 §Hard boundaries). The execution
  * pages generate Markdown checklists for the user to act on manually
  * in their broker app; the workbench never sends an order. This guard
  * grep-scans every `(protected)/execution/**` page for the forbidden
- * labels so a future refactor can't quietly add a button that suggests
- * the workbench performs execution.
+ * labels so a future refactor (in either language) can't quietly add a
+ * button that suggests the workbench performs execution.
+ *
+ * Why also scan messages/zh-CN.json:
+ *   - B024 F003 moves user-facing copy into the i18n bundle. A forbidden
+ *     phrase could land inside the bundle even if no JSX text node
+ *     contains it literally. We scan the bundle for the exact button-
+ *     label keys (and require that no value matches a banned phrase).
  *
  * String literals that legitimately mention the phrase in user-facing
- * disclaimer copy ("the workbench does NOT place orders") are kept out
- * of the offending list by anchoring the regex at the start of a quote
- * and requiring a button-context word ("Button", "label", "title", or
- * the JSX text node form `>label<`). Source code that talks ABOUT
- * execution in comments / disclaimers is fine; a rendered button
- * label is not.
+ * disclaimer copy ("the workbench does NOT place orders" / 「工作台从不
+ * 下单」) are kept out of the offending list by anchoring the regex to
+ * a JSX text-node or button-label assignment shape — disclaimers in
+ * comments / paragraphs / aria copy are fine.
  */
 import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
@@ -31,17 +37,38 @@ const EXECUTION_DIR = join(
   "(protected)",
   "execution",
 );
+const MESSAGES_DIR = join(FRONTEND_ROOT, "messages");
 
-const FORBIDDEN_PATTERNS: RegExp[] = [
-  // JSX text node form: `>Execute<`, `>Place order<`, `>Send to broker<`.
-  // Inserted between a JSX opening and closing tag the button label
-  // becomes literal `>label<` text — that's the shape we forbid.
-  />\s*(?:execute|place\s+order|send\s+to\s+broker)\s*</im,
-];
+const EN_BANNED = [
+  "execute",
+  "place order",
+  "send to broker",
+] as const;
 
-// More targeted scan: look for explicit button-label assignments.
-const SCAN_REGEX =
+// B024 F003 banned Chinese phrases — the workbench surface must never
+// describe a manual-checklist button as if it performs the trade.
+const ZH_BANNED = [
+  "执行",
+  "下单",
+  "发送券商",
+  "立即买入",
+  "实盘",
+  "真实交易",
+  "自动交易",
+  "一键交易",
+] as const;
+
+const EN_FORBIDDEN_JSX = /(?:>\s*)(execute|place\s+order|send\s+to\s+broker)(?:\s*<)/i;
+const ZH_FORBIDDEN_JSX = new RegExp(
+  `(?:>\\s*)(?:${ZH_BANNED.join("|")})(?:\\s*<)`,
+);
+
+// `children: "Execute"` / `aria-label="Execute"` shapes.
+const EN_FORBIDDEN_ASSIGN =
   /(?:children|label|title|aria-label)\s*[:=]\s*"(?:execute|place\s+order|send\s+to\s+broker)/i;
+const ZH_FORBIDDEN_ASSIGN = new RegExp(
+  `(?:children|label|title|aria-label)\\s*[:=]\\s*"(?:${ZH_BANNED.join("|")})`,
+);
 
 function collectPageFiles(root: string): string[] {
   const out: string[] = [];
@@ -64,33 +91,89 @@ function collectPageFiles(root: string): string[] {
 describe("no execution buttons under (protected)/execution/**", () => {
   const files = collectPageFiles(EXECUTION_DIR);
 
-  it(`covers at least the 4 F002+F003 pages`, () => {
-    // F002 ships position-diff + account; F003 ships ticket page +
-    // ticket detail subpage. F004+ append fills + journal-history.
-    expect(files.length).toBeGreaterThanOrEqual(4);
+  it(`covers at least the 5 execution pages`, () => {
+    // B023 ships position-diff + ticket + ticket/[id] + fills +
+    // journal-history + account. Floor at 5 to guard against tree
+    // pruning.
+    expect(files.length).toBeGreaterThanOrEqual(5);
   });
 
   for (const file of files) {
     const relative = file.slice(FRONTEND_ROOT.length + sep.length);
-    it(`${relative} contains no execute/place-order/send-to-broker button label`, () => {
+    it(`${relative} contains no English execute/place-order/send-to-broker button label`, () => {
       const body = readFileSync(file, "utf-8");
-      for (const pattern of FORBIDDEN_PATTERNS) {
-        const match = body.match(pattern);
-        if (match) {
-          throw new Error(
-            `forbidden button label detected in ${relative}: ${match[0]}`,
-          );
-        }
-      }
-      // Targeted label-assignment scan: any literal "Execute" /
-      // "Place order" / "Send to broker" as a button label.
-      // Render text in `<Button>Execute</Button>` is caught by the JSX
-      // regex above; this regex catches the `children: "Execute"` and
-      // `aria-label="Execute"` shapes that don't go through JSX text.
-      const labelMatch = body.match(SCAN_REGEX);
-      if (labelMatch) {
+      const jsxMatch = body.match(EN_FORBIDDEN_JSX);
+      if (jsxMatch) {
         throw new Error(
-          `forbidden button label assignment in ${relative}: ${labelMatch[0]}`,
+          `forbidden English button label detected in ${relative}: ${jsxMatch[0]}`,
+        );
+      }
+      const assignMatch = body.match(EN_FORBIDDEN_ASSIGN);
+      if (assignMatch) {
+        throw new Error(
+          `forbidden English button label assignment in ${relative}: ${assignMatch[0]}`,
+        );
+      }
+    });
+
+    it(`${relative} contains no Chinese 执行/下单/实盘/etc button label`, () => {
+      const body = readFileSync(file, "utf-8");
+      const jsxMatch = body.match(ZH_FORBIDDEN_JSX);
+      if (jsxMatch) {
+        throw new Error(
+          `forbidden Chinese button label detected in ${relative}: ${jsxMatch[0]}`,
+        );
+      }
+      const assignMatch = body.match(ZH_FORBIDDEN_ASSIGN);
+      if (assignMatch) {
+        throw new Error(
+          `forbidden Chinese button label assignment in ${relative}: ${assignMatch[0]}`,
+        );
+      }
+    });
+  }
+});
+
+describe("no forbidden button labels in messages bundle", () => {
+  // Banned phrases are only forbidden when used AS a button label key.
+  // Disclaimer / description / toast prose may legitimately reference
+  // "下单" inside copy like 「工作台从不下单」. Keys with these suffixes
+  // are interpreted as button labels:
+  const BUTTON_LABEL_KEY_PATTERN =
+    /(button|generate|void|save|submit|upload|run|export|reset|delete|edit|create|signIn|signOut|addRow|action|cta)/i;
+
+  for (const locale of ["en", "zh-CN"] as const) {
+    it(`${locale}.json: no value at a button-label key contains a banned phrase`, () => {
+      const filePath = join(MESSAGES_DIR, `${locale}.json`);
+      const bundle = JSON.parse(readFileSync(filePath, "utf-8"));
+      const offending: { path: string; value: string }[] = [];
+
+      const walk = (node: unknown, path: string[]): void => {
+        if (node === null || node === undefined) return;
+        if (typeof node === "string") {
+          const finalKey = path[path.length - 1] ?? "";
+          if (!BUTTON_LABEL_KEY_PATTERN.test(finalKey)) return;
+          for (const phrase of locale === "en" ? EN_BANNED : ZH_BANNED) {
+            if (node.toLowerCase().includes(phrase.toLowerCase())) {
+              offending.push({ path: path.join("."), value: node });
+            }
+          }
+          return;
+        }
+        if (typeof node === "object") {
+          for (const [k, v] of Object.entries(node)) {
+            walk(v, [...path, k]);
+          }
+        }
+      };
+
+      walk(bundle, []);
+      if (offending.length > 0) {
+        const list = offending
+          .map((o) => `  ${o.path} = ${JSON.stringify(o.value)}`)
+          .join("\n");
+        throw new Error(
+          `forbidden button-label phrases in ${locale}.json:\n${list}`,
         );
       }
     });

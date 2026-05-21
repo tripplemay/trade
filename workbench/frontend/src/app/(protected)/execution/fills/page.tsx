@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { workbenchFetch } from "@/lib/api-fetch";
 import type { components } from "@/types/api";
 
 type TicketListResponse = components["schemas"]["TicketListResponse"];
@@ -60,14 +62,20 @@ const EMPTY_MANUAL_ROW: ManualRow = {
 
 type RowError = { row: number; error: string };
 
-function manualRowToFill(row: ManualRow, index: number): { fill: FillRowIn | null; error?: RowError } {
+function manualRowToFill(
+  row: ManualRow,
+  index: number,
+  tValidation: ReturnType<typeof useTranslations<"form.validation">>,
+): { fill: FillRowIn | null; error?: RowError } {
   const errors: string[] = [];
-  if (!row.symbol.trim()) errors.push("symbol required");
+  if (!row.symbol.trim()) errors.push(tValidation("fillSymbolRequired"));
   const sharesNum = Number(row.shares);
-  if (!Number.isFinite(sharesNum) || sharesNum <= 0) errors.push("shares must be > 0");
+  if (!Number.isFinite(sharesNum) || sharesNum <= 0)
+    errors.push(tValidation("fillSharesPositive"));
   const priceNum = Number(row.fill_price);
-  if (!Number.isFinite(priceNum) || priceNum <= 0) errors.push("fill_price must be > 0");
-  if (!row.filled_at.trim()) errors.push("filled_at required (ISO date-time)");
+  if (!Number.isFinite(priceNum) || priceNum <= 0)
+    errors.push(tValidation("fillPricePositive"));
+  if (!row.filled_at.trim()) errors.push(tValidation("fillFilledAtRequired"));
   if (errors.length > 0) {
     return { fill: null, error: { row: index, error: errors.join("; ") } };
   }
@@ -89,6 +97,12 @@ function manualRowToFill(row: ManualRow, index: number): { fill: FillRowIn | nul
 }
 
 export default function FillsPage() {
+  const t = useTranslations("execution.fills");
+  const tCols = useTranslations("execution.fills.columns");
+  const tCommon = useTranslations("common");
+  const tToast = useTranslations("toast");
+  const tValidation = useTranslations("form.validation");
+
   const [ticketId, setTicketId] = useState("");
   const [tickets, setTickets] = useState<TicketListResponse["items"]>([]);
   const [fills, setFills] = useState<FillsListResponse["items"]>([]);
@@ -102,7 +116,7 @@ export default function FillsPage() {
 
   const refreshTickets = useCallback(async () => {
     try {
-      const response = await fetch(TICKETS_URL);
+      const response = await workbenchFetch(TICKETS_URL);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const payload = (await response.json()) as TicketListResponse;
       setTickets(payload.items);
@@ -125,7 +139,7 @@ export default function FillsPage() {
       return;
     }
     try {
-      const response = await fetch(
+      const response = await workbenchFetch(
         `${FILLS_URL}?ticket_id=${encodeURIComponent(id)}`,
       );
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -143,7 +157,7 @@ export default function FillsPage() {
 
   const handleManualSubmit = async () => {
     if (!ticketId) {
-      toast.error("Pick a ticket first.");
+      toast.error(tToast("pickTicketFirst"));
       return;
     }
     const collected: FillRowIn[] = [];
@@ -157,22 +171,22 @@ export default function FillsPage() {
       ) {
         return; // blank row, skipped
       }
-      const result = manualRowToFill(row, index);
+      const result = manualRowToFill(row, index, tValidation);
       if (result.fill) collected.push(result.fill);
       else if (result.error) errors.push(result.error);
     });
     setRowErrors(errors);
     if (errors.length > 0) {
-      toast.error(`${errors.length} row(s) have errors`);
+      toast.error(tToast("rowsHaveErrorsCount", { count: errors.length }));
       return;
     }
     if (collected.length === 0) {
-      toast.error("Add at least one fill row.");
+      toast.error(tToast("addAtLeastOneFill"));
       return;
     }
     setSubmitting(true);
     try {
-      const response = await fetch(FILLS_URL, {
+      const response = await workbenchFetch(FILLS_URL, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -185,7 +199,9 @@ export default function FillsPage() {
         const detail = await response.json();
         if (detail?.detail?.errors) {
           setRowErrors(detail.detail.errors);
-          toast.error(`${detail.detail.errors.length} row(s) rejected by server`);
+          toast.error(
+            tToast("rowsRejectedByServer", { count: detail.detail.errors.length }),
+          );
         } else {
           throw new Error(`HTTP ${response.status}: ${JSON.stringify(detail)}`);
         }
@@ -194,7 +210,10 @@ export default function FillsPage() {
       const payload = (await response.json()) as FillSubmitResponse;
       setPreview(payload);
       toast.success(
-        `Inserted ${payload.inserted.length} fill(s); ${payload.unmatched_count} unmatched`,
+        tToast("fillsInsertedCount", {
+          count: payload.inserted.length,
+          unmatched: payload.unmatched_count,
+        }),
       );
       setManualRows([{ ...EMPTY_MANUAL_ROW }]);
       await refreshFills(ticketId);
@@ -207,11 +226,11 @@ export default function FillsPage() {
 
   const handleCsvSubmit = async () => {
     if (!ticketId) {
-      toast.error("Pick a ticket first.");
+      toast.error(tToast("pickTicketFirst"));
       return;
     }
     if (!csvFile) {
-      toast.error("Select a CSV file first.");
+      toast.error(tToast("selectCsvFirst"));
       return;
     }
     setSubmitting(true);
@@ -220,12 +239,12 @@ export default function FillsPage() {
       form.append("ticket_id", ticketId);
       form.append("allow_unmatched", String(allowUnmatched));
       form.append("csv_file", csvFile);
-      const response = await fetch(FILLS_CSV_URL, { method: "POST", body: form });
+      const response = await workbenchFetch(FILLS_CSV_URL, { method: "POST", body: form });
       if (!response.ok) {
         const detail = await response.json();
         if (detail?.detail?.errors) {
           setRowErrors(detail.detail.errors);
-          toast.error(`CSV has ${detail.detail.errors.length} bad row(s)`);
+          toast.error(tToast("csvHasBadRows", { count: detail.detail.errors.length }));
         } else {
           throw new Error(`HTTP ${response.status}: ${JSON.stringify(detail)}`);
         }
@@ -234,7 +253,10 @@ export default function FillsPage() {
       const payload = (await response.json()) as FillSubmitResponse;
       setPreview(payload);
       toast.success(
-        `Inserted ${payload.inserted.length} fill(s); ${payload.unmatched_count} unmatched`,
+        tToast("fillsInsertedCount", {
+          count: payload.inserted.length,
+          unmatched: payload.unmatched_count,
+        }),
       );
       setCsvFile(null);
       await refreshFills(ticketId);
@@ -258,25 +280,20 @@ export default function FillsPage() {
     <section data-testid="page-fills" className="space-y-6">
       <header className="flex items-baseline justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Fill journal
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            Upload broker CSV or enter fills manually. The workbench records
-            what you executed; it does not place orders.
-          </p>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("title")}</h1>
+          <p className="text-xs text-muted-foreground">{t("description")}</p>
         </div>
         <span data-testid="fills-state" className="text-xs text-muted-foreground">
-          {loadError ? `unreachable: ${loadError}` : `${fills.length} fill(s) on this ticket`}
+          {loadError
+            ? tCommon("unreachableWithError", { error: loadError })
+            : t("fillsCount", { count: fills.length })}
         </span>
       </header>
 
       <Card data-testid="fills-ticket-card">
         <CardHeader>
-          <CardTitle>Ticket</CardTitle>
-          <CardDescription>
-            Pick the ticket these fills belong to. Voided / executed tickets are read-only.
-          </CardDescription>
+          <CardTitle>{t("ticketCardTitle")}</CardTitle>
+          <CardDescription>{t("ticketCardDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <select
@@ -285,7 +302,7 @@ export default function FillsPage() {
             onChange={(e) => setTicketId(e.target.value)}
             className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
           >
-            <option value="">— pick a ticket —</option>
+            <option value="">{t("ticketPlaceholder")}</option>
             {tickets.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.id} ({t.status} · {t.ticket_date})
@@ -297,11 +314,8 @@ export default function FillsPage() {
 
       <Card data-testid="fills-csv-card">
         <CardHeader>
-          <CardTitle>CSV upload</CardTitle>
-          <CardDescription>
-            Generic / Schwab / IBKR formats auto-detected. Errors return per-row;
-            the rest of the file is preserved for re-upload.
-          </CardDescription>
+          <CardTitle>{t("csvCardTitle")}</CardTitle>
+          <CardDescription>{t("csvCardDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <Input
@@ -317,14 +331,14 @@ export default function FillsPage() {
               checked={allowUnmatched}
               onChange={(e) => setAllowUnmatched(e.target.checked)}
             />
-            Accept unmatched fills (order_seq missing)
+            {t("allowUnmatched")}
           </label>
           <Button
             data-testid="fills-csv-submit"
             onClick={handleCsvSubmit}
             disabled={!csvFile || submitting}
           >
-            {submitting ? "Uploading…" : "Upload CSV"}
+            {submitting ? tCommon("uploading") : t("csvUpload")}
           </Button>
         </CardContent>
       </Card>
@@ -332,8 +346,8 @@ export default function FillsPage() {
       <Card data-testid="fills-manual-card">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Manual entry</CardTitle>
-            <CardDescription>One row per fill. Validated client-side first.</CardDescription>
+            <CardTitle>{t("manualCardTitle")}</CardTitle>
+            <CardDescription>{t("manualCardDescription")}</CardDescription>
           </div>
           <Button
             type="button"
@@ -341,19 +355,19 @@ export default function FillsPage() {
             data-testid="fills-manual-add"
             onClick={addManualRow}
           >
-            Add row
+            {tCommon("addRow")}
           </Button>
         </CardHeader>
         <CardContent className="space-y-3">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-24">Seq</TableHead>
-                <TableHead className="w-28">Symbol</TableHead>
-                <TableHead className="w-20">Side</TableHead>
-                <TableHead className="w-24 text-right">Shares</TableHead>
-                <TableHead className="w-28 text-right">Price</TableHead>
-                <TableHead className="w-48">Filled at (ISO)</TableHead>
+                <TableHead className="w-24">{tCols("seq")}</TableHead>
+                <TableHead className="w-28">{tCols("symbol")}</TableHead>
+                <TableHead className="w-20">{tCols("side")}</TableHead>
+                <TableHead className="w-24 text-right">{tCols("shares")}</TableHead>
+                <TableHead className="w-28 text-right">{tCols("price")}</TableHead>
+                <TableHead className="w-48">{tCols("filledAt")}</TableHead>
                 <TableHead className="w-20" />
               </TableRow>
             </TableHeader>
@@ -420,7 +434,7 @@ export default function FillsPage() {
                       data-testid={`fills-manual-remove-${index}`}
                       onClick={() => removeManualRow(index)}
                     >
-                      Remove
+                      {tCommon("remove")}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -432,7 +446,7 @@ export default function FillsPage() {
             onClick={handleManualSubmit}
             disabled={submitting}
           >
-            {submitting ? "Saving…" : "Save fills"}
+            {submitting ? tCommon("saving") : t("manualSubmit")}
           </Button>
         </CardContent>
       </Card>
@@ -440,10 +454,8 @@ export default function FillsPage() {
       {rowErrors.length > 0 ? (
         <Card data-testid="fills-row-errors-card" className="border-destructive/60">
           <CardHeader>
-            <CardTitle>Row-level errors</CardTitle>
-            <CardDescription>
-              Fix the listed rows and resubmit. The other rows are preserved.
-            </CardDescription>
+            <CardTitle>{t("rowErrorsCardTitle")}</CardTitle>
+            <CardDescription>{t("rowErrorsCardDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="space-y-1 text-sm">
@@ -453,7 +465,7 @@ export default function FillsPage() {
                   data-testid={`fills-row-error-${e.row}`}
                   className="rounded-md border border-destructive/40 px-2 py-1"
                 >
-                  <strong>row {e.row}:</strong> {e.error}
+                  <strong>{t("rowErrorPrefix", { row: e.row })}</strong> {e.error}
                 </li>
               ))}
             </ul>
@@ -464,11 +476,15 @@ export default function FillsPage() {
       {preview ? (
         <Card data-testid="fills-preview-card">
           <CardHeader>
-            <CardTitle>Last insert</CardTitle>
+            <CardTitle>{t("previewCardTitle")}</CardTitle>
             <CardDescription>
-              {preview.inserted.length} row(s) accepted; {preview.unmatched_count} flagged
-              as unmatched
-              {preview.accepted_under_allow_unmatched ? " (override on)" : ""}.
+              {t("previewCardDescription", {
+                accepted: preview.inserted.length,
+                unmatched: preview.unmatched_count,
+                override: preview.accepted_under_allow_unmatched
+                  ? t("previewOverrideOn")
+                  : t("previewOverrideOff"),
+              })}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -480,7 +496,7 @@ export default function FillsPage() {
                   className="rounded-md border border-border/60 px-2 py-1 font-mono text-xs"
                 >
                   {row.symbol} {row.side} {row.shares} @ {row.fill_price} ·{" "}
-                  {row.matched ? "matched" : "unmatched"}
+                  {row.matched ? t("matchedLabel") : t("unmatchedLabel")}
                 </li>
               ))}
             </ul>
@@ -490,27 +506,25 @@ export default function FillsPage() {
 
       <Card data-testid="fills-history-card">
         <CardHeader>
-          <CardTitle>Fills on this ticket</CardTitle>
-          <CardDescription>
-            Persisted journal rows. Reconcile in the journal-history view (F005).
-          </CardDescription>
+          <CardTitle>{t("historyCardTitle")}</CardTitle>
+          <CardDescription>{t("historyCardDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           {fills.length === 0 ? (
             <p data-testid="fills-history-empty" className="text-sm text-muted-foreground">
-              No fills recorded for this ticket yet.
+              {t("historyEmpty")}
             </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Seq</TableHead>
-                  <TableHead>Symbol</TableHead>
-                  <TableHead>Side</TableHead>
-                  <TableHead className="text-right">Shares</TableHead>
-                  <TableHead className="text-right">Price</TableHead>
-                  <TableHead>Source</TableHead>
-                  <TableHead>Filled at</TableHead>
+                  <TableHead>{tCols("seq")}</TableHead>
+                  <TableHead>{tCols("symbol")}</TableHead>
+                  <TableHead>{tCols("side")}</TableHead>
+                  <TableHead className="text-right">{tCols("shares")}</TableHead>
+                  <TableHead className="text-right">{tCols("price")}</TableHead>
+                  <TableHead>{tCols("source")}</TableHead>
+                  <TableHead>{tCols("filledAt")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

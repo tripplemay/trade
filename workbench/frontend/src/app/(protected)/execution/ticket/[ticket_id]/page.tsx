@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import MarkdownRenderer from "@/components/markdown/MarkdownRenderer";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { workbenchFetch } from "@/lib/api-fetch";
 import type { components } from "@/types/api";
 
 type TicketDetail = components["schemas"]["TicketDetail"];
@@ -30,6 +32,10 @@ function downloadMarkdown(filename: string, body: string): void {
 }
 
 export default function TicketDetailPage() {
+  const t = useTranslations("execution.ticketDetail");
+  const tLabels = useTranslations("execution.ticketDetail.labels");
+  const tCommon = useTranslations("common");
+
   const params = useParams<{ ticket_id: string }>();
   const ticketId = params?.ticket_id ?? "";
   const [detail, setDetail] = useState<TicketDetail | null>(null);
@@ -38,7 +44,7 @@ export default function TicketDetailPage() {
   useEffect(() => {
     if (!ticketId) return;
     let cancelled = false;
-    fetch(`/api/execution/tickets/${encodeURIComponent(ticketId)}`)
+    workbenchFetch(`/api/execution/tickets/${encodeURIComponent(ticketId)}`)
       .then(async (response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const payload = (await response.json()) as TicketDetail;
@@ -57,24 +63,29 @@ export default function TicketDetailPage() {
     downloadMarkdown(`order-ticket-${detail.id}.md`, detail.markdown_body);
   };
 
+  const stateLabel = error
+    ? tCommon("unreachableWithError", { error })
+    : detail
+      ? t("stateLine", { status: detail.status, date: detail.ticket_date })
+      : tCommon("loading");
+
   return (
     <section data-testid="page-ticket-detail" className="space-y-6">
       <header className="flex items-baseline justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Ticket <span className="font-mono text-base">{ticketId}</span>
+            {t("titlePrefix")} <span className="font-mono text-base">{ticketId}</span>
           </h1>
           <p className="text-xs text-muted-foreground">
-            Read-only archive. Open <Link href="/execution/ticket" className="underline">the
-            ticket page</Link> to generate a new ticket from the current diff.
+            {t("descriptionPrefix")}
+            <Link href="/execution/ticket" className="underline">
+              {t("descriptionLink")}
+            </Link>
+            {t("descriptionSuffix")}
           </p>
         </div>
         <span data-testid="ticket-detail-state" className="text-xs text-muted-foreground">
-          {error
-            ? `unreachable: ${error}`
-            : detail
-              ? `${detail.status} · ticket_date ${detail.ticket_date}`
-              : "loading…"}
+          {stateLabel}
         </span>
       </header>
 
@@ -82,31 +93,31 @@ export default function TicketDetailPage() {
         <>
           <Card data-testid="ticket-detail-meta-card">
             <CardHeader>
-              <CardTitle>Metadata</CardTitle>
+              <CardTitle>{t("metadataTitle")}</CardTitle>
               <CardDescription>
-                Markdown source: <code>{detail.markdown_path}</code>
+                {t("metadataDescriptionPrefix")} <code>{detail.markdown_path}</code>
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-3 text-sm sm:grid-cols-2">
               <div>
-                <span className="text-muted-foreground">Status:</span>{" "}
+                <span className="text-muted-foreground">{tLabels("status")}</span>{" "}
                 <span className="font-mono">{detail.status}</span>
               </div>
               <div>
-                <span className="text-muted-foreground">Snapshot id:</span>{" "}
+                <span className="text-muted-foreground">{tLabels("snapshotId")}</span>{" "}
                 <span className="font-mono">{detail.snapshot_id}</span>
               </div>
               <div>
-                <span className="text-muted-foreground">Target positions id:</span>{" "}
+                <span className="text-muted-foreground">{tLabels("targetPositionsId")}</span>{" "}
                 <span className="font-mono">{detail.target_positions_id}</span>
               </div>
               <div>
-                <span className="text-muted-foreground">Created:</span>{" "}
+                <span className="text-muted-foreground">{tLabels("created")}</span>{" "}
                 {new Date(detail.created_at).toLocaleString()}
               </div>
               {detail.executed_at ? (
                 <div>
-                  <span className="text-muted-foreground">Executed:</span>{" "}
+                  <span className="text-muted-foreground">{tLabels("executed")}</span>{" "}
                   {new Date(detail.executed_at).toLocaleString()}
                 </div>
               ) : null}
@@ -116,7 +127,7 @@ export default function TicketDetailPage() {
                   variant="secondary"
                   onClick={handleDownload}
                 >
-                  Download Markdown
+                  {t("downloadMarkdown")}
                 </Button>
               </div>
             </CardContent>
@@ -124,10 +135,8 @@ export default function TicketDetailPage() {
 
           <Card data-testid="ticket-detail-body-card">
             <CardHeader>
-              <CardTitle>Checklist</CardTitle>
-              <CardDescription>
-                Research-only. The workbench did not place these orders.
-              </CardDescription>
+              <CardTitle>{t("checklistTitle")}</CardTitle>
+              <CardDescription>{t("checklistDescription")}</CardDescription>
             </CardHeader>
             <CardContent>
               <MarkdownRenderer body={detail.markdown_body} />
