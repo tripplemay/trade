@@ -4,9 +4,10 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B024-i18n-zh-cn：`fixing`**（Codex F006 首轮 L1 验收发现 blocker）；F001-F005 已完成，F006 首轮未过。已验证通过：backend `ruff`/`mypy`/`pytest 236 passed 2 skipped`，frontend `lint`/`typecheck`/`vitest 146 passed`/`build`，`npm audit --audit-level=high` 仅 4 moderate 且 exit 0，`.next/static` 无后端端口，中文按钮禁词 safety 与 key parity 全绿，Playwright 19 项在安装本机浏览器后通过，本地双 locale UI smoke 也通过。
+- **B024-i18n-zh-cn：`reverifying`**（fix_rounds=1）；F001-F005 已完成，F006 首轮 blocker 已修复，等 Codex 复验。Generator 本轮 fix：PUT `/api/execution/account` cash<0 改走 manual check + `HTTPException(422, detail=t('validation.cash_negative'))`，仅这一条路径走 i18n，其他 Pydantic 422 不动（保 spec line 205 本意 + 不破既有 192 测试）。
+- Backend gates 本轮全绿：`pytest 240 passed 2 skipped` (+4 i18n) / `ruff` / `mypy 120 source files Success`。
 - Spec：`docs/specs/B024-i18n-zh-cn-spec.md`
-- 当前 blocker：`PUT /api/execution/account` 的 `cash<0` 负向校验仍返回 Pydantic 默认英文 422；`Accept-Language=zh-CN` 与 `?locale=en` 都不生效，不满足 F006 明确验收项。另有 spec 内部冲突：`docs/specs/B024-i18n-zh-cn-spec.md` 第 188 行要求翻译该 422，第 205 行又写“不翻译 Pydantic validation error”。
+- Spec 内部冲突（line 188 vs 205）已用「精准 manual check」模式弥合：未引入全局 Pydantic 翻译框架，符合 line 205；cash<0 这一条按 `Accept-Language` / `?locale=` 返中英 detail，符合 line 188 + F006 L2 验收清单第 6 条。
 - 决策矩阵：next-intl@^3 / zh-CN+en 默认中文 / Header 下拉 + NEXT_LOCALE cookie 365d 持久 / 无 URL prefix / 翻范围 = 前端 UI + 后端 HTTPException detail + Markdown disclaimer / 不翻 docs / 专业术语保留英文（Sharpe/drawdown/slippage/bps/kill-switch/rebalance/sleeve/Top N/ETF）/ Disclaimer 双语并存 / Markdown 永不按 locale 切内容。
 - 中文按钮禁词扩集（与英文禁词同级 enforced）：`执行 / 下单 / 发送券商 / 立即买入 / 实盘 / 真实交易 / 自动交易 / 一键交易`。
 

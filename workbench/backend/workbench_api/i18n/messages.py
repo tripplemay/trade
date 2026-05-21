@@ -6,6 +6,13 @@ Keys map to a single user-facing string per locale. Placeholders use
 namespace (`auth.*`, `ticket.*`, `csv.*`, `report.*`, `backlog.*`,
 `backtest.*`, `strategy.*`, `reconcile.*`, `health.*`, `validation.*`).
 
+Note: F006 fixing round adds `validation.cash_negative` for the
+`PUT /api/execution/account` `cash < 0` 422. The Pydantic default
+422 detail is not user-translatable, so the route handler validates
+`cash` manually and raises `HTTPException(422, detail=t(...))` so the
+chosen locale's copy flows out via the standard `{"detail": "..."}`
+shape.
+
 The two bundles MUST share an identical key set — `test_i18n.py`
 enforces parity so a future drop-in addition can't silently miss a
 translation.
@@ -50,6 +57,7 @@ MESSAGES: Final[dict[str, dict[str, str]]] = {
         "health.db_unreachable": "db_unreachable",
         # Generic
         "validation.detail_passthrough": "{detail}",
+        "validation.cash_negative": "现金不能为负数。",
     },
     "en": {
         "auth.misconfigured": (
@@ -92,6 +100,7 @@ MESSAGES: Final[dict[str, dict[str, str]]] = {
         ),
         "health.db_unreachable": "db_unreachable",
         "validation.detail_passthrough": "{detail}",
+        "validation.cash_negative": "cash cannot be negative.",
     },
 }
 

@@ -97,6 +97,10 @@ def put_account_route(
     _user: AuthenticatedUserDep,
     session: SessionDep,
 ) -> AccountSnapshotPayload:
+    if body.cash < 0:
+        raise HTTPException(
+            status_code=422, detail=t("validation.cash_negative")
+        )
     return update_account(session, body)
 
 

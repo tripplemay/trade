@@ -42,9 +42,15 @@ class AccountUpdateRequest(BaseModel):
     The handler inserts a fresh ``account_snapshot`` row with
     ``source=ui_edit``; the request itself omits ``id`` / ``snapshot_at``
     so the wire format matches what the React form posts.
+
+    ``cash`` deliberately omits the ``ge=0.0`` constraint that lives on
+    ``AccountSnapshotPayload``: the route handler enforces ``cash >= 0``
+    manually so the rejection can flow through the locale-aware
+    ``HTTPException`` path (B024 F006 fix). Pydantic's default 422 is
+    not user-translatable.
     """
 
-    cash: float = Field(ge=0.0)
+    cash: float
     base_currency: str = Field(min_length=2, max_length=8)
     positions: list[PositionEntry] = Field(default_factory=list)
 

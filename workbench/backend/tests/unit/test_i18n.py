@@ -303,3 +303,53 @@ def test_query_locale_override_wins_over_header(
         assert "Unknown strategy id" in detail
     else:
         assert "未知策略" in detail
+
+
+# ---------------------------------------------------------------------------
+# B024 F006 fixing — PUT /api/execution/account cash<0 localised 422
+# ---------------------------------------------------------------------------
+#
+# Pydantic's default 422 detail is not user-translatable, so the route
+# handler validates ``cash >= 0`` manually and raises HTTPException with
+# a ``t()`` resolved string. Verify both locales and the ``?locale=``
+# override per F006 spec line 188.
+
+
+@pytest.mark.parametrize("locale", ["zh-CN", "en"])
+def test_put_account_cash_negative_localised(
+    app_client: TestClient, locale: str
+) -> None:
+    body = {"cash": -1, "base_currency": "USD", "positions": []}
+    r = app_client.put(
+        "/api/execution/account",
+        json=body,
+        headers={"Accept-Language": locale},
+    )
+    assert r.status_code == 422, r.text
+    detail = r.json()["detail"]
+    assert isinstance(detail, str)
+    if locale == "en":
+        assert detail == "cash cannot be negative."
+    else:
+        assert detail == "现金不能为负数。"
+
+
+@pytest.mark.parametrize("locale", ["zh-CN", "en"])
+def test_put_account_cash_negative_query_locale_override(
+    app_client: TestClient, locale: str
+) -> None:
+    """``?locale=`` query param overrides ``Accept-Language`` header."""
+
+    inverse = "en" if locale == "zh-CN" else "zh-CN"
+    body = {"cash": -1, "base_currency": "USD", "positions": []}
+    r = app_client.put(
+        f"/api/execution/account?locale={locale}",
+        json=body,
+        headers={"Accept-Language": inverse},
+    )
+    assert r.status_code == 422, r.text
+    detail = r.json()["detail"]
+    if locale == "en":
+        assert detail == "cash cannot be negative."
+    else:
+        assert detail == "现金不能为负数。"
