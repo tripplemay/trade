@@ -46,7 +46,7 @@
       "title": "Codex L1 + L2 真 VM 验收 + workbench i18n signoff + framework v0.9.26 候选",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "L1 (CI 内)：F001-F005 全部 generator 验收脚本绿（vitest / lint / typecheck / build / pytest / ruff / mypy / npm audit --omit=dev --audit-level=high / same-origin regression / safety regression）；新加：(a) `diff jq paths-recursive zh-CN.json en.json` exit 0；(b) 中文按钮禁词 Vitest grep 通过；(c) 前端残余英文 hardcode ≤5 白名单；(d) backend i18n pytest parametrize zh-CN+en 全覆盖；(e) Playwright 双 locale `19 + N` passed。L2 (真 VM)：(1) OAuth → Home zh-CN 默认中文 ✓；(2) LocaleSwitcher 切 en → 整站英文 ✓；(3) 切回 zh-CN cookie 持久 ✓；(4) 全 manual execution 流跑一遍 zh-CN locale + 一遍 en locale（seed account → POST tickets {defensive:true} → POST fills/csv → POST reconcile/{id} → GET journal-history → GET slippage-analytics → GET debug/recent-errors count=0）；(5) Markdown ticket disclaimer 双语 + 字段双语都出现（验文件落 docs/runs/）；(6) `/api/execution/account` PUT 故意触发 validate error（cash<0）→ Accept-Language=zh 返中文 detail；?locale=en query 覆盖返英文 detail；(7) Production HEAD ≡ main HEAD（同 SHA）；(8) `/api/debug/recent-errors` count=0 after full L2 flow；(9) 副作用恢复（account 恢复 cash=0 / positions=[]，测试 ticket 留作证据）。Signoff：docs/test-reports/B024-i18n-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md 含 §Production/HEAD 等价性 段。Framework v0.9.26 候选记录到 framework/proposed-learnings.md：(α) i18n 中文按钮禁词扩集；(β) next-intl + NextAuth middleware chain pattern；(γ) bilingual disclaimer 双语永存策略（compliance 内容禁按 locale 分支）。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
