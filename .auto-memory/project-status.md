@@ -4,11 +4,10 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B025-us-quality-momentum-satellite：`fixing`**；F001-F005 ✅ generator completed；F006 fix-round-2 的本地复验已通过，但 L2 真 VM 因部署漂移被打回。Spec：`docs/specs/B025-us-quality-momentum-satellite-spec.md`。最新 blocker：`docs/test-reports/B025-us-quality-reverify2-blocker-2026-05-25.md`。
-- Codex round-2 结论：L1 全绿（backend `pytest 241+2 skipped` + ruff + mypy，trade `pytest 727` + mypy，fixture regressions 25+24，frontend lint/typecheck/vitest 157/build/npm audit，artifact grep clean，Playwright `33/33 passed`）。
-- L2 功能面基本通过：production 上 zh-CN + en 的 `/strategies`、`/recommendations`、`/risk`、`/reports`、`/reports/[slug]` 均可渲染 B025 surface；`/api/debug/recent-errors` 返回 `200 {"count":0,"records":[]}`；locale switch 聚焦复现 `3/3` 可切到 en 并持久到 `/risk`。
-- 当前唯一硬 blocker：`Production HEAD ≡ main HEAD` 失败。local `main` = `7bb25f4`，但 `https://trade.guangai.ai/api/health.version` 与 backend systemd startup log 仍是 `0b61dda`。需要把生产重新部署到当前 main 后再交回 Codex。
-- 补充漂移症状：生产前端只接受 `__Secure-authjs.session-token`；同一签名 token 用无前缀 `authjs.session-token` 会被重定向到 `/login`，进一步说明线上运行 bundle/config 与当前主干不完全一致。
+- **B025-us-quality-momentum-satellite：`reverifying`**；F001-F005 ✅；F006 fix-round-3 已完成（commit afa154d, deploy run 26393802895 success），等 Codex 第三次复验。Spec：`docs/specs/B025-us-quality-momentum-satellite-spec.md`。
+- Fix-round-3 修复：给 `.github/workflows/workbench-deploy.yml` 加 `workflow_dispatch` trigger（input `ref` 默认 main），`RELEASE_SHA` 从 job env 改为 step 内 `git rev-parse HEAD` 兼容两条 trigger 路径。这是 chore-only 主干 commit 的 deploy 逃生口（path-ignore 排除了 progress.json / docs/）。
+- Production HEAD 现在 = main HEAD = `afa154d`：`curl https://trade.guangai.ai/api/health` → `version: afa154dc958033a2b426759544466ff763d4fdd0` ✅。
+- Codex round-2 L1 + L2 功能面都已 PASS（详见 `docs/test-reports/B025-us-quality-reverify2-blocker-2026-05-25.md`），唯一阻塞是 hash 等价性，本轮已解。
 - 目标：把 Master Portfolio 的 `satellite_us_quality` sleeve 从 stub 升级为 implemented_strategy，对应 5 因子美股个股策略 + workbench UI 双语展示（继承 B024 i18n）。预估 3-4 周。
 - 范围决策（2026-05-25 用户已批）：全栈（strategy + backtest + Master Portfolio + workbench UI）；纯 fixture / mock（synthetic data, not actual filings）；strategy doc §7 完整版因子权重 `0.35 mom + 0.30 quality + 0.15 lowvol + 0.10 value + 0.10 trend`；股票池 = S&P 500 + Nasdaq 100 30-50 ticker 子集跨 ≥7 GICS sector；Top 15 等权；单股 ≤7% / 行业 ≤30%；财报前 5d 不新开仓；月度信号 + Master quarterly cadence；HK-China satellite 留 B026 候选。
 - Feature 分配：F001 fixture+universe+filter / F002 5 因子计算 / F003 综合评分+选股+约束 / F004 Master 接入+backtest / F005 workbench UI 双语 (generator) + F006 Codex L1+L2 签收 (codex)。
