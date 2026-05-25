@@ -22,7 +22,7 @@
       "title": "综合评分 + Top 15 选股 + 等权 + 单股/行业约束 + 财报规避",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "(1) 新建 trade/strategies/us_quality_momentum/parameters.py: @dataclass(frozen=True, slots=True) UsQualityMomentumParameters with strategy_id='us_quality_momentum' / top_n=15 / factor_weights (momentum=0.35, quality=0.30, low_vol=0.15, value=0.10, trend=0.10) / max_position_weight=0.07 / max_sector_weight=0.30 / earnings_window_days=5 / rebalance_frequency='monthly' / parameter_hash()；(2) 新建 trade/strategies/us_quality_momentum/construction.py: build_portfolio(scores, universe, sector_map, earnings_dates, as_of, parameters) 6 step: 评分聚合 → Top N → 财报规避 (已持仓不调整 / 新候选跳过 / 已过财报日正常) → 等权 1/N → 单股 ≤7% 缩减 + 行业 ≤30% 缩减 (超限按比例缩减 + 余额分摊)；(3) 新建 trade/strategies/us_quality_momentum/signal.py: generate_signal(parameters, as_of_date) -> SignalResult = (parameters_hash, weights, sector_exposure, factor_contributions)；(4) pytest ≥20 测试: 评分聚合 5 因子权重和=1.0 / Top N / 单股上限触发 / 行业上限触发 (1 行业 6 ticker 但 ≤30%) / 财报规避 3 场景 (已持仓 / 新候选 / 已过财报日) / 不重复 ticker / 等权 sum ≈ 1.0 / parameter_hash deterministic；(5) ruff + mypy 清；(6) PortfolioWeights sum 接近 1.0 ± 1e-8 (未填满计入 cash buffer)；(7) 不动 Master Portfolio 配置 (留 F004)。"
     },
     {
