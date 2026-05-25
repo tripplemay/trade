@@ -1,9 +1,11 @@
-# Data Source Evaluation（2026-05-25）
+# Data Source Evaluation（2026-05-25；2026-05-26 vendor reselect）
 
-> **状态：** **approved**（2026-05-25 用户批准）
+> **状态：** **approved**（2026-05-25 用户批准；2026-05-26 vendor reselect 修订）
 > **配套：** `docs/product/roadmap-2026-05.md` Stream 1.A + 1.B + 1.C
 > **目的：** 为 Stream 1（Real data ingest）做数据源选型，作为 Stream 1.A spec 的权威输入。
 > **范围：** 价格 + 财务 + News（仅简提，详细见 Stream 2 / 单独 doc）+ 选型 + 架构 + cost。
+>
+> **2026-05-26 修订摘要：** 原首选 Polygon.io Starter $30/月 在 2026 年 Q1 已 rebrand 为 Massive.com（polygon.io 301 永久 redirect 到 massive.com，APIs 继续兼容，Starter tier 改 $29/月）。考虑到 vendor 稳定性疑虑（刚 rebrand）+ 进一步性价比，用户重新选型，**新首选 Tiingo Starter $10/月（独立 fintech 老牌 vendor，2014 起未 rebrand 未被收购）+ yfinance 免费 cross-check 留 B028 接入**。Massive 保留为备选。详见 §6.1。
 
 ---
 
@@ -67,13 +69,13 @@ B025 fixture `data/fixtures/us_quality_momentum/universe.csv` 已定义 30-50 ti
 | **Stooq** | 免费 | ✅ | ✅ | 30+ 年 | ⚠️ 部分 | ⚠️ | 无 | 数据质量参差 |
 | **FRED** (Federal Reserve) | 免费 | ❌（只宏观）| ❌ | ✅ | ✅ | ✅ | 无明示 | 宏观经济数据（10y / VIX / CPI 等），辅助 Stream 2 market context |
 
-### 3.2 Paid Starter tier（**推荐主选**）
+### 3.2 Paid Starter tier（**推荐主选**，2026-05-26 reselect 后更新）
 
 | Provider | Cost ($/月) | ETF+个股 | 港股 ADR | EOD 历史 | EOD 增量 | PIT | Rate limit | 注释 |
 |---|---|---|---|---|---|---|---|---|
-| **Polygon.io Starter** | **$30 (~¥200)** | ✅ 全美股 | ✅ ADR | 20+ 年 | ✅ 每日 EOD（盘后 ~6pm ET）| ✅ 严格 | 5 req/min unlimited 历史 | **推荐主选**：覆盖全 + PIT + 文档好 |
-| **Tiingo Starter** | $10 (~¥70) | ✅ 美股 | ⚠️ 部分 ADR | 30+ 年 | ✅ | ✅ | 60 req/hour | 便宜，覆盖略次于 Polygon |
-| **Alpha Vantage Premium** | $50 (~¥350) | ✅ | ⚠️ | 20+ 年 | ✅ | ✅ | 75/min | 较贵且无明显优势 |
+| **Tiingo Starter** | **$10 (~¥70)** | ✅ 美股 | ⚠️ 部分 ADR | 30+ 年 | ✅ | ✅ | 60 req/hour | **推荐主选（2026-05-26）**：vendor 最稳定 + 最便宜 + 30+ 年历史 |
+| **Massive (formerly Polygon.io) Starter** | $29 (~¥200) | ✅ 全美股 | ✅ ADR | 20+ 年 (since 2003) | ✅ 每日 EOD（盘后 ~6pm ET）| ✅ 严格 | 5 req/min unlimited 历史 | **原首选**；2026 Q1 rebrand 引发 vendor 稳定性疑虑 → 降为备选 |
+| **Alpha Vantage Premium** | $50 (~¥350) | ✅ | ⚠️ | 20+ 年 | ✅ | ✅ | 75/min | 较贵且 ADR 覆盖一般 |
 | **EODHD Fundamentals + EOD** | $30-100 (~¥200-700) | ✅ + 财务 | ✅ | 30+ 年 | ✅ | ✅ | 100K req/day | 可同时覆盖价格 + 财务（Stream 1.C 选型时再评）|
 
 ### 3.3 Paid Developer / Institutional（**不推荐**，超预算）
@@ -116,20 +118,22 @@ B025 fixture `data/fixtures/us_quality_momentum/universe.csv` 已定义 30-50 ti
 
 ## 6. 推荐配置（v0.9.28 起 Stream 1.A 落地参考）
 
-### 6.1 Stream 1.A + 1.B（价格）
+### 6.1 Stream 1.A + 1.B（价格）— 2026-05-26 reselect
 
-**首选：Polygon.io Starter $30/月**
+**首选：Tiingo Starter $10/月**（2026-05-26 vendor reselect 后定）
 
 理由：
-- 覆盖全（ETF + 个股 + ADR + 港股 proxy）
-- 严格 PIT（split adjusted historical correctly）
-- 历史 backfill 20+ 年 + 每日 EOD 增量稳定
-- 含 Polygon Fundamentals（Stream 1.C 同 provider 一站式）
-- Rate limit 5/min 对 batch backfill 足够（30-50 ticker × 1 day = 5-10 min 跑完）
+- vendor 稳定性最佳（Tiingo 独立 fintech，2014 起未 rebrand 未被收购；Polygon 2026 Q1 rebrand 为 Massive 引发疑虑）
+- 最便宜 paid 选项（$10/月 ≈ ¥70），与 LLM ¥1500 预算合计 ~¥1570 余 ¥430 buffer
+- 30+ 年历史（比 Massive 20+ 年长）+ 严格 PIT
+- ADR 覆盖足够（项目策略走 US-listed ADR proxy）
+- 60 req/hour rate limit 对 backfill 一次性入仓充裕（30-50 ticker × 10 年 ≈ 60-200 req 总，1 小时跑完）
 
-**备选 / 双源 cross-check（可选）**：yfinance 免费 + Alpha Vantage free tier — 用作 Polygon 数据异常时的 cross-validation（不作为主源）。
+**备选 / 双源 cross-check**：yfinance 免费 — 用作 Tiingo 数据异常时的 cross-validation（不作为主源；本批次 B027 不接入，**B028 backfill 时接入**）。
 
-### 6.2 Stream 1.C（财务）
+**备选 paid（vendor 多样化时）**：Massive (formerly Polygon.io) Starter $29/月 — 覆盖更广 + Polygon Fundamentals 一站式，若 Tiingo 在后续批次出现严重 coverage gap 可降级到此。
+
+### 6.2 Stream 1.C（财务）— 2026-05-26 调整
 
 **首选：SEC EDGAR 免费**（自己 parse XBRL）
 
@@ -138,9 +142,9 @@ B025 fixture `data/fixtures/us_quality_momentum/universe.csv` 已定义 30-50 ti
 - 某些 ratio（如 EV/EBITDA / FCF Yield）SEC 原文需要计算且容易出错
 - 跨国公司（如 BABA / TSM 等 ADR）SEC 数据不全
 
-**降级到 paid 选项**：
-- 已含在 Polygon Starter 的 Polygon Fundamentals（cost = $0 额外）
-- 或 EODHD Fundamentals $30-100（含国际 ADR）
+**降级到 paid 选项**（2026-05-26 调整，Tiingo Starter 不含 fundamentals）：
+- **EODHD Fundamentals $30-100/月**（含国际 ADR；首选 paid 降级）
+- 或 Massive (Polygon) Fundamentals $29 含在 Starter（仅作 vendor 多样化备选）
 
 ### 6.3 News（Stream 2，简定）
 
@@ -199,16 +203,17 @@ data/snapshots/
 - pytest 读 `data/fixtures/` （B025 已建立 schema） + 测试样本 `data/snapshots/unified/` 子集
 - 增量 cron job 在 production VM 跑，CI 不跑
 
-## 8. Cost 预算分配
+## 8. Cost 预算分配（2026-05-26 reselect 后更新）
 
 | 项 | 月预估 |
 |---|---|
-| Polygon Starter $30 = ¥200 | ¥200 |
+| **Tiingo Starter $10 = ¥70** | **¥70** |
+| yfinance free cross-check（B028+） | ¥0 |
 | EODHD Fundamentals（可选，Stream 1.C 触发降级时启用）$30-100 | ¥0-700 |
 | FRED / SEC EDGAR / Yahoo RSS（全部免费）| ¥0 |
-| **数据源小计** | **¥200-900** |
+| **数据源小计** | **¥70-770**（比原 Polygon 方案 ¥200-900 节省 ¥130/月）|
 | LLM API（doc C，预估 cap ¥1500）| ¥500-1500 |
-| **合计 月预算 cap** | **¥700-2400**（与 roadmap §2 ¥500-2000 接近上限；EODHD 上线时需 review）|
+| **合计 月预算 cap** | **¥570-2270**（与 roadmap §2 ¥500-2000 对齐；EODHD 上线时需 review 是否超 ¥2000）|
 
 ## 9. 不做的事
 
