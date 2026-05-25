@@ -15,11 +15,25 @@ from typing import Any
 import httpx
 import pytest
 
+from workbench_api.data.cost_guard import BudgetExceeded, MonthlyBudgetGuard
 from workbench_api.data.snapshot_loader import PriceBar
 from workbench_api.data.tiingo_loader import (
     TIINGO_BASE_URL,
     TiingoSnapshotLoader,
 )
+
+
+class _NoopGuard:
+    """Stand-in for :class:`MonthlyBudgetGuard` that counts calls but
+    never raises or touches the DB. Lets the network-layer tests focus
+    on retry / parse behaviour without standing up the budget-log
+    fixture for every spec."""
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def check_and_increment(self) -> None:
+        self.calls += 1
 
 
 class _StubResponse:
@@ -98,7 +112,9 @@ def test_api_key_resolves_from_environment(
     """When the explicit kwarg is omitted, the env var feeds the key."""
 
     monkeypatch.setenv("TIINGO_API_KEY", "env-key-xyz")
-    loader = TiingoSnapshotLoader(client=_StubClient(), sleep=lambda _s: None)
+    loader = TiingoSnapshotLoader(
+        client=_StubClient(), sleep=lambda _s: None, guard=_NoopGuard()
+    )
     assert loader.api_key == "env-key-xyz"
 
 
@@ -106,7 +122,9 @@ def test_fetch_daily_bars_parses_tiingo_payload() -> None:
     """Happy-path parse mirrors Tiingo's daily-prices schema field-by-field."""
 
     client = _StubClient([_StubResponse(200, [_ok_bar("2026-05-22"), _ok_bar("2026-05-23")])])
-    loader = TiingoSnapshotLoader(api_key="k", client=client, sleep=lambda _s: None)
+    loader = TiingoSnapshotLoader(
+        api_key="k", client=client, sleep=lambda _s: None, guard=_NoopGuard()
+    )
     bars = loader.fetch_daily_bars("SPY", date(2026, 5, 22), date(2026, 5, 23))
     assert len(bars) == 2
     first = bars[0]
@@ -133,7 +151,10 @@ def test_fetch_daily_bars_retries_on_5xx_then_succeeds() -> None:
     )
     sleeps: list[float] = []
     loader = TiingoSnapshotLoader(
-        api_key="k", client=client, sleep=lambda s: sleeps.append(s)
+        api_key="k",
+        client=client,
+        sleep=lambda s: sleeps.append(s),
+        guard=_NoopGuard(),
     )
     bars = loader.fetch_daily_bars("SPY", date(2026, 5, 22), date(2026, 5, 22))
     assert len(bars) == 1
@@ -152,7 +173,10 @@ def test_fetch_daily_bars_retries_on_429_rate_limit() -> None:
     )
     sleeps: list[float] = []
     loader = TiingoSnapshotLoader(
-        api_key="k", client=client, sleep=lambda s: sleeps.append(s)
+        api_key="k",
+        client=client,
+        sleep=lambda s: sleeps.append(s),
+        guard=_NoopGuard(),
     )
     bars = loader.fetch_daily_bars("SPY", date(2026, 5, 22), date(2026, 5, 22))
     assert len(bars) == 1
@@ -170,7 +194,9 @@ def test_fetch_daily_bars_exhausts_retries_and_raises() -> None:
             _StubResponse(500, {"detail": "boom"}),
         ]
     )
-    loader = TiingoSnapshotLoader(api_key="k", client=client, sleep=lambda _s: None)
+    loader = TiingoSnapshotLoader(
+        api_key="k", client=client, sleep=lambda _s: None, guard=_NoopGuard()
+    )
     with pytest.raises(httpx.HTTPStatusError):
         loader.fetch_daily_bars("SPY", date(2026, 5, 22), date(2026, 5, 22))
 
@@ -181,7 +207,9 @@ def test_fetch_daily_bars_clamps_future_to_date() -> None:
     semantically ask for unobservable data."""
 
     client = _StubClient([_StubResponse(200, [_ok_bar()])])
-    loader = TiingoSnapshotLoader(api_key="k", client=client, sleep=lambda _s: None)
+    loader = TiingoSnapshotLoader(
+        api_key="k", client=client, sleep=lambda _s: None, guard=_NoopGuard()
+    )
     future = date.today() + timedelta(days=10)
     loader.fetch_daily_bars("SPY", date.today() - timedelta(days=1), future)
     _url, params = client.calls[0]
@@ -196,7 +224,9 @@ def test_fetch_daily_bars_raises_on_missing_field() -> None:
     bad = {**_ok_bar(), "adjClose": None}
     del bad["adjClose"]
     client = _StubClient([_StubResponse(200, [bad])])
-    loader = TiingoSnapshotLoader(api_key="k", client=client, sleep=lambda _s: None)
+    loader = TiingoSnapshotLoader(
+        api_key="k", client=client, sleep=lambda _s: None, guard=_NoopGuard()
+    )
     with pytest.raises(ValueError) as exc_info:
         loader.fetch_daily_bars("SPY", date(2026, 5, 22), date(2026, 5, 22))
     assert "adjClose" in str(exc_info.value)
@@ -208,7 +238,9 @@ def test_fetch_daily_bars_raises_when_payload_not_a_list() -> None:
     a schema violation and must not be parsed into PriceBars."""
 
     client = _StubClient([_StubResponse(200, {"detail": "Bad ticker"})])
-    loader = TiingoSnapshotLoader(api_key="k", client=client, sleep=lambda _s: None)
+    loader = TiingoSnapshotLoader(
+        api_key="k", client=client, sleep=lambda _s: None, guard=_NoopGuard()
+    )
     with pytest.raises(ValueError) as exc_info:
         loader.fetch_daily_bars("BAD", date(2026, 5, 22), date(2026, 5, 22))
     assert "non-list" in str(exc_info.value)
@@ -224,7 +256,9 @@ def test_fetch_daily_bars_retries_on_network_error() -> None:
             _StubResponse(200, [_ok_bar()]),
         ]
     )
-    loader = TiingoSnapshotLoader(api_key="k", client=client, sleep=lambda _s: None)
+    loader = TiingoSnapshotLoader(
+        api_key="k", client=client, sleep=lambda _s: None, guard=_NoopGuard()
+    )
     bars = loader.fetch_daily_bars("SPY", date(2026, 5, 22), date(2026, 5, 22))
     assert len(bars) == 1
 
@@ -233,7 +267,9 @@ def test_health_check_returns_true_on_200() -> None:
     """A 200 from the daily-prices smoke endpoint signals the key works."""
 
     client = _StubClient([_StubResponse(200, [_ok_bar()])])
-    loader = TiingoSnapshotLoader(api_key="k", client=client, sleep=lambda _s: None)
+    loader = TiingoSnapshotLoader(
+        api_key="k", client=client, sleep=lambda _s: None, guard=_NoopGuard()
+    )
     assert loader.health_check() is True
 
 
@@ -242,7 +278,9 @@ def test_health_check_returns_false_on_auth_failure() -> None:
     can distinguish "key invalid" from "vendor unreachable"."""
 
     client = _StubClient([_StubResponse(401, {"detail": "Not authorized"})])
-    loader = TiingoSnapshotLoader(api_key="bad", client=client, sleep=lambda _s: None)
+    loader = TiingoSnapshotLoader(
+        api_key="bad", client=client, sleep=lambda _s: None, guard=_NoopGuard()
+    )
     assert loader.health_check() is False
 
 
@@ -259,7 +297,9 @@ def test_multi_ticker_sequential_fetch_uses_one_request_per_ticker() -> None:
             _StubResponse(200, [_ok_bar("2026-05-22")]),
         ]
     )
-    loader = TiingoSnapshotLoader(api_key="k", client=client, sleep=lambda _s: None)
+    loader = TiingoSnapshotLoader(
+        api_key="k", client=client, sleep=lambda _s: None, guard=_NoopGuard()
+    )
     for ticker in ("SPY", "QQQ", "IEF"):
         loader.fetch_daily_bars(ticker, date(2026, 5, 22), date(2026, 5, 22))
     assert len(client.calls) == 3
@@ -268,3 +308,50 @@ def test_multi_ticker_sequential_fetch_uses_one_request_per_ticker() -> None:
         f"{TIINGO_BASE_URL}/daily/qqq/prices",
         f"{TIINGO_BASE_URL}/daily/ief/prices",
     }
+
+
+# --- F002: cost guard integration ----------------------------------------
+
+
+def test_fetch_daily_bars_calls_guard_before_http() -> None:
+    """The guard must be invoked exactly once per fetch_daily_bars call,
+    before the HTTP layer sees anything. Order matters so a tripped
+    cap halts the call before paying network time."""
+
+    guard = _NoopGuard()
+    client = _StubClient([_StubResponse(200, [_ok_bar()])])
+    loader = TiingoSnapshotLoader(
+        api_key="k", client=client, sleep=lambda _s: None, guard=guard
+    )
+    loader.fetch_daily_bars("SPY", date(2026, 5, 22), date(2026, 5, 22))
+    assert guard.calls == 1
+
+
+def test_fetch_daily_bars_skips_http_when_guard_raises_budget_exceeded() -> None:
+    """A BudgetExceeded raise must propagate out of fetch_daily_bars and
+    the HTTP client must remain untouched — the whole point of the cap
+    is to stop the network call BEFORE it happens."""
+
+    class _ExceededGuard:
+        def check_and_increment(self) -> None:
+            raise BudgetExceeded("cap reached in test")
+
+    client = _StubClient([_StubResponse(200, [_ok_bar()])])
+    loader = TiingoSnapshotLoader(
+        api_key="k", client=client, sleep=lambda _s: None, guard=_ExceededGuard()
+    )
+    with pytest.raises(BudgetExceeded):
+        loader.fetch_daily_bars("SPY", date(2026, 5, 22), date(2026, 5, 22))
+    assert client.calls == []
+
+
+def test_default_guard_is_monthly_budget_guard_default() -> None:
+    """Constructor default must produce a real MonthlyBudgetGuard with
+    the spec-pinned cap (so a forgotten ``guard=`` kwarg cannot silently
+    disable the safety rail)."""
+
+    loader = TiingoSnapshotLoader(
+        api_key="k", client=_StubClient(), sleep=lambda _s: None
+    )
+    assert isinstance(loader._guard, MonthlyBudgetGuard)
+    assert loader._guard.monthly_cap_usd == 10.0

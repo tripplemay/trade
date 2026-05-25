@@ -20,7 +20,15 @@ from workbench_api.settings import get_settings
 config = context.config
 
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # ``disable_existing_loggers=False`` keeps test-suite-wide caplog /
+    # service loggers intact. The default ``True`` value silently
+    # disables every logger created before this fileConfig call, which
+    # turns into spooky-action-at-a-distance: any test (B027 F002
+    # test_budget_log_repo.test_alembic_upgrade_creates_tiingo_budget_log_table
+    # was the first repro) that drives alembic upgrade in-process would
+    # kill the cost_guard / dashboard / etc. loggers that downstream
+    # tests rely on for caplog assertions.
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = Base.metadata
 

@@ -114,7 +114,7 @@ echo "→ alembic upgrade head"
 # migration drift that leaves the schema short of these 6 tables fails
 # the deploy here, before the symlink flip + service restart.
 if [[ -n "${WORKBENCH_DB_URL:-}" ]]; then
-  echo "→ verifying schema (account / backlog_entry / snapshot_meta / order_ticket / fill_journal_entry / account_snapshot)"
+  echo "→ verifying schema (account / backlog_entry / snapshot_meta / order_ticket / fill_journal_entry / account_snapshot / tiingo_budget_log)"
   "${VENV_PYTHON}" - <<'PY'
 import os
 import sys
@@ -131,6 +131,7 @@ required = {
     "order_ticket",
     "fill_journal_entry",
     "account_snapshot",
+    "tiingo_budget_log",
 }
 missing = required - present
 if missing:

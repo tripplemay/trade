@@ -15,6 +15,7 @@ from workbench_api.db.models.base import Base
 from workbench_api.db.models.fill_journal_entry import FillJournalEntry
 from workbench_api.db.models.order_ticket import OrderTicket
 from workbench_api.db.models.snapshot_meta import SnapshotMeta
+from workbench_api.db.models.tiingo_budget_log import TiingoBudgetLog
 
 __all__ = [
     "Account",
@@ -24,4 +25,5 @@ __all__ = [
     "FillJournalEntry",
     "OrderTicket",
     "SnapshotMeta",
+    "TiingoBudgetLog",
 ]

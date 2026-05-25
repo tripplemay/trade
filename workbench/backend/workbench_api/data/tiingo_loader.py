@@ -43,6 +43,7 @@ from typing import Any, Protocol
 
 import httpx
 
+from workbench_api.data.cost_guard import MonthlyBudgetGuard
 from workbench_api.data.snapshot_loader import PriceBar, SnapshotLoader
 
 
@@ -56,6 +57,17 @@ class _HttpClient(Protocol):
     """
 
     def get(self, url: str, params: dict[str, str]) -> Any: ...
+
+
+class _Guard(Protocol):
+    """Subset of :class:`MonthlyBudgetGuard` the loader actually invokes.
+
+    Lets unit tests pass a hand-rolled stub (e.g. ``_NoopGuard`` or
+    ``_ExceededGuard``) without inheriting from the frozen dataclass.
+    Production callers continue to pass a real ``MonthlyBudgetGuard``.
+    """
+
+    def check_and_increment(self) -> None: ...
 
 logger = logging.getLogger(__name__)
 
@@ -78,8 +90,9 @@ class TiingoSnapshotLoader(SnapshotLoader):
         *,
         client: _HttpClient | None = None,
         sleep: Any = time.sleep,
+        guard: _Guard | None = None,
     ) -> None:
-        """Bind the loader to an API key + HTTP client.
+        """Bind the loader to an API key + HTTP client + budget guard.
 
         ``api_key`` resolves from the explicit argument first, then
         ``TIINGO_API_KEY`` in the process environment. Missing key
@@ -90,6 +103,13 @@ class TiingoSnapshotLoader(SnapshotLoader):
         bypass the live network and the real ``time.sleep`` (which
         would slow retry tests by ~10s). Production callers use the
         defaults.
+
+        ``guard`` defaults to ``MonthlyBudgetGuard.default()`` (cap=$10
+        per spec §4.4). :meth:`fetch_daily_bars` calls
+        ``guard.check_and_increment`` before issuing the HTTP request,
+        so a runaway loop trips :class:`BudgetExceeded` before billing
+        is affected. Unit tests inject a guard whose
+        ``check_and_increment`` is monkey-patched, sidestepping the DB.
         """
 
         resolved_key = api_key or os.environ.get("TIINGO_API_KEY")
@@ -111,6 +131,7 @@ class TiingoSnapshotLoader(SnapshotLoader):
             },
         )
         self._sleep = sleep
+        self._guard = guard or MonthlyBudgetGuard.default()
 
     @property
     def api_key(self) -> str:
@@ -124,6 +145,10 @@ class TiingoSnapshotLoader(SnapshotLoader):
         from_date: date,
         to_date: date,
     ) -> list[PriceBar]:
+        # Cost guard runs FIRST so a BudgetExceeded raise bypasses the
+        # HTTP call entirely — the cap is meant to halt ingest before
+        # network spend, not after.
+        self._guard.check_and_increment()
         clamped_to = min(to_date, date.today())
         if clamped_to < to_date:
             logger.info(
