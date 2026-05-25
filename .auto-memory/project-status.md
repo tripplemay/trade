@@ -38,6 +38,6 @@ type: project
 ## 已知 gap（非阻塞）
 - 本机 `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
 - 本机首次跑 Playwright 需先 `npx playwright install chromium` 下载浏览器。
-- **B027 实施时需要用户协助配置 GitHub Secret `TIINGO_API_KEY`**（Tiingo Starter $10/月 账号注册 + key 拿取于 `https://api.tiingo.com/account/api/token`）。
+- **GitHub Secret `TIINGO_API_KEY` 已配置**（2026-05-26 用户预先配置完成）；Generator F001/F002 实施无需中断等待 user 协助。
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->
