@@ -38,7 +38,7 @@
       "title": "workbench UI 全栈展示（5 路由 + 双语 + B024 i18n 继承）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "(1) 前端 5 路由覆盖: /strategies / /strategies/[id] (或 sleeve detail 卡片) / /recommendations / /risk / /reports + /reports/[slug] 全部识别 us_quality_momentum sleeve；(2) 新 namespace strategies.usQualityMomentum.* 加入 messages/zh-CN.json + en.json，key set bit-identical (vitest messages-key-parity.spec.ts 不破)；(3) 双语字段每条 ≥2 处: 策略名 (美股质量动量 / US Quality Momentum) + 5 因子标签 (动量/质量/低波/价值/趋势 / Momentum/Quality/Low Vol/Value/Trend) + 行业名 (GICS 英文不译; 中文括号注释) + Risk panel sleeve 名 + drawdown + exposure + kill-switch 状态；(4) Recommendations 页面展示 satellite_us_quality target positions table (ticker/weight/sector)；(5) Risk panel 加新 sleeve 一行 (drawdown + exposure 条 + kill-switch indicator)；(6) Reports 列表 + 详情页展示双语 Markdown；(7) vitest 新增 ≥10 测试 (renderWithIntl helper 沿用 B024 F002 模式)；(8) Playwright zh-CN + en 双 locale 5 路由 smoke ≥10 H1/label assertion；(9) 截图 5 页 × 2 locale = 10 PNG 存 docs/screenshots/B025-us-quality/{zh-CN,en}/ ≤300 KB each；(10) Backend 如引入 /api/strategies/us_quality_momentum/signal/current 必须 Repository pattern (不读 runtime file system) + HTTPException detail 用 t() + Accept-Language 协议继承 + pytest parametrize zh-CN/en；如不引入直接复用 /api/reports/*；(11) 中文按钮禁词 vitest grep 0 命中；(12) B024 既有 146 vitest 全过 + B025 新增 ≥10；(13) lint/typecheck/build 绿；build artifact 无 127.0.0.1 / :872x；npm audit --omit=dev --audit-level=high exit 0；ruff + mypy (若动 backend) 清。"
     },
     {
