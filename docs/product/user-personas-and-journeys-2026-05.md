@@ -1,6 +1,6 @@
 # Workbench 用户画像与每日工作流（2026-05-25 draft）
 
-> **状态：** draft，待用户审阅。本文档由 Planner 在 B025 done 阶段与用户 5 轮 Q&A 后撰写。
+> **状态：** **approved**（2026-05-25 用户批准）。本文档由 Planner 在 B025 done 阶段与用户 6 轮 Q&A 后撰写。
 > **配套：** `docs/product/positioning-2026-05.md`（产品定位 + 三层定义）
 > **目的：** 把"用户每天怎么用 workbench"具象化，作为后续 UI / 功能优先级判断依据。
 
@@ -157,8 +157,9 @@
 
 ## 9. Doc Lifecycle
 
-- **当前状态：** draft（2026-05-25 Planner 撰写）
-- **下一步：** 用户在 chat 中校正 → Planner 同 commit 修订 → 用户最终批准后改 status：approved
+- **当前状态：** **approved**（2026-05-25 用户批准）
+- **生效信号：** 后续 UI 类批次 spec 必须引用本 doc Daily Journey / UI 优先级矩阵 / Anti-Journeys 三段为权威
+- **修订流程：** 同 positioning-2026-05.md
 
 ---
 

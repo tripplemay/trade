@@ -1,6 +1,6 @@
 # Workbench 产品定位（2026-05-25 draft）
 
-> **状态：** draft，待用户审阅。本文档由 Planner 在 B025 done 阶段与用户 5 轮 Q&A 后撰写。
+> **状态：** **approved**（2026-05-25 用户批准）。本文档由 Planner 在 B025 done 阶段与用户 6 轮 Q&A 后撰写。
 > **目的：** 在启动 B026 之前对齐"workbench 究竟为谁、做什么、不做什么"，让后续技术批次不再脱离产品 vision。
 > **来源：** 用户在 done 阶段 5 轮 AskUserQuestion 答复，每个判断都有用户原话来源（引用见 §5）。
 
@@ -135,9 +135,9 @@
 
 ## 9. Doc Lifecycle
 
-- **当前状态：** draft（2026-05-25 Planner 撰写）
-- **下一步：** 用户在 chat 中校正 → Planner 同 commit 修订 → 用户最终批准后改 status：approved
-- **生效信号：** 后续所有批次 spec 第一节必须引用本 doc 当前位置（哪一层 + 目标层 + UI 是否符合 Robinhood-style 期望）
+- **当前状态：** **approved**（2026-05-25 用户批准）
+- **生效信号：** 后续所有批次 spec 第一节必须引用本 doc 当前位置（哪一层 + 目标层 + UI 是否符合 Robinhood-style 期望 + AI 是否触及 §1.1 / §6.1 边界）
+- **修订流程：** 重大产品方向变更（如 AI 边界放宽到路径 C / 商业化决策）需新 doc 替代本 doc，本 doc 改 status: superseded-by-<new-doc-name>；小修订（typo / 字段补充）直接 commit
 
 ---
 
