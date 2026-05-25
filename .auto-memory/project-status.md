@@ -4,11 +4,10 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B026-synthetic-data-banner：`fixing`（fix-round 2）**；F001 completed（commit 9571f3d），F002 Codex 干净 env 复验后 L1 通过，但 L2 发现生产真实交互缺陷，已退回 Generator 修复。
+- **B026-synthetic-data-banner：`reverifying`（fix-round 2）**；F001 fix（commit d02ad79）给 dismiss 加 vanilla DOM fallback；等 Workbench Deploy 自动触发后 Codex 在 production 复测。
 - 目标：Layer 0 期间所有 protected 页面顶部加持久 banner，明确但克制标注「研究原型 · 仅含合成数据 · 不构成投资决策依据」+ 英文。防止误用 synthetic 数字做实盘决策。
-- Codex reverify 结论：Generator 关于首轮本地红项的判断是对的；`rm -rf .next node_modules && npm ci` 后，frontend `npm run build`、`/login`、full Playwright `38 passed` 全部恢复，证明上一轮 L1 问题是本机环境污染，不是产品实现回归。
-- 当前唯一 blocker 在 production：点击 `synthetic-data-banner-close` 后，banner 没有在当前页面/会话里立刻隐藏；reload 后仍显示。验收要求是“当前会话先隐藏，reload 后再重现”，现在只满足后一半。Blocker 文档：`docs/test-reports/B026-synthetic-data-banner-reverify-blocker-2026-05-26.md`。
-- L2 其余项是绿的：production HEAD == main HEAD == `c9274b5`，zh-CN/en 的 banner surface 正常，`/api/debug/recent-errors` 返回 0，截图已落盘 `docs/screenshots/B026-banner/`。
+- Codex reverify 结论：Generator 关于首轮本地红项的判断是对的；`rm -rf .next node_modules && npm ci` 后，frontend `npm run build`、`/login`、full Playwright `38 passed` 全部恢复，证明上一轮 L1 问题是本机环境污染，不是产品实现回归。L2 唯一红项是 production 点击 dismiss 后 banner 不隐藏。
+- fix-round 2 修复：SyntheticDataBanner 保留 React onClick → setDismissed 主路径，新增 useEffect 绑 vanilla addEventListener 把 container.style.display 设 'none' 作为冗余路径；任一路径独立满足『hide now』；reload 仍由 SSR 重渲实现『reappear』。本地 vitest 166 / lint / typecheck / build / npm audit / safety / local prod-mode Playwright b026 6/6 全绿。L2 4 张截图一并入 commit `docs/screenshots/B026-banner/`。
 - 本批次属 implementation-path-2026-05.md §4 **Phase 0 第一个 batch**（独立无依赖）。预估 1 个轻量批次。
 - 后续路径：B027 (Phase 1.A 数据源选型) → B028 (1.B 价格) → B029 (1.C 财务) → B030 (1.D 全 sleeve 切真) → 里程碑 A Layer 0→1。
 
