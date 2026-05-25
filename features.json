@@ -14,7 +14,7 @@
       "title": "5 因子计算（动量 / 质量 / 低波 / 价值 / 趋势）+ rank 标准化",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "(1) 新建 trade/strategies/us_quality_momentum/factors.py，5 pure function: momentum_12_1(prices, as_of, lookback=12, skip=1) / momentum_6m(prices, as_of) / quality_score(fundamentals, as_of) = rank(roe)+rank(gross_margin)+rank(fcf_yield)-rank(debt_to_assets) / low_vol_score(prices, as_of, windows=(60,120,252)) 倒数 vol 排名 / value_score(fundamentals, as_of) = avg(rank(1/pe), rank(1/pb), rank(1/ev_ebitda), rank(fcf_yield), rank(earnings_yield)) / trend_score(prices, as_of) = price>MA200 AND MA50>MA200 AND MA200_slope>0 → 1.0/0.0 with 斜率插值；(2) 新建 trade/strategies/us_quality_momentum/ranking.py: standardize(series) rank-based (推荐 percent_rank)；(3) 所有因子函数接收 pandas DataFrame/Series 输入，纯函数无 IO；(4) pytest ≥25 测试: 每因子 happy path + edge case (缺失数据/全相等/单 ticker) + point-in-time 严格性 (财报数据 report_date 之前不可见) + 标准化 (zero-variance/NaN/order preservation) + 跨因子 deterministic；(5) ruff + mypy 清；(6) 不引入 ML 模型；sklearn 仅允许 ranking 工具函数，禁止 fit/predict；(7) 不动 B011-B024 既有 strategy/portfolio 模块。"
     },
     {
