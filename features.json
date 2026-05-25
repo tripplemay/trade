@@ -6,7 +6,7 @@
       "title": "SyntheticDataBanner 组件 + Layout 集成 + 双语 messages + 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "(1) 新建 src/components/SyntheticDataBanner.tsx：'use client' + React useState dismissed + env flag check (NEXT_PUBLIC_SYNTHETIC_DATA_BANNER) + lucide-react Info/X 图标 + 浅黄背景 (amber-50 / dark:amber-950) + 双语 useTranslations('syntheticBanner') + aria-live='polite' + aria-label 双语 close button；(2) messages/zh-CN.json + en.json 加新 namespace syntheticBanner.headline + syntheticBanner.ariaClose，zh-CN: '研究原型 · 仅含合成数据 · 不构成投资决策依据' / en: 'Research prototype · Synthetic data only · Not for investment decisions'；key set bit-identical (既有 vitest messages-key-parity.spec.ts 通过)；(3) src/app/(protected)/layout.tsx 顶部插入 <SyntheticDataBanner />（不入 login 页 / 不入 root layout）；其他 layout 结构不动；(4) .env.example 加 NEXT_PUBLIC_SYNTHETIC_DATA_BANNER=true 注释行；.env.production VM 上保持 true；(5) vitest ≥6 新测试：env enabled + dismissed=false 渲染 / env enabled + dismissed=true 不渲染 / env disabled 不渲染 / key parity / 双语 headline 断言 / aria 可访问性；(6) Playwright 双 locale smoke ≥4 新断言：zh-CN banner 头部 '研究原型 · 仅含合成数据' 可见 / en 切换 banner 头部 'Research prototype · Synthetic data only' 可见 / 点 × 后同会话 reload banner 重新出现 / 5 protected 路由抽样 ≥3 banner 显示；(7) tests/safety/no-execution-buttons.spec.ts ≥15 spec assertions 0 命中 (含中文禁词)；(8) Gates: npm run lint exit=0 / typecheck exit=0 / npm test ≥162 (156 baseline + ≥6) / build standalone OK / npm audit --omit=dev --audit-level=high exit=0 / grep build artifact 无 127.0.0.1/:872x；Backend 不动既有 pytest ≥320 不破；(9) 不动 B024 既有 16 namespace 仅新增 1 / 不动 B023 manual execution / DB schema / backend endpoint / strategy / Markdown 报告模板。"
     },
     {

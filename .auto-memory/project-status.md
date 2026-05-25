@@ -4,9 +4,10 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B026-synthetic-data-banner：`building`**；F001 pending（generator）+ F002 pending（codex）。Spec：`docs/specs/B026-synthetic-data-banner-spec.md`。
+- **B026-synthetic-data-banner：`verifying`**；F001 completed（generator commit 9571f3d）+ F002 pending（codex L1+L2 真 VM + signoff）。Spec：`docs/specs/B026-synthetic-data-banner-spec.md`。
 - 目标：Layer 0 期间所有 protected 页面顶部加持久 banner，明确但克制标注「研究原型 · 仅含合成数据 · 不构成投资决策依据」+ 英文。防止误用 synthetic 数字做实盘决策。
 - 决策矩阵（2026-05-25 用户已批）：本会话隐藏可关闭性（点 × 会话级 React state，reload 重现）/ env var `NEXT_PUBLIC_SYNTHETIC_DATA_BANNER` 手动控制（Phase 1 done 时手动改 false 隐藏）/ 明确但克制文案 + 浅黄背景 + Info 图标 / 仅 protected 路径 / 双语继承 B024 i18n。
+- F001 本地 gates 全绿：lint=0 / typecheck=0 / vitest 165 passed（157→165，+8 新 specs，spec ≥162 满足）/ build OK / npm audit no-high / safety regression unchanged。Backend 不动。
 - 本批次属 implementation-path-2026-05.md §4 **Phase 0 第一个 batch**（独立无依赖）。预估 1 个轻量批次。
 - 后续路径：B027 (Phase 1.A 数据源选型) → B028 (1.B 价格) → B029 (1.C 财务) → B030 (1.D 全 sleeve 切真) → 里程碑 A Layer 0→1。
 
