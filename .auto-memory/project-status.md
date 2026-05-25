@@ -4,10 +4,11 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B026-synthetic-data-banner：`reverifying`（fix-round 1）**；F001 completed（commit 9571f3d），F002 Codex 首轮反弹本地不可复现，Generator 写 response 等 Codex 干净 env 复测。
+- **B026-synthetic-data-banner：`fixing`（fix-round 2）**；F001 completed（commit 9571f3d），F002 Codex 干净 env 复验后 L1 通过，但 L2 发现生产真实交互缺陷，已退回 Generator 修复。
 - 目标：Layer 0 期间所有 protected 页面顶部加持久 banner，明确但克制标注「研究原型 · 仅含合成数据 · 不构成投资决策依据」+ 英文。防止误用 synthetic 数字做实盘决策。
-- Generator fix-round 1 调查：本地 `rm -rf .next && npm run build` 全绿（含 /execution/journal-history + /execution/position-diff 路由），`/login` curl 返回 200 + 合法 HTML，B026 Playwright 6/6 passed；GitHub Actions Workbench Frontend CI + Python CI + Workbench Deploy 三个 workflow 在同一 c9274b5 全绿；生产 HEAD == main HEAD。三环境一致绿 vs Codex 本地一红，结论：Codex env 问题（stale .next / stale :3000 dev server / 平台 native bin 缺失）。Response 文档：`docs/test-reports/B026-synthetic-data-banner-generator-response-2026-05-26.md`。
-- 本轮 0 行代码修改；等 Codex 在 `rm -rf .next node_modules && npm ci && npx playwright install chromium && npm run build` 后复测。若仍红需附 next build stderr + node/npm/uname + @next/swc-* 目录列表。
+- Codex reverify 结论：Generator 关于首轮本地红项的判断是对的；`rm -rf .next node_modules && npm ci` 后，frontend `npm run build`、`/login`、full Playwright `38 passed` 全部恢复，证明上一轮 L1 问题是本机环境污染，不是产品实现回归。
+- 当前唯一 blocker 在 production：点击 `synthetic-data-banner-close` 后，banner 没有在当前页面/会话里立刻隐藏；reload 后仍显示。验收要求是“当前会话先隐藏，reload 后再重现”，现在只满足后一半。Blocker 文档：`docs/test-reports/B026-synthetic-data-banner-reverify-blocker-2026-05-26.md`。
+- L2 其余项是绿的：production HEAD == main HEAD == `c9274b5`，zh-CN/en 的 banner surface 正常，`/api/debug/recent-errors` 返回 0，截图已落盘 `docs/screenshots/B026-banner/`。
 - 本批次属 implementation-path-2026-05.md §4 **Phase 0 第一个 batch**（独立无依赖）。预估 1 个轻量批次。
 - 后续路径：B027 (Phase 1.A 数据源选型) → B028 (1.B 价格) → B029 (1.C 财务) → B030 (1.D 全 sleeve 切真) → 里程碑 A Layer 0→1。
 
@@ -17,7 +18,7 @@ type: project
 
 ## 生产状态
 - `https://trade.guangai.ai` live with 双语 workbench（默认 zh-CN，可切 en）+ OAuth + /api/health + /api/debug/recent-errors + daily 03:00 UTC backup + 4 sleeve 完整持仓展示（含 satellite_us_quality 5 因子，仍 synthetic data）。
-- Production HEAD = main HEAD = `c9274b5`；当前阻塞不是 deploy drift，而是本地前端 build/runtime 回归。
+- Production HEAD = main HEAD = `c9274b5`；当前阻塞不是 deploy drift，而是生产上的 banner dismiss 交互未生效。
 
 ## 永久硬边界（B026 起继续；v0.9.28）
 - 系统层：no-broker SDK / no-paper-or-live URL / no-credential / no-auto-execution / 多用户禁 / Cloud SQL 禁 / same-origin /api/* / auth-gated / Repository 读写非直 file
