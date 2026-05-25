@@ -50,10 +50,10 @@ _DEFAULT_SLEEVES: tuple[MasterSleeveConfig, ...] = (
     ),
     MasterSleeveConfig(
         sleeve_id="satellite_us_quality",
-        sleeve_type=SLEEVE_TYPE_SATELLITE_STUB,
-        strategy_id=None,
+        sleeve_type=SLEEVE_TYPE_IMPLEMENTED,
+        strategy_id="us_quality_momentum",
         planning_weight=0.20,
-        role_label="satellite_alpha_stub",
+        role_label="satellite_alpha",
     ),
     MasterSleeveConfig(
         sleeve_id="satellite_hk_china",

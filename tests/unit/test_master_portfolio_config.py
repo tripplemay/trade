@@ -11,7 +11,7 @@ from trade.portfolio.master import (
 )
 
 
-def test_default_master_portfolio_combines_two_core_sleeves_and_two_satellite_stubs() -> None:
+def test_default_master_portfolio_combines_three_implemented_sleeves_and_one_stub() -> None:
     parameters = default_master_portfolio_parameters()
     sleeves_by_id = {sleeve.sleeve_id: sleeve for sleeve in parameters.sleeves}
 
@@ -25,8 +25,11 @@ def test_default_master_portfolio_combines_two_core_sleeves_and_two_satellite_st
     assert sleeves_by_id["momentum"].strategy_id == "global_etf_momentum"
     assert sleeves_by_id["risk_parity"].sleeve_type == SLEEVE_TYPE_IMPLEMENTED
     assert sleeves_by_id["risk_parity"].strategy_id == "risk_parity_vol_target"
-    assert sleeves_by_id["satellite_us_quality"].sleeve_type == SLEEVE_TYPE_SATELLITE_STUB
-    assert sleeves_by_id["satellite_us_quality"].strategy_id is None
+    # B025 F004: satellite_us_quality flipped from SATELLITE_STUB to
+    # IMPLEMENTED with strategy_id 'us_quality_momentum'.
+    assert sleeves_by_id["satellite_us_quality"].sleeve_type == SLEEVE_TYPE_IMPLEMENTED
+    assert sleeves_by_id["satellite_us_quality"].strategy_id == "us_quality_momentum"
+    # satellite_hk_china remains a stub — slated for B026.
     assert sleeves_by_id["satellite_hk_china"].sleeve_type == SLEEVE_TYPE_SATELLITE_STUB
     assert sleeves_by_id["satellite_hk_china"].strategy_id is None
 

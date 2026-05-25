@@ -124,6 +124,10 @@ def test_master_portfolio_backtest_records_per_sleeve_contributions() -> None:
 
 
 def test_master_portfolio_satellite_stub_contribution_falls_through_to_defensive_asset() -> None:
+    # B025 F004 flipped satellite_us_quality from stub → implemented; the only
+    # remaining stub sleeve is satellite_hk_china (planning_weight 0.10),
+    # slated for B026 implementation. Its stub fall-through still routes to
+    # the defensive asset.
     records = _synthetic_daily_universe(
         ("SPY", "VEA", "AGG", "GLD", "SGOV"), SINGLE_QUARTER_DAYS
     )
@@ -140,11 +144,11 @@ def test_master_portfolio_satellite_stub_contribution_falls_through_to_defensive
     stub = next(
         contribution
         for contribution in period.sleeve_contributions
-        if contribution.sleeve_id == "satellite_us_quality"
+        if contribution.sleeve_id == "satellite_hk_china"
     )
     assert stub.sleeve_type == SLEEVE_TYPE_SATELLITE_STUB
     assert stub.child_target_weights == {"SGOV": 1.0}
-    assert stub.contribution_weights == {"SGOV": pytest.approx(0.20)}
+    assert stub.contribution_weights == {"SGOV": pytest.approx(0.10)}
 
 
 def test_master_portfolio_executes_at_t_plus_1_open() -> None:
