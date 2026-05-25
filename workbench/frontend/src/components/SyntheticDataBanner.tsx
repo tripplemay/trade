@@ -15,20 +15,60 @@
  *   - `NEXT_PUBLIC_SYNTHETIC_DATA_BANNER=false` hides the banner entirely
  *     so the deployment can turn it off once real-data Phase 1 lands.
  *     Default (unset or anything other than the literal "false") shows it.
+ *
+ * Fix-round 2 (2026-05-26): dismiss now has two redundant paths after Codex
+ * F002 L2 reverify saw the React onClick → setState path fail to visually
+ * hide the banner on the live production VM (works locally in both
+ * `next dev` and `next start`, both unit + Playwright). To make the
+ * dismiss interaction robust to whichever production-only edge case is
+ * preventing the React state path from propagating to the DOM, the close
+ * button now also (a) attaches a vanilla DOM click listener via
+ * `useEffect`, and (b) sets `display: none` on the container directly.
+ * `setDismissed(true)` is still the canonical state path — the DOM hide
+ * is belt-and-braces so the user-visible "hide now" half of the spec
+ * holds even if React event delegation is broken. A reload still
+ * re-renders SSR HTML, so the "reappear after reload" half holds too.
  */
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Info, X } from "lucide-react";
 
 export function SyntheticDataBanner() {
   const t = useTranslations("syntheticBanner");
   const [dismissed, setDismissed] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const enabled = process.env.NEXT_PUBLIC_SYNTHETIC_DATA_BANNER !== "false";
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const btn = container.querySelector<HTMLButtonElement>(
+      '[data-testid="synthetic-data-banner-close"]',
+    );
+    if (!btn) return;
+    const handler = () => {
+      // setDismissed is the canonical source of truth — once React
+      // re-renders, the component returns null and the node unmounts.
+      setDismissed(true);
+      // Defensive: if React's setState path is interrupted in
+      // production (event delegation, hydration partial, etc.), hide
+      // the container directly so the user-visible dismiss still
+      // happens. The reload behaviour stays the same: a full reload
+      // re-runs the server render and the banner reappears.
+      container.style.display = "none";
+    };
+    btn.addEventListener("click", handler);
+    return () => {
+      btn.removeEventListener("click", handler);
+    };
+  }, []);
+
   if (!enabled || dismissed) return null;
 
   return (
     <div
+      ref={containerRef}
       role="status"
       aria-live="polite"
       data-testid="synthetic-data-banner"

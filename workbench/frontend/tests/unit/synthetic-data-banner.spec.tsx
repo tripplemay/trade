@@ -98,4 +98,24 @@ describe("SyntheticDataBanner (B026 F001)", () => {
     expect(enMessages.syntheticBanner.headline).toBe(EN_HEADLINE);
     expect(enMessages.syntheticBanner.ariaClose).toBeTruthy();
   });
+
+  it("native click also dismisses via the DOM fallback path (fix-round 2)", () => {
+    // Codex F002 L2 reverify saw the React `onClick → setState → return
+    // null` path fail to visually hide the banner on the production VM
+    // even though the dev/start/unit builds were all green. The
+    // component now also binds a vanilla DOM `click` listener via
+    // useEffect that sets `display: none` on the container, so the
+    // dismiss visibly succeeds even if React's synthetic-event path is
+    // broken. Dispatching a native MouseEvent (rather than RTL's
+    // fireEvent, which goes through React's delegation) exercises both
+    // paths; the assertion accepts either outcome — fully unmounted
+    // (React path won) or display:none (DOM fallback won).
+    vi.stubEnv("NEXT_PUBLIC_SYNTHETIC_DATA_BANNER", "true");
+    const { getByTestId, queryByTestId } = renderWithIntl(<SyntheticDataBanner />);
+    const btn = getByTestId("synthetic-data-banner-close");
+    btn.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const node = queryByTestId("synthetic-data-banner") as HTMLElement | null;
+    const visuallyHidden = node === null || node.style.display === "none";
+    expect(visuallyHidden).toBe(true);
+  });
 });
