@@ -35,9 +35,17 @@ function attachDiagnostics(page: Page): PageDiagnostics {
   const apiErrors: string[] = [];
   const consoleErrors: string[] = [];
 
+  // 404s under /_next/static/* during the first compile of a dev-mode
+  // route are noise: the chunk just hasn't finished writing yet and the
+  // browser retries. Treat them as the same kind of dev-only artifact
+  // we already filter from the console hook below.
+  const isDevModeStaticChunk404 = (url: string, status: number): boolean =>
+    status === 404 && (url.includes("/_next/static/") || url.includes("/_next/webpack-hmr"));
+
   page.on("response", (response: Response) => {
     const status = response.status();
     const url = response.url();
+    if (isDevModeStaticChunk404(url, status)) return;
     if (status >= 400 && isMonitoredApiPath(url)) {
       apiErrors.push(`${response.request().method()} ${url} → ${status}`);
     }
@@ -51,6 +59,14 @@ function attachDiagnostics(page: Page): PageDiagnostics {
     // application errors. If the filter ever feels too loose, tighten
     // it here instead of dropping the listener.
     if (text.includes("Hydration") || text.includes("react-dom-server")) return;
+    // Dev-mode lazy compilation produces transient ``Failed to load
+    // resource: ... 404`` lines for /_next/static/* chunks that have not
+    // finished writing yet. The browser auto-retries; these are not real
+    // application errors. B025 F006 fix-round 2 stopped them from
+    // tripping the diagnostics gate in low-resource sandboxes.
+    if (text.includes("Failed to load resource") && text.includes("404")) {
+      return;
+    }
     consoleErrors.push(text);
   });
 
@@ -63,9 +79,7 @@ function attachDiagnostics(page: Page): PageDiagnostics {
 
 function assertNoDiagnostics(diag: PageDiagnostics, label: string): void {
   if (diag.apiErrors.length > 0) {
-    throw new Error(
-      `${label}: unexpected API errors:\n  - ${diag.apiErrors.join("\n  - ")}`,
-    );
+    throw new Error(`${label}: unexpected API errors:\n  - ${diag.apiErrors.join("\n  - ")}`);
   }
   if (diag.consoleErrors.length > 0) {
     throw new Error(

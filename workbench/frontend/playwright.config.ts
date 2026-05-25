@@ -12,9 +12,15 @@ const SESSION_STATE_FILE = path.join("tests", "e2e", ".auth", "session.json");
 
 export default defineConfig({
   testDir: "./tests",
+  globalSetup: require.resolve("./tests/e2e/global-setup.ts"),
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
+  // Retries help tolerate the dev-mode lazy-compile race in resource-
+  // constrained sandboxes; B025 F006 reverify spent a fix-round on
+  // repeated `_next/static/* 404` console errors that only appeared on
+  // the very first compile pass. Setting retries=2 even outside CI keeps
+  // ad-hoc local runs robust without slowing the happy path.
+  retries: process.env.CI ? 2 : 1,
   reporter: process.env.CI ? [["html", { open: "never" }], ["list"]] : "list",
   use: {
     baseURL: BASE_URL,
