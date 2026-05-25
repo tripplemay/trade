@@ -4,11 +4,10 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B026-synthetic-data-banner：`fixing`**；F001 completed（generator commit 9571f3d），F002 首轮验收被打回。Blocker：`docs/test-reports/B026-synthetic-data-banner-blocker-2026-05-25.md`。
+- **B026-synthetic-data-banner：`reverifying`（fix-round 1）**；F001 completed（commit 9571f3d），F002 Codex 首轮反弹本地不可复现，Generator 写 response 等 Codex 干净 env 复测。
 - 目标：Layer 0 期间所有 protected 页面顶部加持久 banner，明确但克制标注「研究原型 · 仅含合成数据 · 不构成投资决策依据」+ 英文。防止误用 synthetic 数字做实盘决策。
-- Codex 首轮结论：production hash 等价性正常（`/api/health.version == c9274b5...`），backend/trade 全绿，frontend lint/typecheck/vitest 165/npm audit/grep 也绿；但 `npm run build` 与 Playwright runtime 同时失败。
-- build blocker：Next.js page-data collection 报 `PageNotFoundError: Cannot find module for page: /execution/journal-history` 与 `/execution/position-diff`，尽管对应 `src/app/(protected)/execution/.../page.tsx` 文件存在。
-- Playwright blocker：匿名 `/login` 与 `/ -> /login` 直接渲染 `Internal Server Error`；同一运行态错误级联到 protected-route shell、旧 B025 bilingual suite、以及新 B026 banner suite，所以缺失 `workbench-topbar` / `synthetic-data-banner` 只是下游症状。
+- Generator fix-round 1 调查：本地 `rm -rf .next && npm run build` 全绿（含 /execution/journal-history + /execution/position-diff 路由），`/login` curl 返回 200 + 合法 HTML，B026 Playwright 6/6 passed；GitHub Actions Workbench Frontend CI + Python CI + Workbench Deploy 三个 workflow 在同一 c9274b5 全绿；生产 HEAD == main HEAD。三环境一致绿 vs Codex 本地一红，结论：Codex env 问题（stale .next / stale :3000 dev server / 平台 native bin 缺失）。Response 文档：`docs/test-reports/B026-synthetic-data-banner-generator-response-2026-05-26.md`。
+- 本轮 0 行代码修改；等 Codex 在 `rm -rf .next node_modules && npm ci && npx playwright install chromium && npm run build` 后复测。若仍红需附 next build stderr + node/npm/uname + @next/swc-* 目录列表。
 - 本批次属 implementation-path-2026-05.md §4 **Phase 0 第一个 batch**（独立无依赖）。预估 1 个轻量批次。
 - 后续路径：B027 (Phase 1.A 数据源选型) → B028 (1.B 价格) → B029 (1.C 财务) → B030 (1.D 全 sleeve 切真) → 里程碑 A Layer 0→1。
 
