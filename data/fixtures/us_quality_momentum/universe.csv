@@ -1,0 +1,31 @@
+ticker,name,exchange,gics_sector,gics_industry,listing_date,market_cap_initial
+AAPL,Apple Inc.,NASDAQ,Information Technology,"Technology Hardware, Storage & Peripherals",1980-12-12,700000000000.0
+MSFT,Microsoft Corporation,NASDAQ,Information Technology,Systems Software,1986-03-13,550000000000.0
+NVDA,NVIDIA Corporation,NASDAQ,Information Technology,Semiconductors,1999-01-22,110000000000.0
+JNJ,Johnson & Johnson,NYSE,Health Care,Pharmaceuticals,1944-09-25,400000000000.0
+UNH,UnitedHealth Group Incorporated,NYSE,Health Care,Managed Health Care,1984-10-17,300000000000.0
+JPM,JPMorgan Chase & Co.,NYSE,Financials,Diversified Banks,1969-03-05,450000000000.0
+BAC,Bank of America Corporation,NYSE,Financials,Diversified Banks,1972-10-30,200000000000.0
+V,Visa Inc.,NYSE,Financials,Transaction & Payment Processing,2008-03-19,300000000000.0
+AMZN,"Amazon.com, Inc.",NASDAQ,Consumer Discretionary,Broadline Retail,1997-05-15,400000000000.0
+HD,"The Home Depot, Inc.",NYSE,Consumer Discretionary,Home Improvement Retail,1981-09-22,300000000000.0
+GOOGL,Alphabet Inc. Class A,NASDAQ,Communication Services,Interactive Media & Services,2004-08-19,500000000000.0
+META,"Meta Platforms, Inc.",NASDAQ,Communication Services,Interactive Media & Services,2012-05-18,300000000000.0
+HON,Honeywell International Inc.,NASDAQ,Industrials,Industrial Conglomerates,1985-09-19,120000000000.0
+UPS,"United Parcel Service, Inc.",NYSE,Industrials,Air Freight & Logistics,1999-11-10,130000000000.0
+CAT,Caterpillar Inc.,NYSE,Industrials,Construction Machinery & Heavy Trucks,1929-12-02,100000000000.0
+PG,The Procter & Gamble Company,NYSE,Consumer Staples,Personal Care Products,1929-01-01,220000000000.0
+KO,The Coca-Cola Company,NYSE,Consumer Staples,Soft Drinks & Non-alcoholic Beverages,1919-09-05,200000000000.0
+WMT,Walmart Inc.,NYSE,Consumer Staples,Consumer Staples Merchandise Retail,1972-08-25,300000000000.0
+XOM,Exxon Mobil Corporation,NYSE,Energy,Integrated Oil & Gas,1972-01-03,350000000000.0
+CVX,Chevron Corporation,NYSE,Energy,Integrated Oil & Gas,1977-01-03,220000000000.0
+NEE,"NextEra Energy, Inc.",NYSE,Utilities,Multi-Utilities,1971-03-15,130000000000.0
+DUK,Duke Energy Corporation,NYSE,Utilities,Electric Utilities,2006-04-03,75000000000.0
+PLD,"Prologis, Inc.",NYSE,Real Estate,Industrial REITs,1997-11-24,60000000000.0
+AMT,American Tower Corporation,NYSE,Real Estate,Telecom Tower REITs,1998-06-05,85000000000.0
+LIN,Linde plc,NYSE,Materials,Industrial Gases,2018-10-30,100000000000.0
+APD,"Air Products and Chemicals, Inc.",NYSE,Materials,Industrial Gases,1961-12-12,60000000000.0
+ECL,Ecolab Inc.,NYSE,Materials,Specialty Chemicals,1957-11-25,55000000000.0
+ZQAI,Synthetic Industrial Smallcap Co.,NYSE,Industrials,Industrial Machinery & Supplies & Components,2020-06-15,5000000000.0
+ZQPT,Synthetic Penny Tech Holdings,NASDAQ,Information Technology,Application Software,2019-03-10,12000000000.0
+ZQLH,Synthetic Light Volume Health Inc.,NYSE,Health Care,Health Care Equipment,2018-11-08,25000000000.0

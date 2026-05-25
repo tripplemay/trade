@@ -16,12 +16,16 @@ __pycache__/
 # Market data and local databases
 data/*
 !data/.gitkeep
+!data/fixtures/
 *.parquet
 *.csv
 *.db
 *.sqlite
 *.sqlite3
 logs/
+
+# Synthetic fixtures committed for offline CI (B025 etc.)
+!data/fixtures/**
 
 # OS / editor
 .DS_Store

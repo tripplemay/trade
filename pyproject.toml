@@ -9,6 +9,7 @@ description = "Fixture-first Global ETF Momentum backtest MVP."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+  "pandas>=2.2",
   "yfinance>=0.2.40",
 ]
 
@@ -39,3 +40,7 @@ files = ["trade"]
 strict = true
 warn_unused_ignores = true
 warn_redundant_casts = true
+
+[[tool.mypy.overrides]]
+module = ["pandas", "pandas.*", "numpy", "numpy.*"]
+ignore_missing_imports = true
