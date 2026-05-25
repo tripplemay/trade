@@ -36,6 +36,7 @@
     "backtest": "Backtest",
     "reports": "Reports",
     "recommendations": "Recommendations",
+    "risk": "Risk",
     "positionDiff": "Position diff",
     "ticket": "Ticket",
     "fills": "Fills",
@@ -338,7 +339,17 @@
     "masterDd": "master DD {value}%",
     "killSwitchThreshold": "Kill-switch threshold {value}%",
     "perSleeveThreshold": "per-sleeve advisory {value}%",
-    "slippageTrend": "3m slippage {value} bps"
+    "slippageTrend": "3m slippage {value} bps",
+    "page": {
+      "title": "Risk panel",
+      "subtitle": "Live master drawdown, kill-switch threshold, and per-sleeve advisories",
+      "contextTitle": "Field reference",
+      "contextDescription": "The B025 satellite_us_quality sleeve also appears in the per-sleeve list.",
+      "explainMaster": "= current equity drawdown vs all-time high; trips the kill-switch when it exceeds the threshold.",
+      "explainKillSwitch": "= hard threshold on master drawdown; only defensive weight moves are accepted once tripped.",
+      "explainPerSleeve": "= advisory threshold on per-sleeve drawdown; any sleeve over it flips the panel to yellow.",
+      "sleeveNote": "satellite_us_quality currently surfaces master_dd as a per-sleeve proxy; F011 wires real per-sleeve nav."
+    }
   },
   "execution": {
     "positionDiff": {

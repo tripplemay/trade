@@ -9,6 +9,7 @@ import {
   LineChart,
   ListTodo,
   Receipt,
+  ShieldAlert,
   Upload,
   Wallet,
   type LucideIcon,
@@ -25,6 +26,7 @@ export type NavKey =
   | "backtest"
   | "reports"
   | "recommendations"
+  | "risk"
   | "positionDiff"
   | "ticket"
   | "fills"
@@ -58,6 +60,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: Compass,
     testId: "nav-recommendations",
   },
+  { href: "/risk", labelKey: "risk", icon: ShieldAlert, testId: "nav-risk" },
   {
     href: "/execution/position-diff",
     labelKey: "positionDiff",
