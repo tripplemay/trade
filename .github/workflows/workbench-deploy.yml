@@ -6,9 +6,17 @@ name: Workbench Deploy
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
-# Chained trigger: only run after BOTH workbench-backend and workbench-frontend
-# pipelines have finished green on `main`. We re-check the conclusion inside
-# the job because `workflow_run` always fires regardless of result.
+# Trigger #1 (default): chained — only runs after BOTH workbench-backend and
+# workbench-frontend pipelines have finished green on `main`. We re-check the
+# conclusion inside the job because `workflow_run` always fires regardless of
+# result.
+#
+# Trigger #2 (manual): workflow_dispatch lets the deploy owner ship a `main`
+# revision whose only diff is in `progress.json` / `docs/` / `.auto-memory/`
+# (i.e. paths excluded by both CI workflows' path filters). Without this trigger
+# the spec's `Production HEAD ≡ main HEAD` gate is unreachable on chore-only
+# commits — B025 F006 reverify-2 caught the gap with main at a chore SHA that
+# never armed the workflow_run chain.
 on:
   workflow_run:
     workflows:
@@ -18,6 +26,12 @@ on:
       - completed
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref (branch / tag / SHA) to deploy. Defaults to `main`."
+        required: false
+        default: "main"
 
 concurrency:
   group: workbench-deploy
@@ -25,21 +39,34 @@ concurrency:
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
+    # Allow either the chained workflow_run (must be a green main run) or a
+    # manual workflow_dispatch. The dispatch path lets the deploy owner ship
+    # chore-only main SHAs that CI does not cover.
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
       DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
       DEPLOY_USER: deploy
       RELEASE_ROOT: /srv/workbench/releases
       CURRENT_LINK: /srv/workbench/current
 
     steps:
-      - name: Check out the commit that produced the green CI
+      - name: Check out the requested ref
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          # workflow_dispatch supplies inputs.ref (default `main`).
+          # workflow_run carries the head_sha of the CI run that armed us.
+          ref: ${{ github.event.inputs.ref || github.event.workflow_run.head_sha }}
+
+      - name: Resolve release SHA
+        run: |
+          set -euo pipefail
+          RELEASE_SHA="$(git rev-parse HEAD)"
+          echo "RELEASE_SHA=${RELEASE_SHA}" >> "$GITHUB_ENV"
+          echo "deploying SHA ${RELEASE_SHA} (event=${{ github.event_name }})"
 
       - name: Set up Python
         uses: actions/setup-python@v5
