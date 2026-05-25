@@ -30,7 +30,7 @@
       "title": "Master Portfolio 接入（sleeve stub→implemented）+ Backtest + 双语报告",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "(1) 改 trade/portfolio/master.py 精准 1 处: satellite_us_quality sleeve_type SLEEVE_TYPE_SATELLITE_STUB → SLEEVE_TYPE_IMPLEMENTED, strategy_id='us_quality_momentum', planning_weight=0.20 (其他 3 sleeve 完全不动包括 satellite_hk_china stub)；(2) 改 tests/unit/test_master_portfolio_config.py satellite_us_quality stub 断言→implemented 断言 + strategy_id 断言，satellite_hk_china 仍 stub 不动；(3) 新建 trade/backtest/us_quality_momentum/engine.py 单 sleeve backtest driver (复用 trade/backtest/ 既有 BacktestRunner 模式) + metrics.py；(4) 单 sleeve backtest ≥10 年输出 JSON + Markdown 到 reports/us_quality_momentum/<as_of_date>.{json,md}，指标必输出: 年化收益 / 年化波动 / Sharpe / Sortino / Calmar / MDD / 月度收益矩阵 / 年度收益表 / 换手率 / 胜率 / 盈亏比 / 行业暴露 / 单股贡献 / 因子贡献 / 相对 SPY/QQQ/RSP/静态 Top 15 超额；(5) Markdown 报告双语字段 (继承 B024 §4.3 模式，专业术语 Sharpe/Sortino/Calmar/MDD/bps 不译) + 双语 disclaimer 头部 'research-only; not a trading instruction / 仅供研究使用；不构成交易指令'；(6) Master Portfolio 4-sleeve backtest deterministic + 既有 tests/unit/test_master_portfolio_backtest.py 全过 + 新增 ≥5 Master backtest 测试覆盖 satellite_us_quality 实际持仓 + kill-switch；(7) pytest ≥30 新测试 (单 sleeve backtest + master integration + metrics + report serialization)；(8) 基准对比断言落 deterministic 范围 (年化 [5%,25%] / Sharpe [0.3,1.5] / MDD <50%) 不强求达成 strategy doc §3 实盘目标；(9) ruff + mypy 清。"
     },
     {
