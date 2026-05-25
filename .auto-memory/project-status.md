@@ -4,7 +4,9 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B025-us-quality-momentum-satellite：`verifying`**；F001-F005 ✅ generator 全部 completed (CI 26387093593/26387093579/26387093635 all green，累计 11 vitest + ≈135 pytest 新增)；F006 (Codex L1+L2) pending。Spec：`docs/specs/B025-us-quality-momentum-satellite-spec.md`。
+- **B025-us-quality-momentum-satellite：`fixing`**；F001-F005 ✅ generator completed，但 F006 首轮 L1 被 Codex 打回。Blocker：`docs/test-reports/B025-us-quality-blocker-2026-05-25.md`。Spec：`docs/specs/B025-us-quality-momentum-satellite-spec.md`。
+- 非 blocker 的基础 gates 都绿：backend `pytest 241 passed, 2 skipped` + `ruff` + `mypy`，trade `pytest 727 passed` + `mypy trade`，frontend `lint` / `typecheck` / `vitest 157 passed` / `build` / `npm audit` 通过，离线 fixture/factor 关键测试通过。
+- 真正 blocker 有 2 个：1) F006 acceptance 要求 `Playwright ≥29 (19 baseline + ≥10 双 locale)`，但当前 `npx playwright test --list` 只有 `19 tests in 4 files`，B025 locale smoke specs 未交付；2) spec/F006 文案写独立 `/risk` 路由，但当前前端没有 `/risk` app route，风险信息只通过 `RiskBanner` 嵌入在其他页面。
 - 目标：把 Master Portfolio 的 `satellite_us_quality` sleeve 从 stub 升级为 implemented_strategy，对应 5 因子美股个股策略 + workbench UI 双语展示（继承 B024 i18n）。预估 3-4 周。
 - 范围决策（2026-05-25 用户已批）：全栈（strategy + backtest + Master Portfolio + workbench UI）；纯 fixture / mock（synthetic data, not actual filings）；strategy doc §7 完整版因子权重 `0.35 mom + 0.30 quality + 0.15 lowvol + 0.10 value + 0.10 trend`；股票池 = S&P 500 + Nasdaq 100 30-50 ticker 子集跨 ≥7 GICS sector；Top 15 等权；单股 ≤7% / 行业 ≤30%；财报前 5d 不新开仓；月度信号 + Master quarterly cadence；HK-China satellite 留 B026 候选。
 - Feature 分配：F001 fixture+universe+filter / F002 5 因子计算 / F003 综合评分+选股+约束 / F004 Master 接入+backtest / F005 workbench UI 双语 (generator) + F006 Codex L1+L2 签收 (codex)。
