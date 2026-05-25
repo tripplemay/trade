@@ -4,9 +4,10 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B025-us-quality-momentum-satellite：`reverifying`**（fix-round 4，仅 deploy 补部署）；F001-F005 ✅；F006 round-3 L1+L2 功能全过，唯一阻塞是 `Production HEAD ≡ main HEAD`，本轮先把状态机推到位再立即 dispatch deploy，让 production 落在最终 chore SHA。Blocker 报告：`docs/test-reports/B025-us-quality-reverify3-blocker-2026-05-25.md`。
-- 策略：本 commit 推送后立即 `gh workflow run "Workbench Deploy" -r main`，验证 `/api/health.version` 等于本 commit SHA。
-- 框架层潜在 race（已记入 generator_handoff）：每轮 fixing→reverifying 都会产生一个 chore commit，每次 chore 后 production 都会落后一个 commit。可能需要 framework v0.9.27 候选加 `docs-only-deploy` workflow 或要求 Codex 在 done 阶段也 dispatch deploy。
+- **B025-us-quality-momentum-satellite：`done`**；F001-F006 全部完成并签收。Signoff：`docs/test-reports/B025-us-quality-signoff-2026-05-25.md`。
+- round-4 结论：production deploy drift 已解除。Codex 在签收前确认 `curl https://trade.guangai.ai/api/health.version == abaaf6e6a162d0ce73305e71ec1c29b54512da5f`，与当时 `main` 一致。
+- 产品代码自 `afa154d` 之后未变；后续 `f45ac46` / `efc9be5` / `abaaf6e` 都是 metadata/test-artifact commit。基于“无产品差异”原则，round-4 复用了上一轮完整 L1 绿灯，并在当前 HEAD 补跑 focused local smoke：B025 bilingual Playwright `14/14 passed`。
+- L2 production 最终通过：zh-CN + en 的 `/strategies`、`/recommendations`、`/risk`、`/reports`、`/reports/[slug]` 均正常；`/api/debug/recent-errors` 为 `200 {\"count\":0,\"records\":[]}`；locale switch focused repro `3/3` 成功。
 - 目标：把 Master Portfolio 的 `satellite_us_quality` sleeve 从 stub 升级为 implemented_strategy，对应 5 因子美股个股策略 + workbench UI 双语展示（继承 B024 i18n）。预估 3-4 周。
 - 范围决策（2026-05-25 用户已批）：全栈（strategy + backtest + Master Portfolio + workbench UI）；纯 fixture / mock（synthetic data, not actual filings）；strategy doc §7 完整版因子权重 `0.35 mom + 0.30 quality + 0.15 lowvol + 0.10 value + 0.10 trend`；股票池 = S&P 500 + Nasdaq 100 30-50 ticker 子集跨 ≥7 GICS sector；Top 15 等权；单股 ≤7% / 行业 ≤30%；财报前 5d 不新开仓；月度信号 + Master quarterly cadence；HK-China satellite 留 B026 候选。
 - Feature 分配：F001 fixture+universe+filter / F002 5 因子计算 / F003 综合评分+选股+约束 / F004 Master 接入+backtest / F005 workbench UI 双语 (generator) + F006 Codex L1+L2 签收 (codex)。
@@ -19,7 +20,7 @@ type: project
 
 ## 生产状态
 - `https://trade.guangai.ai` live with 双语 workbench（默认 zh-CN，可切 en）+ OAuth + /api/health + /api/debug/recent-errors + daily 03:00 UTC backup。
-- 当前 live 版本是 `afa154d`，功能面正常，但**仍不满足 Production HEAD = main HEAD**：仓库 `origin/main` 已到 `f45ac46`。
+- Signoff 前已确认 `Production HEAD = main HEAD = abaaf6e`；signoff metadata commit 后将再次手动 dispatch deploy，保持最终 SHA 等价。
 
 ## 永久硬边界（B025 起继续）
 no-broker SDK / no-paper-or-live URL / no-credential / no-auto-execution / 多用户禁 / Cloud SQL 禁 / same-origin /api/* / auth-gated / Repository 读写非直 file / 任何按钮 labelled execute/place order/send to broker 禁 + 中文等价禁词同级（v0.9.26）/ Order ticket Markdown 双语 disclaimer 永存 / framework v0.9.21-v0.9.26 全约束 / fixture-first 离线 CI / no ML fit-predict。
