@@ -7,7 +7,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **每次会话启动必须执行（所有 agent 通用）：**
 1. 读取 `.auto-memory/MEMORY.md`（项目记忆索引），按需加载记忆文件
-2. 读取 `progress.json`，确认当前阶段，再加载对应角色文件（generator.md / evaluator.md / planner.md）
+2. 读取 `progress.json`，确认当前阶段角色（planner / generator / evaluator）
+3. 加载 `.auto-memory/role-context/{当前角色}.md`（active 行为规范，T1 分层加载约定）
+4. **按需**查阅 `framework/harness/{当前角色}.md`（深度规则知识库，含 v0.9.X 沉淀；不是 always-loaded）
+
+> 项目根历史曾有 `planner.md / generator.md / evaluator.md` 3 个 stale 副本，v0.9.28（B025 done 阶段）已删除。详见 `framework/STRUCTURE.md`。
 
 **分支规则：** 代码提交推 `main` 分支。部署由用户手动触发。
 

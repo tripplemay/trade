@@ -101,13 +101,15 @@
 - ❌ **房产 / 保险 / 加密 资产管理**（不在 workbench 范围；保留在外部工具）
 - ❌ **跟单 / 社区 / leaderboard**（个人工具）
 
-## 6.1 永久边界更新（B025 done 阶段，待 framework 沉淀）
+## 6.1 永久边界更新（v0.9.28 已沉淀，2026-05-25）
 
-原 framework v0.9.21-v0.9.27 永久边界中的 `no-AI fit/predict` 在产品定位明确后应**精细化**为：
+原 framework v0.9.21-v0.9.27 永久边界中的 `no-AI fit/predict` 一刀切，B025 done 阶段已精细化为：
 
-| 旧表述（v0.9.21-v0.9.27）| 新表述（待 framework v0.9.28 沉淀）|
+| 旧表述（v0.9.21-v0.9.27）| 新表述（v0.9.28 已沉淀）|
 |---|---|
 | `no-AI fit/predict` 一刀切 | (a) `no-AI auto-execution`（永久）<br>(b) `no-AI 收益预测数字输出`（永久）<br>(c) `no-AI 替代 quant 评分作为唯一决策依据`（永久）<br>(d) `AI 必须基于 quant signal + real data + 可引用 news` 才能输出建议（永久）<br>(e) AI 解释 / summarize / translate / context aggregation **允许** |
+
+写入位置：`framework/harness/planner.md` §"AI 边界精细化（v0.9.28 — B025 done 沉淀）" + `.auto-memory/project-status.md` §永久硬边界 v0.9.28 段。任何 AI / LLM 类批次 spec 必须显式引用本 5 子条全集。
 
 ## 7. 后续批次（基于本定位重新评估）
 

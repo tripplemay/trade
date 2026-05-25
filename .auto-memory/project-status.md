@@ -19,11 +19,20 @@ type: project
 ## 生产状态
 - `https://trade.guangai.ai` live with 双语 workbench（默认 zh-CN，可切 en）+ OAuth + /api/health + /api/debug/recent-errors + daily 03:00 UTC backup + 4 sleeve 完整持仓展示（含新落地的 satellite_us_quality 5 因子）。
 
-## 永久硬边界（B025 起继续）
-no-broker SDK / no-paper-or-live URL / no-credential / no-auto-execution / 多用户禁 / Cloud SQL 禁 / same-origin /api/* / auth-gated / Repository 读写非直 file / 任何按钮 labelled execute/place order/send to broker 禁 + 中文等价禁词同级（v0.9.26）/ Order ticket Markdown 双语 disclaimer 永存 / framework v0.9.21-v0.9.27 全约束 / fixture-first 离线 CI / no ML fit-predict / cloud-deploy 批次 deploy workflow 含 workflow_dispatch + Generator chore commit 后 dispatch deploy（v0.9.27）。
+## 永久硬边界（B025 起继续；v0.9.28 AI 边界精细化）
+- 系统层：no-broker SDK / no-paper-or-live URL / no-credential / no-auto-execution / 多用户禁 / Cloud SQL 禁 / same-origin /api/* / auth-gated / Repository 读写非直 file
+- UI 层：任何按钮 labelled execute/place order/send to broker 禁 + 中文等价禁词同级（v0.9.26）/ Order ticket Markdown 双语 disclaimer 永存
+- 数据 / CI 层：fixture-first 离线 CI / framework v0.9.21-v0.9.28 全约束 / cloud-deploy 批次 deploy workflow 含 workflow_dispatch + Generator chore commit 后 dispatch deploy（v0.9.27）
+- **AI 边界（v0.9.28 精细化，取代 v0.9.21-v0.9.27 一刀切 "no-AI fit/predict"）：**
+  - (a) `no-AI auto-execution`：AI 不可触发任何自动下单 / 交易 / 调仓
+  - (b) `no-AI 收益预测数字输出`：AI 不输出"预期年化 X%" / 任何收益预测数字
+  - (c) `no-AI 替代 quant 评分作为唯一决策依据`：AI 是 quant signal 的叠加层，不可跳过 Master Portfolio 评分直接给 buy/sell
+  - (d) `AI 输出必须基于 quant signal + real data + 可引用 news`：无引用的黑盒建议禁止；每条建议必带 quant_signal SHA / news source URL
+  - (e) AI 做以下事项**允许**：解释（quant signal / 指标 / Sharpe 等术语 tooltip）/ summarize（news / SEC filings）/ translate（zh ↔ en）/ context aggregation / Robinhood-style 简化文案。
 
 ## Framework 状态
-- 最新版本 **v0.9.27**（2026-05-25 沉淀完成）：B025 B 组 3 候选已写入 generator.md §12.7 + evaluator.md §20 + §21 + planner.md §Cloud-deploy v0.9.27 扩展 (e) + templates/signoff-report.md §Post-signoff Deploy + CHANGELOG + 归档 `framework/archive/proposed-learnings-archive-v0.9.27.md`。A 组 spec 预想 3 条（多因子 fixture / sleeve stub→implemented / earnings 规避）经用户评估复用价值不足不沉淀。proposed-learnings.md 当前空。
+- 最新版本 **v0.9.28**（2026-05-25 沉淀完成）：B025 done 阶段结构澄清 + AI 边界精细化合并 sink。删除项目根 3 个 stale .md（planner/generator/evaluator）；harness-rules.md + CLAUDE.md 明确加载路径为 `.auto-memory/role-context/{角色}.md`（active）+ `framework/harness/{角色}.md`（按需查阅）；新建 `framework/STRUCTURE.md` 澄清目录语义；AI 边界从 `no-AI fit/predict` 一刀切改为 5 子条（auto-execution / 收益预测 / 替代 quant / 必须可引用 / 允许的解释 summarize translate context aggregation）。
+- 上一版本 **v0.9.27**（2026-05-25）：B025 F006 4-round 实战教训 3 条（chore-only deploy 逃生口 / Playwright stale process / signoff Post-deploy 模板）；详见 v0.9.27 归档。
 
 ## post-MVP backlog（按优先级）
 - **BL-B011-S2 high**（HK-China satellite；US Quality 已在 B025 落地剥离）→ 候选 B026

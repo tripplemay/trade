@@ -134,15 +134,15 @@ git push origin main
 
 **默认映射（无 role_assignments 时）：**
 
-| status | 执行工具 | 加载文件 | 动作 |
+| status | 执行工具 | 当前角色 | 动作 |
 |---|---|---|---|
-| `new` | Claude CLI | planner.md | 拆解需求，生成 features.json，写 spec |
-| `planning` | Claude CLI | planner.md | 继续 planning（上次中断时） |
-| `building` | Claude CLI | generator.md | 按功能列表逐条实现 |
-| `verifying` | Codex | evaluator.md | 首轮验收 |
-| `fixing` | Claude CLI | generator.md | 根据 evaluator_feedback 修复 |
-| `reverifying` | Codex | evaluator.md | 复验，写 signoff 报告 |
-| `done` | Claude CLI | planner.md | 更新记忆，处理 proposed-learnings，询问下一批次 |
+| `new` | Claude CLI | planner | 拆解需求，生成 features.json，写 spec |
+| `planning` | Claude CLI | planner | 继续 planning（上次中断时） |
+| `building` | Claude CLI | generator | 按功能列表逐条实现 |
+| `verifying` | Codex | evaluator | 首轮验收 |
+| `fixing` | Claude CLI | generator | 根据 evaluator_feedback 修复 |
+| `reverifying` | Codex | evaluator | 复验，写 signoff 报告 |
+| `done` | Claude CLI | planner | 更新记忆，处理 proposed-learnings，询问下一批次 |
 
 **阶段与角色的对应关系：**
 
@@ -152,8 +152,21 @@ git push origin main
 | `building` / `fixing` | generator |
 | `verifying` / `reverifying` | evaluator |
 
-### 第三步：读取对应角色文件
-根据第二步的判断结果加载 planner.md / generator.md / evaluator.md 并严格执行。
+### 第三步：读取对应角色行为规范 + 按需查阅规则知识库
+
+按第二步判断结果，**加载** `.auto-memory/role-context/{当前角色}.md`（active 行为规范，37-50 行简短版，T1 分层加载约定）并严格执行其中规约。
+
+**深度规则知识库**位于 `framework/harness/{当前角色}.md`（含 v0.9.X 沉淀的 §8-N 各类规则细节）。这些**不是 always-loaded**，但在以下场景**必须按需查阅**：
+
+| 角色 | 必须查阅 framework/harness/ 的场景 |
+|---|---|
+| Planner | 起草 spec acceptance 时 / done 阶段做框架沉淀时 / 设计批次 acceptance 引用规则（v0.9.X 规则）时 |
+| Generator | 实施时遇到 acceptance 模糊点 / framework 规则与代码冲突时 / 写 fix-round commit message 引用 framework 规则号时 |
+| Evaluator | 写 signoff 时填模板段（如 §Production/HEAD 等价性 / §Post-signoff Deploy） / verifying 时使用 §18 E2E 稳定性诊断 / §20 lsof / §21 双段勾选 等规则 |
+
+> **设计理由（v0.9.28 — B025 done 沉淀）：** agent 启动加载量大会污染 context window。短版（.auto-memory/role-context/）每次必读；长版（framework/harness/）按需查阅。这是 framework v0.5.0+ 分层加载演进结果。
+>
+> 项目根历史曾存在 `planner.md / generator.md / evaluator.md` 3 个 stale 副本（init commit `6fb81a6` 后从未更新），v0.9.28 已删除。
 
 ### 第四步：完成后更新 progress.json
 每个阶段结束后必须更新 progress.json 中的 status 字段，再结束会话。

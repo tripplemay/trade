@@ -5,6 +5,32 @@
 
 ---
 
+## v0.9.28 — 2026-05-25（B025 done 阶段：结构澄清 + AI 边界精细化）
+
+**来源批次：**
+- B025 done 阶段产品规划批次（独立任务模式，不走 spec-driven 状态机）
+- 6 轮用户 Q&A：定位 + 三层定义 + 用户画像 + AI 角色与边界
+- 用户在 done 阶段直接提问 "framework 目录只是模板，并不是本项目要遵守的规则文件" 引发的结构性调查
+- docs `docs/product/positioning-2026-05.md` + `user-personas-and-journeys-2026-05.md` approved 2026-05-25（commit `5d3a425`）
+
+**触发原因：**
+- 用户直觉 "framework 只是模板" 与实际机制不完全对齐，启动结构性调查
+- 调查发现项目根 `planner.md / generator.md / evaluator.md` 是 init commit `6fb81a6` 写入后从未更新的 stale 雏形；framework/harness/{角色}.md 才是 v0.9.7-v0.9.27 持续演进的规则知识库；`.auto-memory/role-context/{角色}.md` 才是 T1 真实加载的 active 行为规范
+- `harness-rules.md` 第 156 行 + `CLAUDE.md` 第 10 行"加载对应角色文件"路径模糊（项目根 vs framework/harness/ 都可能）造成认知混乱
+- B025 done 阶段产品规划明确 AI 角色与边界（`no-AI fit/predict` 一刀切需替换为 5 子条），与 v0.9.21-v0.9.27 永久边界冲突
+
+**变更：**
+- 删除项目根 stale 雏形：`planner.md` / `generator.md` / `evaluator.md`（3 个文件 init commit 后从未更新）
+- 修改 `harness-rules.md` 第三步章节：明确加载 `.auto-memory/role-context/{角色}.md`（active）+ 按需查阅 `framework/harness/{角色}.md`（规则知识库）；默认映射表"加载文件"列改为"当前角色"
+- 修改项目根 `CLAUDE.md` 启动流程：从 2 步改为 4 步，明确分层加载（`.auto-memory/MEMORY.md` → `progress.json` → `.auto-memory/role-context/{角色}.md` → 按需 framework/harness/）
+- 新建 `framework/STRUCTURE.md`：澄清 framework/ 各子目录语义（harness/ = 规则知识库 / templates/ = 项目模板 / proposed-learnings.md = 暂存区 / archive/ = 归档 / CHANGELOG.md = 版本史 / README.md + bootstrap.sh = 新项目用法指南）+ agent 启动加载流 6 步明确化
+- 新增 `framework/harness/planner.md` §"AI 边界精细化（v0.9.28 — B025 done 沉淀）"：把 `no-AI fit/predict` 一刀切替换为 5 子条（(a) no-AI auto-execution / (b) no-AI 收益预测数字 / (c) no-AI 替代 quant / (d) AI 必须可引用 quant+real+news / (e) 解释/summarize/translate/context aggregation 允许）+ spec acceptance 段落模板 + 适用范围 + B025 反面案例预防
+- 更新 `.auto-memory/project-status.md` §永久硬边界：从一行单段改为 4 层结构化（系统层 / UI 层 / 数据CI层 / AI 边界 5 子条），框架版本 v0.9.27 → v0.9.28
+- 更新 `docs/product/positioning-2026-05.md` §6.1：从 "待 framework 沉淀" 改为 "v0.9.28 已沉淀"
+- 归档 `framework/archive/proposed-learnings-archive-v0.9.28.md`（含本次结构调查全过程 + 5 个关键证据 + 用户 Q&A 时序）
+
+---
+
 ## v0.9.27 — 2026-05-25（B025 沉淀，3 grouped learnings）
 
 **来源批次：**
