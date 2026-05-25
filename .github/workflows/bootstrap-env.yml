@@ -54,6 +54,11 @@ jobs:
           GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           ALLOWED_USER_EMAIL: ${{ secrets.ALLOWED_USER_EMAIL }}
+          # B027 F002 — Tiingo Starter API key for real-market-data ingest.
+          # Backend-only secret; surface only here so the env file the
+          # deploy workflow reads on the VM carries it. Missing on the VM
+          # → deploy.sh pre-flight check exits 66 with remediation message.
+          TIINGO_API_KEY: ${{ secrets.TIINGO_API_KEY }}
         run: |
           # set +x to be defensive — GHA masks ${{ secrets.* }} but never echo plaintext anyway.
           set +x
@@ -74,6 +79,8 @@ jobs:
           WORKBENCH_LOG_DIR=/var/log/workbench
           WORKBENCH_BACKUP_LOG=/var/log/workbench/backup.log
           # SENTRY_DSN= # optional; leave commented unless Sentry project set up
+          # B027 F002 — Tiingo Starter API key (real-market-data ingest).
+          TIINGO_API_KEY=$TIINGO_API_KEY
           EOF
           chmod 600 "$ENVFILE"
           # Sanity: confirm the file isn't empty and doesn't contain literal PLACEHOLDER
@@ -83,7 +90,7 @@ jobs:
             exit 1
           fi
           # Each required key must be present and non-empty
-          for k in GOOGLE_OAUTH_CLIENT_ID GOOGLE_OAUTH_CLIENT_SECRET NEXTAUTH_SECRET ALLOWED_USER_EMAIL; do
+          for k in GOOGLE_OAUTH_CLIENT_ID GOOGLE_OAUTH_CLIENT_SECRET NEXTAUTH_SECRET ALLOWED_USER_EMAIL TIINGO_API_KEY; do
             if ! grep -qE "^${k}=." "$ENVFILE"; then
               echo "::error::Refusing to ship: ${k} is missing or empty in the assembled env file." >&2
               exit 1
