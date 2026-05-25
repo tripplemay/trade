@@ -4,34 +4,32 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B026-synthetic-data-banner：`done`**；F001/F002 全部完成，signoff 已出：`docs/test-reports/B026-synthetic-data-banner-signoff-2026-05-26.md`。
-- 目标：Layer 0 期间所有 protected 页面顶部加持久 banner，明确但克制标注「研究原型 · 仅含合成数据 · 不构成投资决策依据」+ 英文。防止误用 synthetic 数字做实盘决策。
-- 最终结论：Generator fix-round-2 解除 production dismiss blocker。Evaluator 在 `c4221d0` 上确认 `d02ad79..HEAD` 无产品代码漂移，仅有 handoff 元数据；targeted L1（build + banner unit 9/9 + focused Playwright 6/6）全绿。
-- focused production L2 通过：`https://trade.guangai.ai/strategies` 上 zh-CN banner 初始可见，点击 `×` 后同页立即隐藏，reload 后按 spec 重现；authenticated `/api/debug/recent-errors` 返回 `{\"count\":0,\"records\":[]}`；production `/api/health.version == main HEAD == c4221d0`（签收前）。
-- 当前轮关键截图已落盘 `docs/screenshots/B026-banner/zh-CN/strategies-before-close.png`、`strategies-after-close.png`、`strategies-after-reload.png`、`recent-errors.png`；既有 en/zh screenshots 继续保留满足 spec ≥4 PNG。
-- 本批次属 implementation-path-2026-05.md §4 **Phase 0 第一个 batch**（独立无依赖）。预估 1 个轻量批次。
-- 后续路径：B027 (Phase 1.A 数据源选型) → B028 (1.B 价格) → B029 (1.C 财务) → B030 (1.D 全 sleeve 切真) → 里程碑 A Layer 0→1。
+- **B027-real-data-snapshot-foundation：`building`**；F001 pending（generator）+ F002 pending（generator）+ F003 pending（codex）。Spec：`docs/specs/B027-real-data-snapshot-foundation-spec.md`。
+- 目标：为 Stream 1 Real Data 打地基。把 Polygon.io Starter $30/月 接入 backend Repository 抽象层 + cost guard ($30 月 cap + 80% alert + BudgetExceeded raise) + GitHub Secret POLYGON_API_KEY 注入 .env.production。**不做** backfill / 不切 sleeve / 不动 strategy 代码（B028+ 责任）。
+- 决策矩阵（2026-05-26 用户已批）：轻批次范围（Polygon adapter + Repository + cost guard 不含 backfill）/ API key 方案 A（.env.production + GitHub Secrets，与 B021 OAuth/DB 同机制）/ cross-check fallback 留 B028。
+- 本批次属 implementation-path-2026-05.md §4 **Phase 1 起点（Stream 1.A）**。B026 banner 仍 enable 显示，B030 done 时 by acceptance 关闭。
+- 后续路径：B028（1.B 价格 backfill + yfinance/AV cross-check）→ B029（1.C 财务 SEC EDGAR）→ B030（1.D 全 sleeve 切真）→ 里程碑 A Layer 0→1。
 
 ## 已完成签收 + MVP 完工
-- B001-B025 全部签收。MVP substantively 完成 (PRD §10/§11/§12) — 完工声明：`docs/prd/mvp-completion-declaration-2026-05-20.md`。
-- 最近：B025 US Quality Momentum Satellite signoff 2026-05-25；B024 i18n zh-CN + en signoff 2026-05-22。
+- B001-B026 全部签收。MVP substantively 完成 (PRD §10/§11/§12) — 完工声明：`docs/prd/mvp-completion-declaration-2026-05-20.md`。
+- 最近：B026 Synthetic Data Banner signoff 2026-05-26（2 fix-rounds，production-only React event edge 防御性双路径修复）；B025 US Quality Momentum signoff 2026-05-25。
 
 ## 生产状态
-- `https://trade.guangai.ai` live with 双语 workbench（默认 zh-CN，可切 en）+ OAuth + /api/health + /api/debug/recent-errors + daily 03:00 UTC backup + 4 sleeve 完整持仓展示（含 satellite_us_quality 5 因子，仍 synthetic data）。
-- 签收前 Production HEAD = main HEAD = `c4221d0`；签收 commit 仅含元数据 / 报告 / 截图证据，按 v0.9.25 §Production/HEAD 等价性 接受 signoff 后 metadata-only 不同步，无需额外 dispatch。
+- `https://trade.guangai.ai` live with 双语 workbench（默认 zh-CN，可切 en）+ OAuth + /api/health + /api/debug/recent-errors + daily 03:00 UTC backup + 4 sleeve 完整持仓展示（含 satellite_us_quality 5 因子，仍 synthetic data）+ Layer 0 synthetic data banner。
 
-## 永久硬边界（B026 起继续；v0.9.28）
-- 系统层：no-broker SDK / no-paper-or-live URL / no-credential / no-auto-execution / 多用户禁 / Cloud SQL 禁 / same-origin /api/* / auth-gated / Repository 读写非直 file
-- UI 层：no-execution buttons + 中文等价禁词同级（v0.9.26）/ Order ticket Markdown 双语 disclaimer 永存
-- 数据 / CI 层：fixture-first 离线 CI / cloud-deploy 批次 workflow_dispatch + Generator chore commit 后 dispatch deploy（v0.9.27）
-- **AI 边界（v0.9.28，本批次不引入 AI 但 spec 列）：** (a) no auto-execution / (b) no 收益预测数字 / (c) no 替代 quant / (d) 必须可引用 / (e) 解释/summarize/translate/context aggregation 允许
+## 永久硬边界（B027 起继续；v0.9.28 + B027 新增）
+- 系统层：no-broker SDK / no-paper-or-live URL / no-credential（**Polygon API key 走 secret 不入代码**）/ no-auto-execution / 多用户禁 / Cloud SQL 禁 / same-origin /api/* / auth-gated / Repository 读写非直 file
+- UI 层：no-execution buttons + 中文等价禁词同级（v0.9.26）/ Order ticket Markdown 双语 disclaimer 永存 / **B026 banner 保留显示**
+- 数据 / CI 层：fixture-first 离线 CI（CI 不调 live Polygon）/ cloud-deploy workflow_dispatch + chore commit 后 dispatch deploy（v0.9.27 §12.7）
+- **AI 边界（v0.9.28，本批次不引入 AI）：** (a) no auto-execution / (b) no 收益预测数字 / (c) no 替代 quant / (d) 必须可引用 / (e) 解释/summarize/translate/context aggregation 允许
+- **新增（B027 起）：** (f) Polygon API key 仅 backend 用永不入前端/build/log + (g) 月预算 cap $30 USD enforced（≥80% alert / ≥100% BudgetExceeded raise + halt）
 
 ## Framework 状态
-- 最新版本 **v0.9.28**（2026-05-25 沉淀完成）：结构澄清（删项目根 stale .md / harness-rules.md + CLAUDE.md 明确路径 / framework/STRUCTURE.md）+ AI 边界精细化（5 子条取代一刀切）。proposed-learnings.md 空。
+- 最新版本 **v0.9.28**（2026-05-25 沉淀完成）。B026 done 阶段 production-only React event edge 现象**暂不沉淀**（用户决策），仅在 `framework/proposed-learnings.md` 加历史注释（v0.9.20 BL-060 模式），等二例再合并为 v0.9.29。
 
 ## 产品规划状态（B025 done 阶段，approved 2026-05-25）
-- 8 份 product docs 全 approved：positioning / user-personas-and-journeys / roadmap / llm-provider-evaluation / data-source-evaluation / ai-safety-evals / success-metrics / **implementation-path**（接续地图）
-- 产品定位：AI-augmented personal portfolio decision support tool, built on a quant-strategy chassis（单人 / 永不商业化 / 永不连 broker / AI 是叠加层不是替代层）
+- 8 份 product docs 全 approved：positioning / user-personas-and-journeys / roadmap / llm-provider-evaluation / data-source-evaluation / ai-safety-evals / success-metrics / implementation-path（接续地图）
+- 产品定位：AI-augmented personal portfolio decision support tool, built on a quant-strategy chassis
 
 ## post-MVP backlog（按优先级）
 - **BL-B011-S2 high**（HK-China satellite；US Quality 已在 B025 落地剥离）→ Phase 4 长尾按需
@@ -40,5 +38,6 @@ type: project
 ## 已知 gap（非阻塞）
 - 本机 `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
 - 本机首次跑 Playwright 需先 `npx playwright install chromium` 下载浏览器。
+- **B027 实施时需要用户协助配置 GitHub Secret `POLYGON_API_KEY`**（Polygon 账号注册 + key 拿取）。
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->
