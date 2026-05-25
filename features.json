@@ -6,7 +6,7 @@
       "title": "Fixture + Universe + 流动性过滤（Repository pattern）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "(1) 新建 data/fixtures/us_quality_momentum/ 子目录与 4 CSV (universe / prices_daily / fundamentals / earnings_calendar) + README.md，README 明示「synthetic data, not actual filings」；(2) universe.csv 30-50 ticker 跨 ≥7 GICS sector，每 sector ≥2 ticker，含 ticker/name/exchange/gics_sector/gics_industry/listing_date/market_cap_initial；(3) prices_daily.csv ≥10 年 deterministic 合成序列，含 date/ticker/open/high/low/close/adj_close/volume；(4) fundamentals.csv 每 ticker 每季度 1 行，report_date ≥ fiscal_quarter_end + 30d，含 roe/gross_margin/fcf_yield/debt_to_assets/pe/pb/ev_ebitda/earnings_yield；(5) earnings_calendar.csv 每 ticker 每季度 1 earnings_date ≤ report_date；(6) 新建 data/fixtures/us_quality_momentum/_generate.py（不入 pytest CI 路径，仅 fixture 再生工具，deterministic with --seed）；CSV 入仓库；(7) 新建 trade/data/us_quality_universe.py Repository: load_universe / load_prices(as_of) / load_fundamentals(as_of) / load_earnings_calendar(as_of) 全部 point-in-time；(8) 新建 trade/data/us_quality_filter.py 流动性过滤：apply_liquidity_filter(universe, prices, as_of, market_cap_threshold=10e9, adv60_threshold=50e6, price_threshold=10, listing_age_years=2)；(9) pytest 新增 ≥15 测试覆盖 universe loader / point-in-time 隔离 / filter 边界 / earnings calendar 一致性 / fixture schema 完整性；(10) ruff + mypy 清；(11) fixture 离线验证：pytest 在无网络环境下全过；(12) 不动 B011-B024 任何既有文件；(13) 不引入 sklearn fit/predict 路径。"
     },
     {
