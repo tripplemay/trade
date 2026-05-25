@@ -4,9 +4,10 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B025-us-quality-momentum-satellite：`reverifying`**；F001-F005 ✅ generator completed；F006 首轮 L1 被打回（2 blocker）；fix-round 1 已完成（commit b15661c, CI 26391437378 success），等 Codex 复验。Spec：`docs/specs/B025-us-quality-momentum-satellite-spec.md`。Blocker 报告：`docs/test-reports/B025-us-quality-blocker-2026-05-25.md`。
-- Fix-round 1 修复：(1) 实现独立 `/risk` route（`src/app/(protected)/risk/page.tsx` + nav-risk + risk.page.* 双语 namespace + ShieldAlert 图标）；(2) 新增 14 个 Playwright 双 locale 断言（`tests/e2e/b025-us-quality-bilingual.spec.ts` 覆盖 zh-CN + en × 5 路由 + locale 切换持久），本地 `Playwright 33 passed`（19 baseline + 14 新，超 ≥29 acceptance）；同步 rename 报告文件让 /reports 列表 top-50 内可见。
-- 基础 gates 全绿：backend `pytest 241+2 skipped` + ruff + mypy，trade `pytest 727` + mypy 62 文件，frontend lint/typecheck/vitest 157/build/npm audit/artifact 无 dev URL 全清。
+- **B025-us-quality-momentum-satellite：`fixing`**；F001-F005 ✅ generator completed，但 F006 fix-round-1 复验仍被 Codex 打回。最新复验 blocker：`docs/test-reports/B025-us-quality-reverify-blocker-2026-05-25.md`。Spec：`docs/specs/B025-us-quality-momentum-satellite-spec.md`。
+- fix-round-1 的表层修复已生效：独立 `/risk` route 已存在，B025 新增 Playwright spec 已落地，`npx playwright test --list` 达到 `33 tests in 5 files`。但真实运行态仍不满足验收：Playwright 实跑 `27 failed, 6 passed`。
+- 关键失败点：匿名 `/login` 看不到 `login-page` / `workbench-disclaimer`；`/recommendations` 与 `/risk` 看不到 `risk-banner` / `risk-sleeve-satellite_us_quality`；`/reports` 列表实际显示 `0 份报告`；`/reports/B025-us-quality-momentum-backtest` 看不到中文 disclaimer；legacy protected routes 多页报 repeated console `404` resource errors。
+- 非 blocker 的基础 gates 仍全绿：backend `pytest 241 passed, 2 skipped` + ruff + mypy，trade `pytest 727` + mypy 62 文件，frontend lint/typecheck/vitest 157/build/npm audit/artifact 无 dev URL 全清。
 - 目标：把 Master Portfolio 的 `satellite_us_quality` sleeve 从 stub 升级为 implemented_strategy，对应 5 因子美股个股策略 + workbench UI 双语展示（继承 B024 i18n）。预估 3-4 周。
 - 范围决策（2026-05-25 用户已批）：全栈（strategy + backtest + Master Portfolio + workbench UI）；纯 fixture / mock（synthetic data, not actual filings）；strategy doc §7 完整版因子权重 `0.35 mom + 0.30 quality + 0.15 lowvol + 0.10 value + 0.10 trend`；股票池 = S&P 500 + Nasdaq 100 30-50 ticker 子集跨 ≥7 GICS sector；Top 15 等权；单股 ≤7% / 行业 ≤30%；财报前 5d 不新开仓；月度信号 + Master quarterly cadence；HK-China satellite 留 B026 候选。
 - Feature 分配：F001 fixture+universe+filter / F002 5 因子计算 / F003 综合评分+选股+约束 / F004 Master 接入+backtest / F005 workbench UI 双语 (generator) + F006 Codex L1+L2 签收 (codex)。
