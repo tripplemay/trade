@@ -406,3 +406,45 @@ nvm use                          # 不一致时切换；无 nvm 装 Node 20 LTS
 **处理规则：** 跨 tenant 全量验收 SQL 必须 `sudo -u postgres psql kolmatrix(_staging)` superuser bypass RLS。普通 `kolmatrix_app` role + Prisma RLS 跨 tenant 看 0 行（不是数据缺失，是 RLS 视角限制）。Reviewer only-read 验收尤其要走 superuser path。
 
 **来源：** BL-061 F003 Generator 实战发现 + Codex Reviewer signoff 确认。
+
+---
+
+## 20. 复验前必须 lsof 检查本地 dev 进程，避免 stale bundle 污染 Playwright（v0.9.27 — B025 沉淀）
+
+**背景：** B025 F006 round-2 evaluator 收到 reverify blocker 报告，Playwright 红灯。根因不是产品 bug —— 是本地 `:3000`（Next dev server）或 `:8723`（FastAPI uvicorn）有一个**会话残留进程**还跑着旧 bundle（前一轮 generator 启动后忘了 kill），Playwright 通过 default `baseURL=http://127.0.0.1:3000` 连到这个 stale dev server，跑出和当前 HEAD 完全不同的 UI 行为。
+
+复验时**不能假设本地端口干净**。无论你是不是刚从 git pull 的状态启动，必须前置一道 `lsof` 检查。
+
+**规约（Evaluator 在 verifying / reverifying 阶段跑 Playwright 之前硬要求）：**
+
+1. **跑任何 E2E spec 之前先 lsof：**
+
+   ```bash
+   lsof -i :3000 -i :8723 -sTCP:LISTEN -t
+   # 期望 exit code 1（无输出 = 无残留进程）
+   ```
+
+2. **若有输出（残留进程），先 `kill -9 $(lsof -i :3000 -i :8723 -sTCP:LISTEN -t)` 再启服务**。残留进程的 git SHA 通常 ≠ 当前 HEAD，跑出的 Playwright 结果不能作为 reverify 证据。
+
+3. **统一通过 `bash scripts/test/codex-setup.sh`（或项目等价启动脚本）前台唯一启动 dev server**，启动脚本应自带 lsof 检查 + 等待 dev server `ready` log 后再交还 shell。不要让 Evaluator 自己 ad-hoc `npm run dev &` 起服务——后台启动不易追责，会话间错位概率高。
+
+4. **判定信号：** 单例 PASS / 整组 FAIL 是 suite-level isolation 问题（v0.9.20 §18 已沉淀）；**单例 FAIL + log 显示路由/UI 内容与本批次 spec 不符** 优先怀疑 stale bundle（本节）；**多个 case FAIL + 错误消息一致** 才考虑产品 bug。
+
+**反面案例（B025 F006 round-2）：** Codex 跑 Playwright 多次红灯，log 里 `/strategies` 页面缺新加的 `usQualityMomentum` 文本——但 git HEAD 已含该 commit。`lsof -i :3000` 显示一个 1.5 小时前的 Node 进程仍 LISTEN，kill 之后重启 dev server，Playwright `14/14 passed`。整轮 round-2 本可在 5 分钟 lsof + kill 解决，反而走完一轮 fix-round 浪费 ~30 分钟 + 一个 chore commit。
+
+**来源：** B025-us-quality-momentum-satellite F006 round-2 reverify blocker；signoff `docs/test-reports/B025-us-quality-signoff-2026-05-25.md` §Soft-watch S1 + §Framework Learnings 新坑。配套 `.auto-memory/role-context/evaluator.md` §E2E 稳定性诊断 是项目层 lsof checklist 落地。
+
+---
+
+## 21. 写 signoff 时 Production / HEAD 等价性 与 Post-signoff Deploy 必须双勾选（v0.9.27 — B025 沉淀）
+
+**背景：** v0.9.25 §Production/HEAD 等价性 已规定签收时记录 `deployed_sha vs main HEAD`；但 signoff commit 本身又会推 main，使 production 立即落后一个 commit。B025 F006 把这一点显式列入 §Post-signoff Deploy，避免下一次 signoff 提交后又出现 metadata-only drift。
+
+**Evaluator 写 signoff 时硬要求：**
+
+1. 填 §Production / HEAD 等价性 段（v0.9.25 既有）：deployed SHA / main HEAD / diff 内容判定（产品 vs 状态机）
+2. 填 §Post-signoff Deploy 段（v0.9.27 新增）：签收 commit 推送后是否需要 `gh workflow run "<App> Deploy" -r main` 让 production 追到 signoff SHA，**或者**显式声明 "本签收 commit 仅含 signoff 报告 / 状态机元数据，按 v0.9.25 §Production/HEAD 等价性 接受不同步"
+
+**模板新段位置：** `framework/templates/signoff-report.md` §Post-signoff Deploy（在 §Production / HEAD 等价性 之后、§Soft-watch 之前）。
+
+**来源：** B025 F006 signoff §Framework Learnings 模板修订 + Codex round-3 / round-4 deploy drift 实战。

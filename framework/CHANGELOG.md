@@ -5,6 +5,28 @@
 
 ---
 
+## v0.9.27 — 2026-05-25（B025 沉淀，3 grouped learnings）
+
+**来源批次：**
+- B025-us-quality-momentum-satellite F006 round-1 / round-2 / round-3 / round-4 fix loop（commits `cb068a0` / `0b61dda` / `f45ac46` / `abaaf6e` + 4 blocker reports + `afa154d` workflow_dispatch 上线）
+- signoff `docs/test-reports/B025-us-quality-signoff-2026-05-25.md` §Soft-watch S1 + S2 + §Framework Learnings 3 条（新规律 / 新坑 / 模板修订）
+
+**触发原因：**
+- B025 F006 在 4 个 fix-round 共暴露 3 个独立 framework 短板（产品代码本身在 round-1 后无新增改动，全部 fix-round 都是 framework race 引起）
+- Round-1 / Round-2 blocker：本机 Playwright 红灯但本质是 `:3000` stale Node 进程跑旧 bundle，evaluator 误判为产品 bug，多走一轮 fix-round
+- Round-3 / Round-4 blocker：fixing→reverifying→done 状态机 chore commit 不触发 CI，deploy 永远落后 main 一个 SHA，`Production HEAD ≡ main HEAD` 永远不成立。原 deploy workflow 只接 `workflow_run`，没法手动 dispatch；`afa154d` 临时引入 `workflow_dispatch` 但 race 又一次重现
+- B022 v0.9.25 §Production/HEAD 等价性 已规定签收时记录 deployed_sha vs HEAD；但 signoff commit 本身又会推 main，使 production 立即落后。signoff 模板缺 §Post-signoff Deploy 段显式声明是否要 dispatch
+
+**变更：**
+- `framework/harness/generator.md` 新增 §12.7 "chore-only main commit 必须可手动 dispatch deploy（v0.9.27）"：deploy workflow 含 `workflow_dispatch` trigger（含 YAML 示例）+ Generator 推 chore commit 后必跑 `gh workflow run "<App> Deploy" -r main` + Evaluator 复验时若 diff 仅状态机文件可自行 dispatch 不必起新 fix-round + 反面案例 B025 round-3/4
+- `framework/harness/evaluator.md` 新增 §20 "复验前必须 lsof 检查本地 dev 进程（v0.9.27）"：跑任何 E2E 之前先 `lsof -i :3000 -i :8723 -sTCP:LISTEN -t` 期望 exit 1 + 残留进程必须 kill 再启 + 通过 codex-setup.sh 前台唯一启动 + 判定信号矩阵（stale bundle vs suite-level isolation vs 产品 bug）+ 反面案例 B025 round-2
+- `framework/harness/evaluator.md` 新增 §21 "写 signoff 时 Production/HEAD 等价性 与 Post-signoff Deploy 必须双勾选（v0.9.27）"：签收时双段填写 + 模板段位置指引
+- `framework/harness/planner.md` §Cloud-deploy spec checklist 加 v0.9.27 扩展 (e)：cloud-deploy 批次 spec acceptance 必含 deploy workflow workflow_dispatch + chore commit 后 dispatch deploy + Evaluator 复验时 stale state 自行 dispatch 不必起新 fix-round
+- `framework/templates/signoff-report.md` 新增 §"Post-signoff Deploy（v0.9.27）"：5 字段表（签收 commit 类型 / 是否需要 dispatch / dispatch 命令 / workflow run 链接 / Production 最终 SHA / 接受不同步声明）+ 二选一判断规则（必须 dispatch 矩阵 vs 可不 dispatch 矩阵）+ Evaluator 强制闭环不让 Generator 起新 fix-round
+- 归档 `framework/archive/proposed-learnings-archive-v0.9.27.md`（含 3 候选清单 + B025 signoff §Framework Learnings 摘选 + Planner done 阶段补写时机说明：Codex F006 acceptance 要求 framework v0.9.27 候选 3 条写入 proposed-learnings.md 但 signoff 只在 §Framework Learnings 段列了候选，未触动 proposed-learnings.md 实物。Planner done 阶段补做沉淀实物 + CHANGELOG + 归档，与 v0.9.26 沉淀方式相同；A 组 spec 预想 3 候选（多因子 fixture / sleeve stub→implemented / earnings 规避）经用户评估复用价值不足，不沉淀）
+
+---
+
 ## v0.9.26 — 2026-05-25（B024 沉淀，3 grouped learnings）
 
 **来源批次：**

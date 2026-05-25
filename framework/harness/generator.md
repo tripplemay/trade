@@ -488,6 +488,45 @@ fi
 
 来源：B022 F014 fix-round 4（commit `8d9a948`），deploy.sh 实际改动作为 reference impl。
 
+### 12.7 chore-only main commit 必须可手动 dispatch deploy（v0.9.27 — B025 沉淀）
+
+**触发：** B025 F006 在 round-3 / round-4 连续两轮被 `Production HEAD ≡ main HEAD` 阻塞。根因不是产品代码漂移，而是 **fixing → reverifying → done 的状态机本身会推 chore commit**（`progress.json` / `features.json` / `.auto-memory/**` 改动），而原 deploy workflow 只接 `workflow_run: ["Workbench Frontend CI", "Workbench Backend CI"]` 链触发；状态机文件 paths-ignore 不跑这两个 CI，因此 chore commit 后 production 永远落后一个 SHA，**等价性永远不成立**。
+
+每轮 evaluator 在 reverifying 阶段写 signoff/blocker commit 后，main 又会前进 1 个 chore commit；deploy 又落后。这是 framework race condition，不是评估失误。
+
+**规约：**
+
+1. **任何 cloud-deployed 批次的 deploy workflow 必须含 `workflow_dispatch` trigger**（不限于 `workflow_run`），让 Evaluator / Planner / Generator 都能手动 dispatch 一次让 production 与 HEAD 等价。Generator 在 spec 实施时若 deploy workflow 只有 `workflow_run` 触发，应在 cloud-deploy 类批次的 building 阶段主动补 `workflow_dispatch` trigger（不需新批次）。
+
+   ```yaml
+   # .github/workflows/<app>-deploy.yml
+   on:
+     workflow_run:
+       workflows: ["App Backend CI", "App Frontend CI"]
+       types: [completed]
+       branches: [main]
+     workflow_dispatch:           # ← 加这一条
+       inputs:
+         force_deploy:
+           description: 'Force deploy even if no recent CI run'
+           required: false
+           default: 'false'
+   ```
+
+2. **Generator 推 chore commit（状态机 fixing→reverifying / reverifying→done）后**，若 batch 是 cloud-deployed，必须紧接一行：
+
+   ```bash
+   gh workflow run "<App> Deploy" -r main
+   ```
+
+   并把 workflow run 链接写入下一条 session_notes / handoff，让 Evaluator 复验时知道生产已追上。**不要假设下一个 CI run 会把 production 推到位**——状态机 chore commit 通常不触发 CI。
+
+3. **Evaluator 复验 Production HEAD ≡ main HEAD 之前**，先 `curl /api/health.version | jq -r .version` + `git rev-parse HEAD`，若不等价且 diff 仅含状态机文件（v0.9.25 §Production/HEAD 等价性 判断规则），可直接接受；若 diff 含产品文件或 spec 文件，自行 `gh workflow run "<App> Deploy" -r main` 等绿后再签收，不必再让 Generator 起新 fix-round。
+
+**反面案例（B025 F006 round-3 / round-4）：** round-3 commit `f45ac46`（Generator 状态机推 reverifying）→ production 仍 `afa154d` → Codex 标 reverify3-blocker。Generator round-4 commit `abaaf6e` 引入 `workflow_dispatch`（先前 `afa154d` 已上线），但 main 又前进到 `b34092d`（Codex 写 signoff 的 commit）→ 再次落后。最终 Codex 自己 dispatch deploy 让 production 追到 `abaaf6e` 才完成 Production/HEAD 等价性判定（`b34092d` 仅 signoff metadata 入 `git diff` 接受不同步）。整条 race 本可在 round-1 时就用本规则避免。
+
+**来源：** B025-us-quality-momentum-satellite F006 round-3 / round-4 deploy drift；commits `afa154d`（workflow_dispatch 上线）+ `abaaf6e`（最终签收前 SHA）+ signoff `docs/test-reports/B025-us-quality-signoff-2026-05-25.md` §Soft-watch S2 + §Framework Learnings 新规律。
+
 ---
 
 ## 13. Frontend SSR vs Browser context（v0.9.24 — B021 沉淀）

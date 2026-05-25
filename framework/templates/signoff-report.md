@@ -114,6 +114,33 @@
 
 ---
 
+## Post-signoff Deploy（v0.9.27 — B025 沉淀）
+
+> 本节由 Evaluator 在签收时填写。**签收 commit 本身会推进 `main` 而引入一个新的状态机/元数据 commit**，让 production 自动落后一个 SHA。本段显式记录是否需要 post-signoff 手动 dispatch deploy，避免 v0.9.25 §Production/HEAD 等价性 在下一轮被反复打破。
+>
+> 适用对象：任何 cloud-deployed 批次（B021 及以后含 cloud deploy 的批次）。
+> 纯本地研究 / 纯框架 / 纯文档批次本节可写"批次不含 cloud deploy"。
+
+| 项 | 值 |
+|---|---|
+| 签收 commit 类型 | `signoff-report only` / `signoff + status machine` / `signoff + product change` |
+| Post-signoff dispatch 是否需要 | **是 / 否** |
+| Dispatch 命令（若是） | `gh workflow run "<App> Deploy" -r main`（含具体 workflow 名） |
+| Workflow run 链接（若是） | `https://github.com/<owner>/<repo>/actions/runs/<id>` |
+| Production 最终 SHA = signoff commit SHA | `<sha>`（dispatch deploy 完成后填写） |
+| 接受不同步声明（若否） | 如：`本签收 commit 仅含 signoff 报告，未推产品代码；按 v0.9.25 §Production/HEAD 等价性 接受不同步，无需 dispatch。` |
+
+**判断规则（必须二选一）：**
+
+1. **必须 dispatch**：signoff commit 含**任何**会改变 `workbench/**` / `trade/**` / `docs/specs/**` / `framework/**` 之 production runtime behavior 的改动；或者 signoff commit 含 deploy script / Dockerfile / nginx / systemd unit / env 模板等 deploy-impacting 配置改动。
+2. **可不 dispatch**：signoff commit 仅含 `progress.json` / `features.json` / `.auto-memory/**` / `docs/test-reports/**` / `docs/screenshots/**` 等纯状态机/证据文件，按 v0.9.25 §Production/HEAD 等价性 接受不同步。
+
+**Evaluator 强制：** 选 "必须 dispatch" 时，必须在 signoff PR / commit 推到 main 后立即执行 `gh workflow run` 并等 deploy run 绿，再把 Production 最终 SHA 填回本段。**不要让 Generator 起新 fix-round 做这件事**——状态机 race 由 Evaluator 闭环。
+
+来源：B025 F006 round-3 / round-4 deploy drift 实战；signoff `docs/test-reports/B025-us-quality-signoff-2026-05-25.md` §Soft-watch S2 + §Framework Learnings 模板修订；配套 `framework/harness/generator.md` §12.7（Generator chore commit 后 dispatch 规约）+ `framework/harness/evaluator.md` §21（Evaluator signoff 模板使用规约）+ `framework/harness/planner.md` §Cloud-deploy spec checklist v0.9.27 扩展。
+
+---
+
 ## Soft-watch（不阻塞 done，需后续跟进）
 
 > 本节由 Evaluator 在签收时填写。低-中风险或边界条件遗留事项列入此处，记录"非 bug 但要记账"的事实。每条声明 ID / 描述 / 风险等级 / 建议处置。
