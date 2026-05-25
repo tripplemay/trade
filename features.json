@@ -14,7 +14,7 @@
       "title": "Codex L1 + L2 真 VM 验收 + signoff + framework 候选记录",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "L1 (CI 内): F001 generator 验收脚本全过：lint / typecheck / vitest ≥162 / build / npm audit / 同源 regression / safety regression / messages key parity / 中文按钮禁词 grep 0 / Backend pytest ≥320 + ruff + mypy 不破 / Playwright ≥33 (29 baseline + ≥4 新 banner 双 locale)。L2 (真 VM): (1) OAuth → Home 默认 zh-CN：banner 头部 '研究原型 · 仅含合成数据 · 不构成投资决策依据' 可见；(2) 切 en → banner 头部 'Research prototype · Synthetic data only · Not for investment decisions' 可见；(3) 切回 zh-CN cookie 持久 + banner 跟随切换；(4) 5 protected 路由全部出现 banner (/strategies / /recommendations / /risk / /reports / /backtest 抽样 ≥3 个)；(5) 点 banner × 后同会话页面不再显示，reload 后重新出现；(6) Markdown 报告 (B024 既有双语 disclaimer) 不受影响；(7) /api/debug/recent-errors count=0 after full L2 flow；(8) Production HEAD ≡ main HEAD (同 SHA)；(9) 副作用：本批次不动 account state，不需恢复。Signoff: docs/test-reports/B026-synthetic-data-banner-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md (含 §Production/HEAD 等价性 + §Post-signoff Deploy 双段；v0.9.27/v0.9.28 模板)；docs/screenshots/B026-banner/{zh-CN,en}/ ≥4 PNG (zh + en 各 2 张：home + reports 或 strategies)。Framework 候选：本批次预计为轻量 lead-in 无重大新规律；若 fix-round 出现意外信号记录在 signoff §Framework Learnings；否则按 v0.9.28 留空。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]

@@ -4,10 +4,11 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B026-synthetic-data-banner：`reverifying`（fix-round 2）**；F001 fix（commit d02ad79）给 dismiss 加 vanilla DOM fallback；等 Workbench Deploy 自动触发后 Codex 在 production 复测。
+- **B026-synthetic-data-banner：`done`**；F001/F002 全部完成，signoff 已出：`docs/test-reports/B026-synthetic-data-banner-signoff-2026-05-26.md`。
 - 目标：Layer 0 期间所有 protected 页面顶部加持久 banner，明确但克制标注「研究原型 · 仅含合成数据 · 不构成投资决策依据」+ 英文。防止误用 synthetic 数字做实盘决策。
-- Codex reverify 结论：Generator 关于首轮本地红项的判断是对的；`rm -rf .next node_modules && npm ci` 后，frontend `npm run build`、`/login`、full Playwright `38 passed` 全部恢复，证明上一轮 L1 问题是本机环境污染，不是产品实现回归。L2 唯一红项是 production 点击 dismiss 后 banner 不隐藏。
-- fix-round 2 修复：SyntheticDataBanner 保留 React onClick → setDismissed 主路径，新增 useEffect 绑 vanilla addEventListener 把 container.style.display 设 'none' 作为冗余路径；任一路径独立满足『hide now』；reload 仍由 SSR 重渲实现『reappear』。本地 vitest 166 / lint / typecheck / build / npm audit / safety / local prod-mode Playwright b026 6/6 全绿。L2 4 张截图一并入 commit `docs/screenshots/B026-banner/`。
+- 最终结论：Generator fix-round-2 解除 production dismiss blocker。Evaluator 在 `c4221d0` 上确认 `d02ad79..HEAD` 无产品代码漂移，仅有 handoff 元数据；targeted L1（build + banner unit 9/9 + focused Playwright 6/6）全绿。
+- focused production L2 通过：`https://trade.guangai.ai/strategies` 上 zh-CN banner 初始可见，点击 `×` 后同页立即隐藏，reload 后按 spec 重现；authenticated `/api/debug/recent-errors` 返回 `{\"count\":0,\"records\":[]}`；production `/api/health.version == main HEAD == c4221d0`（签收前）。
+- 当前轮关键截图已落盘 `docs/screenshots/B026-banner/zh-CN/strategies-before-close.png`、`strategies-after-close.png`、`strategies-after-reload.png`、`recent-errors.png`；既有 en/zh screenshots 继续保留满足 spec ≥4 PNG。
 - 本批次属 implementation-path-2026-05.md §4 **Phase 0 第一个 batch**（独立无依赖）。预估 1 个轻量批次。
 - 后续路径：B027 (Phase 1.A 数据源选型) → B028 (1.B 价格) → B029 (1.C 财务) → B030 (1.D 全 sleeve 切真) → 里程碑 A Layer 0→1。
 
@@ -17,7 +18,7 @@ type: project
 
 ## 生产状态
 - `https://trade.guangai.ai` live with 双语 workbench（默认 zh-CN，可切 en）+ OAuth + /api/health + /api/debug/recent-errors + daily 03:00 UTC backup + 4 sleeve 完整持仓展示（含 satellite_us_quality 5 因子，仍 synthetic data）。
-- Production HEAD = main HEAD = `c9274b5`；当前阻塞不是 deploy drift，而是生产上的 banner dismiss 交互未生效。
+- 签收前 Production HEAD = main HEAD = `c4221d0`；签收 commit 仅含元数据 / 报告 / 截图证据，按 v0.9.25 §Production/HEAD 等价性 接受 signoff 后 metadata-only 不同步，无需额外 dispatch。
 
 ## 永久硬边界（B026 起继续；v0.9.28）
 - 系统层：no-broker SDK / no-paper-or-live URL / no-credential / no-auto-execution / 多用户禁 / Cloud SQL 禁 / same-origin /api/* / auth-gated / Repository 读写非直 file
