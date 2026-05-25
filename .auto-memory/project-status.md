@@ -4,10 +4,11 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B026-synthetic-data-banner：`verifying`**；F001 completed（generator commit 9571f3d）+ F002 pending（codex L1+L2 真 VM + signoff）。Spec：`docs/specs/B026-synthetic-data-banner-spec.md`。
+- **B026-synthetic-data-banner：`fixing`**；F001 completed（generator commit 9571f3d），F002 首轮验收被打回。Blocker：`docs/test-reports/B026-synthetic-data-banner-blocker-2026-05-25.md`。
 - 目标：Layer 0 期间所有 protected 页面顶部加持久 banner，明确但克制标注「研究原型 · 仅含合成数据 · 不构成投资决策依据」+ 英文。防止误用 synthetic 数字做实盘决策。
-- 决策矩阵（2026-05-25 用户已批）：本会话隐藏可关闭性（点 × 会话级 React state，reload 重现）/ env var `NEXT_PUBLIC_SYNTHETIC_DATA_BANNER` 手动控制（Phase 1 done 时手动改 false 隐藏）/ 明确但克制文案 + 浅黄背景 + Info 图标 / 仅 protected 路径 / 双语继承 B024 i18n。
-- F001 本地 gates 全绿：lint=0 / typecheck=0 / vitest 165 passed（157→165，+8 新 specs，spec ≥162 满足）/ build OK / npm audit no-high / safety regression unchanged。Backend 不动。
+- Codex 首轮结论：production hash 等价性正常（`/api/health.version == c9274b5...`），backend/trade 全绿，frontend lint/typecheck/vitest 165/npm audit/grep 也绿；但 `npm run build` 与 Playwright runtime 同时失败。
+- build blocker：Next.js page-data collection 报 `PageNotFoundError: Cannot find module for page: /execution/journal-history` 与 `/execution/position-diff`，尽管对应 `src/app/(protected)/execution/.../page.tsx` 文件存在。
+- Playwright blocker：匿名 `/login` 与 `/ -> /login` 直接渲染 `Internal Server Error`；同一运行态错误级联到 protected-route shell、旧 B025 bilingual suite、以及新 B026 banner suite，所以缺失 `workbench-topbar` / `synthetic-data-banner` 只是下游症状。
 - 本批次属 implementation-path-2026-05.md §4 **Phase 0 第一个 batch**（独立无依赖）。预估 1 个轻量批次。
 - 后续路径：B027 (Phase 1.A 数据源选型) → B028 (1.B 价格) → B029 (1.C 财务) → B030 (1.D 全 sleeve 切真) → 里程碑 A Layer 0→1。
 
@@ -17,6 +18,7 @@ type: project
 
 ## 生产状态
 - `https://trade.guangai.ai` live with 双语 workbench（默认 zh-CN，可切 en）+ OAuth + /api/health + /api/debug/recent-errors + daily 03:00 UTC backup + 4 sleeve 完整持仓展示（含 satellite_us_quality 5 因子，仍 synthetic data）。
+- Production HEAD = main HEAD = `c9274b5`；当前阻塞不是 deploy drift，而是本地前端 build/runtime 回归。
 
 ## 永久硬边界（B026 起继续；v0.9.28）
 - 系统层：no-broker SDK / no-paper-or-live URL / no-credential / no-auto-execution / 多用户禁 / Cloud SQL 禁 / same-origin /api/* / auth-gated / Repository 读写非直 file
