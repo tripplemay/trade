@@ -8,20 +8,35 @@
 
 ## 1. 一句话定位
 
-> **Personal portfolio dashboard with quant brain inside.**
+> **AI-augmented personal portfolio decision support tool, built on a quant-strategy chassis.**
 >
-> 单人使用、辅助本人真实财产管理决策的私人投资 dashboard。后台有多策略量化研究框架（5 因子动量 + 风险平价 + satellite），前台呈现走 Robinhood-style 简化路线。永远不是 SaaS、永远不连券商、永远不自动下单。
+> 单人使用，辅助本人真实财产管理决策。**Quant 策略框架（Master Portfolio + 5 因子 + risk parity + satellite）做底层规则评分；AI 层叠加在 quant 之上，整合真实市场数据 + 新闻/宏观/行业信息，给出综合投资建议**。前台呈现走 Robinhood-style 简化路线。AI 不替代 quant 评分（避免幻觉直驱决策），不输出"预期收益"数字（避免误导），最终决策权与执行权 100% 在用户手上。永远不是 SaaS、永远不连券商、永远不自动下单。
+
+## 1.1 AI 角色与边界（B025 done 阶段用户明确）
+
+| AI 可做 | AI 不可做 |
+|---|---|
+| 解释 quant signal 含义（"为什么 Master 推荐这个 sleeve"）| 替代 quant signal（不能跳过 Master 评分直接给 buy/sell）|
+| 整合新闻 / SEC filings / 宏观数据 → 与 quant signal 协同的 context | 直接基于自然语言"我觉得 TSLA 要涨"给建议 |
+| Robinhood-style 简化文案（把 Sharpe / Sortino 翻成大白话）| 输出"预期年化 X%" / 任何收益预测数字 |
+| 给 actionable buy/sell 建议（基于 quant signal + news 综合）| 自动下单 / 连接 broker（永久硬边界）|
+| 给建议的可解释引用（哪条 quant signal + 哪条 news → 为什么建议这样）| 给无引用的黑盒建议（必须可追溯）|
+| 多语言（zh + en，继承 B024）| 跨用户分享建议（单用户 allowlist）|
+| 解释历史回撤归因 | 替代风控规则（kill-switch 仍由规则触发，不由 AI 判断）|
+
+**核心原则：AI 是 quant 与用户之间的翻译/整合层，不是策略本身。**
 
 ## 2. 三层定义（research / paper / live）
 
 | 层级 | 定义 | workbench 当前状态 | workbench 目标 |
 |---|---|---|---|
 | **Layer 0 — Synthetic research prototype** | 用合成 fixture 跑策略 / 回测，验证架构与交互，**所有数字都不能作为决策输入** | ✅ **当前位置**（B001-B025）。Master Portfolio 4 sleeve、5 因子评分、回测报告、Recommendations、Risk Panel 全部基于 synthetic data | 已完成；需在 UI 加 banner 显式声明（防止用户误用）|
-| **Layer 1 — Real historical data research** | 接入真实历史价格 snapshot + point-in-time 基本面，**回测指标第一次有意义** | ❌ 未到达 | **下个里程碑**（用户在 done 阶段明确选择）|
+| **Layer 1 — Real historical data research** | 接入真实历史价格 snapshot + point-in-time 基本面，**回测指标第一次有意义** | ❌ 未到达 | **核心里程碑 #1**（与 Home/UI 改造同等重要并行推进，用户 done 阶段明确）|
+| **Layer 1.5 — AI-augmented advisory (新增)** | quant signal + real data + news/macro context → AI 综合投资建议（含可解释引用，不含预期收益）| ❌ 未到达 | **核心里程碑 #2**（与 Layer 1 平行；Layer 1 为前提）|
 | **Layer 2 — Paper trading** | 真实数据 + 模拟下单（仍 no-broker SDK） | ❌ 未到达 | 中期，价值未知（用户当前是手动 IBKR 实盘，paper 价值偏低）|
 | **Layer 3 — Live trading（broker SDK 接入）** | 自动化下单 | ❌ 永不到达 | **永久边界**，不在产品 roadmap |
 
-**关键：** Layer 0→1 是本年度最重要的产品里程碑。
+**关键：** Layer 0→1（real data） + Layer 0→1.5（AI advisory）+ Home/UI 简化重构 三件大事**并行推进**，本年度产品 roadmap 中心。
 
 ## 3. 目标用户（仅 1 人）
 
@@ -80,27 +95,43 @@
 - ❌ **自动下单 / broker SDK 接入**（永远）
 - ❌ **GDPR / SOC2 / compliance certifications**（不商业化所以不需要）
 - ❌ **paper trading 自动化**（你已经手动 IBKR 实盘，paper 价值低）
-- ❌ **AI 直接决策 / fit-predict 模型**（永久边界）
+- ❌ **AI 替代 quant 评分直接给 buy/sell**（保持 quant 作为基础规则层；AI 是叠加层而非替代层）
+- ❌ **AI 输出"预期收益"数字 / 任何收益预测**（防止误导）
+- ❌ **AI 触发 kill-switch / 自动风控决策**（kill-switch 仍由规则触发，AI 不接管风控）
 - ❌ **房产 / 保险 / 加密 资产管理**（不在 workbench 范围；保留在外部工具）
 - ❌ **跟单 / 社区 / leaderboard**（个人工具）
+
+## 6.1 永久边界更新（B025 done 阶段，待 framework 沉淀）
+
+原 framework v0.9.21-v0.9.27 永久边界中的 `no-AI fit/predict` 在产品定位明确后应**精细化**为：
+
+| 旧表述（v0.9.21-v0.9.27）| 新表述（待 framework v0.9.28 沉淀）|
+|---|---|
+| `no-AI fit/predict` 一刀切 | (a) `no-AI auto-execution`（永久）<br>(b) `no-AI 收益预测数字输出`（永久）<br>(c) `no-AI 替代 quant 评分作为唯一决策依据`（永久）<br>(d) `AI 必须基于 quant signal + real data + 可引用 news` 才能输出建议（永久）<br>(e) AI 解释 / summarize / translate / context aggregation **允许** |
 
 ## 7. 后续批次（基于本定位重新评估）
 
 | Backlog | 在本定位下的价值评估 | 建议优先级 |
 |---|---|---|
-| **Real data ingest**（B009 snapshot 路径升级 + 全 sleeve 替换 fixture） | Layer 0→1 必经；让所有现有 sleeve 第一次有真实指标 | **新增 high**，应优先于 HK-China |
-| **Home 页 dashboard 重构 + market context** | Daily engagement 核心；用户每日打开主要看 Home | **新增 high** |
-| **Reports / Recommendations UI Robinhood-style 简化** | UI 重大改造但与 Layer 0→1 平行可做 | **新增 medium-high** |
-| **UI synthetic-data banner**（轻量提示 + i18n）| 在 Layer 0 期间防止误用，应尽快做 | **新增 medium**，1 个轻量批次 |
-| **BL-B011-S2 HK-China satellite**（原 high）| 仍是 fixture，不解决 Layer 0→1，价值有限 | **降级 medium**（等真数据接入后再做）|
-| **BL-B010-S1 risk parity 专用 fixture**（原 low）| 同上，fixture 时代产物 | **不再做**（Layer 0→1 后自然过时）|
+| **Real data ingest**（B009 snapshot 路径升级 + 全 sleeve 替换 fixture） | Layer 0→1 必经；让所有现有 sleeve 第一次有真实指标；AI advisory 的硬前置 | **新增 critical**（与下两条并行 #1）|
+| **News / market context / SEC filings ingest** | Layer 0→1.5 AI advisory 的信息源；Home 页 daily engagement 内容 | **新增 critical**（与上下并行 #2）|
+| **AI advisory engine**（LLM 接入 + prompt template + cache + safety + 可解释引用） | Layer 0→1.5 核心；用户原本期望 + 路径 B 落地 | **新增 critical**（依赖前两条；可与其早期并行设计）|
+| **Home 页 dashboard 重构**（NAV + Day P&L + news context + 4 sleeve breakdown + AI 综合建议） | Daily engagement 核心；用户每日打开主要看 Home | **新增 high**，与 critical 三件平行 |
+| **Reports / Recommendations UI Robinhood-style 简化** | UI 重大改造；与 critical 三件平行可做 | **新增 medium-high** |
+| **UI synthetic-data banner**（轻量提示 + i18n）| Layer 0 期间防止误用；Layer 0→1 完成前必装 | **新增 medium**，1 个轻量批次 |
+| **Framework v0.9.28 永久边界精细化** | 把 `no-AI fit/predict` 一刀切改为本 doc §6.1 5 子条 | **新增 medium**，1 个轻量批次 |
+| **BL-B011-S2 HK-China satellite**（原 high）| 仍是 fixture，不解决 Layer 0→1 / 0→1.5，价值有限 | **降级 low**（等真数据接入 + AI advisory 框架成型后再做）|
+| **BL-B010-S1 risk parity 专用 fixture**（原 low）| fixture 时代产物 | **不再做**（Layer 0→1 后自然过时）|
 | **BL-B013-D1 / BL-B013-D2**（原 low）| vol-target / VIX overlay 研究 | **保持 low**，待真数据后再评估 |
 | **BL-B023-S1 / BL-B023-S2**（原 low）| 生产冒烟演练 | **保持 low**，环境完成后做 |
 
 ## 8. 衍生 framework 议题（不立即处理，记账）
 
-1. **永久边界增补建议：** 当前 framework v0.9.21-v0.9.27 都从技术维度定义边界（no broker / no live / Repository pattern），需要补**产品边界**（"不商业化 / 不替决策 / 全资产范围"）。建议下次 framework 沉淀加入"product boundary"层。
+1. **永久边界精细化（v0.9.28 候选）：** 把当前 `no-AI fit/predict` 一刀切改为本 doc §6.1 5 子条；同时新增"product boundary"层（不商业化 / 不替决策 / 全资产范围）。
 2. **测试断言风险：** 现有大量回测断言基于 fixture 范围（如 B025 "年化 [5%,25%] / Sharpe [0.3,1.5] / MDD<50%"）。Layer 0→1 切换时这些断言会全部失效，需提前规划 fixture vs real-data assertion 切换策略（v0.9.21 testing-and-fixture-policy 已部分覆盖，需扩展）。
+3. **AI advisory safety pattern（新议题）：** LLM 接入框架在 framework 中尚无任何沉淀。Layer 0→1.5 需要：(a) prompt template 版本管理；(b) cache 策略（同 quant signal + 同 news context → 同建议，可缓存）；(c) cost 控制（用户每日查 1 次 vs 每天 100 次的 cost 量级差）；(d) safety eval（红队测 AI 给"预期收益"、给 buy/sell 而无引用、跟单 hallucination 的失败率）；(e) human review fallback（AI 不确定时升级给用户判断）。
+4. **数据来源选型议题：** 真实价格数据有多种来源（Polygon / Alpha Vantage / yfinance / IEX / EODHD / SEC EDGAR）；基本面 point-in-time 更受限（Polygon / FactSet / Refinitiv 付费）。Layer 0→1 第一批次需做选型 + 评估 + 决策。
+5. **AI provider 选型议题：** Anthropic / OpenAI / Gemini / local LLM 各有权衡（cost / quality / latency / context length）。Layer 0→1.5 第一批次需做选型 + 评估。
 
 ## 9. Doc Lifecycle
 

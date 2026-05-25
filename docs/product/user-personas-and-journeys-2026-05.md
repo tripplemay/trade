@@ -37,11 +37,20 @@
 │                                                         │
 │  🟢 Portfolio status: Normal · Next rebalance in 12d    │
 │                                                         │
+│  💡 AI Advisor today (基于 quant signal + market news): │
+│  "Master Portfolio 维持当前 4 sleeve 配置；当前无       │
+│   触发调仓信号。值得关注：(1) Fed 鹰派表态可能压制      │
+│   久期资产（影响你的 risk_parity sleeve 中的 IEF 仓位）  │
+│   (2) TSMC 财报超预期 → US Quality sleeve 中 NVDA / TSM │
+│   动量信号略增强。**建议：继续持有，下周日复盘**。"     │
+│   📎 引用：quant_signal: master.snapshot.2026-05-25    │
+│         news: bloomberg.fed-minutes / wsj.tsmc-q1     │
+│  ⚠️ 这是研究参考，不是收益预测。最终决策由你判断。      │
+│                                                         │
 │  📰 Today's market context:                             │
 │  • S&P 500 +0.3% · QQQ +0.5% · 10y yield 4.21%         │
-│  • Fed minutes released (sentiment: neutral hawkish)    │
+│  • Fed minutes released                                 │
 │  • TSMC reports Q1 earnings beat                        │
-│  • [Industry news affecting your sleeves...]            │
 │                                                         │
 │  4 Sleeve Snapshot:                                     │
 │  ├─ Momentum (40%)     +0.6% today  ✅                  │
@@ -53,11 +62,18 @@
 └─────────────────────────────────────────────────────────┘
 ```
 
+**关键 UI 设计原则：**
+- **AI Advisor 段位置最显眼**（用户每天最想看的）
+- **每条建议必带引用**（quant_signal SHA / news source URL）—— 不可解释的建议禁止呈现
+- **永远显示 disclaimer**（"研究参考，不是收益预测"）—— 双语
+- **不写预期收益数字**（不写"预期年化 X%"）
+- **AI 没有触发调仓权限**（建议只是文案，调仓仍由 quarterly cadence / kill-switch 规则触发）
+
 **用户行为流：**
 
-1. **0-5 秒**：扫一眼总 NAV + 今日涨跌 + 状态绿灯 → 满意 / 关闭页面 / 继续看
-2. **5-30 秒（若有时间）**：浏览今日市场新闻 + 4 sleeve breakdown，了解资产为什么涨/跌
-3. **30 秒-2 分钟（若有 alert）**：点击 alert（如 sleeve drawdown > 5% / kill-switch warning），看详情决定是否调仓
+1. **0-5 秒**：扫一眼总 NAV + 今日涨跌 + 状态绿灯 + AI 一句话建议 → 满意 / 关闭页面 / 继续看
+2. **5-30 秒（若有时间）**：读完 AI Advisor 全段 + 浏览今日市场新闻 + 4 sleeve breakdown
+3. **30 秒-2 分钟（若 AI 提示关注 / 有 alert）**：点击 AI 建议引用 → 看 quant_signal 详情 + news 原文 → 决定是否调仓
 
 **90% 的日子用户停在 0-5 秒** —— "看一眼放心，关掉"。
 **10% 的日子用户进入 30 秒-2 分钟** —— 真实关注 alert 或好奇 sleeve 表现。
@@ -111,7 +127,10 @@
 | 每天调仓 | Master Portfolio quarterly cadence；用户认同低频 actuation |
 | 在 workbench 下单 | 永久边界 no broker；用户认同手动 IBKR |
 | 用 workbench 选股 | 用户接受 Master Portfolio 系统化框架，不做主观个股选择 |
-| 用 workbench 直接看 LLM 建议 | 永久边界 no AI fit/predict |
+| 让 AI 直接出"今天买 X 卖 Y" 无引用建议 | AI 建议必须引用 quant signal + news；不可凭空 hallucinate |
+| 让 AI 输出"预期年化 X%" | AI 不出收益预测数字（防止误导） |
+| 让 AI 触发自动调仓 / kill-switch | AI 只出文案建议；调仓 / kill-switch 仍由规则触发 |
+| 用 workbench 看 LLM 输出未经 quant 校验的策略 | AI 是 quant + news 的叠加层，不替代 quant |
 | 给朋友看 workbench | 单用户 allowlist；如有分享需求是另一种产品（不在范围内）|
 | 跟其他用户社区互动 | 个人工具，无社区 |
 
