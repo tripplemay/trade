@@ -79,6 +79,24 @@ if [[ -r "${ENV_FILE}" ]]; then
 else
   echo "  warning: ${ENV_FILE} not readable; alembic will use DEFAULT_DEV_DB_URL" >&2
 fi
+
+# B027 F001 — Tiingo Starter API key pre-flight. The TiingoSnapshotLoader
+# constructor raises a RuntimeError at first call when the key is missing,
+# which would only surface long after the service is back up. Failing the
+# deploy here makes the misconfiguration visible immediately instead of
+# at strategy run-time. The key lives in the GitHub repo secret
+# TIINGO_API_KEY → systemd EnvironmentFile path; tolerate empty during the
+# dev `deploy.sh` rehearsal (WORKBENCH_ENV_FILE unset) so a contributor
+# without a Tiingo account can still smoke this script locally.
+if [[ -r "${ENV_FILE}" ]] && [[ -z "${TIINGO_API_KEY:-}" ]]; then
+  echo "✗ TIINGO_API_KEY is missing from ${ENV_FILE}. The Tiingo adapter " >&2
+  echo "  (workbench_api/data/tiingo_loader.py) cannot start without it. " >&2
+  echo "  Configure the TIINGO_API_KEY repo secret (Settings → Secrets and " >&2
+  echo "  variables → Actions) and re-run the deploy workflow so the env " >&2
+  echo "  file is rewritten." >&2
+  exit 66
+fi
+
 echo "→ alembic upgrade head"
 (
   cd "${RELEASE_DIR}/backend"

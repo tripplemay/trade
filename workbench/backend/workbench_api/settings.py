@@ -24,6 +24,7 @@ ALLOWED_ENV_VARS: frozenset[str] = frozenset(
         "WORKBENCH_LOG_DIR",
         "WORKBENCH_REPORTS_DIR",
         "WORKBENCH_RUNS_DIR",
+        "TIINGO_API_KEY",
     }
 )
 """Environment variables the workbench backend is permitted to read.
@@ -80,6 +81,15 @@ class Settings(BaseSettings):
     WORKBENCH_REPORTS_DIR: str = DEFAULT_REPORTS_DIR
     # B022 F010 — directory the Recommendations export-ticket writes to.
     WORKBENCH_RUNS_DIR: str = DEFAULT_RUNS_DIR
+    # B027 F001 — Tiingo Starter API key for real-market-data snapshots.
+    # Backend-only secret; never inlined into the frontend bundle or build
+    # artefact. Production VM gets it via systemd EnvironmentFile (injected
+    # by the GitHub Actions deploy workflow from the TIINGO_API_KEY repo
+    # secret); local dev exports it in the shell when running real-loader
+    # tests. Unset is allowed at process boot so backend bootstrap stays
+    # vendor-free; the TiingoSnapshotLoader constructor raises with a
+    # rotation pointer when called without a resolvable key.
+    TIINGO_API_KEY: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=None,

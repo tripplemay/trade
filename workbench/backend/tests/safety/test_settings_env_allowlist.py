@@ -23,6 +23,8 @@ EXPECTED_ALLOWLIST: frozenset[str] = frozenset(
         "WORKBENCH_LOG_DIR",
         "WORKBENCH_REPORTS_DIR",
         "WORKBENCH_RUNS_DIR",
+        # B027 F001 — Tiingo Starter API key for real-market-data ingest.
+        "TIINGO_API_KEY",
     }
 )
 
