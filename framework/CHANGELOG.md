@@ -5,6 +5,25 @@
 
 ---
 
+## v0.9.26 — 2026-05-25（B024 沉淀，3 grouped learnings）
+
+**来源批次：**
+- B024-i18n-zh-cn F001-F006（commits `fde867d` / `9e398a1` / `caa2495` / `d6b90f1` / `57e6132` / `125e370` / `791c43e` / `67ef393` / `0176056` 链）
+- signoff `docs/test-reports/B024-i18n-signoff-2026-05-22.md` §Framework Learnings 3 候选（α / β / γ）
+
+**触发原因：**
+- B024 是 workbench 首次加 zh-CN locale。原 safety regression `tests/safety/no-execution-buttons.spec.ts` 只扫英文禁词（`execute / place order / send to broker`），任何中文翻译挑「执行清单 / 立即下单 / 一键交易」等英文禁词的语义等价都能绕过守门。后续加新 locale 必须扩集等价禁词的规约值得固化（候选 α）
+- B024 F001 装 next-intl@^3 + NextAuth v5 同时存在时，middleware chain 顺序 / 双模块拆分（`src/i18n.ts` server-only vs `src/i18n-config.ts` pure）/ vitest env / cookie 持久 一组规则非显然，连踩 4 个坑（webpack `pages/ not supported` / vitest happy-dom NextRequest 解析异常 / LocaleSwitcher import 路径 / 匿名首访漏写 cookie）。这套模式后续任何 NextAuth v5 + next-intl 项目都会再用，值得固化（候选 β）
+- B024 F005 Order ticket Markdown disclaimer 多语化时，spec 初稿一度倾向"按 locale 切换 disclaimer 文本"。最终走双语并存——同一份 Markdown 同时含英中两行 disclaimer，**永远不按 locale 切换内容**。理由：Markdown 按日期归档供 operator/auditor 单文件复审、legal review 不想跨多文件、IMMUTABLE 双 pin 防"翻译微调"破合规。这个权衡值得 framework 化以防后续 compliance 类文案再走错路（候选 γ）
+
+**变更：**
+- `framework/harness/planner.md` 新增 §"i18n 加新 locale 时 safety regression 必须扩集等价禁词（v0.9.26）"（spec acceptance 必含等价禁词扩集段 + 中文禁词参考清单 8 项 + safety regression 同 commit 扩集 + ≥10 spec assertion 0 命中 + messages bundle 按 button-类 key 名启发式扫描）
+- `framework/harness/planner.md` 新增 §"i18n disclaimer / compliance 文案双语永存（v0.9.26）"（disclaimer 双语并存而非按 locale 切换 + IMMUTABLE 双 pin EN+ZH + Markdown 章节标题/表头/checklist 同样双语 + 历史 ticket 不重写 + 适用范围扩展到 risk warning / kill-switch / regulatory 报送）
+- `framework/harness/generator.md` 新增 §15 "i18n middleware chain — next-intl + NextAuth + locale cookie 持久（v0.9.26）" 7 子节（15.1 双模块拆分 / 15.2 middleware chain 三分支都调 ensureLocaleCookie / 15.3 LocaleSwitcher 用原生 `<select>` 避 Radix SSR mismatch / 15.4 layout.tsx async + `<html lang={locale}>` / 15.5 TS AppConfig 类型链 typo 触发 tsc 报错 / 15.6 vitest middleware-locale 走 node env 不加 happy-dom / 15.7 4 反面案例汇总表）
+- 归档 `framework/archive/proposed-learnings-archive-v0.9.26.md`（含候选清单 + B024 signoff §Framework Learnings 摘选 + Planner done 阶段补写时机说明：Codex F006 acceptance 要求把 3 候选写入 proposed-learnings.md 但 signoff 只列未写实物，Planner 在 done 收尾时补写并直接归档）
+
+---
+
 ## v0.9.25 — 2026-05-18（B022 沉淀，4 grouped learnings 涵盖 9 items）
 
 **来源批次：**

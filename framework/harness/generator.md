@@ -603,3 +603,168 @@ def recent_errors():
 **Generator 规约：** 任何 FastAPI cloud app 起 spec 时必须含这 3 件套（global handler + ring buffer + auth-gated debug endpoint）。Codex L2 reverify 用 `GET /api/debug/recent-errors` 在每个真实写路径后核 `count=0`。
 
 来源：B022 F014 fix-round 2 `c2f22d5` + fix-round 4 `8d9a948`。Codex L2 用此 endpoint 验证缺表修复后写路径不再触发 OperationalError。
+
+---
+
+## 15. i18n middleware chain — next-intl + NextAuth + locale cookie 持久（v0.9.26 — B024 沉淀）
+
+**适用：** Next.js App Router 项目同时使用 `next-intl` (≥v3) 与 NextAuth v5 `auth()` middleware wrapper 时的串联与持久化。B024 F001 装这套时一次踩 4 个非显然坑，固化为框架规约避免下次重蹈。
+
+### 15.1 双模块拆分：`src/i18n.ts`（server-only）+ `src/i18n-config.ts`（pure）
+
+`getRequestConfig` / `getLocale` / `getMessages` 等 server-only API import `next/headers`，**任何 import 它们的模块都不能被 client / middleware bundle 加载**——webpack 会报 `'next/headers' is only allowed in Server Components ... pages/ directory not supported`。
+
+**规约：** 一开始就拆双模块：
+
+```ts
+// src/i18n.ts — server-only, 含 next/headers
+import { getRequestConfig } from 'next-intl/server';
+import { isLocale, LOCALES, DEFAULT_LOCALE } from './i18n-config';
+export default getRequestConfig(async () => {
+  const locale = await resolveLocale();
+  return { locale, messages: await loadMessages(locale) };
+});
+
+// src/i18n-config.ts — pure, 客户端 + 中间件都可 import
+export const LOCALES = ['zh-CN', 'en'] as const;
+export const DEFAULT_LOCALE = 'zh-CN' as const;
+export type AppLocale = (typeof LOCALES)[number];
+export const isLocale = (v: unknown): v is AppLocale => /* ... */;
+export const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+export const negotiateFromAcceptLanguage = (header: string | null): AppLocale => /* ... */;
+```
+
+**LocaleSwitcher / middleware 必须 import `@/i18n-config`，不能 import `@/i18n`** ——否则 webpack 立刻红屏。
+
+### 15.2 middleware chain：先 NextAuth wrapper，再 ensureLocaleCookie 三分支都调
+
+NextAuth v5 的 `auth()` wrapper 提供"已授权/未授权/公开"三个分支；i18n 的 cookie 协商必须在三个分支都执行，否则匿名首访（未授权重定向 path）就漏写 `NEXT_LOCALE` cookie，再次访问仍走 default 协商。
+
+**规约：** 抽 `src/lib/locale-cookie.ts`，三分支都调：
+
+```ts
+// middleware.ts
+import { auth } from '@/auth';
+import { ensureLocaleCookie } from '@/lib/locale-cookie';
+
+export default auth((req) => {
+  const res = /* compute response based on auth */;
+  ensureLocaleCookie(req, res);  // 公共、未授权重定向、已授权三分支都要调
+  return res;
+});
+
+// src/lib/locale-cookie.ts
+export function ensureLocaleCookie(req: NextRequest, res: NextResponse): void {
+  const existing = req.cookies.get('NEXT_LOCALE')?.value;
+  if (existing && isLocale(existing)) return;
+  const negotiated = negotiateFromAcceptLanguage(req.headers.get('accept-language'));
+  res.cookies.set('NEXT_LOCALE', negotiated, {
+    maxAge: LOCALE_COOKIE_MAX_AGE,
+    sameSite: 'lax',
+    path: '/',
+  });
+}
+```
+
+cookie 规约：`maxAge=365d`、`SameSite=Lax`、`path=/`、name 固定 `NEXT_LOCALE`。
+
+### 15.3 LocaleSwitcher 用原生 `<select>` 而非 Radix portal
+
+Radix `Select` portal 在 SSR 期间会触发 hydration mismatch（dropdown content 走 portal 渲染时机与服务端不一致）。**用原生 `<select>` + `onChange` 写 cookie + `useTransition` + `router.refresh()`** 简单稳健：
+
+```tsx
+'use client';
+import { useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { LOCALES, LOCALE_COOKIE_MAX_AGE, type AppLocale } from '@/i18n-config';
+
+export function LocaleSwitcher({ current }: { current: AppLocale }) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  return (
+    <select
+      value={current}
+      onChange={(e) => {
+        document.cookie = `NEXT_LOCALE=${e.target.value}; Path=/; Max-Age=${LOCALE_COOKIE_MAX_AGE}; SameSite=Lax`;
+        start(() => router.refresh());
+      }}
+      disabled={pending}
+    >
+      {LOCALES.map((l) => <option key={l} value={l}>{l === 'zh-CN' ? '中文' : 'English'}</option>)}
+    </select>
+  );
+}
+```
+
+### 15.4 layout.tsx 改 async + NextIntlClientProvider + `<html lang={locale}>`
+
+```tsx
+// src/app/layout.tsx
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from 'next-intl/server';
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+  return (
+    <html lang={locale}>
+      <body>
+        <NextIntlClientProvider locale={locale} messages={messages}>{children}</NextIntlClientProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+`<html lang>` 必须按 locale 切，否则浏览器/无障碍工具仍按默认语言识别。
+
+### 15.5 TS AppConfig 类型链 — typo 触发 tsc 报错
+
+```ts
+// src/types/intl.d.ts
+import type zhCNMessages from '../../messages/zh-CN.json';
+declare module 'next-intl' {
+  interface AppConfig {
+    Messages: typeof zhCNMessages;
+    Locale: 'zh-CN' | 'en';
+  }
+}
+```
+
+之后 `t('common.foo.typo')` 在 tsc 阶段直接报错。**Messages 类型挂哪一语种 JSON 都行**（messages bundle key set bit-identical 是单独的 CI 守门），习惯挂 default locale。
+
+### 15.6 vitest middleware 测试用 node env，不能加 happy-dom
+
+`NextRequest` 的 cookie 解析在 happy-dom 环境下异常（response cookies 写不进 request cookie view，测断言全错），看似 next-intl 的 bug，实为 jsdom/happy-dom 对 `Request`/`Response` Web API 的兼容缺陷。
+
+**规约：** middleware-locale 类 spec 文件**不要**加 `@vitest-environment happy-dom`/`jsdom`，走默认 node env：
+
+```ts
+// tests/unit/middleware-locale.spec.ts — 不加 @vitest-environment
+import { NextRequest, NextResponse } from 'next/server';
+import { ensureLocaleCookie } from '@/lib/locale-cookie';
+
+describe('ensureLocaleCookie', () => {
+  it('writes NEXT_LOCALE cookie when missing', () => {
+    const req = new NextRequest(new URL('http://localhost/'), {
+      headers: { 'accept-language': 'zh-CN,zh;q=0.9' },
+    });
+    const res = NextResponse.next();
+    ensureLocaleCookie(req, res);
+    expect(res.cookies.get('NEXT_LOCALE')?.value).toBe('zh-CN');
+  });
+});
+```
+
+LocaleSwitcher / 组件测试仍用 happy-dom（React Testing Library 必需），只 middleware/Edge runtime 类用 node env。
+
+### 15.7 反面案例汇总（B024 F001 一次踩这 4 个）
+
+| 现象 | 根因 | 修法 |
+|---|---|---|
+| `'next/headers' ... pages/ directory not supported` | LocaleSwitcher 间接 import `@/i18n` 拉到 next/headers | 拆双模块（15.1），client 走 `@/i18n-config` |
+| middleware-locale.spec.ts 全红 | spec 头加了 `@vitest-environment happy-dom` 致 NextRequest cookie 解析异常 | 删指令走默认 node env（15.6） |
+| 匿名首访漏写 `NEXT_LOCALE` cookie | NextAuth 未授权重定向分支没调 `ensureLocaleCookie` | 三分支都调（15.2） |
+| dropdown SSR hydration warning | Radix portal SSR mismatch | 换原生 `<select>`（15.3） |
+
+**来源：** B024-i18n-zh-cn F001 commits `fde867d` + `9e398a1`；B024 signoff §Framework Learnings 候选 β。配套 planner.md §"i18n 中文按钮禁词扩集" + §"i18n disclaimer / compliance 文案双语永存" 是 Spec 层守门。
