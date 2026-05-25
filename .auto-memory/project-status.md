@@ -6,6 +6,7 @@ type: project
 ## 当前状态
 - **B027-real-data-snapshot-foundation：`verifying`**；F001 completed（11206ac）+ F002 completed（3d14413）+ F003 pending（codex L1+L2+signoff）。Spec：`docs/specs/B027-real-data-snapshot-foundation-spec.md`（含 2026-05-26 vendor reselect 修订）。
 - F001+F002 本地 gates 全绿：backend pytest 273+2 skipped（243 baseline + 32 新 specs；spec ≥10 ×2 floor ✓）/ ruff + mypy 清 / alembic up/down 验证 / trade pytest 727 + frontend vitest 166 unchanged。
+- **Production deploy 操作待用户**：bootstrap-env.yml 已在 dcf1463 补 TIINGO_API_KEY 注入，但 VM 上的 `/etc/workbench/workbench.env` 还没更新。Codex F003 L2 验收前用户需要：(a) dispatch bootstrap-env workflow（confirm=bootstrap-env）；(b) VM 上 admin `sudo install -m 640 -o root -g deploy /home/deploy/.bootstrap/workbench.env /etc/workbench/workbench.env`；(c) 手动 dispatch Workbench Deploy。前两次 Workbench Deploy（11206ac / 4f8e81d）失败于 deploy.sh exit 66（pre-flight check 设计如此），是预期 surfacing 而非回归。
 - 目标：为 Stream 1 Real Data 打地基。把 **Tiingo Starter $10/月** 接入 backend Repository 抽象层 + cost guard ($10 月 cap + 80% alert + BudgetExceeded raise) + GitHub Secret TIINGO_API_KEY 注入 .env.production。**不做** backfill / 不切 sleeve / 不动 strategy 代码（B028+ 责任）。
 - 决策矩阵（2026-05-26 用户已批，含 vendor reselect）：轻批次范围（Tiingo adapter + Repository + cost guard，不含 backfill）/ API key 方案 A（.env.production + GitHub Secrets）/ yfinance cross-check 留 B028 / vendor 原 Polygon.io rebrand 为 Massive.com 引发稳定性疑虑后改 Tiingo（独立 fintech 老牌 2014 起未 rebrand），月预算节省 $19。
 - 本批次属 implementation-path-2026-05.md §4 **Phase 1 起点（Stream 1.A）**。B026 banner 仍 enable 显示，B030 done 时 by acceptance 关闭。
