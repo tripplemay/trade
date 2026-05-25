@@ -90,12 +90,16 @@ def _master_drawdown_from_history(session: Session) -> float:
 def _per_sleeve_drawdowns(master_dd: float) -> list[SleeveDrawdown]:
     """Placeholder until F011 wires real per-sleeve nav tracking.
 
-    We surface a single ``master`` row so the schema stays well-defined
-    + the frontend can render *something* without having to special-case
-    an empty list.
+    We surface the ``master`` row plus a ``satellite_us_quality`` row so
+    the schema stays well-defined and the frontend's per-sleeve table
+    renders the new B025 sleeve. The satellite_us_quality drawdown is a
+    proxy of the master drawdown until F011 ships per-sleeve nav tracking.
     """
 
-    return [SleeveDrawdown(sleeve="master", drawdown=master_dd)]
+    return [
+        SleeveDrawdown(sleeve="master", drawdown=master_dd),
+        SleeveDrawdown(sleeve="satellite_us_quality", drawdown=master_dd),
+    ]
 
 
 def _classify_state(

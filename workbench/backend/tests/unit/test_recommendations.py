@@ -116,8 +116,10 @@ def test_current_returns_target_positions_when_account_present(
     client = _authed_client(tmp_path)
     payload = client.get("/api/recommendations/current").json()
     assert payload["account_present"] is True
-    # 4 sleeves in the registry → 4 target positions (equal-weight).
-    assert len(payload["target_positions"]) == 4
+    # B025 F005 extended the registry to five sleeves (added
+    # satellite_us_quality); recommendations now emits five equal-weight
+    # target positions.
+    assert len(payload["target_positions"]) == 5
     weights = [p["target_weight"] for p in payload["target_positions"]]
     assert sum(weights) == pytest.approx(1.0, abs=1e-3)
 

@@ -106,6 +106,27 @@
     "heatmap": {
       "title": "Turnover heatmap",
       "description": "Cells appear when sweep data lands (F008/F009 wire real values)."
+    },
+    "usQualityMomentum": {
+      "name": "US Quality Momentum",
+      "sleeveLabel": "satellite_us_quality",
+      "tagline": "5-factor rules-based sleeve, monthly rebalance, ≤7% per position, ≤30% per sector.",
+      "factors": {
+        "momentum": "Momentum",
+        "quality": "Quality",
+        "lowVol": "Low Vol",
+        "value": "Value",
+        "trend": "Trend"
+      },
+      "factorWeightsLabel": "Factor weights",
+      "factorWeights": "0.35 Momentum + 0.30 Quality + 0.15 Low Vol + 0.10 Value + 0.10 Trend",
+      "rebalanceLabel": "Rebalance frequency",
+      "rebalanceValue": "Monthly",
+      "topNLabel": "Holdings",
+      "topNValue": "Top 15 equal-weight",
+      "earningsWindowLabel": "Earnings avoidance",
+      "earningsWindowValue": "No new positions within 5 trading days of an earnings release",
+      "dataSource": "Synthetic fixture (synthetic data, not actual filings)"
     }
   },
   "backtest": {

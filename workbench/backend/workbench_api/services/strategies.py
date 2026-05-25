@@ -110,6 +110,39 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
         ),
         {"rebalance": "monthly", "estimator": "HRP"},
     ),
+    # B025 F005: surfaces the US Quality Momentum satellite sleeve on the
+    # /strategies list and detail panels. trade/portfolio/master.py is the
+    # canonical wiring point — this registry mirrors it for the workbench
+    # frontend (which never imports trade/* directly to keep the cloud
+    # build slim).
+    "B025-us-quality-momentum": (
+        _summary(
+            id="B025-us-quality-momentum",
+            name="US Quality Momentum / 美股质量动量",
+            sleeve="satellite_us_quality",
+        ),
+        StrategyProvenance(
+            spec_path="docs/specs/B025-us-quality-momentum-satellite-spec.md",
+            code_path="trade/strategies/us_quality_momentum",
+            last_sweep_path=(
+                "docs/test-reports/B025-us-quality-momentum-backtest-2024-12-31.md"
+            ),
+        ),
+        {
+            "rebalance": "monthly",
+            "top_n": 15,
+            "max_position_weight": 0.07,
+            "max_sector_weight": 0.30,
+            "earnings_window_days": 5,
+            "factor_weights": (
+                "momentum=0.35 quality=0.30 low_vol=0.15 value=0.10 trend=0.10"
+            ),
+            "note": (
+                "B025 satellite_us_quality (planning_weight=0.20). "
+                "Synthetic fixture only; not actual filings."
+            ),
+        },
+    ),
 }
 
 

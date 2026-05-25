@@ -106,6 +106,27 @@
     "heatmap": {
       "title": "换手率热力图",
       "description": "扫盘数据就绪后渲染（F008/F009 接入真实数据）。"
+    },
+    "usQualityMomentum": {
+      "name": "美股质量动量",
+      "sleeveLabel": "satellite_us_quality",
+      "tagline": "5 因子规则型组合，月度调仓，单股 ≤7%，行业 ≤30%。",
+      "factors": {
+        "momentum": "动量（Momentum）",
+        "quality": "质量（Quality）",
+        "lowVol": "低波（Low Vol）",
+        "value": "价值（Value）",
+        "trend": "趋势（Trend）"
+      },
+      "factorWeightsLabel": "因子权重",
+      "factorWeights": "0.35 动量 + 0.30 质量 + 0.15 低波 + 0.10 价值 + 0.10 趋势",
+      "rebalanceLabel": "调仓频率",
+      "rebalanceValue": "月度",
+      "topNLabel": "持仓数量",
+      "topNValue": "Top 15 等权",
+      "earningsWindowLabel": "财报规避",
+      "earningsWindowValue": "财报日前 5 个交易日不新开仓",
+      "dataSource": "合成 fixture（synthetic data, not actual filings）"
     }
   },
   "backtest": {

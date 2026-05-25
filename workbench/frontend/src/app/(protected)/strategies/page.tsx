@@ -11,19 +11,10 @@ import {
   SweepHeatmap,
   type SweepHeatmapCell,
 } from "@/components/chart";
-import {
-  DataTable,
-  type DataTableHandle,
-  dateColumn,
-} from "@/components/table";
+import { UsQualityMomentumHighlight } from "@/components/strategies/UsQualityMomentumHighlight";
+import { DataTable, type DataTableHandle, dateColumn } from "@/components/table";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { components } from "@/types/api";
 import type { ColDef } from "ag-grid-community";
 
@@ -130,10 +121,7 @@ export default function StrategiesPage() {
 
   // Resolve the currently-selected strategy id: ?selected URL param wins,
   // else first row of the loaded list. Detail fetch follows.
-  const effectiveSelected = useMemo(
-    () => selected ?? list[0]?.id ?? null,
-    [selected, list],
-  );
+  const effectiveSelected = useMemo(() => selected ?? list[0]?.id ?? null, [selected, list]);
 
   useEffect(() => {
     if (!effectiveSelected) {
@@ -203,6 +191,8 @@ export default function StrategiesPage() {
           </Button>
         </div>
       </header>
+
+      <UsQualityMomentumHighlight />
 
       <Card data-testid="strategies-list-card">
         <CardHeader>

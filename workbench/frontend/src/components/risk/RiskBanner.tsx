@@ -108,6 +108,24 @@ export function RiskBanner({ data, noFetch, className }: RiskBannerProps) {
             {payload.alternative_defensive_ticket.rationale}
           </p>
         ) : null}
+        {payload.per_sleeve_dd && payload.per_sleeve_dd.length > 0 ? (
+          <ul
+            data-testid="risk-banner-per-sleeve-list"
+            className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs sm:grid-cols-3"
+          >
+            {payload.per_sleeve_dd.map((sleeve) => (
+              <li
+                key={sleeve.sleeve}
+                data-testid={`risk-sleeve-${sleeve.sleeve}`}
+                className="font-mono"
+              >
+                <span className="text-muted-foreground">{sleeve.sleeve}</span>
+                {": "}
+                {(sleeve.drawdown * 100).toFixed(2)}%
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </CardContent>
     </Card>
   );

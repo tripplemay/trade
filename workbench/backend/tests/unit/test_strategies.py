@@ -57,20 +57,42 @@ def test_strategies_list_requires_auth(initialised_db: str) -> None:
     assert client.get("/api/strategies").status_code == 401
 
 
-def test_strategies_list_returns_four_sleeves(initialised_db: str) -> None:
+def test_strategies_list_returns_five_sleeves(initialised_db: str) -> None:
     client = _authed_client()
     response = client.get("/api/strategies")
     assert response.status_code == 200, response.text
     payload: dict[str, Any] = response.json()
     assert isinstance(payload["strategies"], list)
     ids = [entry["id"] for entry in payload["strategies"]]
-    # F007 acceptance — exactly the 4 sleeves spec calls out (B019 default).
+    # B022 F007 introduced the first four sleeves. B025 F005 adds the
+    # satellite_us_quality entry so the workbench surfaces the newly
+    # implemented strategy alongside the regime + risk parity sleeves.
     assert ids == [
         "B013-regime-quarterly",
         "B014-regime-stress",
         "B015-regime-active",
         "B016-risk-parity-hrp",
+        "B025-us-quality-momentum",
     ]
+
+
+def test_strategy_detail_us_quality_momentum_exposes_b025_config(
+    initialised_db: str,
+) -> None:
+    client = _authed_client()
+    response = client.get("/api/strategies/B025-us-quality-momentum")
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["id"] == "B025-us-quality-momentum"
+    assert payload["sleeve"] == "satellite_us_quality"
+    config = payload["config"]
+    assert config["top_n"] == 15
+    assert config["max_position_weight"] == 0.07
+    assert config["max_sector_weight"] == 0.30
+    assert "0.35" in config["factor_weights"]
+    assert payload["provenance"]["spec_path"].endswith(
+        "B025-us-quality-momentum-satellite-spec.md"
+    )
 
 
 def test_strategy_detail_known_id_returns_provenance(initialised_db: str) -> None:
