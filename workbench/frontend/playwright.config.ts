@@ -69,7 +69,11 @@ export default defineConfig({
         storageState: SESSION_STATE_FILE,
       },
       dependencies: ["setup"],
-      testMatch: ["e2e/protected-routes.spec.ts", "e2e/b025-us-quality-bilingual.spec.ts"],
+      testMatch: [
+        "e2e/protected-routes.spec.ts",
+        "e2e/b025-us-quality-bilingual.spec.ts",
+        "e2e/b026-synthetic-banner.spec.ts",
+      ],
     },
   ],
 });

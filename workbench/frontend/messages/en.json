@@ -564,5 +564,9 @@
     "ticketGeneratedNormal": "Generated normal ticket {id}",
     "ticketGeneratedDefensive": "Generated defensive ticket {id}",
     "ticketVoided": "Ticket {id} voided"
+  },
+  "syntheticBanner": {
+    "headline": "Research prototype · Synthetic data only · Not for investment decisions",
+    "ariaClose": "Dismiss this notice"
   }
 }

@@ -564,5 +564,9 @@
     "ticketGeneratedNormal": "已生成 Normal 清单 {id}",
     "ticketGeneratedDefensive": "已生成 Defensive 清单 {id}",
     "ticketVoided": "清单 {id} 已作废"
+  },
+  "syntheticBanner": {
+    "headline": "研究原型 · 仅含合成数据 · 不构成投资决策依据",
+    "ariaClose": "关闭此提示"
   }
 }

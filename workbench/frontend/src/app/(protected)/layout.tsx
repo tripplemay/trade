@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { SessionProvider } from "@/components/shell/SessionProvider";
+import { SyntheticDataBanner } from "@/components/SyntheticDataBanner";
 import { ThemeProvider } from "@/components/shell/ThemeProvider";
 import Footer from "@/components/shell/Footer";
 import SideNav from "@/components/shell/SideNav";
@@ -30,6 +31,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
     <SessionProvider session={session}>
       <ThemeProvider>
         <div className="flex min-h-screen flex-col">
+          <SyntheticDataBanner />
           <TopBar />
           <div className="flex flex-1">
             <SideNav />
