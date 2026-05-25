@@ -4,11 +4,9 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B025-us-quality-momentum-satellite：`fixing`**；F001-F005 ✅；F006 fix-round-3 的功能复验已通过，但仍被 `Production HEAD ≡ main HEAD` 打回。最新 blocker：`docs/test-reports/B025-us-quality-reverify3-blocker-2026-05-25.md`。
-- fix-round-3 本身是对 deploy 链路的修复：`.github/workflows/workbench-deploy.yml` 加 `workflow_dispatch` trigger，让 chore-only main SHAs 也能部署；`afa154d` 已成功部署到 production。
-- 新问题是 `main` 又前进了一个 chore commit：当前 `origin/main` = `f45ac46`，而 production `/api/health.version` 仍是 `afa154d`，所以 hash 等价性再次失效。
-- Codex round-3 结论：L1 全绿。backend `pytest 241+2 skipped` + ruff + mypy，trade `pytest 727` + mypy，frontend lint/typecheck/vitest 157/build/npm audit 全过。首次 Playwright 失败是旧本地栈污染；重启到 `f45ac46` 后，B025 bilingual suite `14/14 passed`。
-- L2 功能面继续通过：production 上 zh-CN + en 的 `/strategies`、`/recommendations`、`/risk`、`/reports`、`/reports/[slug]` 均正常；`/api/debug/recent-errors` 为 `200 {"count":0,"records":[]}`；locale switch 聚焦复现 `3/3` 成功并持久到 `/risk`。
+- **B025-us-quality-momentum-satellite：`reverifying`**（fix-round 4，仅 deploy 补部署）；F001-F005 ✅；F006 round-3 L1+L2 功能全过，唯一阻塞是 `Production HEAD ≡ main HEAD`，本轮先把状态机推到位再立即 dispatch deploy，让 production 落在最终 chore SHA。Blocker 报告：`docs/test-reports/B025-us-quality-reverify3-blocker-2026-05-25.md`。
+- 策略：本 commit 推送后立即 `gh workflow run "Workbench Deploy" -r main`，验证 `/api/health.version` 等于本 commit SHA。
+- 框架层潜在 race（已记入 generator_handoff）：每轮 fixing→reverifying 都会产生一个 chore commit，每次 chore 后 production 都会落后一个 commit。可能需要 framework v0.9.27 候选加 `docs-only-deploy` workflow 或要求 Codex 在 done 阶段也 dispatch deploy。
 - 目标：把 Master Portfolio 的 `satellite_us_quality` sleeve 从 stub 升级为 implemented_strategy，对应 5 因子美股个股策略 + workbench UI 双语展示（继承 B024 i18n）。预估 3-4 周。
 - 范围决策（2026-05-25 用户已批）：全栈（strategy + backtest + Master Portfolio + workbench UI）；纯 fixture / mock（synthetic data, not actual filings）；strategy doc §7 完整版因子权重 `0.35 mom + 0.30 quality + 0.15 lowvol + 0.10 value + 0.10 trend`；股票池 = S&P 500 + Nasdaq 100 30-50 ticker 子集跨 ≥7 GICS sector；Top 15 等权；单股 ≤7% / 行业 ≤30%；财报前 5d 不新开仓；月度信号 + Master quarterly cadence；HK-China satellite 留 B026 候选。
 - Feature 分配：F001 fixture+universe+filter / F002 5 因子计算 / F003 综合评分+选股+约束 / F004 Master 接入+backtest / F005 workbench UI 双语 (generator) + F006 Codex L1+L2 签收 (codex)。
