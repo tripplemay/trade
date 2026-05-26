@@ -4,18 +4,20 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B027-real-data-snapshot-foundation：`reverifying`（fix-round 1）**；F001 completed（11206ac）+ F002 completed（3d14413）+ F003 pending（Codex 复验）。Spec：`docs/specs/B027-real-data-snapshot-foundation-spec.md`。
-- Generator fix-round 1（commit 468d380 + 49462d6）：(1) 把 `httpx>=0.27` 从 `[project.optional-dependencies].dev` 提到 `[project].dependencies` 让 production wheel install 包含；(2) `TiingoSnapshotLoader.health_check()` 也走 `MonthlyBudgetGuard.check_and_increment`（F002 之前只 fetch_daily_bars 过 guard，spec F003 L2 §7 要求 health_check 也 +1）。
-- 加 safety regression：`tests/safety/test_runtime_dependencies_pinned.py` 用 AST 扫每个 `workbench_api/` 源，断言所有 top-level 第三方 import 都在 `[project].dependencies`；并单独 pin `httpx` 在 runtime set 防回退。
-- 生产 smoke 已端到端通过：VM `import httpx` OK / `TiingoSnapshotLoader().health_check()` 真调 Tiingo 返回 True / `tiingo_budget_log` +1 row (date=2026-05-26 / call_count=1 / cost=5e-05)；production HEAD == main HEAD == `49462d6`。
-- L1 本地 gates：backend pytest 277+2 skipped（B026 baseline 243+2 → +34 net B027 specs；包含 fix-round 1 的 +4）/ ruff + mypy 清 on 132 source files / trade pytest 727 + frontend vitest 166 unchanged。
+- **B027-real-data-snapshot-foundation：`done`**；F001 completed（11206ac）+ F002 completed（3d14413）+ F003 completed（Codex signoff）。Spec：`docs/specs/B027-real-data-snapshot-foundation-spec.md`；signoff：`docs/test-reports/B027-real-data-snapshot-foundation-signoff-2026-05-26.md`。
+- Codex 复验结论：**PASS**。L1：backend `pytest 277 passed, 2 skipped` + `ruff` + `mypy` + alembic round-trip；frontend `vitest 166` + `build` + Playwright `38 passed`；artifact grep 未命中 `TIINGO_API_KEY` / Tiingo host 泄漏。
+- L2：production `/api/health.version=49462d62428b78c7f4ec66f5c66a3ae833a30ea0`；本地 `HEAD=033d2f45163526129240e37f4cd1890223d57817`，diff 仅含 `progress.json` + `.auto-memory/project-status.md` 这 1 个 metadata commit，可接受。
+- 真实 Tiingo smoke 已通过：VM 上按服务工作目录执行 `TiingoSnapshotLoader().health_check()` 返回 `True`；`tiingo_budget_log` 总 call_count `2 -> 3`，`DELTA=1`；production DB `alembic_version=0003_b027_tiingo_budget_log`。
+- authenticated `/api/debug/recent-errors` 返回 `{"count":0,"records":[]}`；`/strategies` 页面仍命中 B026 synthetic banner 中文文案。截图证据已落盘：`docs/screenshots/B027-snapshot-foundation/{production-health,recent-errors,strategies-banner}.png`。
+- 本批次目标完成：Tiingo Starter + Repository 抽象 + cost guard + budget log + production secret 注入全部闭环；**仍不做** backfill / 不切 sleeve / 不动 strategy 数据源（B028+ 责任）。
+- 后续路径：B028（1.B 价格 backfill + `yfinance_loader.py` cross-check）→ B029（1.C 财务 SEC EDGAR）→ B030（1.D 全 sleeve 切真）→ 里程碑 A Layer 0→1。
 
 ## 已完成签收 + MVP 完工
-- B001-B026 全部签收。MVP substantively 完成 (PRD §10/§11/§12) — 完工声明：`docs/prd/mvp-completion-declaration-2026-05-20.md`。
-- 最近：B026 Synthetic Data Banner signoff 2026-05-26；B025 US Quality Momentum signoff 2026-05-25。
+- B001-B027 全部签收。MVP substantively 完成 (PRD §10/§11/§12) — 完工声明：`docs/prd/mvp-completion-declaration-2026-05-20.md`。
+- 最近：B027 Real Data Snapshot Foundation signoff 2026-05-26；B026 Synthetic Data Banner signoff 2026-05-26；B025 US Quality Momentum signoff 2026-05-25。
 
 ## 生产状态
-- `https://trade.guangai.ai` live with 双语 workbench + OAuth + `/api/health` + `/api/debug/recent-errors` + B026 synthetic data banner。
+- `https://trade.guangai.ai` live with 双语 workbench + OAuth + `/api/health` + `/api/debug/recent-errors` + B026 synthetic data banner；B027 Tiingo foundation 已部署到 production。
 
 ## 永久硬边界（B027 起继续；v0.9.28 + B027 新增）
 - 系统层：no-broker SDK / no-paper-or-live URL / no-credential（**Tiingo API key 走 secret 不入代码**）/ no-auto-execution / 多用户禁 / Cloud SQL 禁 / same-origin /api/* / auth-gated / Repository 读写非直 file

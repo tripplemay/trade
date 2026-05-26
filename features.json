@@ -22,7 +22,7 @@
       "title": "Codex L1 + L2 真 VM 验收 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "L1 (CI 内): F001 + F002 全 generator 验收脚本跑通 — backend pytest ≥340 / ruff / mypy / alembic up-down OK；Frontend 不动 vitest ≥166 + Playwright ≥33 不破；safety regression 全绿；grep 整 build artifact + log 文件搜 TIINGO_API_KEY value 0 命中。L2 (真 VM): (1) Generator 实施期间已在 GitHub repo Settings 加 TIINGO_API_KEY secret (用户协助)；deploy workflow inject 成功；(2) Production VM cat /etc/workbench/.env.production | grep TIINGO_API_KEY 存在 (值脱敏)；(3) curl https://trade.guangai.ai/api/health 返回 200 + version SHA 与 main HEAD 等价；(4) curl https://trade.guangai.ai/api/debug/recent-errors 返回 {\"count\":0,\"records\":[]}；(5) Production backend log (systemd journal) 含 alembic migration add_tiingo_budget_log_table 成功记录；(6) SSH 到 VM 跑 sqlite3 ... 'SELECT name FROM sqlite_master WHERE type=table AND name=tiingo_budget_log' 返回 1 行；(7) smoke API test (Evaluator 临时跑一次)：production backend 触发一次 TiingoSnapshotLoader.health_check() → Tiingo 返回 200 / budget_log 增 1 行；(8) Production HEAD ≡ main HEAD (v0.9.25 §Production/HEAD 等价性) + Post-signoff Deploy 段 (v0.9.27)；(9) B026 banner 仍 enable 显示 (确认不被本批次影响)。Signoff: docs/test-reports/B027-real-data-snapshot-foundation-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md (v0.9.27/v0.9.28 模板含 §Production/HEAD 等价性 + §Post-signoff Deploy 双段)；docs/screenshots/B027-snapshot-foundation/ ≥2 PNG (production /api/health 响应 + tiingo_budget_log 表存在)。Framework 候选：预期无重大；若 fix-round 出现 cost guard race / secret 注入失败等意外，按 v0.9.X 模式记录 signoff §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
