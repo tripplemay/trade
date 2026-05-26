@@ -4,12 +4,10 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B028-real-data-backfill：`fixing`**；F001 completed + F002 completed + F003 completed + F004 pending。Spec：`docs/specs/B028-real-data-backfill-spec.md`；blocker：`docs/test-reports/B028-real-data-backfill-blocker-2026-05-26.md`。
-- Codex 首轮验收结论：**L1 PASS / L2 FAIL**。L1：backend `pytest 304 passed, 2 skipped` + `ruff` + `mypy`；trade `mypy` 通过（`trade pytest` 当前为空套件）；frontend `vitest 166` + `build` + Playwright `38 passed`；artifact grep 未命中 `TIINGO_API_KEY` / Tiingo/Yahoo endpoint 泄漏。
-- backfill / PIT spot-check 已通过：`data/snapshots/prices/tiingo/` 共 `52` 文件；`data/snapshots/prices/unified/prices_daily.csv` 共 `153386` 行；`docs/test-reports/B028-cross-check-2026-05-26.md` 为 `25/25 PASS`；`load_prices(['SPY'], as_of=2020-03-01)` 最大日期 `2020-02-28`，PIT 过滤正确。
-- production 功能面未见回归：`/api/debug/recent-errors` 返回 `{"count":0,"records":[]}`；`/strategies` 仍命中 B026 banner 文案。
-- **当前唯一硬 blocker：Production HEAD ≠ main HEAD。** production `/api/health.version=8338fc05d2fde18a487d11eb8c240c6bcbbaebb0`，本地 `HEAD=e730a0b498d5c0171414d549a7cb1ac17d0fcd5c`；diff 不仅含状态机文件，还包含 `trade/data/loader.py` 与 `scripts/validate_snapshot.py`，不能按 metadata-only 接受。
-- Generator 下一步：让 production 追到当前 `main` HEAD；Codex 复验时只需重点重查 SHA 等价性、`/api/debug/recent-errors` 与 B026 banner，不必重跑全量本地 backfill 除非再有产品代码变更。
+- **B028-real-data-backfill：`reverifying`（fix-round 1）**；F001+F002+F003 completed + F004 pending（Codex 复验）。Spec：`docs/specs/B028-real-data-backfill-spec.md`。
+- F004 fix-round 1：Codex 首轮 L2 blocker 是 Production HEAD drift。Root cause：F003 只动了 trade/ + scripts/，俩路径都在 workbench/{backend,frontend}/ 之外 → 双 CI paths-ignore → Workbench Deploy 没被 workflow_run 触发（v0.9.27 §12.7 prescribed workflow_dispatch）。修法：dispatch Workbench Deploy run 26429877249 success 2m。
+- Production HEAD 现 == main HEAD == `15dfb4b`；db_connectivity ok；uptime 28s fresh restart；journal 干净（仅 /api/health probe + 我自己的 401 探针）。无产品代码改动；仅状态机推 reverifying + handoff 更新。
+- L1 + functional L2 + backfill artifacts (52 vendor + 153386 unified rows) + cross-check 25/25 PASS + PIT spot check 与 Codex fix-round 0 报告一致不变。
 
 ## 已完成签收 + MVP 完工
 - B001-B027 全部签收。MVP substantively 完成 (PRD §10/§11/§12) — 完工声明：`docs/prd/mvp-completion-declaration-2026-05-20.md`。
