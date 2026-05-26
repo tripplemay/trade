@@ -153,7 +153,9 @@ def load_b025_universe_from_fixture(
     return list(df["ticker"].astype(str))
 
 
-def assert_us_quality_universe_consistent_with_fixture() -> None:
+def assert_us_quality_universe_consistent_with_fixture(
+    fixture_path: Path | None = None,
+) -> None:
     """Pin the static lists against the on-disk fixture.
 
     Raises ``AssertionError`` if the two drift — e.g. the fixture
@@ -161,10 +163,18 @@ def assert_us_quality_universe_consistent_with_fixture() -> None:
     slips into the real-tickers tuple, or :data:`US_QUALITY_TICKER_SECTORS`
     drifts from the fixture's ``gics_sector`` column. This is the
     consistency assert the unit test calls.
+
+    ``fixture_path`` defaults to the on-disk
+    ``data/fixtures/us_quality_momentum/universe.csv``; tests pass
+    a temporary spoofed fixture to exercise the drift-detection
+    branches without monkey-patching the fixture file in place.
     """
 
-    repo_root = Path(__file__).resolve().parents[1]
-    fixture_path = repo_root / "data" / "fixtures" / "us_quality_momentum" / "universe.csv"
+    if fixture_path is None:
+        repo_root = Path(__file__).resolve().parents[1]
+        fixture_path = (
+            repo_root / "data" / "fixtures" / "us_quality_momentum" / "universe.csv"
+        )
     df = pd.read_csv(fixture_path)
 
     fixture = list(df["ticker"].astype(str))

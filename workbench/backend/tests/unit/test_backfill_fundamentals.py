@@ -133,13 +133,12 @@ def test_assert_universe_consistency_detects_sector_drift(tmp_path: Path) -> Non
     :func:`assert_us_quality_universe_consistent_with_fixture`."""
 
     universe = _import_script("universe_us_quality")
-    # Spoof the fixture path via monkey-patching: write a CSV that
-    # matches the universe ticker list but has a wrong sector for
-    # AAPL ("Energy" instead of "Information Technology") and point
-    # the helper at it.
+    # Build a CSV that matches the universe ticker list but has a
+    # wrong sector for AAPL ("Energy" instead of "Information Technology").
     bad_fixture = tmp_path / "universe.csv"
     header = (
-        "ticker,name,exchange,gics_sector,gics_industry,listing_date,market_cap_initial"
+        "ticker,name,exchange,gics_sector,gics_industry,"
+        "listing_date,market_cap_initial"
     )
     rows: list[str] = [header]
     for ticker in universe.us_quality_universe():
@@ -153,33 +152,16 @@ def test_assert_universe_consistency_detects_sector_drift(tmp_path: Path) -> Non
         )
     bad_fixture.write_text("\n".join(rows) + "\n", encoding="utf-8")
 
-    # Redirect the helper's fixture read to our spoof.
-    import pandas as pd
-    real_read_csv = pd.read_csv
-    real_path_resolve = Path.resolve
-
-    def fake_read_csv(path, *a, **kw):  # type: ignore[no-untyped-def]
-        # The helper builds the path via ``Path(__file__).resolve().parents[1] /
-        # "data" / "fixtures" / "us_quality_momentum" / "universe.csv"``.
-        # Detect that exact shape and substitute our spoof.
-        if str(path).endswith("us_quality_momentum/universe.csv"):
-            return real_read_csv(bad_fixture, *a, **kw)
-        return real_read_csv(path, *a, **kw)
-
-    try:
-        pd.read_csv = fake_read_csv  # type: ignore[assignment]
-        with pytest.raises(AssertionError) as exc_info:
-            universe.assert_us_quality_universe_consistent_with_fixture()
-        # Failure message must call out AAPL and the offending sector
-        # so the maintainer can fix it without grepping.
-        msg = str(exc_info.value)
-        assert "AAPL" in msg
-        assert "Energy" in msg
-        assert "Information Technology" in msg
-    finally:
-        pd.read_csv = real_read_csv  # type: ignore[assignment]
-        # Defensive — restore Path.resolve in case it was touched.
-        Path.resolve = real_path_resolve  # type: ignore[method-assign]
+    with pytest.raises(AssertionError) as exc_info:
+        universe.assert_us_quality_universe_consistent_with_fixture(
+            fixture_path=bad_fixture
+        )
+    # Failure message must call out AAPL and the offending sector so
+    # the maintainer can fix it without grepping.
+    msg = str(exc_info.value)
+    assert "AAPL" in msg
+    assert "Energy" in msg
+    assert "Information Technology" in msg
 
 
 # ---------------------------------------------------------------------------

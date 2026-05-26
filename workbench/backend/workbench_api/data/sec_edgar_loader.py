@@ -56,11 +56,16 @@ from workbench_api.data.fundamentals_loader import FundamentalsLoader, Fundament
 # Re-export here so downstream importers (backfill driver, unit tests)
 # that still ``from workbench_api.data.sec_edgar_loader import
 # SEC_CONCEPT_NAMES`` continue to resolve. The canonical source is
-# now :mod:`xbrl_parser`.
-from workbench_api.data.xbrl_parser import (  # noqa: F401
-    SEC_CONCEPT_ALIASES_PER_SECTOR,
-    SEC_CONCEPT_NAMES,
-    get_concept_alias_chain,
+# now :mod:`xbrl_parser`. ``import X as X`` is the strict-mypy
+# pattern for explicit re-exports (PEP 484 §implicit re-export).
+from workbench_api.data.xbrl_parser import (
+    SEC_CONCEPT_ALIASES_PER_SECTOR as SEC_CONCEPT_ALIASES_PER_SECTOR,
+)
+from workbench_api.data.xbrl_parser import (
+    SEC_CONCEPT_NAMES as SEC_CONCEPT_NAMES,
+)
+from workbench_api.data.xbrl_parser import (
+    get_concept_alias_chain as get_concept_alias_chain,
 )
 
 logger = logging.getLogger(__name__)
