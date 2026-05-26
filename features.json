@@ -22,7 +22,7 @@
       "title": "PIT fundamentals loader + strategy 读路径准备",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "(1) 改 trade/data/loader.py：加 load_fundamentals(tickers: list[str], as_of_date: date) → dict[str, FundamentalsRow | None]；PIT enforcement: effective_date = report_date + 1 business day (pandas.tseries.offsets.BusinessDay)；返回每 ticker 最新 effective_date <= as_of_date 的行；读 data/snapshots/fundamentals/unified/fundamentals.csv if exists；else fall back B025 fixture；docstring 明示 PIT 语义 + effective_date 计算；(2) 不动 strategy 代码 (B025 us_quality_momentum 5 因子 / Master Portfolio 等不切实际读路径；F003 仅准备 loader infrastructure；切换是 B030 责任)；(3) pytest ≥10 测试：load_fundamentals(['AAPL'], as_of=2020-03-01) 返回 2019-Q3 或之前 / load_fundamentals(['NVDA'], as_of=2020-04-01) 返回 2019-Q4 / unified.csv 存在读 unified else fall back B025 fixture / 既有 B025 us_quality_momentum 5 因子测试全过 / as_of_date 未来限到今天 / as_of_date < earliest data 返 dict 全 None / 多 ticker 一次 load / 某 ticker 缺数据 None 其他正常 / effective_date business_days(1) 跳周末 / PIT spot check 3-5 random (ticker, as_of_date) tuple；(4) Gates: pytest tests ≥326 + ≥10 = ≥336 / ruff + mypy 清 / **B025 既有回测 deterministic 不变** (pytest 跑 us_quality_momentum 回测断言 fixture 路径下数字不变 B025 既有测试 100% 通过)；(5) 不动 strategy 代码 (Master / sleeve / signal / construction) / Backtest engine / workbench backend endpoints / Frontend UI。"
     },
     {

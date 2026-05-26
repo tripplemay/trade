@@ -4,22 +4,21 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B029-fundamentals-snapshot：`building`**；F001+F002 completed；F003 generator 接手；F004 待 codex。Spec：`docs/specs/B029-fundamentals-snapshot-spec.md`。
-- F002 落 3 scripts + 1 测试 (20 cases) + sec_edgar_loader.py 方法拆 + concept alias chain + ticker_cik DUK fix + .gitignore 扩 *.json + PIT 报告。Commits: feat `11270ff` + fix-round 1 `9187445`。
-- 本机跑真 SEC backfill 实际产出：**685 行**（vs spec ≥1000 floor — sector-structural shortfall；6/27 ticker BAC/JPM/V/LIN/NEE/PLD 产 0 行因银行/支付/REIT/utility 概念不匹配；21/27 产 1-59 行）；3 synthetic ticker skip 不阻塞（裁决 #3）；27 CIK 目录入 `data/snapshots/fundamentals/sec_edgar/`；unified 入 `data/snapshots/fundamentals/unified/fundamentals.csv`。
-- **PIT validation 25/25 PASS** — `report_date >= fiscal_quarter_end + 30d` invariant 全成立。报告 `docs/test-reports/B029-pit-validation-2026-05-26.md`。
-- F002 fix-round 1 重大决策：(a) DUK CIK 0000017797 retired → 1326160 holding co；(b) SEC_CONCEPT_NAMES 从 `dict[str, str]` 升级为 `dict[str, list[str]]` 别名链（驱动按 alias 顺序聚合 entries 后 bucket；解决 ASC 606 ticker 切到 RevenueFromContractWithCustomerExcludingAssessedTax + JNJ 用 StockholdersEquityIncludingPortion... + JNJ OperatingIncomeLoss 2015 后转 IncomeLossFromContinuingOperationsBeforeIncomeTaxes... 等）；(c) SHARES_OUTSTANDING_ALIASES 多 namespace fallback (dei + us-gaap)；(d) 6 ticker 0 行问题确认 sector-structural，B030 cutover per-sector ratio model 调整解决。
-- 本机 Gates 全绿：backend pytest **361 passed** 2 skipped（B028 baseline 304 → +57；vs spec ≥326 floor +35 buffer）/ ruff 0 / mypy 0（143 source files）/ frontend vitest 166（baseline 不破）。
-- 永久边界 (h)(i)(j) 落地 + production aligned (`ef421e9` SEC_EDGAR_CONTACT_EMAIL via bootstrap-env.yml；config tripplezhou@gmail.com on VM)。
-- 下一 sprint F003：`trade/data/loader.py` 加 `load_fundamentals(tickers, as_of_date) → dict[str, FundamentalsRow | None]`；PIT enforcement: `effective_date = report_date + 1 business day`；读 `data/snapshots/fundamentals/unified/fundamentals.csv` if exists else fall back B025 fixture (B025 既有回测 deterministic 不变 = F003 acceptance 硬要求)；pytest ≥10 (≥336 floor)。
-- 后续路径：B029 done → B030 (Stream 1.D 全 sleeve 切真 + reports/ fixture vs real 对比 + per-sector ratio model 解决 6 sector ticker 缺数据 + .env.production NEXT_PUBLIC_SYNTHETIC_DATA_BANNER=false 让 B026 banner 下线) → 里程碑 A Layer 0→1。
+- **B029-fundamentals-snapshot：`verifying`**；F001+F002+F003 generator 完工 → 等 Codex F004 验收。Spec：`docs/specs/B029-fundamentals-snapshot-spec.md`。Generator handoff 详见 `progress.json.generator_handoff`。
+- F003 落 `trade/data/loader.py`：加 `FundamentalsRow` (12 字段；frozen+slots；与 B025 fixture 列序 1:1) + `UNIFIED_FUNDAMENTALS_PATH` / `B025_FIXTURE_FUNDAMENTALS_PATH` / 12-列 `UNIFIED_FUNDAMENTALS_REQUIRED_COLUMNS` + `load_fundamentals(tickers, as_of_date)` PIT 函数 (`effective_date = report_date + 1 business day`；unified-first / fixture fallback；缺数据 None；future as_of clamp；schema 缺列 FixtureDataError 含 regen 指引)；trade/ 独立定义 FundamentalsRow 避免 → workbench_api 反向 import。
+- F003 tests/unit/test_pit_load_fundamentals.py 16 用例：latest visible row / PIT drops post-cutoff / Friday → Monday business-day offset / 缺数据 None / future clamp / multi-ticker / 3 source 优先级 / schema violation / frozen+slots+12 字段 / parametrized 5 (as_of, expected_fq) AAPL 2019 cadence walkthrough。Commit `c3ec920`。
+- 本机 Gates 全绿：trade pytest **755 passed** (739 → +16；vs spec ≥749 floor +6 buffer) / workbench backend pytest 361 passed 2 skipped (不动) / ruff 0 / mypy 0 / frontend vitest 166 不动 / **B025 既有回测 deterministic 不变** (F003 acceptance §(4) 硬要求验证通过)。
+- Production HEAD `d6622e6` (F002 chore commit); F003 commit `c3ec920` trade/+tests/ 触 Python CI + paths-trigger 触 Workbench Backend CI (trade/ in paths)；自然 deploy。
+- 本机数据状态: `data/snapshots/fundamentals/unified/fundamentals.csv` 685 行 / 27 CIK vendor 目录 / 21 真 ticker 1-59 行 / 6 sector-structural 0 行 (BAC/JPM/V/LIN/NEE/PLD) / 3 synthetic skip (ZQAI/ZQPT/ZQLH)；PIT 25/25 spot-check PASS。报告 `docs/test-reports/B029-pit-validation-2026-05-26.md`。
+- B029 关键决策回顾：(1) Pre-impl 裁决全 A (commit `c07867f`)：12-字段 schema 含 fiscal_quarter_end / fiscal_quarter '2014Q4' 无短横线 / 30 ticker map 含 3 synthetic null + ValueError skip 模式 / 不引入新 dep。(2) F002 fix-round 1 alias chain 扩 (`SEC_CONCEPT_NAMES` dict[str,list[str]] + `SHARES_OUTSTANDING_ALIASES` 多 namespace；DUK CIK 17797→1326160)。(3) F003 strategy 层独立 FundamentalsRow 不 import workbench_api。
+- 后续路径：B029 F004 Codex 验收 → B030 (Stream 1.D 全 sleeve 切真 + reports/ fixture vs real 对比 + B030 per-sector ratio model 调整解决 6 sector 0-row + .env.production NEXT_PUBLIC_SYNTHETIC_DATA_BANNER=false 让 B026 banner 下线) → 里程碑 A Layer 0→1。
 
 ## 已完成签收 + MVP 完工
 - B001-B028 全部签收。MVP substantively 完成 (PRD §10/§11/§12) — 完工声明：`docs/prd/mvp-completion-declaration-2026-05-20.md`。
 - 最近：B028 Real Data Backfill signoff 2026-05-26（1 fix-round）；B027 signoff 2026-05-26；B026 signoff 2026-05-26。
 
 ## 生产状态
-- `https://trade.guangai.ai` live；production HEAD = `ef421e9`（F001 SEC_EDGAR_CONTACT_EMAIL pre-flight 已 wired）；F002 本批次产品代码改 trade/+workbench_api/+scripts/，paths-trigger 自然 deploy。
+- `https://trade.guangai.ai` live；B029 本批次产品代码 trade/+workbench_api/+scripts/ 在 paths-trigger 内自然 deploy；F003 commit `c3ec920` 等待 CI 完成 → production HEAD 追上。
 
 ## 永久硬边界（B029 起继续；v0.9.29 + §12.7.1）
 - 系统层：no-broker SDK / no-paper-or-live URL / no-credential / no-auto-execution / 多用户禁 / Cloud SQL 禁 / same-origin /api/* / auth-gated / Repository
@@ -31,4 +30,4 @@ type: project
 ## 已知 gap（非阻塞）
 - 本机 `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
 - GitHub Secret `TIINGO_API_KEY`（B027）+ `SEC_EDGAR_CONTACT_EMAIL` (B029 F001 prod-side aligned) 已配。
-- B029 unified fundamentals 685 行 < spec ≥1000；6 sector ticker 缺数据；F003 fall back B025 fixture 保 backtest；B030 cutover per-sector ratio model 调整解决。
+- B029 unified fundamentals 685 行 < spec ≥1000；6 sector ticker 缺数据 sector-structural；F003 fall back B025 fixture 保 backtest；B030 cutover per-sector ratio model 调整解决。
