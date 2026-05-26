@@ -136,6 +136,85 @@ Spec：`docs/specs/B029-fundamentals-snapshot-spec.md` §4 + §5 F001。
 
 ---
 
-## 8. Planner 裁决（待填）
+## 8. Planner 裁决（2026-05-26）
 
-> 待 Planner 在此追加 `#1:A/B #2:A/B #3:A/B/C #4:A/B` + 逐条理由 + 同步 spec §4.2 / §4.4 修订清单。
+> **裁决人：** Planner（Claude CLI）
+> **日期：** 2026-05-26
+> **依据：** `framework/harness/planner.md` §"Planner 裁决职责"（规则 P1 / P3 / P5）+ `framework/harness/pre-impl-adjudication.md` §2.2 范式
+> **事实核查：** Planner 用 `awk -F, 'NR==1 {print NF}' fundamentals.csv` 实测 12 列；`head -1 | tr ',' '\n'` 第 4 列确实是 `fiscal_quarter_end`；`fiscal_quarter` 实际值 `2014Q4` 无短横线；`grep "ZQAI\|ZQPT\|ZQLH" universe.csv` 命中 3 个 synthetic 行。**Generator 的 3 个事实性断言 100% 准确**。
+
+### 8.1 决议结果（一行汇总）
+
+**#1: A  #2: A  #3: A  #4: A**
+
+Generator 4 项建议**全部采纳**。理由如下。
+
+### 8.2 逐条裁决
+
+#### 决议 #1 — `FundamentalsRow` schema 12 字段（含 `fiscal_quarter_end: date`）
+
+**裁决：A 方案（12 字段）**
+
+理由：
+1. **Fixture 是 source of truth**：B029 F001 acceptance §(1) 明文要求"与 B025 fixture 严格一致"；fixture 12 列是事实。spec §4.2 草案 / §4.4 文字漏列 `fiscal_quarter_end` 是 spec 文字漂移，应以 fixture 为准修订 spec。
+2. **F002 PIT validation §(5) 显式依赖 `fiscal_quarter_end`**：`fiscal_quarter_end < report_date` + `report_date >= fiscal_quarter_end + 30d` 是 hard assertion；若走 11 字段方案让 F002 字符串反推 fiscal_quarter_end（如 `"2014Q4"` → `2014-12-31`），引入额外文本解析逻辑 + 假节假日 / 财年偏移等 edge case，不必要。
+3. **PIT loader F003 简化**：12 字段方案让 `effective_date = report_date + 1 business day` 仍只依赖 `report_date` 列，但 PIT validation 与回溯交叉验证可直接读 `fiscal_quarter_end` 列。
+4. **历史漂移记录**：B025 spec §4.1 文字描述同样漏 `fiscal_quarter_end`（B025 已 done，spec 不修订；B029 spec 修订后即权威）。
+
+#### 决议 #2 — `fiscal_quarter` 格式 `2014Q4`（无短横线）
+
+**裁决：A 方案（`2014Q4`）**
+
+理由：
+1. **Fixture 1350 行实际数据**：是 source of truth。spec §4.2 docstring `"2020-Q4"` 是 spec 草案文字漂移。
+2. **B025 既有回测 deterministic 不变（F003 acceptance 硬要求）**：若改格式破坏 B025 既有 strategy 代码读 fixture 路径，违反 F003 acceptance §(4)。
+3. **历史漂移记录**：B029 spec §4.2 docstring + §10 ratio fixtures 段需同步修订。
+
+#### 决议 #3 — 30 条全入 `ticker_cik_map.json`（27 真 CIK + 3 synthetic 映射 `null`）+ `ValueError` raise + F002 driver catch skip
+
+**裁决：A 方案（30 条全入 + null + ValueError + catch skip）**
+
+理由：
+1. **acceptance §(9) 测试 10 字面读"含全部 30 ticker"成立**：A 方案精确匹配测试。
+2. **`null` 是清晰的"无 CIK"语义**：JSON `null` 比 sentinel 字符串 `"SYNTHETIC"` 类型更清晰，pytest 覆盖也更直接（`assert cik is None`）。
+3. **Synthetic ticker 本质是 B025 fixture 回测虚构样本**：永久边界不会有 real SEC filings；B025 既有 strategy 测试已使用，不能从 universe 中剔除（违反 F003 acceptance "B025 既有回测 deterministic 不变"）。
+4. **F002 backfill driver catch ValueError + log warn + skip 不阻塞批次** 是 fail-safe 设计；本批次预期 backfill ≈ 27 真 ticker × 40 quarters ≈ 1080 rows（达成 acceptance §(6) row count ≥1200 略不达，调整 acceptance 阈值至 ≥1000 — 见 §8.3 修订）。
+
+#### 决议 #4 — 仅 stdlib + httpx，不引入新 dep
+
+**裁决：A 方案（不引入新 dep）**
+
+理由：
+1. **YAGNI**：spec §6 YAGNI 第 8 条明确 "stdlib 已够；XBRL parse 用 ElementTree 或 json companyfacts"。
+2. **companyfacts API 走 JSON**：SEC 已预 parse，stdlib `json` 模块足够。
+3. **未来真需 lxml**（如降级到 raw XBRL XML parse）：走新 batch + v0.9.29 §12.8 规约，不在本批次预留。
+4. **v0.9.29 §12.8 守门 + `CRITICAL_RUNTIME_DEPS`** 不动；本批次 dep 边界稳定。
+
+### 8.3 spec 同步修订清单（Planner 同 commit 完成）
+
+按 planner.md §P3 "修 acceptance 必须扫全文消除矛盾"，本裁决落地时 Planner 同步修订 **B029 spec + features.json** 全文：
+
+| 修订点 | 来源 | 改为 |
+|---|---|---|
+| spec §4.2 `FundamentalsRow` Python 草案 | 11 字段 | **12 字段：`ticker / fiscal_quarter / fiscal_quarter_end / report_date / roe / gross_margin / fcf_yield / debt_to_assets / pe / pb / ev_ebitda / earnings_yield`** |
+| spec §4.2 docstring `fiscal_quarter: str  # e.g. "2020-Q4"` | `"2020-Q4"` | **`"2014Q4"`** |
+| spec §4.4 "Schema matches B025 fixture fundamentals.csv exactly: ... 11 字段" | 11 字段列表 | **12 字段列表（加 `fiscal_quarter_end`）** |
+| spec §4.7 `load_fundamentals` docstring schema 注释 | 11 列 | **12 列** |
+| spec §5 F001 acceptance §(1) "11 列 schema 严格一致" | 11 列 | **12 列 schema 严格一致** |
+| spec §5 F002 acceptance §(6) row count `≥1200` | `≥1200`（30 × 40）| **`≥1000`**（27 真 ticker × 40 + 3 synthetic null 跳过）|
+| spec §5 F002 acceptance §(9) PIT spot check `fiscal_quarter_end` 描述 | 反推 | **直接读 fixture / unified 第 4 列** |
+| spec §5 F001 acceptance §(9) 测试 10 "30-50 ticker → CIK 映射" | "30-50 ticker → CIK" | **"30 ticker → CIK（27 真 + 3 synthetic 映射 null）"** |
+| spec §10 不破 B025 fundamentals.csv 既有 schema | 隐含 | **明示 12 列；synthetic ticker 不入 SEC backfill** |
+| features.json F001 acceptance | 同步以上所有改动 | 同上 |
+
+### 8.4 开工许可
+
+Generator 收到本裁决后**可立即开工 B029 F001**，按 §8.2 各决议 + §8.3 修订后的 spec 实现。
+
+预计 ~6.5 h（按 §6 估算）。完成后走 §5 F001 闸门 + commit + push + CI 检查。
+
+### 8.5 后续注意点
+
+- B025 spec §4.1 文字同样漏 `fiscal_quarter_end`（B025 已 done，本裁决不修 B025 spec；B029 spec 修订后即 fundamentals.csv schema 的权威文档）。
+- 若 F002 实施时发现 SEC 对某真实 ticker 也无 CIK（如某 ticker 改名 / 退市 / 上市后改 ticker），按决议 #3 模式：log warn + skip 不阻塞 batch。
+- 决议 #3 的 catch skip 模式是 fail-safe；F002 acceptance §(6) row count 阈值已下调 ≥1000 reflect 27 真 ticker × 40 quarter 期望。

@@ -18,7 +18,7 @@
 |---|---|
 | 数据源 | **SEC EDGAR 免费自 parse XBRL**（data-source-evaluation §6.2 首选）|
 | Backfill 范围 | **仅 B025 us_quality_momentum 30-50 ticker，10+ 年财报**（约 30-50 ticker × 40 季报 = 1200-2000 filings）|
-| Schema 兼容 | **与 B025 fixture 严格一致**：`fundamentals.csv` 11 列（report_date / ticker / fiscal_quarter / roe / gross_margin / fcf_yield / debt_to_assets / pe / pb / ev_ebitda / earnings_yield）|
+| Schema 兼容 | **与 B025 fixture 严格一致**：`fundamentals.csv` **12 列**（report_date / ticker / fiscal_quarter / **fiscal_quarter_end** / roe / gross_margin / fcf_yield / debt_to_assets / pe / pb / ev_ebitda / earnings_yield）；`fiscal_quarter` 格式 `2014Q4`（无短横线，fixture-authoritative；pre-impl 裁决 2026-05-26 决议 #1+#2）|
 | Storage 路径 | 继承 B028 双层架构：`data/snapshots/fundamentals/{sec_edgar,unified}/` |
 | PIT enforcement | **strict**：effective_date = report_date + 1 trading day（B025 spec §4.1 已定义）；`load_fundamentals(as_of)` 返回 `effective_date <= as_of` 中**每 ticker 最新 fiscal_quarter** |
 | Master ETF + ADR proxy | **不 backfill fundamentals**（ETF 本身无 ratio；ADR 如 BABA/NIO 暂不入 B025 universe，等 HK-China satellite batch 再做）|
@@ -111,13 +111,15 @@ class FundamentalsRow:
     """One fiscal quarter's fundamentals for one ticker. PIT semantics enforced
     by report_date (when filed publicly; effective_date = report_date + 1 trading day).
 
-    Schema matches B025 fixture fundamentals.csv exactly:
-    report_date / ticker / fiscal_quarter / roe / gross_margin / fcf_yield
-    / debt_to_assets / pe / pb / ev_ebitda / earnings_yield
+    Schema matches B025 fixture fundamentals.csv exactly (12 columns per pre-impl
+    adjudication 2026-05-26 #1+#2):
+    report_date / ticker / fiscal_quarter / fiscal_quarter_end / roe / gross_margin
+    / fcf_yield / debt_to_assets / pe / pb / ev_ebitda / earnings_yield
     """
+    report_date: date           # filing date (when publicly visible)
     ticker: str
-    fiscal_quarter: str  # e.g. "2020-Q4"
-    report_date: date    # filing date (when publicly visible)
+    fiscal_quarter: str         # e.g. "2014Q4" (no hyphen, fixture-authoritative)
+    fiscal_quarter_end: date    # period_of_report (last day of fiscal quarter)
     roe: float
     gross_margin: float
     fcf_yield: float
@@ -304,7 +306,7 @@ def load_fundamentals(
 
 **Acceptance：**
 
-(1) 新建 `workbench_api/data/fundamentals_loader.py`：抽象基类 `FundamentalsLoader` + dataclass `FundamentalsRow`（B025 11 列 schema 严格一致）
+(1) 新建 `workbench_api/data/fundamentals_loader.py`：抽象基类 `FundamentalsLoader` + dataclass `FundamentalsRow`（B025 fixture **12 列 schema** 严格一致，列序：`report_date / ticker / fiscal_quarter / fiscal_quarter_end / roe / gross_margin / fcf_yield / debt_to_assets / pe / pb / ev_ebitda / earnings_yield`；`fiscal_quarter` 格式 `2014Q4` 无短横线 — pre-impl 裁决 2026-05-26 决议 #1+#2）
 
 (2) 新建 `workbench_api/data/sec_edgar_loader.py`：`SECEDGARFundamentalsLoader`：
 - BASE_URL = `https://data.sec.gov`
@@ -339,9 +341,9 @@ def load_fundamentals(
 - rate limiter 10/sec 强制（mock time，断言 11 个调用 > 1 sec）
 - xbrl_parser 8 ratio 每个独立函数测试（用 AAPL 抽样数据）
 - ratio 边界 case（零分母 → NaN / inf 处理；missing field → ValueError）
-- ticker_cik_map.json 含 B025 universe 全部 30-50 ticker
+- ticker_cik_map.json 含 B025 universe 全部 **30 ticker（27 真 CIK + 3 synthetic 映射 `null`）**；`SECEDGARFundamentalsLoader.fetch_quarterly_fundamentals` 拿到 `null` CIK 时 raise `ValueError("Synthetic ticker X has no SEC filing; skip in backfill driver")`（pre-impl 裁决 2026-05-26 决议 #3）
 - User-Agent header 含 SEC_EDGAR_CONTACT_EMAIL（mock httpx 拦截 header）
-- FundamentalsRow dataclass frozen + slots + 11 字段
+- FundamentalsRow dataclass frozen + slots + **12 字段**（含 fiscal_quarter_end: date）
 
 (10) Gates：
 - `pytest tests` ≥304 baseline (B028) + ≥12 = ≥316 passed
@@ -364,30 +366,31 @@ def load_fundamentals(
 - 对每 ticker 调 `SECEDGARFundamentalsLoader.fetch_quarterly_fundamentals`（rate limit 自动）
 - 写 vendor raw：`data/snapshots/fundamentals/sec_edgar/<CIK>/<accession>/{10-K,10-Q,metadata.json,parsed_ratios.json}`
 - append unified：`data/snapshots/fundamentals/unified/fundamentals.csv`（sort + dedupe by (ticker, fiscal_quarter) + atomic write）
-- validate：行数 ≈ ticker_count × 40 quarters ± 10%
+- validate：行数 ≈ **27 真 ticker × 40 quarters ≈ 1080** ± 10%（3 synthetic ticker null CIK skip 不计入 — pre-impl 裁决决议 #3）
 
-(2) 新建 `scripts/universe_us_quality.py`：固定 list 与 B025 fixture `data/fixtures/us_quality_momentum/universe.csv` ticker 列一致（30-50 ticker）
+(2) 新建 `scripts/universe_us_quality.py`：固定 list 与 B025 fixture `data/fixtures/us_quality_momentum/universe.csv` ticker 列一致（**30 ticker，含 3 个 synthetic** ZQAI/ZQPT/ZQLH；synthetic 不入 SEC backfill 但仍入 universe 列表以保 B025 既有回测 deterministic）
 
 (3) 新建 `scripts/ticker_to_cik.py`：one-shot 脚本调 SEC `https://www.sec.gov/cgi-bin/browse-edgar?...` 拿 ticker → CIK 映射，cache 到 `workbench_api/data/fixtures/sec_edgar_responses/ticker_cik_map.json`
 
-(4) **本批次手动跑一次 backfill**：`python scripts/backfill_fundamentals.py --from 2014-01-01 --to 2026-05-26 --universe us_quality`；产物 30-50 vendor 目录 + 1 unified fundamentals.csv（≥1200 行 = 30 ticker × 40 quarter）入 `data/snapshots/fundamentals/`（不入 git，commit message / signoff 记录 row count）
+(4) **本批次手动跑一次 backfill**：`python scripts/backfill_fundamentals.py --from 2014-01-01 --to 2026-05-26 --universe us_quality`；产物 **27 真 ticker CIK 目录**（3 synthetic ticker null CIK log warn + skip）+ 1 unified fundamentals.csv（**≥1000 行 ≈ 27 × 40 quarter**）入 `data/snapshots/fundamentals/`（不入 git，commit message / signoff 记录 row count + skip 的 synthetic ticker 列表）
 
-(5) **跑一次抽样 PIT 验证**：抽 3-5 ticker × 5 fiscal_quarter，断言：
-- `fiscal_quarter end_date < report_date`（filing 在 quarter 结束后）
+(5) **跑一次抽样 PIT 验证**：抽 3-5 真 ticker × 5 fiscal_quarter，断言（**直接读 fixture / unified 第 4 列 `fiscal_quarter_end`** — pre-impl 裁决决议 #1）：
+- `fiscal_quarter_end < report_date`（filing 在 quarter 结束后）
 - `report_date >= fiscal_quarter_end + 30 days`（≥30d 披露延迟，B025 spec §4.1 enforcement）
 - 报告存为 `docs/test-reports/B029-pit-validation-2026-MM-DD.md`
 
 (6) pytest 新增 ≥10 测试：
 - backfill_fundamentals argparse + 默认值
-- universe_us_quality 含 ≥30 ticker（与 B025 fixture universe 一致 assertion）
+- universe_us_quality 含 30 ticker（与 B025 fixture universe 一致 assertion，含 3 synthetic）
 - mock SECEDGARFundamentalsLoader → backfill 写 vendor + unified schema correct
 - sort + dedupe by (ticker, fiscal_quarter)
-- row count ≥ ticker_count × 40
+- row count ≥ 27 真 ticker × 40 = 1080 (allow ± 10%；synthetic 不计入)
 - atomic write
 - ticker_to_cik 输出 cache JSON schema
 - partial unified 文件 merge 不重复
-- PIT spot check：`report_date >= fiscal_quarter_end + 30d`
-- B025 schema (11 列) 严格一致 assertion
+- PIT spot check：`report_date >= fiscal_quarter_end + 30d`（直接读 unified 第 4 列）
+- B025 schema (**12 列**) 严格一致 assertion
+- 3 synthetic ticker (ZQAI/ZQPT/ZQLH) backfill log warn + skip 不阻塞批次
 
 (7) Gates：
 - `pytest tests` ≥316 + ≥10 = ≥326 passed
@@ -450,8 +453,8 @@ def load_fundamentals(
 3. `curl https://trade.guangai.ai/api/debug/recent-errors` 返回 `{"count":0,"records":[]}`
 4. B026 banner 仍 enable 显示 不破
 5. Backfill 数据本机验证：
-   - `find data/snapshots/fundamentals/sec_edgar/ -type d -mindepth 1 -maxdepth 1 | wc -l` ≈ 30-50（CIK 目录数 = ticker 数）
-   - `wc -l data/snapshots/fundamentals/unified/fundamentals.csv` ≥ 30 × 40 = 1200 rows
+   - `find data/snapshots/fundamentals/sec_edgar/ -type d -mindepth 1 -maxdepth 1 | wc -l` = **27**（真 ticker CIK 目录数；3 synthetic ticker null CIK 不写 vendor 目录）
+   - `wc -l data/snapshots/fundamentals/unified/fundamentals.csv` ≥ 27 真 ticker × 40 = 1080 rows（3 synthetic ticker null CIK skip）
    - `python -c "from trade.data.loader import load_fundamentals; from datetime import date; r=load_fundamentals(['AAPL'], date(2026,5,1)); print(r['AAPL'].fiscal_quarter)"` 输出最近 quarter
    - PIT spot check：`load_fundamentals(['AAPL'], as_of=date(2020,3,1))` 返回 ≤ 2020-Q1 之前的某 quarter
 6. PIT validation 报告通过（`docs/test-reports/B029-pit-validation-2026-MM-DD.md` 验 `report_date >= fiscal_quarter_end + 30d`）
@@ -483,7 +486,7 @@ def load_fundamentals(
 
 | 门槛 | F# 责任 |
 |---|---|
-| `FundamentalsLoader` 抽象基类 + `FundamentalsRow` 11 列 schema 与 B025 fixture 严格一致 | F001 |
+| `FundamentalsLoader` 抽象基类 + `FundamentalsRow` **12 列** schema 与 B025 fixture 严格一致（pre-impl 裁决决议 #1）| F001 |
 | `SECEDGARFundamentalsLoader` 实现 + User-Agent 含 contact email + rate limit 10/sec | F001 |
 | `xbrl_parser.py` 8 ratio 计算公式锁定 strategy doc §6 | F001 |
 | `.env.example` 含 SEC_EDGAR_CONTACT_EMAIL + deploy.sh secret check | F001 |
@@ -528,7 +531,7 @@ def load_fundamentals(
 | Ratio 计算公式与 strategy doc §6 不符 → 数字漂移 | **永久边界 (j)** 锁定 strategy doc §6 公式；pytest 用 AAPL/NVDA 抽样数据验证每 ratio 与手算一致 |
 | ticker → CIK 映射缺失 / 错误 | ticker_cik_map.json fixture 守门 + F002 acceptance 含 B025 全 universe assertion；CIK 错触发 SEC 404 → ValueError |
 | effective_date business_days 计算复杂 | 用 `pandas.tseries.offsets.BusinessDay` 或 numpy busday_offset；单测覆盖周末 / 假期边界 |
-| B025 fundamentals.csv schema 11 列严格一致 | F001+F002 acceptance 明示 assertion + 跑既有 B025 测试不破 |
+| B025 fundamentals.csv schema **12 列**严格一致（pre-impl 裁决 2026-05-26）| F001+F002 acceptance 明示 assertion + 跑既有 B025 测试不破 |
 | SEC EDGAR 偶发 5xx / 网络中断 | 3 次重试 + backoff（B027 既有 pattern 复用）+ atomic write 防部分写 |
 | Master/ADR proxy 后续要 fundamentals | 本批次架构 vendor-agnostic（FundamentalsLoader 抽象）；后续加 ADR 仅需新 batch 扩 universe，不重构 |
 | 新 dep (lxml) 引入触发 v0.9.29 §12.8 守门未通过 | F001 acceptance 明示走规约（若需引入）；若仅 stdlib + httpx 则不触 |
@@ -542,6 +545,7 @@ def load_fundamentals(
 - 不动 B027 既有 Tiingo loader / cost guard / tiingo_budget_log；本批次 SEC EDGAR 免费不计 budget guard
 - 不动 B028 既有 yfinance loader / backfill_prices.py / universe_master.py / prices unified；本批次 fundamentals 独立路径
 - 不动 strategy 代码 / Recommendations / Risk Panel / Reports / Frontend
+- 不动 B025 fixture `data/fixtures/us_quality_momentum/fundamentals.csv` 既有 12 列 schema 与 30 ticker（含 3 synthetic）— B029 unified 完全镜像，**synthetic ticker 在 SEC backfill 时 log warn + skip 不写 vendor / unified，但仍在 universe 中保 B025 既有回测 deterministic**（pre-impl 裁决 2026-05-26 决议 #3）
 
 ## 11. 后续批次（不在 B029 范围）
 
