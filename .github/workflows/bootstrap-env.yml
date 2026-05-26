@@ -59,6 +59,13 @@ jobs:
           # deploy workflow reads on the VM carries it. Missing on the VM
           # → deploy.sh pre-flight check exits 66 with remediation message.
           TIINGO_API_KEY: ${{ secrets.TIINGO_API_KEY }}
+          # B029 F001 — SEC EDGAR contact email for required User-Agent
+          # header (永久边界 (h); SEC bans non-conforming IPs for 30d
+          # — https://www.sec.gov/os/accessing-edgar-data). Same shape as
+          # TIINGO_API_KEY: surface here so the deploy workflow ships it
+          # to /etc/workbench/workbench.env. Missing on the VM →
+          # deploy.sh pre-flight check exits 67 with remediation message.
+          SEC_EDGAR_CONTACT_EMAIL: ${{ secrets.SEC_EDGAR_CONTACT_EMAIL }}
         run: |
           # set +x to be defensive — GHA masks ${{ secrets.* }} but never echo plaintext anyway.
           set +x
@@ -81,6 +88,8 @@ jobs:
           # SENTRY_DSN= # optional; leave commented unless Sentry project set up
           # B027 F002 — Tiingo Starter API key (real-market-data ingest).
           TIINGO_API_KEY=$TIINGO_API_KEY
+          # B029 F001 — SEC EDGAR contact email for User-Agent header.
+          SEC_EDGAR_CONTACT_EMAIL=$SEC_EDGAR_CONTACT_EMAIL
           EOF
           chmod 600 "$ENVFILE"
           # Sanity: confirm the file isn't empty and doesn't contain literal PLACEHOLDER
@@ -90,7 +99,7 @@ jobs:
             exit 1
           fi
           # Each required key must be present and non-empty
-          for k in GOOGLE_OAUTH_CLIENT_ID GOOGLE_OAUTH_CLIENT_SECRET NEXTAUTH_SECRET ALLOWED_USER_EMAIL TIINGO_API_KEY; do
+          for k in GOOGLE_OAUTH_CLIENT_ID GOOGLE_OAUTH_CLIENT_SECRET NEXTAUTH_SECRET ALLOWED_USER_EMAIL TIINGO_API_KEY SEC_EDGAR_CONTACT_EMAIL; do
             if ! grep -qE "^${k}=." "$ENVFILE"; then
               echo "::error::Refusing to ship: ${k} is missing or empty in the assembled env file." >&2
               exit 1
