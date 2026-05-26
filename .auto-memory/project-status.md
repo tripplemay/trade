@@ -4,13 +4,14 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B030-real-data-cutover：`building`**；F001 done (generator)；F002+F003 pending（generator）+ F004 pending（codex）。Spec：`docs/specs/B030-real-data-cutover-spec.md`。
-- **F001 done 2026-05-27**：per-sector alias chains 落地 (Financials/Utilities/Real Estate × 6 concept) + universe sector 映射；重跑 backfill **685 → 853 rows (+24.5%)**；4/6 sector ticker 恢复 (LIN 31/NEE 53/PLD 58/JPM 13)；BAC/V structural gap (无标准 capex / 无 quarterly shares_outstanding) 文档化转给 Planner。Gates: backend pytest 381 / trade pytest 755 / ruff clean。PIT report: `docs/test-reports/B030-pit-validation-2026-05-27.md`。**Spec §(4) ≥1000 row floor 未达 (853；-15%)** — alias-chain 机制穷尽，需后续算法变更 (capex=0 fallback / annual-shares interp) 或 universe 调整决策。用户已批 Land 选项 1（land aliases + 转 Planner）。
-- 🎯 **Phase 1 终点 / 里程碑 A Layer 0→1**：本批次完成后 workbench 进入「research with real historical data」阶段；回测指标第一次有真实意义；B026 banner 下线；fixture vs real 5 份对比报告生成。
-- 决策矩阵（2026-05-27 用户已批）：6 sector-structural ticker 处置 = F001 per-sector aliases (现 4/6 实施成功；BAC/V residual gap 转 Planner) / B026 banner 关闭 = B030 done by acceptance / 4 features 拆分 / 对比报告 = Master 4 sleeve + B025 us_quality 各独立 5 份 + 1 overview。
+- **B030-real-data-cutover：`verifying`**；F001+F002+F003 done (generator)；F004 pending（codex L1+L2 验收 + signoff）。Spec：`docs/specs/B030-real-data-cutover-spec.md`。
+- **F001 done 2026-05-27** (fd680a4 + 70e2f4d)：per-sector alias chains (Financials/Utilities/Real Estate × 6 concept) + universe sector 映射；重跑 backfill **685 → 853 rows (+24.5%)**；4/6 sector ticker 恢复。BAC/V structural gap 文档化转 Planner。
+- **F002 done 2026-05-27** (f83d2df)：trade/data/us_quality_universe.py 4-tier 解析 (explicit fixture_dir > FORCE_FIXTURE_PATH=1 > unified > default fixture)。schema 12-col / 8-col 完全相同 → zero conversion。B025 deterministic tests 用 autouse FORCE_FIXTURE_PATH=1 per-module fixture 锁定。+23 new tests。
+- **F003 done 2026-05-27**：scripts/compare_fixture_vs_real.py 5 sleeve buy-and-hold proxy；reports/fixture_vs_real/ 11 files；B026 banner 4 处接线关闭 (.env.example=true + .env.production=false + workbench-deploy.yml env + bootstrap-env.yml 注释)；+19 new tests。
+- 🎯 **Phase 1 终点 / 里程碑 A Layer 0→1**：F004 codex evaluator 接手 L1 + L2 完成后达成。
 - 新增永久产品边界 (k)：**Layer 状态不可逆向滑落** — B030 done 后若真数据严重 unreliable 必须新批次 spec 决议，不 silent rollback。
 - 本批次属 implementation-path-2026-05.md §4 **Phase 1 第五个 batch（Stream 1.D 终点）**。
-- 后续路径：F002 strategy 切真（trade/strategies/* + trade/portfolio/master.py）→ F003 对比报告 + banner 关 → F004 codex L2 → 🎯 里程碑 A Layer 0→1。
+- 后续路径：F004 codex L2 验收 → 🎯 里程碑 A Layer 0→1 → Phase 2 (B031+ LLM advisory / B033+ News ingest)。
 
 ## 已完成签收 + MVP 完工
 - B001-B029 全部签收。MVP substantively 完成 (PRD §10/§11/§12) — 完工声明：`docs/prd/mvp-completion-declaration-2026-05-20.md`。

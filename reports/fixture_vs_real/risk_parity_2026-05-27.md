@@ -1,0 +1,22 @@
+# Risk Parity (inverse-vol) — fixture vs real (2026-05-27)
+
+**Sleeve id:** `risk_parity`
+**Universe size:** 5
+
+**Methodology note:** Equal-weight buy-and-hold proxy across the sleeve's universe. Captures data-source quality delta; strategy-logic correctness is pinned by the existing test suite under FORCE_FIXTURE_PATH=1. Fixture branch resolved 0/5 universe tickers (others absent from the fixture).
+
+## Side-by-side metrics
+
+| Metric | Fixture (synthetic) | Real (unified) | Δ (real − fixture) |
+|---|---:|---:|---:|
+| Annual Return | n/a | 8.37% | n/a |
+| Volatility | n/a | 10.06% | n/a |
+| Sharpe | n/a | 0.83 | n/a |
+| Sortino | n/a | 1.01 | n/a |
+| Calmar | n/a | 0.40 | n/a |
+| Max Drawdown | n/a | -20.88% | n/a |
+| Win Rate | n/a | 54.86% | n/a |
+
+_Daily return rows used:_ fixture=n/a, real=3115
+
+_Universe tickers resolved:_ fixture=0/5, real=5/5

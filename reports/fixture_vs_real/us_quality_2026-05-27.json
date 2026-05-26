@@ -1,0 +1,30 @@
+{
+  "sleeve_id": "us_quality",
+  "label": "US Quality Momentum (27 real tickers)",
+  "as_of": "2026-05-27",
+  "universe_size": 27,
+  "is_stub": false,
+  "fixture": {
+    "annual_return": 0.14856831600428655,
+    "volatility": 0.06931234141006554,
+    "sharpe": 2.143461221794932,
+    "sortino": 3.404138622869563,
+    "calmar": 2.0684319773464734,
+    "max_drawdown": -0.07182654185944282,
+    "win_rate": 0.5518672199170125,
+    "row_count": 2892
+  },
+  "real": {
+    "annual_return": 0.30734069042598744,
+    "volatility": 0.2620988474364986,
+    "sharpe": 1.172613666301795,
+    "sortino": 1.5437307848183102,
+    "calmar": 0.7321085101707436,
+    "max_drawdown": -0.41980210058521095,
+    "win_rate": 0.5589085072231139,
+    "row_count": 3115
+  },
+  "fixture_universe_resolved": 27,
+  "real_universe_resolved": 27,
+  "note": "Equal-weight buy-and-hold proxy across the sleeve's universe. Captures data-source quality delta; strategy-logic correctness is pinned by the existing test suite under FORCE_FIXTURE_PATH=1."
+}

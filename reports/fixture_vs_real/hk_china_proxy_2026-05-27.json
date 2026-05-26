@@ -1,0 +1,12 @@
+{
+  "sleeve_id": "hk_china_proxy",
+  "label": "HK / China Proxy (B011 satellite stub)",
+  "as_of": "2026-05-27",
+  "universe_size": 0,
+  "is_stub": true,
+  "fixture": null,
+  "real": null,
+  "fixture_universe_resolved": 0,
+  "real_universe_resolved": 0,
+  "note": "B011 satellite stub \u2014 no implemented backtest engine. Real-data cutover for this sleeve is deferred to the post-milestone-A backlog (HK/China implementation batch)."
+}

@@ -122,6 +122,13 @@ jobs:
           # workbench.env; only the URL travels with the build.
           NEXTAUTH_URL: https://trade.guangai.ai
           NODE_ENV: production
+          # B030 F003 — B026 synthetic-data banner OFF in production (Layer
+          # 0→1 milestone A complete; real SEC EDGAR + Tiingo data is wired).
+          # ``workbench/frontend/.env.production`` already sets the value;
+          # this duplicates the wiring as belt-and-braces so the production
+          # bundle stays banner-free even if the .env.production file is
+          # accidentally removed. Component code preserved for downgrade.
+          NEXT_PUBLIC_SYNTHETIC_DATA_BANNER: "false"
         run: npm run build
 
       - name: Stage release artifacts

@@ -5,6 +5,10 @@
 .env
 .env.*
 !.env.example
+# B030 F003 — frontend production env (NEXT_PUBLIC_* build-time flags only;
+# no secrets here). Tracked so the banner-off setting ships with the repo
+# rather than living only in a CI workflow inline env block.
+!workbench/frontend/.env.production
 *.key
 *.pem
 

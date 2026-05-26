@@ -1,0 +1,21 @@
+{
+  "sleeve_id": "risk_parity",
+  "label": "Risk Parity (inverse-vol)",
+  "as_of": "2026-05-27",
+  "universe_size": 5,
+  "is_stub": false,
+  "fixture": null,
+  "real": {
+    "annual_return": 0.08366715406640424,
+    "volatility": 0.10055281767420372,
+    "sharpe": 0.8320717012375536,
+    "sortino": 1.008125999175499,
+    "calmar": 0.4007363777282266,
+    "max_drawdown": -0.20878352631900576,
+    "win_rate": 0.5486356340288925,
+    "row_count": 3115
+  },
+  "fixture_universe_resolved": 0,
+  "real_universe_resolved": 5,
+  "note": "Equal-weight buy-and-hold proxy across the sleeve's universe. Captures data-source quality delta; strategy-logic correctness is pinned by the existing test suite under FORCE_FIXTURE_PATH=1. Fixture branch resolved 0/5 universe tickers (others absent from the fixture)."
+}

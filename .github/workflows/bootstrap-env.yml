@@ -90,6 +90,16 @@ jobs:
           TIINGO_API_KEY=$TIINGO_API_KEY
           # B029 F001 — SEC EDGAR contact email for User-Agent header.
           SEC_EDGAR_CONTACT_EMAIL=$SEC_EDGAR_CONTACT_EMAIL
+          # B030 F003 — NEXT_PUBLIC_SYNTHETIC_DATA_BANNER is the only
+          # B026 banner-related env var. It is NOT a backend secret;
+          # it is a frontend build-time public flag and lives in
+          # ``workbench/frontend/.env.production`` (auto-loaded by
+          # ``next build``). Documented here per the v0.9.30 §12.9
+          # four-接线 convention so future maintainers know the
+          # banner flag is NOT injected into /etc/workbench/workbench.env.
+          # Production value: NEXT_PUBLIC_SYNTHETIC_DATA_BANNER=false
+          # (milestone A Layer 0→1 complete; component preserved for
+          # future Layer 0 fallback per 永久边界 (k)).
           EOF
           chmod 600 "$ENVFILE"
           # Sanity: confirm the file isn't empty and doesn't contain literal PLACEHOLDER
