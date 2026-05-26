@@ -176,10 +176,9 @@ def render_summary(
         f"  {'ticker':<8} {'date':<10} {'tiingo_adj':>12} {'yf_adj':>12} {'rel_err':>10}"
     )
     for d in sorted(discrepancies, key=lambda x: -x.relative_error):
-        if d.relative_error == float("inf"):
-            err_repr = "fetch_fail"
-        else:
-            err_repr = f"{d.relative_error:.4%}"
+        err_repr = (
+            "fetch_fail" if d.relative_error == float("inf") else f"{d.relative_error:.4%}"
+        )
         lines.append(
             f"  {d.ticker:<8} {d.sample_date.isoformat():<10} "
             f"{d.tiingo_close:>12.4f} {d.yfinance_close:>12.4f} {err_repr:>10}"
