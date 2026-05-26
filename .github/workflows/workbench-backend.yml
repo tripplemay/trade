@@ -7,15 +7,27 @@ name: Workbench Backend CI
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
+# paths-trigger 配置审计（v0.9.27 §12.7.1 — B028 微沉淀）：
+# 业务代码不只在 workbench/backend/**；trade/** 含 strategy / portfolio / data
+# loader 共享代码；scripts/** 含 B028+ backfill / validate_snapshot；
+# pyproject.toml 含 runtime deps (v0.9.29 §12.8 守门规则同源）。这些路径若
+# 不在 paths-trigger 内，对应 commit 不触 CI，workflow_run-triggered
+# Workbench Deploy 不 arm，production drift（B028 F004 fix-round 1 实证）。
 on:
   push:
     branches: [main]
     paths:
       - "workbench/backend/**"
+      - "trade/**"            # B028+ shared business logic (loader, strategy, portfolio)
+      - "scripts/**"          # B028+ backfill scripts, validate_snapshot, universe config
+      - "pyproject.toml"      # runtime deps (v0.9.29 §12.8)
       - ".github/workflows/workbench-backend.yml"
   pull_request:
     paths:
       - "workbench/backend/**"
+      - "trade/**"
+      - "scripts/**"
+      - "pyproject.toml"
       - ".github/workflows/workbench-backend.yml"
 
 concurrency:

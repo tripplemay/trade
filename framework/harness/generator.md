@@ -527,6 +527,33 @@ fi
 
 **来源：** B025-us-quality-momentum-satellite F006 round-3 / round-4 deploy drift；commits `afa154d`（workflow_dispatch 上线）+ `abaaf6e`（最终签收前 SHA）+ signoff `docs/test-reports/B025-us-quality-signoff-2026-05-25.md` §Soft-watch S2 + §Framework Learnings 新规律。
 
+### 12.7.1 paths-trigger gap — Production HEAD drift 第二种形态（B028 微沉淀）
+
+**背景：** §12.7 沉淀时关注的是**状态机 chore commit**（`progress.json` / `features.json` / `.auto-memory/**`）落在 CI workflow `paths-ignore` 范围外造成 production drift。**B028 F004 fix-round 1 发现第二种形态**：commit 改的是**产品代码本身**（`trade/data/loader.py` + `scripts/validate_snapshot.py`），但这些路径**不在任何 CI workflow 的 `paths:` 触发集合内**（Workbench Backend CI 只 trigger `workbench/backend/**`；Workbench Frontend CI 只 trigger `workbench/{frontend,backend}/**`），所以 `workflow_run`-triggered Workbench Deploy 没 arm，production 落后 main HEAD。
+
+**规约（Planner 起 spec 时硬要求 spec-time pre-flight）：**
+
+1. **Planner 起 spec 时 grep 改动文件落点**：明示 batch 涉及的所有路径（如 "本批次会动 `workbench/backend/**` + `trade/**` + `scripts/**` + `pyproject.toml`"）。
+2. **若任何产品代码路径**不在任何 CI workflow `paths:` 内，**spec acceptance 必须二选一：**
+   - **(a) 同 batch 内修 CI workflow `paths:` 配置**让该路径 trigger CI（结构性修复；一次修一劳永逸；记得 audit 不让 docs-only chore commit 误触）
+   - **(b) Generator 推每个含该路径的 commit 后必跑 `gh workflow run "Workbench Deploy" -r main`**（dispatch 兜底；与 §12.7 状态机 chore commit 同机制）
+3. **Evaluator L2 §Production/HEAD 等价性 检查时**：若 production drift 且 git diff 含**产品代码路径**（非状态机），不自动接受不同步，必须确认是否因 paths-trigger gap → 走 §12.7 dispatch 兜底 + 在 spec follow-up 加 (a) 配置修复。
+
+**反面案例（B028 F004 fix-round 1）：**
+
+| 现象 | 根因 | 修法 |
+|---|---|---|
+| Production HEAD `8338fc0` 落后 main HEAD `e730a0b`；git diff 含 `trade/data/loader.py` 产品代码改动 | F003 commit `420fa3e` 改 `trade/` + `scripts/` 两路径都不在 Workbench Backend CI / Frontend CI `paths:` 内 | Codex dispatch Workbench Deploy（run `26429877249`）兜底 + Planner done 阶段同 commit 修 workbench-backend.yml `paths:` 加 `trade/**` + `scripts/**` + `pyproject.toml` 结构性根治 |
+
+**v0.9.27 §12.7 + §12.7.1 系列覆盖的「Production HEAD drift」全形态：**
+
+| 形态 | 触发原因 | 防御 |
+|---|---|---|
+| 状态机 chore commit | `progress.json` / `features.json` / `.auto-memory/**` 改动落 `paths-ignore` 内 | §12.7：workflow_dispatch + chore commit 后 dispatch |
+| **产品代码 paths-trigger gap** | `trade/**` / `scripts/**` / 顶层 `pyproject.toml` 等不在任何 CI workflow `paths:` 内 | **§12.7.1：spec-time pre-flight + 结构性修 paths 配置 / dispatch 兜底** |
+
+**来源：** B028-real-data-backfill F004 fix-round 1；commits `420fa3e`（F003 触发 paths-trigger gap）+ `15dfb4b`（F004 blocker 记录）+ workflow run `26429877249`（dispatch deploy 兜底）+ signoff `docs/test-reports/B028-real-data-backfill-signoff-2026-05-26.md`。Codex 标"本批次无 framework learnings"，Planner 在 done 阶段重新评估为 §12.7 既有规则的延伸 sub-pattern，不 bump 版本但收紧 spec-time pre-flight 责任。
+
 ### 12.8 pyproject runtime vs dev dependency hygiene（v0.9.29 — B027 沉淀）
 
 **触发：** B027 F002 fix-round 1 — Codex L2 production smoke 失败，根因是 `httpx` 在 `pyproject.toml` 的 `[project.optional-dependencies].dev` 而不是 `[project].dependencies`。**本地 pytest 全过**（pytest 走 dev install 含 extras），**production wheel install 缺 transport 层**（wheel install 默认只装 `[project].dependencies` 不装 extras），Tiingo adapter 启动时 ImportError。Generator round-1 commit `468d380` 把 httpx 移到 runtime + 加 safety regression test 守门。
