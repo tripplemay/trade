@@ -175,6 +175,12 @@ class TiingoSnapshotLoader(SnapshotLoader):
         return [_parse_bar(ticker, entry) for entry in payload]
 
     def health_check(self) -> bool:
+        # B027 F003 fix-round 1: even ``health_check`` issues a live
+        # Tiingo HTTP call, so it must count against the same monthly
+        # budget the fetch path does. Spec F003 L2 §7 specifically
+        # verifies ``health_check() → budget_log +1`` and the original
+        # F002 wiring only ran the guard on ``fetch_daily_bars``.
+        self._guard.check_and_increment()
         try:
             self._get_with_retry(
                 f"{TIINGO_BASE_URL}/daily/spy/prices",

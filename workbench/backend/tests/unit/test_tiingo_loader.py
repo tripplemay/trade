@@ -345,6 +345,41 @@ def test_fetch_daily_bars_skips_http_when_guard_raises_budget_exceeded() -> None
     assert client.calls == []
 
 
+def test_health_check_also_passes_through_guard() -> None:
+    """B027 F003 fix-round 1: spec L2 §7 verifies ``health_check()`` →
+    budget_log +1, so the guard must fire on the probe path too — not
+    just on ``fetch_daily_bars``. A tripped cap should raise out of
+    health_check just like it does from fetch_daily_bars; an operator
+    running ``health_check`` on a budget-exhausted month learns the
+    cause immediately instead of seeing a confusing 200 response."""
+
+    guard = _NoopGuard()
+    client = _StubClient([_StubResponse(200, [_ok_bar()])])
+    loader = TiingoSnapshotLoader(
+        api_key="k", client=client, sleep=lambda _s: None, guard=guard
+    )
+    assert loader.health_check() is True
+    assert guard.calls == 1
+
+
+def test_health_check_skips_http_when_guard_raises_budget_exceeded() -> None:
+    """If the cap is already hit, ``health_check`` propagates
+    BudgetExceeded BEFORE issuing the HTTP probe — the cap is meant to
+    halt every Tiingo call, not just the bulk ingest path."""
+
+    class _ExceededGuard:
+        def check_and_increment(self) -> None:
+            raise BudgetExceeded("cap reached in test")
+
+    client = _StubClient([_StubResponse(200, [_ok_bar()])])
+    loader = TiingoSnapshotLoader(
+        api_key="k", client=client, sleep=lambda _s: None, guard=_ExceededGuard()
+    )
+    with pytest.raises(BudgetExceeded):
+        loader.health_check()
+    assert client.calls == []
+
+
 def test_default_guard_is_monthly_budget_guard_default() -> None:
     """Constructor default must produce a real MonthlyBudgetGuard with
     the spec-pinned cap (so a forgotten ``guard=`` kwarg cannot silently
