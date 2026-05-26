@@ -32,6 +32,14 @@ requires-python = ">=3.11"
 dependencies = [
   "alembic>=1.13,<2",
   "fastapi>=0.115,<0.116",
+  # B027 F002 fix-round 1: `httpx` was previously only a `dev` extra
+  # because the test suite uses it via TestClient. B027's
+  # `workbench_api/data/tiingo_loader.py` now imports `httpx` at
+  # module top-level, which means a production install (which only
+  # resolves the [project].dependencies set, not the dev extras)
+  # cannot even import the module. Lifting it here keeps the
+  # production wheel self-contained.
+  "httpx>=0.27",
   "pydantic>=2.7,<3",
   "pydantic-settings>=2.3,<3",
   "python-jose[cryptography]>=3.3,<4",
@@ -49,7 +57,6 @@ workbench-bootstrap = "workbench_api.cli.bootstrap:main"
 
 [project.optional-dependencies]
 dev = [
-  "httpx>=0.27",
   "mypy>=1.10",
   "pytest>=8.2",
   "ruff>=0.5",
