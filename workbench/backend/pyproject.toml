@@ -40,6 +40,14 @@ dependencies = [
   # cannot even import the module. Lifting it here keeps the
   # production wheel self-contained.
   "httpx>=0.27",
+  # B028 F001: ``yfinance`` is the free non-official Yahoo Finance
+  # wrapper used by ``workbench_api/data/yfinance_loader.py`` for the
+  # cross-check path that asserts Tiingo prices match yfinance within
+  # 0.5% on a random ticker × date sample. yfinance must stay in the
+  # runtime dependency set (per framework v0.9.29 §12.8) so the
+  # production wheel install carries the import — the safety-regression
+  # ``test_critical_runtime_deps_pinned`` test pins this contract.
+  "yfinance>=0.2.40",
   "pydantic>=2.7,<3",
   "pydantic-settings>=2.3,<3",
   "python-jose[cryptography]>=3.3,<4",

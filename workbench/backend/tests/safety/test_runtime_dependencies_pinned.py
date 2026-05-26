@@ -56,6 +56,24 @@ _EXEMPT: frozenset[str] = frozenset(
     }
 )
 
+# Critical runtime dependencies — packages a single mis-classification
+# of has previously broken production. Adding a name here makes the
+# pin explicit and intentional (so a future refactor that splits the
+# pyproject can't silently de-promote it back to a dev extra).
+#
+# Framework v0.9.29 §12.8.1 pattern.
+CRITICAL_RUNTIME_DEPS: frozenset[str] = frozenset(
+    {
+        # B027 F003 fix-round 1 — TiingoSnapshotLoader imports httpx at
+        # module load; missing-on-prod broke deploy. See
+        # framework/harness/generator.md §12.8.2 反面案例 row 1.
+        "httpx",
+        # B028 F001 — YFinanceSnapshotLoader imports yfinance at module
+        # load. Same shape regression class as httpx — keep it pinned.
+        "yfinance",
+    }
+)
+
 
 def _runtime_packages(pyproject_text: str) -> set[str]:
     """Extract the ``[project].dependencies`` package names.
@@ -126,22 +144,29 @@ def test_runtime_imports_are_declared_dependencies() -> None:
         raise AssertionError(msg)
 
 
-def test_httpx_is_runtime_not_dev_extra() -> None:
-    """Pin the specific regression that motivated this guard.
+def test_critical_runtime_deps_pinned() -> None:
+    """Every name in :data:`CRITICAL_RUNTIME_DEPS` must appear in
+    ``[project].dependencies`` so a future pyproject restructure can't
+    silently de-promote them back to dev extras (framework v0.9.29
+    §12.8.1 pattern).
 
-    Even if a contributor restructures pyproject.toml in a future
-    refactor, ``httpx`` must stay in the runtime dependency set —
-    otherwise the Tiingo loader cannot import on the production VM
-    (B027 F003 fix-round 1 root cause).
+    Each entry corresponds to a real prior incident where a top-level
+    ``import X`` landed in source under ``workbench_api/`` but the
+    pyproject only declared X under ``[project.optional-dependencies].dev``;
+    the production wheel install (which resolves only runtime deps,
+    no extras) then blew up on first import. Keep the list intentional.
     """
 
-    data = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))
-    runtime_entries = data.get("project", {}).get("dependencies", [])
-    has_httpx = any(entry.split("[", 1)[0].split(">", 1)[0].strip() == "httpx"
-                    for entry in runtime_entries)
-    assert has_httpx, (
-        "httpx must be a runtime dependency (not just a dev extra); "
-        "workbench_api/data/tiingo_loader.py imports it at module "
-        "load and the production wheel install resolves only "
-        "[project].dependencies."
+    runtime = _runtime_packages(PYPROJECT.read_text(encoding="utf-8"))
+    runtime_normalised = runtime | {n.replace("-", "_") for n in runtime}
+    missing = {
+        dep for dep in CRITICAL_RUNTIME_DEPS
+        if dep not in runtime_normalised
+        and dep.replace("_", "-") not in runtime
+    }
+    assert not missing, (
+        "Critical runtime deps missing from [project].dependencies "
+        f"{sorted(missing)}. Restore each one; see framework/harness/"
+        "generator.md §12.8 for the runtime/dev judgment rules + the "
+        "B027 F003 fix-round 1 prior incident."
     )
