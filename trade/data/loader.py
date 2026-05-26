@@ -58,6 +58,57 @@ doesn't include them. A future extension can widen the dataclass and
 this set together.
 """
 
+# B029 F003 — paths the PIT fundamentals loader resolves to in priority
+# order. Same shape convention as the prices pair above. The unified
+# CSV is produced by ``scripts/backfill_fundamentals.py`` (B029 F002);
+# the B025 fixture remains the deterministic backtest source-of-truth
+# (B025 fixture row count > unified row count for the foreseeable
+# future — see ``docs/test-reports/B029-pit-validation-2026-05-26.md``
+# §3 for the sector-structural gap).
+UNIFIED_FUNDAMENTALS_PATH: Path = (
+    _REPO_ROOT / "data" / "snapshots" / "fundamentals" / "unified" / "fundamentals.csv"
+)
+"""Real-data unified CSV produced by ``scripts/backfill_fundamentals.py``.
+
+Schema matches ``data/fixtures/us_quality_momentum/fundamentals.csv``
+column-for-column (12 columns; Planner pre-impl adjudication 2026-05-26
+decision #1). Filtered by ``effective_date`` before being returned so
+strategy code never observes data that wasn't yet visible at
+``as_of_date``.
+"""
+
+B025_FIXTURE_FUNDAMENTALS_PATH: Path = (
+    _REPO_ROOT / "data" / "fixtures" / "us_quality_momentum" / "fundamentals.csv"
+)
+"""B025 synthetic fundamentals fixture used as the fallback source when
+the unified file does not exist. Six tickers in the B025 universe
+(BAC/JPM/V/LIN/NEE/PLD) produce zero rows in the unified file due to
+sector-structural concept misalignment (see B029 PIT validation
+report); F003's fall-back path means strategy code reading those
+tickers still gets the B025 synthetic values, preserving B025 backtest
+determinism (F003 acceptance §(4) hard invariant).
+"""
+
+UNIFIED_FUNDAMENTALS_REQUIRED_COLUMNS: tuple[str, ...] = (
+    "report_date",
+    "ticker",
+    "fiscal_quarter",
+    "fiscal_quarter_end",
+    "roe",
+    "gross_margin",
+    "fcf_yield",
+    "debt_to_assets",
+    "pe",
+    "pb",
+    "ev_ebitda",
+    "earnings_yield",
+)
+"""Exact 12-column schema the fundamentals CSV must satisfy (per
+:func:`load_fundamentals`). Order matches the B025 fixture header
+1:1 (decision #1). A misshapen CSV raises :class:`FixtureDataError`
+with a regen pointer.
+"""
+
 
 @dataclass(frozen=True, slots=True)
 class PriceBar:
@@ -69,6 +120,41 @@ class PriceBar:
     close: float
     adjusted_close: float
     volume: int
+
+
+@dataclass(frozen=True, slots=True)
+class FundamentalsRow:
+    """One fiscal quarter's eight ratios for one ticker, in the
+    canonical B025 fixture column order.
+
+    Schema matches ``data/fixtures/us_quality_momentum/fundamentals.csv``
+    1:1 (12 columns; Planner pre-impl adjudication 2026-05-26 decision
+    #1). Mirrors :class:`workbench_api.data.fundamentals_loader.FundamentalsRow`
+    but lives in the ``trade`` package to keep the strategy / backtest
+    layer free of any ``workbench_api`` import dependency. The two
+    classes are intentionally structurally identical so a future
+    refactor can swap one for the other without a downstream code
+    change.
+
+    PIT semantics: ``report_date`` is the SEC filing date (when the
+    10-K/10-Q became publicly visible). ``effective_date = report_date +
+    1 business day`` is what :func:`load_fundamentals` filters against
+    so strategy code observes the row strictly **after** market hours
+    on the filing day.
+    """
+
+    report_date: date
+    ticker: str
+    fiscal_quarter: str
+    fiscal_quarter_end: date
+    roe: float
+    gross_margin: float
+    fcf_yield: float
+    debt_to_assets: float
+    pe: float
+    pb: float
+    ev_ebitda: float
+    earnings_yield: float
 
 
 @dataclass(frozen=True, slots=True)
@@ -175,6 +261,142 @@ def _resolve_prices_source() -> Path | None:
     if B025_FIXTURE_PRICES_PATH.exists():
         return B025_FIXTURE_PRICES_PATH
     return None
+
+
+def load_fundamentals(
+    tickers: list[str],
+    as_of_date: date,
+) -> dict[str, FundamentalsRow | None]:
+    """Return the latest PIT-visible :class:`FundamentalsRow` per ticker.
+
+    Reads from :data:`UNIFIED_FUNDAMENTALS_PATH` (real-data unified CSV
+    produced by ``scripts/backfill_fundamentals.py``) when it exists,
+    otherwise falls back to :data:`B025_FIXTURE_FUNDAMENTALS_PATH`
+    (B025 synthetic fixture; row 1 of B025 universe fixture). Strategy
+    code migrates to this function in the B030 cutover; F003 only adds
+    the infrastructure.
+
+    PIT enforcement:
+
+    * ``effective_date = report_date + 1 business day`` (using
+      ``pandas.tseries.offsets.BusinessDay(1)`` so weekends / US
+      federal holidays slide forward to the next trading day).
+    * The row is filtered ``effective_date <= as_of_date`` so a row
+      filed on ``date(2015, 2, 4)`` (a Wednesday) becomes visible at
+      ``date(2015, 2, 5)``; a row filed on a Friday becomes visible
+      the next Monday.
+    * For each ticker, the **latest** row by ``effective_date`` that
+      passes the cutoff is returned. Tickers with no visible row
+      (e.g. ``as_of_date`` precedes the first filing) map to ``None``.
+
+    Args:
+        tickers: ticker symbols to fetch; the output dict always
+            contains every key, with ``None`` for any ticker either
+            absent from the source CSV or whose earliest filing
+            post-dates ``as_of_date``.
+        as_of_date: PIT cutoff for visibility. If in the future, the
+            cutoff is clamped to ``date.today()`` so the loader never
+            surfaces unobservable data.
+
+    Returns:
+        ``{ticker: FundamentalsRow | None}``. The result dict mirrors
+        the ``load_prices`` shape (always keyed by every requested
+        ticker) so callers can branch on ``None`` without raising.
+
+    Raises:
+        FixtureDataError: if either the unified or fallback file is
+            present but is missing one of the required schema columns.
+            The error text includes a remediation pointer
+            (``scripts/backfill_fundamentals.py`` regen).
+    """
+
+    if as_of_date > date.today():
+        as_of_date = date.today()
+
+    source_path = _resolve_fundamentals_source()
+    if source_path is None:
+        # Neither the unified file nor the B025 fixture is on disk.
+        return {ticker: None for ticker in tickers}
+
+    frame = _read_fundamentals_frame(source_path)
+    # ``effective_date = report_date + 1 business day``. ``pandas``
+    # offsets stack correctly on a Series of date objects when cast
+    # via to_datetime first; the result is a Timestamp Series we drop
+    # back to ``date`` for comparison with the ``as_of_date`` argument.
+    frame["effective_date"] = (
+        pd.to_datetime(frame["report_date"]) + pd.tseries.offsets.BusinessDay(1)
+    ).dt.date
+    # PIT enforcement happens BEFORE the ticker filter so the per-ticker
+    # slice cannot include a row whose effective_date exceeds the cutoff
+    # by accident.
+    visible = frame[frame["effective_date"] <= as_of_date]
+
+    out: dict[str, FundamentalsRow | None] = {ticker: None for ticker in tickers}
+    if visible.empty:
+        return out
+    for ticker in tickers:
+        ticker_slice = visible[visible["ticker"] == ticker].sort_values(
+            "effective_date"
+        )
+        if ticker_slice.empty:
+            continue
+        out[ticker] = _row_to_fundamentals(ticker_slice.iloc[-1])
+    return out
+
+
+def _resolve_fundamentals_source() -> Path | None:
+    """Pick the highest-priority on-disk source for :func:`load_fundamentals`."""
+
+    if UNIFIED_FUNDAMENTALS_PATH.exists():
+        return UNIFIED_FUNDAMENTALS_PATH
+    if B025_FIXTURE_FUNDAMENTALS_PATH.exists():
+        return B025_FIXTURE_FUNDAMENTALS_PATH
+    return None
+
+
+def _read_fundamentals_frame(source_path: Path) -> pd.DataFrame:
+    """Read a CSV in the unified-fundamentals schema and parse dates."""
+
+    frame = pd.read_csv(source_path)
+    required = set(UNIFIED_FUNDAMENTALS_REQUIRED_COLUMNS)
+    missing = required - set(frame.columns)
+    if missing:
+        raise FixtureDataError(
+            f"fundamentals source {source_path} missing required columns "
+            f"{sorted(missing)}; expected at least "
+            f"{sorted(UNIFIED_FUNDAMENTALS_REQUIRED_COLUMNS)}. "
+            "Re-run scripts/backfill_fundamentals.py or restore the B025 "
+            "fixture."
+        )
+    frame["report_date"] = pd.to_datetime(frame["report_date"]).dt.date
+    frame["fiscal_quarter_end"] = pd.to_datetime(frame["fiscal_quarter_end"]).dt.date
+    return frame
+
+
+def _row_to_fundamentals(row: Any) -> FundamentalsRow:
+    """Translate a unified-schema CSV row (after PIT filter) into the
+    :class:`FundamentalsRow` shape used by the strategy layer.
+
+    ``row`` is a single-row pandas Series (the ``iloc[-1]`` result of
+    sort_values + tail). All numeric columns are cast through ``float``
+    so a CSV that stored values as strings (the unified driver writes
+    decimals as strings) still round-trips into typed floats.
+    """
+
+    return FundamentalsRow(
+        report_date=row["report_date"],
+        ticker=str(row["ticker"]),
+        fiscal_quarter=str(row["fiscal_quarter"]),
+        fiscal_quarter_end=row["fiscal_quarter_end"],
+        roe=float(row["roe"]),
+        gross_margin=float(row["gross_margin"]),
+        fcf_yield=float(row["fcf_yield"]),
+        debt_to_assets=float(row["debt_to_assets"]),
+        pe=float(row["pe"]),
+        pb=float(row["pb"]),
+        ev_ebitda=float(row["ev_ebitda"]),
+        earnings_yield=float(row["earnings_yield"]),
+    )
 
 
 def _read_prices_frame(source_path: Path) -> pd.DataFrame:
