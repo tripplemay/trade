@@ -229,10 +229,37 @@ class SECEDGARFundamentalsLoader(FundamentalsLoader):
         """Fetch all quarterly fundamentals **filed** in
         ``[from_date, to_date]`` inclusive for ``ticker``.
 
+        Expects a pre-baked ``parsed_ratios`` block in the SEC payload
+        (the F001 fixture shape). The B029 F002 backfill driver
+        synthesises that block from the raw SEC companyfacts payload
+        + Tiingo prices, then re-routes through this method via the
+        :func:`parse_companyfacts` helper directly. Live SEC fetch
+        without pre-parsing is exposed via
+        :meth:`fetch_raw_companyfacts` for the driver to call.
+
         Raises :class:`ValueError` when ``ticker`` resolves to a
         synthetic entry (CIK ``None``) — the caller (F002 backfill
         driver) catches this and skips with a warn log per Planner
         pre-impl adjudication decision #3 (fail-safe; not a fatal).
+        """
+
+        payload = self.fetch_raw_companyfacts(ticker)
+        return parse_companyfacts(ticker, payload, from_date=from_date, to_date=to_date)
+
+    def fetch_raw_companyfacts(self, ticker: str) -> dict[str, Any]:
+        """Fetch the **raw** SEC companyfacts JSON for ``ticker``.
+
+        Returns the full ``data.sec.gov/api/xbrl/companyfacts/`` response
+        as a typed dict (``cik`` / ``entityName`` / ``facts`` keys; the
+        ``facts.us-gaap`` sub-tree carries every reported concept with
+        its full unit / period array). The F002 backfill driver walks
+        this tree to extract the eleven concepts pinned in
+        :data:`SEC_CONCEPT_NAMES`, then computes the eight B025 ratios
+        per fiscal quarter (joining Tiingo prices on ``report_date``).
+
+        Synthetic-ticker handling and rate-limit invariants are the
+        same as :meth:`fetch_quarterly_fundamentals`; the fetch path
+        is shared.
         """
 
         if ticker not in self._ticker_cik_map:
@@ -257,10 +284,9 @@ class SECEDGARFundamentalsLoader(FundamentalsLoader):
         if not isinstance(payload, dict):
             raise ValueError(
                 f"SEC companyfacts for {ticker} (CIK {cik}) returned non-dict "
-                f"payload of type {type(payload).__name__}; cannot parse to "
-                f"FundamentalsRow list"
+                f"payload of type {type(payload).__name__}; cannot parse"
             )
-        return parse_companyfacts(ticker, payload, from_date=from_date, to_date=to_date)
+        return payload
 
     def health_check(self) -> bool:
         """Probe SEC EDGAR by fetching AAPL submissions metadata.
