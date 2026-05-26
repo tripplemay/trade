@@ -4,17 +4,20 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B028-real-data-backfill：`reverifying`（fix-round 1）**；F001+F002+F003 completed + F004 pending（Codex 复验）。Spec：`docs/specs/B028-real-data-backfill-spec.md`。
-- F004 fix-round 1：Codex 首轮 L2 blocker 是 Production HEAD drift。Root cause：F003 只动了 trade/ + scripts/，俩路径都在 workbench/{backend,frontend}/ 之外 → 双 CI paths-ignore → Workbench Deploy 没被 workflow_run 触发（v0.9.27 §12.7 prescribed workflow_dispatch）。修法：dispatch Workbench Deploy run 26429877249 success 2m。
-- Production HEAD 现 == main HEAD == `15dfb4b`；db_connectivity ok；uptime 28s fresh restart；journal 干净（仅 /api/health probe + 我自己的 401 探针）。无产品代码改动；仅状态机推 reverifying + handoff 更新。
-- L1 + functional L2 + backfill artifacts (52 vendor + 153386 unified rows) + cross-check 25/25 PASS + PIT spot check 与 Codex fix-round 0 报告一致不变。
+- **B028-real-data-backfill：`done`**；F001-F004 全部 completed。Spec：`docs/specs/B028-real-data-backfill-spec.md`；signoff：`docs/test-reports/B028-real-data-backfill-signoff-2026-05-26.md`。
+- Codex 复验结论：**PASS**。focused L2 blocker（production HEAD drift）已解除：production `/api/health.version=15dfb4bfcc4100b1bd1ec0755208ed8ee054fa42`；本地 `HEAD=0cad66558308e08c0d0b2b470115f6ccf197cd6e`，diff 仅含 `progress.json` + `.auto-memory/project-status.md` 这 1 个 metadata commit，可接受。
+- production 功能面通过：authenticated `/api/debug/recent-errors` 返回 `{"count":0,"records":[]}`；`/strategies` 仍命中 B026 banner 文案 `研究原型 · 仅含合成数据 · 不构成投资决策依据`。
+- L1 与本机 backfill 证据保留：backend `pytest 304 passed, 2 skipped` + `ruff` + `mypy`；frontend `vitest 166` + `build` + Playwright `38 passed`；`data/snapshots/prices/tiingo/` 共 `52` 文件；unified `prices_daily.csv` 共 `153386` 行；cross-check 报告 `25/25 PASS`；SPY PIT spot-check `as_of=2020-03-01 -> max date 2020-02-28`。
+- 截图证据已落盘：`docs/screenshots/B028-backfill/{snapshots-structure,cross-check-report,spy-pit-spotcheck}.png`。
+- 本批次目标完成：历史价格 backfill、双层 storage、yfinance 抽样背书与 PIT loader enforcement 全部闭环；strategy 代码仍未切到真实数据路径，留 B030。
+- 后续路径：B029（1.C 财务 SEC EDGAR）→ B030（1.D 全 sleeve 切真 + reports/ fixture vs real 对比）→ 里程碑 A Layer 0→1。
 
 ## 已完成签收 + MVP 完工
-- B001-B027 全部签收。MVP substantively 完成 (PRD §10/§11/§12) — 完工声明：`docs/prd/mvp-completion-declaration-2026-05-20.md`。
-- 最近：B027 Real Data Snapshot Foundation signoff 2026-05-26；B026 Synthetic Data Banner signoff 2026-05-26。
+- B001-B028 全部签收。MVP substantively 完成 (PRD §10/§11/§12) — 完工声明：`docs/prd/mvp-completion-declaration-2026-05-20.md`。
+- 最近：B028 Real Data Backfill signoff 2026-05-26；B027 Real Data Snapshot Foundation signoff 2026-05-26；B026 Synthetic Data Banner signoff 2026-05-26。
 
 ## 生产状态
-- `https://trade.guangai.ai` live with 双语 workbench + OAuth + `/api/health` + `/api/debug/recent-errors` + B026 synthetic data banner；当前线上 SHA 仍停在 B028 F002 阶段的 `8338fc0`。
+- `https://trade.guangai.ai` live with 双语 workbench + OAuth + `/api/health` + `/api/debug/recent-errors` + B026 synthetic data banner；production 已追到 B028 deploy SHA `15dfb4b`。
 
 ## 永久硬边界（B028 起继续）
 - 系统层：no-broker SDK / no-paper-or-live URL / no-credential（API key 走 secret 不入代码）/ no-auto-execution / 多用户禁 / Cloud SQL 禁 / same-origin /api/* / auth-gated / Repository 读写非直 file
