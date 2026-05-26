@@ -25,6 +25,7 @@ ALLOWED_ENV_VARS: frozenset[str] = frozenset(
         "WORKBENCH_REPORTS_DIR",
         "WORKBENCH_RUNS_DIR",
         "TIINGO_API_KEY",
+        "SEC_EDGAR_CONTACT_EMAIL",
     }
 )
 """Environment variables the workbench backend is permitted to read.
@@ -90,6 +91,15 @@ class Settings(BaseSettings):
     # vendor-free; the TiingoSnapshotLoader constructor raises with a
     # rotation pointer when called without a resolvable key.
     TIINGO_API_KEY: str | None = None
+    # B029 F001 — SEC EDGAR contact email for the required User-Agent
+    # header (永久边界 (h); SEC policy: ban IP for 30d without a valid
+    # contact). Backend-only configuration; never inlined into the
+    # frontend bundle. Production VM gets it via systemd EnvironmentFile
+    # populated from the SEC_EDGAR_CONTACT_EMAIL repo secret. Unset is
+    # allowed at process boot so backend bootstrap stays vendor-free;
+    # the SECEDGARFundamentalsLoader constructor raises with a fix
+    # pointer when called without a resolvable email.
+    SEC_EDGAR_CONTACT_EMAIL: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=None,

@@ -1,0 +1,63 @@
+{
+  "_doc": "B029 F001 — synthesised SEC companyfacts shape for NVDA. Same provenance + shape as aapl_companyfacts.json; quarterly entries sourced from data/fixtures/us_quality_momentum/fundamentals.csv NVDA rows (2014Q4-2015Q3).",
+  "cik": 1045810,
+  "entityName": "NVIDIA Corporation",
+  "parsed_ratios": [
+    {
+      "ticker": "NVDA",
+      "fiscal_quarter": "2014Q4",
+      "fiscal_quarter_end": "2014-12-31",
+      "report_date": "2015-02-04",
+      "roe": 0.3066,
+      "gross_margin": 0.6075,
+      "fcf_yield": 0.028,
+      "debt_to_assets": 0.1817,
+      "pe": 36.9,
+      "pb": 11.58,
+      "ev_ebitda": 27.01,
+      "earnings_yield": 0.0271
+    },
+    {
+      "ticker": "NVDA",
+      "fiscal_quarter": "2015Q1",
+      "fiscal_quarter_end": "2015-03-31",
+      "report_date": "2015-05-05",
+      "roe": 0.3652,
+      "gross_margin": 0.6476,
+      "fcf_yield": 0.027,
+      "debt_to_assets": 0.2357,
+      "pe": 35.29,
+      "pb": 11.48,
+      "ev_ebitda": 26.79,
+      "earnings_yield": 0.0283
+    },
+    {
+      "ticker": "NVDA",
+      "fiscal_quarter": "2015Q2",
+      "fiscal_quarter_end": "2015-06-30",
+      "report_date": "2015-08-04",
+      "roe": 0.3554,
+      "gross_margin": 0.6304,
+      "fcf_yield": 0.021,
+      "debt_to_assets": 0.2087,
+      "pe": 88.09,
+      "pb": 10.24,
+      "ev_ebitda": 23.88,
+      "earnings_yield": 0.0114
+    },
+    {
+      "ticker": "NVDA",
+      "fiscal_quarter": "2015Q3",
+      "fiscal_quarter_end": "2015-09-30",
+      "report_date": "2015-11-04",
+      "roe": 0.3394,
+      "gross_margin": 0.6096,
+      "fcf_yield": 0.0305,
+      "debt_to_assets": 0.22,
+      "pe": 33.3,
+      "pb": 10.79,
+      "ev_ebitda": 25.17,
+      "earnings_yield": 0.03
+    }
+  ]
+}

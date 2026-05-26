@@ -97,6 +97,26 @@ if [[ -r "${ENV_FILE}" ]] && [[ -z "${TIINGO_API_KEY:-}" ]]; then
   exit 66
 fi
 
+# B029 F001 — SEC EDGAR contact email pre-flight (永久边界 (h);
+# https://www.sec.gov/os/accessing-edgar-data). The SEC enforces a
+# fair-access policy that bans IPs lacking a valid User-Agent header
+# with a contact email for 30 days. The SECEDGARFundamentalsLoader
+# constructor raises a RuntimeError at first call when the env var is
+# missing — failing the deploy here makes the misconfiguration visible
+# immediately instead of at the next fundamentals fetch. Tolerate empty
+# during the dev `deploy.sh` rehearsal (WORKBENCH_ENV_FILE unset) so a
+# contributor without an SEC EDGAR config can still smoke this locally.
+if [[ -r "${ENV_FILE}" ]] && [[ -z "${SEC_EDGAR_CONTACT_EMAIL:-}" ]]; then
+  echo "✗ SEC_EDGAR_CONTACT_EMAIL is missing from ${ENV_FILE}. The SEC " >&2
+  echo "  EDGAR adapter (workbench_api/data/sec_edgar_loader.py) cannot " >&2
+  echo "  start without a valid contact email in the User-Agent header — " >&2
+  echo "  SEC bans non-conforming IPs for 30 days. Configure the " >&2
+  echo "  SEC_EDGAR_CONTACT_EMAIL repo secret (Settings → Secrets and " >&2
+  echo "  variables → Actions) with a research-only mailbox and re-run " >&2
+  echo "  the deploy workflow so the env file is rewritten." >&2
+  exit 67
+fi
+
 echo "→ alembic upgrade head"
 (
   cd "${RELEASE_DIR}/backend"

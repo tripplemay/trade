@@ -25,6 +25,9 @@ EXPECTED_ALLOWLIST: frozenset[str] = frozenset(
         "WORKBENCH_RUNS_DIR",
         # B027 F001 — Tiingo Starter API key for real-market-data ingest.
         "TIINGO_API_KEY",
+        # B029 F001 — SEC EDGAR contact email for required User-Agent
+        # header (永久边界 (h); ban IP without it).
+        "SEC_EDGAR_CONTACT_EMAIL",
     }
 )
 

@@ -1,0 +1,63 @@
+{
+  "_doc": "B029 F001 — synthesised SEC companyfacts shape for AAPL with the pre-baked ``parsed_ratios`` block. 4 quarterly entries (2014Q4-2015Q3) sourced from data/fixtures/us_quality_momentum/fundamentals.csv lines 2,17,32,47 (B025 fixture authoritative). Real SEC companyfacts payloads do NOT include ``parsed_ratios``; the F002 backfill driver stitches Tiingo prices into compute_ratios output and synthesises this block before passing to parse_companyfacts. F001 uses this fixture so the parser unit tests stay fully offline (CI requirement) and use the same shape the F002 driver will produce.",
+  "cik": 320193,
+  "entityName": "Apple Inc.",
+  "parsed_ratios": [
+    {
+      "ticker": "AAPL",
+      "fiscal_quarter": "2014Q4",
+      "fiscal_quarter_end": "2014-12-31",
+      "report_date": "2015-02-04",
+      "roe": 0.4469,
+      "gross_margin": 0.4353,
+      "fcf_yield": 0.0418,
+      "debt_to_assets": 0.2952,
+      "pe": 20.57,
+      "pb": 12.54,
+      "ev_ebitda": 16.72,
+      "earnings_yield": 0.0486
+    },
+    {
+      "ticker": "AAPL",
+      "fiscal_quarter": "2015Q1",
+      "fiscal_quarter_end": "2015-03-31",
+      "report_date": "2015-05-05",
+      "roe": 0.4077,
+      "gross_margin": 0.4096,
+      "fcf_yield": 0.0512,
+      "debt_to_assets": 0.3057,
+      "pe": 17.34,
+      "pb": 11.68,
+      "ev_ebitda": 15.58,
+      "earnings_yield": 0.0577
+    },
+    {
+      "ticker": "AAPL",
+      "fiscal_quarter": "2015Q2",
+      "fiscal_quarter_end": "2015-06-30",
+      "report_date": "2015-08-04",
+      "roe": 0.5017,
+      "gross_margin": 0.388,
+      "fcf_yield": 0.0486,
+      "debt_to_assets": 0.2929,
+      "pe": 21.73,
+      "pb": 11.46,
+      "ev_ebitda": 15.28,
+      "earnings_yield": 0.046
+    },
+    {
+      "ticker": "AAPL",
+      "fiscal_quarter": "2015Q3",
+      "fiscal_quarter_end": "2015-09-30",
+      "report_date": "2015-11-04",
+      "roe": 0.4563,
+      "gross_margin": 0.4343,
+      "fcf_yield": 0.0416,
+      "debt_to_assets": 0.2744,
+      "pe": 21.91,
+      "pb": 11.31,
+      "ev_ebitda": 15.07,
+      "earnings_yield": 0.0456
+    }
+  ]
+}
