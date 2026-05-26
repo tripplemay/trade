@@ -1,4 +1,15 @@
-"""Committed fixture market data loader."""
+"""Committed fixture market data loader.
+
+B028 F003 extends this module with :func:`load_prices`, a PIT-enforced
+read path that prefers the unified real-data CSV produced by
+``scripts/backfill_prices.py`` (B028 F002) and falls back to the B025
+fixture (``data/fixtures/us_quality_momentum/prices_daily.csv``) when
+the unified file is not on disk. The strategy code stays on the
+existing fixture loaders for now; the B030 batch is responsible for
+flipping the read paths to the unified source. The infrastructure
+lives here so B030 only needs to import this function — no strategy
+refactor.
+"""
 
 from __future__ import annotations
 
@@ -10,8 +21,42 @@ from importlib import resources
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
+
 FIXTURE_FILE_NAME = "market_prices.json"
 REQUIRED_PRICE_FIELDS = ("date", "symbol", "open", "close", "adjusted_close", "volume")
+
+# B028 F003 — paths the PIT loader resolves to in priority order.
+# Both paths sit under the repo root (loader.py lives at
+# ``trade/data/loader.py``; parents[2] is the repo root).
+_REPO_ROOT: Path = Path(__file__).resolve().parents[2]
+UNIFIED_PRICES_PATH: Path = (
+    _REPO_ROOT / "data" / "snapshots" / "prices" / "unified" / "prices_daily.csv"
+)
+"""Real-data unified CSV produced by ``scripts/backfill_prices.py``.
+
+Schema matches ``data/fixtures/us_quality_momentum/prices_daily.csv``
+bit-for-bit: ``date / ticker / open / high / low / close / adj_close /
+volume``. Filtered by ``as_of_date`` before being returned so strategy
+code never observes future data.
+"""
+
+B025_FIXTURE_PRICES_PATH: Path = (
+    _REPO_ROOT / "data" / "fixtures" / "us_quality_momentum" / "prices_daily.csv"
+)
+"""B025 synthetic fixture used as the fallback source when the unified
+file does not exist (i.e. before the B028 backfill has been run on this
+checkout). Tickers absent from the fixture map to an empty list.
+"""
+
+UNIFIED_REQUIRED_COLUMNS: frozenset[str] = frozenset(
+    {"date", "ticker", "open", "close", "adj_close", "volume"}
+)
+"""Minimum schema the unified / fixture CSV must satisfy. ``high`` and
+``low`` are accepted but unused — the legacy :class:`PriceBar` shape
+doesn't include them. A future extension can widen the dataclass and
+this set together.
+"""
 
 
 @dataclass(frozen=True, slots=True)
@@ -52,6 +97,118 @@ def load_fixture_prices(path: Path | None = None) -> DataSnapshot:
 
     payload = _read_fixture_payload(path)
     return _snapshot_from_payload(payload)
+
+
+def load_prices(
+    tickers: list[str],
+    as_of_date: date,
+    from_date: date | None = None,
+) -> dict[str, list[PriceBar]]:
+    """Return PIT-filtered daily price bars per ticker.
+
+    Reads from :data:`UNIFIED_PRICES_PATH` (real-data unified file
+    produced by ``scripts/backfill_prices.py``) when it exists,
+    otherwise falls back to :data:`B025_FIXTURE_PRICES_PATH` (B025
+    synthetic). Strategy code is intended to migrate to this function
+    in the B030 cutover; it does not yet replace the existing fixture
+    loaders.
+
+    Args:
+        tickers: ticker symbols to fetch; the output dict always
+            contains every key, with an empty list for any ticker
+            absent from the source.
+        as_of_date: PIT cutoff — rows with ``date > as_of_date`` are
+            dropped before return. If ``as_of_date`` is in the future
+            it is clamped to ``date.today()`` so the loader never
+            tries to surface unobservable data.
+        from_date: optional lower bound; rows with ``date < from_date``
+            are dropped. Useful for windowed backtests that don't need
+            the full history each call.
+
+    Returns:
+        ``{ticker: [PriceBar...]}`` sorted by date ascending per
+        ticker. The :class:`PriceBar` shape uses ``adjusted_close`` /
+        ``symbol`` (matching the rest of ``trade.data.loader``); the
+        unified CSV's ``adj_close`` column maps onto it.
+
+    Raises:
+        FixtureDataError: if either the unified or fallback file is
+            present but is missing one of the required schema columns.
+            The error text includes a remediation pointer
+            (``scripts/backfill_prices.py`` regen).
+    """
+
+    if as_of_date > date.today():
+        as_of_date = date.today()
+
+    source_path = _resolve_prices_source()
+    if source_path is None:
+        # Neither the unified file nor the B025 fixture is on disk.
+        # Strategy callers asking for prices before either ships shouldn't
+        # crash — return an explicitly empty result keyed by every
+        # requested ticker.
+        return {ticker: [] for ticker in tickers}
+
+    frame = _read_prices_frame(source_path)
+    # PIT enforcement happens BEFORE the ticker filter so the per-ticker
+    # slice cannot include a row newer than as_of_date by accident.
+    frame = frame[frame["date"] <= as_of_date]
+    if from_date is not None:
+        frame = frame[frame["date"] >= from_date]
+
+    out: dict[str, list[PriceBar]] = {ticker: [] for ticker in tickers}
+    if frame.empty:
+        return out
+    for ticker in tickers:
+        ticker_slice = frame[frame["ticker"] == ticker].sort_values("date")
+        if ticker_slice.empty:
+            continue
+        out[ticker] = [_row_to_pricebar(row) for row in ticker_slice.itertuples(index=False)]
+    return out
+
+
+def _resolve_prices_source() -> Path | None:
+    """Pick the highest-priority on-disk source for :func:`load_prices`."""
+
+    if UNIFIED_PRICES_PATH.exists():
+        return UNIFIED_PRICES_PATH
+    if B025_FIXTURE_PRICES_PATH.exists():
+        return B025_FIXTURE_PRICES_PATH
+    return None
+
+
+def _read_prices_frame(source_path: Path) -> pd.DataFrame:
+    """Read a CSV in the unified-schema shape + parse ``date`` to ``date``."""
+
+    frame = pd.read_csv(source_path)
+    missing = UNIFIED_REQUIRED_COLUMNS - set(frame.columns)
+    if missing:
+        raise FixtureDataError(
+            f"prices source {source_path} missing required columns "
+            f"{sorted(missing)}; expected at least {sorted(UNIFIED_REQUIRED_COLUMNS)}. "
+            "Re-run scripts/backfill_prices.py or restore the B025 fixture."
+        )
+    frame["date"] = pd.to_datetime(frame["date"]).dt.date
+    return frame
+
+
+def _row_to_pricebar(row: Any) -> PriceBar:
+    """Translate a unified-schema CSV row into the trade.data PriceBar shape.
+
+    ``adj_close`` (CSV) → ``adjusted_close`` (PriceBar) and ``ticker``
+    (CSV) → ``symbol`` (PriceBar) are the only renames; ``high`` and
+    ``low`` are intentionally dropped because the legacy PriceBar
+    schema doesn't carry them.
+    """
+
+    return PriceBar(
+        date=row.date,
+        symbol=row.ticker,
+        open=float(row.open),
+        close=float(row.close),
+        adjusted_close=float(row.adj_close),
+        volume=int(row.volume),
+    )
 
 
 def load_snapshot_prices(path: Path) -> DataSnapshot:
