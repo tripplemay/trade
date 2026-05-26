@@ -22,7 +22,7 @@
       "title": "PIT loader enforcement + strategy 读路径 unified 切换准备",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "(1) 改 trade/data/loader.py：加 as_of_date: date 参数到 load_prices 等公共函数 + 加 unified 层读取 (若 data/snapshots/prices/unified/prices_daily.csv 存在则读 unified；else 回退既有 fixture 路径 B009) + PIT enforcement (unified 路径返回前 filter df.date <= as_of_date) + docstring 明示 PIT 语义 + 数据来源 (real vs fixture)；(2) 不动 strategy 代码 (B011 Master / B025 us_quality / B013 regime adaptive 等不切实际读路径；F003 仅准备 loader infrastructure；切换是 B030 责任)；(3) pytest 新增 ≥10 测试：load_prices(as_of=2020-03-01) 不返回 date > 2020-03-01 行 / load_prices(as_of=2026-01-01) 含 2025 末数据 / unified.csv 存在读 unified else fixture / 既有 B011/B025 fixture-based 测试 全过 / as_of_date 未来限到今天 / as_of_date < earliest data 返空 / 多 ticker 一次 load dict / B025 fixture path 调用仍读 fixture 不破 / unified.csv schema mismatch ValueError 含修复指引 / PIT spot check 3-5 random (ticker, as_of_date) tuple；(4) Gates: pytest tests ≥295 + ≥10 = ≥305 (trade pytest 部分也覆盖) / ruff + mypy 清 / **B025 既有回测 deterministic 不变** (pytest 跑 us_quality_momentum 回测断言 fixture 路径下数字不变)；(5) 不动 strategy 代码 (Master / sleeve / signal / construction) / Backtest engine / workbench backend endpoints / Frontend UI。"
     },
     {

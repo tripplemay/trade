@@ -1,10 +1,11 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "B028 Real Data Backfill — 利用 B027 已落地的 TiingoSnapshotLoader + cost guard，把 Master 4 sleeve ETF + B025 us_quality_momentum 30-50 ticker + US-listed ADR proxy（合计 50-80 ticker）的 10+ 年历史日线 OHLCV backfill 到本地 fixture-shaped unified 层 + 加 yfinance cross-check 抽样验证 + 加 PIT loader enforcement。Stream 1.B / Phase 1 (implementation-path-2026-05.md §4 第三个 batch)。**不做** strategy 代码切真数据（留 B030）/ 财务 snapshot（留 B029）/ 每日 EOD cron（推迟）。本批次 4 features：(F001) yfinance loader + cross-check script + v0.9.29 §12.8 走规约 (pyproject [project].dependencies 加 yfinance + safety regression test 守门)；(F002) Backfill driver (scripts/backfill_prices.py) + Storage 双层 (data/snapshots/{prices,fundamentals}/{vendor,unified}/) + universe_master.py + 本机跑通 50-80 ticker × 10+ 年 + validate_snapshot 抽样 25 (ticker, date) cross-check PASS；(F003) PIT loader enforcement (trade/data/loader.py 加 as_of_date 参数 + 读 unified.csv else fixture + filter df.date <= as_of_date) + B025 us_quality 回测 deterministic 不变；(F004) Codex L1 + L2 真 VM 验收 + signoff。**永久硬边界 100% 继承 v0.9.29：** AI 5 子条 + 系统层 + UI 层 + 数据 CI 层 (含 §12.8 pyproject runtime vs dev dep hygiene 守门) + 产品边界 (B027 起 (f)(g))。决策矩阵（2026-05-26 用户已批）：backfill 范围=Master 4 sleeve ETF + B025 + ADR proxy 50-80 ticker / yfinance cross-check=抽样 3-5 ticker × 5 日期 误差 <0.5% / Storage=双层 vendor/unified / PIT=loader 层 enforcement + pytest spot check。B026 banner 仍 enable 不破。F001+F002+F003 generator，F004 codex。预估 1 个中等批次。",
   "total_features": 4,
-  "completed_features": 2,
+  "completed_features": 3,
   "fix_rounds": 0,
-  "current_sprint": "F003",
+  "current_sprint": "F004",
+  "generator_completed_at": "2026-05-26",
   "last_updated": "2026-05-26",
   "reference_docs": [
     "docs/specs/B028-real-data-backfill-spec.md",
