@@ -436,7 +436,14 @@ def test_sec_concept_names_covers_eight_ratio_inputs() -> None:
         "depreciation_amortization",
     }
     assert expected_keys.issubset(set(SEC_CONCEPT_NAMES))
-    # Spot-check a couple of canonical SEC concept names so a typo in
-    # the dict surfaces here.
-    assert SEC_CONCEPT_NAMES["net_income"] == "NetIncomeLoss"
-    assert SEC_CONCEPT_NAMES["stockholders_equity"] == "StockholdersEquity"
+    # Each entry is an alias chain (list of SEC concept names tried in
+    # order); first element is the canonical name, additional entries
+    # are SEC concept-rename / ASC standard transition fallbacks.
+    assert SEC_CONCEPT_NAMES["net_income"][0] == "NetIncomeLoss"
+    assert SEC_CONCEPT_NAMES["stockholders_equity"][0] == "StockholdersEquity"
+    # Revenues alias chain must include the post-ASC 606 concept
+    # (B029 F002 first-run discovered AAPL switched to this concept).
+    assert (
+        "RevenueFromContractWithCustomerExcludingAssessedTax"
+        in SEC_CONCEPT_NAMES["revenues"]
+    )

@@ -143,9 +143,26 @@ UNIFIED_COLUMNS: tuple[str, ...] = (
 
 # SEC reports CommonStockSharesOutstanding under the ``dei`` namespace,
 # not ``us-gaap``. We special-case that one.
-SHARES_OUTSTANDING_CONCEPT = "CommonStockSharesOutstanding"
 DEI_NAMESPACE = "dei"
 USGAAP_NAMESPACE = "us-gaap"
+
+# Shares-outstanding alias chain — multi-namespace because SEC filers
+# drift across ``dei``/``us-gaap`` for this concept more than for
+# balance-sheet items. The driver iterates this list in order and
+# unions every entry, then bucketing keeps latest-filed per quarter.
+SHARES_OUTSTANDING_ALIASES: tuple[tuple[str, str], ...] = (
+    # ``dei.EntityCommonStockSharesOutstanding`` is the most common
+    # cover-page concept (e.g. JNJ — 68 entries).
+    ("dei", "EntityCommonStockSharesOutstanding"),
+    ("dei", "CommonStockSharesOutstanding"),
+    ("us-gaap", "CommonStockSharesOutstanding"),
+    # Weighted-average basic shares from the income statement is a
+    # last-resort fallback that's available for nearly every filer
+    # (JNJ — 221 entries). Not identical to point-in-time outstanding
+    # shares but close enough for the MarketCap approximation when no
+    # cover-page concept was filed for the period.
+    ("us-gaap", "WeightedAverageNumberOfSharesOutstandingBasic"),
+)
 
 
 def _calendar_quarter(end_date: date) -> tuple[int, int]:
@@ -297,19 +314,22 @@ def raw_companyfacts_to_parsed_ratios(
     if not isinstance(facts, dict):
         return [], [f"{ticker}: companyfacts missing 'facts' object"]
 
-    # Index every required concept by calendar quarter.
+    # Index every required concept by calendar quarter. ``SEC_CONCEPT_NAMES``
+    # is an alias chain: try each concept in order and union their entries
+    # before bucketing so a SEC concept rename (e.g. AAPL switching to
+    # ``RevenueFromContractWithCustomerExcludingAssessedTax`` after ASC 606)
+    # still surfaces in the time series.
     indexed: dict[str, dict[tuple[int, int], dict[str, Any]]] = {}
-    for short_name, sec_concept in SEC_CONCEPT_NAMES.items():
-        entries = _index_concept_entries(facts, sec_concept, USGAAP_NAMESPACE)
-        indexed[short_name] = _bucket_entries_by_quarter(entries)
-    shares_entries = _index_concept_entries(
-        facts, SHARES_OUTSTANDING_CONCEPT, DEI_NAMESPACE
-    )
-    if not shares_entries:
-        # Some filers report shares under us-gaap instead of dei.
-        shares_entries = _index_concept_entries(
-            facts, SHARES_OUTSTANDING_CONCEPT, USGAAP_NAMESPACE
-        )
+    for short_name, concept_aliases in SEC_CONCEPT_NAMES.items():
+        combined: list[dict[str, Any]] = []
+        for concept_name in concept_aliases:
+            combined.extend(
+                _index_concept_entries(facts, concept_name, USGAAP_NAMESPACE)
+            )
+        indexed[short_name] = _bucket_entries_by_quarter(combined)
+    shares_entries: list[dict[str, Any]] = []
+    for ns, concept_name in SHARES_OUTSTANDING_ALIASES:
+        shares_entries.extend(_index_concept_entries(facts, concept_name, ns))
     indexed["shares_outstanding"] = _bucket_entries_by_quarter(shares_entries)
 
     # Quarters available = union of all concept buckets. Each row needs

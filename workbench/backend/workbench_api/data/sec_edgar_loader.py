@@ -505,25 +505,105 @@ def _load_default_ticker_cik_map() -> dict[str, int | None]:
     return out
 
 
-# Concept-name aliases for downstream F002 use. F001 doesn't traverse
-# raw companyfacts at the concept level (the fixtures already pre-bake
-# the eight ratios via ``parsed_ratios``), but F002's backfill driver
-# uses these to extract fact values from the live SEC payload. Pinned
-# here so a SEC concept rename has one edit point.
-SEC_CONCEPT_NAMES: dict[str, str] = {
-    "net_income": "NetIncomeLoss",
-    "stockholders_equity": "StockholdersEquity",
-    "revenues": "Revenues",
-    "cogs": "CostOfGoodsAndServicesSold",
-    "cfo": "NetCashProvidedByUsedInOperatingActivities",
-    "capex": "PaymentsToAcquirePropertyPlantAndEquipment",
-    "long_term_debt": "LongTermDebt",
-    "assets": "Assets",
-    "cash": "CashAndCashEquivalentsAtCarryingValue",
-    "operating_income": "OperatingIncomeLoss",
-    "depreciation_amortization": "DepreciationDepletionAndAmortization",
+# Concept-name **alias chains** for downstream F002 use. F001 doesn't
+# traverse raw companyfacts at the concept level (the fixtures already
+# pre-bake the eight ratios via ``parsed_ratios``), but F002's backfill
+# driver walks these to extract fact values from the live SEC payload.
+# Pinned here so a SEC concept rename / ASC standard transition has
+# one edit point.
+#
+# Each ratio input maps to an **ordered list** of SEC us-gaap concept
+# names; the F002 parser tries them in order and merges every entry
+# from any concept whose name matches. Per-(year, quarter) bucketing
+# then keeps the latest-filed entry, so an alias chain effectively
+# stitches together a single time series across the SEC's concept
+# renaming history.
+#
+# Common drift causes the chains address:
+#
+# * **Revenues** — pre-ASC 606 filings used ``Revenues`` /
+#   ``SalesRevenueNet``; post-2018 ASC 606 filings switched to
+#   ``RevenueFromContractWithCustomerExcludingAssessedTax``. Most B025
+#   universe tickers (AAPL, MSFT, NVDA, ...) have ≤ 10 Revenues entries
+#   total and the rest under the new concept (B029 F002 first-run
+#   discovered this on AAPL).
+# * **COGS** — some filers use ``CostOfGoodsAndServicesSold``, others
+#   ``CostOfRevenue`` or ``CostOfGoodsSold``.
+# * **LongTermDebt** — sometimes filed as
+#   ``LongTermDebtNoncurrent`` for the non-current portion only.
+# * **DepreciationDepletionAndAmortization** — different filers use
+#   ``DepreciationAndAmortization`` or just ``Depreciation``.
+# * **PaymentsToAcquirePropertyPlantAndEquipment** — some filers report
+#   capex as ``PaymentsToAcquireProductiveAssets``.
+SEC_CONCEPT_NAMES: dict[str, list[str]] = {
+    "net_income": ["NetIncomeLoss"],
+    "stockholders_equity": [
+        "StockholdersEquity",
+        "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest",
+    ],
+    "revenues": [
+        "Revenues",
+        "RevenueFromContractWithCustomerExcludingAssessedTax",
+        "SalesRevenueNet",
+        "SalesRevenueGoodsNet",
+        "RevenueFromContractWithCustomerIncludingAssessedTax",
+    ],
+    "cogs": [
+        "CostOfGoodsAndServicesSold",
+        "CostOfRevenue",
+        "CostOfGoodsSold",
+        "CostOfServices",
+        "CostsAndExpenses",
+        # Utilities + service firms report operating expenses as a
+        # single line item rather than splitting COGS / OpEx (e.g. NEE,
+        # LIN, financial firms). Treating ``OperatingExpenses`` as a
+        # COGS-equivalent imprecisely inflates gross_margin denominator
+        # but unlocks ratio production for non-product filers.
+        "OperatingExpenses",
+        "OperatingCostsAndExpenses",
+    ],
+    "cfo": [
+        "NetCashProvidedByUsedInOperatingActivities",
+        "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations",
+    ],
+    "capex": [
+        "PaymentsToAcquirePropertyPlantAndEquipment",
+        "PaymentsToAcquireProductiveAssets",
+        "PaymentsToAcquirePropertyPlantAndEquipmentAndIntangibleAssets",
+        "PaymentsToAcquireOtherPropertyPlantAndEquipment",
+    ],
+    "long_term_debt": [
+        "LongTermDebt",
+        "LongTermDebtNoncurrent",
+    ],
+    "assets": ["Assets"],
+    "cash": [
+        "CashAndCashEquivalentsAtCarryingValue",
+        "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents",
+        "Cash",
+    ],
+    "operating_income": [
+        "OperatingIncomeLoss",
+        # Pre-tax income — not strictly equivalent (includes non-operating
+        # interest income/expense), but the closest XBRL fallback for
+        # filers that stop reporting OperatingIncomeLoss (e.g. JNJ
+        # post-2015 transitions to this concept). Documented imprecision.
+        "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+        "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+    ],
+    "depreciation_amortization": [
+        "DepreciationDepletionAndAmortization",
+        "DepreciationAndAmortization",
+        "Depreciation",
+    ],
 }
-"""SEC us-gaap XBRL concept names per ratio input. Pinned for F002."""
+"""SEC us-gaap XBRL concept-name **alias chains** per ratio input.
+
+For each input, the F002 driver tries every concept in order and
+merges all matching entries before bucketing by calendar quarter. This
+handles the common SEC concept drift between ASC standards / filer
+preferences without forcing every filer to use one canonical name.
+"""
 
 
 def quarterly_fp_values() -> frozenset[str]:
