@@ -5,6 +5,35 @@
 
 ---
 
+## v0.9.30 — 2026-05-26（B027 + B029 二例合并沉淀：production secret 三处接线铁律）
+
+**来源批次：**
+- B027 F002 fix-round 1（commits `dcf1463 fix(B027-F002): bootstrap-env.yml — include TIINGO_API_KEY in env file` + `c46bda3 chore(B027): note env-file deploy gap + operator action in handoff`）
+- B029 F001 fix-round 1（commits `ef421e9 fix(B029-F001): wire SEC_EDGAR_CONTACT_EMAIL into bootstrap-env.yml` + `1e21e9f chore(B029): F001 production-side aligned`）
+- B029 done 阶段 Generator handoff 主动建议沉淀（Codex signoff 标"无 framework learnings"；Planner 重新评估为真二例满足"等二例再合并"原则）
+
+**触发原因：**
+- B027 引入 `TIINGO_API_KEY` 时第一次踩坑：spec acceptance 写"deploy.sh 加 pre-flight check"+ ".env.example 加 secret 注释"但漏 `bootstrap-env.yml` workflow 同步加 secret；production VM `/etc/workbench/workbench.env` 拿不到新 secret；Generator fix-round 补 commit
+- B029 引入 `SEC_EDGAR_CONTACT_EMAIL` 时再次完全相同的踩坑：spec/Generator 走同样路径漏 bootstrap-env.yml；又一个 fix-round
+- 这是真正的二例：两次完全相同的 anti-pattern（不是相似机制不同问题）；满足之前"等二例再合并"原则
+- 复用窗口大：B031 LLM gateway 会引入 ANTHROPIC_API_KEY / OPENAI_API_KEY / COHERE_API_KEY 至少 3 secret；B033 News ingest 可能引入付费 RSS；Phase 4 long-tail batches 都可能撞
+
+**变更：**
+- `framework/harness/generator.md` 新增 §12.9 "production secret 三处接线铁律（v0.9.30 — B027 + B029 二例合并沉淀）"
+  - 4 处接线 ASCII art 框（.env.example / config.py / deploy.sh / **bootstrap-env.yml**）
+  - 4 条规约（spec acceptance / Generator checklist / Planner pre-impl 审计 / Evaluator L2 验证）
+  - 反面案例对比表（B027 + B029 完全相同 anti-pattern）
+  - 预防价值说明（B031 / B033 / Phase 4 受益）
+  - v0.9.X "deploy hygiene" 教训汇总表更新（含本节）
+- `framework/proposed-learnings.md` 加 v0.9.30 注释（更新 B026 React event edge 不强合并 hold 表述）
+- 归档 `framework/archive/proposed-learnings-archive-v0.9.30.md`（含 B027+B029 两次踩坑详情 + Planner 评估理由 + 与 §12.5 §12.6 §12.7 §12.7.1 §12.8 deploy hygiene 系列关系）
+
+**未沉淀（继续 hold）：**
+- B026 production-only React event edge — 仍单一案例（B027 deploy install edge / B028 paths-trigger / B029 secret inject 都机制不同，不与 B026 React event edge 合并）；hold 等下一例 React UI 互动 local-pass-prod-fail
+- B029 S1 unified 685 < 1000 floor 因 sector-structural 缺数据 — 不是 framework 教训，是策略层细节，B030 per-sector ratio model 解决
+
+---
+
 ## v0.9.29 — 2026-05-26（B027 沉淀：pyproject runtime vs dev dependency hygiene）
 
 **来源批次：**

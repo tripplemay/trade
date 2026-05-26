@@ -27,6 +27,10 @@ type: project
 - 数据 / CI 层：fixture-first 离线 CI / pyproject runtime-vs-dev hygiene（v0.9.29 §12.8）/ paths-trigger 含 trade/+scripts/+pyproject.toml（v0.9.27 §12.7.1）
 - B027 起 (f)(g)：Tiingo API key 永不入前端/build/log；月预算 cap `$10` enforced
 - **B029 起 (h)(i)(j)：** SEC EDGAR User-Agent 必含 contact email（ban IP 30d）/ Rate limit 10/sec hard / 8 ratio 公式锁定 strategy doc §6 + B029 spec §4.4
+- **B030 起 (k) v0.9.30：** 新 production secret 必须 3+1 处接线（.env.example + config.py + deploy.sh + bootstrap-env.yml）— spec acceptance + Generator checklist + Planner pre-impl 审计 + Evaluator L2 验证 四重守门
+
+## Framework 状态
+- 最新版本 **v0.9.30**（2026-05-26 沉淀完成）：B027 + B029 二例合并沉淀 "production secret 三处接线铁律"（§12.9）— Generator handoff 主动建议；满足"等二例再合并"原则。"deploy hygiene" 系列已覆盖 5 层 production-only edge 防御（deploy script / deploy workflow / runtime process / packaging / secret 注入）。proposed-learnings.md 空。B026 React event edge 仍单一案例 hold。
 
 ## 已知 gap（非阻塞）
 - 本机 `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。

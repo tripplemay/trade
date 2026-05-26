@@ -705,6 +705,69 @@ def test_critical_runtime_deps_pinned():
 
 ---
 
+### 12.9 production secret 三处接线铁律（v0.9.30 — B027 + B029 二例合并沉淀）
+
+**触发：** B027 引入 `TIINGO_API_KEY` 时 + B029 引入 `SEC_EDGAR_CONTACT_EMAIL` 时**两次完全相同的踩坑**——Generator spec acceptance 写"`deploy.sh` 加 pre-flight check"和"`.env.example` 加 secret 注释"，但**漏了 `bootstrap-env.yml` workflow 同步加 secret**，结果 production VM 的 `/etc/workbench/workbench.env` 拿不到新 secret，Generator 必须 fix-round 补 commit（`dcf1463` for B027 / `ef421e9` for B029）。
+
+满足"等二例再合并沉淀"原则（B026 React event edge 仍单一案例 hold；本节是 B027+B029 真正二例）。
+
+**规律：** Production 上一个新 secret 完整生效需要 **3 处同步接线**（缺任何一处都让 deploy 后 secret 不可用）：
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│ 新 production secret 三处接线（每次新加 secret 必查 + 同 commit 完成）│
+├──────────────────────────────────────────────────────────────┤
+│ 1. .env.example                                              │
+│    加 `<SECRET_KEY>=<placeholder>` 注释行                    │
+│    说明用途 + 获取方式（如 dashboard URL）                    │
+│                                                              │
+│ 2. workbench/backend/workbench_api/config.py (or settings.py)│
+│    加 `os.environ["<SECRET_KEY>"]` 读取 + 缺时 raise         │
+│    RuntimeError 含修复指引                                   │
+│                                                              │
+│ 3. workbench/deploy/scripts/deploy.sh                        │
+│    加 pre-flight check：                                     │
+│    `if [ -z "${<SECRET_KEY>}" ]; then echo "missing"; exit 1; fi` │
+│                                                              │
+│ 4. .github/workflows/bootstrap-env.yml          ← B027/B029 漏的 │
+│    把 GitHub Secret 写入 production VM 的                    │
+│    `/etc/workbench/workbench.env`：加一行                    │
+│    `<SECRET_KEY>=${{ secrets.<SECRET_KEY> }}`                │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**规约（Planner 起 spec acceptance 时硬要求 + Generator 实施时 checklist）：**
+
+1. **Spec acceptance 必含**：任何引入新 production secret 的 spec acceptance（如 F00X spec §(N) 引入 `XYZ_API_KEY`）**必须同时列出 4 处接线**——明确写"`bootstrap-env.yml` 加一行 inject"，不可省略以为 deploy.sh 已 cover。
+2. **Generator 实施 checklist**：写 spec implementation 时第一件事 grep `bootstrap-env.yml` 既有 secret 列表 + 加新 secret 到同位置；不要等 deploy 失败再补。
+3. **Planner pre-impl 审计**：若 spec acceptance 列出 `.env.example` + `deploy.sh` pre-flight 但漏 `bootstrap-env.yml`，Planner 在裁决时主动补该项（参考 v0.9.X §pre-impl 范式）。
+4. **Evaluator L2 验证**：production VM 上 `cat /etc/workbench/workbench.env | grep <SECRET_KEY>` 必含此 secret；若漏走 §12.7 dispatch 兜底 + 后续 fix-round 补 bootstrap-env.yml。
+
+**反面案例对比表：**
+
+| 批次 | Secret | Spec 漏 bootstrap-env.yml | Fix commit |
+|---|---|---|---|
+| **B027** | `TIINGO_API_KEY` | F002 acceptance 写 deploy.sh pre-flight 但没 bootstrap-env.yml | `dcf1463 fix(B027-F002): bootstrap-env.yml — include TIINGO_API_KEY in env file` + `c46bda3 chore(B027): note env-file deploy gap + operator action in handoff` |
+| **B029** | `SEC_EDGAR_CONTACT_EMAIL` | F001 acceptance 写 deploy.sh pre-flight 但没 bootstrap-env.yml | `ef421e9 fix(B029-F001): wire SEC_EDGAR_CONTACT_EMAIL into bootstrap-env.yml` + `1e21e9f chore(B029): F001 production-side aligned` |
+
+**预防价值：** 本规则保护后续任何引入 secret 的批次（B031 LLM gateway `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` / `COHERE_API_KEY` 至少 3 个 secret；B033 News ingest 若引入付费 RSS；Phase 4 long-tail batches）不再撞同一个坑。Generator 主动按 §12.9 checklist 走 ≈ 1 个 fix-round 节省。
+
+**与 v0.9.X 系列 "deploy hygiene" 教训汇总：**
+
+| 版本 | 现象 | 防御 | 哪一层 |
+|---|---|---|---|
+| v0.9.25 §12.5 | deploy.sh 没 source env file → alembic 跑 scratch DB | deploy.sh source EnvironmentFile | deploy script |
+| v0.9.25 §12.6 | alembic 跑后 schema 不一致 | deploy.sh post-alembic schema-assert | deploy script |
+| v0.9.27 §12.7 | chore-only commit 不触 CI / deploy | workflow_dispatch + chore commit 后 dispatch | deploy workflow |
+| v0.9.27 §12.7.1 | 产品代码 paths-trigger gap → deploy drift | spec-time pre-flight + 结构性修 paths 配置 | deploy workflow |
+| v0.9.27 §20 (evaluator.md) | production VM stale dev process | lsof check + kill 再启 | runtime process |
+| v0.9.29 §12.8 | pytest pass 但 wheel install 缺 dev extras | runtime vs dev 判断 + safety regression test | packaging |
+| **v0.9.30 §12.9（本节）** | **新 secret 漏 bootstrap-env.yml inject → production env 缺 secret** | **三处接线铁律 + Planner pre-impl 主动补 + Generator checklist** | **secret 注入** |
+
+**来源：** B027 F002 fix-round 1 commits `dcf1463` + `c46bda3` + B029 F001 fix-round 1 commits `ef421e9` + `1e21e9f`；B029 done 阶段 Generator handoff 主动建议沉淀（Codex signoff 标"本批次无 framework learnings"，Planner 重新评估为 B027+B029 真二例满足合并沉淀原则）。
+
+---
+
 ## 13. Frontend SSR vs Browser context（v0.9.24 — B021 沉淀）
 
 **触发：** B021 F006 fix-round 5 — Codex L2 reverify 失败因生产首页登录后显示 `Backend unreachable: Failed to fetch`。根因：`workbench/frontend/src/app/(protected)/page.tsx` 的 `HEALTH_URL` 默认硬编码 `http://127.0.0.1:8723/api/health`。SSR build 时这个值被 inline 进 client bundle，浏览器在用户笔记本上 fetch 127.0.0.1:8723（用户机器，不是 VM）必失败。
