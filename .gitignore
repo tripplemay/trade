@@ -18,6 +18,7 @@ __pycache__/
 data/*
 !data/.gitkeep
 !data/fixtures/
+!data/snapshots/
 *.parquet
 *.csv
 *.db
@@ -27,6 +28,12 @@ logs/
 
 # Synthetic fixtures committed for offline CI (B025 etc.)
 !data/fixtures/**
+
+# B028 F002 — snapshot layout: README + per-dir gitignore committed,
+# generated CSV / parquet payloads remain ignored via
+# data/snapshots/.gitignore (the dir's own ignore file).
+!data/snapshots/README.md
+!data/snapshots/.gitignore
 
 # OS / editor
 .DS_Store
