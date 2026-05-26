@@ -31,6 +31,22 @@ EXPECTED_TICKER_COUNT = 30
 SYNTHETIC_TICKERS = {"ZQAI", "ZQPT", "ZQLH"}
 
 
+@pytest.fixture(autouse=True)
+def _force_b025_fixture_path(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Pin every test in this module to the B025 synthetic fixture.
+
+    B030 F002 introduced unified-first loading in
+    :func:`trade.data.us_quality_universe.load_prices` /
+    ``load_fundamentals``. The assertions in this file are about the
+    fixture's specific 30-ticker shape and deterministic PIT
+    properties; without the env var override the loader would silently
+    return the larger unified universe (153K rows / 853 quarterly
+    rows). See B030 F002 spec §(8).
+    """
+
+    monkeypatch.setenv("FORCE_FIXTURE_PATH", "1")
+
+
 # ---------------------------------------------------------------------------
 # Universe loader
 # ---------------------------------------------------------------------------

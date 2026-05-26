@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "B030 Real Data Cutover (Phase 1 终点 / 里程碑 A Layer 0→1) — 利用 B028 unified prices + B029 unified fundamentals (含本批次 F001 per-sector aliases 补完的全量)，把 Master Portfolio 4 sleeve + B025 us_quality_momentum 5 因子 strategy 代码读路径从 fixture 切到 unified 真数据 + 跑 fixture vs real 对比回测报告 + 关 B026 synthetic banner。完成后达成 **里程碑 A Layer 0→1**：Production 上展示的 NAV / sleeve breakdown / Recommendations / Risk Panel / Reports 第一次基于真实历史数据，回测指标可作为真实参考。Stream 1.D / Phase 1 终点 (implementation-path-2026-05.md §4 第五个 batch)。本批次 4 features：(F001) per-sector ratio aliases (Financials/Utilities/Real Estate 3 sector × 8 ratio concept alias chain) + 重跑 backfill 补 6 sector ticker (BAC/JPM/V/LIN/NEE/PLD) 解决 B029 Soft-watch S1；unified.fundamentals.csv 685 → ≥1000 行；(F002) Master Portfolio 4 sleeve + B025 us_quality 5 因子 + Master / portfolio 代码 read path 切到 unified；FORCE_FIXTURE_PATH=1 env var 保 既有 fixture deterministic；(F003) 5 份 + 1 overview fixture vs real 对比报告 (Master + 4 sleeve + us_quality 各独立) + B026 banner 关闭 (v0.9.30 §12.9 四处接线遵守：.env.example/.env.production/bootstrap-env.yml frontend env)；(F004) Codex L1 + L2 真 VM 验收 + signoff = 里程碑 A 达成。**永久硬边界 100% 继承 v0.9.30 + 新增 (k)：** (k) Layer 状态不可逆向滑落 — B030 done 后 Layer 1 状态稳定，若发现真数据严重 unreliable 必须新批次 spec 决议，不 silent rollback fixture / 不 silent 重开 banner。决策矩阵 (2026-05-27 用户已批)：6 sector ticker 处置=F001 同期 per-sector aliases 补 backfill / B026 banner 关闭=B030 done by acceptance .env.production NEXT_PUBLIC_SYNTHETIC_DATA_BANNER=false / 4 features 拆分 / 对比报告=Master 4 sleeve + B025 us_quality 各独立 5 份 + 1 overview。受益 v0.9.27 §12.7.1 paths-trigger 已修 + v0.9.30 §12.9 secret 三处接线 (本批次 banner env 走同款 4 处接线)。F001+F002+F003 generator，F004 codex。预估 1-2 个中等批次 (Phase 1 最大单批 — strategy 代码切真)。",
   "total_features": 4,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
-  "current_sprint": "F002",
+  "current_sprint": "F003",
   "last_updated": "2026-05-27",
   "reference_docs": [
     "docs/specs/B030-real-data-cutover-spec.md",

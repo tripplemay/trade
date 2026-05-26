@@ -10,6 +10,7 @@ from __future__ import annotations
 from datetime import date, timedelta
 
 import pandas as pd
+import pytest
 
 from trade.backtest.master_portfolio import (
     MasterChildStrategyParameters,
@@ -23,6 +24,22 @@ from trade.portfolio.master import SLEEVE_TYPE_IMPLEMENTED
 from trade.strategies.us_quality_momentum.parameters import (
     UsQualityMomentumParameters,
 )
+
+
+@pytest.fixture(autouse=True)
+def _force_b025_fixture_path(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Pin Master Portfolio B025 integration tests to the synthetic fixture.
+
+    B030 F002 introduced unified-first loading in
+    :mod:`trade.data.us_quality_universe`. These integration tests
+    were calibrated against the 30-ticker fixture; the larger unified
+    universe (52 tickers across the B025 + B028 backfill) breaks the
+    "satellite_us_quality holds real us-quality tickers" assertions
+    because the unified universe includes additional names the
+    Master backtest hasn't been wired against.
+    """
+
+    monkeypatch.setenv("FORCE_FIXTURE_PATH", "1")
 
 # Trading days that exist in both the ETF synthetic fixture and the US Quality
 # fixture. Q1 2024 end (signal date) and the next trading day (execution).

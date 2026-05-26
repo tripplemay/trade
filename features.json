@@ -14,7 +14,7 @@
       "title": "Master Portfolio 4 sleeve + B025 us_quality 5 因子 strategy 代码切真",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) 改 trade/strategies/momentum.py：直接 pd.read_csv → load_prices(tickers, as_of_date)；(2) 改 trade/strategies/risk_parity.py：同上；(3) 改 trade/strategies/us_quality_momentum/factors.py + signal.py：8 ratio 计算 from load_fundamentals + price-derived ratio 从 load_prices；signal.py pipeline 用 loader-injected 数据；(4) 改 trade/strategies/hk_china_proxy.py (若已实现 stub)：load_prices unified；(5) 改 trade/portfolio/master.py：Master Portfolio 4 sleeve 组合切到 unified prices via load_prices + as_of_date 透传；(6) **不动 trade/data/loader.py 现有逻辑** (B028 F003 + B029 F003 已就位 unified-first + fixture fallback；本 F002 仅改 strategy 消费方)；(7) pytest ≥20 测试：每 sleeve unified 路径读 PriceBar / FundamentalsRow 成功 / unified 缺数据 fall back fixture / B025 us_quality 5 因子在 unified 数据下 ratio 与 fixture 路径数值差异 ±10% 容忍 / Master Portfolio 4 sleeve 组合 unified-first 完整跑通 / 既有 B011 / B025 / B013 strategy 测试 100% 通过；(8) 重要: **B025 us_quality_momentum 既有回测在 fixture path 数字不变** — FORCE_FIXTURE_PATH=1 env var 强制 fixture 路径时既有 deterministic 测试 100% 通过 (保 B025 acceptance §F003 §(4))；(9) Gates: pytest tests ≥371 + ≥20 = ≥391 / ruff + mypy 清 / FORCE_FIXTURE_PATH=1 pytest 强制 fixture 路径全过 / 默认 (unified-first) 全过 / frontend 不破；(10) 不动 trade/data/loader.py / workbench backend endpoints / Frontend UI / B026 banner (留 F003) / reports/ (留 F003)。"
     },
     {

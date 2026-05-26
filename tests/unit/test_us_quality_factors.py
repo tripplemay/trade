@@ -23,6 +23,19 @@ from trade.strategies.us_quality_momentum.factors import (
     value_score,
 )
 
+
+@pytest.fixture(autouse=True)
+def _force_b025_fixture_path(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Pin factor tests to the B025 synthetic fixture (B030 F002).
+
+    Factor-vs-fixture assertions are calibrated against the 30-ticker
+    fixture; without this override F002's unified-first branch would
+    surface the real SEC EDGAR data (25 real tickers) and the
+    fixture-pinned assertions would fail.
+    """
+
+    monkeypatch.setenv("FORCE_FIXTURE_PATH", "1")
+
 FIXTURE_AS_OF = date(2024, 1, 2)
 EXPECTED_TICKER_COUNT = 30
 

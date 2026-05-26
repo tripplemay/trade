@@ -26,6 +26,19 @@ from trade.backtest.us_quality_momentum.metrics import (
 )
 
 
+@pytest.fixture(autouse=True)
+def _force_b025_fixture_path(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Pin backtest-metrics tests to the B025 synthetic fixture (B030 F002).
+
+    ``test_fixture_backtest_lands_inside_spec_deterministic_ranges``
+    explicitly asserts the B025 deterministic backtest metric ranges;
+    without this override F002's unified-first branch would surface
+    real SEC EDGAR data and the ranges would not hold.
+    """
+
+    monkeypatch.setenv("FORCE_FIXTURE_PATH", "1")
+
+
 def _flat_growth_curve(days: int, daily_growth: float, starting: float = 100.0) -> pd.DataFrame:
     dates = pd.bdate_range(start="2023-01-02", periods=days)
     equity = starting * np.power(1.0 + daily_growth, np.arange(days))
