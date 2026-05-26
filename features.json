@@ -6,7 +6,7 @@
       "title": "yfinance loader + cross-check script + v0.9.29 §12.8 走规约",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "(1) pyproject.toml 加 yfinance>=0.2.40 到 [project].dependencies (不是 dev extras；v0.9.29 §12.8 规约)；(2) tests/safety/test_runtime_dependencies_pinned.py 已存在 (v0.9.29 §12.8.1)；CRITICAL_RUNTIME_DEPS 加 yfinance；既有测试通过；(3) 新建 workbench_api/data/yfinance_loader.py：YFinanceSnapshotLoader 继承 SnapshotLoader；fetch_daily_bars 调 yfinance.Ticker(t).history(start, end) parse → list[PriceBar]；health_check 调 yf.Ticker('SPY').info 非空；(4) 新建 workbench_api/data/fixtures/yfinance_responses/spy-sample.json 等 mock；测试用 mock 不调网络；(5) 新建 scripts/validate_snapshot.py：抽样 3-5 ticker × 5 随机日期 cross-check Tiingo vs yfinance；误差 <0.5% PASS / else FAIL；输出 summary 表 + 详细 discrepancy 列表；exit code 0/1；(6) pytest 新增 ≥8 测试：YFinanceSnapshotLoader mock yfinance 解析 / 空返回 ValueError / health_check happy + fail / validate_snapshot 抽样 PASS / validate_snapshot 抽样 ≥0.5% FAIL / v0.9.29 safety regression 含 yfinance 通过 / v0.9.29 critical deps pinned 含 yfinance；(7) Gates: pytest tests ≥277 baseline (B027) + ≥8 = ≥285 / ruff exit=0 / mypy exit=0 / frontend 不动 vitest ≥166；(8) 不动 B027 既有 tiingo_loader / cost_guard / snapshot_loader / B025 fixture / strategy / B026 banner / production deploy。"
     },
     {
