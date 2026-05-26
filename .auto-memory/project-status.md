@@ -4,14 +4,11 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B027-real-data-snapshot-foundation：`fixing`**；F001 completed（11206ac）+ F002 completed（3d14413）+ F003 pending。Spec：`docs/specs/B027-real-data-snapshot-foundation-spec.md`。
-- Codex 首轮验收结论：**L1 PASS / L2 FAIL**。blocker 报告：`docs/test-reports/B027-real-data-snapshot-foundation-blocker-2026-05-26.md`。
-- L1 已通过：backend `pytest 273 passed, 2 skipped` + `ruff` + `mypy` + alembic round-trip；frontend `vitest 166` + `build` + Playwright `38 passed`；artifact grep 未命中 `TIINGO_API_KEY` / Tiingo host 泄漏。
-- L2 已确认通过子项：production `/api/health.version` == local `HEAD c46bda37cd165ed5a81153b9b876eee56ae2e5c7`；VM `/etc/workbench/workbench.env` 已有脱敏 `TIINGO_API_KEY`；SQLite 存在 `tiingo_budget_log` 表。
-- **当前唯一硬 blocker：production runtime 缺 `httpx`。** Codex 在 VM 上按 systemd 同工作目录 `/srv/workbench/current/backend` 执行 Tiingo smoke：`from workbench_api.data.tiingo_loader import TiingoSnapshotLoader` 直接报 `ModuleNotFoundError: No module named 'httpx'`，因此 F003 L2 第 7 条（`health_check() -> 200 / budget_log +1`）失败。
-- 根因特征：本地 `.venv` 带 dev 依赖所以测试全绿；backend `pyproject.toml` 当前仅在 `[project.optional-dependencies].dev` 声明 `httpx`，production venv 未安装该运行时依赖。
-- 非阻塞观察：`/opt/workbench/.venv/site-packages/workbench_api` 未包含完整子包树，但 systemd 实际从 release 源码目录启动；这不是本轮 blocker 主因。spec 写 `/etc/workbench/.env.production`，实际是 `/etc/workbench/workbench.env`，属 checklist 文本漂移。
-- Generator 下一步：补齐 production runtime `httpx` 安装路径并 redeploy；复验需重新证明 Tiingo smoke 成功、`budget_log +1`、`/api/debug/recent-errors` 正常，以及 B026 banner 不受影响。
+- **B027-real-data-snapshot-foundation：`reverifying`（fix-round 1）**；F001 completed（11206ac）+ F002 completed（3d14413）+ F003 pending（Codex 复验）。Spec：`docs/specs/B027-real-data-snapshot-foundation-spec.md`。
+- Generator fix-round 1（commit 468d380 + 49462d6）：(1) 把 `httpx>=0.27` 从 `[project.optional-dependencies].dev` 提到 `[project].dependencies` 让 production wheel install 包含；(2) `TiingoSnapshotLoader.health_check()` 也走 `MonthlyBudgetGuard.check_and_increment`（F002 之前只 fetch_daily_bars 过 guard，spec F003 L2 §7 要求 health_check 也 +1）。
+- 加 safety regression：`tests/safety/test_runtime_dependencies_pinned.py` 用 AST 扫每个 `workbench_api/` 源，断言所有 top-level 第三方 import 都在 `[project].dependencies`；并单独 pin `httpx` 在 runtime set 防回退。
+- 生产 smoke 已端到端通过：VM `import httpx` OK / `TiingoSnapshotLoader().health_check()` 真调 Tiingo 返回 True / `tiingo_budget_log` +1 row (date=2026-05-26 / call_count=1 / cost=5e-05)；production HEAD == main HEAD == `49462d6`。
+- L1 本地 gates：backend pytest 277+2 skipped（B026 baseline 243+2 → +34 net B027 specs；包含 fix-round 1 的 +4）/ ruff + mypy 清 on 132 source files / trade pytest 727 + frontend vitest 166 unchanged。
 
 ## 已完成签收 + MVP 完工
 - B001-B026 全部签收。MVP substantively 完成 (PRD §10/§11/§12) — 完工声明：`docs/prd/mvp-completion-declaration-2026-05-20.md`。
