@@ -22,5 +22,8 @@ type: project
 ## 永久硬边界（B027 起继续；v0.9.28 + B027 新增）
 - 系统层：no-broker SDK / no-paper-or-live URL / no-credential（**Tiingo API key 走 secret 不入代码**）/ no-auto-execution / 多用户禁 / Cloud SQL 禁 / same-origin /api/* / auth-gated / Repository 读写非直 file
 - UI 层：no-execution buttons + 中文等价禁词同级 / Order ticket Markdown 双语 disclaimer 永存 / **B026 banner 保留显示**
-- 数据 / CI 层：fixture-first 离线 CI（CI 不调 live Tiingo）/ cloud-deploy workflow_dispatch + chore commit 后 dispatch deploy
+- 数据 / CI 层：fixture-first 离线 CI（CI 不调 live Tiingo）/ cloud-deploy workflow_dispatch + chore commit 后 dispatch deploy / **pyproject runtime vs dev dep hygiene + safety regression test 守门（v0.9.29 §12.8）**
 - 新增：Tiingo API key 永不入前端/build/log；月预算 cap `$10` enforced（≥80% alert / ≥100% BudgetExceeded raise）
+
+## Framework 状态
+- 最新版本 **v0.9.29**（2026-05-26 沉淀完成）：B027 deploy-time install layer 教训 — `pyproject` `[project].dependencies` vs `[project.optional-dependencies].dev` 判断规则 + `tests/safety/test_runtime_dependencies_pinned.py` ast walker 守门 pattern + 「local vs prod」系列对比表。Codex 标"无 learnings"但 Planner 评估为 framework-grade（高复用窗口：B028 yfinance / B029 SEC EDGAR / B031 LLM gateway / B033 news ingest 每个都会引入新 dep）。B026 React event edge 仍单一案例 hold。proposed-learnings.md 空。

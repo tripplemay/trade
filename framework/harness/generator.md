@@ -527,6 +527,155 @@ fi
 
 **来源：** B025-us-quality-momentum-satellite F006 round-3 / round-4 deploy drift；commits `afa154d`（workflow_dispatch 上线）+ `abaaf6e`（最终签收前 SHA）+ signoff `docs/test-reports/B025-us-quality-signoff-2026-05-25.md` §Soft-watch S2 + §Framework Learnings 新规律。
 
+### 12.8 pyproject runtime vs dev dependency hygiene（v0.9.29 — B027 沉淀）
+
+**触发：** B027 F002 fix-round 1 — Codex L2 production smoke 失败，根因是 `httpx` 在 `pyproject.toml` 的 `[project.optional-dependencies].dev` 而不是 `[project].dependencies`。**本地 pytest 全过**（pytest 走 dev install 含 extras），**production wheel install 缺 transport 层**（wheel install 默认只装 `[project].dependencies` 不装 extras），Tiingo adapter 启动时 ImportError。Generator round-1 commit `468d380` 把 httpx 移到 runtime + 加 safety regression test 守门。
+
+**规律：** Python 应用引入新 third-party 依赖时，**必须区分 `[project].dependencies`（runtime 必需，wheel install 自动装）vs `[project.optional-dependencies].dev / test / docs`（仅本地 dev / CI test 用）**。判断规则：
+
+| 依赖类型 | 判断 | 放哪 |
+|---|---|---|
+| 业务代码 import（`workbench_api/`、`trade/` 等 source tree）| **runtime 必需** | `[project].dependencies` |
+| 测试代码 import（`tests/`）| **仅 dev** | `[project.optional-dependencies].dev` |
+| 既被 source 又被 tests import | **runtime 必需**（按 source 范围判定）| `[project].dependencies` |
+| Type checker / linter / formatter（mypy / ruff）| 仅 dev | `[project.optional-dependencies].dev` |
+| Stub packages（`types-*`）| 仅 dev | `[project.optional-dependencies].dev` |
+
+**规约（任何 Python 应用批次 spec 涉及新 dep 引入时）：**
+
+1. **加新 import 前先判断 runtime / dev**：grep source tree（`workbench_api/**/*.py` / `trade/**/*.py`）是否有该 import；有 → runtime；只在 `tests/` → dev。
+2. **加 safety regression test 守门** — 新建 `tests/safety/test_runtime_dependencies_pinned.py`（如不存在），walk source tree 用 `ast` 收集每个 top-level third-party import，断言 each 在 `[project].dependencies` 中（exempts stdlib + 一小 explicit transitive list 如 `pydantic_core` 等隐式依赖）。pin 关键 dep（如 httpx）确保 future 重构不能 silently undo。
+3. **Spec acceptance 必含**：任何 batch spec 引入新 dep 时，acceptance 显式列出 dep 名 + runtime/dev 归类 + safety regression 测试是否需要 extend。
+
+### 12.8.1 Safety regression test 模板
+
+```python
+# tests/safety/test_runtime_dependencies_pinned.py
+"""Guard against pyproject runtime/dev dependency misclassification.
+
+Production wheel install only carries [project].dependencies; if any source
+file imports a package only listed in [project.optional-dependencies].dev,
+production startup raises ImportError. This regression test walks the source
+tree at CI time and asserts every top-level third-party import is declared
+in [project].dependencies.
+
+Failure mode prevented: B027 F002 fix-round 1 commit 468d380 (httpx had been
+in [project.optional-dependencies].dev; production wheel install lacked it;
+TiingoSnapshotLoader raised ImportError on first call).
+"""
+from __future__ import annotations
+
+import ast
+import sys
+import tomllib
+from pathlib import Path
+
+# Standard library packages that source tree may import without pyproject declaration
+STDLIB_MODULES = set(sys.stdlib_module_names)
+
+# Packages that come transitively with other runtime deps (no need to declare
+# explicitly in pyproject); add new entries only when you confirm transitivity.
+TRANSITIVE_ALLOWLIST: set[str] = {
+    "pydantic_core",  # via pydantic
+    # Add as confirmed
+}
+
+# Source roots to scan (relative to repo root)
+SOURCE_ROOTS = ("workbench_api", "trade")
+
+# Critical dependencies that must always appear in [project].dependencies.
+# Pin via this list to prevent silent un-promotion in future refactors.
+CRITICAL_RUNTIME_DEPS: set[str] = {
+    "httpx",     # B027 Tiingo adapter
+    "fastapi",   # backend framework
+    "uvicorn",   # ASGI server
+    # Extend as batches grow
+}
+
+
+def _load_runtime_deps(pyproject_path: Path) -> set[str]:
+    data = tomllib.loads(pyproject_path.read_text())
+    deps = data["project"]["dependencies"]
+    # Strip version specifiers, extras, env markers
+    names = set()
+    for dep in deps:
+        name = dep.split(";")[0].split("[")[0]
+        for op in ("==", ">=", "<=", "~=", "!=", "<", ">", " "):
+            name = name.split(op)[0]
+        names.add(name.strip().replace("-", "_"))
+    return names
+
+
+def _walk_top_level_imports(source_root: Path) -> set[str]:
+    imports: set[str] = set()
+    for py_file in source_root.rglob("*.py"):
+        tree = ast.parse(py_file.read_text(), filename=str(py_file))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    imports.add(alias.name.split(".")[0])
+            elif isinstance(node, ast.ImportFrom):
+                if node.level == 0 and node.module:
+                    imports.add(node.module.split(".")[0])
+    return imports
+
+
+def test_all_source_imports_in_runtime_dependencies():
+    repo_root = Path(__file__).parents[2]
+    pyproject = repo_root / "pyproject.toml"
+    runtime_deps = _load_runtime_deps(pyproject)
+
+    missing: set[str] = set()
+    for root_name in SOURCE_ROOTS:
+        root = repo_root / root_name
+        if not root.exists():
+            continue
+        for imp in _walk_top_level_imports(root):
+            imp_normalized = imp.replace("-", "_")
+            if (
+                imp_normalized in STDLIB_MODULES
+                or imp_normalized in TRANSITIVE_ALLOWLIST
+                or imp_normalized in runtime_deps
+                or imp_normalized.startswith(SOURCE_ROOTS)  # first-party imports
+            ):
+                continue
+            missing.add(imp_normalized)
+    assert not missing, (
+        f"Source imports not declared in [project].dependencies: {sorted(missing)}. "
+        f"Move them from [project.optional-dependencies].dev to [project].dependencies "
+        f"(see framework/harness/generator.md §12.8 for the runtime/dev judgment rules)."
+    )
+
+
+def test_critical_runtime_deps_pinned():
+    repo_root = Path(__file__).parents[2]
+    runtime_deps = _load_runtime_deps(repo_root / "pyproject.toml")
+    for dep in CRITICAL_RUNTIME_DEPS:
+        dep_normalized = dep.replace("-", "_")
+        assert dep_normalized in runtime_deps, (
+            f"Critical runtime dep {dep!r} missing from [project].dependencies. "
+            f"Restore it; future refactors must not silently de-promote (B027 lesson)."
+        )
+```
+
+### 12.8.2 反面案例（B027 F003 fix-round 1）
+
+| 现象 | 根因 | 修法 |
+|---|---|---|
+| 本地 `pytest 273 passed`，production wheel 启动 `ImportError: No module named 'httpx'` | `httpx>=0.27` 在 `[project.optional-dependencies].dev`；production wheel install 默认不装 extras | commit `468d380` 移到 `[project].dependencies` + 加 `tests/safety/test_runtime_dependencies_pinned.py` 守门 |
+| Codex L2 §7 smoke 失败（`TiingoSnapshotLoader().health_check()` 调用前就崩）| 同上 | 同上 |
+
+**来源：** B027-real-data-snapshot-foundation F003 fix-round 1；commits `468d380`（httpx 提升到 runtime）+ Generator handoff at `49462d6` + signoff `docs/test-reports/B027-real-data-snapshot-foundation-signoff-2026-05-26.md`。
+
+**类比 v0.9.X 系列「local vs prod」教训：**
+
+| 版本 | 现象 | 防御 |
+|---|---|---|
+| v0.9.25 §12.5 | 本地 alembic OK，production deploy.sh 没 source env file → 跑 scratch DB | deploy.sh source EnvironmentFile |
+| v0.9.27 §12.7 | 本地 commit push，chore-only commit 不触 CI / deploy → production HEAD drift | workflow_dispatch + chore commit 后 dispatch |
+| v0.9.27 §20 (evaluator.md) | 本地 Playwright pass，production VM stale dev process 让 dismiss UI 失败 | lsof check + kill 再启 |
+| **v0.9.29 §12.8（本节）** | **本地 pytest pass，production wheel install 缺 dev extras → ImportError** | **runtime vs dev 判断 + safety regression test 守门** |
+
 ---
 
 ## 13. Frontend SSR vs Browser context（v0.9.24 — B021 沉淀）

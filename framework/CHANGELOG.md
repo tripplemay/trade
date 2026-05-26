@@ -5,6 +5,34 @@
 
 ---
 
+## v0.9.29 — 2026-05-26（B027 沉淀：pyproject runtime vs dev dependency hygiene）
+
+**来源批次：**
+- B027-real-data-snapshot-foundation F002 fix-round 1（commit `468d380` httpx 提升到 runtime；commit `49462d6` health_check 走 budget guard）
+- signoff `docs/test-reports/B027-real-data-snapshot-foundation-signoff-2026-05-26.md`（Codex 标"本批次无 framework learnings"；Planner 重新评估认为 httpx promotion fix 是 framework-grade pattern）
+
+**触发原因：**
+- B027 F003 Codex L2 production smoke 失败：本地 `pytest 273 passed` 全过，但 production wheel install 启动 `ImportError: No module named 'httpx'`
+- 根因：`httpx>=0.27` 在 `[project.optional-dependencies].dev`；production wheel install 默认只装 `[project].dependencies` 不装 extras；Tiingo adapter 启动时 ImportError
+- 这是 v0.9.X 系列「local pass + prod fail」第 N 例（v0.9.25 §12.5 deploy.sh source env / v0.9.27 §12.7 chore-only deploy / v0.9.27 §20 lsof stale process）；本节是该系列的 deploy-time install 层教训
+- Generator round-1 修法（commit `468d380`）主动加 safety regression test `test_runtime_dependencies_pinned.py` walks source tree ast 守门，是 framework-grade pattern；不沉淀的话 Phase 1 后续 B028 (yfinance) / B029 (SEC EDGAR XBRL parser) / Phase 2 LLM gateway / news ingest 每个都会引入新 dep，每次都可能撞同样问题
+
+**变更：**
+- `framework/harness/generator.md` 新增 §12.8 "pyproject runtime vs dev dependency hygiene（v0.9.29 — B027 沉淀）"，含：
+  - 5 行 dep 类型判断规则表（业务 import / tests import / 同时 / linter / stub）
+  - 3 条规约（加 import 前判断 / safety regression test 守门 / spec acceptance 列 dep）
+  - §12.8.1 完整 safety regression test 模板（`tests/safety/test_runtime_dependencies_pinned.py` ast walker + STDLIB_MODULES + TRANSITIVE_ALLOWLIST + CRITICAL_RUNTIME_DEPS pin）
+  - §12.8.2 反面案例表（本地 pytest pass → production ImportError）
+  - 类比 v0.9.X「local vs prod」系列对比表（v0.9.25 §12.5 / v0.9.27 §12.7 / v0.9.27 §20 / **v0.9.29 §12.8**）
+- 归档 `framework/archive/proposed-learnings-archive-v0.9.29.md`（含来源 + 沉淀位置 + safety regression test 模板说明 + 「local vs prod」系列演进）
+
+**未沉淀（继续 hold）：**
+- B026 production-only React event edge（vanilla DOM fallback 双路径）— 仍单一案例，B025/B026 done 阶段已记账于 proposed-learnings.md 历史注释。本批次 B027 是 deploy-time install edge（机制不同），不与 B026 React event edge 强合并；等下一例 React UI 互动 local-pass-prod-fail 再合并沉淀
+- B027 health_check 没走 budget guard wiring 漏（commit `49462d6` 修复）— spec acceptance 完整性教训，单一案例不构成规律
+- B027 Soft-watch S1 env file 文案漂移（`.env.production` vs `workbench.env`）— spec accuracy 教训属已有 planner.md 铁律 3，无需新沉淀
+
+---
+
 ## v0.9.28 — 2026-05-25（B025 done 阶段：结构澄清 + AI 边界精细化）
 
 **来源批次：**
