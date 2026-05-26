@@ -20,6 +20,8 @@ import math
 import pytest
 
 from workbench_api.data.xbrl_parser import (
+    SEC_CONCEPT_ALIASES_PER_SECTOR,
+    SEC_CONCEPT_NAMES,
     compute_debt_to_assets,
     compute_earnings_yield,
     compute_ebitda,
@@ -29,6 +31,7 @@ from workbench_api.data.xbrl_parser import (
     compute_pb,
     compute_pe,
     compute_roe,
+    get_concept_alias_chain,
 )
 
 
@@ -144,3 +147,138 @@ def test_ev_ebitda_zero_ebitda_raises() -> None:
     msg = str(exc_info.value)
     assert "ev_ebitda" in msg
     assert "ebitda" in msg
+
+
+# ---------------------------------------------------------------------------
+# B030 F001 — SEC_CONCEPT_ALIASES_PER_SECTOR + get_concept_alias_chain
+# ---------------------------------------------------------------------------
+
+
+def test_per_sector_alias_map_covers_three_sectors() -> None:
+    """B030 F001 acceptance — Financials / Utilities / Real Estate are
+    the three sectors whose XBRL dialect drifts far enough from the
+    default chain to need explicit overrides (B029 Soft-watch S1)."""
+
+    assert set(SEC_CONCEPT_ALIASES_PER_SECTOR.keys()) == {
+        "Financials",
+        "Utilities",
+        "Real Estate",
+    }
+
+
+@pytest.mark.parametrize(
+    "sector",
+    ["Financials", "Utilities", "Real Estate"],
+)
+def test_per_sector_alias_map_includes_eight_ratio_concepts(sector: str) -> None:
+    """Each per-sector override must cover the concepts whose XBRL
+    dialect actually drifts for that sector. The five
+    ratio-input keys (revenues / cogs / long_term_debt / operating_income
+    / depreciation_amortization) are exactly the ones identified in
+    the B030 spec §4.2 sector-dialect table — net_income / assets /
+    cash / cfo / capex / stockholders_equity are stable across the
+    three sectors so they fall through to the default chain via
+    :func:`get_concept_alias_chain`."""
+
+    overrides = SEC_CONCEPT_ALIASES_PER_SECTOR[sector]
+    must_have_overrides = {
+        "revenues",
+        "cogs",
+        "long_term_debt",
+        "operating_income",
+        "depreciation_amortization",
+    }
+    assert must_have_overrides.issubset(set(overrides.keys()))
+    # Any override key must exist in the default chain too — the
+    # import-time sanity check in xbrl_parser enforces this, but a
+    # belt-and-braces pin here catches a regression.
+    for short_name in overrides:
+        assert short_name in SEC_CONCEPT_NAMES
+
+
+def test_get_concept_alias_chain_default_sector_returns_default_chain() -> None:
+    """When ``sector=None`` (or an unrecognised sector), the helper
+    returns the default :data:`SEC_CONCEPT_NAMES` chain unchanged.
+
+    Pinned so adding a new per-sector override doesn't accidentally
+    shadow the default for "Information Technology" / "Health Care" /
+    other sectors that already work with the default chain.
+    """
+
+    default_chain = SEC_CONCEPT_NAMES["revenues"]
+    assert get_concept_alias_chain("AAPL", "revenues", None) == default_chain
+    assert (
+        get_concept_alias_chain("AAPL", "revenues", "Information Technology")
+        == default_chain
+    )
+    assert get_concept_alias_chain("JNJ", "revenues", "Health Care") == default_chain
+
+
+def test_get_concept_alias_chain_financials_promotes_interest_revenue() -> None:
+    """Acceptance §(7): Financials → ``InterestAndDividendIncomeOperating``
+    must come first in the revenues chain (banks file this concept
+    instead of ``Revenues``)."""
+
+    chain = get_concept_alias_chain("JPM", "revenues", "Financials")
+    assert chain[0] == "InterestAndDividendIncomeOperating"
+    # The bank concept must be ahead of the default ``Revenues``.
+    assert chain.index("InterestAndDividendIncomeOperating") < chain.index("Revenues")
+    # And ``Revenues`` must still be in the chain so Visa (Financials but
+    # uses ``Revenues``) resolves on the fallback.
+    assert "Revenues" in chain
+
+
+def test_get_concept_alias_chain_utilities_promotes_longtermdebtnoncurrent() -> None:
+    """Utilities (NEE / DUK) file the noncurrent portion as the
+    primary ``LongTermDebt`` concept; the chain must front-load it."""
+
+    chain = get_concept_alias_chain("NEE", "long_term_debt", "Utilities")
+    assert chain[0] == "LongTermDebtNoncurrent"
+    assert chain.index("LongTermDebtNoncurrent") < chain.index("LongTermDebt")
+
+
+def test_get_concept_alias_chain_real_estate_promotes_consolidated_debt() -> None:
+    """REITs (PLD / AMT) file ``LongTermDebtCurrentAndNoncurrent`` as
+    the consolidated balance line."""
+
+    chain = get_concept_alias_chain("PLD", "long_term_debt", "Real Estate")
+    assert chain[0] == "LongTermDebtCurrentAndNoncurrent"
+
+
+def test_get_concept_alias_chain_falls_back_to_default_on_unlisted_concept() -> None:
+    """An override sector with no entry for a particular concept must
+    fall through to the default. ``assets`` is the same concept across
+    all sectors so it has no per-sector override — the default chain
+    must still be returned when sector=Financials."""
+
+    assert (
+        get_concept_alias_chain("JPM", "assets", "Financials")
+        == SEC_CONCEPT_NAMES["assets"]
+    )
+    assert (
+        get_concept_alias_chain("NEE", "net_income", "Utilities")
+        == SEC_CONCEPT_NAMES["net_income"]
+    )
+
+
+def test_get_concept_alias_chain_returns_empty_list_for_unknown_concept() -> None:
+    """Unknown short-name → empty list. The F002 driver treats an
+    empty chain as "no matching concept" and skips the quarter with a
+    documented reason."""
+
+    assert get_concept_alias_chain("AAPL", "not_a_real_concept", None) == []
+    # Per-sector lookup also falls through when the short-name is
+    # absent both in the override and the default.
+    assert get_concept_alias_chain("JPM", "not_a_real_concept", "Financials") == []
+
+
+def test_get_concept_alias_chain_returns_a_copy_not_a_reference() -> None:
+    """Mutating the returned list must not corrupt the module-level
+    registry. The helper currently returns ``list(...)``; pin the
+    invariant so a future refactor doesn't drop the copy."""
+
+    chain = get_concept_alias_chain("JPM", "revenues", "Financials")
+    chain.append("BOGUS_CONCEPT")
+    # Refetching gives the original chain back.
+    refetch = get_concept_alias_chain("JPM", "revenues", "Financials")
+    assert "BOGUS_CONCEPT" not in refetch

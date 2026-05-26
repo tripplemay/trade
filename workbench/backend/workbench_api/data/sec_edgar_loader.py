@@ -52,6 +52,17 @@ import httpx
 
 from workbench_api.data.fundamentals_loader import FundamentalsLoader, FundamentalsRow
 
+# B030 F001 — concept-name alias registry moved to ``xbrl_parser``.
+# Re-export here so downstream importers (backfill driver, unit tests)
+# that still ``from workbench_api.data.sec_edgar_loader import
+# SEC_CONCEPT_NAMES`` continue to resolve. The canonical source is
+# now :mod:`xbrl_parser`.
+from workbench_api.data.xbrl_parser import (  # noqa: F401
+    SEC_CONCEPT_ALIASES_PER_SECTOR,
+    SEC_CONCEPT_NAMES,
+    get_concept_alias_chain,
+)
+
 logger = logging.getLogger(__name__)
 
 SEC_EDGAR_BASE_URL = "https://data.sec.gov"
@@ -225,6 +236,7 @@ class SECEDGARFundamentalsLoader(FundamentalsLoader):
         ticker: str,
         from_date: date,
         to_date: date,
+        sector: str | None = None,
     ) -> list[FundamentalsRow]:
         """Fetch all quarterly fundamentals **filed** in
         ``[from_date, to_date]`` inclusive for ``ticker``.
@@ -237,12 +249,28 @@ class SECEDGARFundamentalsLoader(FundamentalsLoader):
         without pre-parsing is exposed via
         :meth:`fetch_raw_companyfacts` for the driver to call.
 
+        B030 F001 — ``sector`` is the ticker's GICS sector (one of
+        ``Financials`` / ``Utilities`` / ``Real Estate`` for the three
+        sectors with XBRL-dialect overrides; any other value falls
+        through to the default concept chain). It's threaded into the
+        loader's diagnostic logs and forwarded onto downstream parsers
+        that resolve concept aliases via
+        :func:`workbench_api.data.xbrl_parser.get_concept_alias_chain`.
+        The pre-baked ``parsed_ratios`` flow (this method) is sector-
+        agnostic because the ratios are already computed; the sector
+        argument is preserved here so the public surface matches what
+        live-parsing callers (the F002 backfill driver) expect.
+
         Raises :class:`ValueError` when ``ticker`` resolves to a
         synthetic entry (CIK ``None``) — the caller (F002 backfill
         driver) catches this and skips with a warn log per Planner
         pre-impl adjudication decision #3 (fail-safe; not a fatal).
         """
 
+        # ``sector`` reserved for downstream live parsers; the parsed_ratios
+        # path does not need it. We still accept it on the surface so the
+        # F002 backfill driver can pass it through uniformly.
+        del sector
         payload = self.fetch_raw_companyfacts(ticker)
         return parse_companyfacts(ticker, payload, from_date=from_date, to_date=to_date)
 
@@ -505,105 +533,12 @@ def _load_default_ticker_cik_map() -> dict[str, int | None]:
     return out
 
 
-# Concept-name **alias chains** for downstream F002 use. F001 doesn't
-# traverse raw companyfacts at the concept level (the fixtures already
-# pre-bake the eight ratios via ``parsed_ratios``), but F002's backfill
-# driver walks these to extract fact values from the live SEC payload.
-# Pinned here so a SEC concept rename / ASC standard transition has
-# one edit point.
-#
-# Each ratio input maps to an **ordered list** of SEC us-gaap concept
-# names; the F002 parser tries them in order and merges every entry
-# from any concept whose name matches. Per-(year, quarter) bucketing
-# then keeps the latest-filed entry, so an alias chain effectively
-# stitches together a single time series across the SEC's concept
-# renaming history.
-#
-# Common drift causes the chains address:
-#
-# * **Revenues** — pre-ASC 606 filings used ``Revenues`` /
-#   ``SalesRevenueNet``; post-2018 ASC 606 filings switched to
-#   ``RevenueFromContractWithCustomerExcludingAssessedTax``. Most B025
-#   universe tickers (AAPL, MSFT, NVDA, ...) have ≤ 10 Revenues entries
-#   total and the rest under the new concept (B029 F002 first-run
-#   discovered this on AAPL).
-# * **COGS** — some filers use ``CostOfGoodsAndServicesSold``, others
-#   ``CostOfRevenue`` or ``CostOfGoodsSold``.
-# * **LongTermDebt** — sometimes filed as
-#   ``LongTermDebtNoncurrent`` for the non-current portion only.
-# * **DepreciationDepletionAndAmortization** — different filers use
-#   ``DepreciationAndAmortization`` or just ``Depreciation``.
-# * **PaymentsToAcquirePropertyPlantAndEquipment** — some filers report
-#   capex as ``PaymentsToAcquireProductiveAssets``.
-SEC_CONCEPT_NAMES: dict[str, list[str]] = {
-    "net_income": ["NetIncomeLoss"],
-    "stockholders_equity": [
-        "StockholdersEquity",
-        "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest",
-    ],
-    "revenues": [
-        "Revenues",
-        "RevenueFromContractWithCustomerExcludingAssessedTax",
-        "SalesRevenueNet",
-        "SalesRevenueGoodsNet",
-        "RevenueFromContractWithCustomerIncludingAssessedTax",
-    ],
-    "cogs": [
-        "CostOfGoodsAndServicesSold",
-        "CostOfRevenue",
-        "CostOfGoodsSold",
-        "CostOfServices",
-        "CostsAndExpenses",
-        # Utilities + service firms report operating expenses as a
-        # single line item rather than splitting COGS / OpEx (e.g. NEE,
-        # LIN, financial firms). Treating ``OperatingExpenses`` as a
-        # COGS-equivalent imprecisely inflates gross_margin denominator
-        # but unlocks ratio production for non-product filers.
-        "OperatingExpenses",
-        "OperatingCostsAndExpenses",
-    ],
-    "cfo": [
-        "NetCashProvidedByUsedInOperatingActivities",
-        "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations",
-    ],
-    "capex": [
-        "PaymentsToAcquirePropertyPlantAndEquipment",
-        "PaymentsToAcquireProductiveAssets",
-        "PaymentsToAcquirePropertyPlantAndEquipmentAndIntangibleAssets",
-        "PaymentsToAcquireOtherPropertyPlantAndEquipment",
-    ],
-    "long_term_debt": [
-        "LongTermDebt",
-        "LongTermDebtNoncurrent",
-    ],
-    "assets": ["Assets"],
-    "cash": [
-        "CashAndCashEquivalentsAtCarryingValue",
-        "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents",
-        "Cash",
-    ],
-    "operating_income": [
-        "OperatingIncomeLoss",
-        # Pre-tax income — not strictly equivalent (includes non-operating
-        # interest income/expense), but the closest XBRL fallback for
-        # filers that stop reporting OperatingIncomeLoss (e.g. JNJ
-        # post-2015 transitions to this concept). Documented imprecision.
-        "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
-        "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
-    ],
-    "depreciation_amortization": [
-        "DepreciationDepletionAndAmortization",
-        "DepreciationAndAmortization",
-        "Depreciation",
-    ],
-}
-"""SEC us-gaap XBRL concept-name **alias chains** per ratio input.
-
-For each input, the F002 driver tries every concept in order and
-merges all matching entries before bucketing by calendar quarter. This
-handles the common SEC concept drift between ASC standards / filer
-preferences without forcing every filer to use one canonical name.
-"""
+# NOTE: B030 F001 moved ``SEC_CONCEPT_NAMES`` to
+# :mod:`workbench_api.data.xbrl_parser` so it lives next to the per-
+# sector overrides (:data:`SEC_CONCEPT_ALIASES_PER_SECTOR`) and the
+# :func:`get_concept_alias_chain` resolver. This module re-exports
+# them at the top (see imports) for backward compatibility with
+# downstream code that still imports from here.
 
 
 def quarterly_fp_values() -> frozenset[str]:

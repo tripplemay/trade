@@ -103,13 +103,14 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from universe_us_quality import (  # noqa: E402
     B025_SYNTHETIC_TICKERS,
+    get_ticker_sector,
     us_quality_universe,
 )
 from workbench_api.data.sec_edgar_loader import (  # noqa: E402
-    SEC_CONCEPT_NAMES,
     SECEDGARFundamentalsLoader,
 )
 from workbench_api.data.xbrl_parser import (  # noqa: E402
+    SEC_CONCEPT_NAMES,
     compute_debt_to_assets,
     compute_earnings_yield,
     compute_ebitda,
@@ -119,6 +120,7 @@ from workbench_api.data.xbrl_parser import (  # noqa: E402
     compute_pb,
     compute_pe,
     compute_roe,
+    get_concept_alias_chain,
 )
 
 logger = logging.getLogger(__name__)
@@ -299,6 +301,7 @@ def raw_companyfacts_to_parsed_ratios(
     payload: dict[str, Any],
     *,
     prices: dict[tuple[str, str], float],
+    sector: str | None = None,
 ) -> tuple[list[dict[str, Any]], list[str]]:
     """Convert raw SEC companyfacts JSON into the ``parsed_ratios``
     block that :func:`parse_companyfacts` consumes.
@@ -308,19 +311,32 @@ def raw_companyfacts_to_parsed_ratios(
     these dicts directly. ``skip_messages`` carries human-readable
     reasons per quarter that was dropped (missing concept / no price
     intersection / zero denominator).
+
+    B030 F001 — when ``sector`` matches one of the per-sector overrides
+    in :data:`SEC_CONCEPT_ALIASES_PER_SECTOR` (Financials / Utilities /
+    Real Estate), the per-sector alias chain is used in place of the
+    default for the affected concepts. ``sector=None`` (or an
+    unrecognised sector) falls through to the default
+    :data:`SEC_CONCEPT_NAMES` chain.
     """
 
     facts = payload.get("facts", {})
     if not isinstance(facts, dict):
         return [], [f"{ticker}: companyfacts missing 'facts' object"]
 
-    # Index every required concept by calendar quarter. ``SEC_CONCEPT_NAMES``
-    # is an alias chain: try each concept in order and union their entries
-    # before bucketing so a SEC concept rename (e.g. AAPL switching to
+    # Index every required concept by calendar quarter. For each concept,
+    # resolve a sector-aware alias chain via
+    # :func:`xbrl_parser.get_concept_alias_chain`: when ``sector`` matches
+    # a per-sector override (Financials / Utilities / Real Estate) the
+    # sector-idiomatic concept is tried first; otherwise the default
+    # :data:`SEC_CONCEPT_NAMES` chain applies. Within a chain, every
+    # concept's entries are unioned before bucketing so a SEC concept
+    # rename (e.g. AAPL switching to
     # ``RevenueFromContractWithCustomerExcludingAssessedTax`` after ASC 606)
     # still surfaces in the time series.
     indexed: dict[str, dict[tuple[int, int], dict[str, Any]]] = {}
-    for short_name, concept_aliases in SEC_CONCEPT_NAMES.items():
+    for short_name in SEC_CONCEPT_NAMES:
+        concept_aliases = get_concept_alias_chain(ticker, short_name, sector)
         combined: list[dict[str, Any]] = []
         for concept_name in concept_aliases:
             combined.extend(
@@ -613,8 +629,9 @@ def backfill(
             logger.error("fetch crashed for %s: %s", ticker, exc)
             continue
 
+        sector = get_ticker_sector(ticker)
         rows, skips = raw_companyfacts_to_parsed_ratios(
-            ticker, payload, prices=prices
+            ticker, payload, prices=prices, sector=sector
         )
         # Filter rows to the requested filing-date window.
         in_window = [

@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import csv
 import importlib.util
+import math
 import sys
 from datetime import date
 from pathlib import Path
@@ -62,10 +63,123 @@ def test_us_quality_universe_consistent_with_b025_fixture() -> None:
     """Both subsets (real + synthetic) must mirror
     ``data/fixtures/us_quality_momentum/universe.csv`` exactly,
     otherwise the F002 backfill drifts out of step with the B025
-    fixture that the B025 deterministic backtest reads."""
+    fixture that the B025 deterministic backtest reads. B030 F001
+    extends the assert to cover the ``gics_sector`` column too —
+    drift here breaks the per-sector alias chain resolution and
+    re-introduces B029 Soft-watch S1 (sector tickers producing 0
+    backfill rows)."""
 
     universe = _import_script("universe_us_quality")
     universe.assert_us_quality_universe_consistent_with_fixture()
+
+
+# ---------------------------------------------------------------------------
+# B030 F001 — universe_us_quality sector mapping + per-ticker lookup
+# ---------------------------------------------------------------------------
+
+
+def test_us_quality_ticker_sectors_covers_all_30_tickers() -> None:
+    """Every ticker in the B025 universe must have an explicit sector
+    entry. Synthetic tickers (ZQ*) get their fixture sector even
+    though they're skipped in the SEC backfill — keeping the mapping
+    complete avoids per-call .get() default-None surprises in non-
+    backfill code paths (e.g. UI sector breakdowns)."""
+
+    universe = _import_script("universe_us_quality")
+    assert len(universe.US_QUALITY_TICKER_SECTORS) == 30
+    for ticker in universe.us_quality_universe():
+        assert ticker in universe.US_QUALITY_TICKER_SECTORS, (
+            f"{ticker} missing from US_QUALITY_TICKER_SECTORS"
+        )
+
+
+def test_us_quality_ticker_sectors_includes_six_sector_structural_tickers() -> None:
+    """B029 Soft-watch S1 tickers (BAC/JPM/V/LIN/NEE/PLD) — the
+    sector mapping must resolve them into one of the three per-sector
+    override buckets (Financials / Utilities / Real Estate) or, in
+    LIN's case, into Materials with its dialect handled by the
+    default chain's late-fallback positions."""
+
+    universe = _import_script("universe_us_quality")
+    sectors = universe.US_QUALITY_TICKER_SECTORS
+    # Banks and Visa land in Financials (per-sector override).
+    assert sectors["BAC"] == "Financials"
+    assert sectors["JPM"] == "Financials"
+    assert sectors["V"] == "Financials"
+    # NEE → Utilities (per-sector override).
+    assert sectors["NEE"] == "Utilities"
+    # PLD → Real Estate (per-sector override).
+    assert sectors["PLD"] == "Real Estate"
+    # LIN → Materials — no per-sector override; the default chain's
+    # ``LongTermDebtNoncurrent`` / ``OperatingExpenses`` fallbacks
+    # cover LIN's Utilities-style XBRL dialect.
+    assert sectors["LIN"] == "Materials"
+
+
+def test_get_ticker_sector_returns_none_for_unknown_ticker() -> None:
+    """Out-of-universe ticker → ``None``. The F002 driver passes the
+    return value straight to ``get_concept_alias_chain`` which falls
+    back to the default chain on ``None``."""
+
+    universe = _import_script("universe_us_quality")
+    assert universe.get_ticker_sector("ZZZZ") is None
+    assert universe.get_ticker_sector("") is None
+
+
+def test_assert_universe_consistency_detects_sector_drift(tmp_path: Path) -> None:
+    """Inject a fake fixture with a deliberately wrong sector for AAPL
+    and verify the consistency assert flags it. Pins the new B030 F001
+    sector-column branch added to
+    :func:`assert_us_quality_universe_consistent_with_fixture`."""
+
+    universe = _import_script("universe_us_quality")
+    # Spoof the fixture path via monkey-patching: write a CSV that
+    # matches the universe ticker list but has a wrong sector for
+    # AAPL ("Energy" instead of "Information Technology") and point
+    # the helper at it.
+    bad_fixture = tmp_path / "universe.csv"
+    header = (
+        "ticker,name,exchange,gics_sector,gics_industry,listing_date,market_cap_initial"
+    )
+    rows: list[str] = [header]
+    for ticker in universe.us_quality_universe():
+        sector = (
+            "Energy"
+            if ticker == "AAPL"
+            else universe.US_QUALITY_TICKER_SECTORS[ticker]
+        )
+        rows.append(
+            f"{ticker},Stub Co,NYSE,{sector},Stub Industry,2020-01-01,1000000000"
+        )
+    bad_fixture.write_text("\n".join(rows) + "\n", encoding="utf-8")
+
+    # Redirect the helper's fixture read to our spoof.
+    import pandas as pd
+    real_read_csv = pd.read_csv
+    real_path_resolve = Path.resolve
+
+    def fake_read_csv(path, *a, **kw):  # type: ignore[no-untyped-def]
+        # The helper builds the path via ``Path(__file__).resolve().parents[1] /
+        # "data" / "fixtures" / "us_quality_momentum" / "universe.csv"``.
+        # Detect that exact shape and substitute our spoof.
+        if str(path).endswith("us_quality_momentum/universe.csv"):
+            return real_read_csv(bad_fixture, *a, **kw)
+        return real_read_csv(path, *a, **kw)
+
+    try:
+        pd.read_csv = fake_read_csv  # type: ignore[assignment]
+        with pytest.raises(AssertionError) as exc_info:
+            universe.assert_us_quality_universe_consistent_with_fixture()
+        # Failure message must call out AAPL and the offending sector
+        # so the maintainer can fix it without grepping.
+        msg = str(exc_info.value)
+        assert "AAPL" in msg
+        assert "Energy" in msg
+        assert "Information Technology" in msg
+    finally:
+        pd.read_csv = real_read_csv  # type: ignore[assignment]
+        # Defensive — restore Path.resolve in case it was touched.
+        Path.resolve = real_path_resolve  # type: ignore[method-assign]
 
 
 # ---------------------------------------------------------------------------
@@ -569,3 +683,358 @@ def test_quarter_end_canonical_date(year: int, quarter: int, expected_end: date)
 
     backfill = _import_script("backfill_fundamentals")
     assert backfill._quarter_end(year, quarter) == expected_end
+
+
+# ---------------------------------------------------------------------------
+# B030 F001 — per-sector alias chain routing through the backfill driver
+# ---------------------------------------------------------------------------
+
+
+def _bank_synthetic_companyfacts() -> dict[str, Any]:
+    """Synthesise a bank-style SEC companyfacts payload for JPM FY2014.
+
+    Critical difference from the default test fixture: revenues are
+    filed under ``InterestAndDividendIncomeOperating`` (no ``Revenues``
+    entry) and COGS is filed under ``InterestExpense`` (no
+    ``CostOfGoodsAndServicesSold`` entry). Without per-sector
+    overrides, both concepts would miss the default alias chain and
+    the quarter would be skipped (B029 Soft-watch S1 root cause).
+    """
+
+    def usd_unit(val: float, end: str = "2014-12-31") -> dict[str, Any]:
+        return {
+            "units": {
+                "USD": [
+                    {
+                        "end": end,
+                        "val": val,
+                        "filed": "2015-02-24",
+                        "fy": 2014,
+                        "fp": "FY",
+                        "form": "10-K",
+                        "accn": "0000019617-15-000005",
+                    }
+                ]
+            }
+        }
+
+    def shares_unit(val: float, end: str = "2014-12-31") -> dict[str, Any]:
+        return {
+            "units": {
+                "shares": [
+                    {
+                        "end": end,
+                        "val": val,
+                        "filed": "2015-02-24",
+                        "fy": 2014,
+                        "fp": "FY",
+                        "form": "10-K",
+                        "accn": "0000019617-15-000005",
+                    }
+                ]
+            }
+        }
+
+    return {
+        "cik": 19617,
+        "entityName": "JPMorgan Chase & Co.",
+        "facts": {
+            "us-gaap": {
+                "NetIncomeLoss": usd_unit(21_745_000_000.0),
+                "StockholdersEquity": usd_unit(231_727_000_000.0),
+                # Bank-specific concepts only — no Revenues / COGS.
+                "InterestAndDividendIncomeOperating": usd_unit(74_054_000_000.0),
+                "InterestExpense": usd_unit(11_233_000_000.0),
+                "NetCashProvidedByUsedInOperatingActivities": usd_unit(
+                    77_407_000_000.0
+                ),
+                "PaymentsToAcquirePropertyPlantAndEquipment": usd_unit(
+                    7_400_000_000.0
+                ),
+                "LongTermDebt": usd_unit(276_836_000_000.0),
+                "Assets": usd_unit(2_572_274_000_000.0),
+                "CashAndCashEquivalentsAtCarryingValue": usd_unit(27_831_000_000.0),
+                "OperatingIncomeLoss": usd_unit(30_699_000_000.0),
+                "DepreciationDepletionAndAmortization": usd_unit(4_759_000_000.0),
+            },
+            "dei": {
+                "CommonStockSharesOutstanding": shares_unit(3_715_000_000.0),
+            },
+        },
+    }
+
+
+def test_backfill_uses_financials_alias_chain_for_bank_revenues() -> None:
+    """B030 F001 acceptance §(5): with sector=Financials the driver
+    finds ``InterestAndDividendIncomeOperating`` (the bank revenue
+    concept) and produces a non-empty row even when ``Revenues`` is
+    absent from the payload. Default-sector (no override) would
+    skip the quarter."""
+
+    backfill = _import_script("backfill_fundamentals")
+    payload = _bank_synthetic_companyfacts()
+    prices = {("JPM", "2015-02-24"): 56.40}
+    rows, skips = backfill.raw_companyfacts_to_parsed_ratios(
+        "JPM", payload, prices=prices, sector="Financials"
+    )
+    assert skips == [], skips
+    assert len(rows) == 1
+    row = rows[0]
+    assert row["ticker"] == "JPM"
+    assert row["fiscal_quarter"] == "2014Q4"
+    # gross_margin = (revenues - cogs) / revenues
+    # = (74_054 - 11_233) / 74_054 ≈ 0.8484
+    assert row["gross_margin"] > 0
+    # debt_to_assets = 276_836 / 2_572_274 ≈ 0.1076
+    assert math.isclose(row["debt_to_assets"], 0.1076, abs_tol=0.001)
+
+
+def test_backfill_skips_bank_revenues_without_sector_override() -> None:
+    """Without the per-sector alias chain (sector=None or default),
+    the bank payload misses on both ``revenues`` and ``cogs`` and the
+    quarter is dropped — exactly the B029 Soft-watch S1 failure mode
+    the B030 F001 override is fixing."""
+
+    backfill = _import_script("backfill_fundamentals")
+    payload = _bank_synthetic_companyfacts()
+    prices = {("JPM", "2015-02-24"): 56.40}
+    rows, skips = backfill.raw_companyfacts_to_parsed_ratios(
+        "JPM", payload, prices=prices, sector=None
+    )
+    assert rows == []
+    # Skip message must call out the missing revenue / cogs concept so
+    # a maintainer can see why sector=None failed.
+    joined = " | ".join(skips)
+    assert "revenues" in joined or "cogs" in joined
+
+
+def _utility_synthetic_companyfacts() -> dict[str, Any]:
+    """Synthesise NEE-style filings: ``LongTermDebtNoncurrent`` is
+    the primary concept, COGS lives under ``OperatingExpenses``,
+    and there's no plain ``LongTermDebt`` or ``CostOfGoodsAndServicesSold``."""
+
+    def usd_unit(val: float, end: str = "2014-12-31") -> dict[str, Any]:
+        return {
+            "units": {
+                "USD": [
+                    {
+                        "end": end,
+                        "val": val,
+                        "filed": "2015-02-19",
+                        "fy": 2014,
+                        "fp": "FY",
+                        "form": "10-K",
+                        "accn": "0000753308-15-000005",
+                    }
+                ]
+            }
+        }
+
+    def shares_unit(val: float, end: str = "2014-12-31") -> dict[str, Any]:
+        return {
+            "units": {
+                "shares": [
+                    {
+                        "end": end,
+                        "val": val,
+                        "filed": "2015-02-19",
+                        "fy": 2014,
+                        "fp": "FY",
+                        "form": "10-K",
+                        "accn": "0000753308-15-000005",
+                    }
+                ]
+            }
+        }
+
+    return {
+        "cik": 753308,
+        "entityName": "NextEra Energy, Inc.",
+        "facts": {
+            "us-gaap": {
+                "NetIncomeLoss": usd_unit(2_465_000_000.0),
+                "StockholdersEquity": usd_unit(15_311_000_000.0),
+                "Revenues": usd_unit(17_021_000_000.0),
+                # Utility-specific: OperatingExpenses, no COGS.
+                "OperatingExpenses": usd_unit(13_500_000_000.0),
+                "NetCashProvidedByUsedInOperatingActivities": usd_unit(
+                    5_300_000_000.0
+                ),
+                "PaymentsToAcquirePropertyPlantAndEquipment": usd_unit(
+                    7_500_000_000.0
+                ),
+                # Utility-specific: LongTermDebtNoncurrent, no LongTermDebt.
+                "LongTermDebtNoncurrent": usd_unit(26_000_000_000.0),
+                "Assets": usd_unit(74_888_000_000.0),
+                "CashAndCashEquivalentsAtCarryingValue": usd_unit(341_000_000.0),
+                "OperatingIncomeLoss": usd_unit(3_521_000_000.0),
+                "DepreciationDepletionAndAmortization": usd_unit(2_400_000_000.0),
+            },
+            "dei": {
+                "CommonStockSharesOutstanding": shares_unit(443_000_000.0),
+            },
+        },
+    }
+
+
+def test_backfill_uses_utilities_alias_chain_for_long_term_debt() -> None:
+    """B030 F001 acceptance §(5): sector=Utilities resolves
+    ``LongTermDebtNoncurrent`` for NEE-style payloads that lack the
+    plain ``LongTermDebt`` concept."""
+
+    backfill = _import_script("backfill_fundamentals")
+    payload = _utility_synthetic_companyfacts()
+    prices = {("NEE", "2015-02-19"): 100.0}
+    rows, skips = backfill.raw_companyfacts_to_parsed_ratios(
+        "NEE", payload, prices=prices, sector="Utilities"
+    )
+    assert skips == [], skips
+    assert len(rows) == 1
+    row = rows[0]
+    # NEE debt_to_assets = 26_000 / 74_888 ≈ 0.347 — utilities run
+    # high leverage. Sanity-bound the value rather than the exact
+    # number so a recompute on the same payload still passes.
+    assert 0.30 <= row["debt_to_assets"] <= 0.40
+
+
+def _real_estate_synthetic_companyfacts() -> dict[str, Any]:
+    """REIT-style: ``LongTermDebtCurrentAndNoncurrent`` as the primary
+    debt concept; ``OperatingExpenses`` rather than COGS."""
+
+    def usd_unit(val: float, end: str = "2014-12-31") -> dict[str, Any]:
+        return {
+            "units": {
+                "USD": [
+                    {
+                        "end": end,
+                        "val": val,
+                        "filed": "2015-02-25",
+                        "fy": 2014,
+                        "fp": "FY",
+                        "form": "10-K",
+                        "accn": "0001045609-15-000005",
+                    }
+                ]
+            }
+        }
+
+    def shares_unit(val: float, end: str = "2014-12-31") -> dict[str, Any]:
+        return {
+            "units": {
+                "shares": [
+                    {
+                        "end": end,
+                        "val": val,
+                        "filed": "2015-02-25",
+                        "fy": 2014,
+                        "fp": "FY",
+                        "form": "10-K",
+                        "accn": "0001045609-15-000005",
+                    }
+                ]
+            }
+        }
+
+    return {
+        "cik": 1045609,
+        "entityName": "Prologis, Inc.",
+        "facts": {
+            "us-gaap": {
+                "NetIncomeLoss": usd_unit(560_000_000.0),
+                "StockholdersEquity": usd_unit(11_500_000_000.0),
+                "Revenues": usd_unit(1_700_000_000.0),
+                "OperatingExpenses": usd_unit(1_100_000_000.0),
+                "NetCashProvidedByUsedInOperatingActivities": usd_unit(
+                    600_000_000.0
+                ),
+                "PaymentsToAcquirePropertyPlantAndEquipment": usd_unit(
+                    200_000_000.0
+                ),
+                # REIT-specific: LongTermDebtCurrentAndNoncurrent.
+                "LongTermDebtCurrentAndNoncurrent": usd_unit(8_200_000_000.0),
+                "Assets": usd_unit(24_500_000_000.0),
+                "CashAndCashEquivalentsAtCarryingValue": usd_unit(380_000_000.0),
+                "OperatingIncomeLoss": usd_unit(750_000_000.0),
+                "DepreciationDepletionAndAmortization": usd_unit(450_000_000.0),
+            },
+            "dei": {
+                "CommonStockSharesOutstanding": shares_unit(500_000_000.0),
+            },
+        },
+    }
+
+
+def test_backfill_uses_real_estate_alias_chain_for_consolidated_debt() -> None:
+    """B030 F001 acceptance §(5): sector=Real Estate resolves
+    ``LongTermDebtCurrentAndNoncurrent`` for REIT-style payloads."""
+
+    backfill = _import_script("backfill_fundamentals")
+    payload = _real_estate_synthetic_companyfacts()
+    prices = {("PLD", "2015-02-25"): 42.50}
+    rows, skips = backfill.raw_companyfacts_to_parsed_ratios(
+        "PLD", payload, prices=prices, sector="Real Estate"
+    )
+    assert skips == [], skips
+    assert len(rows) == 1
+    row = rows[0]
+    # PLD debt_to_assets = 8_200 / 24_500 ≈ 0.335
+    assert math.isclose(row["debt_to_assets"], 0.3347, abs_tol=0.005)
+
+
+def test_backfill_driver_threads_sector_via_get_ticker_sector(tmp_path: Path) -> None:
+    """B030 F001 acceptance §(2)+§(3): the ``backfill()`` driver looks
+    up the sector via :func:`get_ticker_sector` and threads it through
+    to :func:`raw_companyfacts_to_parsed_ratios`. Verify by feeding a
+    bank-style JPM payload through the full driver and confirming the
+    row materialises (would be skipped without the sector lookup)."""
+
+    backfill = _import_script("backfill_fundamentals")
+    payload = _bank_synthetic_companyfacts()
+    loader = _StubLoader(
+        table={"JPM": payload}, ticker_cik_map={"JPM": 19617}
+    )
+    prices_csv = tmp_path / "prices_daily.csv"
+    with prices_csv.open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(
+            fh, fieldnames=("date", "ticker", "open", "high", "low", "close", "adj_close", "volume")
+        )
+        writer.writeheader()
+        writer.writerow(
+            {
+                "date": "2015-02-24",
+                "ticker": "JPM",
+                "open": "56.00",
+                "high": "56.50",
+                "low": "55.80",
+                "close": "56.40",
+                "adj_close": "40.0",
+                "volume": "12000000",
+            }
+        )
+    row_count, failures, skips = backfill.backfill(
+        ["JPM"],
+        date(2014, 1, 1),
+        date(2026, 12, 31),
+        loader,
+        snapshots_root=tmp_path,
+        prices_csv=prices_csv,
+    )
+    assert failures == []
+    assert row_count == 1
+    # Verify the row is in the unified CSV with non-zero ratios.
+    unified = tmp_path / "fundamentals" / "unified" / "fundamentals.csv"
+    with unified.open() as fh:
+        rows = list(csv.DictReader(fh))
+    assert len(rows) == 1
+    assert rows[0]["ticker"] == "JPM"
+    # Eight ratios must all be non-empty / parseable as float.
+    for col in (
+        "roe", "gross_margin", "fcf_yield", "debt_to_assets",
+        "pe", "pb", "ev_ebitda", "earnings_yield",
+    ):
+        val = float(rows[0][col])
+        # gross_margin / debt_to_assets / pe / pb / ev_ebitda are all
+        # positive for a healthy bank; fcf_yield / earnings_yield are
+        # positive too at these numbers but the floor here is "not
+        # NaN, not zero" — the sector chain produced a real number.
+        assert val != 0 and val == val, f"{col} produced zero/NaN: {val}"
