@@ -17,7 +17,7 @@ type: project
 - 最近：🎯 **B030 Real Data Cutover signoff 2026-05-27（Phase 1 终点 / 里程碑 A Layer 0→1 达成）**；B029 signoff 2026-05-26；B028 signoff 2026-05-26；B027 signoff 2026-05-26。
 
 ## 生产状态
-- `https://trade.guangai.ai` live；production `/api/health.version` = `abf2ec4438a9605ff579c59fda425cda7db171f8`；B026 synthetic banner 已下线；strategy 已切真数据（real prices + real fundamentals）；fixture vs real 5+1 对比报告本机已生成。
+- `https://trade.guangai.ai` live；production `/api/health.version` = `61bc4c31a7fa3229a84896d7d3a93fab1b613405`（B031 F001，2026-05-27 deploy 成功；AIGC_GATEWAY_API_KEY 已配 GitHub Secret + bootstrap-env workflow + tripplezhou install + systemd restart 完成；deploy.sh pre-flight 通过）；B026 synthetic banner 仍 0 hits decommissioned；strategy 已切真数据（real prices + real fundamentals）；fixture vs real 5+1 对比报告本机已生成。
 
 ## 永久硬边界（B031 起继续；v0.9.31 + §12.9 + §16/§22）
 - 系统层：no-broker SDK / no-paper-or-live URL / no-credential / no-auto-execution / 多用户禁 / Cloud SQL 禁 / same-origin /api/* / auth-gated / Repository
@@ -34,6 +34,6 @@ type: project
 ## 已知 gap（非阻塞）
 - 本机 `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
 - GitHub Secret `TIINGO_API_KEY`（B027）+ `SEC_EDGAR_CONTACT_EMAIL`（B029）已配。
-- **B031 F001 实施需配置 GitHub Secret `AIGC_GATEWAY_API_KEY`**（用户协助通过 mcp__aigc-gateway__create_api_key 生成 + 配 GitHub repo Settings）。
+- GitHub Secret `AIGC_GATEWAY_API_KEY` 已配（2026-05-27 用户）+ bootstrap-env workflow 已 dispatch + tripplezhou 已 install env + services 已 restart + Workbench Deploy 已成功 (run 26516368849)；F002+F003 不再阻塞。
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->
