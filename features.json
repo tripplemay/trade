@@ -14,7 +14,7 @@
       "title": "CI workflow + deploy gate 集成 (AI Safety Eval workflow)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) 新建 tests/safety/test_ai_advisor_red_team.py：parametrize 15 样本调 judge_output + assert fail_triggered is False (per 永久边界 (n) 100% 拦截)；advisor_output 用 mock INSUFFICIENT_GROUNDING (B036 上线后改 real call)；(2) 新建 .github/workflows/ai-safety-eval.yml：按 spec §4.5 paths trigger workbench/backend/workbench_api/llm/** + data/safety-evals/** ; env AIGC_GATEWAY_API_KEY 注入 ; timeout 10min ; FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true ; pytest tests/safety/test_ai_advisor_red_team.py -v；(3) 改 .github/workflows/workbench-deploy.yml：workflows 列表加 'AI Safety Eval' (per ai-safety-evals §5.2 deploy gate；任一红 → deploy 拒绝)；(4) 改 workbench-deploy.yml if 条件：含 AI Safety Eval workflow_run.conclusion == 'success' 检查 (与 Backend/Frontend CI 并列守门)；(5) pytest/test ≥5 测试：tests/safety/test_ai_advisor_red_team.py 15 parametrize cases 全过 (mock LLMGateway + mock advisor output INSUFFICIENT_GROUNDING) / tests/safety/test_safety_eval_workflow.py 新建：grep .github/workflows/ai-safety-eval.yml 含 AIGC_GATEWAY_API_KEY env + data/safety-evals/** paths trigger + workbench-deploy.yml include AI Safety Eval workflow / workflow YAML lint (python-yaml 解析无错)；(6) Gates: pytest tests ≥479 + ≥5 = ≥484 / ruff + mypy 清 / Frontend 不动 / **永久边界 (n) 守门**：CI workflow 必含 deploy gate 检查 (grep 验证)；(7) 不动 F001 已完成的 dataset/judge module / 其他 backend endpoint / strategy 代码 / B031 既有 LLMGateway。"
     },
     {

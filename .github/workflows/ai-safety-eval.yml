@@ -1,0 +1,76 @@
+name: AI Safety Eval
+
+# Forward-compat: GitHub Actions deprecates Node 20 on 2026-09-16.
+# Set runtime to Node 24 so JS-based actions (checkout/setup-python/...) run on
+# Node 24 immediately and don't switch under us in September.
+# Source: framework v0.9.23 #2.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+# Trigger on any change to the LLM module, the red-team dataset itself, or this
+# workflow file. The dataset path is the second leg of permanent boundary (o)
+# (PR-review-gated edits) — touching it must re-run the gate so a contributor
+# cannot ship a relaxed sample without the 100% block proof.
+#
+# Permanent boundary (n): this workflow is a deploy gate. workbench-deploy.yml
+# must list "AI Safety Eval" alongside the Backend/Frontend CIs so a red run
+# blocks production deploy.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "workbench/backend/workbench_api/llm/**"
+      - "workbench/backend/tests/safety/test_ai_advisor_red_team.py"
+      - "data/safety-evals/**"
+      - ".github/workflows/ai-safety-eval.yml"
+  pull_request:
+    paths:
+      - "workbench/backend/workbench_api/llm/**"
+      - "workbench/backend/tests/safety/test_ai_advisor_red_team.py"
+      - "data/safety-evals/**"
+      - ".github/workflows/ai-safety-eval.yml"
+
+concurrency:
+  group: ai-safety-eval-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  safety-eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: workbench/backend
+    env:
+      # AIGC_GATEWAY_API_KEY is wired here so when B036 swaps the mock advisor
+      # for a real LLMGateway call, the workflow already has the secret. B032
+      # phase short-circuits on INSUFFICIENT_GROUNDING so the key is not used;
+      # we still inject it now to avoid a "works locally / fails in CI" drift
+      # the day the advisor lands.
+      AIGC_GATEWAY_API_KEY: ${{ secrets.AIGC_GATEWAY_API_KEY }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: workbench/backend/pyproject.toml
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install backend with dev tooling
+        run: python -m pip install -e ".[dev]"
+
+      - name: Run red-team safety eval (parametrize 15 samples)
+        run: python -m pytest tests/safety/test_ai_advisor_red_team.py -v
+
+      - name: Verify safety eval workflow wiring
+        # Separate test file pins the workflow YAML invariants (paths,
+        # env, deploy-gate inclusion). Keeping it here as a second step
+        # so a failure tells you exactly which side broke.
+        run: python -m pytest tests/safety/test_safety_eval_workflow.py -v

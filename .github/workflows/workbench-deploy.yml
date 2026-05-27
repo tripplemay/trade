@@ -6,14 +6,20 @@ name: Workbench Deploy
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
-# Trigger #1 (default): chained — only runs after BOTH workbench-backend and
-# workbench-frontend pipelines have finished green on `main`. We re-check the
-# conclusion inside the job because `workflow_run` always fires regardless of
-# result.
+# Trigger #1 (default): chained — only runs after one of the upstream CI
+# pipelines has finished green on `main`. We re-check the conclusion inside
+# the job because `workflow_run` always fires regardless of result.
+#
+# B032 F002: "AI Safety Eval" joins as a third gate. The workflow_run trigger
+# fires once per matching upstream workflow, so each green main run can arm a
+# deploy; the conditional in `jobs.deploy.if` is the one that enforces the
+# `conclusion == 'success'` boundary. Adding the safety eval here makes a red
+# safety eval block production deploy alongside red backend/frontend CI runs
+# (permanent boundary (n)).
 #
 # Trigger #2 (manual): workflow_dispatch lets the deploy owner ship a `main`
 # revision whose only diff is in `progress.json` / `docs/` / `.auto-memory/`
-# (i.e. paths excluded by both CI workflows' path filters). Without this trigger
+# (i.e. paths excluded by all CI workflows' path filters). Without this trigger
 # the spec's `Production HEAD ≡ main HEAD` gate is unreachable on chore-only
 # commits — B025 F006 reverify-2 caught the gap with main at a chore SHA that
 # never armed the workflow_run chain.
@@ -22,6 +28,7 @@ on:
     workflows:
       - "Workbench Backend CI"
       - "Workbench Frontend CI"
+      - "AI Safety Eval"
     types:
       - completed
     branches:

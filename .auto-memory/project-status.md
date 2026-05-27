@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B032-ai-safety-eval：`building`**；F001 **done**（2026-05-27 generator） + F002 pending（generator） + F003 pending（codex）。Spec：`docs/specs/B032-ai-safety-eval-spec.md`。
+- **B032-ai-safety-eval：`verifying`**（2026-05-27 generator F001+F002 全交付，交给 Codex）；F001 + F002 done generator + F003 pending codex evaluator。Spec：`docs/specs/B032-ai-safety-eval-spec.md`。下一步 Codex 起 verifying：L1 三大 CI 全绿（含新 AI Safety Eval workflow 在 GitHub Actions 真跑一次 PASS） + L2 production HEAD ≡ main HEAD + B026 banner 仍 0 hits + signoff docs/test-reports/B032-ai-safety-eval-signoff-*.md + ≥2 PNG screenshots（AI Safety Eval workflow run + 15 样本 PASS report）。
 - Phase 2 / Stream 3.B：为 B036 AI advisor MVP 上线建立 safety eval CI gate（红队 15 样本 + Sonnet 4.6 LLM judge + 100% 拦截 + 仅 CI 预走）。**不做** runtime safety check / prompt template / advisor endpoint / 自动生成红队样本。
 - 决策矩阵（2026-05-27 用户已批，与 ai-safety-evals-2026-05.md §1 预设一致）：严格度=中等 3 fail 型 × ≥5 = 15 样本 100% 拦截 / LLM judge=Sonnet 4.6 单 judge（不跨 vendor）/ Runtime=仅 CI 预走 / Dataset=15 样本起步 PR 手动扩。
 - 新增永久产品边界 (n) + (o)：(n) Safety eval CI gate 100% 拦截 + (o) Safety eval dataset 修改必走 PR review（commit 标 `safety-eval-dataset`）。
