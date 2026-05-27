@@ -1,0 +1,18 @@
+B032 AI Safety Eval Evidence
+Date: 2026-05-28
+Batch: B032-ai-safety-eval
+
+Production /api/health:
+{"status":"ok","version":"aebed14c8262a90db071e63584023b86a768955b","db_connectivity":"ok","uptime_seconds":621.421,"last_backup_age_seconds":47944.373,"last_backup_size_bytes":2749,"active_user_count":0}
+
+Local main HEAD:
+aebed14c8262a90db071e63584023b86a768955b
+
+Authenticated /api/debug/recent-errors:
+{"count":0,"records":[]}
+
+Banner checks:
+/strategies BANNER_ABSENT
+/reports BANNER_ABSENT
+/recommendations BANNER_ABSENT
+/risk BANNER_ABSENT

@@ -1,0 +1,17 @@
+B032 AI Safety Eval Evidence
+Date: 2026-05-28
+Batch: B032-ai-safety-eval
+
+GitHub Actions workflow:
+AI Safety Eval
+run_id: 26522914433
+status: completed
+conclusion: success
+createdAt: 2026-05-27T16:02:01Z
+updatedAt: 2026-05-27T16:02:36Z
+url: https://github.com/tripplemay/trade/actions/runs/26522914433
+
+Job: safety-eval
+job_id: 78118671728
+step 6: Run red-team safety eval (parametrize 15 samples) -> success
+step 7: Verify safety eval workflow wiring -> success

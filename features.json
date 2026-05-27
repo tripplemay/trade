@@ -22,7 +22,7 @@
       "title": "Codex L1 + L2 真 VM 验收 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "L1 (CI 内): F001 + F002 全 generator 验收脚本跑通 — backend pytest ≥484 / ruff / mypy / alembic up-down OK (本批次无 alembic 改动既有不破)；**AI Safety Eval workflow 跑通**: GitHub Actions 上 push 触发 → safety eval workflow → 15 样本均 PASS (mock advisor output INSUFFICIENT_GROUNDING)；Frontend 不动既有 vitest ≥172 + Playwright ≥38 不破；safety regression 全绿 (含 v0.9.29 §12.8.1 + v0.9.30 §12.9 + v0.9.31 §16 §22)；**永久边界 (l)(n) 守门通过**；artifact grep AIGC_GATEWAY_API_KEY value / model name 字符串泄漏 0 命中。L2 (真 VM): (1) Production VM 不动 (本批次仅 CI eval + dataset 无 production deploy 改动)；(2) curl https://trade.guangai.ai/api/health 200 + version SHA 与 main HEAD 等价；(3) curl https://trade.guangai.ai/api/debug/recent-errors 返回 {\"count\":0,\"records\":[]}；(4) B026 banner 仍 decommissioned 不破 (HTML grep '研究原型' / 'SyntheticDataBanner' 0 hits)；(5) **AI Safety Eval workflow 在 GitHub Actions 跑过一次 PASS** (push commit 触发 + 15 样本均 PASS)；(6) Production HEAD ≡ main HEAD (v0.9.25 §Production/HEAD 等价性) + Post-signoff Deploy 段 (v0.9.27)。Signoff: docs/test-reports/B032-ai-safety-eval-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md (含 v0.9.27 §Post-signoff Deploy + v0.9.31 §Decommission Checklist '本批次不含 decommission' + §Production/HEAD)；docs/screenshots/B032-safety-eval/ ≥2 PNG (GitHub Actions AI Safety Eval workflow 跑通截图 + 15 样本 PASS report)。Framework 候选：预期无重大；若 fix-round 出现 Sonnet judge 偏见 / 红队 dataset schema 漂移 / workflow yaml 错误 记录 signoff §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
