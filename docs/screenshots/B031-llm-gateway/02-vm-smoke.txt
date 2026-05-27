@@ -1,0 +1,18 @@
+B031 LLM Gateway Reverify Evidence
+Date: 2026-05-27
+Batch: B031-llm-gateway
+
+VM env / DB:
+HAS_KEY=yes
+llm_budget_log
+
+Production smoke:
+BEFORE=0
+HEALTH_CHECK=True
+AFTER=0
+
+Protected HTML banner checks:
+/strategies BANNER_ABSENT
+/reports BANNER_ABSENT
+/recommendations BANNER_ABSENT
+/risk BANNER_ABSENT

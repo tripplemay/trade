@@ -1,0 +1,12 @@
+B031 LLM Gateway Reverify Evidence
+Date: 2026-05-27
+Batch: B031-llm-gateway
+
+Production /api/health:
+{"status":"ok","version":"f31c3027b5a42f4585783d69eb2f84ba290352c5","db_connectivity":"ok","uptime_seconds":842.439,"last_backup_age_seconds":44733.496,"last_backup_size_bytes":2749,"active_user_count":1}
+
+Local main HEAD:
+f31c3027b5a42f4585783d69eb2f84ba290352c5
+
+Authenticated /api/debug/recent-errors:
+{"count":0,"records":[]}
