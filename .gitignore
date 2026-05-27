@@ -37,6 +37,12 @@ logs/
 # generated CSV / parquet payloads remain ignored via
 # data/snapshots/.gitignore (the dir's own ignore file).
 !data/snapshots/README.md
+
+# B032 F001 — safety eval red-team dataset is source-of-truth for the
+# AI safety eval CI gate (permanent boundary (n)(o)); must ship in
+# the repo so deploys can re-run the gate.
+!data/safety-evals/
+!data/safety-evals/**
 !data/snapshots/.gitignore
 
 # OS / editor

@@ -48,6 +48,13 @@ ROUTING_TABLE: Final[dict[str, str]] = {
     "sharpe_tooltip": "claude-haiku-4.5",
     "robinhood_simplify": "claude-haiku-4.5",
     "embedding": "bge-m3",
+    # B032 F001 — Sonnet 4.6 single-judge for the AI safety eval CI
+    # gate. Per ai-safety-evals-2026-05.md §4: judge prompts need
+    # cross-rule reasoning that Haiku/Flash do not reliably do; cost
+    # stays bounded because the CI eval is 15 samples × ~2K tokens
+    # × ~20 runs/month ≈ ¥30 (well under the ¥1500 monthly cap and
+    # the 80% alert ratio).
+    "safety_judge": "claude-sonnet-4.6",
     # Cost-guard fallback chain (callers re-route once the alert
     # threshold is crossed; per §6 keep the system functional).
     # bge-m3 is the only multilingual embedding the gateway currently

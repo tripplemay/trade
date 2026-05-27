@@ -33,6 +33,13 @@ from workbench_api.llm.gateway import (
     ChatResult,
     LLMGateway,
 )
+from workbench_api.llm.judge import (
+    INSUFFICIENT_GROUNDING_SIGNAL,
+    JUDGE_PROMPT_TEMPLATE,
+    JudgeResult,
+    judge_output,
+    summarize_news_set,
+)
 from workbench_api.llm.routing import (
     PRICE_TABLE,
     ROUTING_TABLE,
@@ -48,11 +55,16 @@ __all__ = [
     "ChatResult",
     "EMBED_ROUTE",
     "HEALTH_ROUTE",
+    "INSUFFICIENT_GROUNDING_SIGNAL",
+    "JUDGE_PROMPT_TEMPLATE",
+    "JudgeResult",
     "LLMGateway",
     "MonthlyBudgetGuard",
     "PRICE_TABLE",
     "ROUTING_TABLE",
     "USD_TO_CNY_RATE",
     "estimate_cost_usd",
+    "judge_output",
     "route_task",
+    "summarize_news_set",
 ]
