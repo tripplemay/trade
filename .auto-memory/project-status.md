@@ -4,14 +4,12 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B030-real-data-cutover：`fixing`**；F004 首轮验收失败，blocker 报告：`docs/test-reports/B030-real-data-cutover-blocker-2026-05-27.md`。Spec：`docs/specs/B030-real-data-cutover-spec.md`。
-- **F001 done 2026-05-27** (fd680a4 + 70e2f4d)：per-sector alias chains (Financials/Utilities/Real Estate × 6 concept) + universe sector 映射；重跑 backfill **685 → 853 rows (+24.5%)**；4/6 sector ticker 恢复。BAC/V structural gap 文档化转 Planner。
-- **F002 done 2026-05-27** (f83d2df)：trade/data/us_quality_universe.py 4-tier 解析 (explicit fixture_dir > FORCE_FIXTURE_PATH=1 > unified > default fixture)。schema 12-col / 8-col 完全相同 → zero conversion。B025 deterministic tests 用 autouse FORCE_FIXTURE_PATH=1 per-module fixture 锁定。+23 new tests。
-- **F003 done 2026-05-27**：scripts/compare_fixture_vs_real.py 5 sleeve buy-and-hold proxy；reports/fixture_vs_real/ 11 files；B026 banner 4 处接线关闭 (.env.example=true + .env.production=false + workbench-deploy.yml env + bootstrap-env.yml 注释)；+19 new tests。
-- F004 首轮验收结果：L1 绿色门基本通过（backend pytest 400 passed 2 skipped / trade pytest 778 passed / FORCE_FIXTURE_PATH=1 仍 778 passed / frontend vitest 166 / build / local Playwright 38 全绿），但 L2 失败。
-- 当前硬 blocker 1：`docs/test-reports/B030-pit-validation-2026-05-27.md` 仍只有 `853` unified fundamentals rows，低于 spec `>=1000` floor，且 `BAC` / `V` 仍 0-row。
-- 当前硬 blocker 2：production 受保护页面 `/strategies`、`/reports`、`/backtest`、`/recommendations` 仍命中 B026 banner 文案 `研究原型 · 仅含合成数据 · 不构成投资决策依据`；HTML/RSC payload 仍含 `SyntheticDataBanner`，说明产线 banner 未真正下线。
-- 🎯 **Phase 1 终点 / 里程碑 A Layer 0→1** 暂未达成；待 Generator 修复后回到 Codex 复验。
+- **B030-real-data-cutover：`reverifying`**；F004 fix-round 1 done (generator)。Codex 接手 reverify L1+L2。Spec：`docs/specs/B030-real-data-cutover-spec.md`；PIT updated: `docs/test-reports/B030-pit-validation-2026-05-27.md`。
+- **F001 done + F004 fix-round 1 floor recovered 2026-05-27**：unified rows **853 → 1121 (+63.6% vs B029 baseline)**；6/6 sector ticker recovered (BAC 32 / JPM 56 / V 38 / LIN 31 / NEE 53 / PLD 58)。三层补丁：(a) default chain 补 `LongTermDebtAndCapitalLeaseObligations` (HD/XOM/ECL/APD +130 rows)；(b) Financials capex=0 fallback (BAC/JPM +75 rows)；(c) V dividend-derive shares (V +38 rows)。+7 regression tests。
+- **F002 done 2026-05-27** (f83d2df)：trade/data/us_quality_universe.py 4-tier 解析。+23 new tests。
+- **F003 done 2026-05-27 + F004 fix-round 1 banner truly off**：从 (protected)/layout.tsx 移除 banner JSX+import + 删 messages 中 syntheticBanner.* keys → 组件 chunk 不在 layout 加载 + i18n 字符串不在 RSC payload。组件文件保留 + hardcoded 双语 + useLocale。+15 frontend tests (6 decommission guard + 9 component isolation)。Local build grep '研究原型' / 'SyntheticDataBanner' = 0 hit。
+- F004 fix-round 1 Gates 全绿：backend pytest 408 / trade pytest 778 (default + FORCE_FIXTURE_PATH=1) / ruff + strict mypy clean / frontend vitest 172 / npm run build clean。
+- 🎯 **Phase 1 终点 / 里程碑 A Layer 0→1** 待 Codex reverify pass 后达成。
 - 新增永久产品边界 (k)：**Layer 状态不可逆向滑落** — B030 done 后若真数据严重 unreliable 必须新批次 spec 决议，不 silent rollback。
 - 本批次属 implementation-path-2026-05.md §4 **Phase 1 第五个 batch（Stream 1.D 终点）**。
 - 后续路径：Generator 修 F004 blocker → Codex reverify → 🎯 里程碑 A Layer 0→1 → Phase 2 (B031+ LLM advisory / B033+ News ingest)。
@@ -37,7 +35,7 @@ type: project
 ## 已知 gap（非阻塞）
 - 本机 `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
 - GitHub Secret `TIINGO_API_KEY`（B027）+ `SEC_EDGAR_CONTACT_EMAIL`（B029）已配；B030 本批次不引入新 secret 无需用户介入。
-- **B030 F001 残留 (当前 blocker)**：853 < 1000 row floor (-15%)；BAC/V 仍 0 row。BAC 无标准 capex（银行不发 PaymentsToAcquirePropertyPlantAndEquipment 只发证券购买），V 无 quarterly shares_outstanding（只发年度 cover-page）。Forward path: (a) Financials capex=0 fallback + (b) V annual-shares interpolation → ~920 rows；或 (c) B025 universe 移除 BAC/V。详 `docs/test-reports/B030-pit-validation-2026-05-27.md` §4+§9。
+- **B030 F004 fix-round 1 已解 (前一轮 blocker 1)**：原 853→1121 rows；BAC/V 全恢复。详 `docs/test-reports/B030-pit-validation-2026-05-27.md` §4。三个 documented approximation: bank fcf-yield = CFO/MarketCap (capex=0) / V shares via dividend ratio / annual-shares propagation (defensive 未用)。
 - B029 S2 backend pytest SOCKS proxy 敏感属 evaluator 环境特定。
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->

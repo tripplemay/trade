@@ -249,6 +249,14 @@ SEC_CONCEPT_NAMES: dict[str, list[str]] = {
     ],
     "long_term_debt": [
         "LongTermDebt",
+        # B030 F004 fix-round 1 (2026-05-27): many large-cap industrial /
+        # consumer filers (HD, XOM, ECL, ...) report long-term debt
+        # exclusively under ``LongTermDebtAndCapitalLeaseObligations``
+        # (the consolidated balance line that includes finance lease
+        # obligations). Without this alias the default chain misses on
+        # ~50 quarters per filer; B030 F001 first-round backfill produced
+        # 5-9 rows for these tickers instead of the expected 50+.
+        "LongTermDebtAndCapitalLeaseObligations",
         "LongTermDebtNoncurrent",
     ],
     "assets": ["Assets"],

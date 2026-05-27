@@ -29,6 +29,11 @@ export default defineConfig({
       "tests/safety/dev-rewrites-cover-backend-api.spec.ts",
       "tests/safety/production-callback-url.spec.ts",
       "tests/safety/no-execution-buttons.spec.ts",
+      // B030 F004 fix-round 1 — assert the B026 synthetic banner is
+      // decommissioned in the protected layout + messages bundles
+      // (Codex hard blocker 2; production HTML must not surface the
+      // banner copy nor the component name).
+      "tests/safety/synthetic-data-banner-decommissioned.spec.ts",
     ],
     exclude: [
       // disclaimer-present runs in Playwright (anon project) only.

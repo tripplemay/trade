@@ -963,6 +963,235 @@ def test_backfill_uses_real_estate_alias_chain_for_consolidated_debt() -> None:
     assert math.isclose(row["debt_to_assets"], 0.3347, abs_tol=0.005)
 
 
+# ---------------------------------------------------------------------------
+# B030 F004 fix-round 1 — F001 floor fixes (Codex hard blocker 1)
+# ---------------------------------------------------------------------------
+
+
+def _bank_companyfacts_missing_capex() -> dict[str, Any]:
+    """Bank-style payload identical to ``_bank_synthetic_companyfacts``
+    except WITHOUT ``PaymentsToAcquirePropertyPlantAndEquipment`` —
+    mirrors the real BAC / JPM filings (banks don't file traditional
+    PP&E capex). Used to pin the F004 ``capex=0 for Financials``
+    fallback."""
+
+    payload = _bank_synthetic_companyfacts()
+    # Banks file no PP&E capex at all; drop it from the synthetic
+    # payload so the test mirrors the real BAC/JPM SEC payload shape.
+    del payload["facts"]["us-gaap"]["PaymentsToAcquirePropertyPlantAndEquipment"]
+    return payload
+
+
+def test_financials_treats_missing_capex_as_zero(tmp_path: Path) -> None:
+    """B030 F004 fix-round 1: when sector=Financials AND capex concept
+    is absent from the payload, the driver treats capex as 0 instead
+    of dropping the row. Without this, BAC has 0 rows in the backfill
+    (no traditional PP&E capex line); with it, BAC unlocks 30+
+    quarters of valid data. The fcf_yield becomes CFO/MarketCap (an
+    approximation documented in the strategy notes)."""
+
+    backfill = _import_script("backfill_fundamentals")
+    payload = _bank_companyfacts_missing_capex()
+    prices = {("JPM", "2015-02-24"): 56.40}
+    rows, skips = backfill.raw_companyfacts_to_parsed_ratios(
+        "JPM", payload, prices=prices, sector="Financials"
+    )
+    assert skips == [], skips
+    assert len(rows) == 1
+    # fcf_yield = (CFO - 0) / MarketCap = CFO / MarketCap when capex
+    # is treated as zero (Financials-sector approximation).
+    row = rows[0]
+    assert row["fcf_yield"] > 0
+
+
+def test_non_financials_still_requires_capex(tmp_path: Path) -> None:
+    """Backward compat: the capex=0 fallback applies ONLY to
+    Financials. A non-financial filer missing capex still skips the
+    quarter — same behaviour as before F004 fix-round 1. Catches a
+    regression where someone over-eagerly applies the fallback to
+    every sector."""
+
+    backfill = _import_script("backfill_fundamentals")
+    # Use the AAPL bank-shaped fixture but missing capex and a non-
+    # Financials sector → the row must drop.
+    payload = _bank_companyfacts_missing_capex()
+    prices = {("AAPL", "2015-02-24"): 100.0}
+    rows, skips = backfill.raw_companyfacts_to_parsed_ratios(
+        "AAPL", payload, prices=prices, sector="Information Technology"
+    )
+    assert rows == []
+    assert any("capex" in s for s in skips), skips
+
+
+def test_propagate_annual_shares_only_fills_candidate_quarters() -> None:
+    """The annual-shares propagation must NOT manufacture new quarters
+    — it only fills shares-outstanding into cells whose OTHER concepts
+    are already filed. Catches the failure mode where the test
+    fixture's other concepts only cover 2014Q4 but the propagation
+    materialises Q1/Q2/Q3 buckets that would then fail downstream
+    "missing concepts" checks (the F004 fix-round 1 first attempt
+    had this exact bug)."""
+
+    backfill = _import_script("backfill_fundamentals")
+    # Bucket has one annual filing (2024, 4) — candidate quarters
+    # include only Q2/Q3 of 2024 (Q1/Q4 should NOT be filled because
+    # they're not in the candidate set).
+    bucketed = {(2024, 4): {"val": 1000, "filed": "2025-02-01"}}
+    candidates = {(2024, 2), (2024, 3)}
+    result = backfill._propagate_annual_shares_to_quarterly(bucketed, candidates)
+    assert set(result.keys()) == {(2024, 2), (2024, 3), (2024, 4)}
+    # The Q4 anchor must propagate into Q2 and Q3.
+    assert result[(2024, 2)]["val"] == 1000
+    assert result[(2024, 3)]["val"] == 1000
+    # Q1 of 2024 should NOT appear in the result — it wasn't in
+    # candidates, so the helper must not invent the cell.
+    assert (2024, 1) not in result
+
+
+def test_propagate_annual_shares_empty_anchor_is_a_no_op() -> None:
+    """When the bucketed shares map is empty (filer reports nothing)
+    the helper must return an empty dict — it has no anchor to copy
+    from."""
+
+    backfill = _import_script("backfill_fundamentals")
+    result = backfill._propagate_annual_shares_to_quarterly({}, {(2024, 1), (2024, 2)})
+    assert result == {}
+
+
+def test_derive_shares_from_dividends_works_when_both_concepts_filed() -> None:
+    """B030 F004 fix-round 1: when shares-outstanding is missing for
+    a quarter but both ``DividendsCommonStockCash`` and
+    ``CommonStockDividendsPerShareCashPaid`` are filed, derive
+    shares = total / per-share. Pinned for the V (Visa) recovery
+    path — Visa doesn't file standard shares-outstanding concepts but
+    does file both dividend lines."""
+
+    backfill = _import_script("backfill_fundamentals")
+    facts = {
+        "us-gaap": {
+            "DividendsCommonStockCash": {
+                "units": {
+                    "USD": [
+                        {
+                            "end": "2024-12-31",
+                            "val": 1_080_000_000,  # $1.08B in dividends
+                            "filed": "2025-02-01",
+                            "fp": "Q4",
+                            "form": "10-K",
+                        }
+                    ]
+                }
+            },
+            "CommonStockDividendsPerShareCashPaid": {
+                "units": {
+                    "USD/shares": [
+                        {
+                            "end": "2024-12-31",
+                            "val": 0.54,  # $0.54 per share
+                            "filed": "2025-02-01",
+                            "fp": "Q4",
+                            "form": "10-K",
+                        }
+                    ]
+                }
+            },
+        }
+    }
+    out = backfill._derive_shares_from_dividends(facts, existing={})
+    assert (2024, 4) in out
+    derived = out[(2024, 4)]
+    # 1,080,000,000 / 0.54 = 2,000,000,000 shares.
+    assert derived["val"] == pytest.approx(2_000_000_000, rel=1e-6)
+    # Must carry the SEC-shape fields so downstream date / val readers
+    # don't need a special case.
+    assert derived["filed"] == "2025-02-01"
+    assert derived["end"] == "2024-12-31"
+    assert "_b030_derived_from" in derived
+
+
+def test_derive_shares_skips_when_per_share_is_zero() -> None:
+    """If the per-share dividend is zero (rare but possible during a
+    dividend pause), the derivation must skip rather than divide by
+    zero. Catches the failure mode where a corner-case quarter would
+    produce inf / nan shares and poison MarketCap downstream."""
+
+    backfill = _import_script("backfill_fundamentals")
+    facts = {
+        "us-gaap": {
+            "DividendsCommonStockCash": {
+                "units": {
+                    "USD": [
+                        {"end": "2024-12-31", "val": 0, "filed": "2025-02-01"}
+                    ]
+                }
+            },
+            "CommonStockDividendsPerShareCashPaid": {
+                "units": {
+                    "USD/shares": [
+                        {"end": "2024-12-31", "val": 0, "filed": "2025-02-01"}
+                    ]
+                }
+            },
+        }
+    }
+    out = backfill._derive_shares_from_dividends(facts, existing={})
+    assert out == {}
+
+
+def test_derive_shares_does_not_overwrite_existing_shares() -> None:
+    """If the filer already reports shares for the quarter (e.g. the
+    standard ``EntityCommonStockSharesOutstanding`` is filed), the
+    derived value must NOT overwrite it. The standard concept is more
+    reliable than the dividend-derivation approximation."""
+
+    backfill = _import_script("backfill_fundamentals")
+    facts = {
+        "us-gaap": {
+            "DividendsCommonStockCash": {
+                "units": {
+                    "USD": [
+                        {"end": "2024-12-31", "val": 100, "filed": "2025-02-01"}
+                    ]
+                }
+            },
+            "CommonStockDividendsPerShareCashPaid": {
+                "units": {
+                    "USD/shares": [
+                        {"end": "2024-12-31", "val": 0.5, "filed": "2025-02-01"}
+                    ]
+                }
+            },
+        }
+    }
+    existing = {
+        (2024, 4): {"val": 1_500_000_000, "filed": "2025-02-01", "end": "2024-12-31"}
+    }
+    out = backfill._derive_shares_from_dividends(facts, existing=existing)
+    # The pre-existing value (1.5B) must be preserved.
+    assert out[(2024, 4)]["val"] == 1_500_000_000
+
+
+def test_long_term_debt_default_chain_includes_capital_lease_obligations() -> None:
+    """B030 F004 fix-round 1: ``LongTermDebtAndCapitalLeaseObligations``
+    must appear in the default long_term_debt chain. Many large-cap
+    industrial / consumer filers (HD, XOM, ECL, ...) file ONLY this
+    concept; the F001 first-round chain missed them and they were
+    backfilled with 5-9 rows instead of the expected ~50.
+
+    Pin: a future maintainer who removes the alias to "clean up
+    duplicates" breaks the F001 floor."""
+
+    backfill = _import_script("backfill_fundamentals")
+    chain = backfill.SEC_CONCEPT_NAMES["long_term_debt"]
+    assert "LongTermDebtAndCapitalLeaseObligations" in chain
+    # Must come after the canonical LongTermDebt so non-capital-lease
+    # filers (the majority) still resolve their canonical concept
+    # first.
+    assert chain.index("LongTermDebt") < chain.index(
+        "LongTermDebtAndCapitalLeaseObligations"
+    )
+
+
 def test_backfill_driver_threads_sector_via_get_ticker_sector(tmp_path: Path) -> None:
     """B030 F001 acceptance §(2)+§(3): the ``backfill()`` driver looks
     up the sector via :func:`get_ticker_sector` and threads it through

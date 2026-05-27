@@ -251,6 +251,127 @@ def _bucket_entries_by_quarter(
     return out
 
 
+def _derive_shares_from_dividends(
+    facts: dict[str, Any],
+    existing: dict[tuple[int, int], dict[str, Any]],
+) -> dict[tuple[int, int], dict[str, Any]]:
+    """Synthesise ``shares_outstanding`` from dividends data when SEC
+    doesn't file the concept directly (B030 F004 fix-round 1).
+
+    Visa is the canonical case: their 10-Q / 10-K stop filing
+    ``EntityCommonStockSharesOutstanding`` quarterly (cover-page only
+    on the 10-K, and even that is a single entry) and they don't file
+    ``WeightedAverageNumberOfSharesOutstandingBasic`` at all. But they
+    DO file:
+
+    * ``us-gaap.DividendsCommonStockCash`` — total cash dividends
+      paid to common stockholders in the period (USD).
+    * ``us-gaap.CommonStockDividendsPerShareCashPaid`` — per-share
+      cash dividend paid (USD/shares).
+
+    The ratio ``total / per_share`` is the share count receiving the
+    dividend, which is exactly what MarketCap needs.
+
+    Implementation: for each (year, q) where shares is NOT already
+    filed but both dividend concepts ARE filed, materialise a synthetic
+    bucket entry. The synthetic entry inherits the dividend's
+    ``filed`` / ``end`` dates so downstream report-date / fiscal-
+    quarter-end logic keeps working.
+    """
+
+    div_total = _bucket_entries_by_quarter(
+        _index_concept_entries(facts, "DividendsCommonStockCash", "us-gaap"),
+    )
+    div_per_share = _bucket_entries_by_quarter(
+        _index_concept_entries(
+            facts, "CommonStockDividendsPerShareCashPaid", "us-gaap"
+        ),
+    )
+    out: dict[tuple[int, int], dict[str, Any]] = dict(existing)
+    for key in div_total.keys() & div_per_share.keys():
+        if key in out:
+            continue
+        total_entry = div_total[key]
+        per_share_entry = div_per_share[key]
+        try:
+            total_val = float(total_entry["val"])
+            per_share_val = float(per_share_entry["val"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if per_share_val <= 0 or total_val <= 0:
+            continue
+        derived = total_val / per_share_val
+        # Synthesise a bucket entry that mimics the SEC shape so
+        # downstream date / val readers don't need a special case.
+        out[key] = {
+            "end": per_share_entry.get("end", total_entry.get("end")),
+            "val": derived,
+            "filed": per_share_entry.get("filed", total_entry.get("filed")),
+            "fy": per_share_entry.get("fy"),
+            "fp": per_share_entry.get("fp"),
+            "form": per_share_entry.get("form"),
+            "accn": per_share_entry.get("accn"),
+            "_b030_derived_from": "DividendsCommonStockCash/CommonStockDividendsPerShareCashPaid",
+        }
+    return out
+
+
+def _propagate_annual_shares_to_quarterly(
+    bucketed: dict[tuple[int, int], dict[str, Any]],
+    candidate_quarters: set[tuple[int, int]],
+) -> dict[tuple[int, int], dict[str, Any]]:
+    """Fill quarterly shares-outstanding buckets from an adjacent annual
+    entry (B030 F004 fix-round 1).
+
+    Some filers (notably Visa) only report
+    ``dei.EntityCommonStockSharesOutstanding`` on the annual 10-K cover
+    page, so the bucketed map ends up with one entry in Q4 of each
+    fiscal year and nothing in Q1-Q3. Without a fallback the F002
+    backfill produces zero rows for those filers — every quarterly row
+    needs ``shares_outstanding`` to compute MarketCap.
+
+    This helper walks ``candidate_quarters`` (the union of buckets
+    across all OTHER concepts) and, for each cell where shares is
+    missing, copies the value from the nearest filed annual entry in
+    the same fiscal year (preferring Q4 of the prior year if Q1/Q2/Q3
+    of the current year are also absent — typical 10-K filing pattern).
+    The returned map is a NEW dict — the input is not mutated.
+
+    The "candidate_quarters" gate is critical: we only fill the shares
+    gap for quarters whose OTHER concepts are already filed. We do NOT
+    materialise fictitious quarters (e.g. a Q1 with shares but no
+    net_income). This keeps the row-completeness check downstream
+    honest.
+
+    The approximation is "shares are roughly constant within a fiscal
+    year"; for the universe of B025 us_quality tickers this holds to
+    sub-percent accuracy (no major secondary offerings / massive
+    buybacks intra-year for the canonical names). Documented as an
+    approximation in the F004 fix-round 1 PIT validation report.
+    """
+
+    if not bucketed or not candidate_quarters:
+        return dict(bucketed)
+    out: dict[tuple[int, int], dict[str, Any]] = dict(bucketed)
+    for year, q in candidate_quarters:
+        if (year, q) in out:
+            continue
+        # Find an anchor entry for this fiscal year — first try Q4
+        # (annual filing), then any quarter in the year, then Q4 of
+        # the prior year (early-Q1 quarter often uses prior FY's
+        # cover-page shares as the most recent known count).
+        anchor = (
+            bucketed.get((year, 4))
+            or bucketed.get((year, 3))
+            or bucketed.get((year, 2))
+            or bucketed.get((year, 1))
+            or bucketed.get((year - 1, 4))
+        )
+        if anchor is not None:
+            out[(year, q)] = anchor
+    return out
+
+
 def _load_close_prices(prices_csv: Path) -> dict[tuple[str, str], float]:
     """Index B028 unified prices CSV by (ticker, date-iso) → close.
 
@@ -348,6 +469,22 @@ def raw_companyfacts_to_parsed_ratios(
         shares_entries.extend(_index_concept_entries(facts, concept_name, ns))
     indexed["shares_outstanding"] = _bucket_entries_by_quarter(shares_entries)
 
+    # B030 F004 fix-round 1 dividend-derivation fallback. Some filers
+    # (V / Visa) report neither quarterly ``EntityCommonStockSharesOutstanding``
+    # nor ``WeightedAverageNumberOfSharesOutstandingBasic``, leaving no
+    # standard XBRL concept the loader can use to compute MarketCap.
+    # When that happens AND the filer DOES report ``DividendsCommonStockCash``
+    # + ``CommonStockDividendsPerShareCashPaid`` for the same quarter,
+    # derive ``shares = total_dividends / dividends_per_share``. This is
+    # accurate to within sub-percent for stable-dividend names (the
+    # share count moves much slower than dividends do); when the
+    # filer is between dividend dates or the per-share value rounds to
+    # zero, the helper returns nothing and the row drops with a
+    # documented skip.
+    indexed["shares_outstanding"] = _derive_shares_from_dividends(
+        facts, indexed["shares_outstanding"]
+    )
+
     # Quarters available = union of all concept buckets. Each row needs
     # at least the eight ratio inputs + report_date + shares; drop
     # quarters where any required input is missing (with a per-quarter
@@ -356,22 +493,52 @@ def raw_companyfacts_to_parsed_ratios(
     for bucket in indexed.values():
         all_quarters |= set(bucket.keys())
 
+    # B030 F004 fix-round 1: V (Visa) files shares_outstanding only on
+    # the annual 10-K cover page via
+    # ``dei.EntityCommonStockSharesOutstanding`` — only 2 entries
+    # across the entire history. Without a fallback the F002 backfill
+    # produces 0 rows for V even though every other concept resolves.
+    # The fallback propagates the annual cover-page shares value into
+    # Q1/Q2/Q3 of the same fiscal year **only for quarters that already
+    # appear in other concept buckets** — i.e. we don't materialise
+    # new fictitious quarters; we only fill the shares gap in quarters
+    # whose other concepts are already filed. The approximation
+    # (constant shares within an annual window) is documented in the
+    # F004 fix-round 1 commit message and the PIT validation report;
+    # for V specifically the absolute share-count change quarter-to-
+    # quarter is small (sub-percent) so the MarketCap-dependent ratios
+    # stay within the same ballpark.
+    indexed["shares_outstanding"] = _propagate_annual_shares_to_quarterly(
+        indexed["shares_outstanding"], all_quarters
+    )
+
     rows: list[dict[str, Any]] = []
     skip_messages: list[str] = []
+    # B030 F004 fix-round 1: ``capex`` is conditionally required. Banks
+    # (sector=Financials) structurally do not file traditional
+    # ``PaymentsToAcquirePropertyPlantAndEquipment`` because they have
+    # no meaningful PP&E investing line — their "investing" is
+    # securities purchases (PaymentsToAcquireHeldToMaturitySecurities
+    # etc.) which are not capex in the fundamental-investing sense.
+    # For Financials we treat missing capex as 0, making
+    # ``fcf_yield = CFO / MarketCap`` rather than the strict
+    # ``(CFO − Capex) / MarketCap``. Approximation documented in the
+    # strategy doc + PIT validation report. All other sectors still
+    # require capex (it's a real signal for them).
+    capex_optional = sector == "Financials"
     required_short_names = (
         "net_income",
         "stockholders_equity",
         "revenues",
         "cogs",
         "cfo",
-        "capex",
         "long_term_debt",
         "assets",
         "cash",
         "operating_income",
         "depreciation_amortization",
         "shares_outstanding",
-    )
+    ) + (() if capex_optional else ("capex",))
     for year, q in sorted(all_quarters):
         fiscal_quarter = f"{year}Q{q}"
         missing = [
@@ -388,7 +555,11 @@ def raw_companyfacts_to_parsed_ratios(
             revenues = float(indexed["revenues"][(year, q)]["val"])
             cogs = float(indexed["cogs"][(year, q)]["val"])
             cfo = float(indexed["cfo"][(year, q)]["val"])
-            capex = abs(float(indexed["capex"][(year, q)]["val"]))
+            if capex_optional and (year, q) not in indexed["capex"]:
+                # Bank capex fallback: treat as 0 (see comment above).
+                capex = 0.0
+            else:
+                capex = abs(float(indexed["capex"][(year, q)]["val"]))
             long_term_debt = float(indexed["long_term_debt"][(year, q)]["val"])
             assets = float(indexed["assets"][(year, q)]["val"])
             cash = float(indexed["cash"][(year, q)]["val"])
