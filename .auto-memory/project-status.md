@@ -4,38 +4,36 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B030-real-data-cutover：`done`**；F004 已于 2026-05-27 复验签收。Signoff：`docs/test-reports/B030-real-data-cutover-signoff-2026-05-27.md`；证据图：`docs/screenshots/B030-cutover/`。
-- **F001 done + F004 fix-round 1 floor recovered 2026-05-27**：unified rows **853 → 1121 (+63.6% vs B029 baseline)**；6/6 sector ticker recovered (BAC 32 / JPM 56 / V 38 / LIN 31 / NEE 53 / PLD 58)。三层补丁：(a) default chain 补 `LongTermDebtAndCapitalLeaseObligations` (HD/XOM/ECL/APD +130 rows)；(b) Financials capex=0 fallback (BAC/JPM +75 rows)；(c) V dividend-derive shares (V +38 rows)。+7 regression tests。
-- **F002 done 2026-05-27** (f83d2df)：trade/data/us_quality_universe.py 4-tier 解析。+23 new tests。
-- **F003 done 2026-05-27 + F004 fix-round 1 banner truly off**：从 (protected)/layout.tsx 移除 banner JSX+import + 删 messages 中 syntheticBanner.* keys → 组件 chunk 不在 layout 加载 + i18n 字符串不在 RSC payload。组件文件保留 + hardcoded 双语 + useLocale。+15 frontend tests (6 decommission guard + 9 component isolation)。Local build grep '研究原型' / 'SyntheticDataBanner' = 0 hit。
-- F004 复验结论：L1 全绿（backend pytest 408 / trade pytest 778 / FORCE_FIXTURE_PATH=1 仍 778 / frontend vitest 172 / build / local Playwright 38）；L2 focused checks 也通过（production HEAD 等价、recent-errors=0、protected HTML 均 `BANNER_ABSENT`）。
-- 🎯 **Phase 1 终点 / 里程碑 A Layer 0→1 已达成**。
-- 新增永久产品边界 (k)：**Layer 状态不可逆向滑落** — B030 done 后若真数据严重 unreliable 必须新批次 spec 决议，不 silent rollback。
-- 本批次属 implementation-path-2026-05.md §4 **Phase 1 第五个 batch（Stream 1.D 终点）**。
-- 后续路径：Phase 2 (B031+ LLM advisory / B033+ News ingest)。
+- **B031-llm-gateway：`building`**；F001+F002 pending（generator）+ F003 pending（codex）。Spec：`docs/specs/B031-llm-gateway-spec.md`。
+- 🎯 **Phase 2 起点 / Stream 3.A**：本批次 = Layer 1.5 AI-augmented advisory 基础设施。Phase 1 Layer 0→1 已完成（B030 done 2026-05-27）。
+- 目标：把 aigc-gateway（已有 MCP server 30+ tools）接入 backend，提供统一 chat completion + multi-tier routing + cost guard + log。**不做** prompt template / safety eval / advisor endpoint / 前端 UI 改动（留 B032/B036+）。
+- 决策矩阵（2026-05-27 用户已批）：aigc-gateway HTTP REST 接入（不走 MCP）/ Multi-tier routing per llm-provider-evaluation §5.2（Sonnet 主 / Haiku 高频 / Flash news / Opus quarterly）/ 月 cost cap ¥1500（¥1200 alert + Haiku fallback / ¥1500 halt）/ 范围 = 纯 basic infra。
+- 新增永久产品边界 (l) + (m)：(l) LLM provider routing 不可硬编码 model name in 业务代码 + (m) LLM 月预算 cap ¥1500 enforced。
+- 本批次属 implementation-path-2026-05.md §4 **Phase 2 第六个 batch（Stream 3.A 起点）**。受益 v0.9.30 §12.9 secret 三处接线（AIGC_GATEWAY_API_KEY 四处接线）+ v0.9.31 §16/§22/§Decommission Checklist（本批次非 decommission；signoff 标"无"）。
+- 后续路径：B032（Stream 3.B AI safety eval）→ B033（2.A News）→ B034（2.B embedding）→ B035（2.C market context）→ B036（3.C AI advisor MVP）= **🎯 里程碑 B Phase 2 终点**。
 
 ## 已完成签收 + MVP 完工
-- B001-B029 全部签收。MVP substantively 完成 (PRD §10/§11/§12) — 完工声明：`docs/prd/mvp-completion-declaration-2026-05-20.md`。
-- 最近：B029 Fundamentals Snapshot signoff 2026-05-26（0 fix-round；27 CIK + 685 rows + PIT 25/25 PASS）；B028 signoff 2026-05-26；B027 signoff 2026-05-26；B026 signoff 2026-05-26。
+- B001-B030 全部签收。MVP substantively 完成 (PRD §10/§11/§12) — 完工声明：`docs/prd/mvp-completion-declaration-2026-05-20.md`。
+- 最近：🎯 **B030 Real Data Cutover signoff 2026-05-27（Phase 1 终点 / 里程碑 A Layer 0→1 达成）**；B029 signoff 2026-05-26；B028 signoff 2026-05-26；B027 signoff 2026-05-26。
 
 ## 生产状态
-- `https://trade.guangai.ai` live；production `/api/health.version` = `abf2ec4438a9605ff579c59fda425cda7db171f8`，与签收前 `main` 等价；B026 synthetic banner 已从 production 受保护页面下线。
+- `https://trade.guangai.ai` live；production `/api/health.version` = `abf2ec4438a9605ff579c59fda425cda7db171f8`；B026 synthetic banner 已下线；strategy 已切真数据（real prices + real fundamentals）；fixture vs real 5+1 对比报告本机已生成。
 
-## 永久硬边界（B030 起继续；v0.9.30 + §12.9）
+## 永久硬边界（B031 起继续；v0.9.31 + §12.9 + §16/§22）
 - 系统层：no-broker SDK / no-paper-or-live URL / no-credential / no-auto-execution / 多用户禁 / Cloud SQL 禁 / same-origin /api/* / auth-gated / Repository
-- UI 层：no-execution buttons + 中文等价禁词同级 / Order ticket Markdown 双语 disclaimer / **B026 banner 在 B030 done 后下线**（B030 起组件代码保留可重启路径）
+- UI 层：no-execution buttons + 中文等价禁词同级 / Order ticket Markdown 双语 disclaimer / B026 banner decommissioned（v0.9.31 §16 四处清理已完成）
 - 数据 / CI 层：fixture-first 离线 CI / pyproject runtime-vs-dev hygiene（v0.9.29 §12.8）/ paths-trigger 含 trade/+scripts/+pyproject.toml（v0.9.27 §12.7.1）
 - B027 起 (f)(g)：Tiingo API key 永不入前端/build/log；月预算 cap `$10` enforced
 - B029 起 (h)(i)(j)：SEC EDGAR User-Agent 必含 contact email / Rate limit 10/sec hard / 8 ratio 公式锁定 strategy doc §6
-- B030 起 (k) + v0.9.30 §12.9：production secret 必须 3+1 处接线 (.env.example + config.py + deploy.sh + bootstrap-env.yml) + **Layer 状态不可逆向滑落**（B030 done 后 Layer 1 稳定，回滚需新批次 spec）
+- B030 起 (k) + v0.9.30 §12.9：production secret 必须 3+1 处接线 + **Layer 状态不可逆向滑落**（B030 done 后 Layer 1 稳定）
+- **B031 起 (l)(m)：** (l) LLM provider routing 不可硬编码 model name in 业务代码 / (m) LLM 月预算 cap ¥1500 enforced（¥1200 alert + Haiku/Flash fallback / ¥1500 halt）
 
 ## Framework 状态
-- 最新版本 **v0.9.31**（2026-05-27 沉淀完成）：B030 沉淀 "Feature decommission ≠ env flag off — 四处清理铁律"（generator.md §16 + evaluator.md §22 + templates/signoff-report.md §Decommission Checklist 三处一体）。Codex F004 signoff first-class 主动列入 3 同源候选。"deploy hygiene + decommission" 系列已覆盖 6 层 production-only edge 防御（deploy script / deploy workflow / runtime process / packaging / secret 注入 / UI feature 退役）。proposed-learnings.md 空。B026 React event edge 仍单一案例 hold。
+- 最新版本 **v0.9.31**（2026-05-27 沉淀完成）：B030 沉淀 Feature decommission 四处清理铁律（generator.md §16 + evaluator.md §22 + templates/signoff-report.md §Decommission Checklist 三处一体）。"deploy hygiene + decommission" 系列已覆盖 6 层 production-only edge 防御。B026 React event edge 仍单一案例 hold。
 
 ## 已知 gap（非阻塞）
 - 本机 `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
-- GitHub Secret `TIINGO_API_KEY`（B027）+ `SEC_EDGAR_CONTACT_EMAIL`（B029）已配；B030 本批次不引入新 secret 无需用户介入。
-- **B030 soft-watch**：`compare_fixture_vs_real.py` 仍是 data-quality delta proxy，不是 full strategy backtest；local harness 仍有 auth env / `3099` 契约漂移。详 signoff Soft-watch。
-- B029 S2 backend pytest SOCKS proxy 敏感属 evaluator 环境特定。
+- GitHub Secret `TIINGO_API_KEY`（B027）+ `SEC_EDGAR_CONTACT_EMAIL`（B029）已配。
+- **B031 F001 实施需配置 GitHub Secret `AIGC_GATEWAY_API_KEY`**（用户协助通过 mcp__aigc-gateway__create_api_key 生成 + 配 GitHub repo Settings）。
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->
