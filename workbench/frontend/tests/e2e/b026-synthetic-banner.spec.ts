@@ -1,12 +1,14 @@
 /**
- * B026 F001 — Playwright bilingual smoke for the SyntheticDataBanner.
+ * B026 / B030 — Playwright smoke for the decommissioned synthetic banner.
  *
- * Acceptance (spec §5 F001 + §7 gates):
- *   - zh-CN banner headline contains "研究原型 · 仅含合成数据"
- *   - en banner headline contains "Research prototype · Synthetic data only"
- *   - 5 protected routes sampled (≥3) → banner visible on each
- *   - dismissing the banner hides it for the current page, and reloading
- *     re-renders it (session-only dismissal is by design — spec §6)
+ * B026 originally shipped the banner and required it to render. B030
+ * milestone A / Layer 0→1 explicitly turns it off in production and
+ * removes the protected-layout render path. The component file remains
+ * in the tree for rollback, but the live app must not surface the banner.
+ *
+ * Acceptance (B030 F003/F004):
+ *   - sampled protected routes do not render `synthetic-data-banner`
+ *   - zh-CN / en locale changes do not resurrect the banner
  *
  * Uses the same auth storageState + locale-cookie pattern as
  * tests/e2e/b025-us-quality-bilingual.spec.ts.
@@ -16,16 +18,7 @@ import { expect, test, type BrowserContext } from "@playwright/test";
 
 const LOCALE_COOKIE = "NEXT_LOCALE";
 const BANNER_TESTID = "synthetic-data-banner";
-const HEADLINE_TESTID = "synthetic-data-banner-headline";
-const CLOSE_TESTID = "synthetic-data-banner-close";
-
-const ZH_HEADLINE_FRAGMENT = "研究原型 · 仅含合成数据";
-const EN_HEADLINE_FRAGMENT = "Research prototype · Synthetic data only";
-
-// Sample three of the five protected routes called out in spec §5 F001 (6).
-// The Backtest and Reports paths cover the heavier shell variants
-// (resizable panel + AG Grid) while `/` exercises the dashboard cards.
-const SAMPLE_ROUTES = ["/", "/strategies", "/risk"] as const;
+const SAMPLE_ROUTES = ["/", "/strategies", "/risk", "/reports", "/backtest"] as const;
 
 async function setLocaleCookie(context: BrowserContext, locale: "zh-CN" | "en"): Promise<void> {
   const { hostname } = new URL(test.info().project.use.baseURL ?? "http://127.0.0.1:3000");
@@ -43,64 +36,53 @@ async function setLocaleCookie(context: BrowserContext, locale: "zh-CN" | "en"):
   ]);
 }
 
-test.describe("B026 SyntheticDataBanner (zh-CN)", () => {
+test.describe("B026 SyntheticDataBanner decommissioned (zh-CN)", () => {
   test.beforeEach(async ({ context }) => {
     await setLocaleCookie(context, "zh-CN");
   });
 
-  test("banner renders with zh-CN headline on /strategies", async ({ page }) => {
+  test("banner is absent on /strategies", async ({ page }) => {
     await page.goto("/strategies");
-    const banner = page.getByTestId(BANNER_TESTID);
-    await expect(banner).toBeVisible();
-    await expect(page.getByTestId(HEADLINE_TESTID)).toContainText(ZH_HEADLINE_FRAGMENT);
+    await expect(page.getByTestId(BANNER_TESTID)).toHaveCount(0);
   });
 
-  test("banner appears on every sampled protected route", async ({ page }) => {
+  test("banner is absent on every sampled protected route", async ({ page }) => {
     for (const route of SAMPLE_ROUTES) {
       await page.goto(route);
-      await expect(page.getByTestId(BANNER_TESTID), `banner missing on ${route}`).toBeVisible();
+      await expect(
+        page.getByTestId(BANNER_TESTID),
+        `decommissioned banner unexpectedly present on ${route}`,
+      ).toHaveCount(0);
     }
   });
 
-  test("clicking close hides the banner; reload brings it back", async ({ page }) => {
+  test("reload does not resurrect the banner", async ({ page }) => {
     await page.goto("/strategies");
-    await expect(page.getByTestId(BANNER_TESTID)).toBeVisible();
-    await page.getByTestId(CLOSE_TESTID).click();
     await expect(page.getByTestId(BANNER_TESTID)).toHaveCount(0);
-
     await page.reload();
-    // Reload re-mounts the React tree; dismissed state is session-React
-    // only, so the banner must reappear — by design (spec §6).
-    await expect(page.getByTestId(BANNER_TESTID)).toBeVisible();
-    await expect(page.getByTestId(HEADLINE_TESTID)).toContainText(ZH_HEADLINE_FRAGMENT);
+    await expect(page.getByTestId(BANNER_TESTID)).toHaveCount(0);
   });
 });
 
-test.describe("B026 SyntheticDataBanner (en)", () => {
+test.describe("B026 SyntheticDataBanner decommissioned (en)", () => {
   test.beforeEach(async ({ context }) => {
     await setLocaleCookie(context, "en");
   });
 
-  test("banner renders with en headline on /strategies", async ({ page }) => {
+  test("banner is absent on /strategies", async ({ page }) => {
     await page.goto("/strategies");
-    const banner = page.getByTestId(BANNER_TESTID);
-    await expect(banner).toBeVisible();
-    await expect(page.getByTestId(HEADLINE_TESTID)).toContainText(EN_HEADLINE_FRAGMENT);
+    await expect(page.getByTestId(BANNER_TESTID)).toHaveCount(0);
   });
 
-  test("banner headline tracks locale switch (zh-CN → en) via cookie", async ({
-    page,
-    context,
-  }) => {
-    // Pre-seed zh-CN, then visit /risk, then flip the cookie + reload.
+  test("locale switch does not resurrect the banner", async ({ page, context }) => {
     await context.clearCookies({ name: LOCALE_COOKIE });
     await setLocaleCookie(context, "zh-CN");
     await page.goto("/risk");
-    await expect(page.getByTestId(HEADLINE_TESTID)).toContainText(ZH_HEADLINE_FRAGMENT);
+    await expect(page.getByTestId(BANNER_TESTID)).toHaveCount(0);
 
     await context.clearCookies({ name: LOCALE_COOKIE });
     await setLocaleCookie(context, "en");
     await page.reload();
-    await expect(page.getByTestId(HEADLINE_TESTID)).toContainText(EN_HEADLINE_FRAGMENT);
+    await expect(page.getByTestId(BANNER_TESTID)).toHaveCount(0);
   });
 });
