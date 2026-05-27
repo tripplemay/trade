@@ -1,6 +1,10 @@
 {
-  "balance_usd": 87.42,
-  "currency": "USD",
-  "month_year": "2026-05",
-  "active_models_count": 7
+  "object": "list",
+  "data": [
+    {"id": "claude-haiku-4.5", "object": "model", "brand": "Anthropic"},
+    {"id": "claude-sonnet-4.6", "object": "model", "brand": "Anthropic"},
+    {"id": "claude-opus-4.7", "object": "model", "brand": "Anthropic"},
+    {"id": "gemini-3-flash", "object": "model", "brand": "Google"},
+    {"id": "bge-m3", "object": "model", "brand": "BAAI"}
+  ]
 }

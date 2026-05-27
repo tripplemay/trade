@@ -37,11 +37,11 @@ REQUIRED_PRODUCTION_TASKS: frozenset[str] = frozenset(
 
 
 def test_route_task_returns_haiku_for_daily_advisor() -> None:
-    assert route_task("daily_advisor") == "claude-haiku-4-5"
+    assert route_task("daily_advisor") == "claude-haiku-4.5"
 
 
 def test_route_task_returns_sonnet_for_quarterly_review() -> None:
-    assert route_task("quarterly_review") == "claude-sonnet-4-6"
+    assert route_task("quarterly_review") == "claude-sonnet-4.6"
 
 
 def test_route_task_returns_opus_for_quarterly_review_deep() -> None:
@@ -49,11 +49,34 @@ def test_route_task_returns_opus_for_quarterly_review_deep() -> None:
     review per §5.2 — the routing key must exist so a caller asking
     for the deep tier never silently downgrades to Sonnet."""
 
-    assert route_task("quarterly_review_deep") == "claude-opus-4-7"
+    assert route_task("quarterly_review_deep") == "claude-opus-4.7"
 
 
 def test_route_task_returns_gemini_flash_for_news() -> None:
-    assert route_task("news_summarize") == "gemini-2.0-flash"
+    assert route_task("news_summarize") == "gemini-3-flash"
+
+
+def test_routing_table_uses_production_gateway_model_ids() -> None:
+    """F003 fix-round 1 regression: model IDs must match the production
+    aigc-gateway catalogue (dotted format ``claude-haiku-4.5``, not
+    the placeholder dashed ``claude-haiku-4-5`` shipped in F001).
+    Catches a future drift back to the placeholder before it hits
+    L2 acceptance."""
+
+    expected_live_ids = {
+        "claude-haiku-4.5",
+        "claude-sonnet-4.6",
+        "claude-opus-4.7",
+        "gemini-3-flash",
+        "bge-m3",
+    }
+    actual_ids = set(ROUTING_TABLE.values())
+    missing = expected_live_ids - actual_ids
+    assert missing == set(), (
+        f"ROUTING_TABLE missing production gateway IDs: {sorted(missing)}. "
+        "These IDs are what the live gateway returns from GET /v1/models — "
+        "calling the gateway with a different ID raises 400 invalid_parameter."
+    )
 
 
 def test_route_task_unknown_raises_with_fix_pointer() -> None:
@@ -97,7 +120,7 @@ def test_estimate_cost_usd_uses_input_output_token_split() -> None:
     must total $6 for Haiku."""
 
     cost = estimate_cost_usd(
-        "claude-haiku-4-5",
+        "claude-haiku-4.5",
         input_tokens=1_000_000,
         output_tokens=1_000_000,
     )
@@ -117,11 +140,12 @@ def test_estimate_cost_usd_rounds_to_six_decimals() -> None:
     stable across deletes / re-adds (B027 cost-guard pattern)."""
 
     cost = estimate_cost_usd(
-        "gemini-2.0-flash", input_tokens=12_345, output_tokens=6_789
+        "gemini-3-flash", input_tokens=12_345, output_tokens=6_789
     )
-    # (12_345 / 1e6) * 0.10 + (6_789 / 1e6) * 0.40
-    # = 0.0012345 + 0.0027156 = 0.0039501 → rounds to 0.00395
-    assert cost == pytest.approx(0.00395, abs=1e-6)
+    # gemini-3-flash priced at ($0.50, $3.00) per 1M tokens.
+    # (12_345 / 1e6) * 0.50 + (6_789 / 1e6) * 3.00
+    # = 0.0061725 + 0.020367 = 0.0265395 → rounds to 0.02654
+    assert cost == pytest.approx(0.02654, abs=1e-5)
     # Result equals its own 6-decimal rounding (no tail noise).
     assert cost == round(cost, 6)
 

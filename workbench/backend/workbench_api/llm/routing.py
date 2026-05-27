@@ -35,20 +35,28 @@ from __future__ import annotations
 from typing import Final
 
 ROUTING_TABLE: Final[dict[str, str]] = {
-    # Per llm-provider-evaluation §5.2 — production tasks
-    "daily_advisor": "claude-haiku-4-5",
-    "quarterly_review": "claude-sonnet-4-6",
-    "quarterly_review_deep": "claude-opus-4-7",
-    "news_summarize": "gemini-2.0-flash",
-    "topic_tagging": "claude-haiku-4-5",
-    "sharpe_tooltip": "claude-haiku-4-5",
-    "robinhood_simplify": "claude-haiku-4-5",
-    "embedding": "cohere-embed-multilingual-v3",
+    # Per llm-provider-evaluation §5.2 — production tasks.
+    # Model IDs use the dotted format the production aigc-gateway
+    # exposes via ``GET /v1/models`` (verified 2026-05-27). F003 fix-
+    # round 1 swapped the placeholder dashed IDs (e.g. ``claude-haiku-
+    # 4-5``) for the live IDs.
+    "daily_advisor": "claude-haiku-4.5",
+    "quarterly_review": "claude-sonnet-4.6",
+    "quarterly_review_deep": "claude-opus-4.7",
+    "news_summarize": "gemini-3-flash",
+    "topic_tagging": "claude-haiku-4.5",
+    "sharpe_tooltip": "claude-haiku-4.5",
+    "robinhood_simplify": "claude-haiku-4.5",
+    "embedding": "bge-m3",
     # Cost-guard fallback chain (callers re-route once the alert
     # threshold is crossed; per §6 keep the system functional).
-    "_fallback_advisor": "claude-haiku-4-5",
-    "_fallback_news": "gemini-2.0-flash",
-    "_fallback_embedding": "gemini-text-embedding-004",
+    # bge-m3 is the only multilingual embedding the gateway currently
+    # exposes, so the embedding fallback intentionally points at the
+    # same model — the fallback semantics here are "stay functional",
+    # not "downgrade tier".
+    "_fallback_advisor": "claude-haiku-4.5",
+    "_fallback_news": "gemini-3-flash",
+    "_fallback_embedding": "bge-m3",
     # Offline CI placeholder — never selected by production callers,
     # but listed so the routing table is the single source of truth.
     "_ci_mock": "mock-provider",
@@ -59,15 +67,15 @@ PRICE_TABLE entry below."""
 
 
 PRICE_TABLE: Final[dict[str, tuple[float, float]]] = {
-    # model_name → (input USD per 1M tokens, output USD per 1M tokens)
-    # Sourced from public list-price tables as of 2026-05 (±20% drift
-    # tolerated per spec §6; refine with precise token counter later).
-    "claude-haiku-4-5": (1.00, 5.00),
-    "claude-sonnet-4-6": (3.00, 15.00),
-    "claude-opus-4-7": (15.00, 75.00),
-    "gemini-2.0-flash": (0.10, 0.40),
-    "cohere-embed-multilingual-v3": (0.10, 0.10),
-    "gemini-text-embedding-004": (0.00, 0.00),  # free tier
+    # model_name → (input USD per 1M tokens, output USD per 1M tokens).
+    # Sourced from production aigc-gateway ``GET /v1/models`` payload
+    # (verified 2026-05-27). ±20% drift tolerated per spec §6; refine
+    # with precise token counter later.
+    "claude-haiku-4.5": (1.00, 5.00),
+    "claude-sonnet-4.6": (3.00, 15.00),
+    "claude-opus-4.7": (15.00, 75.00),
+    "gemini-3-flash": (0.50, 3.00),
+    "bge-m3": (0.084, 0.0),  # output_per_1m is 0 for embeddings
     "mock-provider": (0.00, 0.00),  # CI mock
 }
 """Per-model list-price reference for cost estimation. Keys must

@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B031-llm-gateway：`fixing`**（2026-05-27 Codex 首轮验收退回）；F001 + F002 done generator，F003 first-round L1 PASS / L2 FAIL。Spec：`docs/specs/B031-llm-gateway-spec.md`。唯一硬 blocker：production VM 上 `LLMGateway().health_check()` 触发 `httpx.ConnectError: [Errno -2] Name or service not known`，真实网关 reachability 未打通；但 `/api/health.version` 已等于 `main` HEAD，`AIGC_GATEWAY_API_KEY` 已在 `/etc/workbench/workbench.env`，`llm_budget_log` 表存在，`/api/debug/recent-errors` 为 `0`，且失败前后 `llm_budget_log` 聚合仍 `0→0`，说明 no-billing 子条件是绿的。下一步 Generator 需修复 gateway base-URL / service wiring 后回 `reverifying`。
+- **B031-llm-gateway：`reverifying`**（2026-05-27 Generator fix-round 1 完成，等 Codex 复验）；F001 + F002 done generator，F003 L1 已 PASS / L2 待 Codex 重测。Spec：`docs/specs/B031-llm-gateway-spec.md`。Fix-round 1 修复了 F001 invented schema 与真实 OpenAI-compatible aigc-gateway 的根因不匹配：base URL → `https://aigc.guangai.ai`（curl verified）+ endpoints → `/v1/chat/completions` + `/v1/embeddings` + `/v1/models`（health_check）+ ChatResult 解析 OpenAI envelope + 模型 ID 改 dotted form（claude-haiku-4.5 等）。本机 gates 全绿，等 Workbench Deploy 自动跑完后再 SSH VM 验 health_check 真返回 True。
 - 🎯 **Phase 2 起点 / Stream 3.A**：本批次 = Layer 1.5 AI-augmented advisory 基础设施。Phase 1 Layer 0→1 已完成（B030 done 2026-05-27）。
 - 目标：把 aigc-gateway（已有 MCP server 30+ tools）接入 backend，提供统一 chat completion + multi-tier routing + cost guard + log。**不做** prompt template / safety eval / advisor endpoint / 前端 UI 改动（留 B032/B036+）。
 - 决策矩阵（2026-05-27 用户已批）：aigc-gateway HTTP REST 接入（不走 MCP）/ Multi-tier routing per llm-provider-evaluation §5.2（Sonnet 主 / Haiku 高频 / Flash news / Opus quarterly）/ 月 cost cap ¥1500（¥1200 alert + Haiku fallback / ¥1500 halt）/ 范围 = 纯 basic infra。

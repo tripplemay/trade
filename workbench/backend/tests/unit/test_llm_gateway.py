@@ -152,7 +152,7 @@ def test_chat_result_is_frozen_with_slots() -> None:
 
     result = ChatResult(
         content="hello",
-        model_used="claude-haiku-4-5",
+        model_used="claude-haiku-4.5",
         input_tokens=1,
         output_tokens=2,
         cost_usd_est=0.0001,
@@ -217,6 +217,19 @@ def test_default_base_url_matches_module_constant() -> None:
     assert gateway.base_url == AIGC_GATEWAY_BASE_URL.rstrip("/")
 
 
+def test_default_base_url_is_real_production_host() -> None:
+    """F003 fix-round 1 regression guard: the default base URL must be
+    the live production host. F001 shipped a placeholder
+    ``aigc-gateway.example.com`` that DNS could not resolve on the
+    production VM (Codex first-round L2 blocker). Asserting on the
+    real host here keeps a future revert from re-introducing the
+    placeholder.
+    """
+
+    assert AIGC_GATEWAY_BASE_URL == "https://aigc.guangai.ai"
+    assert "example.com" not in AIGC_GATEWAY_BASE_URL
+
+
 # --- advise() happy + adversarial paths --------------------------------
 
 
@@ -230,10 +243,12 @@ def test_advise_parses_chat_payload_into_chat_result() -> None:
         ChatRequest(task="daily_advisor", messages=[{"role": "user", "content": "Hi"}])
     )
     assert isinstance(result, ChatResult)
-    assert result.model_used == "claude-haiku-4-5"
+    assert result.model_used == "claude-haiku-4.5"
     assert result.input_tokens == 84
     assert result.output_tokens == 31
-    assert result.aigc_log_id == "aigc-log-2026-05-27-daily-001"
+    # aigc-gateway's ``id`` field is the log identifier in the
+    # OpenAI-compatible envelope.
+    assert result.aigc_log_id == "chatcmpl-2026-05-27-daily-001"
 
 
 def test_advise_routes_task_through_routing_table() -> None:
@@ -251,8 +266,10 @@ def test_advise_routes_task_through_routing_table() -> None:
         )
     )
     assert len(client.posts) == 1
-    _url, body = client.posts[0]
-    assert body["model"] == "gemini-2.0-flash"
+    url, body = client.posts[0]
+    assert body["model"] == "gemini-3-flash"
+    # F003 fix-round 1: production gateway uses OpenAI-compatible path.
+    assert url.endswith("/v1/chat/completions")
 
 
 def test_advise_unknown_task_raises_before_network_call() -> None:
@@ -366,17 +383,41 @@ def test_advise_skips_http_when_guard_raises() -> None:
     assert client.posts == []
 
 
-def test_advise_raises_on_missing_content_field() -> None:
+def test_advise_raises_on_missing_choices_field() -> None:
     """aigc-gateway schema drift surfaces as a ValueError so a vendor
-    change cannot silently produce a ChatResult with empty content."""
+    change cannot silently produce a ChatResult with empty content.
+    OpenAI envelope requires non-empty ``choices`` list."""
 
-    client = _StubClient([_StubResponse(200, {"model": "claude-haiku-4-5"})])  # no content
+    client = _StubClient([_StubResponse(200, {"model": "claude-haiku-4.5"})])  # no choices
     gateway = _make_gateway(client=client)
     with pytest.raises(ValueError) as exc_info:
         gateway.advise(
             ChatRequest(task="daily_advisor", messages=[{"role": "user", "content": "x"}])
         )
-    assert "content" in str(exc_info.value)
+    assert "choices" in str(exc_info.value)
+
+
+def test_advise_raises_on_missing_message_content() -> None:
+    """Even with a ``choices`` list, an item lacking
+    ``message.content`` is a schema violation that must fail loud."""
+
+    client = _StubClient(
+        [
+            _StubResponse(
+                200,
+                {
+                    "model": "claude-haiku-4.5",
+                    "choices": [{"index": 0, "finish_reason": "stop"}],
+                },
+            )
+        ]
+    )
+    gateway = _make_gateway(client=client)
+    with pytest.raises(ValueError) as exc_info:
+        gateway.advise(
+            ChatRequest(task="daily_advisor", messages=[{"role": "user", "content": "x"}])
+        )
+    assert "message" in str(exc_info.value)
 
 
 def test_advise_raises_on_non_dict_payload() -> None:
@@ -407,36 +448,55 @@ def test_advise_retries_on_network_error() -> None:
     result = gateway.advise(
         ChatRequest(task="daily_advisor", messages=[{"role": "user", "content": "x"}])
     )
-    assert result.model_used == "claude-haiku-4-5"
+    assert result.model_used == "claude-haiku-4.5"
 
 
 # --- embed() ----------------------------------------------------------
+
+
+def _openai_embedding_payload(vectors: list[list[float]]) -> dict[str, Any]:
+    """Build an OpenAI-compatible ``/v1/embeddings`` response envelope
+    for stubbed tests."""
+
+    return {
+        "object": "list",
+        "data": [
+            {"object": "embedding", "embedding": vec, "index": i}
+            for i, vec in enumerate(vectors)
+        ],
+        "model": "bge-m3",
+        "usage": {"prompt_tokens": 10, "total_tokens": 10},
+    }
 
 
 def test_embed_returns_parsed_vectors() -> None:
     """Embedding endpoint returns one vector per input text."""
 
     client = _StubClient(
-        [_StubResponse(200, {"vectors": [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]})]
+        [_StubResponse(200, _openai_embedding_payload([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]))]
     )
     gateway = _make_gateway(client=client)
     vectors = gateway.embed(["alpha", "beta", "gamma"])
     assert vectors == [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
 
 
-def test_embed_routes_to_cohere_multilingual_by_default() -> None:
-    """Default routing for ``task='embedding'`` is the Cohere
-    multilingual v3 model per llm-provider-evaluation §5.2."""
+def test_embed_routes_to_bge_m3_by_default() -> None:
+    """Default routing for ``task='embedding'`` is BAAI's ``bge-m3``
+    (multilingual; the only embedding model the production gateway
+    currently exposes via GET /v1/models)."""
 
-    client = _StubClient([_StubResponse(200, {"vectors": [[0.0]]})])
+    client = _StubClient([_StubResponse(200, _openai_embedding_payload([[0.0]]))])
     gateway = _make_gateway(client=client)
     gateway.embed(["one"])
-    _url, body = client.posts[0]
-    assert body["model"] == "cohere-embed-multilingual-v3"
+    url, body = client.posts[0]
+    assert body["model"] == "bge-m3"
+    # F003 fix-round 1: production gateway uses OpenAI-compatible path.
+    assert url.endswith("/v1/embeddings")
 
 
-def test_embed_raises_on_missing_vectors_field() -> None:
-    """A payload without ``vectors`` is a schema violation."""
+def test_embed_raises_on_missing_data_field() -> None:
+    """A payload without OpenAI-compatible ``data`` is a schema
+    violation."""
 
     client = _StubClient([_StubResponse(200, {"unexpected": "shape"})])
     gateway = _make_gateway(client=client)
@@ -447,14 +507,21 @@ def test_embed_raises_on_missing_vectors_field() -> None:
 # --- health_check() ---------------------------------------------------
 
 
-def test_health_check_returns_true_on_balance_200() -> None:
-    """A 200 from /balance signals the gateway is reachable + key valid."""
+def test_health_check_returns_true_on_models_200() -> None:
+    """A 200 from /v1/models signals the gateway is reachable.
+
+    F003 fix-round 1: ``/v1/models`` is the public unauthenticated
+    catalog endpoint — cheaper + no-auth alternative to a balance
+    probe (which would need a project-scoped key). It satisfies the
+    spec's "smoke must not increment llm_budget_log" requirement
+    naturally because no per-request billing happens here.
+    """
 
     payload = _load_fixture("aigc_gateway_balance_response.json")
     client = _StubClient([_StubResponse(200, payload)])
     gateway = _make_gateway(client=client)
     assert gateway.health_check() is True
-    assert client.gets == [f"{gateway.base_url}/balance"]
+    assert client.gets == [f"{gateway.base_url}/v1/models"]
 
 
 def test_health_check_returns_false_on_auth_failure() -> None:

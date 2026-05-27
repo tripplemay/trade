@@ -1,10 +1,22 @@
 {
-  "content": "Today's portfolio drift is within tolerance; no rebalance needed. Monitor SPY exposure as it approaches the upper sleeve band.",
-  "model": "claude-haiku-4-5",
+  "id": "chatcmpl-2026-05-27-daily-001",
+  "object": "chat.completion",
+  "created": 1716796800,
+  "model": "claude-haiku-4.5",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Today's portfolio drift is within tolerance; no rebalance needed. Monitor SPY exposure as it approaches the upper sleeve band."
+      },
+      "finish_reason": "stop"
+    }
+  ],
   "usage": {
-    "input_tokens": 84,
-    "output_tokens": 31
+    "prompt_tokens": 84,
+    "completion_tokens": 31,
+    "total_tokens": 115
   },
-  "cost_usd_est": 0.000239,
-  "log_id": "aigc-log-2026-05-27-daily-001"
+  "cost_usd_est": 0.000239
 }

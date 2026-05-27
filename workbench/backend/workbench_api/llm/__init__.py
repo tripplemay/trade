@@ -26,6 +26,9 @@ from workbench_api.llm.cost_guard import (
 )
 from workbench_api.llm.gateway import (
     AIGC_GATEWAY_BASE_URL,
+    CHAT_ROUTE,
+    EMBED_ROUTE,
+    HEALTH_ROUTE,
     ChatRequest,
     ChatResult,
     LLMGateway,
@@ -40,8 +43,11 @@ from workbench_api.llm.routing import (
 __all__ = [
     "AIGC_GATEWAY_BASE_URL",
     "BudgetExceeded",
+    "CHAT_ROUTE",
     "ChatRequest",
     "ChatResult",
+    "EMBED_ROUTE",
+    "HEALTH_ROUTE",
     "LLMGateway",
     "MonthlyBudgetGuard",
     "PRICE_TABLE",

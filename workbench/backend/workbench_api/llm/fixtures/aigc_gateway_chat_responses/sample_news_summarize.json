@@ -1,10 +1,22 @@
 {
-  "content": "FOMC held rates steady; statement language softened on labor-market tightness.",
-  "model": "gemini-2.0-flash",
+  "id": "chatcmpl-2026-05-27-news-001",
+  "object": "chat.completion",
+  "created": 1716796900,
+  "model": "gemini-3-flash",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "FOMC held rates steady; statement language softened on labor-market tightness."
+      },
+      "finish_reason": "stop"
+    }
+  ],
   "usage": {
-    "input_tokens": 1240,
-    "output_tokens": 22
+    "prompt_tokens": 1240,
+    "completion_tokens": 22,
+    "total_tokens": 1262
   },
-  "cost_usd_est": 0.000133,
-  "log_id": "aigc-log-2026-05-27-news-001"
+  "cost_usd_est": 0.000686
 }

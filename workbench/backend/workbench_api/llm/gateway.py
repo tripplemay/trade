@@ -40,12 +40,33 @@ from workbench_api.llm.routing import estimate_cost_usd, route_task
 logger = logging.getLogger(__name__)
 
 
-AIGC_GATEWAY_BASE_URL = "https://aigc-gateway.example.com"
-"""Default aigc-gateway REST base. The constructor accepts a
-``base_url`` override so a future production URL change is a one-
-line edit at call sites rather than a code change here. The default
-is intentionally a placeholder — the production VM passes the real
-URL through the ``LLMGateway(...)`` factory in service wiring."""
+AIGC_GATEWAY_BASE_URL = "https://aigc.guangai.ai"
+"""Default aigc-gateway REST base (production host). The gateway
+exposes an OpenAI-compatible API surface — ``/v1/chat/completions``,
+``/v1/embeddings``, ``/v1/models`` — so callers route requests to
+the same paths the OpenAI SDK uses.
+
+The constructor accepts a ``base_url`` override so unit tests can
+point at a local stub without hitting the network, and a future
+operator can run the workbench against a staging / self-hosted
+gateway by passing a different URL through the service wiring.
+
+History: B031 F001 shipped the placeholder ``aigc-gateway.example.com``;
+Codex F003 first-round L2 caught the resulting ``Name or service not
+known`` on the production VM. The fix-round 1 commit replaces the
+default with the real production host."""
+
+CHAT_ROUTE: str = "/v1/chat/completions"
+"""OpenAI-compatible chat completion route."""
+
+EMBED_ROUTE: str = "/v1/embeddings"
+"""OpenAI-compatible embeddings route."""
+
+HEALTH_ROUTE: str = "/v1/models"
+"""Public unauthenticated models list — cheap reachability probe.
+The gateway's ``GET /v1/models`` returns the catalog without any
+billing impact, which is exactly the contract ``health_check()``
+needs (spec F003 L2 §7: smoke must not increment ``llm_budget_log``)."""
 
 DEFAULT_TIMEOUT_SECONDS: float = 60.0
 MAX_RETRIES: int = 3
@@ -213,7 +234,9 @@ class LLMGateway:
             "max_tokens": request.max_tokens,
             "temperature": request.temperature,
         }
-        response = self._post_with_retry(f"{self._base_url}/chat", json=payload)
+        response = self._post_with_retry(
+            f"{self._base_url}{CHAT_ROUTE}", json=payload
+        )
         return _parse_chat_result(response, fallback_model=model)
 
     def embed(self, texts: list[str], task: str = "embedding") -> list[list[float]]:
@@ -239,21 +262,29 @@ class LLMGateway:
         self._guard.check_and_increment(estimated_cost_usd=estimated_cost)
 
         payload = {"model": model, "input": list(texts)}
-        response = self._post_with_retry(f"{self._base_url}/embed", json=payload)
+        response = self._post_with_retry(
+            f"{self._base_url}{EMBED_ROUTE}", json=payload
+        )
         return _parse_embedding_vectors(response)
 
     def health_check(self) -> bool:
-        """Probe ``GET /balance`` to confirm the gateway is reachable.
+        """Probe ``GET /v1/models`` to confirm the gateway is reachable.
 
-        Returns ``True`` for any 200 response, ``False`` when the API
-        key is rejected (401/403). Other errors propagate so the
-        operator can distinguish "key invalid" from "gateway down".
-        The probe does not consult the cost guard — a balance lookup
-        is metadata-only and should not count against the monthly cap.
+        ``/v1/models`` is the public, unauthenticated catalog endpoint
+        — a 200 here proves DNS + TLS + nginx + gateway-process are
+        all healthy without burning any per-request budget. The probe
+        does not consult the cost guard (spec F003 L2 §7: smoke must
+        not increment ``llm_budget_log``).
+
+        Returns ``True`` for any 200 response, ``False`` when the
+        gateway rejects the call as unauthorized (401/403; only
+        relevant when a future gated probe endpoint is used). Other
+        errors propagate so the operator can distinguish key-invalid
+        from gateway-down at the call site.
         """
 
         try:
-            self._get_with_retry(f"{self._base_url}/balance")
+            self._get_with_retry(f"{self._base_url}{HEALTH_ROUTE}")
         except _AuthFailure:
             return False
         return True
@@ -377,76 +408,118 @@ def _estimate_input_tokens(messages: list[dict[str, str]]) -> int:
 
 
 def _parse_chat_result(payload: Any, *, fallback_model: str) -> ChatResult:
-    """Translate the aigc-gateway ``/chat`` JSON into :class:`ChatResult`.
+    """Translate the aigc-gateway ``/v1/chat/completions`` JSON into
+    :class:`ChatResult`.
 
-    The gateway's documented schema (per aigc-gateway MCP server) is:
+    The gateway is OpenAI-compatible, so the response follows the
+    OpenAI ``chat.completion`` envelope (verified against
+    ``aigcgateway/src/app/api/v1/chat/completions/route.ts``):
 
     .. code-block:: json
 
         {
-          "content": "...",
+          "id": "chatcmpl-...",
+          "object": "chat.completion",
           "model": "<routed model name>",
-          "usage": {"input_tokens": 12, "output_tokens": 34},
-          "cost_usd_est": 0.001234,
-          "log_id": "aigc-log-..."
+          "choices": [
+            {"index": 0,
+             "message": {"role": "assistant", "content": "..."},
+             "finish_reason": "stop"}
+          ],
+          "usage": {"prompt_tokens": 12, "completion_tokens": 34,
+                    "total_tokens": 46},
+          "cost_usd_est": 0.001234  // optional, gateway-specific extension
         }
 
-    Missing fields raise ``ValueError`` so a schema drift fails loud
-    rather than producing a silently-empty ``ChatResult``.
+    The ``id`` field doubles as the aigc-gateway log identifier — we
+    record it on the workbench side so a support ticket can correlate
+    a local row to the gateway's request log without leaking the
+    actual message content.
+
+    Missing fields raise ``ValueError`` so a vendor schema drift fails
+    loud rather than producing a silently-empty ``ChatResult``.
     """
 
     if not isinstance(payload, dict):
         raise ValueError(
-            "aigc-gateway /chat returned non-dict payload of type "
-            f"{type(payload).__name__}; cannot parse to ChatResult"
+            "aigc-gateway /v1/chat/completions returned non-dict payload "
+            f"of type {type(payload).__name__}; cannot parse to ChatResult"
         )
-    if "content" not in payload:
+    choices = payload.get("choices")
+    if not isinstance(choices, list) or not choices:
         raise ValueError(
-            f"aigc-gateway /chat payload missing 'content' field; "
-            f"got keys {sorted(payload.keys())}"
+            "aigc-gateway /v1/chat/completions payload missing non-empty "
+            f"'choices' list; got keys {sorted(payload.keys())}"
+        )
+    first_choice = choices[0]
+    if not isinstance(first_choice, dict):
+        raise ValueError(
+            "aigc-gateway /v1/chat/completions 'choices[0]' is not a dict; "
+            f"got {type(first_choice).__name__}"
+        )
+    message = first_choice.get("message")
+    if not isinstance(message, dict) or "content" not in message:
+        raise ValueError(
+            "aigc-gateway /v1/chat/completions 'choices[0].message.content' "
+            f"missing; got message={message!r}"
         )
     usage = payload.get("usage") or {}
-    input_tokens = int(usage.get("input_tokens", 0))
-    output_tokens = int(usage.get("output_tokens", 0))
+    input_tokens = int(usage.get("prompt_tokens", 0))
+    output_tokens = int(usage.get("completion_tokens", 0))
     return ChatResult(
-        content=str(payload["content"]),
+        content=str(message["content"]),
         model_used=str(payload.get("model") or fallback_model),
         input_tokens=input_tokens,
         output_tokens=output_tokens,
         cost_usd_est=float(payload.get("cost_usd_est", 0.0)),
-        aigc_log_id=str(payload.get("log_id", "")),
+        aigc_log_id=str(payload.get("id", "")),
     )
 
 
 def _parse_embedding_vectors(payload: Any) -> list[list[float]]:
-    """Translate the aigc-gateway ``/embed`` JSON into vector lists.
+    """Translate the aigc-gateway ``/v1/embeddings`` JSON into vector
+    lists.
 
-    Expected shape::
+    OpenAI-compatible envelope::
 
-        {"vectors": [[0.1, 0.2, ...], ...]}
+        {
+          "object": "list",
+          "data": [
+            {"object": "embedding", "embedding": [...], "index": 0},
+            ...
+          ],
+          "model": "bge-m3",
+          "usage": {"prompt_tokens": 12, "total_tokens": 12}
+        }
 
     Malformed payloads raise ``ValueError`` so a vendor schema drift
     fails ingest immediately rather than writing zero-length vectors
     into a downstream RAG index.
     """
 
-    if not isinstance(payload, dict) or "vectors" not in payload:
+    if not isinstance(payload, dict) or "data" not in payload:
         raise ValueError(
-            "aigc-gateway /embed payload missing 'vectors'; got "
+            "aigc-gateway /v1/embeddings payload missing 'data'; got "
             f"{type(payload).__name__}"
         )
-    vectors = payload["vectors"]
-    if not isinstance(vectors, list):
+    data = payload["data"]
+    if not isinstance(data, list):
         raise ValueError(
-            "aigc-gateway /embed 'vectors' must be a list; got "
-            f"{type(vectors).__name__}"
+            "aigc-gateway /v1/embeddings 'data' must be a list; got "
+            f"{type(data).__name__}"
         )
     parsed: list[list[float]] = []
-    for index, vec in enumerate(vectors):
+    for index, item in enumerate(data):
+        if not isinstance(item, dict) or "embedding" not in item:
+            raise ValueError(
+                f"aigc-gateway /v1/embeddings data[{index}] missing "
+                f"'embedding' key; got {item!r}"
+            )
+        vec = item["embedding"]
         if not isinstance(vec, list):
             raise ValueError(
-                f"aigc-gateway /embed vector at index {index} is not a list; "
-                f"got {type(vec).__name__}"
+                f"aigc-gateway /v1/embeddings data[{index}].embedding is "
+                f"not a list; got {type(vec).__name__}"
             )
         parsed.append([float(value) for value in vec])
     return parsed
