@@ -19,6 +19,11 @@ The module is layered:
   without touching the gateway code.
 """
 
+from workbench_api.llm.cost_guard import (
+    USD_TO_CNY_RATE,
+    BudgetExceeded,
+    MonthlyBudgetGuard,
+)
 from workbench_api.llm.gateway import (
     AIGC_GATEWAY_BASE_URL,
     ChatRequest,
@@ -34,11 +39,14 @@ from workbench_api.llm.routing import (
 
 __all__ = [
     "AIGC_GATEWAY_BASE_URL",
+    "BudgetExceeded",
     "ChatRequest",
     "ChatResult",
     "LLMGateway",
+    "MonthlyBudgetGuard",
     "PRICE_TABLE",
     "ROUTING_TABLE",
+    "USD_TO_CNY_RATE",
     "estimate_cost_usd",
     "route_task",
 ]

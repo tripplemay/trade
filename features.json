@@ -14,7 +14,7 @@
       "title": "LLM cost guard + budget log + alembic migration",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) 新建 workbench_api/llm/cost_guard.py：MonthlyBudgetGuard dataclass (cap=200.0 USD ≈ ¥1500 / alert=0.80 / halt=1.00)；check_and_increment(estimated_cost_usd) 检查 + 写 budget log；BudgetExceeded exception 含修复指引 + ¥-equivalent 显示；(2) 新建 workbench_api/repositories/llm_budget_log.py：SQLite 表 llm_budget_log (date PK / month_year TEXT / call_count INT / total_cost_usd_est REAL)；CRUD get_month_total_usd(date) / increment(date, cost_usd)；(3) alembic migration add_llm_budget_log_table.py 参考 B027 既有 add_tiingo_budget_log_table.py 模式；不破既有 schema；(4) 改 LLMGateway.advise：入口调 guard.check_and_increment(estimated_cost) + 估算 cost (按 routing table 选定 model 的输入 token × 价格表估算)；(5) 改 /api/debug/recent-errors (B022 既有) 确认能捕获 llm_budget_near_cap warning + BudgetExceeded raise log；(6) pytest ≥10 测试：MonthlyBudgetGuard.default() (cap=200.0/alert=0.80) / check_and_increment(estimated=10) 月内首次通过 / 接近 80% (≥160 USD) log warning / ≥100% (≥200 USD) raise BudgetExceeded / BudgetExceeded 异常含 ¥-equivalent / llm_budget_log SQLite CRUD / 月份切换 5→6 归零 / alembic up/down 在 fixture DB / LLMGateway 集成 cost_guard (mock check_and_increment → advise 成功 / BudgetExceeded → 不调 HTTP) / llm_budget_log 表 schema 一致性；(7) Gates: pytest tests ≥420 + ≥10 = ≥430 / ruff + mypy 清 / alembic up/down 在 fixture DB 验证 / Frontend 不动；(8) 不动 F001 已完成的 gateway / routing 接口 / 其他 backend endpoint / strategy 代码。"
     },
     {

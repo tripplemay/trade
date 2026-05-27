@@ -18,10 +18,10 @@ Retry policy mirrors the Tiingo adapter (B027 F001):
   ``health_check`` can return ``False`` cleanly.
 
 Cost guard integration (permanent boundary **(m)** — ¥1500 monthly
-cap) lands in B031 F002. F001 leaves a Protocol-shaped ``guard``
-constructor parameter so the F002 ``MonthlyBudgetGuard`` plugs in
-without touching gateway code. F001's default guard is a no-op pass-
-through so unit tests exercising the HTTP layer don't need a DB.
+cap) lands in B031 F002 via :class:`workbench_api.llm.cost_guard.MonthlyBudgetGuard`.
+The gateway constructor accepts a ``guard`` Protocol so unit tests
+can swap in a stub without standing up the budget-log DB; production
+callers leave it ``None`` and get the real DB-backed default.
 """
 
 from __future__ import annotations
@@ -34,6 +34,7 @@ from typing import Any, Protocol
 
 import httpx
 
+from workbench_api.llm.cost_guard import MonthlyBudgetGuard
 from workbench_api.llm.routing import estimate_cost_usd, route_task
 
 logger = logging.getLogger(__name__)
@@ -112,36 +113,12 @@ class _HttpClient(Protocol):
 class _Guard(Protocol):
     """Subset of the cost guard the gateway invokes.
 
-    F001 ships a no-op default; F002 swaps it for
-    :class:`workbench_api.llm.cost_guard.MonthlyBudgetGuard`. The
-    signature is the same shape Tiingo's guard uses so the two
-    budget-log surfaces look identical to the call site.
+    The default implementation is :class:`workbench_api.llm.cost_guard.MonthlyBudgetGuard`;
+    unit tests typically inject a hand-rolled stub matching this
+    Protocol so they can stay offline.
     """
 
     def check_and_increment(self, *, estimated_cost_usd: float) -> None: ...
-
-
-class _NoopGuard:
-    """Default guard for F001 — counts invocations, never blocks.
-
-    F002 replaces the default with the real ``MonthlyBudgetGuard``.
-    Until then, this stand-in keeps F001's gateway functional and
-    its unit tests independent of the budget log DB layer.
-    """
-
-    def __init__(self) -> None:
-        self.calls = 0
-
-    def check_and_increment(self, *, estimated_cost_usd: float) -> None:
-        # ``estimated_cost_usd`` is accepted-and-ignored on purpose:
-        # F001 records the contract shape that F002 will honour. The
-        # variable would normally be unused; logging it at DEBUG keeps
-        # the kwarg meaningful in trace output without raising a lint.
-        self.calls += 1
-        logger.debug(
-            "llm_noop_guard_pass",
-            extra={"calls": self.calls, "estimated_cost_usd": estimated_cost_usd},
-        )
 
 
 class LLMGateway:
@@ -189,7 +166,10 @@ class LLMGateway:
             },
         )
         self._sleep = sleep
-        self._guard = guard or _NoopGuard()
+        # B031 F002: real cost guard is the production default.
+        # ``MonthlyBudgetGuard.default()`` is cheap (frozen dataclass);
+        # DB session opens only at ``check_and_increment`` time.
+        self._guard = guard or MonthlyBudgetGuard.default()
 
     @property
     def api_key(self) -> str:

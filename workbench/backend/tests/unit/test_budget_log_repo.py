@@ -86,7 +86,10 @@ def test_alembic_upgrade_creates_tiingo_budget_log_table(tmp_db_url: str) -> Non
     assert "ix_tiingo_budget_log_month_year" in indexes
 
     # Downgrade strips the table + its index without touching B021/B023.
-    command.downgrade(cfg, "-1")
+    # Target the revision explicitly (rather than ``-1``) so a future
+    # migration stacked above 0003 — e.g. B031's 0004 llm_budget_log —
+    # does not silently change what ``-1`` means.
+    command.downgrade(cfg, "0002_b023_execution_workflow")
     inspector = inspect(get_engine())
     assert "tiingo_budget_log" not in set(inspector.get_table_names())
     assert {

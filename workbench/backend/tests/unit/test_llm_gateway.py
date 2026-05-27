@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol
 
 import httpx
 import pytest
@@ -109,10 +109,18 @@ class _StubClient:
         return nxt
 
 
+class _GuardLike(Protocol):
+    """Anything matching the gateway's ``_Guard`` Protocol — lets the
+    helper accept hand-rolled scenario stubs (``_CapHitGuard`` etc.)
+    without enumerating each one."""
+
+    def check_and_increment(self, *, estimated_cost_usd: float) -> None: ...
+
+
 def _make_gateway(
     *,
     client: _StubClient,
-    guard: _StubGuard | _ExceededGuard | None = None,
+    guard: _GuardLike | None = None,
 ) -> LLMGateway:
     """Build an LLMGateway wired against the stub HTTP client."""
 
@@ -469,3 +477,48 @@ def test_health_check_does_not_invoke_guard() -> None:
     gateway = _make_gateway(client=client, guard=guard)
     gateway.health_check()
     assert guard.estimates == []
+
+
+# --- F002 — MonthlyBudgetGuard integration --------------------------
+
+
+def test_default_guard_is_monthly_budget_guard_default() -> None:
+    """B031 F002: a forgotten ``guard=`` kwarg must NOT silently fall
+    back to a no-op — the production safety rail is the real
+    ``MonthlyBudgetGuard``. Asserting via isinstance keeps the
+    test stable across future cap changes."""
+
+    from workbench_api.llm.cost_guard import MonthlyBudgetGuard
+
+    gateway = LLMGateway(
+        api_key="k", client=_StubClient(), sleep=lambda _s: None
+    )
+    assert isinstance(gateway._guard, MonthlyBudgetGuard)
+    assert gateway._guard.monthly_cap_usd == 200.0
+
+
+def test_advise_skips_http_when_budget_exceeded_raises() -> None:
+    """A real :class:`BudgetExceeded` raise (e.g. ¥1500 cap hit) must
+    propagate out of advise() and the HTTP client must remain
+    untouched. Permanent boundary (m) — cap halts spend BEFORE the
+    network call happens."""
+
+    from workbench_api.llm.cost_guard import BudgetExceeded
+
+    class _CapHitGuard:
+        def check_and_increment(self, *, estimated_cost_usd: float) -> None:  # noqa: ARG002
+            raise BudgetExceeded(
+                "Monthly LLM budget cap of $200.00 (¥1500) reached"
+            )
+
+    client = _StubClient([_StubResponse(200, {"content": "x"})])
+    gateway = _make_gateway(client=client, guard=_CapHitGuard())
+    with pytest.raises(BudgetExceeded) as exc_info:
+        gateway.advise(
+            ChatRequest(task="daily_advisor", messages=[{"role": "user", "content": "x"}])
+        )
+    # Spec §F002(6): exception message must surface ¥-equivalent.
+    assert "¥1500" in str(exc_info.value)
+    # The HTTP client must remain untouched — cap halts before
+    # any aigc-gateway request goes out on the wire.
+    assert client.posts == []
