@@ -448,3 +448,32 @@ nvm use                          # 不一致时切换；无 nvm 装 Node 20 LTS
 **模板新段位置：** `framework/templates/signoff-report.md` §Post-signoff Deploy（在 §Production / HEAD 等价性 之后、§Soft-watch 之前）。
 
 **来源：** B025 F006 signoff §Framework Learnings 模板修订 + Codex round-3 / round-4 deploy drift 实战。
+
+---
+
+## 22. Decommission 类批次 E2E 断言必须 presence→absence 翻转（v0.9.31 — B030 沉淀）
+
+**背景：** B030 F004 reverify 时发现 `tests/e2e/b026-synthetic-banner.spec.ts` 是 B026 时期写的 **presence assertion**（验证 banner 存在 + 渲染中英文文案 + 关闭按钮等），但 B030 把 banner 退役（layout 移除 + i18n keys 删 + 组件保留 + decommission notice）。**legacy E2E 跑出来 fail**——不是产品 bug，是 acceptance 语义翻转了：从 "banner present" 应改为 "banner absent"。
+
+如不同步翻转，会出现 **"产品正确、测试过期"的假红**，导致：
+- CI 红灯但产品其实 PASS（误判）
+- Evaluator 需要花时间判断哪个红是真红
+- 长期累积让 E2E 失去守门信号
+
+**规约（Evaluator 在 decommission 类批次 verify / reverify 时硬要求）：**
+
+1. **检查 legacy E2E spec 是否需要翻转**：批次 spec 涉及 decommission（关 feature / 切 layer / 退役组件）时，**verify 阶段第一件事 grep 既有 E2E spec 名是否含被退役组件名 / feature 名**。若有命中：
+   - 该 spec 必须从 **presence assertion**（如 `expect(banner).toBeVisible()`）翻转为 **absence assertion**（如 `expect(banner).toBeHidden()` / `await expect(page.locator(...)).toHaveCount(0)`）
+   - 翻转必须在**同 batch 内完成**（不能留 Soft-watch）
+2. **守门测试**：spec acceptance 必含「legacy E2E 翻转」断言。生成 `tests/e2e/<feature>-decommissioned.spec.ts` 显式断言 absence + 添加 `// DECOMMISSIONED YYYY-MM-DD by B0XX, see <feature>-component.spec.tsx for reactivation` comment header。
+3. **配套 framework/harness/generator.md §16 四处清理铁律**：Generator 走完 4 处清理后，Evaluator verify 时**必跑 legacy E2E 验证翻转语义**。
+
+**反面案例（B030 F004 reverify）：**
+
+| 现象 | 根因 | 修法 |
+|---|---|---|
+| `tests/e2e/b026-synthetic-banner.spec.ts` 跑 fail（13 assertions × 2 locale）| B026 时期 presence assertion，B030 banner 退役后语义翻转 | F004 fix-round 1 commit `095e91d`：spec 改为 absence assertion + decommission notice header |
+
+**Signoff §Decommission Checklist 配套：** Evaluator 写 signoff 时勾选 `framework/templates/signoff-report.md §Decommission Checklist`（v0.9.31 模板修订），确认 legacy E2E 已同步翻转。
+
+**来源：** B030 F004 reverify Soft-watch S3 + Codex signoff §Framework Learnings 第 1 条（**Codex first-class 主动列入**）；commit `095e91d`（Playwright spec presence→absence）+ `tests/e2e/b026-synthetic-banner.spec.ts` 修订实例。配套 generator.md §16 四处清理铁律 + templates/signoff-report.md §Decommission Checklist。

@@ -141,6 +141,28 @@
 
 ---
 
+## Decommission Checklist（v0.9.31 — B030 沉淀）
+
+> 本节由 Evaluator 在签收时填写。**适用对象：含 UI feature 退役 / layer 切换 / 组件 decommission 的批次**（如 B030 关 B026 banner / Phase 3 UI 重构旧组件退役 / 切 sleeve / 切 vendor）。非 decommission 批次本节可写 "本批次不含 decommission"。
+>
+> 仅靠 env flag = false 不够 — 需要 4 处清理（详见 `framework/harness/generator.md` §16 + `framework/harness/evaluator.md` §22）。
+
+| 检查项 | 状态 | 证据 |
+|---|---|---|
+| (1) 退役组件 import + JSX 已从 layout / page 移除 | **是 / 否 / N/A** | grep `<ComponentName` in `src/app/` → 0 hits |
+| (2) i18n messages JSON 中 namespace keys 已删除 | **是 / 否 / N/A** | grep `<namespace>\.` in `messages/{zh-CN,en}.json` → 0 hits |
+| (3) 组件文件保留 + decommission notice + 重启路径 | **是 / 否 / N/A** | 文件开头含 `DECOMMISSIONED YYYY-MM-DD by B0XX, see <component>-component.spec.tsx for reactivation` 注释 + hardcoded 双语 + useLocale 替代 useTranslations |
+| (4a) 守门测试：`tests/safety/<feature>-decommissioned.spec.ts` 存在 | **是 / 否 / N/A** | 断言 layout 无 import + messages 无 keys |
+| (4b) 隔离测试：`tests/unit/<feature>-component.spec.tsx` 存在 | **是 / 否 / N/A** | 组件 isolation 测试验证重启路径仍可用 |
+| (4c) Legacy E2E presence → absence 翻转 | **是 / 否 / N/A** | grep 旧 E2E spec 名是否含被退役组件 / feature 名；若有命中必须翻转 |
+| Production HTML grep 组件名 / i18n keys 字面值 | **0 hits / N hits** | L2 验证：浏览器拉 protected 页面 HTML grep 0 命中 |
+
+**Evaluator 强制：** 任一 "否" 必须在同 batch 内修（不能留 Soft-watch）。"N/A" 必须说明原因（如 feature 没有 i18n keys）。
+
+**来源：** B030 F004 fix-round 1 banner truly off + legacy E2E presence→absence；signoff `docs/test-reports/B030-real-data-cutover-signoff-2026-05-27.md` §Framework Learnings 模板修订；配套 `framework/harness/generator.md` §16（Generator 四处清理铁律）+ `framework/harness/evaluator.md` §22（E2E 翻转规约）。
+
+---
+
 ## Soft-watch（不阻塞 done，需后续跟进）
 
 > 本节由 Evaluator 在签收时填写。低-中风险或边界条件遗留事项列入此处，记录"非 bug 但要记账"的事实。每条声明 ID / 描述 / 风险等级 / 建议处置。

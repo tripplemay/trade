@@ -30,7 +30,7 @@ type: project
 - B030 起 (k) + v0.9.30 §12.9：production secret 必须 3+1 处接线 (.env.example + config.py + deploy.sh + bootstrap-env.yml) + **Layer 状态不可逆向滑落**（B030 done 后 Layer 1 稳定，回滚需新批次 spec）
 
 ## Framework 状态
-- 最新版本 **v0.9.30**（2026-05-26 沉淀完成）：B027 + B029 二例合并沉淀 "production secret 三处接线铁律"（§12.9）。"deploy hygiene" 系列已覆盖 5 层 production-only edge 防御（deploy script / deploy workflow / runtime process / packaging / secret 注入）。proposed-learnings.md 空。B026 React event edge 仍单一案例 hold。
+- 最新版本 **v0.9.31**（2026-05-27 沉淀完成）：B030 沉淀 "Feature decommission ≠ env flag off — 四处清理铁律"（generator.md §16 + evaluator.md §22 + templates/signoff-report.md §Decommission Checklist 三处一体）。Codex F004 signoff first-class 主动列入 3 同源候选。"deploy hygiene + decommission" 系列已覆盖 6 层 production-only edge 防御（deploy script / deploy workflow / runtime process / packaging / secret 注入 / UI feature 退役）。proposed-learnings.md 空。B026 React event edge 仍单一案例 hold。
 
 ## 已知 gap（非阻塞）
 - 本机 `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。

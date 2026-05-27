@@ -5,6 +5,43 @@
 
 ---
 
+## v0.9.31 — 2026-05-27（B030 沉淀：Feature decommission 四处清理铁律 + E2E presence→absence 翻转）
+
+**来源批次：**
+- B030 F004 fix-round 1（commits `abf2ec4` F001 floor recovery + B026 banner truly off + `095e91d` Playwright spec presence→absence）
+- signoff `docs/test-reports/B030-real-data-cutover-signoff-2026-05-27.md` §Framework Learnings **Codex first-class 主动列入 3 条候选**（与 B027/B028/B029 Codex 标"无 learnings"模式不同；本次发现确实是 first-class framework discovery）
+
+**触发原因：**
+- B030 F003 关 B026 synthetic data banner，Generator 走 v0.9.30 §12.9 「secret 三处接线」模式让 banner env build-time disable（`.env.example` + `.env.production` + `bootstrap-env.yml` frontend env file）
+- Codex F004 verify L1 grep `研究原型` / `SyntheticDataBanner` 仍命中 production HTML bundle → blocker
+- 根因：React 组件正确 dead-code-eliminate 到 `return null`，**但** (a) i18n keys 仍 ship 在 messages JSON RSC payload + (b) `(protected)/layout.tsx` 仍 import + 渲染 component 导致组件名仍在 layout chunk
+- Codex grep 命中 i18n bundle 字面值 + chunk name 而非渲染 DOM
+- 反 anti-pattern："env flag = false 已够" 的错误假设
+- Generator F004 fix-round 1 真正解决：(1) layout 移 import + JSX (2) messages 删 keys (3) 组件保留 + decommission notice + 重启路径 (4) 守门测试 6+9 + legacy E2E presence→absence
+- legacy E2E (`tests/e2e/b026-synthetic-banner.spec.ts`) 跑 fail 因为 B026 时期 presence assertion 在 B030 退役后语义翻转
+
+**变更：**
+
+- `framework/harness/generator.md` 新增 §16 "Feature decommission ≠ env flag off — 四处清理铁律（v0.9.31 — B030 沉淀）"
+  - 4 处清理 ASCII art（layout JSX / i18n keys / 组件保留 + notice / 守门测试 + E2E 翻转）
+  - 4 条规约（spec acceptance / Generator checklist / Planner pre-impl 审计 / Evaluator L2 验证）
+  - 反面案例表（F003 实施 → F004 verify → fix-round 1 修复）
+  - 与 v0.9.30 §12.9 secret 三处接线对比表（同源 anti-pattern 不同场景）
+- `framework/harness/evaluator.md` 新增 §22 "Decommission 类批次 E2E 断言必须 presence→absence 翻转（v0.9.31 — B030 沉淀）"
+  - 3 条规约（grep 既有 E2E spec / 守门测试 / 配套 §16 四处清理）
+  - 反面案例（B030 F004 reverify legacy E2E fail）
+- `framework/templates/signoff-report.md` 新增 §"Decommission Checklist（v0.9.31 — B030 沉淀）"
+  - 7 行检查项表（4 处清理 + production HTML grep）
+  - Evaluator 强制规约（任一"否"必须同 batch 内修）
+- 归档 `framework/archive/proposed-learnings-archive-v0.9.31.md`
+
+**未沉淀（继续 hold）：**
+- B026 React event edge 仍单一案例（B030 decommission edge 机制不同，不与 React event edge 合并）
+- B030 S1 `compare_fixture_vs_real.py` 是 data-quality proxy 不是 full strategy backtest — 策略层细节
+- B030 S2 local harness `codex-setup.sh` / `AGENTS.md` 3099 漂移 — 项目 local config，非 framework
+
+---
+
 ## v0.9.30 — 2026-05-26（B027 + B029 二例合并沉淀：production secret 三处接线铁律）
 
 **来源批次：**
