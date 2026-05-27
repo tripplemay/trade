@@ -1,0 +1,10 @@
+{
+  "content": "Today's portfolio drift is within tolerance; no rebalance needed. Monitor SPY exposure as it approaches the upper sleeve band.",
+  "model": "claude-haiku-4-5",
+  "usage": {
+    "input_tokens": 84,
+    "output_tokens": 31
+  },
+  "cost_usd_est": 0.000239,
+  "log_id": "aigc-log-2026-05-27-daily-001"
+}

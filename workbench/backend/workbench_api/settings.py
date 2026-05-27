@@ -26,6 +26,7 @@ ALLOWED_ENV_VARS: frozenset[str] = frozenset(
         "WORKBENCH_RUNS_DIR",
         "TIINGO_API_KEY",
         "SEC_EDGAR_CONTACT_EMAIL",
+        "AIGC_GATEWAY_API_KEY",
     }
 )
 """Environment variables the workbench backend is permitted to read.
@@ -100,6 +101,19 @@ class Settings(BaseSettings):
     # the SECEDGARFundamentalsLoader constructor raises with a fix
     # pointer when called without a resolvable email.
     SEC_EDGAR_CONTACT_EMAIL: str | None = None
+    # B031 F001 — aigc-gateway API key for the unified LLM gateway
+    # (Stream 3.A — Phase 2 starting infra). Backend-only secret;
+    # never inlined into the frontend bundle or build artefact.
+    # Production VM gets it via the systemd EnvironmentFile, populated
+    # by the bootstrap-env workflow from the AIGC_GATEWAY_API_KEY repo
+    # secret (generated via `mcp__aigc-gateway__create_api_key` or the
+    # aigc-gateway dashboard). Unset is allowed at process boot so
+    # backend bootstrap stays vendor-free; the LLMGateway constructor
+    # raises with a fix pointer when first instantiated without a
+    # resolvable key. Permanent boundary (l) — business code never
+    # references model names directly; route via
+    # workbench_api.llm.routing.ROUTING_TABLE instead.
+    AIGC_GATEWAY_API_KEY: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=None,

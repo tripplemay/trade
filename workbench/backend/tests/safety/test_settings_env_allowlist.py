@@ -28,6 +28,11 @@ EXPECTED_ALLOWLIST: frozenset[str] = frozenset(
         # B029 F001 — SEC EDGAR contact email for required User-Agent
         # header (永久边界 (h); ban IP without it).
         "SEC_EDGAR_CONTACT_EMAIL",
+        # B031 F001 — aigc-gateway API key for the unified LLM gateway
+        # (Stream 3.A / Phase 2 starting infra; v0.9.30 §12.9 four-
+        # place wiring + permanent boundaries (l) routing and
+        # (m) ¥1500 cap enforced inside gateway/cost-guard code).
+        "AIGC_GATEWAY_API_KEY",
     }
 )
 

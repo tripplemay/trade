@@ -1,0 +1,10 @@
+{
+  "content": "FOMC held rates steady; statement language softened on labor-market tightness.",
+  "model": "gemini-2.0-flash",
+  "usage": {
+    "input_tokens": 1240,
+    "output_tokens": 22
+  },
+  "cost_usd_est": 0.000133,
+  "log_id": "aigc-log-2026-05-27-news-001"
+}

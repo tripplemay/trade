@@ -66,6 +66,18 @@ jobs:
           # to /etc/workbench/workbench.env. Missing on the VM →
           # deploy.sh pre-flight check exits 67 with remediation message.
           SEC_EDGAR_CONTACT_EMAIL: ${{ secrets.SEC_EDGAR_CONTACT_EMAIL }}
+          # B031 F001 — aigc-gateway API key for the unified LLM
+          # gateway (Stream 3.A / Phase 2 starting infra). Backend-only
+          # secret; v0.9.30 §12.9 four-place wiring landed here as the
+          # fourth place (.env.example + settings.py + deploy.sh +
+          # bootstrap-env.yml). Generate via
+          # `mcp__aigc-gateway__create_api_key` or the aigc-gateway
+          # dashboard. Missing on the VM → deploy.sh pre-flight check
+          # exits 68 with remediation message. Permanent boundary (l)
+          # routing + (m) ¥1500 monthly cap are enforced inside the
+          # gateway/cost-guard code regardless of how this key
+          # arrives.
+          AIGC_GATEWAY_API_KEY: ${{ secrets.AIGC_GATEWAY_API_KEY }}
         run: |
           # set +x to be defensive — GHA masks ${{ secrets.* }} but never echo plaintext anyway.
           set +x
@@ -90,6 +102,8 @@ jobs:
           TIINGO_API_KEY=$TIINGO_API_KEY
           # B029 F001 — SEC EDGAR contact email for User-Agent header.
           SEC_EDGAR_CONTACT_EMAIL=$SEC_EDGAR_CONTACT_EMAIL
+          # B031 F001 — aigc-gateway backend API key (LLM gateway).
+          AIGC_GATEWAY_API_KEY=$AIGC_GATEWAY_API_KEY
           # B030 F003 — NEXT_PUBLIC_SYNTHETIC_DATA_BANNER is the only
           # B026 banner-related env var. It is NOT a backend secret;
           # it is a frontend build-time public flag and lives in
@@ -109,7 +123,7 @@ jobs:
             exit 1
           fi
           # Each required key must be present and non-empty
-          for k in GOOGLE_OAUTH_CLIENT_ID GOOGLE_OAUTH_CLIENT_SECRET NEXTAUTH_SECRET ALLOWED_USER_EMAIL TIINGO_API_KEY SEC_EDGAR_CONTACT_EMAIL; do
+          for k in GOOGLE_OAUTH_CLIENT_ID GOOGLE_OAUTH_CLIENT_SECRET NEXTAUTH_SECRET ALLOWED_USER_EMAIL TIINGO_API_KEY SEC_EDGAR_CONTACT_EMAIL AIGC_GATEWAY_API_KEY; do
             if ! grep -qE "^${k}=." "$ENVFILE"; then
               echo "::error::Refusing to ship: ${k} is missing or empty in the assembled env file." >&2
               exit 1

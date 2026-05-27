@@ -117,6 +117,28 @@ if [[ -r "${ENV_FILE}" ]] && [[ -z "${SEC_EDGAR_CONTACT_EMAIL:-}" ]]; then
   exit 67
 fi
 
+# B031 F001 — aigc-gateway API key pre-flight (Stream 3.A / Phase 2
+# starting infra). The LLMGateway constructor
+# (workbench_api/llm/gateway.py) raises a RuntimeError at first call
+# when the key is missing — failing the deploy here makes the
+# misconfiguration visible immediately instead of at the first LLM
+# call inside an AI advisor endpoint (B036+). Same shape as TIINGO_
+# API_KEY (B027) and SEC_EDGAR_CONTACT_EMAIL (B029): tolerate empty
+# during the dev `deploy.sh` rehearsal (WORKBENCH_ENV_FILE unset) so
+# a contributor without aigc-gateway access can still smoke this
+# script locally. Permanent boundary (l) routing + (m) cost cap are
+# enforced inside the gateway code regardless of this check.
+if [[ -r "${ENV_FILE}" ]] && [[ -z "${AIGC_GATEWAY_API_KEY:-}" ]]; then
+  echo "✗ AIGC_GATEWAY_API_KEY is missing from ${ENV_FILE}. The LLM " >&2
+  echo "  gateway (workbench_api/llm/gateway.py) cannot start without " >&2
+  echo "  a backend-scoped key. Configure the AIGC_GATEWAY_API_KEY " >&2
+  echo "  repo secret (Settings → Secrets and variables → Actions); " >&2
+  echo "  generate one via mcp__aigc-gateway__create_api_key or the " >&2
+  echo "  aigc-gateway dashboard, then re-run the bootstrap-env " >&2
+  echo "  workflow so the env file is rewritten." >&2
+  exit 68
+fi
+
 echo "→ alembic upgrade head"
 (
   cd "${RELEASE_DIR}/backend"
