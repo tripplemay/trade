@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B031-llm-gateway：`verifying`**（2026-05-27 generator 交付）；F001 + F002 done generator + F003 pending codex evaluator。Spec：`docs/specs/B031-llm-gateway-spec.md`。下一步 Codex 起 verifying：L1 CI gates + L2 真 VM SSH 验 alembic 0004 + sqlite llm_budget_log 表 + smoke health_check + B026 banner 仍 0 hits + signoff docs/test-reports/B031-llm-gateway-signoff-*.md + ≥2 PNG screenshots。
+- **B031-llm-gateway：`fixing`**（2026-05-27 Codex 首轮验收退回）；F001 + F002 done generator，F003 first-round L1 PASS / L2 FAIL。Spec：`docs/specs/B031-llm-gateway-spec.md`。唯一硬 blocker：production VM 上 `LLMGateway().health_check()` 触发 `httpx.ConnectError: [Errno -2] Name or service not known`，真实网关 reachability 未打通；但 `/api/health.version` 已等于 `main` HEAD，`AIGC_GATEWAY_API_KEY` 已在 `/etc/workbench/workbench.env`，`llm_budget_log` 表存在，`/api/debug/recent-errors` 为 `0`，且失败前后 `llm_budget_log` 聚合仍 `0→0`，说明 no-billing 子条件是绿的。下一步 Generator 需修复 gateway base-URL / service wiring 后回 `reverifying`。
 - 🎯 **Phase 2 起点 / Stream 3.A**：本批次 = Layer 1.5 AI-augmented advisory 基础设施。Phase 1 Layer 0→1 已完成（B030 done 2026-05-27）。
 - 目标：把 aigc-gateway（已有 MCP server 30+ tools）接入 backend，提供统一 chat completion + multi-tier routing + cost guard + log。**不做** prompt template / safety eval / advisor endpoint / 前端 UI 改动（留 B032/B036+）。
 - 决策矩阵（2026-05-27 用户已批）：aigc-gateway HTTP REST 接入（不走 MCP）/ Multi-tier routing per llm-provider-evaluation §5.2（Sonnet 主 / Haiku 高频 / Flash news / Opus quarterly）/ 月 cost cap ¥1500（¥1200 alert + Haiku fallback / ¥1500 halt）/ 范围 = 纯 basic infra。
@@ -17,7 +17,7 @@ type: project
 - 最近：🎯 **B030 Real Data Cutover signoff 2026-05-27（Phase 1 终点 / 里程碑 A Layer 0→1 达成）**；B029 signoff 2026-05-26；B028 signoff 2026-05-26；B027 signoff 2026-05-26。
 
 ## 生产状态
-- `https://trade.guangai.ai` live；production `/api/health.version` = `61bc4c31a7fa3229a84896d7d3a93fab1b613405`（B031 F001，2026-05-27 deploy 成功；AIGC_GATEWAY_API_KEY 已配 GitHub Secret + bootstrap-env workflow + tripplezhou install + systemd restart 完成；deploy.sh pre-flight 通过）；B026 synthetic banner 仍 0 hits decommissioned；strategy 已切真数据（real prices + real fundamentals）；fixture vs real 5+1 对比报告本机已生成。
+- `https://trade.guangai.ai` live；production `/api/health.version` = `b002ef59eef58e9ed40c1f22512037c7f3650c50`（与当前 `main` HEAD 等价，B031 F002 deploy 成功）；`AIGC_GATEWAY_API_KEY` 已配 GitHub Secret + bootstrap-env workflow + VM install；`llm_budget_log` 表存在；authenticated `/api/debug/recent-errors` = `{"count":0,"records":[]}`；但 production `LLMGateway().health_check()` 仍命中 `Name or service not known` blocker。B026 synthetic banner 仍 0 hits decommissioned；strategy 已切真数据（real prices + real fundamentals）；fixture vs real 5+1 对比报告本机已生成。
 
 ## 永久硬边界（B031 起继续；v0.9.31 + §12.9 + §16/§22）
 - 系统层：no-broker SDK / no-paper-or-live URL / no-credential / no-auto-execution / 多用户禁 / Cloud SQL 禁 / same-origin /api/* / auth-gated / Repository
@@ -34,6 +34,6 @@ type: project
 ## 已知 gap（非阻塞）
 - 本机 `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
 - GitHub Secret `TIINGO_API_KEY`（B027）+ `SEC_EDGAR_CONTACT_EMAIL`（B029）已配。
-- GitHub Secret `AIGC_GATEWAY_API_KEY` 已配（2026-05-27 用户）+ bootstrap-env workflow 已 dispatch + tripplezhou 已 install env + services 已 restart + Workbench Deploy 已成功 (run 26516368849)；F002+F003 不再阻塞。
+- GitHub Secret `AIGC_GATEWAY_API_KEY` 已配（2026-05-27 用户）+ bootstrap-env workflow 已 dispatch + tripplezhou 已 install env + services 已 restart + Workbench Deploy 已成功；当前阻塞不在 secret 注入，而在 production gateway endpoint / runtime wiring。
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->
