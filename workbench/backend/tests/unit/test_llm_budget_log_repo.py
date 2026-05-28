@@ -91,7 +91,11 @@ def test_alembic_upgrade_creates_llm_budget_log_table(tmp_db_url: str) -> None:
     cfg.set_main_option("script_location", f"{backend_root}/workbench_api/db/migrations")
     cfg.set_main_option("sqlalchemy.url", tmp_db_url)
 
-    command.upgrade(cfg, "head")
+    # Upgrade to B031's revision specifically rather than ``head``; later
+    # batches (B033+) add migrations above 0004, so ``-1`` from head no
+    # longer targets this batch's table. Pinning the revision keeps the
+    # B031 contract test stable as new migrations land.
+    command.upgrade(cfg, "0004_b031_llm_budget_log")
     inspector = inspect(get_engine())
     table_names = set(inspector.get_table_names())
     assert "llm_budget_log" in table_names
@@ -100,9 +104,10 @@ def test_alembic_upgrade_creates_llm_budget_log_table(tmp_db_url: str) -> None:
     indexes = {idx["name"] for idx in inspector.get_indexes("llm_budget_log")}
     assert "ix_llm_budget_log_month_year" in indexes
 
-    # Downgrade one revision strips the table + its index without
-    # touching B021/B023/B027 baseline.
-    command.downgrade(cfg, "-1")
+    # Downgrade to the revision before B031 to verify this batch's
+    # table + index are dropped cleanly. Same reasoning as the explicit
+    # upgrade target above — ``-1`` from head moves with each new batch.
+    command.downgrade(cfg, "0003_b027_tiingo_budget_log")
     inspector = inspect(get_engine())
     after_table_names = set(inspector.get_table_names())
     assert "llm_budget_log" not in after_table_names

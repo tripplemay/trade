@@ -14,6 +14,7 @@ from workbench_api.db.repositories.backlog import BacklogRepository
 from workbench_api.db.repositories.base import Repository
 from workbench_api.db.repositories.fill_journal_entry import FillJournalEntryRepository
 from workbench_api.db.repositories.llm_budget_log import LLMBudgetLogRepository
+from workbench_api.db.repositories.news import NewsRepository
 from workbench_api.db.repositories.order_ticket import OrderTicketRepository
 from workbench_api.db.repositories.snapshot import SnapshotMetaRepository
 
@@ -23,6 +24,7 @@ __all__ = [
     "BacklogRepository",
     "FillJournalEntryRepository",
     "LLMBudgetLogRepository",
+    "NewsRepository",
     "OrderTicketRepository",
     "Repository",
     "SnapshotMetaRepository",

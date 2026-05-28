@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B033-news-ingest：`building`**（2026-05-28 Planner 启动；4 features 已落 features.json：F001 schema + Repository + alembic 0005 + Snapshot + Adapter Protocol / F002 SEC EDGAR adapter / F003 Yahoo RSS adapter + CLI / F004 codex L1+L2）。Spec：`docs/specs/B033-news-ingest-spec.md`。
+- **B033-news-ingest：`building`**（2026-05-28；F001 ✅ done，F002/F003 generator pending → F004 codex；spec `docs/specs/B033-news-ingest-spec.md`）。F001 落地 `News` 表 + `NewsRepository.save_if_new` 幂等 + alembic 0005 可逆 + `NewsSnapshotWriter` 内容寻址 + `NewsAdapter` Protocol；backend pytest 532（baseline 513 + 19）；ruff / mypy / alembic 全过；顺手把 B031 alembic 测试从 `head`/`-1` 改为显式 revision（防 B033 加 0005 后下游断）。
 - Phase 2 / Stream 2.A：为 B034 News↔ticker + B036 AI advisor MVP 提供 news ingest 基础设施。**不做** FRED（B035）/ News↔ticker（B034）/ Recommendations 渲染 / scheduled cron / 内联 raw text 入 DB / AI advisor。
 - 决策矩阵（2026-05-28 用户已批）：Source=SEC EDGAR + Yahoo RSS 二源（FRED 留 B035）/ EDGAR form types=10-K+10-Q+8-K+Form 4 / Universe=US Quality 27 real (synthetic ZQ* skip) + 4 master ETFs / Ticker assoc 不做（留 B034）/ Production ingest=adapter+CLI（无 cron）/ Schema=metadata+snapshot path（raw 落 `data/snapshots/news/`）/ F 拆分=4 features (3g+1c) / 不引入新 secret（复用 B029 `SEC_EDGAR_CONTACT_EMAIL`） / Cost=¥0。
 - 新增永久产品边界 (p) + (q)：(p) News raw text 仅落 snapshot path 不内联 DB（守门 `tests/safety/test_news_schema_metadata_only.py`）+ (q) News ingest 默认 production-disabled（无 `workbench_api/news/scheduler.py` + 无 cron + 无 systemd unit，守门 `tests/safety/test_news_no_scheduler.py`）。
