@@ -1,0 +1,41 @@
+{
+  "_doc": "B033 fixture — truncated NVDA /submissions/ envelope (CIK 1045810). Built to exercise the 8-K + 10-Q path of the adapter.",
+  "cik": "0001045810",
+  "name": "NVIDIA Corp",
+  "tickers": ["NVDA"],
+  "exchanges": ["Nasdaq"],
+  "fiscalYearEnd": "0131",
+  "filings": {
+    "recent": {
+      "accessionNumber": [
+        "0001045810-26-000050",
+        "0001045810-26-000048",
+        "0001045810-26-000045"
+      ],
+      "filingDate": ["2026-05-20", "2026-05-12", "2026-03-15"],
+      "reportDate": ["2026-04-27", "2026-05-10", "2026-01-25"],
+      "form": ["8-K", "10-Q", "8-K"],
+      "primaryDocument": [
+        "nvda-20260427.htm",
+        "nvda-20260427-10q.htm",
+        "nvda-20260125-8k.htm"
+      ],
+      "primaryDocDescription": ["8-K", "10-Q", "8-K"],
+      "items": ["2.02,9.01", "", "8.01"],
+      "acceptanceDateTime": [
+        "2026-05-20T17:00:00.000Z",
+        "2026-05-12T17:00:00.000Z",
+        "2026-03-15T17:00:00.000Z"
+      ],
+      "fileNumber": ["000-23985", "000-23985", "000-23985"],
+      "filmNumber": ["1", "2", "3"],
+      "size": [250000, 800000, 200000],
+      "isXBRL": [1, 1, 1],
+      "isXBRLNumeric": [1, 1, 1],
+      "isInlineXBRL": [1, 1, 1],
+      "act": ["34", "34", "34"],
+      "core_type": ["", "", ""]
+    },
+    "files": []
+  }
+}

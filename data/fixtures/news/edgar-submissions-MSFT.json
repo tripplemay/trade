@@ -1,0 +1,41 @@
+{
+  "_doc": "B033 fixture — truncated MSFT /submissions/ envelope (CIK 789019). Built to exercise the Form 4 + 10-Q path of the adapter.",
+  "cik": "0000789019",
+  "name": "MICROSOFT CORP",
+  "tickers": ["MSFT"],
+  "exchanges": ["Nasdaq"],
+  "fiscalYearEnd": "0630",
+  "filings": {
+    "recent": {
+      "accessionNumber": [
+        "0001140361-26-021000",
+        "0001140361-26-020999",
+        "0000789019-26-000010"
+      ],
+      "filingDate": ["2026-05-22", "2026-05-21", "2026-04-30"],
+      "reportDate": ["2026-05-20", "2026-05-19", "2026-03-31"],
+      "form": ["4", "4", "10-Q"],
+      "primaryDocument": [
+        "xslF345X06/form4.xml",
+        "xslF345X06/form4.xml",
+        "msft-20260331.htm"
+      ],
+      "primaryDocDescription": ["FORM 4", "FORM 4", "10-Q"],
+      "items": ["", "", ""],
+      "acceptanceDateTime": [
+        "2026-05-22T20:00:00.000Z",
+        "2026-05-21T20:00:00.000Z",
+        "2026-04-30T16:30:00.000Z"
+      ],
+      "fileNumber": ["001-37845", "001-37845", "001-37845"],
+      "filmNumber": ["1", "2", "3"],
+      "size": [30000, 30000, 800000],
+      "isXBRL": [0, 0, 1],
+      "isXBRLNumeric": [0, 0, 1],
+      "isInlineXBRL": [0, 0, 1],
+      "act": ["", "", "34"],
+      "core_type": ["", "", ""]
+    },
+    "files": []
+  }
+}

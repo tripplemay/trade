@@ -14,7 +14,7 @@
       "title": "SEC EDGAR adapter (10-K / 10-Q / 8-K + Form 4)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "(1) workbench_api/news/adapters/sec_edgar.py: SECEdgarNewsAdapter(NewsAdapter), source='sec_edgar'；(2) fetch(ticker, since): User-Agent 复用 SEC_EDGAR_CONTACT_EMAIL (config.settings) + rate limit 10 req/sec (token bucket，可复用 B029 _sec_edgar_throttle 或新独立 module) + 调 https://data.sec.gov/submissions/CIK{cik:010d}.json 列 filings + 按 form_type ∈ {'10-K','10-Q','8-K','4'} 过滤 + published_at >= since 过滤 + 每条 filing fetch 主文档 (.htm 或 .xml) build NewsItem(raw_body, raw_ext) + 落库 NewsRepository.save_if_new + snapshot 落 data/snapshots/news/sec_edgar/{YYYY-MM-DD}/{accession_no}.{htm,xml}；(3) CIK lookup 复用 B029 既有 resolver；(4) Synthetic ZQ* ticker: log warn + 返回空 iterator (B029 §3 一致)；(5) data/fixtures/news/edgar-sample-*.json: ≥3 fixture (10-K AAPL / 8-K NVDA / Form 4 MSFT) + 至少一份主文档 raw body sample；(6) pytest ≥8: adapter mock httpx 返回 fixture → 落库 + snapshot 正确 / form type filter (fixture 含 noise S-1 / 13F 断言被滤) / rate limit respect (mock + 时间断言 ≥0.1s 间隔) / User-Agent header 含 SEC_EDGAR_CONTACT_EMAIL / Synthetic ZQ* skip + log warn / since 过滤 (published_at < since 不入库)；(7) **第三方 API live-validate 建议** (参 B031 F003 fix-round 1 教训): generator 实施时至少手 hit 一次真实 https://data.sec.gov/submissions/CIK0000320193.json (AAPL) 验证 JSON envelope + 关键字段路径，写守门 unit test 锁住；(8) Gates: backend pytest ≥536 (F001 后 528 + ≥8) / ruff / mypy / **不引入新 secret** (grep .env.example / config.py / deploy.sh / bootstrap-env.yml 无新增条目)；(9) 不动 F001 schema / Yahoo adapter (留 F003) / 既有 B029 SECEDGARFundamentalsLoader (本批次走独立 /submissions/ endpoint) / B032 AI Safety Eval workflow."
     },
     {

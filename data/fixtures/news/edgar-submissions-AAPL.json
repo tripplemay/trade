@@ -1,0 +1,116 @@
+{
+  "_doc": "B033 fixture — truncated SEC EDGAR /submissions/CIK0000320193.json envelope used by tests/unit/test_news_adapter_edgar.py. Live-validated 2026-05-28 against https://data.sec.gov/submissions/CIK0000320193.json. Parallel arrays in filings.recent intentionally include noise (S-1, 13F) so the form-type filter assertion proves the adapter drops them. The accession numbers, filing dates, and primary documents are the real values from the live envelope; full payload was 164 KB so this truncation keeps the fixture diffable.",
+  "cik": "0000320193",
+  "entityType": "operating",
+  "name": "Apple Inc.",
+  "tickers": ["AAPL"],
+  "exchanges": ["Nasdaq"],
+  "fiscalYearEnd": "0930",
+  "category": "Large accelerated filer",
+  "filings": {
+    "recent": {
+      "accessionNumber": [
+        "0000320193-26-000020",
+        "0001140361-26-020871",
+        "0001140361-26-020298",
+        "0000320193-26-000013",
+        "0000320193-26-000011",
+        "0000320193-25-000114",
+        "0000999999-26-000001",
+        "0000888888-26-000001"
+      ],
+      "filingDate": [
+        "2026-05-15",
+        "2026-05-12",
+        "2026-05-08",
+        "2026-05-01",
+        "2026-04-30",
+        "2025-11-01",
+        "2026-05-10",
+        "2026-05-09"
+      ],
+      "reportDate": [
+        "2026-03-29",
+        "2026-05-08",
+        "2026-05-06",
+        "2026-03-28",
+        "2026-04-30",
+        "2025-09-27",
+        "",
+        ""
+      ],
+      "form": [
+        "10-K",
+        "4",
+        "4",
+        "10-Q",
+        "8-K",
+        "10-K",
+        "S-1",
+        "13F-HR"
+      ],
+      "primaryDocument": [
+        "aapl-20260329.htm",
+        "xslF345X06/form4.xml",
+        "xslF345X06/form4.xml",
+        "aapl-20260328.htm",
+        "aapl-20260430.htm",
+        "aapl-20250927.htm",
+        "noise.htm",
+        "13fhr.htm"
+      ],
+      "primaryDocDescription": [
+        "10-K",
+        "FORM 4",
+        "FORM 4",
+        "10-Q",
+        "8-K",
+        "10-K",
+        "S-1",
+        "13F-HR"
+      ],
+      "items": [
+        "",
+        "",
+        "",
+        "",
+        "2.02,9.01",
+        "",
+        "",
+        ""
+      ],
+      "acceptanceDateTime": [
+        "2026-05-15T16:30:00.000Z",
+        "2026-05-12T20:00:00.000Z",
+        "2026-05-08T19:45:00.000Z",
+        "2026-05-01T16:00:00.000Z",
+        "2026-04-30T17:00:00.000Z",
+        "2025-11-01T16:30:00.000Z",
+        "2026-05-10T16:00:00.000Z",
+        "2026-05-09T16:00:00.000Z"
+      ],
+      "fileNumber": [
+        "001-36743",
+        "001-36743",
+        "001-36743",
+        "001-36743",
+        "001-36743",
+        "001-36743",
+        "001-36743",
+        "001-36743"
+      ],
+      "filmNumber": [
+        "1", "2", "3", "4", "5", "6", "7", "8"
+      ],
+      "size": [
+        2000000, 30000, 30000, 800000, 250000, 2100000, 100000, 90000
+      ],
+      "isXBRL": [1, 0, 0, 1, 1, 1, 0, 0],
+      "isXBRLNumeric": [1, 0, 0, 1, 1, 1, 0, 0],
+      "isInlineXBRL": [1, 0, 0, 1, 1, 1, 0, 0],
+      "act": ["34", "", "", "34", "34", "34", "", "34"],
+      "core_type": ["", "", "", "", "", "", "", ""]
+    },
+    "files": []
+  }
+}

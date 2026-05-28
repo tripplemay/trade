@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "B033 News Ingest Framework (Phase 2 / Stream 2.A) — 为 B034 News↔ticker + B036 AI advisor MVP 打基础：SEC EDGAR filings (10-K / 10-Q / 8-K + Form 4) + Yahoo Finance RSS 二 source 接入；fixture-first 离线 CI；metadata-only schema + raw text 落 data/snapshots/news/；workbench_api/news/ 模块 + CLI manual trigger (无 cron)；universe = B025 US Quality 27 real ticker + 4 master ETFs (SPY/QQQ/EFA/EEM); synthetic ZQ* skip。**不做** FRED (留 B035) / News↔ticker (留 B034) / Recommendations 渲染 / scheduled cron / 内联 raw text 入 DB / AI advisor。本批次 4 features: (F001) news schema + Repository + alembic 0005 + NewsSnapshotWriter + NewsAdapter Protocol + pytest ≥10; (F002) SEC EDGAR adapter + fixture ≥3 + pytest ≥8 + 第三方 API live-validate 建议 (参 B031 F003); (F003) Yahoo RSS adapter + CLI + feedparser runtime dep + pytest ≥8 + 永久边界 (q) 守门; (F004) Codex L1 + L2 真 VM 验收 + signoff (含 production DB alembic head = 0005_b033_news + 无 scheduler + data/snapshots/news/ 目录存在但为空)。**永久硬边界 100% 继承 v0.9.31 + (l)(m)(n)(o) + 新增 (p)(q)：** (p) News raw text 仅落 snapshot path 不内联 DB (守门 test_news_schema_metadata_only.py inspect News.__table__.columns 无 raw_text/body/content TEXT column) + (q) News ingest 默认 production-disabled (无 workbench_api/news/scheduler.py + 无 APScheduler import + 无 cron + 无 systemd unit)。决策矩阵 (2026-05-28 用户已批)：Source=SEC EDGAR + Yahoo RSS (FRED 留 B035) / EDGAR form types=10-K+10-Q+8-K+Form 4 / Universe=US Quality 27 + 4 ETFs (synthetic skip) / Ticker assoc=不做 (留 B034) / Production ingest=adapter+CLI (无 cron) / Schema=metadata-only + snapshot path / F 拆分=4 features (3g+1c) / Secret=不引入新 (复用 SEC_EDGAR_CONTACT_EMAIL B029) / CI=fixture-first / Cost=¥0。受益 v0.9.27 §12.7.1 paths-trigger + v0.9.29 §12.8 runtime deps + v0.9.30 §12.9 secret 三处接线 (本批次无新 secret) + v0.9.31 §16/§22 + v0.9.28 5 子条 (本批次不触 AI 但 spec 列出)。预估 1 个中型批次。Cost 估算：¥0/月 (SEC EDGAR + Yahoo RSS 均免费)。",
   "total_features": 4,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
-  "current_sprint": "F002",
+  "current_sprint": "F003",
   "last_updated": "2026-05-28",
   "reference_docs": [
     "docs/specs/B033-news-ingest-spec.md",
