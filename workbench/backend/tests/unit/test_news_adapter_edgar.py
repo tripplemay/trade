@@ -35,7 +35,9 @@ MSFT_CIK = 789019
 
 
 def _load_fixture(name: str) -> dict[str, Any]:
-    return json.loads((FIXTURE_DIR / name).read_text(encoding="utf-8"))
+    payload = json.loads((FIXTURE_DIR / name).read_text(encoding="utf-8"))
+    assert isinstance(payload, dict)
+    return payload
 
 
 @dataclass
@@ -134,7 +136,7 @@ def test_fetch_aapl_filters_to_allowed_forms() -> None:
             since=datetime(2026, 1, 1, tzinfo=UTC),
         )
     )
-    forms = sorted({item.form_type for item in items})
+    forms = sorted({item.form_type for item in items if item.form_type is not None})
     assert forms == ["10-K", "10-Q", "4", "8-K"]
     accs = sorted(item.source_id for item in items)
     # Verify the noise (S-1 + 13F-HR accession numbers) is excluded.
@@ -284,9 +286,9 @@ def test_user_agent_header_contains_contact_email() -> None:
     import httpx
 
     adapter = SECEdgarNewsAdapter(contact_email="abc@example.com")
-    headers = adapter._client.headers  # type: ignore[attr-defined]
-    assert isinstance(adapter._client, httpx.Client)  # type: ignore[attr-defined]
-    ua = headers["User-Agent"]
+    client = adapter._client  # noqa: SLF001 — intentional internal access for test
+    assert isinstance(client, httpx.Client)
+    ua = client.headers["User-Agent"]
     assert "abc@example.com" in ua
     assert "Workbench Trade" in ua
 
