@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
@@ -70,8 +71,30 @@ def _default_universe() -> tuple[str, ...]:
 
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
-DEFAULT_SNAPSHOT_ROOT = REPO_ROOT / "data" / "snapshots" / "news"
 DEFAULT_LOOKBACK_DAYS = 30
+
+
+def _default_snapshot_root() -> Path:
+    """Resolve the snapshot storage root.
+
+    B034 F001 closes the B033 signoff soft-watch **S1**: production
+    persists news snapshots outside the repo tree (the VM provisions
+    ``/var/lib/workbench/data/snapshots/news`` at deploy time), so the
+    root must come from the ``WORKBENCH_NEWS_SNAPSHOT_DIR`` environment
+    variable when set. It falls back to the repo-relative
+    ``data/snapshots/news`` for local dev / tests where the env var is
+    absent. This stays a CLI default only — the ingest CLI is still
+    manual-trigger (no scheduler; permanent boundary **(q)**), so
+    resolving the env var here does not make ingest run in production.
+    """
+
+    env_root = os.environ.get("WORKBENCH_NEWS_SNAPSHOT_DIR")
+    if env_root:
+        return Path(env_root)
+    return REPO_ROOT / "data" / "snapshots" / "news"
+
+
+DEFAULT_SNAPSHOT_ROOT = _default_snapshot_root()
 
 
 @dataclass(frozen=True, slots=True)

@@ -16,8 +16,10 @@ explicit edit to this test.
 from __future__ import annotations
 
 from sqlalchemy import Text
+from sqlalchemy.types import JSON
 
 from workbench_api.db.models.news import News
+from workbench_api.db.models.news_embedding import NewsEmbedding
 
 _BLOCKED_BODY_COLUMNS: frozenset[str] = frozenset({"raw_text", "body", "content"})
 
@@ -72,3 +74,46 @@ def test_news_table_snapshot_path_and_hash_are_required() -> None:
     columns = {col.name: col for col in News.__table__.columns}
     assert not columns["snapshot_path"].nullable
     assert not columns["content_sha256"].nullable
+
+
+def test_news_embedding_table_has_no_raw_body_text_column() -> None:
+    """B034 boundary (p) extension: the ``news_embedding`` table holds a
+    vector, never raw filing / article body. Block any ``raw_text`` /
+    ``body`` / ``content`` TEXT column from sneaking in alongside it."""
+
+    text_body_columns = {
+        col.name
+        for col in NewsEmbedding.__table__.columns
+        if isinstance(col.type, Text) and col.name in _BLOCKED_BODY_COLUMNS
+    }
+    assert not text_body_columns, (
+        "Permanent product boundary (p) violated: news_embedding grew a raw "
+        f"body TEXT column ({sorted(text_body_columns)}). Only the dense "
+        "vector belongs here — raw bodies live under data/snapshots/news/."
+    )
+
+
+def test_news_embedding_vector_is_numeric_json_not_text() -> None:
+    """The ``vector`` column must be a (numeric) JSON column, not a Text
+    column — a regression to TEXT would let raw body smuggle in as a string
+    and bypass boundary (p)."""
+
+    vector_col = NewsEmbedding.__table__.columns["vector"]
+    assert isinstance(vector_col.type, JSON), (
+        "news_embedding.vector must stay a JSON column carrying list[float]; "
+        f"got {vector_col.type!r}. A Text/String type would let raw article "
+        "body live in DB, violating boundary (p)."
+    )
+    assert not isinstance(vector_col.type, Text)
+
+
+def test_news_embedding_table_column_set_is_metadata_only() -> None:
+    """Pin the exact column set so a future edit can't smuggle a body
+    column into news_embedding under a different name."""
+
+    columns = {col.name for col in NewsEmbedding.__table__.columns}
+    assert columns == {"id", "news_id", "model", "dim", "vector", "created_at"}, (
+        "Permanent product boundary (p): news_embedding columns drifted from "
+        "the B034 spec §4.2 schema. Any new column must be reviewed against "
+        "the boundary before merge."
+    )

@@ -20,7 +20,9 @@ import pytest
 from workbench_api.news.adapters.base import NewsItem
 from workbench_api.news.cli import (
     DEFAULT_LOOKBACK_DAYS,
+    REPO_ROOT,
     FetchSummary,
+    _default_snapshot_root,
     build_adapters,
     fetch_main,
     parse_args,
@@ -308,3 +310,25 @@ def test_fetch_main_creates_snapshot_dirs(
     fetch_main(args, adapter_factory=factory)  # type: ignore[arg-type]
     assert (root / "sec_edgar").is_dir()
     assert (root / "yahoo_rss").is_dir()
+
+
+def test_default_snapshot_root_honours_env_var(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """B034 F001 — S1 closure: ``WORKBENCH_NEWS_SNAPSHOT_DIR`` overrides
+    the repo-relative default so production persists snapshots outside the
+    release tree (matches deploy.sh's persistent-data-root provisioning)."""
+
+    persistent = tmp_path / "var" / "lib" / "workbench" / "data" / "snapshots" / "news"
+    monkeypatch.setenv("WORKBENCH_NEWS_SNAPSHOT_DIR", str(persistent))
+    assert _default_snapshot_root() == persistent
+
+
+def test_default_snapshot_root_falls_back_to_repo_relative(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Without the env var, the default stays repo-relative for local dev
+    / tests — unchanged from the B033 behaviour."""
+
+    monkeypatch.delenv("WORKBENCH_NEWS_SNAPSHOT_DIR", raising=False)
+    assert _default_snapshot_root() == REPO_ROOT / "data" / "snapshots" / "news"
