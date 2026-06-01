@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B033-news-ingest：`verifying`**（2026-06-01；F001/F002/F003 generator ✅ done → 交接 Codex 跑 F004 L1+L2 验收；spec `docs/specs/B033-news-ingest-spec.md`）。F001=News 表+Repository+alembic 0005+SnapshotWriter+Adapter Protocol；F002=SEC EDGAR adapter（10-K/10-Q/8-K/Form 4，复用 B029 rate-limit+UA）；F003=Yahoo RSS adapter+`news.cli` manual-trigger CLI+feedparser runtime dep+永久边界 (q) 守门。backend pytest 570 passed+2 skipped（≥544 spec）/ ruff 0 / mypy 0（179 files）/ 无新 secret / frontend 不动。F003 commit f006405。
+- **B033-news-ingest：`fixing`**（2026-06-01；F004 首轮 Codex 验收 blocker：L1 全 PASS，L2 production snapshot dir 缺失；报告 `docs/test-reports/B033-news-ingest-blocker-2026-06-01.md`）。F001/F002/F003 generator ✅ done；F004 L1：backend pytest 570 passed+2 skipped / ruff 0 / mypy 0 / alembic 0005→0004→0005 / frontend lint+typecheck / vitest 172 / Playwright 38。F004 L2 PASS：health HEAD=843fbef / recent-errors=0 / DB alembic current=0005_b033_news / 无 scheduler+cron+systemd news fetch / B026 banner absent；FAIL：`/srv/workbench/current/data/snapshots/news` 与 `/var/lib/workbench/data/snapshots/news` 均 missing（应存在且为空）。
 - Phase 2 / Stream 2.A：为 B034 News↔ticker + B036 AI advisor MVP 提供 news ingest 基础设施。**不做** FRED（B035）/ News↔ticker（B034）/ Recommendations 渲染 / scheduled cron / 内联 raw text 入 DB / AI advisor。
 - 决策矩阵（2026-05-28 用户已批）：Source=SEC EDGAR + Yahoo RSS 二源（FRED 留 B035）/ EDGAR form types=10-K+10-Q+8-K+Form 4 / Universe=US Quality 27 real (synthetic ZQ* skip) + 4 master ETFs / Ticker assoc 不做（留 B034）/ Production ingest=adapter+CLI（无 cron）/ Schema=metadata+snapshot path（raw 落 `data/snapshots/news/`）/ F 拆分=4 features (3g+1c) / 不引入新 secret（复用 B029 `SEC_EDGAR_CONTACT_EMAIL`） / Cost=¥0。
 - 新增永久产品边界 (p) + (q)：(p) News raw text 仅落 snapshot path 不内联 DB（守门 `tests/safety/test_news_schema_metadata_only.py`）+ (q) News ingest 默认 production-disabled（无 `workbench_api/news/scheduler.py` + 无 cron + 无 systemd unit，守门 `tests/safety/test_news_no_scheduler.py`）。
@@ -16,7 +16,7 @@ type: project
 - 最近：B032 AI Safety Eval signoff 2026-05-28；B031 LLM Gateway signoff 2026-05-27（1 fix-round；OpenAI-compatible API 真实接入 aigc.guangai.ai）；🎯 B030 Real Data Cutover signoff 2026-05-27（Phase 1 终点 / 里程碑 A Layer 0→1 达成）。
 
 ## 生产状态
-- `https://trade.guangai.ai` live；production `/api/health.version` = `aebed14c8262a90db071e63584023b86a768955b`（与 B032 签收前 `main` HEAD 等价）；authenticated `/api/debug/recent-errors` = `{"count":0,"records":[]}`；AIGC_GATEWAY_API_KEY + TIINGO_API_KEY + SEC_EDGAR_CONTACT_EMAIL 已 VM env；llm_budget_log + tiingo_budget_log 表已存在；B026 banner decommissioned + `/strategies` `/reports` `/recommendations` `/risk` 均 `BANNER_ABSENT`。
+- `https://trade.guangai.ai` live；production `/api/health.version` = `843fbef3696dfec078103fb7f3993fedb5dd0a5a`（与当前 `main` HEAD 等价）；authenticated `/api/debug/recent-errors` = `{"count":0,"records":[]}`；AIGC_GATEWAY_API_KEY + TIINGO_API_KEY + SEC_EDGAR_CONTACT_EMAIL 已 VM env；`news` + `llm_budget_log` + `tiingo_budget_log` 表已存在；B026 banner decommissioned + `/strategies` `/reports` `/recommendations` `/risk` 均 `BANNER_ABSENT`。当前 production gap：B033 snapshot dir 未创建。
 
 ## 永久硬边界（B033 起继续；v0.9.31 + §12.9 + §16/§22）
 - 系统层：no-broker SDK / no-paper-or-live URL / no-credential / no-auto-execution / 多用户禁 / Cloud SQL 禁 / same-origin /api/* / auth-gated / Repository
