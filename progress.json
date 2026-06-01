@@ -61,7 +61,7 @@
       "workbench/backend/tests/safety/test_news_snapshot_dir_provisioned.py",
       "data/snapshots/news/README.md"
     ],
-    "reverify_notes": "重新部署须先完成：push→Workbench Backend CI 绿→Workbench Deploy (workflow_run) 自动跑→VM 上新 deploy.sh 执行 mkdir。Codex reverify 前确认 Deploy 这一轮已成功（gh run list 看 Workbench Deploy 对应 77a455a 之后的 main HEAD）。然后复验 F004 L2 §8：/var/lib/workbench/data/snapshots/news 存在且为空；current/data/snapshots/news 经 symlink 解析到同一持久目录；边界 (q) 仍守（无 scheduler.py / 无 news cron / 无 systemd news unit / deploy.sh 不跑 ingest）；其余 L2 项（health HEAD≡main / recent-errors=0 / alembic head=0005_b033_news / B026 banner absent）保持。L1 回归：backend pytest 572 passed+2 skipped（新增 test_news_snapshot_dir_provisioned 2 个）/ ruff 0 / mypy 0（180 files）。",
+    "reverify_notes": "✅ Deploy 已完成：Workbench Deploy run 26730625040 (headSha 94a038b) conclusion=success + healthcheck 过（无 rollback），新 deploy.sh 已在 VM 执行 mkdir。Codex 可直接复验 F004 L2 §8：/var/lib/workbench/data/snapshots/news 存在且为空；current/data/snapshots/news 经 symlink 解析到同一持久目录；边界 (q) 仍守（无 scheduler.py / 无 news cron / 无 systemd news unit / deploy.sh 不跑 ingest）；其余 L2 项（health HEAD≡main / recent-errors=0 / alembic head=0005_b033_news / B026 banner absent）保持。L1 回归：backend pytest 572 passed+2 skipped（新增 test_news_snapshot_dir_provisioned 2 个）/ ruff 0 / mypy 0（180 files）。",
     "out_of_scope_followup": "CLI 的 DEFAULT_SNAPSHOT_ROOT（cli.py parents[4] + wheel 安装路径）在生产解析不准；本批次不跑 CLI fetch 故不阻塞。B034 首次真跑 ingest 前须把 CLI 默认 snapshot root 接到 WORKBENCH_NEWS_SNAPSHOT_DIR（持久路径）。已在 README + deploy.sh 注释标注。"
   },
   "session_notes": {
