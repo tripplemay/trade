@@ -34,15 +34,19 @@ _MASTER_NEWS_ETFS: tuple[str, ...] = ("SPY", "QQQ", "EFA", "EEM")
 def _sleeve_constituents() -> dict[str, tuple[str, ...]]:
     """Build (and memoise) the sleeve → tickers map.
 
-    Imported lazily so the heavy ``scripts`` package (pandas) loads only
-    when the association service is first used, not at module import."""
+    The US Quality constituents come from
+    :func:`workbench_api.news.ticker_match.equity_universe_tickers`, which
+    reads ``universe.csv`` via the stdlib ``csv`` loader — **no pandas /
+    no ``scripts`` import**. That keeps this off the request path's
+    dependency on the heavy ``scripts.universe_us_quality`` (pandas),
+    which the leaner production / frontend-CI backend install does not
+    carry — importing it in a request handler 500s there (B034 F003
+    fix-round root cause)."""
 
-    from scripts.universe_us_quality import (  # type: ignore[import-untyped]
-        US_QUALITY_REAL_TICKERS,
-    )
+    from workbench_api.news.ticker_match import equity_universe_tickers
 
     return {
-        "satellite_us_quality": tuple(US_QUALITY_REAL_TICKERS),
+        "satellite_us_quality": equity_universe_tickers(),
         "master": _MASTER_NEWS_ETFS,
     }
 

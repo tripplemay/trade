@@ -152,6 +152,19 @@ def build_ticker_dictionary() -> TickerDictionary:
     return TickerDictionary(tokens=tokens, tickers=frozenset(tickers))
 
 
+def equity_universe_tickers() -> tuple[str, ...]:
+    """The B025 US Quality real (non-synthetic) equity tickers, sorted.
+
+    Derived from ``universe.csv`` via the stdlib ``csv`` loader — **no
+    pandas / no ``scripts`` package import** — so it is safe to call on
+    the API request path (the leaner production / frontend-CI backend
+    install does not carry pandas). ``scripts.universe_us_quality`` holds
+    the same set but pulls pandas at import time, which is fine for the
+    CLI but must never land in a request handler."""
+
+    return tuple(sorted(_load_universe_names()))
+
+
 def match_mentions(
     text: str, *, dictionary: TickerDictionary | None = None
 ) -> list[str]:
