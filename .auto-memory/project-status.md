@@ -27,7 +27,7 @@ type: project
 - AI 边界（v0.9.28 5 子条）：本批次不触 AI logic（仅 news raw ingest infra）；B034 起 news→embedding 才首次触发
 
 ## Framework 状态
-- 最新版本 **v0.9.31**（2026-05-27 沉淀完成）：B030 Feature decommission 四处清理铁律。**B031 第三方 API live-validate 候选仍 hold 等二例合并**（B033 F002 若再撞同样 spec invented endpoint 问题可达成「二例合并」沉淀 v0.9.32 条件）。B026 React event edge 仍单一案例 hold。
+- 最新版本 **v0.9.31**（2026-05-27 沉淀完成）：B030 Feature decommission 四处清理铁律。B033 signoff §Framework Learnings 标「本批次无」。**B031 第三方 API live-validate 候选仍 hold 等二例合并**——B033 F002（SEC EDGAR）按建议主动 live-validate，未再撞 spec-invented-endpoint，二例未达成，v0.9.32 不沉淀。B026 React event edge 仍单一案例 hold。
 
 ## 已知 gap（非阻塞）
 - 本机 `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
