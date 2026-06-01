@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>SPY Headline News</title>
+    <link>https://finance.yahoo.com/quote/SPY</link>
+    <description>SPY news from Yahoo Finance</description>
+    <language>en-US</language>
+    <item>
+      <title>SPY Hits New All-Time High</title>
+      <link>https://finance.yahoo.com/news/spy-record-high-2026</link>
+      <guid isPermaLink="false">spy-record-2026-05</guid>
+      <pubDate>Mon, 11 May 2026 14:30:00 GMT</pubDate>
+      <description>S&amp;P 500 ETF crosses 700 for the first time on broad rally.</description>
+    </item>
+    <item>
+      <title>SPY Records Largest Weekly Inflow Since January</title>
+      <link>https://finance.yahoo.com/news/spy-inflows-may</link>
+      <guid isPermaLink="false">spy-inflows-2026-05-13</guid>
+      <pubDate>Wed, 13 May 2026 21:00:00 GMT</pubDate>
+      <description>SPDR S&amp;P 500 ETF Trust sees $4.1B in net new assets last week.</description>
+    </item>
+  </channel>
+</rss>

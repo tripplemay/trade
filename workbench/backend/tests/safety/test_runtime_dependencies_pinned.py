@@ -71,6 +71,11 @@ CRITICAL_RUNTIME_DEPS: frozenset[str] = frozenset(
         # B028 F001 — YFinanceSnapshotLoader imports yfinance at module
         # load. Same shape regression class as httpx — keep it pinned.
         "yfinance",
+        # B033 F003 — YahooRSSNewsAdapter imports feedparser at module
+        # load to parse Yahoo Finance headline RSS into structured
+        # entries. Type stubs are unavailable; the adapter uses
+        # ``# type: ignore[import-untyped]`` on the import line.
+        "feedparser",
     }
 )
 

@@ -19,6 +19,16 @@
 # large JSON files; same "regenerate, don't commit" semantics as the
 # CSV payloads.
 *.json
+# B033 — News raw filing / article bodies land under
+# data/snapshots/news/{source}/{YYYY-MM-DD}/ as HTML (10-K/Q + 8-K
+# primary documents) or XML (Form 4 ownership filings + Yahoo RSS
+# per-entry fragments). Same "regenerate, don't commit" semantics
+# as the CSV / parquet / JSON payloads; the snapshot_path +
+# content_sha256 on the news row is the canonical reference
+# (permanent product boundary (p)).
+*.htm
+*.html
+*.xml
 
 # But keep documentation + schema samples + ignore file itself.
 !README.md

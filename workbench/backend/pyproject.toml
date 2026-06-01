@@ -48,6 +48,14 @@ dependencies = [
   # production wheel install carries the import — the safety-regression
   # ``test_critical_runtime_deps_pinned`` test pins this contract.
   "yfinance>=0.2.40",
+  # B033 F003: ``feedparser`` is the canonical RSS/Atom parser the
+  # ``workbench_api/news/adapters/yahoo_rss.py`` adapter imports at
+  # module top-level. Must stay in the runtime dep set (framework
+  # v0.9.29 §12.8 hygiene) so the production wheel install resolves
+  # it — the safety-regression ``test_critical_runtime_deps_pinned``
+  # asserts this contract; type stubs are unavailable, so callers
+  # handle the import with ``# type: ignore[import-untyped]``.
+  "feedparser>=6.0,<7",
   "pydantic>=2.7,<3",
   "pydantic-settings>=2.3,<3",
   "python-jose[cryptography]>=3.3,<4",

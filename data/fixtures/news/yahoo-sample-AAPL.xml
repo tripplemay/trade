@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>AAPL Headline News</title>
+    <link>https://finance.yahoo.com/quote/AAPL</link>
+    <description>AAPL news from Yahoo Finance</description>
+    <language>en-US</language>
+    <item>
+      <title>Apple Reports Q2 Earnings Above Estimates</title>
+      <link>https://finance.yahoo.com/news/apple-q2-earnings-2026</link>
+      <guid isPermaLink="false">aapl-q2-2026-001</guid>
+      <pubDate>Mon, 11 May 2026 12:00:00 GMT</pubDate>
+      <description>Apple beat consensus EPS by 3 cents on iPhone strength.</description>
+    </item>
+    <item>
+      <title>Apple Announces New iPhone 18 Lineup</title>
+      <link>https://finance.yahoo.com/news/iphone-18-launch</link>
+      <guid isPermaLink="false">aapl-iphone-18-launch</guid>
+      <pubDate>Tue, 12 May 2026 16:30:00 GMT</pubDate>
+      <description>Cupertino unveils three iPhone 18 models with titanium chassis.</description>
+    </item>
+    <item>
+      <title>Apple Pays Quarterly Dividend</title>
+      <link>https://finance.yahoo.com/news/apple-dividend-q2</link>
+      <guid isPermaLink="false">aapl-dividend-q2-2026</guid>
+      <pubDate>Wed, 13 May 2026 09:00:00 GMT</pubDate>
+      <description>Per-share dividend of $0.27, payable May 31.</description>
+    </item>
+  </channel>
+</rss>
