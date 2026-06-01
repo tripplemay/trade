@@ -183,6 +183,27 @@ print(f"  ✓ schema check passed: {sorted(required)} present in {url}")
 PY
 fi
 
+# B033 F004 — provision the news snapshot directory (永久边界 (p) + (q)).
+# News raw filing / article bodies land here (boundary (p): the `news`
+# table stores only metadata + snapshot_path + content_sha256; the bodies
+# live on disk). Those bodies must survive release swaps + the 30-day
+# release GC, so the canonical location is the persistent data root next
+# to the SQLite DB (/var/lib/workbench/), NOT the ephemeral release tree.
+# We create the directory EMPTY and never invoke the news ingest
+# entrypoint here — B033 keeps news ingest manual-trigger only
+# (boundary (q): no cron / scheduler / systemd unit). F004 L2 acceptance
+# §8 asserts the directory exists and is empty.
+#
+# A symlink exposes the same persistent directory at the release-relative
+# `data/snapshots/news` path so any repo-root-relative resolution (e.g.
+# the CLI's DEFAULT_SNAPSHOT_ROOT) lands on the persistent store rather
+# than writing into the release tree that the next deploy discards.
+NEWS_SNAPSHOT_DIR="${WORKBENCH_NEWS_SNAPSHOT_DIR:-/var/lib/workbench/data/snapshots/news}"
+echo "→ ensure news snapshot dir ${NEWS_SNAPSHOT_DIR} (empty; no ingest)"
+mkdir -p "${NEWS_SNAPSHOT_DIR}"
+mkdir -p "${RELEASE_DIR}/data/snapshots"
+ln -sfn "${NEWS_SNAPSHOT_DIR}" "${RELEASE_DIR}/data/snapshots/news"
+
 # 2. Flip the active release symlink atomically. `ln -sfn` is one syscall
 # and survives the brief window where both services are reading from the
 # directory.

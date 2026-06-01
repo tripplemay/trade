@@ -43,6 +43,18 @@ boundary **(q)** locks this in; see
 batch that wants automated scheduling must add a permanent-boundary
 relaxation note before introducing a scheduler module.
 
+## Production location
+
+On the production VM the canonical store is the **persistent** path
+`/var/lib/workbench/data/snapshots/news` — next to the SQLite DB
+(`/var/lib/workbench/db/workbench.db`), so raw bodies survive release
+swaps and the 30-day release GC. `workbench/deploy/scripts/deploy.sh`
+creates it (empty) on every deploy and symlinks the release-relative
+`data/snapshots/news` path onto it. The directory is created but never
+populated by the deploy — ingest is manual-trigger only (boundary `(q)`).
+Override the location with `WORKBENCH_NEWS_SNAPSHOT_DIR` if the data root
+ever moves. Guard: `tests/safety/test_news_snapshot_dir_provisioned.py`.
+
 ## Why `data/snapshots/`?
 
 Same regenerate-don't-commit semantics as `data/snapshots/prices/`
