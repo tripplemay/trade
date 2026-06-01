@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from workbench_api.auth.dependency import require_authenticated_user
 from workbench_api.auth.jwt_validator import AuthenticatedUser
@@ -14,11 +14,13 @@ from workbench_api.schemas.recommendations import (
     ExportTicketRequest,
     ExportTicketResponse,
     RecommendationsResponse,
+    SleeveNewsResponse,
 )
 from workbench_api.services.recommendations import (
     _resolve_runs_dir,
     export_ticket,
     get_current_recommendations,
+    get_sleeve_news,
 )
 from workbench_api.settings import Settings, get_settings
 
@@ -38,6 +40,31 @@ def get_current_recommendations_route(
     session: SessionDep,
 ) -> RecommendationsResponse:
     return get_current_recommendations(session)
+
+
+@router.get("/news", response_model=SleeveNewsResponse)
+def get_sleeve_news_route(
+    _user: AuthenticatedUserDep,
+    session: SessionDep,
+    sleeve: Annotated[str, Query(min_length=1, description="Sleeve label (required).")],
+    topic: Annotated[str | None, Query(description="Filter by deterministic topic tag.")] = None,
+    source: Annotated[str | None, Query(description="Filter by news source.")] = None,
+    form_type: Annotated[str | None, Query(description="Filter by SEC form type.")] = None,
+    limit: Annotated[int, Query(ge=1, le=100, description="Max items returned.")] = 20,
+) -> SleeveNewsResponse:
+    """B034 F003 — relevance-sorted news for one sleeve.
+
+    Auth-gated, same-origin, read-only. Returns **only structured
+    fields** (no AI-generated text — B034 non-generative boundary)."""
+
+    return get_sleeve_news(
+        session,
+        sleeve=sleeve,
+        topic=topic,
+        source=source,
+        form_type=form_type,
+        limit=limit,
+    )
 
 
 @router.post("/export-ticket", response_model=ExportTicketResponse)

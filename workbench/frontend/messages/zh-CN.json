@@ -255,6 +255,20 @@
       "resultPrefix": "已写入 ",
       "resultSuffix": " — 任何执行前请先人工核对。",
       "errorPrefix": "导出失败:"
+    },
+    "news": {
+      "title": "Sleeve 相关新闻",
+      "description": "影响本 sleeve 的近期备案与头条，按相关度排序。仅结构化元数据 — 无 AI 评论。",
+      "sleeveLabel": "Sleeve",
+      "sourceLabel": "来源",
+      "formTypeLabel": "表单类型",
+      "topicLabel": "主题",
+      "all": "全部",
+      "scoreLabel": "相关度",
+      "tickersLabel": "标的",
+      "loading": "正在加载 sleeve 新闻…",
+      "empty": "本 sleeve 暂无相关新闻。",
+      "error": "无法加载 sleeve 新闻：{error}"
     }
   },
   "snapshots": {

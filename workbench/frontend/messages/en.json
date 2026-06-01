@@ -255,6 +255,20 @@
       "resultPrefix": "Wrote ",
       "resultSuffix": " — review manually before any execution.",
       "errorPrefix": "Export failed:"
+    },
+    "news": {
+      "title": "Sleeve news",
+      "description": "Recent filings & headlines affecting this sleeve, ranked by relevance. Structured metadata only — no AI commentary.",
+      "sleeveLabel": "Sleeve",
+      "sourceLabel": "Source",
+      "formTypeLabel": "Form type",
+      "topicLabel": "Topic",
+      "all": "All",
+      "scoreLabel": "Relevance",
+      "tickersLabel": "Tickers",
+      "loading": "Loading sleeve news…",
+      "empty": "No relevant news for this sleeve.",
+      "error": "Could not load sleeve news: {error}"
     }
   },
   "snapshots": {

@@ -22,7 +22,7 @@
       "title": "Recommendations 丰富面板：GET /recommendations/news API + 前端 NewsPanel (topic tag + 相关度排序 + 筛选)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) workbench_api/schemas/recommendations.py 扩: SleeveNewsItem (news_id, title, source, url, published_at, content_sha256, topics[], matched_tickers[], score) + SleeveNewsResponse {items: SleeveNewsItem[]}；(2) workbench_api/routes/recommendations.py 扩: GET /recommendations/news (auth-gated, same-origin) query sleeve(必填)/topic?/source?/form_type?/limit? → 调 NewsAssociationService → SleeveNewsResponse；**纯结构化无 AI 文本**；(3) 前端 (protected)/recommendations: NewsPanel 组件 — 每 sleeve 下 topic tag chips + 相关度(score)排序 + source/form_type/topic 筛选器 + 外链 url (rel='noopener noreferrer')；走 same-origin /api/recommendations/news；(4) backend pytest: GET /recommendations/news 200 + auth-gated (未登录 401/redirect) + 各 filter query 生效 + sleeve 必填校验 + 响应 schema pin；(5) **AI 边界守门**: test_b034_no_generative_ai 扩集断言 /recommendations/news 响应字段集精确 pin (无 free-form AI 文本字段)；前端 vitest 断言 NewsPanel 渲染纯结构化 (无 AI 段落)；(6) frontend vitest 新增 NewsPanel 测试 (topic tag 渲染 / 排序 / 筛选交互) + Playwright e2e (recommendations 页加载 NewsPanel + 筛选)；(7) Gates: backend pytest ≥600 (F002 后 594 + ≥6) / frontend vitest ≥172 (+NewsPanel) / Playwright ≥38 (+面板 e2e) / lint 0 / typecheck pass / ruff / mypy / 不引入新 secret；(8) 不动 /recommendations/current + /export-ticket / 既有 risk/execution/tickets / B026 banner decommissioned / 设计稿一致 (若 design-draft 有 recommendations news 稿则比对，无则按最小只读面板)."
     },
     {

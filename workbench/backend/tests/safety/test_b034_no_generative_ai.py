@@ -105,3 +105,28 @@ def test_embedder_runs_with_gateway_lacking_advise() -> None:
 
     # Should not raise — no generative method is ever accessed.
     assert embedder.embed_pending([_News()]) == 1  # type: ignore[list-item]
+
+
+def test_sleeve_news_response_has_no_free_form_text_field() -> None:
+    """The ``/recommendations/news`` response item exposes exactly the
+    structured field set — no free-form AI text field (e.g. ``advice`` /
+    ``summary_text`` / ``rationale``) may slip in under B034's
+    non-generative boundary. Generative advisory text is B036 scope."""
+
+    from workbench_api.schemas.recommendations import (
+        SleeveNewsItem,
+        SleeveNewsResponse,
+    )
+
+    assert set(SleeveNewsItem.model_fields) == {
+        "news_id",
+        "title",
+        "source",
+        "url",
+        "published_at",
+        "content_sha256",
+        "topics",
+        "matched_tickers",
+        "score",
+    }
+    assert set(SleeveNewsResponse.model_fields) == {"items"}

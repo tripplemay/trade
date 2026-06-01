@@ -26,11 +26,17 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from workbench_api.db.models.account import Account
+from workbench_api.news.association import (
+    NewsAssociationService,
+    SleeveNewsRelevance,
+)
 from workbench_api.schemas.recommendations import (
     ExportTicketRequest,
     ExportTicketResponse,
     GateCheck,
     RecommendationsResponse,
+    SleeveNewsItem,
+    SleeveNewsResponse,
     TargetPosition,
 )
 from workbench_api.services.strategies import list_strategies
@@ -61,6 +67,52 @@ copy. Treat as a contract surface, not an editable string.
 """
 
 DEFAULT_KILL_SWITCH_THRESHOLD: float = 0.20
+
+
+def _to_news_item(relevance: SleeveNewsRelevance) -> SleeveNewsItem:
+    return SleeveNewsItem(
+        news_id=str(relevance.news_id),
+        title=relevance.title,
+        source=relevance.source,
+        url=relevance.url,
+        published_at=relevance.published_at.isoformat(),
+        content_sha256=relevance.content_sha256,
+        topics=list(relevance.topics),
+        matched_tickers=list(relevance.matched_tickers),
+        score=relevance.score,
+    )
+
+
+def get_sleeve_news(
+    session: Session,
+    *,
+    sleeve: str,
+    topic: str | None = None,
+    source: str | None = None,
+    form_type: str | None = None,
+    limit: int = 20,
+) -> SleeveNewsResponse:
+    """Return the relevance-sorted news for ``sleeve`` (B034 F003).
+
+    Pure read over the ``news`` + ``news_embedding`` tables via
+    :class:`NewsAssociationService`. **No sleeve-query provider is wired
+    here**: B034 keeps the GET path deterministic and offline (¥0, no
+    per-request gateway call), so the score is the hard-match strength
+    (matched-ticker count) broken by recency — the embedding cosine
+    soft-rank lives in the service for B036's batch advisor. The
+    response carries **only structured fields** (B034 non-generative
+    boundary §3); there is no AI-generated text.
+    """
+
+    service = NewsAssociationService(session)
+    relevances = service.news_for_sleeve(
+        sleeve,
+        limit=limit,
+        topic=topic,
+        source=source,
+        form_type=form_type,
+    )
+    return SleeveNewsResponse(items=[_to_news_item(r) for r in relevances])
 
 
 def _aggregate_account_state(session: Session) -> tuple[bool, float]:

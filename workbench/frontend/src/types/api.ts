@@ -223,6 +223,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/recommendations/news": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Sleeve News Route
+         * @description B034 F003 — relevance-sorted news for one sleeve.
+         *
+         *     Auth-gated, same-origin, read-only. Returns **only structured
+         *     fields** (no AI-generated text — B034 non-generative boundary).
+         */
+        get: operations["get_sleeve_news_route_api_recommendations_news_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/recommendations/export-ticket": {
         parameters: {
             query?: never;
@@ -1552,6 +1575,70 @@ export interface components {
              */
             drawdown: number;
         };
+        /**
+         * SleeveNewsItem
+         * @description One sleeve-relevant news item (B034 F003).
+         *
+         *     **Purely structured, no AI-generated text** — this is the B034
+         *     non-generative boundary (spec §3): every field is metadata,
+         *     deterministic topic tags, matched tickers, or a numeric relevance
+         *     score. There is no free-form advice / summary field; generative
+         *     advisory text is B036 scope. ``tests/safety/test_b034_no_generative_ai.py``
+         *     pins this exact field set so a future free-text field can't slip in.
+         */
+        SleeveNewsItem: {
+            /**
+             * News Id
+             * @description News row UUID (string form).
+             */
+            news_id: string;
+            /** Title */
+            title: string;
+            /**
+             * Source
+             * @description 'sec_edgar' / 'yahoo_rss'.
+             */
+            source: string;
+            /**
+             * Url
+             * @description Source URL (rendered as an external link).
+             */
+            url: string;
+            /**
+             * Published At
+             * @description ISO-8601 publish timestamp.
+             */
+            published_at: string;
+            /**
+             * Content Sha256
+             * @description Snapshot body hash (B033 boundary p).
+             */
+            content_sha256: string;
+            /**
+             * Topics
+             * @description Deterministic topic tags (财报 / 重大事件 / …); never LLM-generated.
+             */
+            topics?: string[];
+            /**
+             * Matched Tickers
+             * @description Sleeve constituent tickers the news mentions (hard match).
+             */
+            matched_tickers?: string[];
+            /**
+             * Score
+             * @description Relevance score = matched-ticker count + cosine.
+             */
+            score: number;
+        };
+        /**
+         * SleeveNewsResponse
+         * @description GET /api/recommendations/news payload — relevance-sorted news for
+         *     one sleeve. Items are ordered most-relevant first.
+         */
+        SleeveNewsResponse: {
+            /** Items */
+            items?: components["schemas"]["SleeveNewsItem"][];
+        };
         /** SlippageAnalyticsResponse */
         SlippageAnalyticsResponse: {
             /**
@@ -2192,6 +2279,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RecommendationsResponse"];
+                };
+            };
+        };
+    };
+    get_sleeve_news_route_api_recommendations_news_get: {
+        parameters: {
+            query: {
+                /** @description Sleeve label (required). */
+                sleeve: string;
+                /** @description Filter by deterministic topic tag. */
+                topic?: string | null;
+                /** @description Filter by news source. */
+                source?: string | null;
+                /** @description Filter by SEC form type. */
+                form_type?: string | null;
+                /** @description Max items returned. */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SleeveNewsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

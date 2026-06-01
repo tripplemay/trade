@@ -9,20 +9,11 @@ import {
   type AllocationBarItem,
   type AllocationSlice,
 } from "@/components/chart";
+import { NewsPanel } from "@/components/recommendations/NewsPanel";
 import { RiskBanner } from "@/components/risk/RiskBanner";
-import {
-  DataTable,
-  percentColumn,
-  weightColumn,
-} from "@/components/table";
+import { DataTable, percentColumn, weightColumn } from "@/components/table";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { ColDef } from "ag-grid-community";
 import type { components } from "@/types/api";
@@ -40,8 +31,16 @@ function buildPositionColumns(
 ): ColDef<TargetPosition>[] {
   return [
     { field: "symbol", headerName: t("columnSymbol"), width: 110 },
-    weightColumn<TargetPosition>({ field: "target_weight", headerName: t("columnTarget"), digits: 2 }),
-    weightColumn<TargetPosition>({ field: "current_weight", headerName: t("columnCurrent"), digits: 2 }),
+    weightColumn<TargetPosition>({
+      field: "target_weight",
+      headerName: t("columnTarget"),
+      digits: 2,
+    }),
+    weightColumn<TargetPosition>({
+      field: "current_weight",
+      headerName: t("columnCurrent"),
+      digits: 2,
+    }),
     percentColumn<TargetPosition>({ field: "diff", headerName: t("columnDiff"), digits: 2 }),
     { field: "rationale", headerName: t("columnRationale"), flex: 2 },
   ];
@@ -147,7 +146,10 @@ export default function RecommendationsPage() {
 
       <RiskBanner />
 
-      <Card data-testid="recommendations-disclaimer-card" className="border-amber-700/40 bg-amber-950/20">
+      <Card
+        data-testid="recommendations-disclaimer-card"
+        className="border-amber-700/40 bg-amber-950/20"
+      >
         <CardContent className="py-3 text-xs text-amber-100">
           <strong>{t("disclaimerBold")}</strong> {t("disclaimerBody")}
         </CardContent>
@@ -282,7 +284,10 @@ export default function RecommendationsPage() {
             {exporting ? tExport("buttonExporting") : tExport("button")}
           </Button>
           {exportResult ? (
-            <p data-testid="recommendations-export-result" className="text-xs text-muted-foreground">
+            <p
+              data-testid="recommendations-export-result"
+              className="text-xs text-muted-foreground"
+            >
               {tExport("resultPrefix")}
               <code>{exportResult.path}</code>
               {tExport("resultSuffix")}
@@ -295,6 +300,8 @@ export default function RecommendationsPage() {
           ) : null}
         </CardContent>
       </Card>
+
+      <NewsPanel />
     </section>
   );
 }

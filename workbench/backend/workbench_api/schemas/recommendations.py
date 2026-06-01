@@ -43,6 +43,41 @@ class RecommendationsResponse(BaseModel):
     )
 
 
+class SleeveNewsItem(BaseModel):
+    """One sleeve-relevant news item (B034 F003).
+
+    **Purely structured, no AI-generated text** — this is the B034
+    non-generative boundary (spec §3): every field is metadata,
+    deterministic topic tags, matched tickers, or a numeric relevance
+    score. There is no free-form advice / summary field; generative
+    advisory text is B036 scope. ``tests/safety/test_b034_no_generative_ai.py``
+    pins this exact field set so a future free-text field can't slip in.
+    """
+
+    news_id: str = Field(description="News row UUID (string form).")
+    title: str
+    source: str = Field(description="'sec_edgar' / 'yahoo_rss'.")
+    url: str = Field(description="Source URL (rendered as an external link).")
+    published_at: str = Field(description="ISO-8601 publish timestamp.")
+    content_sha256: str = Field(description="Snapshot body hash (B033 boundary p).")
+    topics: list[str] = Field(
+        default_factory=list,
+        description="Deterministic topic tags (财报 / 重大事件 / …); never LLM-generated.",
+    )
+    matched_tickers: list[str] = Field(
+        default_factory=list,
+        description="Sleeve constituent tickers the news mentions (hard match).",
+    )
+    score: float = Field(description="Relevance score = matched-ticker count + cosine.")
+
+
+class SleeveNewsResponse(BaseModel):
+    """GET /api/recommendations/news payload — relevance-sorted news for
+    one sleeve. Items are ordered most-relevant first."""
+
+    items: list[SleeveNewsItem] = Field(default_factory=list)
+
+
 class ExportTicketRequest(BaseModel):
     """POST /api/recommendations/export-ticket body."""
 
