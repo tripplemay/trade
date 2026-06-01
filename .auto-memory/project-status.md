@@ -4,16 +4,15 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B033-news-ingest：`done`**（2026-06-01；F004 已 signoff）。fix-round 1 修复的 production snapshot dir blocker 已复验通过：deploy.sh 在部署时 provision 持久路径 `/var/lib/workbench/data/snapshots/news` 并把 release 相对路径 symlink 到该目录；目录存在且为空，且不跑 ingest（边界 (q)）。L1 全 PASS：backend pytest 572 passed+2 skipped / ruff 0 / mypy 0 / frontend vitest 172 / Playwright 38。L2 全 PASS：production `/api/health.version`=`94a038b`，与 `main` HEAD `41d0dbe` 仅元数据差异、产品代码等价；authenticated recent-errors 0；alembic current=`0005_b033_news (head)`；无 scheduler.py / cron / systemd news fetch；B026 banner absence 保持。signoff：`docs/test-reports/B033-news-ingest-signoff-2026-06-01.md`；blocker 留档：`docs/test-reports/B033-news-ingest-blocker-2026-06-01.md`。遗留(非阻塞)：CLI DEFAULT_SNAPSHOT_ROOT 生产解析不准，B034 首跑 ingest 前须接 `WORKBENCH_NEWS_SNAPSHOT_DIR`。
-- Phase 2 / Stream 2.A：为 B034 News↔ticker + B036 AI advisor MVP 提供 news ingest 基础设施。**不做** FRED（B035）/ News↔ticker（B034）/ Recommendations 渲染 / scheduled cron / 内联 raw text 入 DB / AI advisor。
-- 决策矩阵（2026-05-28 用户已批）：Source=SEC EDGAR + Yahoo RSS 二源（FRED 留 B035）/ EDGAR form types=10-K+10-Q+8-K+Form 4 / Universe=US Quality 27 real (synthetic ZQ* skip) + 4 master ETFs / Ticker assoc 不做（留 B034）/ Production ingest=adapter+CLI（无 cron）/ Schema=metadata+snapshot path（raw 落 `data/snapshots/news/`）/ F 拆分=4 features (3g+1c) / 不引入新 secret（复用 B029 `SEC_EDGAR_CONTACT_EMAIL`） / Cost=¥0。
-- 新增永久产品边界 (p) + (q)：(p) News raw text 仅落 snapshot path 不内联 DB（守门 `tests/safety/test_news_schema_metadata_only.py`）+ (q) News ingest 默认 production-disabled（无 `workbench_api/news/scheduler.py` + 无 cron + 无 systemd unit，守门 `tests/safety/test_news_no_scheduler.py`）。
-- 本批次属 implementation-path-2026-05.md §4 **Phase 2 第八个 batch（Stream 2.A）**。
-- 后续路径：B034（2.B embedding）→ B035（2.C market context）→ B036（3.C AI advisor MVP）= **🎯 里程碑 B Phase 2 终点**。
+- **B034-news-ticker-embedding：`building`**（2026-06-01 启动；Phase 2 / Stream 2.B 第九个 batch）。在 B033 news 基础设施上加语义关联层，为 B036 AI advisor 提供 news↔sleeve 关联 + 可引用 news URL/SHA。spec `docs/specs/B034-news-ticker-embedding-spec.md`。4 features：(F001) `news_embedding` 表 + alembic 0006 + NewsEmbedder（bge-m3 复用 B031）+ fixture 向量 + S1 env 闭合 + 非生成式守门；(F002) ticker 字典硬匹配 + 确定性 topic taxonomy + NewsAssociationService（hard + cosine 软排序）；(F003) `GET /recommendations/news` + 前端 NewsPanel（topic tag + 相关度排序 + 筛选）；(F004) Codex L1+L2 + signoff。
+- **B034 决策矩阵（2026-06-01 用户已批，★=用户拍板）：** Embedding=**bge-m3**（复用 B031 `LLMGateway.embed`；gateway 实际只暴露 bge-m3 非计划写的 Cohere）/ 存储=独立 `news_embedding` 表 vector 落 JSON + 应用内 cosine（SQLite + 禁 pgvector/Cloud SQL）/ ★生产 ingest=**保持 fixture-first 不跑**（B033 边界 (q) 不动）/ ★Ticker=**字典硬匹配 + cosine 软排序** / ★UI=**丰富面板** / Topic tagging=确定性非 LLM / AI 边界=**非生成式守门**（5 子条生成式约束落 B036）/ ¥≈0。
+- **B034 首次触发 AI 边界，但仅非生成式检索基建**（embedding 只产向量、不产 user-facing AI 文本）；守门 `tests/safety/test_b034_no_generative_ai.py`。生成式建议 / `INSUFFICIENT_GROUNDING` / red-team 15 样本 → **B036**。
+- **不做**：生成式 AI 建议（B036）/ 生产 ingest（保持 (q)）/ FRED（B035）/ pgvector / 换 embedding provider。
+- 后续路径：B034（2.B 本批）→ B035（2.C market context）→ B036（3.C AI advisor MVP）= **🎯 里程碑 B Phase 2 终点**。
 
 ## 已完成签收 + MVP 完工
-- B001-B032 全部签收。MVP substantively 完成 (PRD §10/§11/§12) — 完工声明：`docs/prd/mvp-completion-declaration-2026-05-20.md`。
-- 最近：B032 AI Safety Eval signoff 2026-05-28；B031 LLM Gateway signoff 2026-05-27（1 fix-round；OpenAI-compatible API 真实接入 aigc.guangai.ai）；🎯 B030 Real Data Cutover signoff 2026-05-27（Phase 1 终点 / 里程碑 A Layer 0→1 达成）。
+- B001-B033 全部签收。MVP substantively 完成 (PRD §10/§11/§12) — 完工声明：`docs/prd/mvp-completion-declaration-2026-05-20.md`。
+- 最近：**B033 News Ingest signoff 2026-06-01**（1 fix-round；prod snapshot dir provision blocker→修复；SEC EDGAR + Yahoo RSS adapter + News schema + snapshot writer + CLI；边界 (p)(q)）；B032 AI Safety Eval signoff 2026-05-28；B031 LLM Gateway signoff 2026-05-27（OpenAI-compatible API 真实接入 aigc.guangai.ai）；🎯 B030 Real Data Cutover signoff 2026-05-27（Phase 1 终点 / 里程碑 A）。
 
 ## 生产状态
 - `https://trade.guangai.ai` live；production `/api/health.version` = `94a038b235fa63598ac1f0dda7f73603810a039e`（签收时 `main` HEAD = `41d0dbe0f2bf2dd845a987e462b0903c47a9a589`，仅元数据差异，产品代码等价）；authenticated `/api/debug/recent-errors` = `{"count":0,"records":[]}`；AIGC_GATEWAY_API_KEY + TIINGO_API_KEY + SEC_EDGAR_CONTACT_EMAIL 已 VM env；`news` + `llm_budget_log` + `tiingo_budget_log` 表已存在；`/var/lib/workbench/data/snapshots/news` 已创建且为空；B026 banner decommissioned + `/strategies` `/reports` `/recommendations` `/risk` 均 `BANNER_ABSENT`。
