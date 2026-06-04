@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>B034 Alembic 0006 Evidence</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; background: #f5f7fb; color: #111827; }
+    main { max-width: 980px; margin: 40px auto; padding: 32px; background: #fff; border: 1px solid #dbe2ea; border-radius: 8px; }
+    h1 { margin: 0 0 16px; font-size: 28px; }
+    p { margin: 0 0 12px; font-size: 16px; }
+    pre { margin: 20px 0 0; padding: 20px; background: #0f172a; color: #e5e7eb; border-radius: 6px; overflow: auto; font: 14px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>B034 L2 Evidence: schema + runtime invariants</h1>
+    <p>Production verification after fix-round 1 deploy.</p>
+    <pre>WORKBENCH_DB_URL=sqlite:///var/lib/workbench/db/workbench.db
+alembic_version=0006_b034_news_embedding
+tables=news,news_embedding
+scheduler_py_absent
+cron_absent
+systemd_units_absent
+/var/lib/workbench/data/snapshots/news
+snapshot_dir_empty</pre>
+  </main>
+</body>
+</html>
