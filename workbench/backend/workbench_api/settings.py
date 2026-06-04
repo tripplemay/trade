@@ -27,6 +27,8 @@ ALLOWED_ENV_VARS: frozenset[str] = frozenset(
         "TIINGO_API_KEY",
         "SEC_EDGAR_CONTACT_EMAIL",
         "AIGC_GATEWAY_API_KEY",
+        "FRED_API_KEY",
+        "ALPHAVANTAGE_API_KEY",
     }
 )
 """Environment variables the workbench backend is permitted to read.
@@ -114,6 +116,24 @@ class Settings(BaseSettings):
     # references model names directly; route via
     # workbench_api.llm.routing.ROUTING_TABLE instead.
     AIGC_GATEWAY_API_KEY: str | None = None
+    # B035 F001 — FRED (Federal Reserve Economic Data) API key for the
+    # market-context macro series (DGS10 / VIXCLS / CPIAUCSL). Backend-only
+    # secret; never inlined into the frontend bundle. Production VM gets it
+    # via the systemd EnvironmentFile populated by the bootstrap-env
+    # workflow from the FRED_API_KEY repo secret (free key from
+    # https://fred.stlouisfed.org/docs/api/api_key.html). Unset is allowed
+    # at boot so backend bootstrap stays vendor-free; the FREDMarketLoader
+    # constructor raises with a fix pointer when called without a key.
+    FRED_API_KEY: str | None = None
+    # B035 F001 — Alpha Vantage API key for the market-context index series
+    # (SPY / QQQ / UUP via GLOBAL_QUOTE). Backend-only secret; never inlined
+    # into the frontend bundle. Production VM gets it via the systemd
+    # EnvironmentFile populated by the bootstrap-env workflow from the
+    # ALPHAVANTAGE_API_KEY repo secret (free key from
+    # https://www.alphavantage.co/support/#api-key; note the 25 req/day
+    # free-tier cap). Unset is allowed at boot; the AlphaVantageLoader
+    # constructor raises with a fix pointer when called without a key.
+    ALPHAVANTAGE_API_KEY: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=None,

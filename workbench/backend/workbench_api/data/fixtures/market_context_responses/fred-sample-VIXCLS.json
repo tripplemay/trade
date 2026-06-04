@@ -1,0 +1,15 @@
+{
+  "realtime_start": "2026-06-03",
+  "realtime_end": "2026-06-03",
+  "units": "lin",
+  "file_type": "json",
+  "order_by": "observation_date",
+  "sort_order": "desc",
+  "count": 2,
+  "offset": 0,
+  "limit": 10,
+  "observations": [
+    {"realtime_start": "2026-06-03", "realtime_end": "2026-06-03", "date": "2026-06-03", "value": "18.42"},
+    {"realtime_start": "2026-06-03", "realtime_end": "2026-06-03", "date": "2026-06-02", "value": "19.10"}
+  ]
+}

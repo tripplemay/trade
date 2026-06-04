@@ -139,6 +139,36 @@ if [[ -r "${ENV_FILE}" ]] && [[ -z "${AIGC_GATEWAY_API_KEY:-}" ]]; then
   exit 68
 fi
 
+# B035 F001 — FRED API key pre-flight (Stream 2.C / market context). The
+# FREDMarketLoader constructor raises when the key is missing; failing the
+# deploy here surfaces the misconfiguration immediately instead of at the
+# first market-context timer fetch. Same shape as TIINGO/SEC/AIGC: tolerate
+# empty during the dev `deploy.sh` rehearsal (env file unset) so a
+# contributor without a FRED key can still smoke this script locally.
+if [[ -r "${ENV_FILE}" ]] && [[ -z "${FRED_API_KEY:-}" ]]; then
+  echo "✗ FRED_API_KEY is missing from ${ENV_FILE}. The market-context " >&2
+  echo "  FRED loader (workbench_api/data/fred_loader.py) cannot fetch " >&2
+  echo "  macro series without a key. Configure the FRED_API_KEY repo " >&2
+  echo "  secret (Settings → Secrets and variables → Actions); get a free " >&2
+  echo "  key at https://fred.stlouisfed.org/docs/api/api_key.html, then " >&2
+  echo "  re-run the bootstrap-env workflow so the env file is rewritten." >&2
+  exit 69
+fi
+
+# B035 F001 — Alpha Vantage API key pre-flight (Stream 2.C / market
+# context). The AlphaVantageLoader constructor raises when the key is
+# missing. Same tolerate-empty-in-dev shape as above.
+if [[ -r "${ENV_FILE}" ]] && [[ -z "${ALPHAVANTAGE_API_KEY:-}" ]]; then
+  echo "✗ ALPHAVANTAGE_API_KEY is missing from ${ENV_FILE}. The market- " >&2
+  echo "  context Alpha Vantage loader (workbench_api/data/alpha_vantage_" >&2
+  echo "  loader.py) cannot fetch index quotes without a key. Configure " >&2
+  echo "  the ALPHAVANTAGE_API_KEY repo secret (Settings → Secrets and " >&2
+  echo "  variables → Actions); get a free key at " >&2
+  echo "  https://www.alphavantage.co/support/#api-key, then re-run the " >&2
+  echo "  bootstrap-env workflow so the env file is rewritten." >&2
+  exit 70
+fi
+
 echo "→ alembic upgrade head"
 (
   cd "${RELEASE_DIR}/backend"

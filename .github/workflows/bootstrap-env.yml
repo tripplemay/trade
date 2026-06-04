@@ -78,6 +78,14 @@ jobs:
           # gateway/cost-guard code regardless of how this key
           # arrives.
           AIGC_GATEWAY_API_KEY: ${{ secrets.AIGC_GATEWAY_API_KEY }}
+          # B035 F001 — FRED + Alpha Vantage API keys for the market-context
+          # series (Stream 2.C). Backend-only secrets; v0.9.30 §12.9 four-place
+          # wiring (.env.example + settings.py + deploy.sh + bootstrap-env.yml).
+          # Free keys: fred.stlouisfed.org/docs/api/api_key.html and
+          # alphavantage.co/support/#api-key. Missing on the VM →
+          # deploy.sh pre-flight exits 69 (FRED) / 70 (Alpha Vantage).
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY }}
         run: |
           # set +x to be defensive — GHA masks ${{ secrets.* }} but never echo plaintext anyway.
           set +x
@@ -104,6 +112,9 @@ jobs:
           SEC_EDGAR_CONTACT_EMAIL=$SEC_EDGAR_CONTACT_EMAIL
           # B031 F001 — aigc-gateway backend API key (LLM gateway).
           AIGC_GATEWAY_API_KEY=$AIGC_GATEWAY_API_KEY
+          # B035 F001 — FRED + Alpha Vantage market-context API keys.
+          FRED_API_KEY=$FRED_API_KEY
+          ALPHAVANTAGE_API_KEY=$ALPHAVANTAGE_API_KEY
           # B030 F003 — NEXT_PUBLIC_SYNTHETIC_DATA_BANNER is the only
           # B026 banner-related env var. It is NOT a backend secret;
           # it is a frontend build-time public flag and lives in
@@ -123,7 +134,7 @@ jobs:
             exit 1
           fi
           # Each required key must be present and non-empty
-          for k in GOOGLE_OAUTH_CLIENT_ID GOOGLE_OAUTH_CLIENT_SECRET NEXTAUTH_SECRET ALLOWED_USER_EMAIL TIINGO_API_KEY SEC_EDGAR_CONTACT_EMAIL AIGC_GATEWAY_API_KEY; do
+          for k in GOOGLE_OAUTH_CLIENT_ID GOOGLE_OAUTH_CLIENT_SECRET NEXTAUTH_SECRET ALLOWED_USER_EMAIL TIINGO_API_KEY SEC_EDGAR_CONTACT_EMAIL AIGC_GATEWAY_API_KEY FRED_API_KEY ALPHAVANTAGE_API_KEY; do
             if ! grep -qE "^${k}=." "$ENVFILE"; then
               echo "::error::Refusing to ship: ${k} is missing or empty in the assembled env file." >&2
               exit 1

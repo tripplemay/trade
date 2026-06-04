@@ -33,6 +33,10 @@ EXPECTED_ALLOWLIST: frozenset[str] = frozenset(
         # place wiring + permanent boundaries (l) routing and
         # (m) ¥1500 cap enforced inside gateway/cost-guard code).
         "AIGC_GATEWAY_API_KEY",
+        # B035 F001 — FRED + Alpha Vantage API keys for the market-context
+        # series (Stream 2.C; v0.9.30 §12.9 four-place wiring).
+        "FRED_API_KEY",
+        "ALPHAVANTAGE_API_KEY",
     }
 )
 
