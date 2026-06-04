@@ -234,6 +234,18 @@ mkdir -p "${NEWS_SNAPSHOT_DIR}"
 mkdir -p "${RELEASE_DIR}/data/snapshots"
 ln -sfn "${NEWS_SNAPSHOT_DIR}" "${RELEASE_DIR}/data/snapshots/news"
 
+# B035 F002 — provision the market-context snapshot directory (boundary (r):
+# read-only market-data fetch). Raw FRED / Alpha Vantage responses land here
+# (same snapshot foundation as news); they must survive release swaps + GC,
+# so the canonical location is the persistent data root next to the SQLite
+# DB. The market-context systemd timer writes here via
+# WORKBENCH_MARKET_SNAPSHOT_DIR; a symlink also exposes it at the
+# release-relative path for the CLI's repo-relative default.
+MARKET_SNAPSHOT_DIR="${WORKBENCH_MARKET_SNAPSHOT_DIR:-/var/lib/workbench/data/snapshots/market-context}"
+echo "→ ensure market-context snapshot dir ${MARKET_SNAPSHOT_DIR}"
+mkdir -p "${MARKET_SNAPSHOT_DIR}"
+ln -sfn "${MARKET_SNAPSHOT_DIR}" "${RELEASE_DIR}/data/snapshots/market-context"
+
 # 2. Flip the active release symlink atomically. `ln -sfn` is one syscall
 # and survives the brief window where both services are reading from the
 # directory.
@@ -249,5 +261,25 @@ echo "→ systemctl daemon-reload + restart workbench-{backend,frontend}.service
 sudo /bin/systemctl daemon-reload
 sudo /bin/systemctl restart workbench-backend.service
 sudo /bin/systemctl restart workbench-frontend.service
+
+# B035 F002 — install + enable the market-context daily timer (boundary (r):
+# read-only market-data fetch only; systemd timer, NOT an in-process
+# scheduler). The unit files ship in the release under deploy/systemd/.
+# Best-effort: tolerate a dev `deploy.sh` rehearsal (no sudo / units absent)
+# and a not-yet-granted sudoers entry so an existing backend/frontend deploy
+# still completes. Codex F004 L2 verifies `systemctl status` shows the timer
+# enabled; if this block warned, add the sudoers grant + re-deploy.
+SYSTEMD_SRC="${RELEASE_DIR}/deploy/systemd"
+if [[ -f "${SYSTEMD_SRC}/workbench-market-context.timer" ]]; then
+  echo "→ install + enable workbench-market-context.timer (boundary (r) read-only fetch)"
+  if sudo /usr/bin/install -m 644 "${SYSTEMD_SRC}/workbench-market-context.service" /etc/systemd/system/workbench-market-context.service \
+    && sudo /usr/bin/install -m 644 "${SYSTEMD_SRC}/workbench-market-context.timer" /etc/systemd/system/workbench-market-context.timer \
+    && sudo /bin/systemctl daemon-reload \
+    && sudo /bin/systemctl enable --now workbench-market-context.timer; then
+    echo "✓ workbench-market-context.timer enabled"
+  else
+    echo "::warning::Could not install/enable workbench-market-context.timer. Grant the deploy user sudoers access to '/usr/bin/install -m 644 * /etc/systemd/system/workbench-market-context.*' and '/bin/systemctl enable --now workbench-market-context.timer', then re-deploy (B035 F002). Deploy continues; the daily market-context fetch will not run until granted." >&2
+  fi
+fi
 
 echo "✓ deploy complete: ${RELEASE_DIR}"

@@ -1,0 +1,14 @@
+[Unit]
+Description=Daily timer for workbench market-context fetch (boundary (r): read-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B035-market-context-spec.md
+
+[Timer]
+# Once per day. Persistent=true catches up a missed run after a VM reboot /
+# downtime window (the free FRED + Alpha Vantage tiers tolerate this; the
+# fetch is idempotent via MarketContextRepository.save_if_new).
+OnCalendar=daily
+Persistent=true
+Unit=workbench-market-context.service
+
+[Install]
+WantedBy=timers.target
