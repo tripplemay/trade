@@ -63,22 +63,6 @@
 
 <!-- 2026-05-27: B031 done — 第三方 API spec invented endpoint 现象观察记账（不沉淀为正式 v0.9.32 规约，等二例再合并）。本批次 F003 fix-round 1 commit f31c302 修真实 aigc-gateway OpenAI-compatible API: spec §4 invented JSON envelope (/chat + /embed + /balance + top-level content/cost_usd_est/log_id) 不匹配真 API；真 API 是 OpenAI-compatible /v1/chat/completions + /v1/embeddings + /v1/models with choices[0].message.content envelope；placeholder host aigc-gateway.example.com DNS fail。Generator 修复后 BASE_URL = https://aigc.guangai.ai + OpenAI envelope 解析 + dotted model IDs (claude-haiku-4.5 等验证自 /v1/models) + prod URL guard + endpoint path 守门测试。Codex signoff §Framework Learnings first-class 列入 1 候选 (建议位置 generator.md)。用户暂不沉淀决议：参考 v0.9.20 BL-060 / B026 React event edge 单一案例不入沉淀原则。复用窗口（B033 News API / B034 Cohere embedding / B035 FRED+Alpha Vantage / Phase 3+）—— 后续若再撞同样"spec invented 第三方 API endpoint"问题，由当时 Planner 合并 B031 + 新案例沉淀为 v0.9.32（建议位置：framework/harness/planner.md 铁律 1 扩展 "第三方 API 接入 spec 必须 live-validate" + framework/harness/generator.md §17 "F001 实施时必须 live hit 真 API 验证"）。-->
 
-## [2026-06-01] Claude CLI — 来源：B034 F003 fix-round（Frontend CI Playwright 抓到 /api/recommendations/news 500）
+<!-- 2026-06-04: v0.9.32 沉淀完成（B034 二例合并：请求路径 deploy-artifact 自包含铁律）：两条候选（2026-06-01 B034 F003 import scripts/pandas → frontend-CI 500 + 2026-06-04 B034 F004 L2 open repo-root data/fixtures → production VM 500）同根合并沉淀。(1) framework/harness/generator.md 新增 §12.10 "请求路径 deploy-artifact 自包含铁律"（二例 + deploy artifact 边界 ASCII art + 4 条规约 + 与 §12.8/§12.9 关系 + local vs prod 系列补一行）。(2) framework/harness/evaluator.md 新增 §23 "新增 user-facing 路由 L2 必测真 VM authenticated 200"。(3) framework/templates/signoff-report.md §L2 实测记录 加勾选行。(4) CHANGELOG v0.9.32。(5) 归档 framework/archive/proposed-learnings-archive-v0.9.32.md（含两条原候选全文 + 二例合并评估 + 仍 hold 候选记录）。仍 hold：B031 第三方 API live-validate（不同模式，单例，等二例）+ B026 React event edge（单例）。-->
 
-**类型：** 新规律 / 新坑
-
-**内容：** 请求路径（routes / services / 被其调用的 workbench_api 模块）严禁在 import 时或调用时 import `pandas` / 根级 `scripts` 包——这些是 CLI / 离线脚本依赖，精简生产 & frontend-CI 后端 install 不携带，导致请求 500。本地 dev 全装故 vitest（mock fetch）与本地手测均抓不到；**唯有 Playwright e2e 跑真后端栈才暴露这类 import-time 依赖泄漏**。B034 F003：`sleeve_tickers` 请求路径 import `scripts.universe_us_quality`（pandas）→ frontend-CI 500；改由 stdlib-csv 的 `ticker_match.equity_universe_tickers()` 解析同一真源修复，并加 AST 守门测试（`test_news_sleeve_tickers.py`）禁止该模块 import pandas/scripts。与 §12.8（runtime vs dev dep pinned，scan workbench_api/）互补——§12.8 抓 workbench_api/ 内 top-level 第三方 import，但抓不到「请求路径 import 根级 scripts 包（其内部再 import pandas）」这一层。
-
-**建议写入：** `framework/harness/generator.md` §12.8 扩展子节「请求路径禁 import CLI-only 重依赖（pandas/scripts）；AST 守门 + e2e 真后端验证」+ §13/§18 e2e 价值补一句「真后端 e2e 是 import-time 依赖泄漏的唯一捕手」。可与既有「local vs prod」系列教训（§12.5/§12.7/§12.8/§12.9）并列。
-
-**状态：** 待确认
-
-## [2026-06-04] Claude CLI — 来源：B034 F004 L2 blocker（production /api/recommendations/news 500 FileNotFoundError）
-
-**类型：** 新规律（与 2026-06-01 候选合并 — 二例已凑齐）
-
-**内容：** 请求路径（routes/services 及其调用链）**禁触 deploy artifact 之外的任何资源**——deploy 只下发 `workbench_api/` 包（含包内 `workbench_api/data/fixtures/*` 数据，如 B029 ticker_cik_map.json），repo-root 的 `scripts/` 与 `data/fixtures/` **均不在 release tree**。两类泄漏同根：(1) 2026-06-01 B034 F003：请求路径 `import scripts.universe_us_quality`（pandas）→ frontend-CI 精简后端 500；(2) 2026-06-04 B034 F004 L2：请求路径 `ticker_match._load_universe_names()` 运行时 `open(repo-root/data/fixtures/.../universe.csv)` → production VM 500 FileNotFoundError。两次本地 + CI（lint/vitest/pytest）全绿，因 checkout 含完整 repo；**唯 L2 真 VM（deploy artifact = 仅 workbench_api/）暴露**。修复模式统一：把所需数据 materialise 成 `workbench_api/` 内代码常量或包内数据文件 + CI drift/缺失守门测试（monkeypatch 资源缺失断言仍工作 = 精确复现 prod 失败的回归）。
-
-**建议写入：** `framework/harness/generator.md` §12.8 扩展（或新 §"请求路径 deploy-artifact 自包含铁律"）：列「禁 import 根级 scripts / 禁读 repo-root data/fixtures / 数据须 materialise 入 workbench_api/ 包」+ 回归测试模板（monkeypatch 资源不存在）。`framework/harness/evaluator.md`：L2 必测「核心新路由真 VM authenticated 200（非仅 schema/health）」。`framework/templates/signoff-report.md` L2 段加「新增 user-facing 路由真 VM 200 验证」勾选项。
-
-**状态：** 待确认（二例合并，建议 Planner done 阶段沉淀 v0.9.32）
+<!-- 当前无活动候选（待确认条目）。 -->

@@ -768,6 +768,50 @@ def test_critical_runtime_deps_pinned():
 
 ---
 
+### 12.10 请求路径 deploy-artifact 自包含铁律（v0.9.32 — B034 二例合并沉淀）
+
+**触发：** B034 News↔ticker 批次 F003 + F004 两次**同根**踩坑——请求路径（routes / services 及其调用链）依赖了 **deploy artifact 之外的资源**：
+
+- **二例 (1) B034 F003**（commit `d1c2b30`）：请求路径 `import scripts.universe_us_quality`（内部 import pandas）→ frontend-CI 精简后端 install 不含根级 `scripts/` 包 + pandas，`/api/recommendations/news` 500。本地全装 + vitest（mock fetch）均抓不到，**唯 Playwright e2e 跑真后端栈**暴露 import-time 依赖泄漏。改由 stdlib-csv 的 `ticker_match.equity_universe_tickers()` 解析同源修复 + AST 守门测试。
+- **二例 (2) B034 F004 L2**（commit `ec02894`）：请求路径 `ticker_match._load_universe_names()` 运行时 `open(repo-root/data/fixtures/.../universe.csv)` → production VM 500 FileNotFoundError。本地 + CI（lint/vitest/pytest）全绿因 checkout 含完整 repo，**唯 L2 真 VM** 暴露。改由 materialise universe 入 `workbench_api/` 包内代码常量修复。
+
+满足"等二例再合并沉淀"原则（参 v0.9.30 §12.9 / v0.9.20 BL-060）。注意：本节与 v0.9.31 hold 的「B031 第三方 API spec invented endpoint live-validate」候选是**不同模式**——后者仍单例 hold。
+
+**规律：** Production deploy artifact **只下发 `workbench_api/` 包**（含包内 `workbench_api/data/...` 数据，如 B029 `ticker_cik_map.json`）；repo-root 的 `scripts/` 与 `data/fixtures/` **均不在 release tree**。任何请求路径在 import 时或运行时触碰这些 repo-only 资源都会在 production 500，而本地 + CI 因完整 checkout **系统性掩盖**。
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│ 请求路径 deploy-artifact 自包含（新 user-facing 路由必查）        │
+├──────────────────────────────────────────────────────────────┤
+│ ✅ 在 release tree（请求路径可依赖）：                            │
+│    workbench_api/**            （含包内 workbench_api/data/*）   │
+│ ❌ 不在 release tree（请求路径严禁 import / open）：             │
+│    repo-root scripts/**        （CLI / 离线脚本，含 pandas）     │
+│    repo-root data/fixtures/**  （仅完整 checkout / CI 存在）     │
+│ 修复模式：所需数据 materialise 成 workbench_api/ 包内            │
+│           代码常量或包内数据文件 + 缺失守门回归测试             │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**规约：**
+
+1. **Spec acceptance 必含**：新增 user-facing 路由的 spec acceptance 必须声明「请求路径自包含」——所需数据 materialise 入 `workbench_api/` 包，不得 import 根级 `scripts/` 或读 repo-root `data/fixtures/`。
+2. **Generator 实施 checklist**：请求路径禁 `import scripts.*`、禁 `open(<repo-root>/data/...)`；数据进 `workbench_api/` 包（代码常量或包内 data 文件）。
+3. **守门回归测试**：monkeypatch 资源缺失（删/改 repo-root path）断言请求路径仍工作 = 精确复现 prod deploy-artifact 缺口的回归（B034 用 AST 守门 `test_news_sleeve_tickers.py` 禁 import pandas/scripts）。
+4. **Evaluator L2 验证**：必测核心新路由真 VM **authenticated 200**（非仅 schema / health）；deploy artifact = 仅 `workbench_api/`。
+
+**与 §12.8 / §12.9 关系：** §12.8 抓 `workbench_api/` 内 top-level 第三方 import（runtime vs dev）；§12.10 抓「请求路径触碰 deploy artifact 之外（根级 `scripts/` + `data/fixtures/`）」这一层——互补，非重叠。
+
+**与 v0.9.X 系列 "local vs prod" 教训补一行：**
+
+| 版本 | 现象 | 防御 | 哪一层 |
+|---|---|---|---|
+| **v0.9.32 §12.10（本节）** | **请求路径 import 根级 scripts / 读 repo-root data/fixtures → prod 500（本地+CI 掩盖）** | **请求路径数据 materialise 入 workbench_api/ 包 + 缺失守门 + L2 真 VM 200** | **deploy artifact 边界** |
+
+**来源：** B034 F003 fix-round（commit `d1c2b30`）+ F004 fix-round 1（commit `ec02894`）；signoff `docs/test-reports/B034-news-ticker-embedding-signoff-2026-06-04.md` §Framework Learnings first-class 列入 + proposed-learnings 二例合并；B034 done 阶段用户确认沉淀。
+
+---
+
 ## 13. Frontend SSR vs Browser context（v0.9.24 — B021 沉淀）
 
 **触发：** B021 F006 fix-round 5 — Codex L2 reverify 失败因生产首页登录后显示 `Backend unreachable: Failed to fetch`。根因：`workbench/frontend/src/app/(protected)/page.tsx` 的 `HEALTH_URL` 默认硬编码 `http://127.0.0.1:8723/api/health`。SSR build 时这个值被 inline 进 client bundle，浏览器在用户笔记本上 fetch 127.0.0.1:8723（用户机器，不是 VM）必失败。

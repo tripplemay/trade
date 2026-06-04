@@ -26,7 +26,8 @@ type: project
 - AI 边界（v0.9.28 5 子条）：本批次不触 AI logic（仅 news raw ingest infra）；B034 起 news→embedding 才首次触发
 
 ## Framework 状态
-- 最新版本 **v0.9.31**（2026-05-27 沉淀完成）：B030 Feature decommission 四处清理铁律。B033 signoff §Framework Learnings 标「本批次无」。**B031 第三方 API live-validate 候选仍 hold 等二例合并**——B033 F002（SEC EDGAR）按建议主动 live-validate，未再撞 spec-invented-endpoint，二例未达成，v0.9.32 不沉淀。B026 React event edge 仍单一案例 hold。
+- 最新版本 **v0.9.32**（2026-06-04 沉淀完成，B034 二例合并）：**请求路径 deploy-artifact 自包含铁律**——请求路径禁 import 根级 `scripts/` / 禁读 repo-root `data/fixtures/`（deploy artifact 只含 `workbench_api/` 包），数据须 materialise 入包；本地+CI 掩盖、唯 L2 真 VM 暴露。落地 generator.md §12.10 + evaluator.md §23（L2 必测核心新路由真 VM 200）+ signoff 模板 §L2 勾选行。
+- 仍 hold（等二例）：**B031 第三方 API live-validate**（不同模式，单例；复用窗口 B035 FRED+Alpha Vantage / B036）+ B026 React event edge（单例）。
 
 ## 已知 gap（非阻塞）
 - 本机 `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。

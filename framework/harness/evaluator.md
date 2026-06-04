@@ -477,3 +477,24 @@ nvm use                          # 不一致时切换；无 nvm 装 Node 20 LTS
 **Signoff §Decommission Checklist 配套：** Evaluator 写 signoff 时勾选 `framework/templates/signoff-report.md §Decommission Checklist`（v0.9.31 模板修订），确认 legacy E2E 已同步翻转。
 
 **来源：** B030 F004 reverify Soft-watch S3 + Codex signoff §Framework Learnings 第 1 条（**Codex first-class 主动列入**）；commit `095e91d`（Playwright spec presence→absence）+ `tests/e2e/b026-synthetic-banner.spec.ts` 修订实例。配套 generator.md §16 四处清理铁律 + templates/signoff-report.md §Decommission Checklist。
+
+---
+
+## 23. 新增 user-facing 路由 L2 必测真 VM authenticated 200（v0.9.32 — B034 二例合并沉淀）
+
+**背景：** B034 F004 首轮 L2 — health / HEAD 等价 / alembic head / 无 scheduler 等 infra 检查全 PASS，**但核心新路由 `GET /api/recommendations/news` 在 production 返回 500**（请求路径运行时 `open(repo-root/data/fixtures/.../universe.csv)`，而 deploy artifact 只含 `workbench_api/` 包不含 repo-root `data/fixtures/`）。L1 本地 + CI 全绿因完整 checkout 掩盖（详见 generator.md §12.10）。**只有真 VM 对核心路由发一次 authenticated 真实请求才暴露。**
+
+**规约（Evaluator verify / reverify 时硬要求）：**
+
+1. **批次新增/改动 user-facing 路由时，L2 必对每条核心新路由发真 VM authenticated 请求并断言 200 + payload 形状**——不得只验 `/api/health` / schema / HEAD 等价就放行。
+2. **断言要触达请求路径的真实依赖**：带上典型 query（如 `?sleeve=<real>`），确认不是空壳 200；空数组可接受（fixture-first 边界），但 500 / FileNotFoundError / ImportError 即 blocker。
+3. **根因归类指向 generator.md §12.10**：若 500，先查请求路径是否 `import scripts.*` 或读 repo-root `data/fixtures/`（deploy artifact 之外）。
+4. **配套 signoff 模板**：`framework/templates/signoff-report.md` L2 段勾选「新增 user-facing 路由真 VM authenticated 200」（v0.9.32 模板修订）。
+
+**反面案例（B034 F004 首轮 L2）：**
+
+| 现象 | 根因 | 修法 |
+|---|---|---|
+| infra 检查全 PASS，但 `GET /api/recommendations/news?sleeve=...` production 500 | 请求路径读 repo-root `data/fixtures/` universe.csv，不在 deploy artifact | F004 fix-round 1 commit `ec02894`：materialise universe 入 `workbench_api/` 包；blocker 留档 `B034-news-ticker-embedding-blocker-2026-06-04.md` |
+
+**来源：** B034 F004 L2 blocker + signoff `docs/test-reports/B034-news-ticker-embedding-signoff-2026-06-04.md` §Framework Learnings；配套 generator.md §12.10 请求路径 deploy-artifact 自包含铁律 + templates/signoff-report.md L2 勾选项。

@@ -5,6 +5,28 @@
 
 ---
 
+## v0.9.32 — 2026-06-04（B034 二例合并沉淀：请求路径 deploy-artifact 自包含铁律）
+
+**来源批次：**
+- B034 News↔ticker/sleeve 关联 + Embedding，F003 fix-round（commit `d1c2b30`）+ F004 fix-round 1（commit `ec02894`）
+- signoff `docs/test-reports/B034-news-ticker-embedding-signoff-2026-06-04.md` §Framework Learnings **first-class 列入 新规律 + 新坑**；proposed-learnings 两条（2026-06-01 + 2026-06-04）二例合并
+- blocker 留档 `docs/test-reports/B034-news-ticker-embedding-blocker-2026-06-04.md`
+
+**触发原因：**
+- 请求路径（routes/services 及调用链）依赖了 deploy artifact 之外的资源，两次同根：
+  - (1) F003：请求路径 `import scripts.universe_us_quality`（pandas）→ frontend-CI 精简后端不含根级 `scripts/` + pandas → `/api/recommendations/news` 500；唯 Playwright e2e 真后端栈暴露
+  - (2) F004 L2：请求路径运行时 `open(repo-root/data/fixtures/.../universe.csv)` → production VM 500 FileNotFoundError；唯 L2 真 VM 暴露
+- 两次本地 + CI 全绿（完整 checkout 系统性掩盖）；deploy artifact 只下发 `workbench_api/` 包（含包内 `workbench_api/data/*`），repo-root `scripts/` 与 `data/fixtures/` 不在 release tree
+- 满足"等二例再合并"原则（与 v0.9.31 hold 的 B031 第三方 API live-validate 是不同模式，后者仍单例 hold）
+
+**变更：**
+- `framework/harness/generator.md` 新增 §12.10 "请求路径 deploy-artifact 自包含铁律"（二例 + deploy artifact 边界 ASCII art + 4 条规约 + 与 §12.8/§12.9 关系 + "local vs prod" 系列补一行）
+- `framework/harness/evaluator.md` 新增 §23 "新增 user-facing 路由 L2 必测真 VM authenticated 200"（规约 + 反面案例 B034 F004 首轮 L2）
+- `framework/templates/signoff-report.md` §L2 实测记录 新增「新增 user-facing 路由真 VM authenticated 200」勾选行
+- 归档 `framework/archive/proposed-learnings-archive-v0.9.32.md`（含两条原候选全文 + 二例合并评估）
+
+---
+
 ## v0.9.31 — 2026-05-27（B030 沉淀：Feature decommission 四处清理铁律 + E2E presence→absence 翻转）
 
 **来源批次：**

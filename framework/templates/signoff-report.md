@@ -65,6 +65,7 @@
 | Staging git_sha == main HEAD | `curl https://staging.kol.guangai.ai/api/health \| jq .git_sha` 输出 = `<sha>` |
 | 端到端流验证 | [描述 Reviewer 走完的真实 UX 流：登录 → 操作 → 观察 / 收件箱 / DB 查询结果] |
 | 关键 invariant | [如 send test 真发出 + Resend providerMessageId / FK 不撞 / count 验证等] |
+| 新增 user-facing 路由真 VM authenticated 200（v0.9.32 — B034 沉淀）| [对每条核心新路由发真 VM authenticated 请求断言 200 + payload 形状，不止 /api/health；带典型 query 触达请求路径真实依赖。若 500 先查请求路径是否依赖 deploy artifact 之外资源（generator.md §12.10）。无新路由写 N/A] |
 | 浏览器手动验（如 UI 类）| [DevTools 截图 / 字段渲染 / 网络面板] |
 
 > **RSC server action / 不可 curl-simulate 类 endpoint（v0.9.11 — BL-020-F005 沉淀）：** 走 `Content-Type: text/x-component` + CSRF + RSC payload 的 endpoint（如 login form / OAuth callback / mutation 提交）curl 不能简洁模拟。L2 实测时应明示该限制，退到「unit + integration testcontainer + health endpoint 联合背书 + prod 灰度浏览器手验」模式，物理验证作 Soft-watch 入项目状态由用户驱动，不阻塞 done。
