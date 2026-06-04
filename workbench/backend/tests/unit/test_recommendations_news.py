@@ -141,6 +141,32 @@ def test_news_topic_filter(initialised_db: str) -> None:
     assert [item["title"] for item in payload["items"]] == ["annual"]
 
 
+def test_news_route_works_without_universe_fixture_file(
+    initialised_db: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Regression for the F004 L2 production 500 (2026-06-04): the route
+    must return 200 even when the repo-root universe fixture CSV is absent
+    (it is not in the deploy artifact). Before the fix this raised
+    FileNotFoundError → 500 — the exact production failure."""
+
+    from pathlib import Path
+
+    from workbench_api.news import ticker_match
+
+    monkeypatch.setattr(
+        ticker_match, "UNIVERSE_CSV", Path("/nonexistent/universe.csv")
+    )
+    ticker_match.build_ticker_dictionary.cache_clear()
+
+    _seed_news(ticker="AAPL", title="Apple 10-K", form_type="10-K")
+    client = _authed_client()
+    resp = client.get("/api/recommendations/news?sleeve=satellite_us_quality")
+    assert resp.status_code == 200
+    assert [item["title"] for item in resp.json()["items"]] == ["Apple 10-K"]
+
+    ticker_match.build_ticker_dictionary.cache_clear()
+
+
 def test_news_source_and_limit(initialised_db: str) -> None:
     _seed_news(ticker="AAPL", title="edgar", source="sec_edgar")
     _seed_news(ticker="AAPL", title="yahoo", source="yahoo_rss")

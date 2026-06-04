@@ -10,8 +10,16 @@ The matcher is fully deterministic (no LLM — B034 AI boundary §3). It
 builds a ``{alias|symbol → ticker}`` dictionary from two grounded
 sources:
 
-* ``data/fixtures/us_quality_momentum/universe.csv`` — company names
-  for the 27 real tickers (e.g. ``"Apple Inc." → AAPL``);
+* :data:`_UNIVERSE_NAMES` — the 27 real tickers' company names
+  (e.g. ``"Apple Inc." → AAPL``), **materialised in code** so the
+  runtime never reads a file. The constant mirrors
+  ``data/fixtures/us_quality_momentum/universe.csv``; the guard test
+  ``test_universe_constant_matches_csv`` fails CI if the two drift.
+  History: F004 L2 (2026-06-04) caught a production 500 — the prior
+  version read the repo-root fixture CSV at request time, but that
+  fixture is **not** in the deploy artifact (only ``workbench_api/``
+  package data ships). Hardcoding the universe makes the request path
+  deploy-artifact-safe.
 * a small hand-curated alias map for the 4 ETFs (which have no row in
   the equity universe CSV).
 
@@ -45,6 +53,45 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 UNIVERSE_CSV = (
     REPO_ROOT / "data" / "fixtures" / "us_quality_momentum" / "universe.csv"
 )
+"""Path to the B025 universe fixture. Used **only** by the
+``test_universe_constant_matches_csv`` consistency guard — never read on
+the runtime / request path (F004 L2 blocker fix, 2026-06-04). The
+fixture is not shipped in the deploy artifact, so runtime reads from
+:data:`_UNIVERSE_NAMES` instead."""
+
+# B025 US Quality 27 real (non-synthetic) tickers → company name,
+# materialised here so the runtime never depends on the un-deployed
+# fixture CSV. Mirrors ``universe.csv`` exactly; the
+# ``test_universe_constant_matches_csv`` guard fails CI on any drift.
+_UNIVERSE_NAMES: dict[str, str] = {
+    "AAPL": "Apple Inc.",
+    "MSFT": "Microsoft Corporation",
+    "NVDA": "NVIDIA Corporation",
+    "JNJ": "Johnson & Johnson",
+    "UNH": "UnitedHealth Group Incorporated",
+    "JPM": "JPMorgan Chase & Co.",
+    "BAC": "Bank of America Corporation",
+    "V": "Visa Inc.",
+    "AMZN": "Amazon.com, Inc.",
+    "HD": "The Home Depot, Inc.",
+    "GOOGL": "Alphabet Inc. Class A",
+    "META": "Meta Platforms, Inc.",
+    "HON": "Honeywell International Inc.",
+    "UPS": "United Parcel Service, Inc.",
+    "CAT": "Caterpillar Inc.",
+    "PG": "The Procter & Gamble Company",
+    "KO": "The Coca-Cola Company",
+    "WMT": "Walmart Inc.",
+    "XOM": "Exxon Mobil Corporation",
+    "CVX": "Chevron Corporation",
+    "NEE": "NextEra Energy, Inc.",
+    "DUK": "Duke Energy Corporation",
+    "PLD": "Prologis, Inc.",
+    "AMT": "American Tower Corporation",
+    "LIN": "Linde plc",
+    "APD": "Air Products and Chemicals, Inc.",
+    "ECL": "Ecolab Inc.",
+}
 
 # The 4 master ETFs the B033/B034 news CLI ingests alongside the equity
 # universe (see ``news/cli.py``). They have no row in the equity
@@ -91,7 +138,21 @@ class TickerDictionary:
 
 def _load_universe_names() -> dict[str, str]:
     """Return ``{ticker: company_name}`` for the real (non-synthetic)
-    equity universe from the B025 fixture CSV."""
+    equity universe.
+
+    Reads from the in-code :data:`_UNIVERSE_NAMES` constant — **no file
+    I/O** — so the runtime / request path stays deploy-artifact-safe
+    (F004 L2 blocker fix, 2026-06-04). A defensive copy keeps callers
+    from mutating the module constant."""
+
+    return dict(_UNIVERSE_NAMES)
+
+
+def _parse_universe_csv() -> dict[str, str]:
+    """Parse the B025 universe fixture CSV → ``{ticker: name}`` (real
+    tickers only). Test-only helper backing the
+    ``test_universe_constant_matches_csv`` drift guard; never called on
+    the runtime path."""
 
     out: dict[str, str] = {}
     with UNIVERSE_CSV.open(encoding="utf-8") as fh:

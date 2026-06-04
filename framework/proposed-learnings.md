@@ -72,3 +72,13 @@
 **建议写入：** `framework/harness/generator.md` §12.8 扩展子节「请求路径禁 import CLI-only 重依赖（pandas/scripts）；AST 守门 + e2e 真后端验证」+ §13/§18 e2e 价值补一句「真后端 e2e 是 import-time 依赖泄漏的唯一捕手」。可与既有「local vs prod」系列教训（§12.5/§12.7/§12.8/§12.9）并列。
 
 **状态：** 待确认
+
+## [2026-06-04] Claude CLI — 来源：B034 F004 L2 blocker（production /api/recommendations/news 500 FileNotFoundError）
+
+**类型：** 新规律（与 2026-06-01 候选合并 — 二例已凑齐）
+
+**内容：** 请求路径（routes/services 及其调用链）**禁触 deploy artifact 之外的任何资源**——deploy 只下发 `workbench_api/` 包（含包内 `workbench_api/data/fixtures/*` 数据，如 B029 ticker_cik_map.json），repo-root 的 `scripts/` 与 `data/fixtures/` **均不在 release tree**。两类泄漏同根：(1) 2026-06-01 B034 F003：请求路径 `import scripts.universe_us_quality`（pandas）→ frontend-CI 精简后端 500；(2) 2026-06-04 B034 F004 L2：请求路径 `ticker_match._load_universe_names()` 运行时 `open(repo-root/data/fixtures/.../universe.csv)` → production VM 500 FileNotFoundError。两次本地 + CI（lint/vitest/pytest）全绿，因 checkout 含完整 repo；**唯 L2 真 VM（deploy artifact = 仅 workbench_api/）暴露**。修复模式统一：把所需数据 materialise 成 `workbench_api/` 内代码常量或包内数据文件 + CI drift/缺失守门测试（monkeypatch 资源缺失断言仍工作 = 精确复现 prod 失败的回归）。
+
+**建议写入：** `framework/harness/generator.md` §12.8 扩展（或新 §"请求路径 deploy-artifact 自包含铁律"）：列「禁 import 根级 scripts / 禁读 repo-root data/fixtures / 数据须 materialise 入 workbench_api/ 包」+ 回归测试模板（monkeypatch 资源不存在）。`framework/harness/evaluator.md`：L2 必测「核心新路由真 VM authenticated 200（非仅 schema/health）」。`framework/templates/signoff-report.md` L2 段加「新增 user-facing 路由真 VM 200 验证」勾选项。
+
+**状态：** 待确认（二例合并，建议 Planner done 阶段沉淀 v0.9.32）
