@@ -36,6 +36,8 @@ const REQUIRED_PREFIXES = [
   "docs",
   // B023 F002+: the manual-execution workflow surface.
   "execution",
+  // B035 F003: the market-context Home card surface.
+  "market-context",
 ];
 
 describe("next.config dev rewrites cover all B022 backend prefixes", () => {

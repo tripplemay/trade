@@ -58,6 +58,7 @@ const nextConfig = {
       "backlog",
       "docs",
       "execution",
+      "market-context",
     ];
     return PROXIED_PREFIXES.flatMap((prefix) => [
       { source: `/api/${prefix}`, destination: `${target}/api/${prefix}` },
