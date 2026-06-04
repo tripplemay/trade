@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
+import { MarketContextCard } from "@/components/market/MarketContextCard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, formatPercent } from "@/components/table/columns";
 import { cn } from "@/lib/utils";
@@ -36,7 +37,9 @@ function DashboardCard({
         <CardDescription>{label}</CardDescription>
         <CardTitle className="numeric text-2xl">{value}</CardTitle>
       </CardHeader>
-      {description ? <CardContent className="text-xs text-muted-foreground">{description}</CardContent> : null}
+      {description ? (
+        <CardContent className="text-xs text-muted-foreground">{description}</CardContent>
+      ) : null}
     </Card>
   );
 }
@@ -125,6 +128,8 @@ export default function HomePage() {
           }
         />
       </div>
+
+      <MarketContextCard />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card data-testid="dashboard-recent-reports">

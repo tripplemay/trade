@@ -6,7 +6,7 @@
       "title": "Market context schema + FRED + Alpha Vantage 双 adapter + 2 secret 三处接线 + snapshot foundation 复用",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) workbench_api/db/models/market_context.py: MarketContextObservation 模型 (id UUID PK 复用 _UuidString / series_id TEXT NOT NULL / source TEXT NOT NULL / obs_date Date NOT NULL / value Numeric NOT NULL / snapshot_path TEXT NOT NULL / fetched_at DateTime tz=True) + uq_market_context_series_date (series_id, obs_date) + ix_market_context_series + ix_market_context_obs_date；(2) workbench_api/db/repositories/market_context.py: MarketContextRepository save_if_new (幂等 by (series_id, obs_date) 返回 None 当 dup) + latest_by_series + list_by_series(since, limit)；(3) migrations/0007_b035_market_context.py: down_revision='0006_b034_news_embedding'；alembic upgrade head → downgrade 显式 '0006_b034_news_embedding' 可逆；(4) workbench_api/data/fred_loader.py: FREDMarketLoader 调 https://api.stlouisfed.org/fred/series/observations?series_id={DGS10|VIXCLS|CPIAUCSL}&api_key={FRED_API_KEY}&file_type=json → 解析 observations[].{date,value} → snapshot (data/snapshots/market-context/fred/{YYYY-MM-DD}/) + repo.save_if_new；(5) workbench_api/data/alpha_vantage_loader.py: AlphaVantageLoader 调免费 endpoint (TIME_SERIES_DAILY 或 GLOBAL_QUOTE, apikey={ALPHAVANTAGE_API_KEY}) for SPY/QQQ/DXY → snapshot + repo；复用 cost_guard；注意 25 req/day 免费上限；(6) raw 落 snapshot foundation 复用既有 snapshot_meta + data/snapshots/market-context/；(7) **2 新 secret §12.9 四处接线**: .env.example 加 FRED_API_KEY + ALPHAVANTAGE_API_KEY 注释 + config/settings 读取缺时 raise + deploy.sh pre-flight check + .github/workflows/bootstrap-env.yml inject 两行 (复用 TIINGO/SEC pattern)；(8) data/fixtures/ fred-sample-*.json (3 series) + alphavantage-sample-*.json (3 series)，CI 不打真 API；(9) **第三方 API live-validate (B031 教训)**: generator 各 live hit 一次真 FRED + 真 Alpha Vantage 验证 JSON envelope + 字段路径，写守门 unit test 锁字段；若 envelope 与假设不符记 signoff §Framework Learnings (B031 候选二例评估)；(10) pytest ≥12: MarketContextObservation CRUD + save_if_new 幂等 / latest_by_series / FRED loader mock httpx + fixture → 落库+snapshot / Alpha Vantage loader mock + fixture / 25/day guard / alembic up 0007 + down 0006 / secret 缺失 raise / live-validate 守门；(11) Gates: backend pytest ≥658 (B034 baseline 646 + ≥12) / ruff 0 / mypy 0 / alembic 可逆 / **2 新 secret 四处接线齐** / 若新 runtime dep 须 pin (§12.8) / frontend 不动；(12) 不动 B027/B029 snapshot foundation 既有 loaders / B033 news / B034 news_embedding / B031 LLMGateway。"
     },
     {
@@ -14,7 +14,7 @@
       "title": "Scheduler（每日只读市场数据拉取）+ market CLI + 边界 (r) scope 守门",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) workbench_api/market/__init__.py + cli.py: argparse fetch 命令拉全 6 series (FRED 3 + Alpha Vantage 3) → snapshot + DB (与 B033 news CLI 同构)；mkdir -p data/snapshots/market-context/{source}；(2) workbench/deploy/systemd/workbench-market-context.timer (每日一次 OnCalendar=daily) + .service (ExecStart=.venv/bin/python -m workbench_api.market.cli fetch, 读 /etc/workbench/workbench.env 拿 2 secret)；**用 systemd timer 非 in-process APScheduler** (避免新 runtime dep + app 无状态)；(3) deploy.sh: install + enable timer (cp unit + systemctl daemon-reload + enable --now)；(4) **永久边界 (r) 守门 tests/safety/test_market_scheduler_scope.py**: AST 扫 workbench_api/market/ + systemd service ExecStart 路径不 import/调用 broker/ticket/execution/recommendation/llm 模块 (调度器仅只读数据拉取，NOT 交易执行/下单/AI)；(5) **News 边界 (q) 不变守门**: 确认本批次未给 news 加 scheduler (test_news_no_scheduler 仍过)；(6) pytest ≥8: CLI argparse 各 flag / dispatch 拉两 source / 二次幂等 skipped / mkdir -p / scheduler scope AST 守门 / systemd unit 文件存在且 ExecStart 仅调 market cli；(7) Gates: backend pytest ≥666 (F001 后 658 + ≥8) / ruff / mypy / 不引入 APScheduler 等 in-process scheduler dep / frontend 不动；(8) 不动 F001 schema/adapter / B033 news (q) 边界 / 既有 deploy 链其他部分。"
     },
     {
@@ -22,7 +22,7 @@
       "title": "Home 页 market context 卡片 + GET /market-context API",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) workbench_api/schemas/market_context.py: MarketContextResponse { series: [{series_id, source, latest_value, latest_date, label}] }；(2) workbench_api/routes/market_context.py: GET /market-context (auth-gated, same-origin) → 调 MarketContextRepository.latest_by_series 返回 6 series 最新值；**纯结构化无 AI 文本**；(3) **§12.10 请求路径自包含守门**: /market-context 请求路径不读 repo-root data/fixtures (series label 等 materialise 入 workbench_api/ 包或 DB)；test_market_context_request_self_contained；(4) 前端 (protected) Home 页 market context 卡片: 6 series 最新值 + 日期 + 来源标注 (FRED/Alpha Vantage)，纯展示；走 same-origin /api/market-context；(5) backend pytest: GET /market-context 200 + auth-gated (未登录 401/redirect) + 响应 schema pin + 空数据态；(6) frontend vitest 新增卡片测试 (渲染 6 series / 空态 / 来源标注) + Playwright e2e (Home 页加载卡片)；(7) Gates: backend pytest ≥672 (F002 后 666 + ≥6) / frontend vitest ≥176 (+卡片) / Playwright ≥39 (+卡片 e2e) / lint 0 / typecheck pass / ruff / mypy；(8) 不动既有 Home 页其他模块 / /recommendations/* / B026 banner / 设计稿一致 (若 design-draft 有 market context 卡片稿则比对，无则按最小只读卡片)。"
     },
     {

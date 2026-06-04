@@ -73,6 +73,13 @@
       "title": "Action items",
       "description": "Things the workbench wants you to look at.",
       "empty": "Nothing flagged. Action items light up when a strategy gate trips or a wash-sale heuristic fires (B022 F010)."
+    },
+    "marketContext": {
+      "title": "Market context",
+      "description": "Latest macro & index readings (FRED + Alpha Vantage), updated daily. Structured data only.",
+      "loading": "Loading market context…",
+      "empty": "No market-context data yet. The daily fetch populates this once configured.",
+      "error": "Could not load market context: {error}"
     }
   },
   "strategies": {

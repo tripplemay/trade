@@ -263,6 +263,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/market-context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Market Context Route */
+        get: operations["get_market_context_route_api_market_context_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/snapshots": {
         parameters: {
             query?: never;
@@ -1277,6 +1294,46 @@ export interface components {
              * @description Realised slippage vs the target prices, in bps.
              */
             slippage_bps: number;
+        };
+        /**
+         * MarketContextResponse
+         * @description GET /api/market-context payload — one entry per catalogued series,
+         *     in catalog order.
+         */
+        MarketContextResponse: {
+            /** Series */
+            series?: components["schemas"]["MarketContextSeries"][];
+        };
+        /**
+         * MarketContextSeries
+         * @description Latest value for one market-context series.
+         */
+        MarketContextSeries: {
+            /**
+             * Series Id
+             * @description e.g. 'DGS10' / 'SPY'.
+             */
+            series_id: string;
+            /**
+             * Source
+             * @description 'fred' / 'alpha_vantage'.
+             */
+            source: string;
+            /**
+             * Label
+             * @description Human-readable display label.
+             */
+            label: string;
+            /**
+             * Latest Value
+             * @description Latest observation value; null when none ingested.
+             */
+            latest_value?: number | null;
+            /**
+             * Latest Date
+             * @description ISO-8601 date of the latest observation, or null.
+             */
+            latest_date?: string | null;
         };
         /**
          * PerformancePoint
@@ -2352,6 +2409,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_market_context_route_api_market_context_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarketContextResponse"];
                 };
             };
         };
