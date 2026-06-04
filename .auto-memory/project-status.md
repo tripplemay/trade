@@ -4,11 +4,12 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B034-news-ticker-embedding：`done`**（2026-06-04；F004 已 signoff）。fix-round 1 修复的 production `/api/recommendations/news` 500 blocker 已复验通过：27 ticker→公司名 materialise 成 `ticker_match._UNIVERSE_NAMES` 代码常量，`_load_universe_names()` 零文件 I/O，不再依赖未部署 fixture CSV。L1 全 PASS：backend pytest 646 passed+2 skipped / safety guards 12 / ruff 0 / mypy 0 / frontend vitest 176 / Playwright 39。L2 全 PASS：production `/api/health.version`=`ec02894`，与 `main` HEAD `d7ce159` 仅 `.auto-memory/project-status.md` 元数据差异、产品代码等价；authenticated recent-errors 0；authenticated `/api/recommendations/news?sleeve=satellite_us_quality` 返回 200 `{\"items\":[]}`；`alembic_version=0006_b034_news_embedding`；无 scheduler.py / cron / systemd news fetch；snapshot dir 仍存在且为空。signoff：`docs/test-reports/B034-news-ticker-embedding-signoff-2026-06-04.md`；blocker 留档：`docs/test-reports/B034-news-ticker-embedding-blocker-2026-06-04.md`。
-- **B034 决策矩阵（2026-06-01 用户已批，★=用户拍板）：** Embedding=**bge-m3**（复用 B031 `LLMGateway.embed`；gateway 实际只暴露 bge-m3 非计划写的 Cohere）/ 存储=独立 `news_embedding` 表 vector 落 JSON + 应用内 cosine（SQLite + 禁 pgvector/Cloud SQL）/ ★生产 ingest=**保持 fixture-first 不跑**（B033 边界 (q) 不动）/ ★Ticker=**字典硬匹配 + cosine 软排序** / ★UI=**丰富面板** / Topic tagging=确定性非 LLM / AI 边界=**非生成式守门**（5 子条生成式约束落 B036）/ ¥≈0。
-- **B034 首次触发 AI 边界，但仅非生成式检索基建**（embedding 只产向量、不产 user-facing AI 文本）；守门 `tests/safety/test_b034_no_generative_ai.py`。生成式建议 / `INSUFFICIENT_GROUNDING` / red-team 15 样本 → **B036**。
-- **不做**：生成式 AI 建议（B036）/ 生产 ingest（保持 (q)）/ FRED（B035）/ pgvector / 换 embedding provider。
-- 后续路径：B034（2.B 本批）→ B035（2.C market context）→ B036（3.C AI advisor MVP）= **🎯 里程碑 B Phase 2 终点**。
+- **B035-market-context：`building`**（2026-06-04 启动；Phase 2 / Stream 2.C 第十个 batch）。Home 页市场宏观 context：FRED（10y/VIX/CPI）+ Alpha Vantage（SPY/QQQ/DXY），每日更新，复用 B027/B029 snapshot foundation。spec `docs/specs/B035-market-context-spec.md`。4 features：(F001) market_context schema + alembic 0007 + FRED+Alpha Vantage 双 adapter + 2 secret 四处接线 + fixtures + live-validate；(F002) **scheduler 每日只读拉取**（market CLI + systemd timer + deploy 接线）+ 边界 (r) 守门；(F003) `GET /market-context` + Home 卡片；(F004) Codex L1+L2 + signoff。
+- **B035 决策矩阵（2026-06-04 用户已批，★=拍板）：** 数据源=★**FRED + Alpha Vantage** / 新 secret=★**FRED_API_KEY + ALPHAVANTAGE_API_KEY**（用户申请 key + §12.9 四处接线）/ 更新=★**引入 scheduler/cron 每日自动**（systemd timer 非 APScheduler）/ 存储=★**复用 B027/B029 snapshot foundation** / live-validate=两源第三方 API（**B031 候选复用窗口**）/ CI=fixture-first ¥≈0。
+- **⚠️ 用户动作项（阻塞 L2，不阻塞开发）：** 用户需申请 FRED + Alpha Vantage 免费 API key 并配 GitHub Secret + 经 bootstrap-env.yml 注入 VM env。
+- **不做**：AI advisor（B036）/ market context 喂 quant 策略 / 盘中实时 / 付费源 / in-process APScheduler。
+- 后续路径：B035（2.C 本批）→ B036（3.C AI advisor MVP）= **🎯 里程碑 B Phase 2 终点**。
+- **B034 ✅ signoff 2026-06-04**（1 fix-round；news_embedding bge-m3 + ticker 硬匹配+cosine + Recommendations NewsPanel；alembic 0006；prod /recommendations/news 200）。
 
 ## 已完成签收 + MVP 完工
 - B001-B033 全部签收。MVP substantively 完成 (PRD §10/§11/§12) — 完工声明：`docs/prd/mvp-completion-declaration-2026-05-20.md`。
@@ -22,8 +23,9 @@ type: project
 - UI 层：no-execution buttons + 中文等价禁词同级 / Order ticket Markdown 双语 disclaimer / B026 banner decommissioned（v0.9.31 §16 守门）
 - 数据 / CI 层：fixture-first 离线 CI / pyproject runtime-vs-dev hygiene（v0.9.29 §12.8）/ paths-trigger 含 trade/+scripts/+pyproject.toml（v0.9.27 §12.7.1）
 - B027 起 (f)(g) / B029 起 (h)(i)(j) / B030 起 (k) + v0.9.30 §12.9 / B031 起 (l)(m) / B032 起 (n)(o)：继续
-- **B033 起 (p)(q)：** (p) News raw text 仅落 snapshot path 不内联 DB / (q) News ingest 默认 production-disabled（无 scheduler / 无 cron / 无 APScheduler import）
-- AI 边界（v0.9.28 5 子条）：本批次不触 AI logic（仅 news raw ingest infra）；B034 起 news→embedding 才首次触发
+- **B033 起 (p)(q)：** (p) News raw text 仅落 snapshot path 不内联 DB / (q) News ingest 默认 production-disabled（无 scheduler / cron / APScheduler；**对 news 不变**）
+- **B035 起 (r)：** 项目首个调度器仅允许**只读市场数据拉取**（systemd timer），明确 NOT 交易执行/下单/recommendation/AI；守门 `test_market_scheduler_scope.py`
+- AI 边界（v0.9.28 5 子条）：B034 news→embedding 首次触发但仅非生成式；生成式建议留 B036
 
 ## Framework 状态
 - 最新版本 **v0.9.32**（2026-06-04 沉淀完成，B034 二例合并）：**请求路径 deploy-artifact 自包含铁律**——请求路径禁 import 根级 `scripts/` / 禁读 repo-root `data/fixtures/`（deploy artifact 只含 `workbench_api/` 包），数据须 materialise 入包；本地+CI 掩盖、唯 L2 真 VM 暴露。落地 generator.md §12.10 + evaluator.md §23（L2 必测核心新路由真 VM 200）+ signoff 模板 §L2 勾选行。
@@ -31,7 +33,7 @@ type: project
 
 ## 已知 gap（非阻塞）
 - 本机 `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
-- GitHub Secret `TIINGO_API_KEY` + `SEC_EDGAR_CONTACT_EMAIL` + `AIGC_GATEWAY_API_KEY` 已配；B033 不引入新 secret。
+- GitHub Secret `TIINGO_API_KEY` + `SEC_EDGAR_CONTACT_EMAIL` + `AIGC_GATEWAY_API_KEY` 已配；**B035 待用户配 `FRED_API_KEY` + `ALPHAVANTAGE_API_KEY`**（阻塞 L2，不阻塞开发）。
 - B029 S2 backend pytest SOCKS proxy 敏感属 evaluator 环境特定。
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->
