@@ -68,9 +68,19 @@ def run_daily(
             continue
         try:
             advisor.advise_sleeve(session, sleeve)
+            # Commit per sleeve so this session does not hold the SQLite
+            # write lock across the next sleeve. ``gateway.advise`` writes
+            # llm_budget_log on a *separate* connection (the cost guard); a
+            # single end-of-run commit kept this session's write transaction
+            # open across sleeves, so the next cost-guard write deadlocked on
+            # the WAL writer lock — 'database is locked' on the production VM
+            # (2026-06-05, satellite_us_quality failed after risk_parity). WAL
+            # + busy_timeout alone is not enough; the held transaction must be
+            # released between sleeves.
+            session.commit()
             saved += 1
         except Exception:
+            session.rollback()
             errors += 1
             logger.exception("advisor_precompute_failure", extra={"sleeve": sleeve})
-    session.commit()
     return PrecomputeSummary(saved=saved, skipped=skipped, errors=errors)
