@@ -1,0 +1,32 @@
+[Unit]
+Description=Workbench AI advisor daily precompute (CI-safety-gated, read+write DB)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B036-ai-advisor-mvp-spec.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=deploy
+Group=deploy
+WorkingDirectory=/srv/workbench/current/backend
+
+# Secrets (AIGC_GATEWAY_API_KEY for the gateway, WORKBENCH_DB_URL, ...) live in
+# /etc/workbench/workbench.env (chmod 640 root:deploy). Never committed.
+EnvironmentFile=/etc/workbench/workbench.env
+
+# Permanent boundary (r) as revised in B036: this scheduler runs the AI
+# advisor precompute (already gated by the AI Safety Eval deploy gate, which
+# requires the red-team 15/15 block). It READS grounding (quant signal + news
+# + market context) and WRITES advice to the DB — it never imports or invokes
+# any broker / order-ticket / execution surface. The advisor output is data,
+# never an order (boundary (a)).
+ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.advisor.cli
+
+# Standard hardening (mirrors the other workbench units).
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/workbench /var/log/workbench /tmp
+
+# No [Install] — pulled by workbench-advisor.timer, never run directly.

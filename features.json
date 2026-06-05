@@ -14,7 +14,7 @@
       "title": "每日预计算（复用 B035 timer）+ 边界 (r) 修订守门",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) workbench_api/advisor/precompute.py: run_daily() 遍历 sleeve → AdvisorService.advise_sleeve → 落库 (幂等 by (sleeve, date))；(2) 复用 B035 systemd timer：扩 .service ExecStart 链 (market 拉取后跑 advisor precompute) 或新增 workbench-advisor.timer (每日，market 之后)；deploy.sh 接线；(3) **边界 (r) 修订守门 tests/safety/test_market_scheduler_scope.py 更新**: 允许 import advisor/llm 模块，但仍 AST 断言不 import broker/ticket/execution/下单模块 (调度器可跑已过 CI safety-gate 的 advisor 预计算，仍 NOT 交易执行)；(4) cost_guard 保护每日 N sleeve × advise ≤ ¥1500/月 cap (边界 m)；(5) advisor 输出永不触发下单 (边界 a) 守门；(6) pytest ≥6: precompute run_daily mock advisor 落库 / 二次幂等 / scope 守门 (允许 advisor 禁 broker/ticket) / cost_guard 触发 / timer .service ExecStart 含 advisor；(7) Gates: backend pytest ≥722 (F001 后 716 + ≥6) / ruff / mypy / 不引新 in-process scheduler dep / frontend 不动；(8) 不动 F001 advisor service / B035 market timer 只读拉取部分 / News (q) 边界。"
     },
     {

@@ -23,23 +23,31 @@ from pathlib import Path
 
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
 MARKET_PKG = BACKEND_ROOT / "workbench_api" / "market"
+ADVISOR_PKG = BACKEND_ROOT / "workbench_api" / "advisor"
+# Both scheduler packages are scanned: the market-context fetch (B035) and
+# the AI advisor precompute (B036). Boundary (r) was revised in B036 — a
+# scheduler may run CI-safety-gated advisor precompute (which imports the
+# LLM gateway), but still never a trade-execution surface.
+SCHEDULER_PKGS = (MARKET_PKG, ADVISOR_PKG)
 REPO_ROOT = Path(__file__).resolve().parents[4]
 SYSTEMD_DIR = REPO_ROOT / "workbench" / "deploy" / "systemd"
 SERVICE_UNIT = SYSTEMD_DIR / "workbench-market-context.service"
 TIMER_UNIT = SYSTEMD_DIR / "workbench-market-context.timer"
+ADVISOR_SERVICE_UNIT = SYSTEMD_DIR / "workbench-advisor.service"
+ADVISOR_TIMER_UNIT = SYSTEMD_DIR / "workbench-advisor.timer"
 DEPLOY_SH = REPO_ROOT / "workbench" / "deploy" / "scripts" / "deploy.sh"
 
-# Dotted-path fragments that mark a trading / recommendation / LLM surface
-# the read-only market scheduler must never import (boundary (r)).
+# Dotted-path fragments that mark a TRADE-EXECUTION surface a scheduler must
+# never import (boundary (r), revised B036). LLM + advisor are now allowed
+# (the advisor precompute is CI-safety-gated); only order/trade execution
+# stays forbidden.
 _FORBIDDEN_IMPORT_FRAGMENTS: tuple[str, ...] = (
     "broker",
     "order_ticket",
     "execution",
-    "recommendation",
     "tickets",
     "fills",
     "reconcile",
-    "workbench_api.llm",
 )
 
 _FORBIDDEN_SCHEDULER_LIBS: frozenset[str] = frozenset(
@@ -58,38 +66,51 @@ def _imported_modules(py_path: Path) -> set[str]:
     return out
 
 
-def test_market_package_imports_no_trading_surface() -> None:
+def test_scheduler_packages_import_no_trade_execution_surface() -> None:
     offending: dict[str, list[str]] = {}
-    for path in MARKET_PKG.rglob("*.py"):
-        modules = _imported_modules(path)
-        hits = sorted(
-            m
-            for m in modules
-            for frag in _FORBIDDEN_IMPORT_FRAGMENTS
-            if frag in m
-        )
-        if hits:
-            offending[str(path.relative_to(BACKEND_ROOT))] = hits
+    for pkg in SCHEDULER_PKGS:
+        for path in pkg.rglob("*.py"):
+            modules = _imported_modules(path)
+            hits = sorted(
+                m
+                for m in modules
+                for frag in _FORBIDDEN_IMPORT_FRAGMENTS
+                if frag in m
+            )
+            if hits:
+                offending[str(path.relative_to(BACKEND_ROOT))] = hits
     assert not offending, (
-        "Permanent product boundary (r) violated: the market scheduler "
-        f"package imports a trading/recommendation/LLM surface {offending}. "
-        "The timer does read-only market-data fetch only — remove the import "
-        "or add a boundary relaxation note in framework/proposed-learnings.md."
+        "Permanent product boundary (r) violated: a scheduler package imports "
+        f"a trade-execution surface {offending}. Schedulers may fetch data and "
+        "run the CI-safety-gated advisor, but never broker / order-ticket / "
+        "execution — remove the import or add a relaxation note in "
+        "framework/proposed-learnings.md."
     )
 
 
-def test_market_package_no_inprocess_scheduler_lib() -> None:
+def test_scheduler_packages_no_inprocess_scheduler_lib() -> None:
     offending: dict[str, list[str]] = {}
-    for path in MARKET_PKG.rglob("*.py"):
-        top_level = {m.split(".", 1)[0] for m in _imported_modules(path)}
-        hits = sorted(top_level & _FORBIDDEN_SCHEDULER_LIBS)
-        if hits:
-            offending[str(path.relative_to(BACKEND_ROOT))] = hits
+    for pkg in SCHEDULER_PKGS:
+        for path in pkg.rglob("*.py"):
+            top_level = {m.split(".", 1)[0] for m in _imported_modules(path)}
+            hits = sorted(top_level & _FORBIDDEN_SCHEDULER_LIBS)
+            if hits:
+                offending[str(path.relative_to(BACKEND_ROOT))] = hits
     assert not offending, (
-        "B035 uses an OS-level systemd timer, not an in-process scheduler: "
+        "Schedulers use OS-level systemd timers, not an in-process scheduler: "
         f"{offending}. Do not add apscheduler / aiocron / schedule (avoids a "
         "new runtime dep + keeps the app stateless)."
     )
+
+
+def test_advisor_scheduler_may_import_llm_gateway() -> None:
+    """Boundary (r) revision (B036): the advisor scheduler is explicitly
+    ALLOWED to import the LLM gateway (it runs the CI-safety-gated advisor).
+    This pins that the revision landed — a regression that re-bans llm under
+    the scheduler scope would break the advisor precompute."""
+
+    service_src = (ADVISOR_PKG / "service.py").read_text(encoding="utf-8")
+    assert "workbench_api.llm.gateway" in service_src
 
 
 def test_service_execstart_only_market_cli() -> None:
@@ -149,3 +170,41 @@ def test_deploy_workflow_ships_systemd_units() -> None:
     workflow = REPO_ROOT / ".github" / "workflows" / "workbench-deploy.yml"
     text = workflow.read_text(encoding="utf-8")
     assert "rsync -a workbench/deploy/systemd" in text
+
+
+# --- B036 advisor timer (boundary (r) revision) --------------------------
+
+
+def test_advisor_service_execstart_runs_advisor_cli() -> None:
+    assert ADVISOR_SERVICE_UNIT.is_file(), f"missing {ADVISOR_SERVICE_UNIT}"
+    text = ADVISOR_SERVICE_UNIT.read_text(encoding="utf-8")
+    execstart = [ln for ln in text.splitlines() if ln.strip().startswith("ExecStart=")]
+    assert len(execstart) == 1
+    assert "workbench_api.advisor.cli" in execstart[0]
+    assert "EnvironmentFile=/etc/workbench/workbench.env" in text
+
+
+def test_advisor_service_references_no_trade_execution() -> None:
+    directives = "\n".join(
+        ln
+        for ln in ADVISOR_SERVICE_UNIT.read_text(encoding="utf-8").splitlines()
+        if not ln.strip().startswith("#")
+    ).lower()
+    for frag in ("broker", "order_ticket", "execution", "ticket", "fills"):
+        assert frag not in directives, (
+            f"advisor .service directive references trade-execution {frag!r} "
+            "(boundary (r))"
+        )
+
+
+def test_advisor_timer_runs_daily_after_market() -> None:
+    assert ADVISOR_TIMER_UNIT.is_file(), f"missing {ADVISOR_TIMER_UNIT}"
+    text = ADVISOR_TIMER_UNIT.read_text(encoding="utf-8")
+    assert "OnCalendar=" in text
+    assert "Unit=workbench-advisor.service" in text
+    assert "WantedBy=timers.target" in text
+
+
+def test_deploy_installs_and_enables_advisor_timer() -> None:
+    text = DEPLOY_SH.read_text(encoding="utf-8")
+    assert "enable --now workbench-advisor.timer" in text

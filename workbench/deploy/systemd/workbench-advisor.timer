@@ -1,0 +1,15 @@
+[Unit]
+Description=Daily timer for workbench AI advisor precompute (after market-context fetch)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B036-ai-advisor-mvp-spec.md
+
+[Timer]
+# 01:00 UTC — an hour after the market-context fetch (00:00 UTC) so the
+# advisor grounding sees the day's fresh market data. Persistent=true catches
+# up a missed run after downtime; the precompute is idempotent by (sleeve,
+# date) so a catch-up never duplicates.
+OnCalendar=*-*-* 01:00:00
+Persistent=true
+Unit=workbench-advisor.service
+
+[Install]
+WantedBy=timers.target

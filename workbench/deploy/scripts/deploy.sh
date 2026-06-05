@@ -282,4 +282,19 @@ if [[ -f "${SYSTEMD_SRC}/workbench-market-context.timer" ]]; then
   fi
 fi
 
+# B036 F002 — install + enable the AI advisor daily timer (boundary (r) as
+# revised: CI-safety-gated advisor precompute, never trade execution). Same
+# best-effort shape as the market timer.
+if [[ -f "${SYSTEMD_SRC}/workbench-advisor.timer" ]]; then
+  echo "→ install + enable workbench-advisor.timer (boundary (r) advisor precompute)"
+  if sudo /usr/bin/install -m 644 "${SYSTEMD_SRC}/workbench-advisor.service" /etc/systemd/system/workbench-advisor.service \
+    && sudo /usr/bin/install -m 644 "${SYSTEMD_SRC}/workbench-advisor.timer" /etc/systemd/system/workbench-advisor.timer \
+    && sudo /bin/systemctl daemon-reload \
+    && sudo /bin/systemctl enable --now workbench-advisor.timer; then
+    echo "✓ workbench-advisor.timer enabled"
+  else
+    echo "::warning::Could not install/enable workbench-advisor.timer. Grant the deploy user sudoers access to '/usr/bin/install -m 644 * /etc/systemd/system/workbench-advisor.*' and '/bin/systemctl enable --now workbench-advisor.timer', then re-deploy (B036 F002). Deploy continues; the daily advisor precompute will not run until granted." >&2
+  fi
+fi
+
 echo "✓ deploy complete: ${RELEASE_DIR}"
