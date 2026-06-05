@@ -297,4 +297,19 @@ if [[ -f "${SYSTEMD_SRC}/workbench-advisor.timer" ]]; then
   fi
 fi
 
+# B037 F001 — install + enable the price-snapshot daily timer (boundary (r):
+# read-only Tiingo close fetch for held symbols → price_snapshot table the
+# Home Day P&L marks against). Same best-effort shape as the timers above.
+if [[ -f "${SYSTEMD_SRC}/workbench-prices.timer" ]]; then
+  echo "→ install + enable workbench-prices.timer (boundary (r) read-only price fetch)"
+  if sudo /usr/bin/install -m 644 "${SYSTEMD_SRC}/workbench-prices.service" /etc/systemd/system/workbench-prices.service \
+    && sudo /usr/bin/install -m 644 "${SYSTEMD_SRC}/workbench-prices.timer" /etc/systemd/system/workbench-prices.timer \
+    && sudo /bin/systemctl daemon-reload \
+    && sudo /bin/systemctl enable --now workbench-prices.timer; then
+    echo "✓ workbench-prices.timer enabled"
+  else
+    echo "::warning::Could not install/enable workbench-prices.timer. Grant the deploy user sudoers access to '/usr/bin/install -m 644 * /etc/systemd/system/workbench-prices.*' and '/bin/systemctl enable --now workbench-prices.timer', then re-deploy (B037 F001). Deploy continues; the daily price fetch will not run until granted." >&2
+  fi
+fi
+
 echo "✓ deploy complete: ${RELEASE_DIR}"

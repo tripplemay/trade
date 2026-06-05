@@ -1,0 +1,15 @@
+[Unit]
+Description=Daily timer for workbench price-snapshot fetch (boundary (r): read-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B037-home-restructure-spec.md
+
+[Timer]
+# 00:30 UTC — after the market-context fetch (00:00) and before the advisor
+# precompute (01:00), so the Home Day P&L marks against fresh closes.
+# Persistent=true catches up a missed run after a VM reboot / downtime
+# window; the fetch is idempotent via PriceSnapshotRepository.save_if_new.
+OnCalendar=*-*-* 00:30:00
+Persistent=true
+Unit=workbench-prices.service
+
+[Install]
+WantedBy=timers.target

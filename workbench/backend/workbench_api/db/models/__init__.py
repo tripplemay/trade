@@ -19,6 +19,7 @@ from workbench_api.db.models.market_context import MarketContextObservation
 from workbench_api.db.models.news import News
 from workbench_api.db.models.news_embedding import NewsEmbedding
 from workbench_api.db.models.order_ticket import OrderTicket
+from workbench_api.db.models.price_snapshot import PriceSnapshot
 from workbench_api.db.models.snapshot_meta import SnapshotMeta
 from workbench_api.db.models.tiingo_budget_log import TiingoBudgetLog
 
@@ -34,6 +35,7 @@ __all__ = [
     "News",
     "NewsEmbedding",
     "OrderTicket",
+    "PriceSnapshot",
     "SnapshotMeta",
     "TiingoBudgetLog",
 ]

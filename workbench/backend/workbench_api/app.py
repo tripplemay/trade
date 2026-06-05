@@ -46,6 +46,7 @@ from workbench_api.routes import backlog as backlog_routes
 from workbench_api.routes import backtests as backtests_routes
 from workbench_api.routes import dashboard as dashboard_routes
 from workbench_api.routes import execution as execution_routes
+from workbench_api.routes import home as home_routes
 from workbench_api.routes import market_context as market_context_routes
 from workbench_api.routes import recommendations as recommendations_routes
 from workbench_api.routes import reports as reports_routes
@@ -263,6 +264,7 @@ def create_app() -> FastAPI:
     # handler bodies replace these in their owning features; the route
     # surface itself stays frozen here.
     api.include_router(dashboard_routes.router)
+    api.include_router(home_routes.router)
     api.include_router(strategies_routes.router)
     api.include_router(backtests_routes.router)
     api.include_router(reports_routes.router)

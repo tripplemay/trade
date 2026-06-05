@@ -24,17 +24,21 @@ from pathlib import Path
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
 MARKET_PKG = BACKEND_ROOT / "workbench_api" / "market"
 ADVISOR_PKG = BACKEND_ROOT / "workbench_api" / "advisor"
-# Both scheduler packages are scanned: the market-context fetch (B035) and
-# the AI advisor precompute (B036). Boundary (r) was revised in B036 — a
-# scheduler may run CI-safety-gated advisor precompute (which imports the
-# LLM gateway), but still never a trade-execution surface.
-SCHEDULER_PKGS = (MARKET_PKG, ADVISOR_PKG)
+PRICES_PKG = BACKEND_ROOT / "workbench_api" / "prices"
+# Three scheduler packages are scanned: the market-context fetch (B035), the
+# AI advisor precompute (B036), and the price-snapshot fetch (B037).
+# Boundary (r) was revised in B036 — a scheduler may run CI-safety-gated
+# advisor precompute (which imports the LLM gateway), but still never a
+# trade-execution surface. The B037 price fetch is read-only market data.
+SCHEDULER_PKGS = (MARKET_PKG, ADVISOR_PKG, PRICES_PKG)
 REPO_ROOT = Path(__file__).resolve().parents[4]
 SYSTEMD_DIR = REPO_ROOT / "workbench" / "deploy" / "systemd"
 SERVICE_UNIT = SYSTEMD_DIR / "workbench-market-context.service"
 TIMER_UNIT = SYSTEMD_DIR / "workbench-market-context.timer"
 ADVISOR_SERVICE_UNIT = SYSTEMD_DIR / "workbench-advisor.service"
 ADVISOR_TIMER_UNIT = SYSTEMD_DIR / "workbench-advisor.timer"
+PRICES_SERVICE_UNIT = SYSTEMD_DIR / "workbench-prices.service"
+PRICES_TIMER_UNIT = SYSTEMD_DIR / "workbench-prices.timer"
 DEPLOY_SH = REPO_ROOT / "workbench" / "deploy" / "scripts" / "deploy.sh"
 
 # Dotted-path fragments that mark a TRADE-EXECUTION surface a scheduler must
@@ -208,3 +212,41 @@ def test_advisor_timer_runs_daily_after_market() -> None:
 def test_deploy_installs_and_enables_advisor_timer() -> None:
     text = DEPLOY_SH.read_text(encoding="utf-8")
     assert "enable --now workbench-advisor.timer" in text
+
+
+# --- B037 price-snapshot timer (boundary (r): read-only price fetch) ------
+
+
+def test_prices_service_execstart_runs_prices_cli() -> None:
+    assert PRICES_SERVICE_UNIT.is_file(), f"missing {PRICES_SERVICE_UNIT}"
+    text = PRICES_SERVICE_UNIT.read_text(encoding="utf-8")
+    execstart = [ln for ln in text.splitlines() if ln.strip().startswith("ExecStart=")]
+    assert len(execstart) == 1
+    assert "workbench_api.prices.cli fetch" in execstart[0]
+    assert "EnvironmentFile=/etc/workbench/workbench.env" in text
+
+
+def test_prices_service_references_no_trade_execution() -> None:
+    directives = "\n".join(
+        ln
+        for ln in PRICES_SERVICE_UNIT.read_text(encoding="utf-8").splitlines()
+        if not ln.strip().startswith("#")
+    ).lower()
+    for frag in ("broker", "order_ticket", "execution", "ticket", "fills"):
+        assert frag not in directives, (
+            f"prices .service directive references trade-execution {frag!r} "
+            "(boundary (r))"
+        )
+
+
+def test_prices_timer_runs_daily_and_pulls_service() -> None:
+    assert PRICES_TIMER_UNIT.is_file(), f"missing {PRICES_TIMER_UNIT}"
+    text = PRICES_TIMER_UNIT.read_text(encoding="utf-8")
+    assert "OnCalendar=" in text
+    assert "Unit=workbench-prices.service" in text
+    assert "WantedBy=timers.target" in text
+
+
+def test_deploy_installs_and_enables_prices_timer() -> None:
+    text = DEPLOY_SH.read_text(encoding="utf-8")
+    assert "enable --now workbench-prices.timer" in text
