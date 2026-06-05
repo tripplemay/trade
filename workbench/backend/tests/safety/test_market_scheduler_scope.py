@@ -135,3 +135,17 @@ def test_deploy_installs_and_enables_timer() -> None:
     assert "workbench-market-context.timer" in text
     assert "enable --now workbench-market-context.timer" in text
     assert "daemon-reload" in text
+    # deploy.sh must reference the units at the actual release layout
+    # (${RELEASE_DIR}/systemd) — the release ships scripts/ + systemd/ at
+    # the top level, NOT a deploy/ dir (regression found 2026-06-05).
+    assert 'SYSTEMD_SRC="${RELEASE_DIR}/systemd"' in text
+
+
+def test_deploy_workflow_ships_systemd_units() -> None:
+    """The deploy workflow must rsync workbench/deploy/systemd into the
+    release, else deploy.sh's timer install finds nothing (2026-06-05:
+    units were never shipped — release had scripts/ but no systemd/)."""
+
+    workflow = REPO_ROOT / ".github" / "workflows" / "workbench-deploy.yml"
+    text = workflow.read_text(encoding="utf-8")
+    assert "rsync -a workbench/deploy/systemd" in text

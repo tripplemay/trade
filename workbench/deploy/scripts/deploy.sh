@@ -269,7 +269,7 @@ sudo /bin/systemctl restart workbench-frontend.service
 # and a not-yet-granted sudoers entry so an existing backend/frontend deploy
 # still completes. Codex F004 L2 verifies `systemctl status` shows the timer
 # enabled; if this block warned, add the sudoers grant + re-deploy.
-SYSTEMD_SRC="${RELEASE_DIR}/deploy/systemd"
+SYSTEMD_SRC="${RELEASE_DIR}/systemd"
 if [[ -f "${SYSTEMD_SRC}/workbench-market-context.timer" ]]; then
   echo "→ install + enable workbench-market-context.timer (boundary (r) read-only fetch)"
   if sudo /usr/bin/install -m 644 "${SYSTEMD_SRC}/workbench-market-context.service" /etc/systemd/system/workbench-market-context.service \

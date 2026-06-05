@@ -166,6 +166,15 @@ jobs:
           # Deploy helpers — deploy.sh / rollback.sh / healthcheck.sh.
           rsync -a workbench/deploy/scripts "${STAGE_DIR}/"
 
+          # B035 F002 — ship the systemd unit files so deploy.sh can
+          # install/enable the market-context timer from the release tree.
+          # Lands at ${STAGE_DIR}/systemd (deploy.sh references
+          # ${RELEASE_DIR}/systemd). Without this the timer units never
+          # reach the VM (found 2026-06-05: release had scripts/ but no
+          # deploy/ dir, so the prior ${RELEASE_DIR}/deploy/systemd path
+          # silently matched nothing).
+          rsync -a workbench/deploy/systemd "${STAGE_DIR}/"
+
           # B022 F009-1 fix: ship docs/test-reports so the Reports page can
           # render B019 retune sweep matrix + cross-link to the spec tree.
           # Without this the production `WORKBENCH_REPORTS_DIR` fallback

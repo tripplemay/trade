@@ -148,6 +148,36 @@ def test_fetch_and_store_idempotent(ctx: SimpleNamespace) -> None:
     assert ctx.repo.count() == 1
 
 
+def test_request_spacing_sleeps_before_each_request() -> None:
+    """Alpha Vantage's free tier limits to 1 request/second; the loader
+    must space requests so the daily 3-series fetch doesn't trip it
+    (verified failing on the production VM 2026-06-05)."""
+
+    slept: list[float] = []
+    client = _StubClient([_StubResponse(_fixture("alphavantage-sample-SPY.json"))])
+    loader = AlphaVantageLoader(
+        api_key="k",
+        client=client,
+        sleep=lambda s: slept.append(s),
+        request_spacing_seconds=2.0,
+    )
+    loader.fetch_series("SPY")
+    assert 2.0 in slept
+
+
+def test_request_spacing_can_be_disabled() -> None:
+    slept: list[float] = []
+    client = _StubClient([_StubResponse(_fixture("alphavantage-sample-SPY.json"))])
+    loader = AlphaVantageLoader(
+        api_key="k",
+        client=client,
+        sleep=lambda s: slept.append(s),
+        request_spacing_seconds=0.0,
+    )
+    loader.fetch_series("SPY")
+    assert slept == []  # no spacing, no retry → no sleeps
+
+
 def test_guard_enforces_daily_quota() -> None:
     """The per-request guard is the 25 req/day enforcement seam — a guard
     that raises once its budget is hit halts the loader."""

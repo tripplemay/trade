@@ -57,6 +57,16 @@ DEFAULT_TIMEOUT_SECONDS: float = 30.0
 MAX_RETRIES: int = 3
 BACKOFF_BASE_SECONDS: float = 0.5
 BACKOFF_CAP_SECONDS: float = 8.0
+DEFAULT_REQUEST_SPACING_SECONDS: float = 2.0
+"""Alpha Vantage's free tier enforces a **1 request/second** burst limit
+(on top of the 25/day cap). The daily CLI fetches the 3 index series
+back-to-back, which trips it — the 2nd/3rd call returns an
+``Information: ...spread out your free API requests... (1 request per
+second)`` body. Sleeping ~2s before each request keeps the daily fetch
+(3 calls ≈ 6s) comfortably under the per-second limit. Tests inject
+``sleep`` as a no-op so this adds no wall-clock to the offline suite.
+Verified on the production VM 2026-06-05 (first manual fetch hit the
+limit before this spacing landed)."""
 
 
 class _HttpClient(Protocol):
@@ -73,6 +83,7 @@ class AlphaVantageLoader:
         client: _HttpClient | None = None,
         sleep: Any = time.sleep,
         guard: RateLimitGuard | None = None,
+        request_spacing_seconds: float = DEFAULT_REQUEST_SPACING_SECONDS,
     ) -> None:
         resolved_key = api_key or os.environ.get("ALPHAVANTAGE_API_KEY")
         if not resolved_key:
@@ -89,6 +100,7 @@ class AlphaVantageLoader:
         self._client = client or httpx.Client(timeout=DEFAULT_TIMEOUT_SECONDS)
         self._sleep = sleep
         self._guard: RateLimitGuard = guard or NoOpRateLimitGuard()
+        self._request_spacing_seconds = request_spacing_seconds
 
     @property
     def api_key(self) -> str:
@@ -102,6 +114,11 @@ class AlphaVantageLoader:
         """Fetch + parse the latest quote for ``symbol``. Returns
         ``(raw_payload, [latest_point])``."""
 
+        # Space requests to respect Alpha Vantage's 1-request/second free
+        # burst limit (the daily CLI fetches 3 series in a row). No-op in
+        # tests where ``sleep`` is injected as a stub.
+        if self._request_spacing_seconds > 0:
+            self._sleep(self._request_spacing_seconds)
         self._guard.check_and_increment()
         payload = self._get_with_retry(
             f"{ALPHA_VANTAGE_BASE_URL}/query",
