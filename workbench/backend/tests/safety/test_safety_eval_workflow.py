@@ -113,6 +113,17 @@ def test_safety_eval_workflow_runs_red_team_pytest() -> None:
     assert "tests/safety/test_ai_advisor_red_team.py" in text
 
 
+def test_safety_eval_workflow_provisions_cost_guard_db() -> None:
+    """B036: the real advisor's cost guard reads/writes ``llm_budget_log``;
+    the workflow must pin a DB + run migrations before the gate, else every
+    sample errors with 'no such table: llm_budget_log' (regression
+    2026-06-05)."""
+
+    text = _read(SAFETY_EVAL_WORKFLOW)
+    assert "WORKBENCH_DB_URL:" in text
+    assert "alembic upgrade head" in text
+
+
 def test_safety_eval_workflow_force_node24_flag_set() -> None:
     """Inherit the framework-wide forward-compat flag so JS-based
     actions run on Node 24 ahead of the 2026-09 Node 20 deprecation."""
