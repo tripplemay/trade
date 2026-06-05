@@ -4,12 +4,12 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B036-ai-advisor-mvp：`done`**（2026-06-05；Phase 2 / Stream 3.C 第十一个 batch）= **🎯 里程碑 B / Phase 2 终点达成**。F001/F002/F003 generator ✅ done；F004 Codex ✅ signoff。L1 PASS：backend pytest 735 passed +17 skipped / B036 focused guards 31 passed / ruff 0 / mypy 0 / alembic 0008↔0007 / frontend lint+typecheck / vitest 185 / Playwright 41。L2 PASS：production `/api/health.version=9cce841`；AI Safety Eval latest workflow success 同 SHA；authenticated `/api/protected-test`=200；authenticated `/api/debug/recent-errors`=`{"count":0,"records":[]}`；authenticated `/api/advisor`=200 且返回 3 个 sleeve 结构化建议（全部 `status=ok`，model=`claude-haiku-4.5`）；anon `/api/advisor`=401；`alembic_version=0008_b036_advisor`；`advisor_recommendation` 当日 3 行；`workbench-advisor.timer` enabled+active；Home AI Advisor 段手验通过且无下单按钮；B026 banner 未复活；news 无 scheduler，边界 `(q)` 保持。签收：`docs/test-reports/B036-ai-advisor-mvp-signoff-2026-06-05.md`。
-- **B036 决策矩阵（2026-06-05 用户已批，★=拍板）：** 触发=★**每日预计算（复用 B035 timer）** / grounding=★**quant + B034 news + B035 market context 全量** / 模型=★按 gateway 实际可用 = routing.py `daily_advisor`→`claude-haiku-4.5`（judge 仍 sonnet-4.6；不稳一行升 sonnet）/ 输出=JSON + references ⊆ input set 校验 + INSUFFICIENT_GROUNDING / 无新 secret（复用 AIGC_GATEWAY_API_KEY）/ Cost ≤¥1500/月 cap。
-- **AI v0.9.28 5 子条首次全量生成式触发，硬 enforce**（no auto-exec / no 收益预测数字 / no 替代 quant 唯一依据 / 必须可引用 / 允许 summarize·translate·aggregate）。
-- **不做**：盘中实时 / 个股买卖指令 / 收益预测数字 / 自动交易 / 多轮对话 advisor / 新 provider·secret。
-- **🎯 Phase 2 完整收官（B031-B036 全签收）= 里程碑 B 达成。** 下一阶段 **Phase 3 — Home + UI 重构（B037-B043，7 batch，部分并行）**：B037 Home 架构改造（必先）→ B038 Home 整合 market context / B039 Home 整合 AI Advisor → B040/B041/B042 Reports·Recommendations·Risk Robinhood-style 重构 / B043 AI 解释层 tooltip。完成后里程碑 C（Layer 0.5）。**待用户确认 Phase 3 首批与排序。**
-- **B035 ✅ signoff 2026-06-05**（FRED+AV 双 adapter + alembic 0007 + systemd timer + Home 卡片）。**B034 ✅ signoff 2026-06-04**（news_embedding bge-m3 + NewsPanel）。
+- **B037-home-restructure：`building`**（2026-06-05 启动）= **Phase 3 / Stream 4.A 首批**（Home+UI 重构，B037-B043 → 里程碑 C / Layer 0.5）。Home 从 quant dashboard 重构为 daily-engagement 中心，按 user-personas §2 Daily Journey mockup 落三段：① NAV+Day P&L / ② AI Advisor 占位(B039) / ③ market context 占位(B038)+4 sleeve breakdown。spec `docs/specs/B037-home-restructure-spec.md`。4 features：(F001) 后端 Home 数据 NAV+Day P&L(mark-to-market B027 价格)+sleeve breakdown + GET /home；(F002) 前端三段 Home 替换旧 dashboard + AI/market 占位 + 双语；(F003) Playwright Daily Journey + i18n safety + 旧 Home 退役四处清理(v0.9.31 §16)；(F004) Codex。
+- **B037 决策矩阵（2026-06-05 用户已批，★=拍板）：** Day P&L=★**mark-to-market 持仓**(B027 价格) / 段落=★**全三段骨架+B038/B039 占位** / 旧 Home=★**直接替换**(不留 legacy-home，偏离 path doc 但用户决) / NAV=复用 dashboard._aggregate_nav(手动录入 no-broker) / 设计稿空→personas §2 mockup 权威 + 双语 + Playwright。
+- **关键边界**：no-execution buttons（Home 无下单按钮+中文禁词）/ 直接替换旧 Home 触发 **v0.9.31 §16 退役四处清理 + §22 E2E presence→absence** / §12.10 自包含。本批不触 AI logic（AI 段仅占位）。
+- **不做**：AI Advisor 内容(B039) / market context 渲染(B038) / Reports·Rec·Risk 重构(B040-B042) / 真 broker 账户 / 保留 legacy-home。
+- **🎯 Phase 2 完整收官（B031-B036 全签收）= 里程碑 B 达成。** 后续 Phase 3：B038(Home market)→B039(Home AI)→B040-B043(Reports/Rec/Risk 重构+AI 解释层)→里程碑 C。
+- **B036 ✅ signoff 2026-06-05**（AI advisor MVP；prod /api/advisor 200/3 sleeve haiku-4.5；red-team 15/15 gate；alembic 0008；advisor timer）。**B035 ✅**（FRED+AV market context 0007）。**B034 ✅**（news_embedding+NewsPanel 0006）。
 
 ## 已完成签收 + MVP 完工
 - B001-B033 全部签收。MVP substantively 完成 (PRD §10/§11/§12) — 完工声明：`docs/prd/mvp-completion-declaration-2026-05-20.md`。
