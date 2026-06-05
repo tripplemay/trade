@@ -25,6 +25,18 @@
 | 5 | NAV 源 | 复用 `dashboard._aggregate_nav`（Account cash+equity，单研究账户，手动录入，no-broker）| 既有 |
 | 6 | i18n / e2e | 双语（zh-CN + en）+ Playwright Daily Journey 流 | path B037 + user-personas |
 
+## 2.1 设计澄清（2026-06-05 用户已批 — building 期发现 spec-vs-codebase gap）
+
+building 启动勘察发现原 §4.2 的两处假设在现有 codebase 无数据源，用户已批以下落地方案：
+
+| gap | 现状 | 用户批准方案（★） |
+|---|---|---|
+| **Day P&L 价格源** | 请求路径无 per-symbol 价格表；B027 Tiingo loader 仅 batch/CLI；价格快照文件属 repo-root data，§12.10 禁请求路径读；market_context（B035）仅 3 ETF+3 macro，非个股 | ★**新建 `price_snapshot` 表 + 每日 timer**（复用 B027 Tiingo loader 抓持仓 symbol 的 daily close 入表；PriceProvider 请求路径读表，§12.10 自包含）。测试用 fake PriceProvider（已知 P&L + 缺失→null 两条均覆盖） |
+| **sleeve 归属** | positions JSON 仅 `{symbol,shares,avg_cost}`，无 sleeve 标签；registry 实际 **3 sleeve**（regime/risk_parity/satellite_us_quality），非 4；无 symbol→sleeve 映射 | ★**positions 加可选 `sleeve` 标签**（schema-tolerant，旧快照无标签→`unclassified` 兜底）；breakdown 按 `position.sleeve` 分组，不臆造持仓 universe |
+
+> 「4 sleeve」为 spec 措辞；实际 registry distinct sleeve = 3（与 B036 `advisor_sleeves()` 一致）+ `unclassified` 兜底。
+> 落地归属 F001（backend Home 数据基座）；F004 L2 增 price timer + price_snapshot + sleeve 标签验证。详见 features.json F001 acceptance（已更新）。
+
 ## 3. 永久硬边界（继承）
 
 - **系统层（继承）：** no-broker（NAV=手动录入研究账户，非真实券商）/ no-auto-execution / same-origin `/api/*` / auth-gated / Repository / 多用户禁 / Cloud SQL 禁。
