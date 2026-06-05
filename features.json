@@ -6,7 +6,7 @@
       "title": "后端 Home 数据基座：price_snapshot 表+每日 timer + positions sleeve 标签 + NAV/Day P&L mark-to-market/sleeve breakdown + GET /home",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【2026-06-05 用户已批两项设计澄清，见 spec §2.1】价格源=新建 price_snapshot 表+每日 timer（复用 B027 Tiingo loader）；sleeve 归属=positions 加 sleeve 标签。(1) **price_snapshot 表**：db/models/price_snapshot.py（symbol/obs_date/close/source/fetched_at，UniqueConstraint(symbol,obs_date)，ix symbol+obs_date，镜像 market_context 0007）+ alembic 0009_b037_price_snapshot（down_revision=0008）+ db/repositories/price_snapshot.py（save_if_new 幂等 / latest_close / prior_close 或 latest_two_by_symbol）。(2) **价格 ingestion CLI + timer**：prices/cli.py 复用 B027 TiingoSnapshotLoader 抓「最新 AccountSnapshot 持仓 distinct symbol」的最近 close→price_snapshot（request_spacing + budget guard 复用）；deploy/systemd/workbench-prices.{service,timer}（每日，oneshot，best-effort install，admin 手动 enable，镜像 workbench-market-context）；边界 (r) 守门扩展 test_market_scheduler_scope：允许 prices import，仍禁 broker/order_ticket/execution/tickets/fills/reconcile。(3) **positions sleeve 标签**：AccountSnapshot.positions JSON 加可选 `sleeve` 字段（schema-tolerant：旧快照无标签→'unclassified'）；既有 execution/reconcile/tickets 读路径不破（sleeve 仅附加，不改 symbol/shares/avg_cost 语义）；seed/bootstrap 可带 sleeve。(4) **PriceProvider 抽象**：services/prices_provider.py get_marks(session, symbols)→{symbol:(latest_close,prior_close)}；生产读 price_snapshot repo；测试注入 fake（满足 acceptance mock 价格→已知 P&L）。(5) schemas/home.py：HomeResponse { nav: float, day_pnl: {value, pct} | null, sleeves: [{sleeve, nav_share, day_pnl, positions_summary}] }。(6) services/home.py build_home(session, settings, provider)：NAV 复用 dashboard._aggregate_nav；**Day P&L mark-to-market**=最新 AccountSnapshot 持仓→PriceProvider 取 latest_close vs prior_close→Σ shares*(latest-prior)，pct=value/Σ shares*prior；价格缺失/无持仓/无快照→day_pnl=null；只读不触发执行；**sleeve breakdown**=按 position.sleeve 分组（registry 实际 3 sleeve regime/risk_parity/satellite_us_quality + unclassified 兜底）+ 各 sleeve 持仓占比(nav_share=sleeve mark/总 mark) + per-sleeve day P&L。(7) routes/home.py：GET /home（auth-gated, same-origin）→build_home；app.py 注册。(8) **§12.10 请求路径自包含守门** test_home_request_self_contained + prices request-path 不读 repo-root fixtures/不 import scripts。(9) pytest ≥20：price_snapshot repo save_if_new 幂等/latest+prior；PriceProvider get_marks；build_home NAV 聚合；Day P&L mark-to-market（fake 价格+持仓→已知 P&L）；价格缺失→null；空账户→nav=0 day_pnl=null；sleeve breakdown 按标签分组+占比+per-sleeve P&L+unclassified 兜底；GET /home 200 + auth-gated(401) + schema pin；scheduler scope 守门含 prices。(10) Gates：backend pytest ≥755（B036 baseline 735 + ≥20）/ ruff 0 / mypy 0 / 不引新 secret（复用 TIINGO_API_KEY）/ frontend 不动。(11) 不动：Account/strategies 既有契约 / B031-B036 后端 / 既有 dashboard 路由其他用途 / market_context（prices 是新表，不复用 market_context）。",
       "design_decisions": [
         "价格源（2026-06-05 用户批）：新建 price_snapshot 表 + 每日 timer（复用 B027 Tiingo loader），非读 repo-root 价格文件（§12.10）。",
@@ -18,7 +18,7 @@
       "title": "前端三段 Home 架构（替换旧 quant dashboard）+ AI/market 占位 + 双语 + mockup 一致性",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) 替换 workbench/frontend/src/app/(protected)/page.tsx 为三段版式 (对齐 user-personas §2 Daily Journey mockup)：① NAV + Day P&L 段 (总 NAV 大数字 + 今日涨跌颜色编码+% + 状态绿灯) / ② AI Advisor 段占位 (预留 slot + 'AI 建议即将上线'，B039 填) / ③ market context 占位 (B038 填) + 4 sleeve breakdown 渲染；(2) 走 same-origin /api/home；(3) **双语 zh-CN + en** 三段所有文案；(4) **no-execution buttons 守门**: Home 无下单/执行按钮 + 无中文等价禁词；(5) mockup 一致性 (对齐 personas §2)；(6) 占位段预留明确 slot + props 约定 (B038/B039 只填内容不改结构)；(7) frontend vitest 新增 Home 三段测试 (NAV/Day P&L 渲染 + 涨跌颜色 + sleeve breakdown + 占位段存在 + 空态 day_pnl=—) + 双语渲染；(8) Gates: frontend vitest ≥185 / lint 0 / typecheck pass / 不破既有 backend；(9) 不动 recommendations/risk/reports 页 / B026 banner / 其他 protected 页。"
     },
     {
@@ -26,7 +26,7 @@
       "title": "Playwright Daily Journey e2e + i18n safety regression + 旧 Home 退役清理（v0.9.31 §16）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) **旧 quant dashboard 退役四处清理 (v0.9.31 §16)**: 移除旧 Home layout/route 引用 + 清旧 Home 专属 i18n keys + 旧组件删除 (或保留 + decommission notice) + 守门测试；(2) **既有 Home E2E presence→absence 翻转 (evaluator.md §22)**: 若有旧 Home e2e/断言，翻转为新三段 presence + 旧元素 absence；(3) Playwright e2e: Daily Journey 流 (登录 → Home 加载三段 → NAV/Day P&L/sleeve breakdown 可见 → AI/market 占位可见 → 无下单按钮)，双 locale；(4) **i18n safety regression 扩集**: 三段 keys 双语齐 + 无禁词 (中文等价禁词同级守门)；(5) pytest/vitest 守门: §16 旧 Home keys 已清 (grep 0) + 旧 route 不可达 (或 redirect)；(6) Gates: frontend Playwright ≥41 (+Daily Journey) / vitest ≥185 不破 / lint 0 / typecheck / backend 不破；(7) 不动 F001 API / F002 三段结构 / 其他页。"
     },
     {
