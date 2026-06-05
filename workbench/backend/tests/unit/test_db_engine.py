@@ -39,3 +39,19 @@ def test_reset_engine_drops_cache(tmp_db_url: str) -> None:
     reset_engine()
     second = get_engine()
     assert first is not second
+
+
+def test_sqlite_engine_enables_wal_and_busy_timeout(tmp_db_url: str) -> None:  # noqa: ARG001
+    """B036 fix-round — the advisor precompute holds a session while the
+    cost guard writes llm_budget_log on a separate connection. WAL +
+    busy_timeout prevent the 'database is locked' deadlock (verified on the
+    production VM 2026-06-05)."""
+
+    from sqlalchemy import text as _text
+
+    engine = get_engine()
+    with engine.connect() as conn:
+        journal_mode = conn.execute(_text("PRAGMA journal_mode")).scalar()
+        busy_timeout = conn.execute(_text("PRAGMA busy_timeout")).scalar()
+    assert str(journal_mode).lower() == "wal"
+    assert int(busy_timeout or 0) >= 30_000
