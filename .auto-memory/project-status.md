@@ -8,7 +8,8 @@ type: project
 - **B036 决策矩阵（2026-06-05 用户已批，★=拍板）：** 触发=★**每日预计算（复用 B035 timer）** / grounding=★**quant + B034 news + B035 market context 全量** / 模型=★按 gateway 实际可用 = routing.py `daily_advisor`→`claude-haiku-4.5`（judge 仍 sonnet-4.6；不稳一行升 sonnet）/ 输出=JSON + references ⊆ input set 校验 + INSUFFICIENT_GROUNDING / 无新 secret（复用 AIGC_GATEWAY_API_KEY）/ Cost ≤¥1500/月 cap。
 - **AI v0.9.28 5 子条首次全量生成式触发，硬 enforce**（no auto-exec / no 收益预测数字 / no 替代 quant 唯一依据 / 必须可引用 / 允许 summarize·translate·aggregate）。
 - **不做**：盘中实时 / 个股买卖指令 / 收益预测数字 / 自动交易 / 多轮对话 advisor / 新 provider·secret。
-- **B035 ✅ signoff 2026-06-05**（1 fix-round；FRED+AV 双 adapter + market_context 表 alembic 0007 + systemd timer 每日只读拉取 + Home 卡片；prod /market-context 200/6 series）。**B034 ✅ signoff 2026-06-04**（news_embedding bge-m3 + Recommendations NewsPanel）。
+- **🎯 Phase 2 完整收官（B031-B036 全签收）= 里程碑 B 达成。** 下一阶段 **Phase 3 — Home + UI 重构（B037-B043，7 batch，部分并行）**：B037 Home 架构改造（必先）→ B038 Home 整合 market context / B039 Home 整合 AI Advisor → B040/B041/B042 Reports·Recommendations·Risk Robinhood-style 重构 / B043 AI 解释层 tooltip。完成后里程碑 C（Layer 0.5）。**待用户确认 Phase 3 首批与排序。**
+- **B035 ✅ signoff 2026-06-05**（FRED+AV 双 adapter + alembic 0007 + systemd timer + Home 卡片）。**B034 ✅ signoff 2026-06-04**（news_embedding bge-m3 + NewsPanel）。
 
 ## 已完成签收 + MVP 完工
 - B001-B033 全部签收。MVP substantively 完成 (PRD §10/§11/§12) — 完工声明：`docs/prd/mvp-completion-declaration-2026-05-20.md`。
@@ -35,7 +36,7 @@ type: project
 
 ## 已知 gap（非阻塞）
 - 本机 `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
-- GitHub Secret `TIINGO_API_KEY` + `SEC_EDGAR_CONTACT_EMAIL` + `AIGC_GATEWAY_API_KEY` 已配；**B035 待用户配 `FRED_API_KEY` + `ALPHAVANTAGE_API_KEY`**（阻塞 L2，不阻塞开发）。
+- GitHub Secret 全配齐（`TIINGO_API_KEY` / `SEC_EDGAR_CONTACT_EMAIL` / `AIGC_GATEWAY_API_KEY` / `FRED_API_KEY` / `ALPHAVANTAGE_API_KEY`，均在 VM env）；Phase 2 无遗留 secret 缺口。
 - B029 S2 backend pytest SOCKS proxy 敏感属 evaluator 环境特定。
 
 <!-- 覆盖写；保持 ≤30 行；只放 WHAT，不重复 progress.json 结构化字段。 -->
