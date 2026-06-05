@@ -59,6 +59,7 @@ const nextConfig = {
       "docs",
       "execution",
       "market-context",
+      "advisor",
     ];
     return PROXIED_PREFIXES.flatMap((prefix) => [
       { source: `/api/${prefix}`, destination: `${target}/api/${prefix}` },

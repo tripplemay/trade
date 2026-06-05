@@ -280,6 +280,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/advisor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Advisor Route */
+        get: operations["get_advisor_route_api_advisor_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/snapshots": {
         parameters: {
             query?: never;
@@ -644,6 +661,43 @@ export interface components {
             severity: string;
             /** Message */
             message: string;
+        };
+        /** AdvisorReference */
+        AdvisorReference: {
+            /** Quant Signal Sha */
+            quant_signal_sha: string;
+            /** News Urls */
+            news_urls?: string[];
+        };
+        /**
+         * AdvisorResponse
+         * @description GET /api/advisor payload — latest advice per sleeve (sleeves with no
+         *     precomputed result yet are omitted).
+         */
+        AdvisorResponse: {
+            /** Sleeves */
+            sleeves?: components["schemas"]["AdvisorSleeveAdvice"][];
+        };
+        /** AdvisorSleeveAdvice */
+        AdvisorSleeveAdvice: {
+            /** Sleeve */
+            sleeve: string;
+            /** Advice */
+            advice: string;
+            /** Rationale */
+            rationale: string;
+            /** References */
+            references?: components["schemas"]["AdvisorReference"][];
+            /**
+             * Status
+             * @description 'ok' / 'insufficient_grounding'.
+             */
+            status: string;
+            /**
+             * Generated At
+             * @description ISO-8601 generation timestamp.
+             */
+            generated_at: string;
         };
         /**
          * AllocationBar
@@ -2429,6 +2483,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MarketContextResponse"];
+                };
+            };
+        };
+    };
+    get_advisor_route_api_advisor_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdvisorResponse"];
                 };
             };
         };

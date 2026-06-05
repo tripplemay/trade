@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "B036 AI Advisor MVP (Phase 2 / Stream 3.C) 🎯 里程碑 B / Phase 2 终点 — 项目首次真正生成式 AI：整合 quant signal + real data + B034 news 关联 + B035 market context → 生成式投资建议，强制带可引用来源 (quant_signal_sha + news_urls)，JSON schema 输出，Home 页 AI Advisor 段，INSUFFICIENT_GROUNDING fallback，通过 B032 已建 15 红队样本 safety gate (CI 100% 拦截才 deploy)。关键复用 B032 既有 harness (gateway.advise / judge.py / test_ai_advisor_red_team.py / red-team dataset / CI safety-eval deploy gate)，B036 建 advisor service 接真 grounding + JSON 契约 + fallback 并让红队对真 advisor 100% 拦截。决策矩阵 (2026-06-05 用户已批，★=拍板)：触发=★每日预计算 (复用 B035 systemd timer) / grounding=★quant + B034 news + B035 market context 全量 (references=[{quant_signal_sha, news_urls}]) / 模型=★按 gateway 实际可用定 = routing.py daily_advisor→claude-haiku-4.5 (live-verified；judge 仍 sonnet-4.6；red-team 不稳一行升 sonnet) / 输出=JSON schema + references ⊆ input set 校验 + INSUFFICIENT_GROUNDING fallback / 5 子条生成式边界 prompt+输出校验强制 / CI=unit fixture-first + red-team gate 跑真 judge / Cost=daily_advisor haiku-4.5 + cost_guard ≤¥1500/月 (无新 secret 复用 AIGC_GATEWAY_API_KEY)。4 features: (F001) advisor service + grounding + JSON 契约 + INSUFFICIENT_GROUNDING + advisor_recommendation 表 + alembic 0008 + red-team 接真 + pytest≥12; (F002) 每日预计算 (B035 timer 扩) + 边界 (r) 修订守门 + pytest≥6; (F003) Home AI Advisor 段 + GET /advisor + fallback UI + pytest≥6 + vitest/Playwright; (F004) Codex L1 (red-team 15/15 + safety-eval deploy gate) + L2 + signoff。**永久硬边界：AI v0.9.28 5 子条首次全量生成式触发硬 enforce (no auto-exec / no 收益预测数字 / no 替代 quant 唯一依据 / 必须可引用 / 允许 summarize·translate·aggregate)；边界 (r) 修订：调度器可只读数据拉取 + 运行已过 CI safety-gate 的 advisor 预计算，仍 NOT 交易执行/下单。** 不做：盘中实时 / 个股买卖指令 / 收益预测数字 / 自动交易 / 多轮对话 advisor / 新 provider/secret。预估 1 个中大型批次。Cost ≤¥1500/月 cap。",
   "total_features": 4,
-  "completed_features": 2,
+  "completed_features": 3,
   "fix_rounds": 0,
-  "current_sprint": "F003",
+  "current_sprint": "F004",
   "last_updated": "2026-06-05",
   "reference_docs": [
     "docs/specs/B036-ai-advisor-mvp-spec.md",

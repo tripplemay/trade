@@ -22,7 +22,7 @@
       "title": "Home AI Advisor 段 + GET /advisor API + INSUFFICIENT_GROUNDING fallback UI",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) workbench_api/schemas/advisor.py: AdvisorResponse { sleeves: [{sleeve, advice, rationale, references[{quant_signal_sha, news_urls}], status, generated_at}] }；(2) workbench_api/routes/advisor.py: GET /advisor (auth-gated, same-origin) → 读最新预计算 latest_by_sleeve；(3) **§12.10 请求路径自包含守门** test_advisor_request_self_contained；(4) 前端 (protected) Home AI Advisor 段: 渲染 advice + rationale + 引用 (news_urls 外链 rel=noopener + quant_signal_sha 标注)；status=insufficient_grounding → 显示 ai-safety §6.2 fallback 文案 (AI 建议未通过安全检查今日跳过)，**不影响** quant signal / news / risk 区；(5) backend pytest: GET /advisor 200 + auth-gated (未登录 401) + 响应 schema pin + ok 与 insufficient_grounding 两态；(6) frontend vitest 新增 advisor 段测试 (渲染建议+引用 / fallback 态 / 空态) + Playwright e2e (Home 加载 advisor 段 + fallback)；(7) **AI 边界 UI 守门**: advisor 段不含下单/执行按钮 (no-execution buttons 边界)；引用必渲染 (β 可引用)；(8) Gates: backend pytest ≥728 (F002 后 722 + ≥6) / frontend vitest ≥180 / Playwright ≥40 / lint 0 / typecheck pass / ruff / mypy；(9) 不动既有 Home 其他段 / recommendations/risk/execution / B026 banner / 设计稿一致 (若 design-draft 有 AI advisor 段稿则比对)。"
     },
     {

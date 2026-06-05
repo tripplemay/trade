@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
+import { AdvisorSection } from "@/components/advisor/AdvisorSection";
 import { MarketContextCard } from "@/components/market/MarketContextCard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, formatPercent } from "@/components/table/columns";
@@ -130,6 +131,8 @@ export default function HomePage() {
       </div>
 
       <MarketContextCard />
+
+      <AdvisorSection />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card data-testid="dashboard-recent-reports">

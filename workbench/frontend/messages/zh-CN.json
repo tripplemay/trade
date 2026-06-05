@@ -80,6 +80,16 @@
       "loading": "正在加载市场环境…",
       "empty": "暂无市场环境数据。配置完成后每日拉取会填充此处。",
       "error": "无法加载市场环境：{error}"
+    },
+    "advisor": {
+      "title": "AI 投资助手",
+      "description": "每日按 sleeve 的 AI 建议，基于 quant signal + news + 市场环境，并通过安全红队评测门禁。仅供研究，绝非交易指令。",
+      "loading": "正在加载 AI 助手…",
+      "empty": "暂无 AI 建议。配置完成后每日预计算会填充此处。",
+      "error": "无法加载 AI 助手：{error}",
+      "fallback": "今日该 sleeve 的 AI 建议未通过安全检查，已跳过。quant signal、news、风险面板不受影响。",
+      "quantLabel": "quant",
+      "sourcesLabel": "来源"
     }
   },
   "strategies": {

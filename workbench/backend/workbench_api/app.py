@@ -41,6 +41,7 @@ from workbench_api.observability.error_buffer import (
 from workbench_api.observability.logging import setup_logging
 from workbench_api.observability.middleware import RequestIDMiddleware
 from workbench_api.observability.sentry import init_sentry
+from workbench_api.routes import advisor as advisor_routes
 from workbench_api.routes import backlog as backlog_routes
 from workbench_api.routes import backtests as backtests_routes
 from workbench_api.routes import dashboard as dashboard_routes
@@ -267,6 +268,7 @@ def create_app() -> FastAPI:
     api.include_router(reports_routes.router)
     api.include_router(recommendations_routes.router)
     api.include_router(market_context_routes.router)
+    api.include_router(advisor_routes.router)
     api.include_router(snapshots_routes.router)
     api.include_router(backlog_routes.router)
     api.include_router(execution_routes.router)

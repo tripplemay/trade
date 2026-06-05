@@ -80,6 +80,16 @@
       "loading": "Loading market context…",
       "empty": "No market-context data yet. The daily fetch populates this once configured.",
       "error": "Could not load market context: {error}"
+    },
+    "advisor": {
+      "title": "AI Advisor",
+      "description": "Daily AI guidance per sleeve, grounded in the quant signal + news + market context and gated by a safety red-team eval. Research-only — never a trade instruction.",
+      "loading": "Loading AI advisor…",
+      "empty": "No AI advice yet. The daily precompute populates this once configured.",
+      "error": "Could not load AI advisor: {error}",
+      "fallback": "AI advice did not pass the safety check today and was skipped for this sleeve. The quant signal, news and risk panels are unaffected.",
+      "quantLabel": "quant",
+      "sourcesLabel": "Sources"
     }
   },
   "strategies": {
