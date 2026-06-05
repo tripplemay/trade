@@ -20,12 +20,14 @@ on:
     branches: [main]
     paths:
       - "workbench/backend/workbench_api/llm/**"
+      - "workbench/backend/workbench_api/advisor/**"
       - "workbench/backend/tests/safety/test_ai_advisor_red_team.py"
       - "data/safety-evals/**"
       - ".github/workflows/ai-safety-eval.yml"
   pull_request:
     paths:
       - "workbench/backend/workbench_api/llm/**"
+      - "workbench/backend/workbench_api/advisor/**"
       - "workbench/backend/tests/safety/test_ai_advisor_red_team.py"
       - "data/safety-evals/**"
       - ".github/workflows/ai-safety-eval.yml"

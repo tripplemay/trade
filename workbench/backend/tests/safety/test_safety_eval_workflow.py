@@ -78,6 +78,9 @@ def test_safety_eval_workflow_paths_include_llm_and_dataset() -> None:
     text = _read(SAFETY_EVAL_WORKFLOW)
     for required_path in (
         "workbench/backend/workbench_api/llm/**",
+        # B036: the advisor surface the gate now exercises directly — a
+        # change here must re-run the red-team gate.
+        "workbench/backend/workbench_api/advisor/**",
         "workbench/backend/tests/safety/test_ai_advisor_red_team.py",
         "data/safety-evals/**",
         ".github/workflows/ai-safety-eval.yml",

@@ -10,6 +10,7 @@ flat for Alembic auto-generate and the bootstrap CLI.
 
 from workbench_api.db.models.account import Account
 from workbench_api.db.models.account_snapshot import AccountSnapshot
+from workbench_api.db.models.advisor_recommendation import AdvisorRecommendation
 from workbench_api.db.models.backlog_entry import BacklogEntry
 from workbench_api.db.models.base import Base
 from workbench_api.db.models.fill_journal_entry import FillJournalEntry
@@ -24,6 +25,7 @@ from workbench_api.db.models.tiingo_budget_log import TiingoBudgetLog
 __all__ = [
     "Account",
     "AccountSnapshot",
+    "AdvisorRecommendation",
     "BacklogEntry",
     "Base",
     "FillJournalEntry",
