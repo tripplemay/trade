@@ -40,6 +40,8 @@ const REQUIRED_PREFIXES = [
   "market-context",
   // B036 F003: the AI advisor Home section surface.
   "advisor",
+  // B037 F001: the Home NAV + Day P&L + sleeve-breakdown surface.
+  "home",
 ];
 
 describe("next.config dev rewrites cover all B022 backend prefixes", () => {

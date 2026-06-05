@@ -87,6 +87,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/home": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Home Route */
+        get: operations["get_home_route_api_home_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/strategies": {
         parameters: {
             query?: never;
@@ -937,6 +954,17 @@ export interface components {
             action_items: components["schemas"]["ActionItem"][];
         };
         /**
+         * DayPnl
+         * @description Mark-to-market Day P&L. ``value`` is absolute (base currency);
+         *     ``pct`` is the fraction vs the prior trading day's mark.
+         */
+        DayPnl: {
+            /** Value */
+            value: number;
+            /** Pct */
+            pct: number;
+        };
+        /**
          * DefensivePosition
          * @description One row in the alternative defensive ticket's target portfolio.
          */
@@ -1285,6 +1313,17 @@ export interface components {
             last_backup_size_bytes: number | null;
             /** Active User Count */
             active_user_count: number;
+        };
+        /**
+         * HomeResponse
+         * @description GET /api/home payload — NAV + Day P&L + sleeve breakdown.
+         */
+        HomeResponse: {
+            /** Nav */
+            nav: number;
+            day_pnl?: components["schemas"]["DayPnl"] | null;
+            /** Sleeves */
+            sleeves?: components["schemas"]["SleeveBreakdown"][];
         };
         /** JournalHistoryItem */
         JournalHistoryItem: {
@@ -1675,6 +1714,23 @@ export interface components {
             slippage_trend_3m_bps?: number | null;
             /** @description Populated only when state == 'red'. The defensive target portfolio the user can choose instead of the normal ticket. */
             alternative_defensive_ticket?: components["schemas"]["AlternativeDefensiveTicket"] | null;
+        };
+        /** SleeveBreakdown */
+        SleeveBreakdown: {
+            /** Sleeve */
+            sleeve: string;
+            /**
+             * Nav Share
+             * @description Fraction of total marked value held in this sleeve, or null when nothing in the sleeve can be marked.
+             */
+            nav_share?: number | null;
+            /** @description Per-sleeve mark-to-market Day P&L, or null when no position in the sleeve has both closes. */
+            day_pnl?: components["schemas"]["DayPnl"] | null;
+            /**
+             * Positions Summary
+             * @description Short human summary, e.g. '3 positions' or '—'.
+             */
+            positions_summary: string;
         };
         /** SleeveDrawdown */
         SleeveDrawdown: {
@@ -2173,6 +2229,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DashboardResponse"];
+                };
+            };
+        };
+    };
+    get_home_route_api_home_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HomeResponse"];
                 };
             };
         };

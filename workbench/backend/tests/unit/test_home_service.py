@@ -141,6 +141,7 @@ def test_sleeve_breakdown_groups_and_shares(initialised_db: str) -> None:
         assert by["regime"].nav_share == pytest.approx(2050.0 / 4000.0)
         assert by["satellite_us_quality"].day_pnl is not None
         assert by["satellite_us_quality"].day_pnl.value == pytest.approx(30.0)
+        assert by["regime"].day_pnl is not None
         assert by["regime"].day_pnl.value == pytest.approx(50.0)
         # A registry sleeve with no positions: 0 share, null Day P&L, "—".
         assert by["risk_parity"].nav_share == pytest.approx(0.0)
