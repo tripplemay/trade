@@ -135,22 +135,25 @@ test("Strategies page renders the list card + export button (B022 F007)", async 
   assertNoDiagnostics(diag, "Strategies");
 });
 
-test("Home page surfaces the 4 dashboard cards (B022 F006)", async ({ page }) => {
+test("Home page surfaces the three restructured sections (B037 F002)", async ({ page }) => {
   const diag = attachDiagnostics(page);
   await page.goto("/");
-  // Cards render synchronously with skeleton "—" values; the F006
-  // contract says all four are present regardless of whether the
-  // /api/dashboard fetch resolves successfully.
+  // B037 replaced the old 4-card quant dashboard with the three-section
+  // daily-engagement Home: ① NAV + Day P&L hero, ② AI advisor (reused),
+  // ③ market context (reused) + sleeve breakdown. The old dashboard-card-*
+  // testids are gone (presence→absence, evaluator.md §22).
   for (const testId of [
-    "dashboard-card-nav",
-    "dashboard-card-drawdown",
-    "dashboard-card-killswitch",
-    "dashboard-card-rebalance",
+    "home-hero",
+    "home-nav",
+    "home-advisor-card",
+    "home-market-context-card",
+    "home-sleeves",
   ]) {
     await expect(page.getByTestId(testId)).toBeVisible();
   }
+  await expect(page.getByTestId("dashboard-card-nav")).toHaveCount(0);
   await page.waitForLoadState("networkidle");
-  assertNoDiagnostics(diag, "Home dashboard");
+  assertNoDiagnostics(diag, "Home restructure");
 });
 
 test("clicking each SideNav link navigates without losing the shell", async ({ page }) => {

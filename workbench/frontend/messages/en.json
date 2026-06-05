@@ -90,6 +90,23 @@
       "fallback": "AI advice did not pass the safety check today and was skipped for this sleeve. The quant signal, news and risk panels are unaffected.",
       "quantLabel": "quant",
       "sourcesLabel": "Sources"
+    },
+    "hero": {
+      "navLabel": "Net Asset Value",
+      "navDescription": "Cash + equity, single research account (manual, no broker).",
+      "dayPnlLabel": "Today's P&L",
+      "dayPnlEmpty": "—",
+      "dayPnlDescription": "Mark-to-market vs the prior trading day's close.",
+      "loading": "Loading…",
+      "error": "Could not load Home: {error}"
+    },
+    "sleeves": {
+      "title": "Sleeve breakdown",
+      "description": "Each sleeve's share of marked NAV + its day P&L. Read-only.",
+      "shareLabel": "Share",
+      "dayPnlLabel": "Day P&L",
+      "empty": "—",
+      "unclassified": "Unclassified"
     }
   },
   "strategies": {
@@ -331,8 +348,8 @@
       "descriptionMidA": ". Mutations ",
       "descriptionCmd": "chore(backlog): add|edit|delete '<'id'>'",
       "descriptionMidB": " auto-commit through ",
-      "descriptionSuffix": "so the durable record on disk stays in lockstep with the workbench's run-time view."
-    , "columnId": "ID",
+      "descriptionSuffix": "so the durable record on disk stays in lockstep with the workbench's run-time view.",
+      "columnId": "ID",
       "columnTitle": "Title",
       "columnPriority": "Priority",
       "columnStatus": "Status",

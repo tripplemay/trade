@@ -1,64 +1,61 @@
 "use client";
 
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { AdvisorSection } from "@/components/advisor/AdvisorSection";
 import { MarketContextCard } from "@/components/market/MarketContextCard";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, formatPercent } from "@/components/table/columns";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { components } from "@/types/api";
 
-type DashboardResponse = components["schemas"]["DashboardResponse"];
+type HomeResponse = components["schemas"]["HomeResponse"];
+type DayPnl = components["schemas"]["DayPnl"];
 
-const DASHBOARD_URL = "/api/dashboard";
+const HOME_URL = "/api/home";
 
-const SEVERITY_STYLES: Record<string, string> = {
-  critical: "border-destructive/60 bg-destructive/10 text-destructive-foreground",
-  warning: "border-amber-700/60 bg-amber-950/40 text-amber-200",
-  info: "border-border bg-muted text-muted-foreground",
-};
+/** Tailwind text colour for a signed P&L value (emerald up / red down /
+ * muted flat). Read-only colour coding — no execution affordance. */
+function pnlColor(value: number | undefined): string {
+  if (value === undefined || value === 0) return "text-muted-foreground";
+  return value > 0 ? "text-emerald-400" : "text-red-400";
+}
 
-function DashboardCard({
-  label,
-  value,
-  description,
-  testId,
-}: {
-  label: string;
-  value: string;
-  description?: string;
-  testId: string;
-}) {
+function DayPnlText({ pnl, emptyLabel }: { pnl: DayPnl | null | undefined; emptyLabel: string }) {
+  if (!pnl) {
+    return <span className="text-muted-foreground">{emptyLabel}</span>;
+  }
+  const sign = pnl.value > 0 ? "+" : "";
   return (
-    <Card data-testid={testId}>
-      <CardHeader>
-        <CardDescription>{label}</CardDescription>
-        <CardTitle className="numeric text-2xl">{value}</CardTitle>
-      </CardHeader>
-      {description ? (
-        <CardContent className="text-xs text-muted-foreground">{description}</CardContent>
-      ) : null}
-    </Card>
+    <span className={cn("numeric", pnlColor(pnl.value))}>
+      {sign}
+      {formatCurrency(pnl.value)} ({sign}
+      {formatPercent(pnl.pct)})
+    </span>
   );
+}
+
+/** Display label for a sleeve key — translate the synthetic
+ * "unclassified" bucket, pass real sleeve ids through untouched. */
+function sleeveLabel(sleeve: string, unclassified: string): string {
+  return sleeve === "unclassified" ? unclassified : sleeve;
 }
 
 export default function HomePage() {
   const t = useTranslations("home");
   const tCommon = useTranslations("common");
-  const [data, setData] = useState<DashboardResponse | null>(null);
+  const [data, setData] = useState<HomeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    fetch(DASHBOARD_URL)
+    fetch(HOME_URL)
       .then(async (response) => {
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
-        const payload = (await response.json()) as DashboardResponse;
+        const payload = (await response.json()) as HomeResponse;
         if (!cancelled) setData(payload);
       })
       .catch((reason: unknown) => {
@@ -72,11 +69,6 @@ export default function HomePage() {
   }, []);
 
   const navValue = data ? formatCurrency(data.nav) : "—";
-  const drawdownValue = data ? formatPercent(data.master_drawdown) : "—";
-  const killSwitchValue = data ? formatPercent(data.kill_switch_threshold) : "—";
-  const daysToRebalanceValue = data ? String(data.days_to_next_rebalance) : "—";
-  const lastRebalance = data?.last_rebalance ?? null;
-
   const stateLabel = data
     ? tCommon("live")
     : error
@@ -87,119 +79,72 @@ export default function HomePage() {
     <section data-testid="workbench-home" className="space-y-6">
       <header className="flex items-baseline justify-between">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("title")}</h1>
-        <span data-testid="dashboard-state" className="text-xs text-muted-foreground">
+        <span data-testid="home-state" className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span
+            aria-hidden
+            className={cn("inline-block h-2 w-2 rounded-full", data ? "bg-emerald-400" : "bg-muted-foreground/50")}
+          />
           {stateLabel}
         </span>
       </header>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <DashboardCard
-          testId="dashboard-card-nav"
-          label={t("metrics.navLabel")}
-          value={navValue}
-          description={
-            lastRebalance
-              ? tCommon("asOf", { date: lastRebalance.date })
-              : t("metrics.navDescriptionFallback")
-          }
-        />
-        <DashboardCard
-          testId="dashboard-card-drawdown"
-          label={t("metrics.drawdownLabel")}
-          value={drawdownValue}
-          description={t("metrics.drawdownDescription")}
-        />
-        <DashboardCard
-          testId="dashboard-card-killswitch"
-          label={t("metrics.killSwitchLabel")}
-          value={killSwitchValue}
-          description={t("metrics.killSwitchDescription")}
-        />
-        <DashboardCard
-          testId="dashboard-card-rebalance"
-          label={t("metrics.rebalanceLabel")}
-          value={daysToRebalanceValue}
-          description={
-            lastRebalance
-              ? t("metrics.rebalanceLastWithFills", {
-                  date: lastRebalance.date,
-                  count: lastRebalance.fill_count,
-                })
-              : t("metrics.rebalanceLastEmpty")
-          }
-        />
-      </div>
+      {/* ① NAV + Day P&L hero */}
+      <Card data-testid="home-hero">
+        <CardHeader>
+          <CardDescription>{t("hero.navLabel")}</CardDescription>
+          <CardTitle data-testid="home-nav" className="numeric text-4xl">
+            {navValue}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-1">
+          <div className="flex items-baseline gap-2 text-lg">
+            <span className="text-sm text-muted-foreground">{t("hero.dayPnlLabel")}</span>
+            <span data-testid="home-day-pnl">
+              <DayPnlText pnl={data?.day_pnl} emptyLabel={t("hero.dayPnlEmpty")} />
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground">{t("hero.dayPnlDescription")}</p>
+        </CardContent>
+      </Card>
 
-      <MarketContextCard />
-
+      {/* ② AI Advisor (B036 — reused in the restructured Home; B039 refines) */}
       <AdvisorSection />
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card data-testid="dashboard-recent-reports">
-          <CardHeader>
-            <CardTitle>{t("recentReports.title")}</CardTitle>
-            <CardDescription>{t("recentReports.description")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {data && data.recent_reports.length > 0 ? (
-              <ul className="space-y-2">
-                {data.recent_reports.map((report) => (
-                  <li key={report.id} className="flex items-center justify-between gap-3 text-sm">
-                    <Link
-                      href={`/reports/${report.id}`}
-                      data-testid={`recent-report-${report.id}`}
-                      className="truncate text-foreground hover:underline"
-                    >
-                      {report.title}
-                    </Link>
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      {report.status} · {report.date}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p data-testid="recent-reports-empty" className="text-sm text-muted-foreground">
-                {t("recentReports.emptyPrefix")}{" "}
-                <code className="rounded bg-muted px-1 py-0.5">{t("recentReports.emptyPath")}</code>
-                {t("recentReports.emptySuffix")}
-              </p>
-            )}
-          </CardContent>
-        </Card>
+      {/* ③ Market context (B035 — reused) + sleeve breakdown */}
+      <MarketContextCard />
 
-        <Card data-testid="dashboard-action-items">
-          <CardHeader>
-            <CardTitle>{t("actionItems.title")}</CardTitle>
-            <CardDescription>{t("actionItems.description")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {data && data.action_items.length > 0 ? (
-              <ul className="space-y-2">
-                {data.action_items.map((item) => (
-                  <li
-                    key={item.id}
-                    data-testid={`action-item-${item.id}`}
-                    className={cn(
-                      "rounded-md border px-3 py-2 text-sm",
-                      SEVERITY_STYLES[item.severity] ?? SEVERITY_STYLES.info,
-                    )}
-                  >
-                    <span className="mr-2 text-[10px] font-semibold uppercase">
-                      {item.severity}
-                    </span>
-                    {item.message}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p data-testid="action-items-empty" className="text-sm text-muted-foreground">
-                {t("actionItems.empty")}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      <Card data-testid="home-sleeves">
+        <CardHeader>
+          <CardTitle>{t("sleeves.title")}</CardTitle>
+          <CardDescription>{t("sleeves.description")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2">
+            {(data?.sleeves ?? []).map((sleeve) => (
+              <li
+                key={sleeve.sleeve}
+                data-testid={`home-sleeve-${sleeve.sleeve}`}
+                className="flex items-center justify-between gap-3 border-b border-border/50 pb-2 text-sm last:border-0"
+              >
+                <span className="font-medium text-foreground">
+                  {sleeveLabel(sleeve.sleeve, t("sleeves.unclassified"))}
+                </span>
+                <span className="flex items-center gap-4 text-xs">
+                  <span className="text-muted-foreground">{sleeve.positions_summary}</span>
+                  <span className="numeric w-16 text-right text-muted-foreground">
+                    {sleeve.nav_share === null || sleeve.nav_share === undefined
+                      ? t("sleeves.empty")
+                      : formatPercent(sleeve.nav_share)}
+                  </span>
+                  <span className="numeric w-28 text-right">
+                    <DayPnlText pnl={sleeve.day_pnl} emptyLabel={t("sleeves.empty")} />
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
     </section>
   );
 }

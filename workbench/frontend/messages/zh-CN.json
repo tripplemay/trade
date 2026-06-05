@@ -90,6 +90,23 @@
       "fallback": "今日该 sleeve 的 AI 建议未通过安全检查，已跳过。quant signal、news、风险面板不受影响。",
       "quantLabel": "quant",
       "sourcesLabel": "来源"
+    },
+    "hero": {
+      "navLabel": "净资产",
+      "navDescription": "现金 + 权益，单一研究账户（手动录入，无券商）。",
+      "dayPnlLabel": "今日盈亏",
+      "dayPnlEmpty": "—",
+      "dayPnlDescription": "按前一交易日收盘价 mark-to-market。",
+      "loading": "加载中…",
+      "error": "无法加载首页：{error}"
+    },
+    "sleeves": {
+      "title": "Sleeve 分解",
+      "description": "各 sleeve 占已标记净资产的比例及当日盈亏。只读。",
+      "shareLabel": "占比",
+      "dayPnlLabel": "当日盈亏",
+      "empty": "—",
+      "unclassified": "未分类"
     }
   },
   "strategies": {
