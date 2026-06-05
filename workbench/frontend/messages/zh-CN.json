@@ -51,29 +51,6 @@
   },
   "home": {
     "title": "首页",
-    "metrics": {
-      "navLabel": "净值",
-      "navDescriptionFallback": "现金 + 持仓估值",
-      "drawdownLabel": "主组合回撤",
-      "drawdownDescription": "相对净值峰值",
-      "killSwitchLabel": "Kill-switch 阈值",
-      "killSwitchDescription": "手动停止在此回撤处武装",
-      "rebalanceLabel": "下次再平衡天数",
-      "rebalanceLastEmpty": "暂无再平衡记录",
-      "rebalanceLastWithFills": "上次：{date} · {count} 笔成交"
-    },
-    "recentReports": {
-      "title": "最新报告",
-      "description": "来自 docs/test-reports/ 的签收、扫盘与复盘。",
-      "emptyPrefix": "暂无最新报告。请将签收 markdown 文件放入",
-      "emptyPath": "docs/test-reports/",
-      "emptySuffix": "。"
-    },
-    "actionItems": {
-      "title": "待办事项",
-      "description": "工作台希望你关注的事项。",
-      "empty": "暂无标记。当策略门控触发或洗售规则命中时会出现待办（B022 F010）。"
-    },
     "marketContext": {
       "title": "市场环境",
       "description": "最新宏观与指数读数（FRED + Alpha Vantage），每日更新。仅结构化数据。",

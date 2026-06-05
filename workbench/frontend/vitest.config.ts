@@ -34,6 +34,10 @@ export default defineConfig({
       // (Codex hard blocker 2; production HTML must not surface the
       // banner copy nor the component name).
       "tests/safety/synthetic-data-banner-decommissioned.spec.ts",
+      // B037 F003 — assert the legacy quant-dashboard Home is
+      // decommissioned (old testids + dashboard keys gone, new
+      // three-section testids present) across both message bundles.
+      "tests/safety/legacy-home-decommissioned.spec.ts",
     ],
     exclude: [
       // disclaimer-present runs in Playwright (anon project) only.

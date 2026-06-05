@@ -30,20 +30,15 @@ import { fileURLToPath } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FRONTEND_ROOT = resolve(HERE, "..", "..");
-const EXECUTION_DIR = join(
-  FRONTEND_ROOT,
-  "src",
-  "app",
-  "(protected)",
-  "execution",
-);
+const EXECUTION_DIR = join(FRONTEND_ROOT, "src", "app", "(protected)", "execution");
+// B037 F002/F003 — the restructured Home is a no-execution surface too
+// (no order/execute buttons; read-only NAV + Day P&L + sleeve breakdown).
+// Scan it alongside the execution pages so a future Home edit can't add
+// an execution affordance in either language.
+const HOME_PAGE = join(FRONTEND_ROOT, "src", "app", "(protected)", "page.tsx");
 const MESSAGES_DIR = join(FRONTEND_ROOT, "messages");
 
-const EN_BANNED = [
-  "execute",
-  "place order",
-  "send to broker",
-] as const;
+const EN_BANNED = ["execute", "place order", "send to broker"] as const;
 
 // B024 F003 banned Chinese phrases — the workbench surface must never
 // describe a manual-checklist button as if it performs the trade.
@@ -59,9 +54,7 @@ const ZH_BANNED = [
 ] as const;
 
 const EN_FORBIDDEN_JSX = /(?:>\s*)(execute|place\s+order|send\s+to\s+broker)(?:\s*<)/i;
-const ZH_FORBIDDEN_JSX = new RegExp(
-  `(?:>\\s*)(?:${ZH_BANNED.join("|")})(?:\\s*<)`,
-);
+const ZH_FORBIDDEN_JSX = new RegExp(`(?:>\\s*)(?:${ZH_BANNED.join("|")})(?:\\s*<)`);
 
 // `children: "Execute"` / `aria-label="Execute"` shapes.
 const EN_FORBIDDEN_ASSIGN =
@@ -88,8 +81,12 @@ function collectPageFiles(root: string): string[] {
   return out;
 }
 
-describe("no execution buttons under (protected)/execution/**", () => {
-  const files = collectPageFiles(EXECUTION_DIR);
+describe("no execution buttons under (protected)/execution/** + Home", () => {
+  const files = [...collectPageFiles(EXECUTION_DIR), HOME_PAGE];
+
+  it(`covers the Home page`, () => {
+    expect(files).toContain(HOME_PAGE);
+  });
 
   it(`covers at least the 5 execution pages`, () => {
     // B023 ships position-diff + ticket + ticket/[id] + fills +
@@ -104,9 +101,7 @@ describe("no execution buttons under (protected)/execution/**", () => {
       const body = readFileSync(file, "utf-8");
       const jsxMatch = body.match(EN_FORBIDDEN_JSX);
       if (jsxMatch) {
-        throw new Error(
-          `forbidden English button label detected in ${relative}: ${jsxMatch[0]}`,
-        );
+        throw new Error(`forbidden English button label detected in ${relative}: ${jsxMatch[0]}`);
       }
       const assignMatch = body.match(EN_FORBIDDEN_ASSIGN);
       if (assignMatch) {
@@ -120,9 +115,7 @@ describe("no execution buttons under (protected)/execution/**", () => {
       const body = readFileSync(file, "utf-8");
       const jsxMatch = body.match(ZH_FORBIDDEN_JSX);
       if (jsxMatch) {
-        throw new Error(
-          `forbidden Chinese button label detected in ${relative}: ${jsxMatch[0]}`,
-        );
+        throw new Error(`forbidden Chinese button label detected in ${relative}: ${jsxMatch[0]}`);
       }
       const assignMatch = body.match(ZH_FORBIDDEN_ASSIGN);
       if (assignMatch) {
@@ -169,12 +162,8 @@ describe("no forbidden button labels in messages bundle", () => {
 
       walk(bundle, []);
       if (offending.length > 0) {
-        const list = offending
-          .map((o) => `  ${o.path} = ${JSON.stringify(o.value)}`)
-          .join("\n");
-        throw new Error(
-          `forbidden button-label phrases in ${locale}.json:\n${list}`,
-        );
+        const list = offending.map((o) => `  ${o.path} = ${JSON.stringify(o.value)}`).join("\n");
+        throw new Error(`forbidden button-label phrases in ${locale}.json:\n${list}`);
       }
     });
   }

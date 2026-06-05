@@ -51,29 +51,6 @@
   },
   "home": {
     "title": "Home",
-    "metrics": {
-      "navLabel": "NAV",
-      "navDescriptionFallback": "Cash + equity_value",
-      "drawdownLabel": "Master drawdown",
-      "drawdownDescription": "From equity peak",
-      "killSwitchLabel": "Kill-switch threshold",
-      "killSwitchDescription": "Manual halt arms at this DD",
-      "rebalanceLabel": "Days to next rebalance",
-      "rebalanceLastEmpty": "No rebalance recorded",
-      "rebalanceLastWithFills": "Last: {date} · {count} fills"
-    },
-    "recentReports": {
-      "title": "Recent reports",
-      "description": "Sign-offs, sweeps, and reviews from docs/test-reports/.",
-      "emptyPrefix": "No recent reports surfaced. Drop sign-off markdown files under",
-      "emptyPath": "docs/test-reports/",
-      "emptySuffix": "."
-    },
-    "actionItems": {
-      "title": "Action items",
-      "description": "Things the workbench wants you to look at.",
-      "empty": "Nothing flagged. Action items light up when a strategy gate trips or a wash-sale heuristic fires (B022 F010)."
-    },
     "marketContext": {
       "title": "Market context",
       "description": "Latest macro & index readings (FRED + Alpha Vantage), updated daily. Structured data only.",

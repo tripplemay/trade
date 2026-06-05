@@ -22,8 +22,18 @@ const HOME_PAYLOAD: HomeResponse = {
   nav: 52500.5,
   day_pnl: { value: 320.25, pct: 0.0061 },
   sleeves: [
-    { sleeve: "regime", nav_share: 0.5, day_pnl: { value: 160.0, pct: 0.006 }, positions_summary: "2 positions" },
-    { sleeve: "risk_parity", nav_share: 0.5, day_pnl: { value: 160.25, pct: 0.0062 }, positions_summary: "1 position" },
+    {
+      sleeve: "regime",
+      nav_share: 0.5,
+      day_pnl: { value: 160.0, pct: 0.006 },
+      positions_summary: "2 positions",
+    },
+    {
+      sleeve: "risk_parity",
+      nav_share: 0.5,
+      day_pnl: { value: 160.25, pct: 0.0062 },
+      positions_summary: "1 position",
+    },
     { sleeve: "satellite_us_quality", nav_share: null, day_pnl: null, positions_summary: "—" },
   ],
 };
@@ -51,6 +61,10 @@ function routedFetch(home: HomeResponse): typeof fetch {
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  // restoreAllMocks does NOT undo vi.stubGlobal — without this the
+  // stubbed global fetch leaks into other spec files sharing the worker
+  // (a flaky cross-file failure source). Unstub explicitly.
+  vi.unstubAllGlobals();
 });
 
 describe("HomePage (B037 F002 — three-section restructure)", () => {
