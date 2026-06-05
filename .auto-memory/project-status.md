@@ -4,11 +4,11 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B035-market-context：`done`**（2026-06-05；Phase 2 / Stream 2.C 第十个 batch）。F001/F002/F003 generator ✅ done；F004 Codex ✅ signoff。L1 PASS：backend pytest 704 passed +2 skipped / B035+B033 safety guards 19 passed / ruff 0 / mypy 0 / alembic 0007↔0006 / frontend lint+typecheck / vitest 180 / Playwright 40。L2 PASS：production `/api/health.version=9338a9f`；authenticated `/api/protected-test`=200；authenticated `/api/debug/recent-errors`=`{"count":0,"records":[]}`；authenticated `/api/market-context`=200 且返回 6 条纯结构化 series；anon `/api/market-context`=401；VM env 含 `FRED_API_KEY` + `ALPHAVANTAGE_API_KEY`；`alembic_version=0007_b035_market_context`；`workbench-market-context.timer` enabled+active；`market_context_observation` 31 行 / 6 series；snapshot dir 落 6 个 JSON；news 无 scheduler，边界 `(q)` 保持。签收：`docs/test-reports/B035-market-context-signoff-2026-06-05.md`。
-- **B035 决策矩阵（2026-06-04 用户已批，★=拍板）：** 数据源=★**FRED + Alpha Vantage** / 新 secret=★**FRED_API_KEY + ALPHAVANTAGE_API_KEY**（用户申请 key + §12.9 四处接线）/ 更新=★**引入 scheduler/cron 每日自动**（systemd timer 非 APScheduler）/ 存储=★**复用 B027/B029 snapshot foundation** / live-validate=两源第三方 API（**B031 候选复用窗口**）/ CI=fixture-first ¥≈0。
-- **不做**：AI advisor（B036）/ market context 喂 quant 策略 / 盘中实时 / 付费源 / in-process APScheduler。
-- 后续路径：B035（2.C 本批）→ B036（3.C AI advisor MVP）= **🎯 里程碑 B Phase 2 终点**。
-- **B034 ✅ signoff 2026-06-04**（1 fix-round；news_embedding bge-m3 + ticker 硬匹配+cosine + Recommendations NewsPanel；alembic 0006；prod /recommendations/news 200）。
+- **B036-ai-advisor-mvp：`building`**（2026-06-05 启动；Phase 2 / Stream 3.C 第十一个 batch）= **🎯 里程碑 B / Phase 2 终点**。项目**首次真正生成式 AI**：整合 quant signal + B034 news + B035 market context → 生成式建议，强制带可引用来源（`quant_signal_sha` + `news_urls`），JSON schema，Home AI Advisor 段，`INSUFFICIENT_GROUNDING` fallback，过 B032 15 红队样本 safety gate。spec `docs/specs/B036-ai-advisor-mvp-spec.md`。**关键复用 B032 既有 harness**（gateway.advise / judge.py / test_ai_advisor_red_team.py / CI safety-eval deploy gate）；B036 建 advisor service 接真 grounding。4 features：(F001) advisor service + grounding + JSON 契约 + INSUFFICIENT_GROUNDING + advisor_recommendation 表 + alembic 0008 + red-team 接真；(F002) 每日预计算（B035 timer 扩）+ 边界 (r) 修订守门；(F003) Home AI Advisor 段 + GET /advisor + fallback UI；(F004) Codex。
+- **B036 决策矩阵（2026-06-05 用户已批，★=拍板）：** 触发=★**每日预计算（复用 B035 timer）** / grounding=★**quant + B034 news + B035 market context 全量** / 模型=★按 gateway 实际可用 = routing.py `daily_advisor`→`claude-haiku-4.5`（judge 仍 sonnet-4.6；不稳一行升 sonnet）/ 输出=JSON + references ⊆ input set 校验 + INSUFFICIENT_GROUNDING / 无新 secret（复用 AIGC_GATEWAY_API_KEY）/ Cost ≤¥1500/月 cap。
+- **AI v0.9.28 5 子条首次全量生成式触发，硬 enforce**（no auto-exec / no 收益预测数字 / no 替代 quant 唯一依据 / 必须可引用 / 允许 summarize·translate·aggregate）。
+- **不做**：盘中实时 / 个股买卖指令 / 收益预测数字 / 自动交易 / 多轮对话 advisor / 新 provider·secret。
+- **B035 ✅ signoff 2026-06-05**（1 fix-round；FRED+AV 双 adapter + market_context 表 alembic 0007 + systemd timer 每日只读拉取 + Home 卡片；prod /market-context 200/6 series）。**B034 ✅ signoff 2026-06-04**（news_embedding bge-m3 + Recommendations NewsPanel）。
 
 ## 已完成签收 + MVP 完工
 - B001-B033 全部签收。MVP substantively 完成 (PRD §10/§11/§12) — 完工声明：`docs/prd/mvp-completion-declaration-2026-05-20.md`。
@@ -24,8 +24,8 @@ type: project
 - 数据 / CI 层：fixture-first 离线 CI / pyproject runtime-vs-dev hygiene（v0.9.29 §12.8）/ paths-trigger 含 trade/+scripts/+pyproject.toml（v0.9.27 §12.7.1）
 - B027 起 (f)(g) / B029 起 (h)(i)(j) / B030 起 (k) + v0.9.30 §12.9 / B031 起 (l)(m) / B032 起 (n)(o)：继续
 - **B033 起 (p)(q)：** (p) News raw text 仅落 snapshot path 不内联 DB / (q) News ingest 默认 production-disabled（无 scheduler / cron / APScheduler；**对 news 不变**）
-- **B035 起 (r)：** 项目首个调度器仅允许**只读市场数据拉取**（systemd timer），明确 NOT 交易执行/下单/recommendation/AI；守门 `test_market_scheduler_scope.py`
-- AI 边界（v0.9.28 5 子条）：B034 news→embedding 首次触发但仅非生成式；生成式建议留 B036
+- **B035 起 (r)，B036 修订：** 调度器允许（a）只读市场数据拉取 +（b）**运行已过 CI safety-gate 的 AI advisor 预计算**（B036）；仍明确 NOT 交易执行/下单/broker；守门 `test_market_scheduler_scope.py`（允许 advisor import，禁 broker/ticket/execution）
+- AI 边界（v0.9.28 5 子条）：B034 非生成式（embedding）；**B036 首次全量生成式触发，硬 enforce**（prompt + 输出校验 references ⊆ input set；过 B032 red-team gate）
 
 ## Framework 状态
 - 最新版本 **v0.9.32**（2026-06-04 沉淀完成，B034 二例合并）：**请求路径 deploy-artifact 自包含铁律**——请求路径禁 import 根级 `scripts/` / 禁读 repo-root `data/fixtures/`（deploy artifact 只含 `workbench_api/` 包），数据须 materialise 入包；本地+CI 掩盖、唯 L2 真 VM 暴露。落地 generator.md §12.10 + evaluator.md §23（L2 必测核心新路由真 VM 200）+ signoff 模板 §L2 勾选行。
