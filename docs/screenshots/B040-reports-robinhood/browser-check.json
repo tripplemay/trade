@@ -1,0 +1,82 @@
+[
+  {
+    "locale": "zh-CN",
+    "backtest": {
+      "url": "https://trade.guangai.ai/backtest",
+      "metricsVisible": true,
+      "buttonCount": 0,
+      "tooltipText": "风险调整后回报：每承担一单位波动所换来的超额收益，越高越好。这是历史回测统计，不是对未来的预测。\n风险调整后回报：每承担一单位波动所换来的超额收益，越高越好。这是历史回测统计，不是对未来的预测。",
+      "syntheticBannerCount": 0,
+      "oldDashboardCount": 0,
+      "textHasExpectedReturn": false,
+      "textHas收益预测": false
+    },
+    "report": {
+      "url": "https://trade.guangai.ai/reports/B016-risk-parity-hrp-comparison",
+      "metricsVisible": true,
+      "pageDetailVisible": true,
+      "buttonCount": 0,
+      "tooltipText": "风险调整后回报：每承担一单位波动所换来的超额收益，越高越好。这是历史回测统计，不是对未来的预测。\n风险调整后回报：每承担一单位波动所换来的超额收益，越高越好。这是历史回测统计，不是对未来的预测。",
+      "syntheticBannerCount": 0,
+      "oldDashboardCount": 0,
+      "reportOrder": [
+        {
+          "testid": null,
+          "text": "← 返回报告列表B016 risk parity hrp comparisonB016 · report · 2026-05-14"
+        },
+        {
+          "testid": "report-metrics",
+          "text": "核心指标解析自本报告的指标表——历史回测统计，非预测。CAGR2.50%Sharpe风险调整后回报：每承担一单位波动所换来的超额收益，越高越好。这是历史回测统计"
+        },
+        {
+          "testid": null,
+          "text": "正文Markdown + GFM 表格;重型表格(≥10 行)以可排序 AG Grid 形式呈现。B016-risk-parity-hrp-comparison"
+        }
+      ],
+      "bodyContainsSummary": true,
+      "textHasExpectedReturn": false,
+      "textHas收益预测": false
+    },
+    "issues": []
+  },
+  {
+    "locale": "en",
+    "backtest": {
+      "url": "https://trade.guangai.ai/backtest",
+      "metricsVisible": true,
+      "buttonCount": 0,
+      "tooltipText": "Risk-adjusted return: excess return earned per unit of volatility. Higher is better. A historical backtest statistic, not a future prediction.\nRisk-adjusted return: excess return earned per unit of volatility. Higher is better. A historical backtest statistic, not a future prediction.",
+      "syntheticBannerCount": 0,
+      "oldDashboardCount": 0,
+      "textHasExpectedReturn": false,
+      "textHas收益预测": false
+    },
+    "report": {
+      "url": "https://trade.guangai.ai/reports/B016-risk-parity-hrp-comparison",
+      "metricsVisible": true,
+      "pageDetailVisible": true,
+      "buttonCount": 0,
+      "tooltipText": "Risk-adjusted return: excess return earned per unit of volatility. Higher is better. A historical backtest statistic, not a future prediction.\nRisk-adjusted return: excess return earned per unit of volatility. Higher is better. A historical backtest statistic, not a future prediction.",
+      "syntheticBannerCount": 0,
+      "oldDashboardCount": 0,
+      "reportOrder": [
+        {
+          "testid": null,
+          "text": "← back to reportsB016 risk parity hrp comparisonB016 · report · 2026-05-14"
+        },
+        {
+          "testid": "report-metrics",
+          "text": "Headline metricsParsed from this report's metrics table — historical backtest st"
+        },
+        {
+          "testid": null,
+          "text": "BodyMarkdown + GFM tables; heavy tables (≥10 rows) render as sortable AG Grid.B0"
+        }
+      ],
+      "bodyContainsSummary": true,
+      "textHasExpectedReturn": false,
+      "textHas收益预测": false
+    },
+    "issues": []
+  }
+]

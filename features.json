@@ -35,13 +35,13 @@
       "acceptance": "(1) **/reports/[slug] 接入**：detail.metrics 非空时在 MarkdownRenderer **上方**渲染 MetricsDisplay 卡片（颜色+双语 tooltip，复用 F002 原语）；metrics=null 时跳过（graceful 纯 Markdown，不显空卡）。(2) **MarkdownRenderer 不动 + body_markdown 不变**：metrics 卡片是独立 section；守门断言 detail.body_markdown 渲染源未被 metrics 逻辑改动（byte-identical 完整性）。(3) frontend vitest：/reports detail metrics 有/无两态（有→大数字卡可见；无→仅 Markdown）+ body_markdown 完整性 + 颜色/tooltip 复用 F002。(4) **Playwright**（两面，双 locale）：/backtest 跑后大数字+颜色可见 + tooltip hover 出中文；/reports 某含指标报告大数字卡可见 + tooltip + Markdown 仍在下方完整。(5) no-execution 守门覆盖 /reports metrics 卡。(6) Gates：frontend vitest ≥ baseline+ / lint 0 / typecheck / Playwright 不破 / 不破 backend。(7) 不动：reports list 页 / _extract_tables / F002 /backtest 接入 / Home。",
       "design_decisions": []
     },
-    {
-      "id": "F004",
-      "title": "Codex L1 + L2 真 VM 验收（两面大数字/颜色/双语 tooltip + Markdown 保全）+ signoff",
-      "priority": "high",
-      "executor": "codex",
-      "status": "pending",
-      "acceptance": "L1 (CI 内)：F001+F002+F003 全 generator 验收脚本跑通 — backend pytest ≥ baseline+≥8 / ruff / mypy / frontend vitest ≥ baseline+ / Playwright（两面）不破；**no-execution 守门**（/backtest + /reports metrics 卡无下单按钮 + 中文禁词 0）；**i18n 双语齐 + 无禁词 + tooltip parity 守门**；**body_markdown 完整性守门**跑过；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）；(2) /api/debug/recent-errors={count:0,records:[]}；(3) 既有路由 GET /api/reports/{slug} authenticated 200 + payload 含 metrics 字段（有指标报告非 null / 无指标报告 null）；anon 401；(4) **两面浏览器手验**：/backtest——跑回测后大数字 + 颜色编码（绿/琥珀/红）+ 英文术语 + 中文 tooltip（hover/tap 出现）；/reports/[slug]——含指标报告大数字卡 + 颜色 + tooltip + **Markdown 报告仍完整渲染在下方**；无下单按钮（no-execution UI）；双语切换 zh/en；定位 §1.1 无「预期收益」数字；截图（两面 ≥2 PNG）；(5) Production HEAD ≡ main HEAD；(6) B026 banner 仍 absent。**本批纯前端 UI + 后端解析无全新对外路由**（/reports/[slug] 既有路由验 metrics 字段；§24 timer N/A）。Signoff: docs/test-reports/B040-reports-robinhood-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（§Production/HEAD + §Post-signoff Deploy）；docs/screenshots/B040-reports-robinhood/ ≥2 PNG（/backtest + /reports，zh 或 +en）。Framework 候选：若 Markdown 指标解析 graceful null / 历史统计 vs 预测边界 出现新通用规律记 signoff §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
-    }
+      {
+        "id": "F004",
+        "title": "Codex L1 + L2 真 VM 验收（两面大数字/颜色/双语 tooltip + Markdown 保全）+ signoff",
+        "priority": "high",
+        "executor": "codex",
+        "status": "done",
+        "acceptance": "L1 (CI 内)：F001+F002+F003 全 generator 验收脚本跑通 — backend pytest ≥ baseline+≥8 / ruff / mypy / frontend vitest ≥ baseline+ / Playwright（两面）不破；**no-execution 守门**（/backtest + /reports metrics 卡无下单按钮 + 中文禁词 0）；**i18n 双语齐 + 无禁词 + tooltip parity 守门**；**body_markdown 完整性守门**跑过；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）；(2) /api/debug/recent-errors={count:0,records:[]}；(3) 既有路由 GET /api/reports/{slug} authenticated 200 + payload 含 metrics 字段（有指标报告非 null / 无指标报告 null）；anon 401；(4) **两面浏览器手验**：/backtest——跑回测后大数字 + 颜色编码（绿/琥珀/红）+ 英文术语 + 中文 tooltip（hover/tap 出现）；/reports/[slug]——含指标报告大数字卡 + 颜色 + tooltip + **Markdown 报告仍完整渲染在下方**；无下单按钮（no-execution UI）；双语切换 zh/en；定位 §1.1 无「预期收益」数字；截图（两面 ≥2 PNG）；(5) Production HEAD ≡ main HEAD；(6) B026 banner 仍 absent。**本批纯前端 UI + 后端解析无全新对外路由**（/reports/[slug] 既有路由验 metrics 字段；§24 timer N/A）。Signoff: docs/test-reports/B040-reports-robinhood-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（§Production/HEAD + §Post-signoff Deploy）；docs/screenshots/B040-reports-robinhood/ ≥2 PNG（/backtest + /reports，zh 或 +en）。Framework 候选：若 Markdown 指标解析 graceful null / 历史统计 vs 预测边界 出现新通用规律记 signoff §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
+      }
   ]
 }
