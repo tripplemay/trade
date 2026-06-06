@@ -810,6 +810,18 @@ def test_critical_runtime_deps_pinned():
 
 5. **把 manual-only CLI 接入 production 自动执行路径（timer/scheduler）时，必须把该 CLI 及其 import 闭包按 §12.10 重新审计**——不能因为"它原来只 manual 跑、本地一直 OK"就豁免。Spec acceptance（如 B038 F001）+ Generator checklist + 守门测试（AST 扫该 CLI 模块无 `scripts.*` import / 不 `open(repo-root/...)`）三处都要覆盖**新接入的执行路径**，不止请求路径。Evaluator L2 必须**手动 trigger 一次该 timer 的 service** 验真（不能只看 timer enabled），观察 oneshot 是否 `ModuleNotFoundError`/`FileNotFoundError`（配 evaluator.md §24 timer 接线检查同步做）。
 
+#### §12.10.2 enforcement 模型：当被禁包被有意打进 artifact，§12.10 从「物理缺席」转「AST 守门」（v0.9.35 — B044 沉淀）
+
+**触发：** B044 真实评分基础——`/api/recommendations/current` 需调 `trade/` 包的 master_portfolio 真实评分，但 `trade/` 不在 deploy artifact（wheel `packages=["workbench_api"]`）。用户批架构 A：**把 `trade/` 装进 VM venv**（precompute CLI 直接 import trade/ 评分写 DB，请求路径只读 DB）。这使 `trade/` **从此物理存在于 artifact**——§12.10 原本靠「`trade/` 物理缺席 → 请求路径想 import 也 import 不到」的天然保护**失效**。
+
+**规律：** §12.10 有两种 enforcement 模式：
+- **模式 1（默认）物理缺席**：禁止的根级包/数据**不进 artifact**，请求路径物理上 import/读不到。最强，零信任。
+- **模式 2（被迫）AST 守门**：当某禁包**被有意打进 artifact 供 job 使用**（如 B044 的 `trade/` 供 precompute），物理保护失效 → **必须显式 AST 守门**断言「请求路径模块（routes/services 调用链）不 import 该包；仅指定 job 模块（如 `recommendations/precompute.py`）允许」。守门成为唯一防线。
+
+**规约（补 §12.10 规约 6）：**
+
+6. **把一个原本 artifact 之外的包打进 artifact（供 precompute/job 用）时，必须同 commit 落 AST 守门**——`tests/safety/test_<feature>_request_self_contained.py` 断言请求路径调用链零 import 该包，仅 allowlisted job 模块允许（B044 `test_recommendations_request_self_contained.py`：routes/services/recommendations 无 `import trade`，仅 `recommendations/precompute.py` 允许）。Spec acceptance 必声明此守门；Evaluator L2 验守门跑过 + 请求路径行为不依赖该包（即使 import 误入也不会在请求时触发重依赖）。**默认仍优先模式 1**（能不打进 artifact 就不打）；仅当 job 确需该包且运维取舍倾向单机 timer（非 CI 算→ingest）时走模式 2 + 守门。
+
 **与 §12.8 / §12.9 关系：** §12.8 抓 `workbench_api/` 内 top-level 第三方 import（runtime vs dev）；§12.10 抓「**生产执行路径**（请求路径 + timer/scheduled CLI）触碰 deploy artifact 之外（根级 `scripts/` + `data/fixtures/`）」这一层——互补，非重叠。
 
 **与 v0.9.X 系列 "local vs prod" 教训补一行：**
@@ -818,6 +830,7 @@ def test_critical_runtime_deps_pinned():
 |---|---|---|---|
 | **v0.9.32 §12.10（本节）** | **请求路径 import 根级 scripts / 读 repo-root data/fixtures → prod 500（本地+CI 掩盖）** | **请求路径数据 materialise 入 workbench_api/ 包 + 缺失守门 + L2 真 VM 200** | **deploy artifact 边界** |
 | **v0.9.34 §12.10.1（B038）** | **manual-only CLI 接入 timer 后首次 prod 执行 → `import scripts.*` ModuleNotFoundError（B033 起隐患，manual-only 期全程掩盖）** | **接入自动执行路径时 CLI 及 import 闭包按 §12.10 重审 + AST 守门 + L2 手动 trigger service 验真** | **deploy artifact 边界（扩到所有生产执行路径）** |
+| **v0.9.35 §12.10.2（B044）** | **被禁包 `trade/` 被有意打进 venv 供 precompute → 物理缺席保护失效，请求路径理论上可 import** | **同 commit 落 AST 守门（请求路径零 import 该包，仅 job 模块 allowlist）；默认仍优先模式 1 不打进 artifact** | **enforcement 模型（物理缺席→AST 守门）** |
 
 **来源：** B034 F003 fix-round（commit `d1c2b30`）+ F004 fix-round 1（commit `ec02894`）；signoff `docs/test-reports/B034-news-ticker-embedding-signoff-2026-06-04.md` §Framework Learnings first-class 列入 + proposed-learnings 二例合并；B034 done 阶段用户确认沉淀。
 

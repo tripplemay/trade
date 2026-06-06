@@ -365,6 +365,11 @@ docs/test-reports/[批次名称]-signoff-YYYY-MM-DD.md
 - 多批次串行重构时，在 backlog.json 用 `order` 字段标顺序，project-status.md 维护路线图概览
 - 生产部署版本 vs HEAD 可能不同步，project-status.md 应同时记录两者的 short-sha
 
+### 生产部署 / 停机恢复（来自 B044）
+- **长停机会使 auto-deploy 在 SCP 阶段静默失败，prod 卡在上一版本**：B044 F003 deploy 恰逢生产 VM 主机级挂死，SCP `kex reset` 失败，CI 未把它当硬错误 → prod 数小时停在上一版本（缺当批读路径）未被发现。
+- **环境恢复后必铁律核对 `prod /api/health.version == main HEAD`**，不等则手动 `gh workflow run "Workbench Deploy" --ref main` re-deploy（Evaluator 的 §Production/HEAD 等价性检查正是抓此类）。
+- VM 主机级挂死（TCP SYN 有应答但 nginx/sshd 应用握手超时）疑与资源耗尽相关；disk 使用率应作 soft-watch 持续监控，挂死前证据常被 reboot 清除、难定位确切根因。
+
 ### 成本控制
 - 聚合型服务商必须设白名单，否则同步全量模型导致健康检查成本爆炸
 - 图片生成的健康检查止步于 L2（格式验证），不执行 L3（真实生成），单次 $0.04–$0.19 不值得

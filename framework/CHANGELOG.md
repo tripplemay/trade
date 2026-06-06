@@ -5,6 +5,23 @@
 
 ---
 
+## v0.9.35 — 2026-06-07（B044 沉淀：§12.10 enforcement 模型「物理缺席→AST 守门」+ 停机恢复 prod==HEAD 核对）
+
+**来源批次：**
+- B044 真实评分基础，F003（§12.10 AST 守门）+ F004（commit/run 27075389529 re-deploy）
+- signoff `docs/test-reports/B044-real-scoring-precompute-signoff-2026-06-07.md` §Framework Learnings（新规律 + 新坑）+ §Soft-watch S1（VM disk 82%）
+- blocker 留档 `docs/test-reports/B044-real-scoring-precompute-blocker-2026-06-07.md`
+
+**触发原因：**
+- (新规律) B044 把 `trade/` 装进 VM venv（precompute 需调真实评分），`trade/` 从此物理存在于 artifact → §12.10「物理缺席」保护失效，请求路径理论上可 import trade/。enforcement 必须从「物理缺席」转「AST 守门」（请求路径零 import trade，仅 precompute job allowlist）。
+- (新坑) F003 deploy 恰逢生产 VM 主机挂死，SCP `kex reset` 静默失败 → prod 数小时卡上一版本未被发现。
+
+**变更：**
+- `framework/harness/generator.md` §12.10 新增子节 §12.10.2「enforcement 模型：物理缺席→AST 守门」（规约 6：禁包打进 artifact 供 job 用时同 commit 落 AST 守门；默认仍优先模式 1 不打进 artifact）+ 对比表 v0.9.35 行
+- `framework/README.md` §经验教训 新增「生产部署 / 停机恢复」子节（长停机 SCP 静默失败 → 恢复后核对 prod version==main HEAD + re-deploy；disk soft-watch）
+
+---
+
 ## v0.9.34 — 2026-06-06（B038 沉淀：§12.10 自包含审计扩到所有生产执行路径）
 
 **来源批次：**

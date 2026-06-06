@@ -79,4 +79,6 @@
 
 <!-- 2026-06-06: v0.9.34 沉淀完成（B038：§12.10 自包含审计扩到所有生产执行路径）：B038 F003 L2 blocker — news/cli.py 接入 workbench-news.timer 后首次 prod 执行触发 import scripts.* ModuleNotFoundError（B033 起隐患，manual-only 期全程掩盖）。signoff §Framework Learnings 由 Planner done 阶段裁定沉淀。写入 generator.md §12.10.1（manual-only CLI 接入自动执行路径时按 §12.10 重审 + 规约 5 + L2 手动 trigger service 验真 + 对比表 v0.9.34 行）+ CHANGELOG v0.9.34。边界 (q)→(r) 收编属产品边界（已落 project-status §永久硬边界），非 framework；B037-OPS1 durable 首验属预期行为确认，不单独沉淀。 -->
 
+<!-- 2026-06-07: v0.9.35 沉淀完成（B044：§12.10 enforcement 模型转变 + 停机恢复 prod==HEAD）：两条 signoff §Framework Learnings 用户批立即沉淀。(1) 新规律 trade/ 入 venv → §12.10 物理缺席保护失效 → 转 AST 守门：写 generator.md §12.10.2 + 规约 6 + 对比表 v0.9.35 行。(2) 新坑 长停机 SCP 静默失败致 prod 卡上一版本：写 README §经验教训「生产部署/停机恢复」子节。CHANGELOG v0.9.35。Soft-watch S1（VM disk 82%）转 project-status 监控（用户选直接 B045，disk 不阻断）；S2/S3（fixture 数据/sleeve stub）留 B045 真数据切换。 -->
+
 <!-- 当前无活动候选（待确认条目）。 -->
