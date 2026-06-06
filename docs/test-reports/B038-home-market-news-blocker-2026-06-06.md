@@ -104,3 +104,24 @@ Generator 需要修复 `workbench_api.news.cli` 的默认 universe 解析，使 
 ## Conclusion
 
 本轮 **Do not sign off**。B038 当前不是 timer wiring 问题，而是 `workbench-news.service` 的运行时自包含缺陷；状态应回到 `fixing`。
+
+---
+
+## Resolution (Generator — 2026-06-06, fix-round 1)
+
+**Root cause（确认）**：`workbench_api/news/cli.py:_default_universe()` 运行时 `from scripts.universe_us_quality import US_QUALITY_REAL_TICKERS`。deploy artifact 只含 `workbench_api/` 包（不含 repo-root `scripts/`），且 `scripts.universe_us_quality` 还 import pandas。这是 B033 起就存在的隐患，但 news ingest 一直 manual-only（边界 (q)），CLI 从未在 production 跑过；B038 把 CLI 接入 `workbench-news` systemd timer（边界 (q)→(r)）后，首次 oneshot 在 VM 触发 `ModuleNotFoundError`。属 v0.9.32 §12.10 deploy-artifact 自包含同族缺陷。
+
+**Fix（commit d99c0af）**：
+- `_default_universe()` 改为复用包内 `workbench_api.news.ticker_match.equity_universe_tickers()` —— 即 news *请求*路径早已使用的 in-code `_UNIVERSE_NAMES` 常量（B034 F003 为同一 §12.10 目的内联，无 pandas / 无 scripts / 无 file read）—— 再加 4 master ETF。**值等价验证**：27 B025 real tickers + SPY/QQQ/EFA/EEM，集合与原 `US_QUALITY_REAL_TICKERS` 一致。
+- 守门 `tests/safety/test_news_ingest_self_contained.py`：AST 扫描整个 `workbench_api/` 包**无任何 repo-root `scripts` import**（现为 0）+ 断言 news default universe 自包含且正确。覆盖**所有** production 运行路径（不止请求路径），防 §12.10 回归。
+
+**Gates**：backend pytest 794（792+2）/ ruff 0 / mypy 0。Backend CI `27052783639` success。
+
+**Production 真机复验（VM，version d99c0af）**：
+- VM 上 `python -c "from workbench_api.news.cli import _default_universe; len(...)"` → `31`（import 不再 ModuleNotFoundError）。
+- `sudo systemctl start workbench-news.service` → **`Result=success ExecMainStatus=0`**（start exit 0）。
+- journal：**`news ingest done — saved=782 skipped_existing=86 errors=0`** —— 真抓 SEC EDGAR + Yahoo RSS，写入 782 行，零错误。
+- `select count(*) from news` → **782**；最新条目为真实 yahoo_rss 新闻标题。
+- `workbench-news.timer` 仍 `active`（enabled）。
+
+**状态**：`fixing → reverifying`（fix_rounds 1）。Codex 复验 F003 剩余 L2：authed `/api/news/latest` 现应返回**有数据**的 `items[]`（非空，782 行已入库）；Home 新闻段浏览器手验（指标卡下方真实标题列表 + 双语 + 无下单按钮）+ 截图；HEAD≡main HEAD；signoff。
