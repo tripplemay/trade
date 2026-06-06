@@ -18,13 +18,7 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { components } from "@/types/api";
 
 type AdvisorResponse = components["schemas"]["AdvisorResponse"];
@@ -71,59 +65,71 @@ export function AdvisorSection() {
           </p>
         ) : sleeves === null ? (
           <p className="text-sm text-muted-foreground">{t("loading")}</p>
-        ) : sleeves.length === 0 ? (
-          <p data-testid="advisor-empty" className="text-sm text-muted-foreground">
-            {t("empty")}
-          </p>
         ) : (
-          <ul data-testid="advisor-list" className="space-y-4">
-            {sleeves.map((item) => (
-              <li
-                key={item.sleeve}
-                data-testid="advisor-sleeve"
-                className="rounded-md border border-border px-3 py-2"
-              >
-                <div className="text-xs font-semibold uppercase text-muted-foreground">
-                  {item.sleeve}
-                </div>
-                {item.status === INSUFFICIENT ? (
-                  <p
-                    data-testid="advisor-fallback"
-                    className="mt-1 text-sm text-amber-200"
+          // B039: the ⚠️ research disclaimer (mockup §2) is a card-level
+          // general statement — it stays visible for both the ok and the
+          // insufficient_grounding state (and the empty state), below the
+          // advice/citations. It only hides while loading or on a fetch
+          // error (no advice to qualify yet).
+          <>
+            {sleeves.length === 0 ? (
+              <p data-testid="advisor-empty" className="text-sm text-muted-foreground">
+                {t("empty")}
+              </p>
+            ) : (
+              <ul data-testid="advisor-list" className="space-y-4">
+                {sleeves.map((item) => (
+                  <li
+                    key={item.sleeve}
+                    data-testid="advisor-sleeve"
+                    className="rounded-md border border-border px-3 py-2"
                   >
-                    {t("fallback")}
-                  </p>
-                ) : (
-                  <div className="mt-1 space-y-1">
-                    <p data-testid="advisor-advice" className="text-sm text-foreground">
-                      {item.advice}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{item.rationale}</p>
-                    <div data-testid="advisor-references" className="pt-1 text-xs">
-                      {(item.references ?? []).map((ref, idx) => (
-                        <div key={idx} className="flex flex-wrap items-center gap-2">
-                          <span className="text-muted-foreground">
-                            {t("quantLabel")}: <code>{ref.quant_signal_sha}</code>
-                          </span>
-                          {(ref.news_urls ?? []).map((url) => (
-                            <a
-                              key={url}
-                              href={url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-foreground underline-offset-2 hover:underline"
-                            >
-                              {url}
-                            </a>
+                    <div className="text-xs font-semibold uppercase text-muted-foreground">
+                      {item.sleeve}
+                    </div>
+                    {item.status === INSUFFICIENT ? (
+                      <p data-testid="advisor-fallback" className="mt-1 text-sm text-amber-200">
+                        {t("fallback")}
+                      </p>
+                    ) : (
+                      <div className="mt-1 space-y-1">
+                        <p data-testid="advisor-advice" className="text-sm text-foreground">
+                          {item.advice}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{item.rationale}</p>
+                        <div data-testid="advisor-references" className="pt-1 text-xs">
+                          {(item.references ?? []).map((ref, idx) => (
+                            <div key={idx} className="flex flex-wrap items-center gap-2">
+                              <span className="text-muted-foreground">
+                                {t("quantLabel")}: <code>{ref.quant_signal_sha}</code>
+                              </span>
+                              {(ref.news_urls ?? []).map((url) => (
+                                <a
+                                  key={url}
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-foreground underline-offset-2 hover:underline"
+                                >
+                                  {url}
+                                </a>
+                              ))}
+                            </div>
                           ))}
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p
+              data-testid="advisor-disclaimer"
+              className="mt-3 border-t border-border/50 pt-2 text-xs text-muted-foreground"
+            >
+              {t("disclaimer")}
+            </p>
+          </>
         )}
       </CardContent>
     </Card>

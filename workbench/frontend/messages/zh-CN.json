@@ -66,7 +66,8 @@
       "error": "无法加载 AI 助手：{error}",
       "fallback": "今日该 sleeve 的 AI 建议未通过安全检查，已跳过。quant signal、news、风险面板不受影响。",
       "quantLabel": "quant",
-      "sourcesLabel": "来源"
+      "sourcesLabel": "来源",
+      "disclaimer": "这是研究参考，不是收益预测。最终决策由你判断。"
     },
     "hero": {
       "navLabel": "净资产",

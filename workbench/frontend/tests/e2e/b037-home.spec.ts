@@ -54,6 +54,10 @@ test.describe("B037 F003 — Home Daily Journey", () => {
     await expect(page.getByTestId("home-sleeves").getByRole("button")).toHaveCount(0);
     // B038 — the news panel is read-only headlines (links only, no order button).
     await expect(page.getByTestId("home-news-card").getByRole("button")).toHaveCount(0);
+    // B039 — the AI Advisor section shows the ⚠️ research disclaimer (visible in
+    // both the ok and the empty/insufficient state) and carries no order button.
+    await expect(page.getByTestId("advisor-disclaimer")).toBeVisible();
+    await expect(page.getByTestId("home-advisor-card").getByRole("button")).toHaveCount(0);
 
     expect(apiErrors, `unexpected /home errors: ${apiErrors.join(", ")}`).toEqual([]);
     const appConsoleErrors = consoleErrors.filter(
@@ -62,16 +66,18 @@ test.describe("B037 F003 — Home Daily Journey", () => {
     expect(appConsoleErrors, `console errors: ${appConsoleErrors.join(", ")}`).toEqual([]);
   });
 
-  for (const { locale, navLabel } of [
-    { locale: "en", navLabel: "Net Asset Value" },
-    { locale: "zh-CN", navLabel: "净资产" },
+  for (const { locale, navLabel, disclaimerSnippet } of [
+    { locale: "en", navLabel: "Net Asset Value", disclaimerSnippet: "research reference" },
+    { locale: "zh-CN", navLabel: "净资产", disclaimerSnippet: "研究参考" },
   ]) {
-    test(`renders the ${locale} hero NAV label`, async ({ page, context }) => {
+    test(`renders the ${locale} hero NAV label + advisor disclaimer`, async ({ page, context }) => {
       await context.addCookies([
         { name: "NEXT_LOCALE", value: locale, domain: "127.0.0.1", path: "/" },
       ]);
       await page.goto("/");
       await expect(page.getByText(navLabel, { exact: true })).toBeVisible();
+      // B039 — the ⚠️ research disclaimer renders in the active locale.
+      await expect(page.getByTestId("advisor-disclaimer")).toContainText(disclaimerSnippet);
     });
   }
 });

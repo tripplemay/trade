@@ -40,6 +40,10 @@ const HOME_PAGE = join(FRONTEND_ROOT, "src", "app", "(protected)", "page.tsx");
 // no-execution Home surface; scan it so a future edit can't add an
 // order/execute affordance (in either language) to the news element.
 const HOME_NEWS_PANEL = join(FRONTEND_ROOT, "src", "components", "home", "HomeNewsPanel.tsx");
+// B039 F001 — the Home AI Advisor section (with its research disclaimer) is
+// part of the same no-execution Home surface; scan it so a future edit can't
+// add an order/execute affordance (in either language) to the advisor element.
+const ADVISOR_SECTION = join(FRONTEND_ROOT, "src", "components", "advisor", "AdvisorSection.tsx");
 const MESSAGES_DIR = join(FRONTEND_ROOT, "messages");
 
 const EN_BANNED = ["execute", "place order", "send to broker"] as const;
@@ -86,7 +90,7 @@ function collectPageFiles(root: string): string[] {
 }
 
 describe("no execution buttons under (protected)/execution/** + Home", () => {
-  const files = [...collectPageFiles(EXECUTION_DIR), HOME_PAGE, HOME_NEWS_PANEL];
+  const files = [...collectPageFiles(EXECUTION_DIR), HOME_PAGE, HOME_NEWS_PANEL, ADVISOR_SECTION];
 
   it(`covers the Home page`, () => {
     expect(files).toContain(HOME_PAGE);
@@ -94,6 +98,10 @@ describe("no execution buttons under (protected)/execution/** + Home", () => {
 
   it(`covers the Home news panel`, () => {
     expect(files).toContain(HOME_NEWS_PANEL);
+  });
+
+  it(`covers the Home advisor section`, () => {
+    expect(files).toContain(ADVISOR_SECTION);
   });
 
   it(`covers at least the 5 execution pages`, () => {

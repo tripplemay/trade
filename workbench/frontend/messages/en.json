@@ -66,7 +66,8 @@
       "error": "Could not load AI advisor: {error}",
       "fallback": "AI advice did not pass the safety check today and was skipped for this sleeve. The quant signal, news and risk panels are unaffected.",
       "quantLabel": "quant",
-      "sourcesLabel": "Sources"
+      "sourcesLabel": "Sources",
+      "disclaimer": "This is a research reference, not an earnings prediction. The final decision is yours."
     },
     "hero": {
       "navLabel": "Net Asset Value",

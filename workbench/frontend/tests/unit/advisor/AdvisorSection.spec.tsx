@@ -20,9 +20,7 @@ const SLEEVES: AdvisorSleeveAdvice[] = [
     sleeve: "satellite_us_quality",
     advice: "Stay diversified within the sleeve.",
     rationale: "Grounded in the quant signal + news.",
-    references: [
-      { quant_signal_sha: "sha256:abc", news_urls: ["https://a.example/1"] },
-    ],
+    references: [{ quant_signal_sha: "sha256:abc", news_urls: ["https://a.example/1"] }],
     status: "ok",
     generated_at: "2026-06-05T01:00:00+00:00",
   },
@@ -89,5 +87,62 @@ describe("AdvisorSection (B036 F003)", () => {
     const { getByTestId, container } = renderWithIntl(<AdvisorSection />);
     await waitFor(() => expect(getByTestId("advisor-list")).toBeInTheDocument());
     expect(container.querySelectorAll("button")).toHaveLength(0);
+  });
+
+  // --- B039: the ⚠️ research disclaimer (mockup §2) -----------------------
+
+  it("renders the research disclaimer for ok + insufficient sleeves", async () => {
+    vi.stubGlobal("fetch", buildFetch({ sleeves: SLEEVES }));
+    const { getByTestId } = renderWithIntl(<AdvisorSection />);
+    await waitFor(() => expect(getByTestId("advisor-list")).toBeInTheDocument());
+    const disclaimer = getByTestId("advisor-disclaimer");
+    expect(disclaimer).toBeInTheDocument();
+    expect(disclaimer.textContent ?? "").not.toHaveLength(0);
+  });
+
+  it("keeps the disclaimer visible when ALL sleeves are insufficient_grounding", async () => {
+    const allInsufficient = SLEEVES.map((s) => ({
+      ...s,
+      status: "insufficient_grounding" as const,
+      advice: "",
+      references: [],
+    }));
+    vi.stubGlobal("fetch", buildFetch({ sleeves: allInsufficient }));
+    const { getByTestId, queryByTestId } = renderWithIntl(<AdvisorSection />);
+    await waitFor(() => expect(getByTestId("advisor-list")).toBeInTheDocument());
+    expect(queryByTestId("advisor-advice")).toBeNull(); // no advice body
+    expect(getByTestId("advisor-disclaimer")).toBeInTheDocument(); // still shown
+  });
+
+  it("keeps the disclaimer visible in the empty state", async () => {
+    vi.stubGlobal("fetch", buildFetch({ sleeves: [] }));
+    const { getByTestId } = renderWithIntl(<AdvisorSection />);
+    await waitFor(() => expect(getByTestId("advisor-empty")).toBeInTheDocument());
+    expect(getByTestId("advisor-disclaimer")).toBeInTheDocument();
+  });
+
+  it("hides the disclaimer while loading and on error", async () => {
+    vi.stubGlobal("fetch", buildFetch(null, false));
+    const { getByTestId, queryByTestId } = renderWithIntl(<AdvisorSection />);
+    await waitFor(() => expect(getByTestId("advisor-error")).toBeInTheDocument());
+    expect(queryByTestId("advisor-disclaimer")).toBeNull();
+  });
+
+  it("renders the English disclaimer copy", async () => {
+    vi.stubGlobal("fetch", buildFetch({ sleeves: SLEEVES }));
+    const { getByTestId } = renderWithIntl(<AdvisorSection />, { locale: "en" });
+    await waitFor(() => expect(getByTestId("advisor-disclaimer")).toBeInTheDocument());
+    expect(getByTestId("advisor-disclaimer")).toHaveTextContent(
+      "This is a research reference, not an earnings prediction. The final decision is yours.",
+    );
+  });
+
+  it("renders the zh-CN disclaimer copy", async () => {
+    vi.stubGlobal("fetch", buildFetch({ sleeves: SLEEVES }));
+    const { getByTestId } = renderWithIntl(<AdvisorSection />, { locale: "zh-CN" });
+    await waitFor(() => expect(getByTestId("advisor-disclaimer")).toBeInTheDocument());
+    expect(getByTestId("advisor-disclaimer")).toHaveTextContent(
+      "这是研究参考，不是收益预测。最终决策由你判断。",
+    );
   });
 });

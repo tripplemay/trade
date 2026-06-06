@@ -48,6 +48,23 @@ describe("messages bundle parity", () => {
     expect(collectKeys(enMessages).length).toBeGreaterThanOrEqual(10);
   });
 
+  it("advisor research disclaimer is present + non-empty in both locales (B039 永存)", () => {
+    // i18n-disclaimer 永存守门 (v0.9.26 family): the Home AI Advisor section's
+    // ⚠️ research disclaimer must exist AND be non-empty in zh-CN + en — drop
+    // one side and this fails (key parity above already bans a one-sided key;
+    // this also bans an accidentally-emptied disclaimer value).
+    for (const bundle of [zhCNMessages, enMessages] as const) {
+      const home = (
+        bundle as unknown as {
+          home?: { advisor?: { disclaimer?: string } };
+        }
+      ).home;
+      const value = home?.advisor?.disclaimer;
+      expect(typeof value).toBe("string");
+      expect((value ?? "").trim().length).toBeGreaterThan(0);
+    }
+  });
+
   it("every leaf value is a string in both bundles", () => {
     // Empty-string leaves are intentional in some namespaces (e.g.
     // ternary "override marker" suffixes that may render as no-op);
