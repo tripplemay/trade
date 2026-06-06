@@ -19,7 +19,7 @@
       "title": "前端 Home 第三段今日市场新闻元素（HomeNewsPanel self-fetch）+ 双语 + no-execution + vitest + Playwright Daily Journey",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) Home 第三段 (protected)/page.tsx 在 MarketContextCard **下方**加新闻元素：改造 components/recommendations/NewsPanel→去 sleeve 下拉的 HomeNewsPanel（或参数化 NewsPanel 接受可选 sleeve，None=global），self-fetch GET /api/news/latest；(2) 渲染 compact 列表对齐 personas §2 mockup「📰 Today's market context」：标题 + source + 发布日期 + 外链（target=_blank rel=noopener noreferrer），top N（默认 5-8）；loading/empty/error 三态；(3) **双语 zh-CN + en** 新闻段所有文案（标题/空态/错误/段标题）；(4) **no-execution buttons 守门扩 Home**：新闻段无下单/执行按钮 + 中文等价禁词同级；(5) mockup 一致性（新闻段位置在第三段指标卡下方，同段）；(6) frontend vitest 新增 Home 新闻段测试（列表渲染 + 三态 + 双语 + 外链属性 + 无执行按钮）；(7) Playwright Daily Journey e2e 更新：Home 加载后新闻段可见（标题列表）+ 双 locale；(8) Gates：frontend vitest ≥ baseline+ / lint 0 / typecheck pass / Playwright 不破 / 不破既有 backend；(9) 不动：B037 三段 Home 结构（仅第三段追加）/ recommendations 页 NewsPanel / AI Advisor 段（B039）/ 其他 protected 页。",
       "design_decisions": []
     },
