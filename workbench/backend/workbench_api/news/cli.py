@@ -54,20 +54,26 @@ logger = logging.getLogger(__name__)
 
 
 # B033 spec §2 Universe — B025 US Quality 27 + 4 master ETFs.
-# Imported from B029 to stay in lockstep with the existing universe
-# constant; ETFs are appended here because the news ingest universe
-# extends past pure equity fundamentals.
 def _default_universe() -> tuple[str, ...]:
-    # ``scripts`` ships no py.typed marker (repo-root helper package
-    # exposed via the editable install), so mypy treats the import as
-    # untyped; pin the local to ``tuple[str, ...]`` to keep the return
-    # type concrete rather than ``Any``.
-    from scripts.universe_us_quality import (  # type: ignore[import-untyped]
-        US_QUALITY_REAL_TICKERS,
-    )
+    """B025 US Quality 27 real tickers + the 4 master ETFs.
 
-    real: tuple[str, ...] = tuple(US_QUALITY_REAL_TICKERS)
-    return real + ("SPY", "QQQ", "EFA", "EEM")
+    Sourced from the in-package ``equity_universe_tickers()`` — the same
+    in-code ``_UNIVERSE_NAMES`` constant the news *request* path already
+    uses (B034 F003) — **not** the repo-root ``scripts.universe_us_quality``
+    (which pulls pandas at import and lives outside the deploy artifact).
+
+    B038 wired this CLI into a production systemd timer (boundary (q)→(r));
+    the deploy artifact ships only the ``workbench_api/`` package, so a
+    runtime ``from scripts...`` import raised ``ModuleNotFoundError`` on the
+    VM oneshot — v0.9.32 §12.10 deploy-artifact self-containment. The news
+    ingest was previously manual-only (boundary (q)), which kept the
+    repo-root import latent until the timer ran it in production. See
+    docs/test-reports/B038-home-market-news-blocker-2026-06-06.md.
+    """
+
+    from workbench_api.news.ticker_match import equity_universe_tickers
+
+    return equity_universe_tickers() + ("SPY", "QQQ", "EFA", "EEM")
 
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
