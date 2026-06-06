@@ -1,0 +1,48 @@
+[
+  {
+    "locale": "zh-CN",
+    "cardTextSample": "今日市场新闻最新市场动态标题（SEC EDGAR + Yahoo RSS），每日更新。仅标题，无 AI 解读。Oklo’s Reactor Progress And Deals Reframe Risks And Opportunity F",
+    "newsItemCount": 8,
+    "firstThreeTitles": [
+      "Oklo’s Reactor Progress And Deals Reframe Risks And Opportunity For Investors",
+      "ETF Zoo: What Happens When Tech Eats the Entire Market?",
+      "The Market Has Only Done This 4 Times Since World War II. Here's What Comes Next."
+    ],
+    "firstThreeHrefs": [
+      "https://finance.yahoo.com/markets/stocks/articles/oklo-reactor-progress-deals-reframe-042436816.html?.tsrc=rss",
+      "http://www.etf.com/sections/podcasts/etf-zoo-what-happens-when-tech-eats-entire-market?utm_source=yahoo-finance&utm_medium=rss&utm_campaign=yahoo-finance-rss&.tsrc=rss",
+      "https://www.fool.com/investing/2026/06/06/the-market-has-only-done-this-4-times-since-world/?.tsrc=rss"
+    ],
+    "buttonCount": 0,
+    "oldDashboardCount": 0,
+    "syntheticBannerCount": 0,
+    "heroVisible": true,
+    "marketCardVisible": true,
+    "consoleErrors": [],
+    "apiErrors": [],
+    "url": "https://trade.guangai.ai/"
+  },
+  {
+    "locale": "en",
+    "cardTextSample": "Today's market newsLatest market headlines (SEC EDGAR + Yahoo RSS), updated daily. Headlines only — no AI commentary.Okl",
+    "newsItemCount": 8,
+    "firstThreeTitles": [
+      "Oklo’s Reactor Progress And Deals Reframe Risks And Opportunity For Investors",
+      "ETF Zoo: What Happens When Tech Eats the Entire Market?",
+      "The Market Has Only Done This 4 Times Since World War II. Here's What Comes Next."
+    ],
+    "firstThreeHrefs": [
+      "https://finance.yahoo.com/markets/stocks/articles/oklo-reactor-progress-deals-reframe-042436816.html?.tsrc=rss",
+      "http://www.etf.com/sections/podcasts/etf-zoo-what-happens-when-tech-eats-entire-market?utm_source=yahoo-finance&utm_medium=rss&utm_campaign=yahoo-finance-rss&.tsrc=rss",
+      "https://www.fool.com/investing/2026/06/06/the-market-has-only-done-this-4-times-since-world/?.tsrc=rss"
+    ],
+    "buttonCount": 0,
+    "oldDashboardCount": 0,
+    "syntheticBannerCount": 0,
+    "heroVisible": true,
+    "marketCardVisible": true,
+    "consoleErrors": [],
+    "apiErrors": [],
+    "url": "https://trade.guangai.ai/"
+  }
+]

@@ -28,7 +28,7 @@
       "title": "Codex L1 + L2 真 VM 验收 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "L1 (CI 内)：F001+F002 全 generator 验收脚本跑通 — backend pytest ≥ baseline+≥10 / ruff / mypy / frontend vitest ≥ baseline+ / Playwright 不破；**no-execution 守门**（Home 新闻段无下单按钮 + 中文禁词 0）；**i18n 双语齐 + 无禁词**；**§12.10 自包含**；**边界 (p) metadata-only + B034 非生成式 + test_news_no_scheduler 仍绿**；scheduler scope 守门含 news 跑过；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）；(2) /api/debug/recent-errors={count:0,records:[]}；(3) **v0.9.32 §23 新路由真 VM 200**：GET /api/news/latest authenticated 200 + 结构化 payload（items[]）；anon 401；(4) **§24 + B037-OPS1 durable 验证**：workbench-news.timer 经 deploy.sh 循环 + sudoers 通配符**自动 enabled+active（无手装、无 warn 行）**——首次验证 B037-OPS1 对全新 timer 的零成本覆盖；手动 trigger workbench-news.service 验真（有新闻行 / 或 SEC rate-limit 合规空，记录哪种）；(5) **Home 新闻段浏览器手验**（对齐 personas §2 mockup）：第三段指标卡下方新闻标题列表 + 外链 + 无下单按钮（no-execution UI）+ 双语切换；截图；(6) Production HEAD ≡ main HEAD；(7) B026 banner 仍 absent；(8) news ingest 仍边界 (r) 只读（scope 守门含 news 仍非执行）。Signoff: docs/test-reports/B038-home-market-news-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（含 §24 timer 接线勾选 + §L2 新路由 200 + §Production/HEAD + §Post-signoff Deploy）；docs/screenshots/B038-home-market-news/ ≥1 PNG（Home 新闻段 zh 或 + en）。Framework 候选：若边界 (q)→(r) 收编 / B037-OPS1 durable 首验 出现新通用规律记 signoff §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]

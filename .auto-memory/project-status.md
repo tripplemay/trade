@@ -4,10 +4,10 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B038-home-market-news：`reverifying`**（2026-06-06 Generator fix-round 1 完成，待 Codex F003 复验）。Phase 3 / Stream 4.B = 把今日市场新闻搬上 Home 第三段。**L1 早绿**（backend 43 + frontend 28 targeted）。**首轮 L2 blocker 已解（commit d99c0af）**：`workbench-news.service` VM oneshot `ModuleNotFoundError scripts.universe_us_quality`（`news/cli.py:_default_universe` 运行时 import repo-root scripts，§12.10 自包含缺陷；B033 起隐患，news manual-only 从未在 prod 跑，B038 接 timer(q→r)首暴露）→ 修复复用包内 `ticker_match.equity_universe_tickers()`（请求路径同源 `_UNIVERSE_NAMES`，无 scripts/pandas）+ 守门 `test_news_ingest_self_contained.py`（AST 扫全 workbench_api 包无 scripts import）。**Production 真机复验（version d99c0af）**：VM import OK；`systemctl start workbench-news.service`=`Result=success errors=0 saved=782`（真抓 SEC EDGAR+Yahoo RSS）；news 表 782 行真实新闻；timer 仍 active。Gates backend 794(792+2)/ruff0/mypy0。**已通过 L2**：`/api/news/latest` authed 200 / anon 401；timer B037-OPS1 durable 自动接线无 warn（deploy run 27052426615）。**Codex 复验剩余**：authed `/api/news/latest` 现应有数据 items[]（782 行入库）+ Home 新闻段浏览器手验+双语+无下单按钮+截图 + HEAD≡main + signoff。blocker 报告 §Resolution。**done 阶段**：§永久硬边界 (q)→(r) 文本同步 + 评估 framework 候选（『既有模块接入 prod 运行路径须同步 §12.10 审计』第三例 / 边界收编 / B037-OPS1 durable 首验）。
+- **B038-home-market-news：✅ `done`**（2026-06-06 Codex F003 fix-round 1 复验通过签收）。Phase 3 / Stream 4.B 已把今日市场新闻补进 Home 第三段。**最终证据（signoff：`docs/test-reports/B038-home-market-news-signoff-2026-06-06.md`）**：L1 targeted backend `45 passed`（含 `test_news_ingest_self_contained`）+ frontend `28 passed`；production `/api/news/latest` authed `200` 且返回真实 `items[]`、anon `401`、authenticated `/api/debug/recent-errors={"count":0,"records":[]}`；`workbench-news.timer` 通过 **B037-OPS1 durable** 自动 install+enable（deploy run `27052861855` 明示 `workbench-news.timer enabled`，无 wiring warn）；`workbench-news.service` 真机 `status=0/SUCCESS`，journal=`saved=782 skipped_existing=86 errors=0`；production Home zh-CN/en 两轮手验均显示 `home-news-card` + 8 条标题列表 + 0 button + 旧 dashboard 0 + `synthetic-data-banner` 0，截图已落 `docs/screenshots/B038-home-market-news/`。首轮 blocker（`scripts.universe_us_quality` 自包含缺陷）已在 fix-round 1 关闭。
 - **B037-OPS1-deploy-timer-sudoers-hardening：✅ `done`**（2026-06-06 Codex F002 签收，0 fix-round）。横切运维修复闭环，根治 B035/B036/B037 三批手装 timer（evaluator.md §24）。deploy run `27050937093` 三 timer 自动 install+enable 无 warn；prod health≡main HEAD `5393343`；三 timer enabled+active；Soft-watch S1 resolved；durable=deploy.sh 循环+sudoers wildcard+root wrapper。signoff `docs/test-reports/B037-OPS1-deploy-timer-sudoers-hardening-signoff-2026-06-06.md`。
 - **B037-home-restructure：✅ `done`**（2026-06-06，1 fix-round=prices.timer L2 blocker）。prod `/api/home`=200(`nav=0 day_pnl=null sleeves=3`)；三段 daily-engagement Home 替换旧 quant dashboard（§16 退役+§22）；`alembic=0009`。signoff `docs/test-reports/B037-home-restructure-signoff-2026-06-06.md`。
-- **🎯 Phase 2 完整收官（B031-B036 全签收）= 里程碑 B；B037 已 done = 里程碑 C 起点。** Phase 3 主线：B038(Home news, building)→B039(Home AI)→B040-B043(Reports/Rec/Risk+AI 解释层)→里程碑 C。
+- **🎯 Phase 2 完整收官（B031-B036 全签收）= 里程碑 B；B037/B038 已 done = 里程碑 C 主线继续。** Phase 3 主线：B039(Home AI)→B040-B043(Reports/Rec/Risk+AI 解释层)→里程碑 C。
 - **B036 ✅ signoff 2026-06-05**（AI advisor MVP；prod /api/advisor 200/3 sleeve haiku-4.5；red-team 15/15 gate；alembic 0008；advisor timer）。**B035 ✅**（FRED+AV market context 0007）。**B034 ✅**（news_embedding+NewsPanel 0006）。
 
 ## 已完成签收 + MVP 完工
@@ -24,8 +24,8 @@ type: project
 - UI 层：no-execution buttons + 中文等价禁词同级 / Order ticket Markdown 双语 disclaimer / B026 banner decommissioned（v0.9.31 §16 守门）
 - 数据 / CI 层：fixture-first 离线 CI / pyproject runtime-vs-dev hygiene（v0.9.29 §12.8）/ paths-trigger 含 trade/+scripts/+pyproject.toml（v0.9.27 §12.7.1）
 - B027 起 (f)(g) / B029 起 (h)(i)(j) / B030 起 (k) + v0.9.30 §12.9 / B031 起 (l)(m) / B032 起 (n)(o)：继续
-- **B033 起 (p)(q)：** (p) News raw text 仅落 snapshot path 不内联 DB / (q) News ingest 默认 production-disabled（无 scheduler / cron / APScheduler；**对 news 不变**）
-- **B035 起 (r)，B036 修订：** 调度器允许（a）只读市场数据拉取 +（b）**运行已过 CI safety-gate 的 AI advisor 预计算**（B036）；仍明确 NOT 交易执行/下单/broker；守门 `test_market_scheduler_scope.py`（允许 advisor import，禁 broker/ticket/execution）
+- **B033 起 (p)，B038 修订：** (p) News raw text 仅落 snapshot path 不内联 DB；**news ingest 自 B038 起收编到边界 (r)**，允许 systemd oneshot timer 做只读 SEC EDGAR + Yahoo RSS 拉取，但 in-process scheduler 仍禁（`test_news_no_scheduler.py` 保留）。
+- **B035 起 (r)，B036/B038 修订：** 调度器允许（a）只读市场数据拉取（market-context / prices / news）+（b）**运行已过 CI safety-gate 的 AI advisor 预计算**（B036）；仍明确 NOT 交易执行/下单/broker；守门 `test_market_scheduler_scope.py`（允许 advisor/news import，禁 broker/ticket/execution）。
 - AI 边界（v0.9.28 5 子条）：B034 非生成式（embedding）；**B036 首次全量生成式触发，硬 enforce**（prompt + 输出校验 references ⊆ input set；过 B032 red-team gate）
 
 ## Framework 状态
