@@ -6,7 +6,7 @@
       "title": "AdvisorSection 加双语 disclaimer + i18n keys + 永存守门 + vitest + Playwright Daily Journey 断言",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【2026-06-06 用户已批：B039 最小范围=补 disclaimer + 验证，见 spec §1-2。B037 复用 AdvisorSection 已渲染 advice/引用/INSUFFICIENT fallback/per-sleeve；唯一 gap=缺 disclaimer】(1) **disclaimer 渲染**：components/advisor/AdvisorSection.tsx 在引用块（advisor-references）下方加 disclaimer 元素（data-testid=advisor-disclaimer），渲染固定模板文案，位置对齐 personas §2 mockup（advice→📎引用→⚠️disclaimer 顺序）；**ok 态 + INSUFFICIENT_GROUNDING 态两态都显示**（通用研究声明非 advice 专属，降级时不消失）。(2) **i18n**：messages/zh-CN.json + en.json advisor 命名空间加 disclaimer key——zh-CN「这是研究参考，不是收益预测。最终决策由你判断。」/ en「This is a research reference, not an earnings prediction. The final decision is yours.」；双语齐 + 无禁词。(3) **i18n-disclaimer-永存守门**（复用/扩 v0.9.26 既有 disclaimer 永存守门）：断言 advisor disclaimer key 在 zh-CN + en 双存，缺一即 fail。(4) **AdvisorSection.spec.tsx 加断言**：disclaimer 渲染（ok 态 + INSUFFICIENT 态）+ 双语 + 文案非空。(5) **no-execution 守门**覆盖 disclaimer 元素（无下单/执行按钮 + 中文禁词同级）。(6) **Playwright Daily Journey**：Home AI Advisor 段 disclaimer 可见（双 locale）。(7) Gates：frontend vitest ≥ baseline+ / lint 0 / typecheck / Playwright 不破；**backend 不动**（无后端 diff，/api/advisor schema 不改）。(8) 不动：AdvisorSection 既有 advice/citations/fallback 渲染（仅追加 disclaimer）/ B038 新闻段 / market-context / 三段 Home 结构 / recommendations/risk/reports 页 / B036 后端生成逻辑。",
       "design_decisions": [
         "范围（2026-06-06 用户批）：B039 字面目标 B037 复用 AdvisorSection 已完成；最小范围=补 disclaimer，前端-only 无后端改动。",
