@@ -67,4 +67,14 @@
 
 <!-- 2026-06-06: v0.9.33 沉淀完成（B035/B036/B037 三例合并：read-only timer L2 接线检查）：B037 signoff §Framework Learnings 新坑「新 timer endpoint/DB 绿 ≠ 运维接线完成」+ §Soft-watch S1（同根三批重复手装 timer），过「等二例再合并」门槛。写入 framework/harness/evaluator.md §24（4 条规约 + 反面案例 B037 F004 首轮 L2 + 与 generator.md §12/§12.9 ops-wiring 同族）+ CHANGELOG v0.9.33。Soft-watch S1 的 durable fix（扩 deploy sudoers + deploy.sh 自动 install/enable timer）未沉淀进文档而是转为下一批次立项跟踪。 -->
 
+## [2026-06-06] Claude CLI — 来源：B037-OPS1 F001 security-reviewer 裁决
+
+**类型：** 新规律（ops-security 设计模式）
+
+**内容：** sudoers 通配符授权 `install` / 文件落盘类命令时，`fnmatch(3)` 不带 `FNM_PATHNAME`，`*` 匹配 `/` → 目标参数 `.../prefix-x/../escape.suffix` 能字面匹配 `.../prefix-*.suffix` pattern 却经内核 `..` 解析逃逸目标目录（root 写任意文件）。**通用缓解：把受限文件落盘交给一个根属、调用方不可写的 wrapper 脚本**（接受裸名 / 拒绝 `/` / 正则锁前缀+后缀 / 固定目标目录与模式），sudoers 只授权该 wrapper —— 既保留通配符的零手工耐久性，又把路径穿越类彻底关在 shell 层。B037-OPS1 落地 `workbench/deploy/sudoers/workbench-install-unit`。
+
+**建议写入：** `framework/harness/generator.md` §12.x（与 §12.9 production secret 三处接线 / §12.10 deploy-artifact 自包含 同属 "deploy/ops hardening" 系列）；或 security 专章。复用窗口：未来任何 deploy 用户 narrow-sudoers 扩权（新增需 root 落盘的运维动作）。
+
+**状态：** 待确认（单例；可与未来同类 sudoers/ops-privilege 案例二例合并，遵循"等二例再沉淀"原则）
+
 <!-- 当前无活动候选（待确认条目）。 -->
