@@ -42,7 +42,7 @@
       "title": "Codex L1 + L2 真 VM 验收（trade/ 入 venv + precompute 真实评分写表 + /current 真实权重 + 数据源 real/fixture + 请求路径无 trade import）+ signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "L1 (CI 内)：F001+F002+F003 全 generator 验收脚本跑通 — backend pytest ≥ baseline+≥10 / ruff / mypy；**§12.10 AST 守门**（请求路径 routes/services/recommendations 无 trade import，仅 precompute 允许）；scheduler scope 守门含 recommendations；trade/ install 不破既有测试；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）；(2) /api/debug/recent-errors={count:0,records:[]}；(3) **trade/ 已入 venv**（VM python import trade.backtest.master_portfolio 不报错）；(4) **precompute 真机 trigger（systemctl start workbench-recommendations.service）→ recommendation_snapshot 有真实评分行**；**记录 master_meta.data_source=real 还是 fixture**（哪种 + 哪些 symbol/target_weight，参 prices/news 验真模式）；(5) **GET /api/recommendations/current authenticated 200 返回真实权重**（非 equal-weight 0.25 均分；target_weight 反映 master 评分组成）+ anon 401；(6) **workbench-recommendations.timer 经 B037-OPS1 deploy 循环+sudoers 通配符自动 enabled+active（无手装、无 warn）**（§24 + B037-OPS1 durable）；(7) **请求路径无 trade import** 守门跑过；(8) Production HEAD ≡ main HEAD；(9) B026 banner 仍 absent。Signoff: docs/test-reports/B044-real-scoring-precompute-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（§24 timer 接线勾选 + §L2 /current 真实权重 + §Production/HEAD + §Post-signoff Deploy + **数据源 real/fixture 显式声明**）。**Framework 候选（强）**：trade/ 入 artifact 改变 §12.10 enforcement 模型（物理缺席→AST 守门）；记 signoff §Framework Learnings 供 planner done 阶段裁定。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
