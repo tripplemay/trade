@@ -15,12 +15,7 @@
 
 import { useTranslations } from "next-intl";
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { colorForMetric, type MetricKey } from "@/lib/metric-color";
 import { cn } from "@/lib/utils";
 
@@ -61,7 +56,10 @@ export function MetricsDisplay({ stats }: { stats: MetricStat[] }) {
           <div key={stat.key} data-testid={`metric-${stat.key}`}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="cursor-help text-[10px] uppercase tracking-wide text-muted-foreground underline decoration-dotted underline-offset-2">
+                <div
+                  data-testid={`metric-label-${stat.key}`}
+                  className="inline-block cursor-help text-[10px] uppercase tracking-wide text-muted-foreground underline decoration-dotted underline-offset-2"
+                >
                   {METRIC_LABELS[stat.key]}
                 </div>
               </TooltipTrigger>

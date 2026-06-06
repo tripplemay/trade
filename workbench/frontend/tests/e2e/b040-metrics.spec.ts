@@ -30,9 +30,12 @@ for (const { locale, tooltipSnippet } of [
     // No order/execute button on the metrics card.
     await expect(page.getByTestId("metrics-display").getByRole("button")).toHaveCount(0);
 
-    // Hover the Sharpe label → the localized explanatory tooltip appears.
-    await page.getByTestId("metric-sharpe").hover();
-    await expect(page.getByTestId("metric-tooltip-sharpe")).toContainText(tooltipSnippet);
+    // Hover the Sharpe label TRIGGER (not the wrapper) → the localized
+    // explanatory tooltip appears (radix opens on pointerenter of the trigger).
+    await page.getByTestId("metric-label-sharpe").hover();
+    const tooltip = page.getByTestId("metric-tooltip-sharpe");
+    await expect(tooltip.first()).toBeVisible();
+    await expect(tooltip.first()).toContainText(tooltipSnippet);
   });
 
   test(`/reports metrics card above markdown + ${locale}`, async ({ page, context }) => {
