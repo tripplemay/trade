@@ -6,7 +6,7 @@
       "title": "真实数据刷新 CLI（Tiingo prices + SEC EDGAR fundamentals → VM unified CSV store）+ workbench-data-refresh.{service,timer} + scope 守门",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【2026-06-07 用户已批：C live-refresh pipeline，见 spec §2】(1) **刷新 CLI** workbench_api/data_refresh/（或复用 prices/news 模块风格）：抓真实 prices（B027 Tiingo loader，深历史满足 risk_parity 120+ 日频 + global_etf_momentum ETF）+ fundamentals（B029 SEC EDGAR `fetch_quarterly_fundamentals` 真实季度财报满足 us_quality 5 因子）→ 写 unified CSV（schema 同 trade loaders 期望 prices_daily.csv + fundamentals.csv）到 /var/lib/workbench/data/snapshots/unified/；universe=master 各 sleeve 所需 symbol。(2) **workbench-data-refresh.{service,timer}**（每日 oneshot，镜像 market-context；B037-OPS1 循环+通配符零成本自动接线）。(3) 复用 B027 request_spacing/budget guard + B029 rate limit；复用 TIINGO_API_KEY + SEC_EDGAR_CONTACT_EMAIL（不引新 secret）。(4) **scheduler scope 守门**扩刷新 job（边界 r 只读市场数据，禁 broker/execution）。(5) pytest ≥8：刷新 job（fake Tiingo/EDGAR→写 unified CSV 正确 schema/行）；scope 守门含刷新 job。(6) Gates：backend pytest ≥ baseline+≥8 / ruff 0 / mypy 0。(7) 不动：B044 precompute/snapshot / master 评分逻辑 / 前端。",
       "design_decisions": [
         "真数据路径（2026-06-07 用户批）：C live-refresh pipeline（非静态快照）。",
