@@ -1,0 +1,57 @@
+#!/bin/bash
+# workbench-install-unit — install a workbench systemd unit, safely.
+#
+# B037-OPS1 security tightening (security-reviewer adjudication, 2026-06-06):
+# the `deploy` user is granted (via /etc/sudoers.d/deploy-workbench) the right
+# to run THIS wrapper as root to install workbench-*.{service,timer} units.
+# It exists ONLY to remove the path-traversal class that a raw
+#   sudo /usr/bin/install -m 644 * /etc/systemd/system/workbench-*.service
+# grant would allow: sudoers `fnmatch` has no FNM_PATHNAME, so `*` matches `/`,
+# and a destination like `/etc/systemd/system/workbench-x/../sshd.service`
+# would match the pattern yet resolve (via `..`) to an arbitrary root-owned
+# unit. This wrapper takes the unit as a BARE NAME (no path), rejects any `/`,
+# and pins the destination directory + install mode, so traversal is impossible.
+#
+# CRITICAL: this wrapper must be installed to a root-owned, deploy-NON-writable
+# path (canonically /usr/local/bin/workbench-install-unit, root:root 0755).
+# If it lived in the deploy-writable release tree, the deploy user could replace
+# it and defeat the validation. Installed once by admin alongside the sudoers
+# drop-in (see docs/dev/B021-vm-setup-runbook.md).
+#
+# Usage: workbench-install-unit <source-file> <unit-name>
+#   <unit-name> must match ^workbench-[A-Za-z0-9._-]+\.(service|timer)$ and
+#   contain no '/'. The file is installed to /etc/systemd/system/<unit-name>
+#   at mode 644.
+
+set -euo pipefail
+
+DEST_DIR=/etc/systemd/system
+
+if [[ $# -ne 2 ]]; then
+  echo "usage: $(basename "$0") <source-file> <unit-name>" >&2
+  exit 64
+fi
+
+src="$1"
+unit="$2"
+
+# Reject any path separator in the unit name — this is the whole point.
+case "${unit}" in
+  */*)
+    echo "error: unit name must not contain '/': ${unit}" >&2
+    exit 65
+    ;;
+esac
+
+# Lock to the workbench- prefix + .service/.timer suffix, conservative charset.
+if [[ ! "${unit}" =~ ^workbench-[A-Za-z0-9._-]+\.(service|timer)$ ]]; then
+  echo "error: unit must match workbench-<name>.{service,timer}: ${unit}" >&2
+  exit 65
+fi
+
+if [[ ! -f "${src}" ]]; then
+  echo "error: source file not found: ${src}" >&2
+  exit 66
+fi
+
+exec /usr/bin/install -m 644 "${src}" "${DEST_DIR}/${unit}"

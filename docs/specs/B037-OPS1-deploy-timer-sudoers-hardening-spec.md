@@ -45,7 +45,7 @@
 
 ### 5.1 版本化 sudoers 工件（仓库内新增）
 
-新增 `workbench/deploy/sudoers/deploy-workbench`（440, root:root），作为 VM `/etc/sudoers.d/deploy-workbench` 的权威源：
+新增 `workbench/deploy/sudoers/deploy-workbench`（440, root:root），作为 VM `/etc/sudoers.d/deploy-workbench` 的权威源。**实施落地（含 security-reviewer 收紧）：** install 不直接授权 `/usr/bin/install`，而是走根属 wrapper `/usr/local/bin/workbench-install-unit`（见下文裁决）：
 
 ```
 # 现有 5 条（B021）保留
@@ -54,13 +54,20 @@ deploy ALL=(ALL) NOPASSWD: /bin/systemctl restart workbench-frontend.service
 deploy ALL=(ALL) NOPASSWD: /bin/systemctl status workbench-backend.service
 deploy ALL=(ALL) NOPASSWD: /bin/systemctl status workbench-frontend.service
 deploy ALL=(ALL) NOPASSWD: /bin/systemctl daemon-reload
-# B037-OPS1 新增：timer 自动接线（通配符，锁 workbench- 前缀 + systemd 目录）
-deploy ALL=(ALL) NOPASSWD: /usr/bin/install -m 644 * /etc/systemd/system/workbench-*.service
-deploy ALL=(ALL) NOPASSWD: /usr/bin/install -m 644 * /etc/systemd/system/workbench-*.timer
+# B037-OPS1 新增：timer 自动接线（install 走根属 wrapper；enable 通配符，锁 workbench- 前缀）
+deploy ALL=(ALL) NOPASSWD: /usr/local/bin/workbench-install-unit * workbench-*.service
+deploy ALL=(ALL) NOPASSWD: /usr/local/bin/workbench-install-unit * workbench-*.timer
 deploy ALL=(ALL) NOPASSWD: /bin/systemctl enable --now workbench-*.timer
 ```
 
-> **安全注意（Generator + security-reviewer 必须裁决）：** sudoers 通配符用 `fnmatch(3)` **不带** `FNM_PATHNAME`，`*` 可匹配 `/`。F001 实施时必须由 security-reviewer 评估通配符能否被滥用作路径穿越（如 install 目标 `workbench-*` 是否可逃逸 `/etc/systemd/system/` 目录），并在 spec/runbook 记录残留风险与缓解（例如目标前缀 `/etc/systemd/system/workbench-` 字面锁定已限制逃逸面；`install -m 644` 模式固定）。若评估认为通配符逃逸面不可接受，回退到「通配符但更紧后缀约束」或显式枚举并报告。
+#### security-reviewer 裁决记录（2026-06-06，硬要求项）
+
+> **裁决：ACCEPT-WITH-TIGHTENING**（已落地 Tightening 1 wrapper；用户 2026-06-06 批「加 wrapper 脚本收紧」）。
+
+- **发现的真实风险（`fnmatch` 不带 `FNM_PATHNAME`，`*` 匹配 `/`）：** 若直接授权 `/usr/bin/install -m 644 * /etc/systemd/system/workbench-*.service`，则目标参数 `/etc/systemd/system/workbench-x/../sshd.service` **能匹配该 pattern**（字面以 `.service` 结尾），内核在写入时解析 `..` → deploy 用户可将 root 属 644 文件写到任意 `.service`/`.timer` 路径（覆盖 `sshd.service` 等）；再配合 `enable --now workbench-*.timer` 可 plant 一个无 `User=`（默认 root）的 `workbench-evil.{service,timer}` → root RCE。
+- **为何非 hard reject：** 单 VM 单用户模型下，deploy 用户**本就**能以 deploy 身份执行任意代码（它写 release tree 并可 restart `workbench-backend.service`）。`-m 644` 固定模式阻止 SUID/可执行投放。提权到 root 是**增量**而非新边界突破。
+- **落地的收紧（Tightening 1）：** 新增根属 wrapper `workbench/deploy/sudoers/workbench-install-unit`（装到 `/usr/local/bin/`，root:root 0755，**deploy 不可写**——否则可被替换绕过校验）。wrapper 接受 **裸 unit 名**（非路径），`case */*` 拒绝任何 `/`，正则锁 `^workbench-[A-Za-z0-9._-]+\.(service|timer)$`，目标目录固定 `/etc/systemd/system/`、模式固定 `-m 644`。→ **`..` 路径穿越类被彻底消除**，同时保留 `enable` 通配符的零手工耐久性。
+- **残留风险（用户已知接受）：** `enable --now workbench-*.timer` 通配符仍允许 plant 一个**合法命名**的 `workbench-*.timer`（+无 `User=` 的同名 service）并以 root 触发。reviewer 的进一步收紧 T2（显式枚举 enable 行）能消除此链，但与用户 ★ 通配符零手工决策冲突，**用户 2026-06-06 选择不采用 T2**。此残留链被 deploy 账户既有的 deploy 级 RCE 信任面所限（单 VM 模型下为增量提权）。详见 runbook 残留风险段。
 
 ### 5.2 deploy.sh DRY 重构
 
@@ -118,7 +125,7 @@ deploy ALL=(ALL) NOPASSWD: /bin/systemctl enable --now workbench-*.timer
 
 | 风险 | 缓解 |
 |---|---|
-| sudoers 通配符路径穿越 | F001 security-reviewer 裁决 + 目标前缀字面锁 `/etc/systemd/system/workbench-` + runbook 记残留风险 |
+| sudoers 通配符路径穿越（`*` 匹配 `/`） | **已落地**：install 走根属 wrapper `/usr/local/bin/workbench-install-unit`（裸 unit 名 + 拒绝 `/` + 锁 `workbench-*.{service,timer}` + 固定目标目录/模式）→ `..` 穿越类彻底消除（security-reviewer ACCEPT-WITH-TIGHTENING §5.1）；残留 planted-timer 链记 runbook |
 | deploy.sh 循环重构破坏现有 3 timer 接线 | 守门测试 (b) 保证每 timer 有 service 兄弟；F002 L2 实测三 timer 全 enabled |
 | sudoers 应用失误锁死 deploy 用户 | `visudo -c` 强制校验；保留现有 5 条不动；分离 drop-in 文件不碰主 sudoers |
 | admin 未应用 sudoers 就验收 | F002 把「sudoers 已应用」列为 L2 前置；未应用则 deploy 仍 warn（回到现状，不退化） |

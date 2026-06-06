@@ -218,6 +218,46 @@ sudo: a password is required        # ✅ non-allowlisted command correctly bloc
 
 ---
 
+## B037-OPS1 — deploy timer auto-wiring sudoers update (2026-06-06)
+
+> **Why:** `deploy.sh` has shipped per-timer install/enable logic since B035, but the original 5-line sudoers above does **not** authorize `install` into `/etc/systemd/system/` or `enable --now`. So each batch that added a read-only timer (B035 market-context, B036 advisor, B037 prices) needed a **one-time admin hand-install** — repeated three times (evaluator.md §24). B037-OPS1 makes the wiring automatic and durable.
+
+The versioned source of truth now lives in the repo (no longer hand-pasted):
+
+- `workbench/deploy/sudoers/deploy-workbench` — the full sudoers drop-in (5 B021 grants + 3 B037-OPS1 grants).
+- `workbench/deploy/sudoers/workbench-install-unit` — the root-owned install wrapper.
+
+### One-time admin action (deploy user cannot self-grant — same boundary exception as Item #3)
+
+Run as `tripplezhou` (full sudo) on the VM. Source the artifacts from the current release tree (`/srv/workbench/current/sudoers/`) or scp from the repo:
+
+```bash
+# 1. Install the root-owned install wrapper (deploy-NON-writable path — critical).
+sudo install -m 0755 -o root -g root \
+  /srv/workbench/current/sudoers/workbench-install-unit \
+  /usr/local/bin/workbench-install-unit
+
+# 2. Replace the sudoers drop-in with the versioned artifact.
+sudo install -m 0440 -o root -g root \
+  /srv/workbench/current/sudoers/deploy-workbench \
+  /etc/sudoers.d/deploy-workbench
+
+# 3. Validate BEFORE trusting it (never skip — a broken sudoers can lock out sudo).
+sudo visudo -c -f /etc/sudoers.d/deploy-workbench    # must print "parsed OK"
+```
+
+After this, `deploy.sh`'s `workbench-*.timer` loop installs + enables every shipped timer automatically on each deploy — **a new timer (B038+) needs zero admin action**. Codex F002 L2 verifies `re-deploy → no timer warn → all three timers enabled`.
+
+### Why an install wrapper instead of a raw `install` wildcard (security)
+
+sudoers wildcards use `fnmatch(3)` **without** `FNM_PATHNAME`, so `*` matches `/`. A raw grant `/usr/bin/install -m 644 * /etc/systemd/system/workbench-*.service` would let the destination `…/workbench-x/../sshd.service` match the pattern yet resolve (via `..`) to an arbitrary root-owned unit — a path-traversal write-as-root. The wrapper `/usr/local/bin/workbench-install-unit` takes the unit as a **bare name**, rejects any `/`, locks it to `workbench-*.{service,timer}`, and pins the destination dir + `-m 644` mode → traversal is impossible. It **must** stay at a root-owned, deploy-non-writable path (else deploy could replace it). security-reviewer adjudication: **ACCEPT-WITH-TIGHTENING** (spec §5.1).
+
+### Residual risk (accepted)
+
+The `enable --now workbench-*.timer` grant still allows a compromised `deploy` user to plant a legitimately-named `workbench-*.timer` (+ a same-named service with no `User=`, defaulting to root) and enable it → root code execution. This is **bounded by the deploy account's existing trust**: `deploy` already writes the release tree that `workbench-backend.service` executes and can restart it (i.e. it already has deploy-level RCE), so this is an *incremental* escalation in the single-VM model, not a new boundary breach. The reviewer's further tightening (explicit per-timer `enable` lines, no wildcard) would close it but defeats the zero-touch durability that is the whole point of this batch; the user chose to keep the wildcard (2026-06-06). Re-evaluate if the VM ever becomes multi-tenant.
+
+---
+
 ## Item #4 — executed 2026-05-15 (Planner ran it after user `gcloud auth login`)
 
 > Planner executed via `gcloud` from VM after user completed interactive `gcloud auth login --no-launch-browser` on the VM. User's credentials cached at `~/.config/gcloud/legacy_credentials/tripplezhou@gmail.com/`; user can `gcloud auth revoke tripplezhou@gmail.com` on VM after B021 setup if desired.

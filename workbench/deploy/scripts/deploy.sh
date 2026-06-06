@@ -262,54 +262,49 @@ sudo /bin/systemctl daemon-reload
 sudo /bin/systemctl restart workbench-backend.service
 sudo /bin/systemctl restart workbench-frontend.service
 
-# B035 F002 — install + enable the market-context daily timer (boundary (r):
-# read-only market-data fetch only; systemd timer, NOT an in-process
-# scheduler). The unit files ship in the release under deploy/systemd/.
-# Best-effort: tolerate a dev `deploy.sh` rehearsal (no sudo / units absent)
-# and a not-yet-granted sudoers entry so an existing backend/frontend deploy
-# still completes. Codex F004 L2 verifies `systemctl status` shows the timer
-# enabled; if this block warned, add the sudoers grant + re-deploy.
+# B037-OPS1 — install + enable EVERY shipped workbench-*.timer (boundary (r):
+# read-only data fetch — market-context / prices — plus the CI-safety-gated
+# advisor precompute; NEVER trade execution / broker / order). The unit files
+# ship in the release at ${SYSTEMD_SRC} (workbench/deploy/systemd/ → top-level
+# systemd/). This single DRY loop replaces the per-timer hardcoded blocks that
+# B035/B036/B037 each appended — a new timer (B038+) is now picked up
+# automatically with zero deploy.sh changes.
+#
+# The sudo grant that makes this succeed lives in the versioned artifact
+# workbench/deploy/sudoers/deploy-workbench. Installs go through the root-owned
+# wrapper /usr/local/bin/workbench-install-unit (security-reviewer tightening,
+# B037-OPS1 §5.1: the wrapper rejects path-separators in the unit name so the
+# sudoers fnmatch `*`-matches-`/` traversal class is impossible). Apply the
+# sudoers drop-in + install the wrapper once on the VM so this loop stops
+# warning (see docs/dev/B021-vm-setup-runbook.md).
+#
+# Best-effort: a dev `deploy.sh` rehearsal (no sudo / units absent) or a
+# not-yet-granted sudoers entry still lets the backend/frontend deploy
+# complete. Codex F002 L2 verifies `systemctl is-enabled` for each timer; if
+# this loop warned, apply the sudoers artifact + re-deploy. Bash 3.2: a glob
+# with no match stays literal, so we guard each path with `[[ -e ... ]]`.
+INSTALL_UNIT=/usr/local/bin/workbench-install-unit
 SYSTEMD_SRC="${RELEASE_DIR}/systemd"
-if [[ -f "${SYSTEMD_SRC}/workbench-market-context.timer" ]]; then
-  echo "→ install + enable workbench-market-context.timer (boundary (r) read-only fetch)"
-  if sudo /usr/bin/install -m 644 "${SYSTEMD_SRC}/workbench-market-context.service" /etc/systemd/system/workbench-market-context.service \
-    && sudo /usr/bin/install -m 644 "${SYSTEMD_SRC}/workbench-market-context.timer" /etc/systemd/system/workbench-market-context.timer \
-    && sudo /bin/systemctl daemon-reload \
-    && sudo /bin/systemctl enable --now workbench-market-context.timer; then
-    echo "✓ workbench-market-context.timer enabled"
-  else
-    echo "::warning::Could not install/enable workbench-market-context.timer. Grant the deploy user sudoers access to '/usr/bin/install -m 644 * /etc/systemd/system/workbench-market-context.*' and '/bin/systemctl enable --now workbench-market-context.timer', then re-deploy (B035 F002). Deploy continues; the daily market-context fetch will not run until granted." >&2
-  fi
-fi
-
-# B036 F002 — install + enable the AI advisor daily timer (boundary (r) as
-# revised: CI-safety-gated advisor precompute, never trade execution). Same
-# best-effort shape as the market timer.
-if [[ -f "${SYSTEMD_SRC}/workbench-advisor.timer" ]]; then
-  echo "→ install + enable workbench-advisor.timer (boundary (r) advisor precompute)"
-  if sudo /usr/bin/install -m 644 "${SYSTEMD_SRC}/workbench-advisor.service" /etc/systemd/system/workbench-advisor.service \
-    && sudo /usr/bin/install -m 644 "${SYSTEMD_SRC}/workbench-advisor.timer" /etc/systemd/system/workbench-advisor.timer \
-    && sudo /bin/systemctl daemon-reload \
-    && sudo /bin/systemctl enable --now workbench-advisor.timer; then
-    echo "✓ workbench-advisor.timer enabled"
-  else
-    echo "::warning::Could not install/enable workbench-advisor.timer. Grant the deploy user sudoers access to '/usr/bin/install -m 644 * /etc/systemd/system/workbench-advisor.*' and '/bin/systemctl enable --now workbench-advisor.timer', then re-deploy (B036 F002). Deploy continues; the daily advisor precompute will not run until granted." >&2
-  fi
-fi
-
-# B037 F001 — install + enable the price-snapshot daily timer (boundary (r):
-# read-only Tiingo close fetch for held symbols → price_snapshot table the
-# Home Day P&L marks against). Same best-effort shape as the timers above.
-if [[ -f "${SYSTEMD_SRC}/workbench-prices.timer" ]]; then
-  echo "→ install + enable workbench-prices.timer (boundary (r) read-only price fetch)"
-  if sudo /usr/bin/install -m 644 "${SYSTEMD_SRC}/workbench-prices.service" /etc/systemd/system/workbench-prices.service \
-    && sudo /usr/bin/install -m 644 "${SYSTEMD_SRC}/workbench-prices.timer" /etc/systemd/system/workbench-prices.timer \
-    && sudo /bin/systemctl daemon-reload \
-    && sudo /bin/systemctl enable --now workbench-prices.timer; then
-    echo "✓ workbench-prices.timer enabled"
-  else
-    echo "::warning::Could not install/enable workbench-prices.timer. Grant the deploy user sudoers access to '/usr/bin/install -m 644 * /etc/systemd/system/workbench-prices.*' and '/bin/systemctl enable --now workbench-prices.timer', then re-deploy (B037 F001). Deploy continues; the daily price fetch will not run until granted." >&2
-  fi
+if [[ -d "${SYSTEMD_SRC}" ]]; then
+  for timer_path in "${SYSTEMD_SRC}"/workbench-*.timer; do
+    [[ -e "${timer_path}" ]] || continue
+    timer_unit=$(basename "${timer_path}")
+    service_unit="${timer_unit%.timer}.service"
+    service_path="${SYSTEMD_SRC}/${service_unit}"
+    if [[ ! -f "${service_path}" ]]; then
+      echo "::warning::${timer_unit} has no sibling ${service_unit} in the release; skipping (a timer needs its oneshot service)." >&2
+      continue
+    fi
+    echo "→ install + enable ${timer_unit} (boundary (r) read-only / advisor precompute)"
+    if sudo "${INSTALL_UNIT}" "${service_path}" "${service_unit}" \
+      && sudo "${INSTALL_UNIT}" "${timer_path}" "${timer_unit}" \
+      && sudo /bin/systemctl daemon-reload \
+      && sudo /bin/systemctl enable --now "${timer_unit}"; then
+      echo "✓ ${timer_unit} enabled"
+    else
+      echo "::warning::Could not install/enable ${timer_unit}. Apply the versioned sudoers artifact workbench/deploy/sudoers/deploy-workbench to /etc/sudoers.d/deploy-workbench AND install workbench/deploy/sudoers/workbench-install-unit to /usr/local/bin/workbench-install-unit (root:root 0755), then re-deploy (B037-OPS1). Deploy continues; this timer will not run until granted." >&2
+    fi
+  done
 fi
 
 echo "✓ deploy complete: ${RELEASE_DIR}"

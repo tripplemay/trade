@@ -1,0 +1,44 @@
+# Versioned source of truth for the VM file /etc/sudoers.d/deploy-workbench.
+#
+# This is the NARROW sudoers grant for the `deploy` user (B021 narrow-sudoers
+# principle): it can ONLY restart/inspect the two workbench services and wire
+# up workbench timers. It cannot install packages, edit other configs, or sudo
+# anything else.
+#
+# Apply on the VM (one-time admin action — the deploy user cannot grant its own
+# sudoers; chicken-and-egg, same boundary exception as B021 prep #3):
+#
+#   sudo install -m 440 -o root -g root \
+#     /srv/workbench/current/sudoers/deploy-workbench \
+#     /etc/sudoers.d/deploy-workbench
+#   sudo visudo -c -f /etc/sudoers.d/deploy-workbench   # must print "parsed OK"
+#
+# Once applied, deploy.sh's timer-wiring loop installs + enables every shipped
+# workbench-*.timer automatically — no per-batch admin hand-install (roots out
+# the B035/B036/B037 repeated friction). See docs/dev/B021-vm-setup-runbook.md.
+
+# --- B021: backend/frontend service control (unchanged) -----------------
+deploy ALL=(ALL) NOPASSWD: /bin/systemctl restart workbench-backend.service
+deploy ALL=(ALL) NOPASSWD: /bin/systemctl restart workbench-frontend.service
+deploy ALL=(ALL) NOPASSWD: /bin/systemctl status workbench-backend.service
+deploy ALL=(ALL) NOPASSWD: /bin/systemctl status workbench-frontend.service
+deploy ALL=(ALL) NOPASSWD: /bin/systemctl daemon-reload
+
+# --- B037-OPS1: automatic timer wiring (boundary (r) read-only / advisor
+# precompute timers only; NEVER trade execution).
+#
+# Installs go through the root-owned wrapper /usr/local/bin/workbench-install-unit
+# (NOT a raw `/usr/bin/install` wildcard). The wrapper takes the unit as a BARE
+# NAME, rejects any '/', and pins the destination to /etc/systemd/system/ at
+# mode 644 — this removes the sudoers fnmatch path-traversal class (`*` matches
+# `/`, so a raw `install ... /etc/systemd/system/workbench-*.service` grant would
+# let `workbench-x/../sshd.service` escape). See the security-reviewer
+# adjudication in docs/specs/B037-OPS1-deploy-timer-sudoers-hardening-spec.md §5.1
+# and the residual-risk note in docs/dev/B021-vm-setup-runbook.md.
+#
+# The `enable --now workbench-*.timer` wildcard keeps zero-touch durability for
+# future timers; its residual planted-timer risk is bounded by the deploy
+# account's existing code-exec trust (it already runs the backend service).
+deploy ALL=(ALL) NOPASSWD: /usr/local/bin/workbench-install-unit * workbench-*.service
+deploy ALL=(ALL) NOPASSWD: /usr/local/bin/workbench-install-unit * workbench-*.timer
+deploy ALL=(ALL) NOPASSWD: /bin/systemctl enable --now workbench-*.timer

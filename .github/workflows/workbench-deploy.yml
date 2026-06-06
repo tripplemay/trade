@@ -175,6 +175,14 @@ jobs:
           # silently matched nothing).
           rsync -a workbench/deploy/systemd "${STAGE_DIR}/"
 
+          # B037-OPS1 — ship the versioned sudoers drop-in + the root-owned
+          # install wrapper so the one-time admin sudoers update can source
+          # them from the release tree (/srv/workbench/current/sudoers/). These
+          # are NOT applied by deploy.sh (the deploy user can't write
+          # /etc/sudoers.d/ — chicken-and-egg); admin installs them once per
+          # B021-vm-setup-runbook.md. Shipping keeps the runbook step accurate.
+          rsync -a workbench/deploy/sudoers "${STAGE_DIR}/"
+
           # B022 F009-1 fix: ship docs/test-reports so the Reports page can
           # render B019 retune sweep matrix + cross-link to the spec tree.
           # Without this the production `WORKBENCH_REPORTS_DIR` fallback

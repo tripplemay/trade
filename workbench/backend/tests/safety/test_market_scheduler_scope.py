@@ -155,15 +155,28 @@ def test_timer_runs_daily_and_pulls_service() -> None:
     assert "WantedBy=timers.target" in text
 
 
-def test_deploy_installs_and_enables_timer() -> None:
+def test_deploy_installs_and_enables_timers_via_dry_loop() -> None:
+    """B037-OPS1: the per-timer install/enable blocks were collapsed into a
+    single loop over ${SYSTEMD_SRC}/workbench-*.timer. The market-context,
+    advisor and prices timers are now wired by that glob, not named literally.
+    Detailed coverage lives in test_deploy_timer_wiring.py; this pins the
+    boundary-(r) scheduler-scope view of the same wiring."""
     text = DEPLOY_SH.read_text(encoding="utf-8")
-    assert "workbench-market-context.timer" in text
-    assert "enable --now workbench-market-context.timer" in text
     assert "daemon-reload" in text
     # deploy.sh must reference the units at the actual release layout
     # (${RELEASE_DIR}/systemd) — the release ships scripts/ + systemd/ at
     # the top level, NOT a deploy/ dir (regression found 2026-06-05).
     assert 'SYSTEMD_SRC="${RELEASE_DIR}/systemd"' in text
+    # The DRY glob loop replaces the per-timer hardcoded blocks.
+    assert 'for timer_path in "${SYSTEMD_SRC}"/workbench-*.timer' in text
+    assert 'enable --now "${timer_unit}"' in text
+    # Each read-only timer ships so the glob picks it up.
+    for unit in (
+        "workbench-market-context.timer",
+        "workbench-advisor.timer",
+        "workbench-prices.timer",
+    ):
+        assert (SYSTEMD_DIR / unit).is_file(), f"missing shipped unit {unit}"
 
 
 def test_deploy_workflow_ships_systemd_units() -> None:
@@ -209,9 +222,14 @@ def test_advisor_timer_runs_daily_after_market() -> None:
     assert "WantedBy=timers.target" in text
 
 
-def test_deploy_installs_and_enables_advisor_timer() -> None:
+def test_advisor_timer_wired_by_dry_loop() -> None:
+    """B037-OPS1: advisor timer is installed by the workbench-*.timer loop
+    (no hardcoded literal). It must ship so the glob covers it."""
     text = DEPLOY_SH.read_text(encoding="utf-8")
-    assert "enable --now workbench-advisor.timer" in text
+    assert "enable --now workbench-advisor.timer" not in text, (
+        "advisor timer must be wired by the DRY loop, not a hardcoded enable"
+    )
+    assert (SYSTEMD_DIR / "workbench-advisor.timer").is_file()
 
 
 # --- B037 price-snapshot timer (boundary (r): read-only price fetch) ------
@@ -247,6 +265,11 @@ def test_prices_timer_runs_daily_and_pulls_service() -> None:
     assert "WantedBy=timers.target" in text
 
 
-def test_deploy_installs_and_enables_prices_timer() -> None:
+def test_prices_timer_wired_by_dry_loop() -> None:
+    """B037-OPS1: prices timer is installed by the workbench-*.timer loop
+    (no hardcoded literal). It must ship so the glob covers it."""
     text = DEPLOY_SH.read_text(encoding="utf-8")
-    assert "enable --now workbench-prices.timer" in text
+    assert "enable --now workbench-prices.timer" not in text, (
+        "prices timer must be wired by the DRY loop, not a hardcoded enable"
+    )
+    assert (SYSTEMD_DIR / "workbench-prices.timer").is_file()
