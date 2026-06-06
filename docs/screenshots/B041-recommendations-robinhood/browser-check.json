@@ -1,0 +1,64 @@
+[
+  {
+    "locale": "zh-CN",
+    "simpleState": {
+      "simpleTabState": "active",
+      "professionalTabState": "inactive",
+      "positionCardsVisible": 0,
+      "emptyStateVisible": 1,
+      "gatePanelVisible": true,
+      "gateCount": 2,
+      "exportVisible": true,
+      "exportDisabled": false,
+      "washSaleTextPresent": true,
+      "syntheticBannerCount": 0,
+      "oldDashboardCount": 0,
+      "buttonCountInsideCards": 0,
+      "textHasExpectedReturn": false,
+      "textHas收益预测": false
+    },
+    "proState": {
+      "simpleTabState": "inactive",
+      "professionalTabState": "active",
+      "tablePresent": 0,
+      "exportVisible": true,
+      "exportDisabled": false,
+      "gateCount": 2,
+      "syntheticBannerCount": 0,
+      "oldDashboardCount": 0
+    },
+    "backToSimpleState": "active",
+    "issues": []
+  },
+  {
+    "locale": "en",
+    "simpleState": {
+      "simpleTabState": "active",
+      "professionalTabState": "inactive",
+      "positionCardsVisible": 0,
+      "emptyStateVisible": 1,
+      "gatePanelVisible": true,
+      "gateCount": 2,
+      "exportVisible": true,
+      "exportDisabled": false,
+      "washSaleTextPresent": true,
+      "syntheticBannerCount": 0,
+      "oldDashboardCount": 0,
+      "buttonCountInsideCards": 0,
+      "textHasExpectedReturn": false,
+      "textHas收益预测": false
+    },
+    "proState": {
+      "simpleTabState": "inactive",
+      "professionalTabState": "active",
+      "tablePresent": 0,
+      "exportVisible": true,
+      "exportDisabled": false,
+      "gateCount": 2,
+      "syntheticBannerCount": 0,
+      "oldDashboardCount": 0
+    },
+    "backToSimpleState": "active",
+    "issues": []
+  }
+]

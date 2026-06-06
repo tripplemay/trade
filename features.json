@@ -15,13 +15,13 @@
         "颜色（planner 决）：复用 B040 colorForMetric，delta 正绿 buy/负红 sell/0 中性。"
       ]
     },
-    {
-      "id": "F002",
-      "title": "Codex L1 + L2 真 VM 验收（简化 card / 专业 toggle 浏览器手验 + 双语 tooltip + delta 颜色 + 工作流不破）+ signoff",
-      "priority": "high",
-      "executor": "codex",
-      "status": "pending",
-      "acceptance": "L1 (CI 内)：F001 验收脚本跑通 — frontend vitest ≥ baseline+ / lint / typecheck / Playwright（toggle+双 locale）不破；**no-execution 守门**（PositionCards+toggle 无下单按钮+中文禁词 0）；**i18n 双语齐+无禁词+parity 守门**；backend 无 diff（确认纯前端）；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）；(2) /api/debug/recent-errors={count:0,records:[]}；(3) **浏览器手验**：Recommendations 默认简化 card（大数字 target/current/delta + delta 颜色绿/红/中性 + 双语 tooltip hover/tap）→ toggle 切专业 table（既有列全在）→ 切回；export-to-ticket 工作流仍可用（gate checks/wash-sale/export 不破）；无下单按钮（no-execution UI）；双语切换 zh/en；定位 §1.1 无「预期收益」数字；截图（简化+专业两态 ≥2 PNG）；(4) Production HEAD ≡ main HEAD；(5) B026 banner 仍 absent。**本批纯前端无新路由/无新 timer，§23/§24 N/A**。Signoff: docs/test-reports/B041-recommendations-robinhood-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（§Production/HEAD + §Post-signoff Deploy；§23/§24 N/A）；docs/screenshots/B041-recommendations-robinhood/ ≥2 PNG（简化 card + 专业 table，zh 或 +en）。Framework 候选：薄 UI 批次预计无；若有记 signoff §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
-    }
+      {
+        "id": "F002",
+        "title": "Codex L1 + L2 真 VM 验收（简化 card / 专业 toggle 浏览器手验 + 双语 tooltip + delta 颜色 + 工作流不破）+ signoff",
+        "priority": "high",
+        "executor": "codex",
+        "status": "done",
+        "acceptance": "L1 (CI 内)：F001 验收脚本跑通 — frontend vitest ≥ baseline+ / lint / typecheck / Playwright（toggle+双 locale）不破；**no-execution 守门**（PositionCards+toggle 无下单按钮+中文禁词 0）；**i18n 双语齐+无禁词+parity 守门**；backend 无 diff（确认纯前端）；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）；(2) /api/debug/recent-errors={count:0,records:[]}；(3) **浏览器手验**：Recommendations 默认简化 card（大数字 target/current/delta + delta 颜色绿/红/中性 + 双语 tooltip hover/tap）→ toggle 切专业 table（既有列全在）→ 切回；export-to-ticket 工作流仍可用（gate checks/wash-sale/export 不破）；无下单按钮（no-execution UI）；双语切换 zh/en；定位 §1.1 无「预期收益」数字；截图（简化+专业两态 ≥2 PNG）；(4) Production HEAD ≡ main HEAD；(5) B026 banner 仍 absent。**本批纯前端无新路由/无新 timer，§23/§24 N/A**。Signoff: docs/test-reports/B041-recommendations-robinhood-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（§Production/HEAD + §Post-signoff Deploy；§23/§24 N/A）；docs/screenshots/B041-recommendations-robinhood/ ≥2 PNG（简化 card + 专业 table，zh 或 +en）。Framework 候选：薄 UI 批次预计无；若有记 signoff §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
+      }
   ]
 }
