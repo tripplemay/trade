@@ -97,9 +97,33 @@ def test_recommendations_requires_auth(initialised_db: str, tmp_path: Path) -> N
     )
 
 
-def test_current_returns_empty_state_when_no_account(
+def _seed_snapshot() -> None:
+    """B044: seed a precomputed Master Portfolio target (the precompute timer
+    writes this; the read path maps it to TargetPosition)."""
+    from sqlalchemy.orm import Session
+
+    from workbench_api.db.repositories.recommendation_snapshot import (
+        RecommendationSnapshotRepository,
+    )
+
+    with Session(get_engine()) as session:
+        RecommendationSnapshotRepository(session).save_batch(
+            as_of_date=date(2024, 12, 31),
+            rows=[
+                {"symbol": "EEM", "sleeve": "momentum", "target_weight": 0.2, "rationale": "m"},
+                {"symbol": "SPY", "sleeve": "momentum", "target_weight": 0.2, "rationale": "m"},
+                {"symbol": "SGOV", "sleeve": "risk_parity", "target_weight": 0.6, "rationale": "d"},
+            ],
+            master_meta={"data_source": "fixture", "planning_weights": {}},
+        )
+        session.commit()
+
+
+def test_current_graceful_empty_when_no_snapshot(
     initialised_db: str, tmp_path: Path
 ) -> None:
+    # B044: target positions come from the recommendation_snapshot; with no
+    # precompute run yet the read path is graceful (empty), never an error.
     client = _authed_client(tmp_path)
     payload = client.get("/api/recommendations/current").json()
     assert payload["account_present"] is False
@@ -109,19 +133,25 @@ def test_current_returns_empty_state_when_no_account(
     assert payload["wash_sale_flags"] == []
 
 
-def test_current_returns_target_positions_when_account_present(
+def test_current_returns_target_positions_from_snapshot(
     initialised_db: str, tmp_path: Path
 ) -> None:
-    _seed_account()
+    # B044: real (fixture-data) Master composition from the snapshot, NOT the
+    # old equal-weight placeholder; independent of account presence.
+    _seed_snapshot()
     client = _authed_client(tmp_path)
     payload = client.get("/api/recommendations/current").json()
-    assert payload["account_present"] is True
-    # B025 F005 extended the registry to five sleeves (added
-    # satellite_us_quality); recommendations now emits five equal-weight
-    # target positions.
-    assert len(payload["target_positions"]) == 5
-    weights = [p["target_weight"] for p in payload["target_positions"]]
-    assert sum(weights) == pytest.approx(1.0, abs=1e-3)
+    positions = payload["target_positions"]
+    assert {p["symbol"] for p in positions} == {"EEM", "SPY", "SGOV"}
+    by_symbol = {p["symbol"]: p for p in positions}
+    assert by_symbol["SGOV"]["target_weight"] == pytest.approx(0.6)
+    assert by_symbol["EEM"]["target_weight"] == pytest.approx(0.2)
+    # current_weight 0.0 this batch (B045 wires the account) → diff == target.
+    assert by_symbol["SGOV"]["current_weight"] == 0.0
+    assert by_symbol["SGOV"]["diff"] == pytest.approx(0.6)
+    # Not equal-weight (the whole point of B044).
+    weights = [p["target_weight"] for p in positions]
+    assert len(set(weights)) > 1
 
 
 def test_export_ticket_writes_markdown_with_disclaimer_literal(
@@ -160,6 +190,7 @@ def test_export_ticket_markdown_is_bilingual(
     """
 
     _seed_account()
+    _seed_snapshot()  # B044: the target-positions table now comes from the snapshot
     client = _authed_client(tmp_path)
     payload = client.post(
         "/api/recommendations/export-ticket",

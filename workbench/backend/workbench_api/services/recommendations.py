@@ -26,6 +26,9 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from workbench_api.db.models.account import Account
+from workbench_api.db.repositories.recommendation_snapshot import (
+    RecommendationSnapshotRepository,
+)
 from workbench_api.news.association import (
     NewsAssociationService,
     SleeveNewsRelevance,
@@ -39,7 +42,6 @@ from workbench_api.schemas.recommendations import (
     SleeveNewsResponse,
     TargetPosition,
 )
-from workbench_api.services.strategies import list_strategies
 
 _logger = logging.getLogger("workbench.recommendations")
 
@@ -147,31 +149,33 @@ def _aggregate_account_state(session: Session) -> tuple[bool, float]:
     return True, total
 
 
-def _build_target_positions(account_present: bool) -> list[TargetPosition]:
-    """Equal-weight across sleeves; current_weight=0 until F011 wires it.
+def _build_target_positions(session: Session) -> list[TargetPosition]:
+    """Map the latest precomputed Master Portfolio target (B044 F002) to
+    TargetPosition rows.
 
-    The schema requires both target and current; with no account data we
-    surface zeroed-out current weights so the frontend's diff column
-    reads "buy everything from scratch" — the user immediately sees that
-    this is a fresh-start recommendation rather than a rebalance delta.
-    """
+    Reads ``recommendation_snapshot`` (written by the recommendations
+    precompute timer, which imports ``trade`` for the real scoring) — this
+    request path NEVER imports ``trade`` (§12.10 AST guard). ``target_weight``
+    is the real (fixture-data) Master composition; ``current_weight`` stays
+    0.0 this batch (B045 wires it from AccountSnapshot), so ``diff`` reads
+    "buy from scratch". When no snapshot exists yet (precompute hasn't run),
+    returns ``[]`` — graceful "scoring pending", never an error."""
 
-    if not account_present:
+    repo = RecommendationSnapshotRepository(session)
+    rows = repo.latest_snapshot()
+    if not rows:
         return []
-
-    sleeves = list_strategies().strategies
-    if not sleeves:
-        return []
-    weight = round(1.0 / len(sleeves), 4)
     out: list[TargetPosition] = []
-    for sleeve in sleeves:
+    for row in rows:
+        target = float(row.target_weight)
+        current = 0.0  # B045 wires the account's current weight (AccountSnapshot)
         out.append(
             TargetPosition(
-                symbol=sleeve.id.split("-")[0],
-                target_weight=weight,
-                current_weight=0.0,
-                diff=weight,
-                rationale=f"Sleeve {sleeve.sleeve} → target weight (F011 wires diff vs current).",
+                symbol=row.symbol,
+                target_weight=target,
+                current_weight=current,
+                diff=round(target - current, 6),
+                rationale=row.rationale,
             )
         )
     return out
@@ -201,7 +205,7 @@ def get_current_recommendations(session: Session) -> RecommendationsResponse:
     as_of = date.today().isoformat()
     return RecommendationsResponse(
         as_of_date=as_of,
-        target_positions=_build_target_positions(account_present),
+        target_positions=_build_target_positions(session),
         gate_checks=_build_gate_checks(total_equity),
         # No trade journal in MVP → no heuristic source for wash-sale flags.
         # F010 ships an empty list so the frontend's flag panel can render

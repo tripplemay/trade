@@ -214,17 +214,39 @@ def test_put_account_rejects_negative_shares(initialised_db: str, tmp_path: Path
     assert response.status_code == 422, response.text
 
 
+def _seed_recommendation_target(symbols: tuple[str, ...]) -> None:
+    """B044: the recommendations target now comes from the precomputed
+    recommendation_snapshot (not equal-weight). Seed an equal-weight target
+    over ``symbols`` so the position-diff has target rows to compare against."""
+    from datetime import date
+
+    from workbench_api.db.repositories.recommendation_snapshot import (
+        RecommendationSnapshotRepository,
+    )
+
+    weight = round(1.0 / len(symbols), 4)
+    with Session(get_engine()) as session:
+        RecommendationSnapshotRepository(session).save_batch(
+            as_of_date=date(2024, 12, 31),
+            rows=[
+                {"symbol": s, "sleeve": "momentum", "target_weight": weight, "rationale": "t"}
+                for s in symbols
+            ],
+            master_meta={"data_source": "fixture", "planning_weights": {}},
+        )
+        session.commit()
+
+
 def test_position_diff_sign_correctness(initialised_db: str, tmp_path: Path) -> None:
     """delta_shares is positive when target_weight > current_weight.
 
-    The recommendations service produces 4 equal-weight target rows
-    (one per strategy sleeve, symbols B013/B014/B015/B016 derived from
-    sleeve IDs). We seed a tiny B013 position so the diff row has a
-    price reference; equal-weight ÷ small-current shares forces a
-    positive delta.
+    B044: the recommendations service reads the recommendation_snapshot; we
+    seed a 4-symbol equal-weight target (B013/B014/B015/B016) + a tiny B013
+    position so the diff row has a price reference and a positive delta.
     """
 
     _seed_account(cash=100_000.0)
+    _seed_recommendation_target(("B013", "B014", "B015", "B016"))
     _seed_snapshot(
         cash=50_000.0,
         positions=[
@@ -272,6 +294,7 @@ def test_position_diff_flags_target_only_symbols_as_unmatched(
     placeholder share calculation."""
 
     _seed_account(cash=100_000.0)
+    _seed_recommendation_target(("B013", "B014", "B015", "B016"))
     _seed_snapshot(cash=100_000.0, positions=[])
     client = _authed_client(_settings(tmp_path))
     payload = client.get("/api/execution/position-diff").json()
