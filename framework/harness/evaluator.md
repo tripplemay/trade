@@ -498,3 +498,27 @@ nvm use                          # 不一致时切换；无 nvm 装 Node 20 LTS
 | infra 检查全 PASS，但 `GET /api/recommendations/news?sleeve=...` production 500 | 请求路径读 repo-root `data/fixtures/` universe.csv，不在 deploy artifact | F004 fix-round 1 commit `ec02894`：materialise universe 入 `workbench_api/` 包；blocker 留档 `B034-news-ticker-embedding-blocker-2026-06-04.md` |
 
 **来源：** B034 F004 L2 blocker + signoff `docs/test-reports/B034-news-ticker-embedding-signoff-2026-06-04.md` §Framework Learnings；配套 generator.md §12.10 请求路径 deploy-artifact 自包含铁律 + templates/signoff-report.md L2 勾选项。
+
+---
+
+## 24. 批次新增 read-only timer 时 L2 必查 systemd 接线状态（v0.9.33 — B035/B036/B037 三例合并沉淀）
+
+**背景：** B037 F004 首轮 L2 — `GET /api/home` authenticated 200、`alembic=0009`、`/api/debug/recent-errors`={count:0}、health/HEAD 等价等 endpoint+DB 检查全绿，**但 production 上 `workbench-prices.timer` 根本没安装/enable**。新 timer 的单元文件随 release 下发，但 deploy 用户 sudoers 不足以自动 `install`/`enable` 到 `/etc/systemd/`，需 admin 一次性手装。**endpoint/DB 已绿 ≠ production 运维接线完成**——timer 缺位时 Day P&L 价格快照不会每日刷新，是静默退化而非 500。本地 + CI 完全无法暴露（无 systemd）。同根摩擦在 **B035（market-context timer）/ B036（advisor timer）/ B037（prices timer）连续三批**重复出现。
+
+**规约（Evaluator verify / reverify 时硬要求）：**
+
+1. **批次新增任何 systemd timer/service（定时拉数据 / 预计算 / 任何 oneshot）时，L2 不得只看 endpoint + 表结构就放行**——必须直接在 VM 上查 timer 接线状态：
+   - `systemctl is-enabled workbench-<x>.timer` → 期望 `enabled`
+   - `systemctl status workbench-<x>.timer` → 期望 `active (waiting)`
+   - 至少一次手动 trigger（`systemctl start workbench-<x>.service`）确认 `Result=success` / `ExecMainStatus=0`，并读 journal 确认是合规路径（如空账户 `saved=0 errors=0`）还是真错误。
+2. **空数据合规路径要在 signoff 写清是「哪种空」**：是业务空（无持仓 → saved=0）还是接线缺失（timer 没装 → 永不触发）——后者即 blocker，前者放行但记录。
+3. **根因归类**：timer 没装属 deploy 用户 sudoers 不足的已知 ops 摩擦（deploy.sh best-effort 仅 warn），不是产品代码 bug；blocker 记 fix-round + 在 signoff §Soft-watch 跟踪 durable fix（扩 sudoers / deploy.sh 自动 install-enable）。
+4. **配套 signoff 模板**：L2 段「price_snapshot/timer L2」类目必须含 `is-enabled` + `status` + 手动 trigger journal 三项证据，而非仅「表已建」。
+
+**反面案例（B037 F004 首轮 L2）：**
+
+| 现象 | 根因 | 修法 |
+|---|---|---|
+| `/api/home` 200 + `alembic=0009` + recent-errors=0 全绿，但 `workbench-prices.timer` production 未 enabled | 新 timer 单元随 release 下发，deploy 用户 sudoers 不足以自动 install/enable，需 admin 手装；首轮 L2 漏查 systemctl 状态 | F004 fix-round 1 commit `710e77e`：admin 一次性安装并 enable `workbench-prices.{service,timer}` + 手动 trigger 验只读路径（`price_cli_no_holdings symbols=0 saved=0`）；blocker 留档 `B037-home-restructure-blocker-2026-06-05.md`；Soft-watch S1 跟踪 durable sudoers fix |
+
+**来源：** B037 F004 L2 blocker（commit `710e77e`）+ signoff `docs/test-reports/B037-home-restructure-signoff-2026-06-06.md` §Framework Learnings 新坑 + §Soft-watch S1；三例同根（B035 market-context / B036 advisor / B037 prices timer），过「等二例再合并」门槛。配套 generator.md §12（systemctl 多 service vs sudoers）+ §12.9 production secret 三处接线铁律 同族 ops-wiring 教训。

@@ -65,4 +65,6 @@
 
 <!-- 2026-06-04: v0.9.32 沉淀完成（B034 二例合并：请求路径 deploy-artifact 自包含铁律）：两条候选（2026-06-01 B034 F003 import scripts/pandas → frontend-CI 500 + 2026-06-04 B034 F004 L2 open repo-root data/fixtures → production VM 500）同根合并沉淀。(1) framework/harness/generator.md 新增 §12.10 "请求路径 deploy-artifact 自包含铁律"（二例 + deploy artifact 边界 ASCII art + 4 条规约 + 与 §12.8/§12.9 关系 + local vs prod 系列补一行）。(2) framework/harness/evaluator.md 新增 §23 "新增 user-facing 路由 L2 必测真 VM authenticated 200"。(3) framework/templates/signoff-report.md §L2 实测记录 加勾选行。(4) CHANGELOG v0.9.32。(5) 归档 framework/archive/proposed-learnings-archive-v0.9.32.md（含两条原候选全文 + 二例合并评估 + 仍 hold 候选记录）。仍 hold：B031 第三方 API live-validate（不同模式，单例，等二例）+ B026 React event edge（单例）。-->
 
+<!-- 2026-06-06: v0.9.33 沉淀完成（B035/B036/B037 三例合并：read-only timer L2 接线检查）：B037 signoff §Framework Learnings 新坑「新 timer endpoint/DB 绿 ≠ 运维接线完成」+ §Soft-watch S1（同根三批重复手装 timer），过「等二例再合并」门槛。写入 framework/harness/evaluator.md §24（4 条规约 + 反面案例 B037 F004 首轮 L2 + 与 generator.md §12/§12.9 ops-wiring 同族）+ CHANGELOG v0.9.33。Soft-watch S1 的 durable fix（扩 deploy sudoers + deploy.sh 自动 install/enable timer）未沉淀进文档而是转为下一批次立项跟踪。 -->
+
 <!-- 当前无活动候选（待确认条目）。 -->

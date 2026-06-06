@@ -5,6 +5,23 @@
 
 ---
 
+## v0.9.33 — 2026-06-06（B035/B036/B037 三例合并沉淀：read-only timer L2 接线检查）
+
+**来源批次：**
+- B037 Home 重构，F004 fix-round 1（commit `710e77e`）— production `workbench-prices.timer` 未安装/enable 的 L2 blocker
+- signoff `docs/test-reports/B037-home-restructure-signoff-2026-06-06.md` §Framework Learnings 新坑 + §Soft-watch S1
+- blocker 留档 `docs/test-reports/B037-home-restructure-blocker-2026-06-05.md`
+
+**触发原因：**
+- 批次新增 read-only systemd timer 时，endpoint（`/api/home` 200）+ DB（`alembic=0009`）+ health/HEAD 等价全绿，**但 timer 在 production 根本没装/enable**（deploy 用户 sudoers 不足以自动 install/enable，需 admin 手装；deploy.sh best-effort 仅 warn）。本地 + CI 无 systemd 无法暴露；唯 L2 直接查 `systemctl is-enabled/status` + 手动 trigger 才发现。
+- 同根摩擦在 **B035（market-context timer）/ B036（advisor timer）/ B037（prices timer）连续三批**重复出现，过「等二例再合并」门槛。
+
+**变更：**
+- `framework/harness/evaluator.md` 新增 §24 "批次新增 read-only timer 时 L2 必查 systemd 接线状态"（4 条规约 + 反面案例 B037 F004 首轮 L2 + 与 generator.md §12/§12.9 ops-wiring 同族关系）
+- Soft-watch S1（deploy 用户 sudoers durable fix）未在本次沉淀解决，转为下一批次（运维修复批次）立项跟踪
+
+---
+
 ## v0.9.32 — 2026-06-04（B034 二例合并沉淀：请求路径 deploy-artifact 自包含铁律）
 
 **来源批次：**
