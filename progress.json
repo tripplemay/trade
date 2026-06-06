@@ -1,38 +1,39 @@
 {
-  "status": "done",
-  "user_goal": "B041 Recommendations Robinhood-style 重构（Phase 3 / Stream 5.B，前端-only）— target positions table → 简化 card + 专业 view toggle。范围（2026-06-06 用户已批）：roadmap S5.B『target positions table → simplified card + 为什么这样建议（联动 B043）；保留专业 view toggle』。核查结论：① UI 重构（简化 card+专业 toggle）=前端-only 可做；② **『为什么这样建议』真实数据/评分不存在**——推荐引擎 equal-weight 占位（F011 真实评分未建），TargetPosition.rationale 占位文本，无 quant signal 可引用；富 AI『为什么』是 B043（依赖真实评分）。决策（★用户批）：UI 重构 now★，富『为什么』留 B043；后端无改动（rationale 占位 as-is surface）；view toggle=Radix Tabs 简化 card/专业 table 默认简化；颜色复用 B040 colorForMetric（delta 正绿 buy/负红 sell/0 中性）。复用 B040 MetricsDisplay/colorForMetric/双语 tooltip + Home sleeve 卡片 + Radix Tabs + i18n。2 features：(F001 g) 前端 PositionCards 简化 card+专业 view toggle+复用 B040 原语+surface 占位 rationale+i18n recommendations.view/cards.*+no-execution 守门+vitest+Playwright；(F002 c) L1+L2 两态浏览器手验+双语 tooltip+delta 颜色+export-to-ticket 工作流不破+signoff（纯前端 §23/§24 N/A）。永久硬边界继承：no-execution UI（无下单按钮+中文禁词，守门扩新 card/toggle）/ 定位 §1.1 不出预期收益（card 显示配置权重非预测）/ tooltip 确定性非 AI / i18n 双语永存。不做：富『为什么』AI 解释(B043) / 改后端 recommendations 引擎/equal-weight/F011 / 既有 DataTable 列/charts/gate/wash-sale/export-to-ticket(B023)/NewsPanel(B034) / Home/Reports(B040)/Risk(B042)。",
-  "total_features": 2,
-  "completed_features": 2,
+  "status": "building",
+  "user_goal": "B044 真实评分基础（Layer 0→1 在 recommendations 面完成；拆两批的第 1 批=核心评分闭环）— 把 /api/recommendations/current 从 equal-weight 占位改为返回 Master Portfolio 真实评分权重。真实评分逻辑全在 trade/ 包（5 因子/risk parity/HRP/trade/backtest/master_portfolio.py _build_portfolio_target 混合）。核心障碍=§12.10 隔离（请求路径禁 import trade/、禁读 repo-root）。决策（★用户批）：①架构=★precompute→DB→read（照 B036 advisor 读侧范式）；②评分位置=★A 把 trade/ 装进 VM venv（VM timer 直接 import trade/ 评分写表；运维简单；trade/ 进 artifact，§12.10 请求路径保护改由 AST 守门兜底）；③范围=★拆两批，本批核心评分（B045=regime reconcile+account current_weight+精炼）。planner 决：权威评分组成=master_portfolio.py 现有(momentum global_etf 0.40/risk_parity 0.30/us_quality 0.20/hk_stub 0.10→defensive)，regime 注册项名实不符留 B045；数据源 master_meta.data_source=real/fixture 显式标记不蒙混(v0.9.21)。本批修订边界(r)收编(c)确定性 quant 评分预计算 read-only。4 features：(F001 g)trade/ 可安装+deploy.sh 装进 venv+CI 纳入；(F002 g)recommendation_snapshot 表+precompute CLI(import trade master_portfolio 真实评分)+workbench-recommendations.{service,timer}(B037-OPS1 自动接线)+真实数据可用性(unified CSV 下发/Tiingo/fixture fallback 标记)+scope 守门；(F003 g)/api/recommendations/current 读 snapshot 替换 equal-weight+§12.10 AST 守门(请求路径禁 trade import 仅 precompute 允许)+graceful；(F004 c)L1+L2 真机 precompute 真实评分写表+/current 真实权重+数据源 real/fixture 记录+timer 自动接线+请求路径无 trade import+signoff。永久硬边界继承：§12.10(请求路径禁 trade，改 AST 守门)/no-execution/定位 §1.1 评分=配置权重非收益预测。不做(留 B045)：regime reconcile/account current_weight/评分调参/AI 为什么(B043)/改前端 UI(B041)/请求路径 import trade。",
+  "total_features": 4,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F002",
+  "current_sprint": "F001",
   "last_updated": "2026-06-06",
   "reference_docs": [
-    "docs/specs/B041-recommendations-robinhood-spec.md",
+    "docs/specs/B044-real-scoring-precompute-spec.md",
     "docs/product/positioning-2026-05.md",
-    "docs/product/user-personas-and-journeys-2026-05.md",
-    "workbench/frontend/src/app/(protected)/recommendations/page.tsx",
-    "workbench/backend/workbench_api/schemas/recommendations.py",
-    "workbench/frontend/src/components/metrics/MetricsDisplay.tsx",
-    "workbench/frontend/src/components/ui/tabs.tsx",
+    "trade/backtest/master_portfolio.py",
+    "workbench/backend/workbench_api/services/recommendations.py",
+    "workbench/backend/workbench_api/advisor/precompute.py",
     "framework/harness/generator.md",
+    "framework/harness/evaluator.md",
     "framework/templates/signoff-report.md"
   ],
   "docs": {
-    "spec": "docs/specs/B041-recommendations-robinhood-spec.md",
+    "spec": "docs/specs/B044-real-scoring-precompute-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B041-recommendations-robinhood-signoff-2026-06-06.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": "B041 F002 PASS（首轮验收）。L1：frontend targeted vitest 53/53；local Playwright b041-recommendations 3/3。首次 Playwright 失败原因为本地未启动 127.0.0.1:3000，不是产品缺陷；按 codex-setup/codex-wait 补起环境后通过。L2：production /api/health=200 version=94df232；recent-errors={count:0,records:[]}；authenticated /api/recommendations/current=200 且当前为空账户路径：target_positions=0 gate_checks=2 wash_sale_flags=0 account_present=false；anonymous /api/recommendations/current=401。浏览器手验 zh-CN/en 两轮 Recommendations 均通过：默认 simple active、可切 professional active、再切回 simple active；空态 `position-cards-empty` 可见；gateCount=2；recommendations-export 可见且未 disabled；syntheticBannerCount=0；oldDashboardCount=0；issues=[]；无 expected return/收益预测字样。签收报告：docs/test-reports/B041-recommendations-robinhood-signoff-2026-06-06.md",
-  "generator_handoff": "B041 F001 完成 + Frontend CI success（commit 94df232）+ 状态 building→verifying 交 Codex F002。**纯前端无 backend diff**。交付：①lib/metric-color.ts colorForDelta(复用 METRIC_COLOR：正绿 buy/负红 sell/0 中性/null 中性)；②components/recommendations/PositionCards.tsx(per-symbol 卡：symbol+target/current/delta 大数字+delta 颜色+占位 rationale as-is+字段双语 radix tooltip；无下单按钮)；③recommendations/page.tsx target-positions 区包 Radix Tabs(简化卡默认/专业既有 DataTable，activationMode=manual)，charts/gate/wash-sale/export-to-ticket/NewsPanel 不动；④i18n recommendations.view.{simple,professional}+recommendations.cards.*(label+tooltips target/current/delta，zh delta tooltip『不是下单指令』非 button-label key 不触守门)。守门：no-execution 扩 PositionCards+parity 3 card tooltip 永存。测试：PositionCards.spec 6+colorForDelta 2+recommendations.spec 改为简化卡默认+toggle 结构(radix 真实切换交互交 e2e，happy-dom 无 user-event 不可靠驱动 radix Tabs activationMode)+e2e b041(toggle simple↔professional via data-state，双 locale+export 不破)。Gates frontend lint0/typecheck/vitest 246(+13)/Playwright 绿。**F002 Codex L2**：(1) health 200+SHA≡main+recent-errors=0；(2) **浏览器手验**：Recommendations 默认简化卡(大数字 target/current/delta+delta 颜色绿/红/中性+双语 tooltip hover)→toggle 切专业 table(既有列全在)→切回；export-to-ticket 工作流仍可用(gate/wash-sale/export 不破)；无下单按钮+双语切换+定位 §1.1 无预期收益；截图(简化+专业两态≥2 PNG)；(3) HEAD≡main+B026 absent。**纯前端无新路由/timer，§23/§24 N/A**。注意：CI/prod 账户可能空→简化卡显空态(position-cards-empty)，e2e 用 data-state 验 toggle 与数据无关。本机 SSH id_ed25519 可登 VM 协助。",
+  "evaluator_feedback": null,
+  "generator_handoff": null,
   "session_notes": {
-    "planner": "2026-06-06 长程会话：B037 done→v0.9.33→B037-OPS1 done→B038 done→v0.9.34→B039 done→B040 done→B041 规划。本段 B041 planning。(1) B040 已干净一轮签收（4/4，0 fix-round，无 framework/soft-watch）。Phase 3 已 done：B037 架构/B037-OPS1 运维/B038 news/B039 disclaimer/B040 Reports Robinhood。(2) **B041=真实新批次**：Explore 摸清 Recommendations 现状——table-centric（ag-grid target_positions：symbol/target_weight/current_weight/diff/rationale + 饼柱图 + gate/wash-sale + export-to-ticket(B023) + NewsPanel(B034)）；无 view toggle。(3) **关键发现**：『为什么这样建议』真实数据不存在——推荐引擎 equal-weight 占位（F011 真实评分未建），rationale 占位文本，无 quant signal 可引；富 AI『为什么』是 B043。用户批 UI 重构 now、富『为什么』留 B043。(4) **B041=前端-only**：简化 card（大数字 target/current/delta+delta 颜色+占位 rationale）+专业 view toggle（Radix Tabs）+复用 B040 原语（MetricsDisplay/colorForMetric/tooltip）+ Home sleeve 卡片布局。后端无改动。(5) spec docs/specs/B041-recommendations-robinhood-spec.md 10 章；features.json 2(1g+1c)；progress building。(6) F001 交 Generator：PositionCards.tsx（复用 B040 colorForMetric delta 正绿/负红/0 中性 + radix tooltip 字段双语）+ Radix Tabs toggle（默认简化/专业既有 DataTable 不动）+ i18n recommendations.view/cards.* + no-execution 守门扩 + vitest + Playwright；**仅切 target-positions 呈现，其余面板(charts/gate/wash-sale/export/news)不动**。(7) F002 Codex：纯前端 §23/§24 N/A；L2 两态手验+export-to-ticket 工作流不破+双语+截图+signoff。(8) 后续 B042 Risk Panel 简化 / B043 AI 解释层（与 B040/B041 tooltip+rationale 联动，富『为什么』+『为什么这个数字重要』）→里程碑 C。(9) **B043 规划时注意**：B040 tooltip + B041 rationale 都留了 AI 富文案接口，B043 一并填；且 B043 依赖真实评分(F011)——若 F011 仍未建，B043 的『为什么这样建议』也受限，规划时需先核查 F011/真实评分状态。",
-    "generator": "2026-06-06 B041 F001 完成（commit 94df232），Frontend CI success，status→verifying 交 Codex F002。纯前端薄批次：Recommendations target-positions 加简化卡视图(默认)+专业 view toggle(Radix Tabs)，复用 B040 metric-color 加 colorForDelta。坑：①radix Tabs 切换在 happy-dom 用 fireEvent.click 不可靠(automatic 模式 focus 激活；改 activationMode=manual 仍 happy-dom 驱动失败，无 user-event)→单测改为验结构(双 toggle+简化默认)，真实切换交互交 e2e(real Chromium data-state 验证 OK)；②CI/prod 账户可能空→简化卡空态，e2e 用 toggle data-state 验证(与数据无关)避免脆弱。复用 B040 经验：radix tooltip 给 trigger 加独立 testid(PositionCards 字段 label tooltip)。无 framework 候选(薄 UI 批次，符合 planner 预期)。",
-    "evaluator": "2026-06-06 B041 F002 首轮验收通过并签收。L1：frontend targeted vitest 53 passed；Playwright `tests/e2e/b041-recommendations.spec.ts` 3 passed。注意首次 e2e 失败是因为未起本地 dev server（ERR_CONNECTION_REFUSED to 127.0.0.1:3000），按 AGENTS 规范用 `NEXTAUTH_SECRET=... ALLOWED_USER_EMAIL=... bash scripts/test/codex-setup.sh` + `codex-wait.sh` 后复跑通过，不是产品缺陷。L2：production `/api/health.version=94df232`，与 `main HEAD=f04eaf6` 仅差 1 个 metadata commit（状态机文件），按 v0.9.25 接受等价不同步；authenticated `/api/debug/recent-errors={count:0,records:[]}`；authenticated `/api/recommendations/current` 200 且 payload 为允许的空账户路径（target_positions=0 gate_checks=2 wash_sale_flags=0 account_present=false）；anonymous current 401。headless Playwright 真机双 locale 验证 `/recommendations`：默认 simple active、professional 可切 active、再切回 simple；空态 `position-cards-empty` 可见；gate panel 2 项存在；`recommendations-export` 可见且 enabled；B026 banner absent；旧 dashboard absent；无 console/pageerror/http>=400；无 `expected return`/`收益预测` 字样。产物：docs/screenshots/B041-recommendations-robinhood/{simple-en,simple-zh-CN,professional-en,professional-zh-CN}.png + browser-check.json；signoff 报告已落。"
+    "planner": "2026-06-06 长程会话：B037 done→v0.9.33→B037-OPS1 done→B038 done→v0.9.34→B039 done→B040 done→B041 done→B044 规划（用户选方向 b 补真实评分基础，非继续 UI 主线）。本段 B044 planning。(1) B041 done 后我 surface 战略信号：Phase 3 UI 跑在真实评分前面（推荐引擎 equal-weight 占位，B043 依赖真实评分）。用户选先补真实评分基础。(2) **Explore 深挖结论**：真实评分逻辑 100% 已存在于 trade/（5 因子 factors.py/risk_parity.py HRP/regime_adaptive/master_portfolio.py _build_portfolio_target 混合都 real）；核心障碍=§12.10 隔离（请求路径禁 import trade/）。~70% wiring 30% build。(3) **关键修正（我先讲漏后核实）**：B036 advisor precompute 不需 trade/；但真实评分 precompute 必须 import trade/。查证：backend 打 wheel packages=['workbench_api']，trade/ 不在 wheel，workbench_api 零 import trade。所以 VM timer job 在 artifact 里拿不到 trade/——advisor 范式不完全适用。我诚实 surface 了这个子问题。(4) **3 决策对齐（★用户批）**：架构 precompute→DB→read★ / 评分位置 A trade/ 入 VM venv★（非我推荐的 B CI 算→SSH ingest；用户选运维简单）/ 拆两批本批核心★。(5) **A 的工程含义**：trade/ 变可安装入 venv；VM timer import trade 评分写 recommendation_snapshot；请求路径仍禁 trade（§12.10 enforcement 从物理缺席→AST 守门兜底）。(6) spec docs/specs/B044-real-scoring-precompute-spec.md 10 章；features.json 4(3g+1c)；progress building。(7) F001 交 Generator：trade/ packaging+deploy.sh 装 venv+CI 纳入（最novel最risky，gate 全批；注意 trade/ 依赖 pandas 等增大 artifact+install）。(8) F002：recommendation_snapshot 表+precompute CLI import trade master_portfolio+timer+**真实数据可用性关键风险**（VM 须有 unified CSV/Tiingo，否则 fixture fallback 须 data_source 标记不蒙混）+scope 守门。(9) F003：/current 读 snapshot+§12.10 AST 守门（请求路径禁 trade，仅 precompute 允许）。(10) F004 Codex：L2 真机 precompute 跑真实评分写表+/current 真实权重+**数据源 real/fixture 必记**+timer B037-OPS1 自动接线+请求路径无 trade import。(11) **done 阶段强 framework 候选**：trade/ 入 artifact 改变 §12.10 enforcement 模型（物理缺席→AST 守门），signoff 会记，done 裁定沉淀。(12) **B045（Batch 2）**：regime sleeve 名实 reconcile（master 用 global_etf_momentum 非注册表 regime_adaptive）+account current_weight（AccountSnapshot）+评分精炼。(13) **B043 依赖 B044+B045** 真实评分才有真东西可解释。(14) 真实数据可用性是本批最大 unknown——若 VM 无真数据，本批可能只跑 fixture 评分（闭环成立但非真 real），需 L2 诚实记录，真数据下发可能溢出到 B045 或本批 L2 补。",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",
-    "F002"
+    "F002",
+    "F003",
+    "F004"
   ]
 }
