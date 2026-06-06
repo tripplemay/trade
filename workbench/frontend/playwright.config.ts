@@ -77,6 +77,7 @@ export default defineConfig({
         "e2e/b035-market-context.spec.ts",
         "e2e/b036-advisor.spec.ts",
         "e2e/b037-home.spec.ts",
+        "e2e/b040-metrics.spec.ts",
       ],
     },
   ],

@@ -218,6 +218,8 @@
     "empty": "No reports surfaced yet.",
     "detail": {
       "back": "← back to reports",
+      "metricsTitle": "Headline metrics",
+      "metricsDescription": "Parsed from this report's metrics table — historical backtest statistics, not predictions.",
       "bodyTitle": "Body",
       "bodyDescription": "Markdown + GFM tables; heavy tables (≥10 rows) render as sortable AG Grid.",
       "bodyLoading": "Loading…",

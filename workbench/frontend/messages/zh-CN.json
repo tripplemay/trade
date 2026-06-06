@@ -218,6 +218,8 @@
     "empty": "暂无报告。",
     "detail": {
       "back": "← 返回报告列表",
+      "metricsTitle": "核心指标",
+      "metricsDescription": "解析自本报告的指标表——历史回测统计，非预测。",
       "bodyTitle": "正文",
       "bodyDescription": "Markdown + GFM 表格;重型表格(≥10 行)以可排序 AG Grid 形式呈现。",
       "bodyLoading": "加载中…",

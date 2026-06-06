@@ -69,6 +69,19 @@ const DETAIL_PAYLOAD: components["schemas"]["ReportDetail"] = {
   cross_links: ["docs/specs/B015-regime-adaptive-activation-policy-spec.md"],
 };
 
+const DETAIL_WITH_METRICS: components["schemas"]["ReportDetail"] = {
+  ...DETAIL_PAYLOAD,
+  metrics: {
+    sharpe: 2.42,
+    sortino: null,
+    calmar: 4.46,
+    cagr: 0.025,
+    max_drawdown: -0.0056,
+    volatility: 0.0103,
+    turnover: 1.09,
+  },
+};
+
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
@@ -77,7 +90,10 @@ afterEach(() => {
 
 describe("ReportsPage (list)", () => {
   it("renders summaries with deep-link", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => jsonResponse(LIST_PAYLOAD)) as unknown as typeof fetch);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => jsonResponse(LIST_PAYLOAD)) as unknown as typeof fetch,
+    );
     const { default: ReportsPage } = await import("@/app/(protected)/reports/page");
     const { getByTestId } = renderWithIntl(<ReportsPage />);
     await waitFor(() => {
@@ -91,31 +107,56 @@ describe("ReportDetailPage (heavy-table swap-in)", () => {
   // react-markdown + remark-gfm + the table parser are noticeably slower
   // than the chart-mock specs; bump the per-test timeout above the 5s
   // vitest default so the run survives load on a cold CI runner.
-  it(
-    "fetches the detail and renders AG Grid for the ≥10-row table",
-    async () => {
-      paramsRef.value = { slug: "B019-retune-signoff" };
-      vi.stubGlobal(
-        "fetch",
-        vi.fn(async () => jsonResponse(DETAIL_PAYLOAD)) as unknown as typeof fetch,
-      );
-      const { default: ReportDetailPage } = await import(
-        "@/app/(protected)/reports/[slug]/page"
-      );
-      const { getByTestId } = renderWithIntl(<ReportDetailPage />);
-      await waitFor(() => {
-        expect(getByTestId("report-detail-state")).toHaveTextContent(/B019.*signoff.*2026-05-15/);
-      });
-      // The 12-row markdown table should swap into AG Grid (12 ≥ 10).
-      await waitFor(() => {
-        expect(getByTestId("markdown-heavy-table")).toBeInTheDocument();
-        expect(getByTestId("ag-grid-mock")).toHaveTextContent(/rows=12/);
-      });
-      // Cross-links Card renders with the spec path.
-      expect(getByTestId("report-detail-cross-links")).toHaveTextContent(
-        "docs/specs/B015-regime-adaptive-activation-policy-spec.md",
-      );
-    },
-    25_000,
-  );
+  it("fetches the detail and renders AG Grid for the ≥10-row table", async () => {
+    paramsRef.value = { slug: "B019-retune-signoff" };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => jsonResponse(DETAIL_PAYLOAD)) as unknown as typeof fetch,
+    );
+    const { default: ReportDetailPage } = await import("@/app/(protected)/reports/[slug]/page");
+    const { getByTestId } = renderWithIntl(<ReportDetailPage />);
+    await waitFor(() => {
+      expect(getByTestId("report-detail-state")).toHaveTextContent(/B019.*signoff.*2026-05-15/);
+    });
+    // The 12-row markdown table should swap into AG Grid (12 ≥ 10).
+    await waitFor(() => {
+      expect(getByTestId("markdown-heavy-table")).toBeInTheDocument();
+      expect(getByTestId("ag-grid-mock")).toHaveTextContent(/rows=12/);
+    });
+    // Cross-links Card renders with the spec path.
+    expect(getByTestId("report-detail-cross-links")).toHaveTextContent(
+      "docs/specs/B015-regime-adaptive-activation-policy-spec.md",
+    );
+  }, 25_000);
+});
+
+describe("ReportDetailPage (B040 metrics card)", () => {
+  it("renders the big-number metrics card above the markdown when metrics present", async () => {
+    paramsRef.value = { slug: "B019-retune-signoff" };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => jsonResponse(DETAIL_WITH_METRICS)) as unknown as typeof fetch,
+    );
+    const { default: ReportDetailPage } = await import("@/app/(protected)/reports/[slug]/page");
+    const { getByTestId } = renderWithIntl(<ReportDetailPage />);
+    await waitFor(() => expect(getByTestId("report-metrics")).toBeInTheDocument());
+    expect(getByTestId("metric-value-sharpe")).toHaveTextContent("2.42");
+    expect(getByTestId("metric-value-cagr")).toHaveTextContent("2.50%");
+    // body_markdown integrity: the markdown table still renders below,
+    // unchanged by the metrics card (the card is an independent section).
+    await waitFor(() => expect(getByTestId("ag-grid-mock")).toHaveTextContent(/rows=12/));
+  }, 25_000);
+
+  it("renders markdown only (no metrics card) when metrics is null — graceful", async () => {
+    paramsRef.value = { slug: "B019-retune-signoff" };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => jsonResponse(DETAIL_PAYLOAD)) as unknown as typeof fetch,
+    );
+    const { default: ReportDetailPage } = await import("@/app/(protected)/reports/[slug]/page");
+    const { getByTestId, queryByTestId } = renderWithIntl(<ReportDetailPage />);
+    await waitFor(() => expect(getByTestId("report-detail-state")).toHaveTextContent(/B019/));
+    expect(queryByTestId("report-metrics")).toBeNull();
+    await waitFor(() => expect(getByTestId("ag-grid-mock")).toBeInTheDocument());
+  }, 25_000);
 });
