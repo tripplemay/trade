@@ -1688,11 +1688,40 @@ export interface components {
              * @description Internal repo paths the report references (resolved to /reports/* / /docs/*).
              */
             cross_links?: string[];
+            /** @description Headline backtest metrics parsed from the report's metrics table (Robinhood-style big-number card). None when no metrics table is recognised — the page then renders the markdown only. */
+            metrics?: components["schemas"]["ReportMetrics"] | null;
         };
         /** ReportListResponse */
         ReportListResponse: {
             /** Reports */
             reports: components["schemas"]["ReportSummary"][];
+        };
+        /**
+         * ReportMetrics
+         * @description B040 F001 — headline backtest metrics parsed from a report's metrics
+         *     table, for the Robinhood-style big-number card.
+         *
+         *     Every field is optional: a report may omit a metric, the table may be
+         *     absent entirely (then ``ReportDetail.metrics`` is ``None``), or a cell
+         *     may be unparseable. ``calmar`` is derived (CAGR / |max_drawdown|) when not
+         *     present as its own column. These are **historical backtest statistics**,
+         *     never a forward return prediction (positioning §1.1).
+         */
+        ReportMetrics: {
+            /** Sharpe */
+            sharpe?: number | null;
+            /** Sortino */
+            sortino?: number | null;
+            /** Calmar */
+            calmar?: number | null;
+            /** Cagr */
+            cagr?: number | null;
+            /** Max Drawdown */
+            max_drawdown?: number | null;
+            /** Volatility */
+            volatility?: number | null;
+            /** Turnover */
+            turnover?: number | null;
         };
         /**
          * ReportSummary

@@ -24,6 +24,25 @@ class ReportTable(BaseModel):
     rows: list[list[str]]
 
 
+class ReportMetrics(BaseModel):
+    """B040 F001 — headline backtest metrics parsed from a report's metrics
+    table, for the Robinhood-style big-number card.
+
+    Every field is optional: a report may omit a metric, the table may be
+    absent entirely (then ``ReportDetail.metrics`` is ``None``), or a cell
+    may be unparseable. ``calmar`` is derived (CAGR / |max_drawdown|) when not
+    present as its own column. These are **historical backtest statistics**,
+    never a forward return prediction (positioning §1.1)."""
+
+    sharpe: float | None = None
+    sortino: float | None = None
+    calmar: float | None = None
+    cagr: float | None = None
+    max_drawdown: float | None = None
+    volatility: float | None = None
+    turnover: float | None = None
+
+
 class ReportDetail(BaseModel):
     """GET /api/reports/{slug} payload."""
 
@@ -40,6 +59,14 @@ class ReportDetail(BaseModel):
     cross_links: list[str] = Field(
         default_factory=list,
         description="Internal repo paths the report references (resolved to /reports/* / /docs/*).",
+    )
+    metrics: ReportMetrics | None = Field(
+        default=None,
+        description=(
+            "Headline backtest metrics parsed from the report's metrics table "
+            "(Robinhood-style big-number card). None when no metrics table is "
+            "recognised — the page then renders the markdown only."
+        ),
     )
 
 

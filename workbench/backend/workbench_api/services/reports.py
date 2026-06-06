@@ -24,6 +24,7 @@ from pathlib import Path
 from workbench_api.schemas.reports import (
     ReportDetail,
     ReportListResponse,
+    ReportMetrics,
     ReportSummary,
     ReportTable,
 )
@@ -92,6 +93,7 @@ def get_report(slug: str, reports_dir: Path) -> ReportDetail:
 
     tables = _extract_tables(body)
     cross_links = _extract_cross_links(body)
+    metrics = _parse_metrics(tables)
 
     return ReportDetail(
         slug=_slug_from_name(path.name),
@@ -102,7 +104,123 @@ def get_report(slug: str, reports_dir: Path) -> ReportDetail:
         body_markdown=body,
         tables=tables,
         cross_links=cross_links,
+        metrics=metrics,
     )
+
+
+# B040 F001 — column-name → ReportMetrics field, with synonyms. Column names
+# are normalised (lower / spaces+dashes → underscore / trailing units stripped)
+# before lookup. Many report tables use B016/B015-style headers
+# (annualized_return / annualized_volatility / mdd …); map those to the
+# canonical metric set.
+_METRIC_COLUMN_SYNONYMS: dict[str, str] = {
+    "sharpe": "sharpe",
+    "sharpe_ratio": "sharpe",
+    "sortino": "sortino",
+    "sortino_ratio": "sortino",
+    "calmar": "calmar",
+    "calmar_ratio": "calmar",
+    "cagr": "cagr",
+    "annualized_return": "cagr",
+    "annual_return": "cagr",
+    "annualised_return": "cagr",
+    "max_drawdown": "max_drawdown",
+    "maximum_drawdown": "max_drawdown",
+    "mdd": "max_drawdown",
+    "volatility": "volatility",
+    "annualized_volatility": "volatility",
+    "annual_volatility": "volatility",
+    "annualised_volatility": "volatility",
+    "vol": "volatility",
+    "turnover": "turnover",
+}
+
+# A table is treated as a metrics table only when it carries at least one of
+# these "core" metric columns — guards against matching an unrelated table that
+# merely happens to share a generic column like ``turnover``.
+_CORE_METRIC_FIELDS: frozenset[str] = frozenset(
+    {"sharpe", "sortino", "calmar", "cagr", "max_drawdown"}
+)
+
+
+def _normalise_column(name: str) -> str:
+    """Lower-case, collapse separators to ``_``, drop a trailing ``(%)`` unit."""
+
+    out = name.strip().lower()
+    out = re.sub(r"\([^)]*\)", "", out)  # drop "(%)" / "(annualized)" units
+    out = re.sub(r"[\s\-/]+", "_", out.strip())
+    return out.strip("_")
+
+
+def _parse_metric_float(cell: str) -> float | None:
+    """Parse a metric cell to float; tolerate ``%``, thousands commas, and
+    non-numeric placeholders (``N/A`` / ``—``) → ``None``."""
+
+    text = cell.strip().replace(",", "")
+    if not text:
+        return None
+    percent = text.endswith("%")
+    if percent:
+        text = text[:-1].strip()
+    try:
+        value = float(text)
+    except ValueError:
+        return None
+    return value / 100.0 if percent else value
+
+
+def _column_field_map(columns: list[str]) -> dict[int, str]:
+    """Return ``{column_index: metric_field}`` for recognised metric columns."""
+
+    mapping: dict[int, str] = {}
+    for idx, col in enumerate(columns):
+        field = _METRIC_COLUMN_SYNONYMS.get(_normalise_column(col))
+        # First win per field — if both ``cagr`` and ``annualized_return``
+        # appear, keep the earliest column.
+        if field is not None and field not in mapping.values():
+            mapping[idx] = field
+    return mapping
+
+
+def _parse_metrics(tables: list[ReportTable]) -> ReportMetrics | None:
+    """Parse headline metrics from the first recognised wide metrics table.
+
+    Recognition (header-signature): the table's columns map to ≥2 known metric
+    fields AND include at least one core field (sharpe / sortino / calmar /
+    cagr / max_drawdown). Values come from the first data row. Calmar is
+    derived from CAGR / |max_drawdown| when not present as its own column.
+    Returns ``None`` when no table qualifies — the report renders markdown
+    only (graceful; never raises). Real-corpus shape: B016/B015 wide tables
+    (``| method | annualized_return | … | sharpe | max_drawdown | …|``)."""
+
+    for table in tables:
+        field_map = _column_field_map(table.columns)
+        if len(field_map) < 2 or not (_CORE_METRIC_FIELDS & set(field_map.values())):
+            continue
+        if not table.rows:
+            continue
+        row = table.rows[0]
+        values: dict[str, float | None] = {}
+        for idx, field in field_map.items():
+            values[field] = _parse_metric_float(row[idx]) if idx < len(row) else None
+
+        # Derive Calmar when the table didn't carry it directly.
+        if values.get("calmar") is None:
+            cagr = values.get("cagr")
+            mdd = values.get("max_drawdown")
+            if cagr is not None and mdd is not None and mdd != 0:
+                values["calmar"] = cagr / abs(mdd)
+
+        return ReportMetrics(
+            sharpe=values.get("sharpe"),
+            sortino=values.get("sortino"),
+            calmar=values.get("calmar"),
+            cagr=values.get("cagr"),
+            max_drawdown=values.get("max_drawdown"),
+            volatility=values.get("volatility"),
+            turnover=values.get("turnover"),
+        )
+    return None
 
 
 def _extract_tables(body: str) -> list[ReportTable]:
