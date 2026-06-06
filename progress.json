@@ -1,56 +1,36 @@
 {
-  "status": "done",
-  "user_goal": "B037 Home 页架构改造 (Phase 3 / Stream 4.A) — 把 Home 从 quant dashboard 重构为 daily-engagement 中心，按 user-personas §2 Daily Journey mockup 落三段版式：① NAV + Day P&L 段 / ② AI Advisor 段(B039 填) / ③ market context(B038 填) + 4 sleeve breakdown 段。本批搭完整三段骨架 + 自己负责的 NAV/Day P&L/sleeve breakdown，AI/market 段留占位。Phase 3 首批 (其他 Home 整合 B038/B039 依赖它) → 里程碑 C (Layer 0.5) 起点。决策矩阵 (2026-06-05 用户已批，★=拍板)：Day P&L=★mark-to-market 持仓 (用 B027 价格快照 mark sleeve 持仓算当日 P&L) / 段落范围=★全三段骨架 + B038/B039 占位 / 旧 Home=★直接替换 (新 Home 上 /，不保留 /admin/legacy-home，偏离 path doc 但用户决) / 设计稿=design-draft 空→user-personas §2 mockup 权威 + acceptance 含一致性项 / NAV 源=复用 dashboard._aggregate_nav (Account cash+equity 手动录入 no-broker) / 双语 + Playwright Daily Journey。4 features: (F001) 后端 Home 数据 NAV+Day P&L mark-to-market+sleeve breakdown + GET /home + pytest≥8; (F002) 前端三段 Home 替换旧 dashboard + AI/market 占位 + 双语 + vitest; (F003) Playwright Daily Journey e2e + i18n safety + 旧 Home 退役四处清理 (v0.9.31 §16); (F004) Codex L1+L2 + signoff。**永久硬边界继承：no-broker (NAV=手动录入研究账户) / no-execution buttons (Home 无下单按钮+中文禁词) / 直接替换旧 Home 触发 v0.9.31 §16 退役四处清理 + E2E presence→absence / §12.10 自包含。** 本批不触 AI logic (AI Advisor 段仅占位)。不做：AI Advisor 内容(B039) / market context 渲染(B038) / Reports·Rec·Risk 重构(B040-B042) / 真 broker 账户 / 保留 legacy-home。预估 1 个中型批次 (前端为主)。",
-  "total_features": 4,
-  "completed_features": 4,
-  "fix_rounds": 1,
-  "current_sprint": "F004",
+  "status": "building",
+  "user_goal": "B037-OPS1 部署卫生修复（横切，非 Phase 3 产品序列）— 让新增 workbench-*.timer 在 deploy.sh 部署时自动 install+enable，根治 B035/B036/B037 三批重复的『endpoint/DB 已绿但 timer 没装』运维摩擦（来源 B037 signoff §Soft-watch S1 + §Framework Learnings，已沉淀 evaluator.md §24）。根因：deploy.sh 自 B035 起已有 timer install/enable 逻辑，但 VM /etc/sudoers.d/deploy-workbench 只授权 5 条 restart/status/daemon-reload，未授权 install + enable workbench-*.timer → sudo 失败只 warn → 每批 admin 手装。决策（2026-06-06 用户已批，★）：先做 S1 修复★ / sudoers 范围=★通配符 workbench-*.{service,timer}（未来新 timer 零手工，范围锁 workbench- 前缀+systemd 目录）/ 编号=★独立前缀 B037-OPS1（roadmap B038-B043 不动）。2 features：(F001 generator) 版本化 sudoers 工件 workbench/deploy/sudoers/deploy-workbench（5 旧+3 新通配符授权）+ deploy.sh DRY 把三段硬编码 timer 块收敛为对 workbench-*.timer 单循环 + 3 守门测试 + B021 runbook 更新 + security-reviewer 裁决通配符路径穿越；(F002 codex) L2 真 VM：admin 应用 sudoers→re-deploy→deploy 日志无 timer warn + 三 timer is-enabled+active + durable 验证（假想新 timer 自动覆盖）+ signoff + 关闭 Soft-watch S1。永久硬边界继承：timer 仅边界 (r) 只读/advisor 预计算 NOT 执行；sudoers 锁 workbench- 前缀+systemd 目录不扩任意 sudo；deploy 用户 narrow-sudoers 原则延续。Ops 前置：sudoers 应用是一次性 admin VM 动作（deploy 无法自授权，角色边界例外须用户授权，等同 B021 #3）。不做：新增 timer / 改调度 / 改边界 (r) / sudoers 塞进 deploy.sh / Phase 3 产品工作。",
+  "total_features": 2,
+  "completed_features": 0,
+  "fix_rounds": 0,
+  "current_sprint": "F001",
   "last_updated": "2026-06-06",
   "reference_docs": [
-    "docs/specs/B037-home-restructure-spec.md",
-    "docs/product/user-personas-and-journeys-2026-05.md",
-    "docs/product/implementation-path-2026-05.md",
-    "docs/specs/B027-real-data-snapshot-foundation-spec.md",
-    "docs/test-reports/B036-ai-advisor-mvp-signoff-2026-06-05.md",
-    "framework/STRUCTURE.md",
-    "framework/CHANGELOG.md",
-    "framework/harness/planner.md",
-    "framework/harness/generator.md",
+    "docs/specs/B037-OPS1-deploy-timer-sudoers-hardening-spec.md",
+    "docs/test-reports/B037-home-restructure-signoff-2026-06-06.md",
+    "docs/dev/B021-vm-setup-runbook.md",
+    "workbench/deploy/scripts/deploy.sh",
     "framework/harness/evaluator.md",
+    "framework/harness/generator.md",
     "framework/templates/signoff-report.md"
   ],
   "docs": {
-    "spec": "docs/specs/B037-home-restructure-spec.md",
+    "spec": "docs/specs/B037-OPS1-deploy-timer-sudoers-hardening-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B037-home-restructure-signoff-2026-06-06.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": {
-    "summary": "B037 F004 复验通过：L1/L2 全 PASS，production /api/home、prices timer、旧 Home 退役与双语/no-execution UI 均满足签收条件。",
-    "pass_count": 9,
-    "partial_count": 0,
-    "fail_count": 0,
-    "issues": []
-  },
-  "generator_fix_round_1": {
-    "feature_id": "F004",
-    "blocker": "L2 item (8) — production 缺 workbench-prices.{service,timer}",
-    "root_cause": "代码+部署流已完整正确（unit 文件随 release 下发 deploy.yml:176，deploy.sh:300-313 best-effort install+enable）；deploy 用户 sudoers 仅授权 backend/frontend restart/status+daemon-reload，无 install 到 /etc/systemd/system + enable --now → deploy.sh prices 块仅 warn。与 B035/B036 timer 同款一次性 admin 手动安装步骤，prices 这次未跑。无产品/部署代码需改。",
-    "fix": "用户授权直接 VM admin 访问；Generator 以 tripplezhou 一次性 install+enable workbench-prices.timer（完全镜像 deploy.sh），并手动跑一次 service 验真只读路径。",
-    "evidence": "workbench-prices.{service,timer} 已装 /etc/systemd/system (root:root 644)；is-enabled=enabled is-active=active；next=Sat 2026-06-06 00:30 UTC；三只读 timer(market-context/advisor/prices)全 enabled；手动 one-shot Result=success ExecMainStatus=0；journal=price_cli_no_holdings symbols=0 saved=0 errors=0（记录：no-holdings 空账户，非 TIINGO-missing；price_snapshot 0 行属合规空路径 day_pnl=null）；alembic=0009；prod /api/health 200 db ok。详见 docs/test-reports/B037-home-restructure-blocker-2026-06-05.md §Resolution。",
-    "no_code_change": true
-  },
-  "generator_handoff": "B037 generator F001-F003 全完成 + CI 全绿 + deploy 成功（77c50fa）。F001 后端：price_snapshot 表(0009)+PriceSnapshotRepository+workbench-prices CLI/timer(复用 B027 Tiingo loader)+positions sleeve 标签+PriceProvider+build_home(NAV/Day P&L mark-to-market/sleeve breakdown)+GET /api/home(auth-gated)+§12.10 守门+scheduler scope(r)含 prices；backend pytest 757(baseline 735+22)/ruff0/mypy0/alembic head 0009。F002 前端：三段 Home 替换旧 quant dashboard（① NAV+Day P&L hero ② 复用 AdvisorSection ③ 复用 MarketContextCard+sleeve breakdown，用户批复用而非空占位）+双语+no-execution+vitest 198(40 files)。F003：§16 旧 Home 退役（死 i18n keys 清+legacy-home-decommissioned guard+no-execution 扩 Home+presence→absence 翻转）+Daily Journey e2e(b037-home，双 locale)+playwright 注册。待 Codex F004 L1+L2 验收。L2 注意：(a)GET /api/home authed 200 结构(nav/day_pnl/sleeves)+anon 401；(b)新三段 Home 浏览器手验+双语+无下单按钮+旧 dashboard absent 截图；(c)price_snapshot/workbench-prices.timer admin 安装(deploy.sh best-effort)+手动跑 prices CLI 验真(TIINGO_API_KEY 已配；持仓为空则 day_pnl=null 亦合规，记录哪种)；(d)alembic_version=0009；(e)HEAD≡main 等价。已知：CI frontend risk-banner.spec.tsx 偶发 flake(stubGlobal 跨 worker 泄漏，与本批无关；已给 home.spec 加 unstubAllGlobals 缓解)；F002 首推因此 flake 失败，rerun 即绿。",
+  "evaluator_feedback": null,
+  "generator_handoff": null,
   "session_notes": {
-    "planner": "2026-06-05 B036 done 收尾 (🎯 里程碑 B / Phase 2 终点达成) + Phase 3 启动 B037 一并完成。(1) B036 done 收尾：F004 首轮干净签收 (0 fix-round)；production /api/advisor 200 (3 sleeve haiku-4.5)；AI Safety Eval deploy gate 同 SHA success (red-team 15/15)。§Framework Learnings 无 (writer-lock 修复吸收)；§Soft-watch 无；proposed-learnings 无候选；B031 live-validate 候选仍 hold (B036 复用 gateway 无新 endpoint，单例)；role_assignments null。Phase 2 (B031-B036) 全签收 = 里程碑 B。(2) B037 启动 = implementation-path §4 Phase 3 / Stream 4.A 首批 (Home+UI 重构，B037-B043，→里程碑 C / Layer 0.5)。(3) **设计稿检查 (planner UI 规则)**：design-draft/ 空无 Home 稿 → 以 user-personas §2 Daily Journey mockup 为权威 (该 doc line 161 规定 UI 批次必引用)；acceptance 含 mockup 一致性项。(4) 6 决策对齐 (用户拍板 3 ★：Day P&L=mark-to-market B027 价格 / 段落范围=全三段骨架+B038/B039 占位 / 旧 Home=直接替换不留 legacy)。NAV 复用 dashboard._aggregate_nav (Account cash+equity 手动录入 no-broker)。(5) **偏离点明**：path doc B037 骨架原写「保留旧 Home 为 /admin/legacy-home 直到稳定」，用户选直接替换 → 尊重落地，spec §9 记丢回退路径风险 (旧组件 git 可恢复)。(6) **退役角度**：直接替换旧 Home = decommission → 触发 v0.9.31 §16 四处清理铁律 (旧 layout/route/i18n keys/守门 + E2E presence→absence，evaluator.md §22)；F003 负责。(7) Spec docs/specs/B037-home-restructure-spec.md 11 章；features.json 4 features (3g+1c)；progress building。(8) 用户协助：无需 (无新 secret)。(9) 下一会话 Generator 起 F001 关键注意点：① schemas/home.py HomeResponse {nav, day_pnl:{value,pct}|null, sleeves[]}；② Day P&L mark-to-market：最新 AccountSnapshot 持仓 × B027 最新价格快照 mark，当日 vs 前一交易日；价格/持仓缺→day_pnl=null (UI —)；只读不触发执行；③ NAV 复用 _aggregate_nav；④ 4 sleeve breakdown 走 strategies sleeve 分组；⑤ GET /home auth-gated + §12.10 自包含守门 test_home_request_self_contained；⑥ baseline backend pytest 735 (B036 收尾)，F001 后 ≥743。(10) F002：替换 (protected)/page.tsx 三段版式对齐 personas §2 mockup；② AI Advisor + ③ market 占位 slot (B038/B039 只填不改结构)；双语 zh+en；no-execution buttons 守门 (Home 无下单按钮+中文禁词)；vitest≥185。(11) F003：v0.9.31 §16 旧 quant dashboard 退役四处清理 (旧 i18n keys grep 0 + 旧 route/组件处理 + 守门) + §22 E2E presence→absence 翻转 + Playwright Daily Journey 流双 locale + i18n safety regression 扩集。(12) F004 Codex：v0.9.32 §23 GET /api/home 真 VM 200 + 新三段 Home 浏览器手验对齐 mockup + 旧 dashboard absent (§16 L2) + no-execution UI + 双语 + §Decommission Checklist。(13) 后续 Phase 3：B038 (Home 整合 market context) → B039 (Home 整合 AI Advisor) → B040-B043 (Reports/Rec/Risk 重构 + AI 解释层) → 里程碑 C。(14) 本会话经自主 loop 长程推进：B033 done→B034→v0.9.32→B035→B036 (里程碑 B)→B037 启动；pinned planner 全程不越界 (building/fixing/verifying 不做 generator/codex 活)，仅 done/planning 行动 + root-cause 建议 (B033 snapshot / B035 deploy blocker 均我 root-cause + surface)。",
-    "generator": "2026-06-06 fix-round 1：F004 L2 blocker（prod 缺 workbench-prices.{service,timer}）已解，status fixing→reverifying。根因非代码——unit 随 release 下发(deploy.yml:176)+deploy.sh:300-313 best-effort install，但 deploy 用户 sudoers 无 install/enable 权 → 只 warn；和 B035/B036 同款一次性 admin 手装步骤，prices 这次漏跑。用户授权直接 VM admin(ssh tripplezhou@34.180.93.185，本机 key=~/.ssh/id_ed25519 或 kolmatrix_deploy 均通；runbook 的 id_ed25519_kolmatrix 本机无)，Generator 镜像 deploy.sh 一次性 install+enable+daemon-reload+手动 one-shot 验真。证据：timer enabled+active next 00:30 UTC；三只读 timer 全 enabled；service Result=success；journal=no-holdings(symbols=0)→price_snapshot 0 行属空账户合规路径(非 TIINGO 缺)。无代码改动，无 commit 产品码。详见 blocker 报告 §Resolution + progress.generator_fix_round_1。Durable 候选(已 surface)：扩 deploy sudoers 让 timer 自动装，消除 B035/B036/B037 反复手装。【B037 building 历史保留】三 generator F001-F003 一会话完成推送(b6c3d00/eda0265/38f86d2/77c50fa)；3 spec-vs-codebase gap 用户确认(price_snapshot 表+timer / positions sleeve 标签 / 复用 AdvisorSection+MarketContextCard 非空占位，spec §2.1)。CI 教训：mypy strict 覆盖 tests/；新 /api 路由须 regen api.ts + next.config PROXIED_PREFIXES + dev-rewrites guard + vitest.config include 白名单；改 Home 须同步翻 protected-routes e2e。",
-    "evaluator": "2026-06-06 F004 复验完成并签收，已置 status=done。修复范围无产品代码变化，仅 production timer 安装与状态机推进，因此本轮复验聚焦 L2 blocker 关闭与真机验收。L2 结果：ssh tripplezhou@34.180.93.185 确认 `workbench-market-context.timer` / `workbench-advisor.timer` / `workbench-prices.timer` 全 `enabled`；`workbench-prices.timer` active(waiting) next 2026-06-07 00:30 UTC；`workbench-prices.service` 最近一次 2026-06-06 00:30 UTC `status=0/SUCCESS`，journal=`price_cli_no_holdings` 且 `symbols=0 saved=0 errors=0`，确认是空账户合规路径而非 TIINGO 缺失；`alembic_version=0009_b037_price_snapshot`；`price_snapshot` count=0 与空持仓一致。authenticated production：用 VM env 派生的临时 `__Secure-authjs.session-token` 验证 `/api/auth/session` 返回 allowlisted 用户，`/api/home` 返回 200 payload（nav=0 day_pnl=null sleeves=3），`/api/debug/recent-errors` 返回 `{count:0,records:[]}`。production 页面手验：authenticated `/` 返回 200；zh-CN / en 两轮浏览器截图已落 `docs/screenshots/B037-home-restructure/home-zh-CN.png` 与 `home-en.png`；`browser-check.json` 记录两轮 `/api/home` 都是 200、`home-hero`/`home-sleeves` 按钮数 0、旧 `dashboard-card-nav` 计数 0、console errors 空。HTML 抓取同时验证 zh/en 文案与新三段结构存在。SHA 等价性：production `/api/health.version=77c50fa...`，main HEAD=710e77e...；`git diff 77c50fa..710e77e` 仅含 progress/features/project-status/blocker-report，按 §10 接受等价不同步。补充 smoke：backend targeted pytest 21 passed；frontend targeted vitest 31 passed。signoff 已写 docs/test-reports/B037-home-restructure-signoff-2026-06-06.md。Soft-watch：deploy 用户 sudoers 仍不足以自动 install/enable 新 timer，已记入 signoff S1。"
+    "planner": "2026-06-06 B037 done 收尾 + 启动 B037-OPS1 运维修复批次。(1) B037 done 收尾：Codex F004 复验 PASS（9/9，1 fix-round = prices.timer L2 blocker）；signoff docs/test-reports/B037-home-restructure-signoff-2026-06-06.md。project-status.md 已由 Codex 更新到 done（准确，未重写）；role_assignments 本就 null。(2) 框架沉淀 v0.9.33（用户批立即沉淀）：B037 signoff §Framework Learnings 新坑（新 timer endpoint/DB 绿≠运维接线完成）+ §Soft-watch S1（三批重复手装 timer）过二例门槛 → 写 evaluator.md §24『批次新增 read-only timer 时 L2 必查 systemd 接线状态』（4 规约+反面案例 B037 F004+与 generator.md §12/§12.9 ops-wiring 同族）+ CHANGELOG v0.9.33 + proposed-learnings 闭环注释。commit a7ff865。(3) 下一批次=S1 运维修复（用户批先做）：根因确认=VM sudoers 缺 install+enable 授权（非 deploy.sh 缺逻辑——deploy.sh L265-311 早有三段 best-effort 块）。3 决策对齐（★通配符 sudoers / ★独立前缀 B037-OPS1 不占 roadmap / ★先做）。spec 11 章；features.json 2 features（1g+1c）；progress building。(4) 关键设计点交 Generator：① sudoers 工件 workbench/deploy/sudoers/deploy-workbench 保留 5 旧+加 3 通配符（install service/timer + enable --now timer）；② security-reviewer 必须裁决 fnmatch * 匹配 / 的路径穿越面（目标前缀字面锁 /etc/systemd/system/workbench- 已限逃逸）；③ deploy.sh 三块收敛单循环 over workbench-*.timer 保 best-effort warn + 边界 (r) 注释；④ 3 守门（无残留硬编码块/每 timer 有 service 兄弟/sudoers 覆盖现存 timer）；⑤ runbook sudoers 段更新 + 一次性 admin 应用步骤。(5) F002 Codex L2：Ops 前置=admin 应用 sudoers（角色边界例外须用户授权）；L2 验 re-deploy 无 warn + 三 timer is-enabled+active + durable（假想新 timer 自动覆盖）+ §24 勾选 + 关闭 S1。(6) Phase 3 主线（B038 Home market context 起）在 B037-OPS1 完成后继续。",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",
-    "F002",
-    "F003",
-    "F004"
+    "F002"
   ]
 }
