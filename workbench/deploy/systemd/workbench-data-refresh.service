@@ -1,0 +1,38 @@
+[Unit]
+Description=Workbench real-data refresh (Tiingo prices + SEC EDGAR fundamentals, read-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B045-real-data-refresh-pipeline-spec.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=deploy
+Group=deploy
+WorkingDirectory=/srv/workbench/current/backend
+
+# Secrets (TIINGO_API_KEY, SEC_EDGAR_CONTACT_EMAIL, ...) live in
+# /etc/workbench/workbench.env (chmod 600 root:deploy). Never committed.
+EnvironmentFile=/etc/workbench/workbench.env
+
+# The VM data store the unified CSVs land under (and that B045 F002 points the
+# trade loaders at via WORKBENCH_DATA_ROOT). Persists across release swaps,
+# next to the SQLite DB. Not a secret — a fixed path.
+Environment=WORKBENCH_DATA_ROOT=/var/lib/workbench/data
+
+# Permanent product boundary (r) (B045 spec §3): this timer does READ-ONLY
+# market-data fetch ONLY — Tiingo daily prices + SEC EDGAR quarterly
+# fundamentals for the Master universe. ExecStart invokes the data-refresh CLI
+# and nothing else — it never runs broker / order-ticket / execution / fills /
+# reconcile code. tests/safety/test_market_scheduler_scope.py greps this
+# ExecStart line and scans the data_refresh package to enforce that.
+ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.data_refresh.cli fetch
+
+# Standard hardening (mirrors workbench-market-context.service).
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/workbench /var/log/workbench /tmp
+
+# No [Install] section — this oneshot is pulled by workbench-data-refresh.timer,
+# never enabled / started directly.

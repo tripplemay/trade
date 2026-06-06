@@ -27,6 +27,7 @@ ADVISOR_PKG = BACKEND_ROOT / "workbench_api" / "advisor"
 PRICES_PKG = BACKEND_ROOT / "workbench_api" / "prices"
 NEWS_PKG = BACKEND_ROOT / "workbench_api" / "news"
 RECOMMENDATIONS_PKG = BACKEND_ROOT / "workbench_api" / "recommendations"
+DATA_REFRESH_PKG = BACKEND_ROOT / "workbench_api" / "data_refresh"
 # Five scheduler packages are scanned: the market-context fetch (B035), the
 # AI advisor precompute (B036), the price-snapshot fetch (B037), the news
 # ingest (B038, boundary (q)→(r)), and the recommendations precompute (B044,
@@ -34,7 +35,14 @@ RECOMMENDATIONS_PKG = BACKEND_ROOT / "workbench_api" / "recommendations"
 # — a scheduler may run CI-safety-gated advisor precompute (which imports the
 # LLM gateway); B044 adds quant scoring that imports the ``trade`` package —
 # but NONE may ever reach a trade-EXECUTION surface (broker/order/fills/...).
-SCHEDULER_PKGS = (MARKET_PKG, ADVISOR_PKG, PRICES_PKG, NEWS_PKG, RECOMMENDATIONS_PKG)
+SCHEDULER_PKGS = (
+    MARKET_PKG,
+    ADVISOR_PKG,
+    PRICES_PKG,
+    NEWS_PKG,
+    RECOMMENDATIONS_PKG,
+    DATA_REFRESH_PKG,
+)
 REPO_ROOT = Path(__file__).resolve().parents[4]
 SYSTEMD_DIR = REPO_ROOT / "workbench" / "deploy" / "systemd"
 SERVICE_UNIT = SYSTEMD_DIR / "workbench-market-context.service"
@@ -47,6 +55,8 @@ NEWS_SERVICE_UNIT = SYSTEMD_DIR / "workbench-news.service"
 NEWS_TIMER_UNIT = SYSTEMD_DIR / "workbench-news.timer"
 RECO_SERVICE_UNIT = SYSTEMD_DIR / "workbench-recommendations.service"
 RECO_TIMER_UNIT = SYSTEMD_DIR / "workbench-recommendations.timer"
+REFRESH_SERVICE_UNIT = SYSTEMD_DIR / "workbench-data-refresh.service"
+REFRESH_TIMER_UNIT = SYSTEMD_DIR / "workbench-data-refresh.timer"
 DEPLOY_SH = REPO_ROOT / "workbench" / "deploy" / "scripts" / "deploy.sh"
 
 # Dotted-path fragments that mark a TRADE-EXECUTION surface a scheduler must
@@ -377,3 +387,44 @@ def test_recommendations_precompute_may_import_trade() -> None:
 
     precompute_src = (RECOMMENDATIONS_PKG / "precompute.py").read_text(encoding="utf-8")
     assert "trade.backtest.master_portfolio" in precompute_src
+
+
+# --- B045 data-refresh job (boundary (r): read-only prices + fundamentals) ---
+
+
+def test_data_refresh_service_execstart_runs_refresh_cli() -> None:
+    assert REFRESH_SERVICE_UNIT.is_file(), f"missing {REFRESH_SERVICE_UNIT}"
+    text = REFRESH_SERVICE_UNIT.read_text(encoding="utf-8")
+    execstart = [ln for ln in text.splitlines() if ln.strip().startswith("ExecStart=")]
+    assert len(execstart) == 1
+    assert "workbench_api.data_refresh.cli" in execstart[0]
+    assert "EnvironmentFile=/etc/workbench/workbench.env" in text
+
+
+def test_data_refresh_service_references_no_trade_execution() -> None:
+    directives = "\n".join(
+        ln
+        for ln in REFRESH_SERVICE_UNIT.read_text(encoding="utf-8").splitlines()
+        if not ln.strip().startswith("#")
+    ).lower()
+    for frag in ("broker", "order_ticket", "fills", "reconcile"):
+        assert frag not in directives, (
+            f"data-refresh .service directive references trade-execution {frag!r} "
+            "(boundary (r))"
+        )
+
+
+def test_data_refresh_timer_runs_daily_and_pulls_service() -> None:
+    assert REFRESH_TIMER_UNIT.is_file(), f"missing {REFRESH_TIMER_UNIT}"
+    text = REFRESH_TIMER_UNIT.read_text(encoding="utf-8")
+    assert "OnCalendar=" in text
+    assert "Unit=workbench-data-refresh.service" in text
+    assert "WantedBy=timers.target" in text
+
+
+def test_data_refresh_timer_wired_by_dry_loop() -> None:
+    """B045 timer installs via the B037-OPS1 workbench-*.timer loop — no
+    hardcoded enable literal in deploy.sh."""
+    text = DEPLOY_SH.read_text(encoding="utf-8")
+    assert "enable --now workbench-data-refresh.timer" not in text
+    assert REFRESH_TIMER_UNIT.is_file()

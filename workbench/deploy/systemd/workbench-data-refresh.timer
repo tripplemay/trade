@@ -1,0 +1,16 @@
+[Unit]
+Description=Daily timer for workbench real-data refresh (boundary (r): read-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B045-real-data-refresh-pipeline-spec.md
+
+[Timer]
+# 02:30 UTC — before the recommendations precompute (03:00) so the unified
+# prices/fundamentals are fresh when the Master scoring reads them. After the
+# market-context (00:00) / prices (00:30) / advisor (01:00) / news (02:00)
+# fetches. Persistent=true catches up a missed run after a VM reboot; the
+# refresh overwrites the unified CSVs each run (idempotent).
+OnCalendar=*-*-* 02:30:00
+Persistent=true
+Unit=workbench-data-refresh.service
+
+[Install]
+WantedBy=timers.target
