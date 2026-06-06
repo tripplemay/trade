@@ -264,6 +264,21 @@
       "columnDiff": "偏离",
       "columnRationale": "说明"
     },
+    "view": {
+      "simple": "简洁",
+      "professional": "专业"
+    },
+    "cards": {
+      "empty": "暂无目标持仓。",
+      "targetLabel": "目标",
+      "currentLabel": "当前",
+      "deltaLabel": "偏离",
+      "tooltips": {
+        "target": "该标的在推荐组合中的目标配置权重——是配置权重，不是收益预测。",
+        "current": "你账户当前对该标的的持仓权重（来自最新快照）。",
+        "delta": "目标减当前——再平衡方向（正=加仓，负=减仓）。仅供一眼参考，不是下单指令。"
+      }
+    },
     "gates": {
       "title": "门控检查",
       "description": "下单前安全过滤器。需全部通过方可人工执行。",

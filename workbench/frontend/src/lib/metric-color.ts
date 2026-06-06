@@ -58,3 +58,16 @@ export function colorForMetric(key: MetricKey, value: number | null | undefined)
       return METRIC_COLOR.neutral;
   }
 }
+
+/** B041 — colour for a target/current weight delta (rebalance direction):
+ * positive (buy more) green, negative (trim) red, flat neutral. Reuses the
+ * shared METRIC_COLOR palette. Colour is an at-a-glance rebalance hint only,
+ * not a buy/sell instruction (the workbench is research-only). */
+export function colorForDelta(value: number | null | undefined): MetricColor {
+  if (value === null || value === undefined || Number.isNaN(value)) {
+    return METRIC_COLOR.neutral;
+  }
+  if (value > 0) return METRIC_COLOR.positive;
+  if (value < 0) return METRIC_COLOR.negative;
+  return METRIC_COLOR.neutral;
+}

@@ -3,7 +3,7 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { colorForMetric, METRIC_COLOR } from "@/lib/metric-color";
+import { colorForDelta, colorForMetric, METRIC_COLOR } from "@/lib/metric-color";
 
 describe("colorForMetric", () => {
   it("ratio metrics (sharpe/sortino/calmar): >=1 positive, 0–1 warning, <0 negative", () => {
@@ -39,5 +39,19 @@ describe("colorForMetric", () => {
     expect(colorForMetric("sharpe", null)).toBe(METRIC_COLOR.neutral);
     expect(colorForMetric("sharpe", undefined)).toBe(METRIC_COLOR.neutral);
     expect(colorForMetric("sharpe", Number.NaN)).toBe(METRIC_COLOR.neutral);
+  });
+});
+
+describe("colorForDelta (B041 rebalance direction)", () => {
+  it("positive buy → green, negative trim → red, flat → neutral", () => {
+    expect(colorForDelta(0.15)).toBe(METRIC_COLOR.positive);
+    expect(colorForDelta(-0.2)).toBe(METRIC_COLOR.negative);
+    expect(colorForDelta(0)).toBe(METRIC_COLOR.neutral);
+  });
+
+  it("null / undefined / NaN → neutral", () => {
+    expect(colorForDelta(null)).toBe(METRIC_COLOR.neutral);
+    expect(colorForDelta(undefined)).toBe(METRIC_COLOR.neutral);
+    expect(colorForDelta(Number.NaN)).toBe(METRIC_COLOR.neutral);
   });
 });

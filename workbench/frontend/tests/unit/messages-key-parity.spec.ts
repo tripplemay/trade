@@ -82,6 +82,23 @@ describe("messages bundle parity", () => {
     }
   });
 
+  it("recommendation card tooltips are present + non-empty in both locales (B041)", () => {
+    const KEYS = ["target", "current", "delta"];
+    for (const bundle of [zhCNMessages, enMessages] as const) {
+      const tooltips = (
+        bundle as unknown as {
+          recommendations?: { cards?: { tooltips?: Record<string, string> } };
+        }
+      ).recommendations?.cards?.tooltips;
+      for (const key of KEYS) {
+        expect(
+          (tooltips?.[key] ?? "").trim().length,
+          `recommendations.cards.tooltips.${key}`,
+        ).toBeGreaterThan(0);
+      }
+    }
+  });
+
   it("every leaf value is a string in both bundles", () => {
     // Empty-string leaves are intentional in some namespaces (e.g.
     // ternary "override marker" suffixes that may render as no-op);

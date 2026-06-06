@@ -62,7 +62,7 @@ const EXPORT: components["schemas"]["ExportTicketResponse"] = {
 
 function buildFetch(map: Record<string, unknown>): typeof fetch {
   return vi.fn(async (input: RequestInfo | URL) => {
-    const url = typeof input === "string" ? input : (input as Request).url ?? input.toString();
+    const url = typeof input === "string" ? input : ((input as Request).url ?? input.toString());
     const body = map[url];
     if (body === undefined) return new Response("not-found", { status: 404 });
     return new Response(JSON.stringify(body), {
@@ -78,7 +78,7 @@ afterEach(() => {
 });
 
 describe("RecommendationsPage (B022 F010)", () => {
-  it("renders disclaimer + state line + gate checks + positions table", async () => {
+  it("renders disclaimer + state line + gate checks + simplified position cards (default)", async () => {
     vi.stubGlobal("fetch", buildFetch({ "/api/recommendations/current": RECS }));
     const { getByTestId } = renderWithIntl(<RecommendationsPage />);
     expect(getByTestId("recommendations-disclaimer-card")).toBeInTheDocument();
@@ -87,7 +87,25 @@ describe("RecommendationsPage (B022 F010)", () => {
       expect(getByTestId("gate-kill_switch")).toHaveTextContent(/pass/i);
     });
     expect(getByTestId("recommendations-wash-empty")).toBeInTheDocument();
-    expect(getByTestId("ag-grid-mock")).toHaveTextContent(/rows=2/);
+    // B041: target positions now default to the simplified card view.
+    await waitFor(() => {
+      expect(getByTestId("position-cards")).toBeInTheDocument();
+      expect(getByTestId("position-card-B013")).toBeInTheDocument();
+      expect(getByTestId("position-card-B016")).toBeInTheDocument();
+    });
+  });
+
+  it("exposes both view toggles with the simplified card view as default (B041)", async () => {
+    // The actual radix Tabs switch interaction is covered by the Playwright
+    // e2e (real Chromium); radix tab activation is unreliable to drive in
+    // happy-dom without user-event. Here we pin the structure + default.
+    vi.stubGlobal("fetch", buildFetch({ "/api/recommendations/current": RECS }));
+    const { getByTestId, queryByTestId } = renderWithIntl(<RecommendationsPage />);
+    await waitFor(() => expect(getByTestId("position-cards")).toBeInTheDocument());
+    expect(getByTestId("view-toggle-simple")).toBeInTheDocument();
+    expect(getByTestId("view-toggle-professional")).toBeInTheDocument();
+    // Default = simplified cards; the professional AG Grid table is not mounted.
+    expect(queryByTestId("ag-grid-mock")).toBeNull();
   });
 
   it("renders empty-state when account_present is false", async () => {

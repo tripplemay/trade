@@ -264,6 +264,21 @@
       "columnDiff": "Diff",
       "columnRationale": "Rationale"
     },
+    "view": {
+      "simple": "Simple",
+      "professional": "Professional"
+    },
+    "cards": {
+      "empty": "No target positions yet.",
+      "targetLabel": "Target",
+      "currentLabel": "Current",
+      "deltaLabel": "Delta",
+      "tooltips": {
+        "target": "Target allocation weight for this symbol in the recommended portfolio — a configuration weight, not a return prediction.",
+        "current": "Your account's current weight for this symbol (from the latest snapshot).",
+        "delta": "Target minus current — the rebalance direction (positive = buy more, negative = trim). An at-a-glance hint, not an order."
+      }
+    },
     "gates": {
       "title": "Gate checks",
       "description": "Pre-trade safety filters. All must pass before manual execution.",

@@ -48,6 +48,16 @@ const ADVISOR_SECTION = join(FRONTEND_ROOT, "src", "components", "advisor", "Adv
 // /reports) is a read-only surface; scan it so a future edit can't add an
 // order/execute affordance to the metrics card in either language.
 const METRICS_DISPLAY = join(FRONTEND_ROOT, "src", "components", "metrics", "MetricsDisplay.tsx");
+// B041 F001 — the simplified target-positions card view is a read-only surface
+// (target/current/delta weights, no order affordance); scan it so a future edit
+// can't add an execute/order button in either language.
+const POSITION_CARDS = join(
+  FRONTEND_ROOT,
+  "src",
+  "components",
+  "recommendations",
+  "PositionCards.tsx",
+);
 const MESSAGES_DIR = join(FRONTEND_ROOT, "messages");
 
 const EN_BANNED = ["execute", "place order", "send to broker"] as const;
@@ -100,10 +110,15 @@ describe("no execution buttons under (protected)/execution/** + Home", () => {
     HOME_NEWS_PANEL,
     ADVISOR_SECTION,
     METRICS_DISPLAY,
+    POSITION_CARDS,
   ];
 
   it(`covers the Home page`, () => {
     expect(files).toContain(HOME_PAGE);
+  });
+
+  it(`covers the recommendations position cards`, () => {
+    expect(files).toContain(POSITION_CARDS);
   });
 
   it(`covers the Home news panel`, () => {

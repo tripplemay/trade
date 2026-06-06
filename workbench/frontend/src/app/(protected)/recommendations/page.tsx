@@ -10,10 +10,12 @@ import {
   type AllocationSlice,
 } from "@/components/chart";
 import { NewsPanel } from "@/components/recommendations/NewsPanel";
+import { PositionCards } from "@/components/recommendations/PositionCards";
 import { RiskBanner } from "@/components/risk/RiskBanner";
 import { DataTable, percentColumn, weightColumn } from "@/components/table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import type { ColDef } from "ag-grid-community";
 import type { components } from "@/types/api";
@@ -55,6 +57,7 @@ const GATE_STYLES: Record<string, string> = {
 export default function RecommendationsPage() {
   const t = useTranslations("recommendations");
   const tPos = useTranslations("recommendations.positions");
+  const tView = useTranslations("recommendations.view");
   const tWeights = useTranslations("recommendations.targetWeights");
   const tDeltas = useTranslations("recommendations.deltas");
   const tGates = useTranslations("recommendations.gates");
@@ -199,11 +202,33 @@ export default function RecommendationsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <DataTable<TargetPosition>
-            rowData={data?.target_positions ?? []}
-            columnDefs={positionColumns}
-            height={280}
-          />
+          {/* B041: simplified card view (default) ⟷ professional table toggle.
+              Only the target-positions presentation changes; charts / gate /
+              wash-sale / export-to-ticket / NewsPanel are untouched. */}
+          <Tabs
+            defaultValue="simple"
+            activationMode="manual"
+            data-testid="recommendations-view-toggle"
+          >
+            <TabsList>
+              <TabsTrigger value="simple" data-testid="view-toggle-simple">
+                {tView("simple")}
+              </TabsTrigger>
+              <TabsTrigger value="professional" data-testid="view-toggle-professional">
+                {tView("professional")}
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="simple">
+              <PositionCards positions={data?.target_positions ?? []} />
+            </TabsContent>
+            <TabsContent value="professional">
+              <DataTable<TargetPosition>
+                rowData={data?.target_positions ?? []}
+                columnDefs={positionColumns}
+                height={280}
+              />
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 
