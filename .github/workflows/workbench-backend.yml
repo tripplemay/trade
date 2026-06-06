@@ -57,6 +57,15 @@ jobs:
       - name: Install backend with dev tooling
         run: python -m pip install -e ".[dev]"
 
+      - name: Install trade package (B044 — recommendations precompute imports it)
+        # The recommendations precompute job (B044 F002) imports
+        # trade.backtest.master_portfolio for real scoring; install the
+        # repo-root trade/ package into the CI venv so those tests resolve and
+        # so the install itself (pandas/numpy deps) is validated in CI. The
+        # request path must NEVER import trade — enforced by the §12.10 AST
+        # guard (F003), not by physical absence, now that trade ships to the venv.
+        run: python -m pip install ../..
+
       - name: Ruff
         run: python -m ruff check .
 

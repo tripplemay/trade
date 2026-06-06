@@ -51,6 +51,22 @@ else
   "${VENV_PIP}" install --quiet --upgrade -e "${RELEASE_DIR}/backend"
 fi
 
+# B044 F001 — install the trade/ wheel into the shared venv alongside
+# workbench_api. The recommendations precompute timer (B044 F002) imports
+# trade.backtest.master_portfolio for real scoring; the request path must
+# NEVER import trade (§12.10 AST guard, F003). This is additive — the
+# workbench_api backend does not import trade, so backend startup is
+# unchanged. Best-effort: a dev `deploy.sh` rehearsal without the trade wheel
+# still completes the backend/frontend deploy.
+echo "→ install trade package into /opt/workbench/.venv"
+TRADE_WHEEL=$(ls "${RELEASE_DIR}"/trade-dist/trade-*.whl 2>/dev/null | head -n 1 || true)
+if [[ -n "${TRADE_WHEEL}" ]]; then
+  echo "  wheel: ${TRADE_WHEEL}"
+  "${VENV_PIP}" install --quiet --upgrade "${TRADE_WHEEL}"
+else
+  echo "  no trade wheel under ${RELEASE_DIR}/trade-dist/; skipping (B044 F001 — precompute will be unavailable until shipped)"
+fi
+
 # 2. Apply pending DB migrations. The workbench is single-VM single-user so
 # we do not need a separate migrate worker — applying inline is the simplest
 # safe ordering (migrate before symlink flip prevents the new server code

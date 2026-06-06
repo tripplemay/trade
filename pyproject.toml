@@ -10,6 +10,12 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
   "pandas>=2.2",
+  # B044 F001: ``trade/`` imports numpy directly (factor scoring / risk
+  # parity). pandas pulls numpy transitively, but per the runtime-dependency
+  # hygiene rule (framework v0.9.29 §12.8) a directly-imported package is an
+  # explicit dependency — keeps the wheel install self-contained when it lands
+  # in the production VM venv (B044 evaluator timer imports trade).
+  "numpy>=1.26",
   "yfinance>=0.2.40",
 ]
 

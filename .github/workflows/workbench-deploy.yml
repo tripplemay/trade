@@ -116,6 +116,16 @@ jobs:
           python -m pip install -e ".[dev]"
           python -m build
 
+      - name: Build trade package (wheel)
+        # B044 F001 — build the trade/ wheel (repo-root pyproject) so deploy.sh
+        # can install it into the VM venv alongside workbench_api. The
+        # recommendations precompute timer (B044 F002) imports
+        # trade.backtest.master_portfolio for real scoring; the request path
+        # must NEVER import trade (enforced by the §12.10 AST guard, F003).
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build --wheel
+
       - name: Install frontend deps
         working-directory: workbench/frontend
         run: npm ci
@@ -162,6 +172,13 @@ jobs:
           if [ -d workbench/frontend/public ]; then
             rsync -a workbench/frontend/public "${STAGE_DIR}/frontend/"
           fi
+
+          # B044 F001 — ship the trade/ wheel so deploy.sh can install it into
+          # the VM venv (the recommendations precompute timer imports trade for
+          # real scoring). Lands at ${STAGE_DIR}/trade-dist/ (deploy.sh
+          # references ${RELEASE_DIR}/trade-dist).
+          mkdir -p "${STAGE_DIR}/trade-dist"
+          rsync -a dist/trade-*.whl "${STAGE_DIR}/trade-dist/"
 
           # Deploy helpers — deploy.sh / rollback.sh / healthcheck.sh.
           rsync -a workbench/deploy/scripts "${STAGE_DIR}/"
