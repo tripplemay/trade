@@ -5,6 +5,24 @@
 
 ---
 
+## v0.9.34 — 2026-06-06（B038 沉淀：§12.10 自包含审计扩到所有生产执行路径）
+
+**来源批次：**
+- B038 Home 今日市场新闻，F003 L2 blocker → F001 fix-round 1（commit `d99c0af`）
+- signoff `docs/test-reports/B038-home-market-news-signoff-2026-06-06.md` §Framework Learnings（Planner done 阶段裁定沉淀）
+- blocker 留档 `docs/test-reports/B038-home-market-news-blocker-...`（bfd040c）
+
+**触发原因：**
+- `news/cli.py` `_default_universe()` 运行时 `import scripts.universe_us_quality`（与 §12.10 二例 (1) 同根）。该缺陷自 B033 起已存在，但 news ingest 一直 manual-only（边界 (q) production-disabled），从未在 prod 跑过 → 本地 + CI + 既有 L2 全部系统性掩盖。
+- B038 把该 CLI 接入 `workbench-news.timer`（边界 (q)→(r) 收编）后首次 prod 执行 → `workbench-news.service` oneshot `ModuleNotFoundError`。唯「timer 接入 + L2 手动 trigger service」暴露。
+- §12.10（v0.9.32）原表述聚焦请求路径；本批证明铁律须扩到**所有生产执行路径**（请求路径 + timer/scheduled CLI 及 import 闭包）。
+
+**变更：**
+- `framework/harness/generator.md` §12.10 新增子节 §12.10.1「自包含审计覆盖所有生产执行路径，不止请求路径」（B038 反面案例 + 规约 5：manual-only CLI 接入自动执行路径时按 §12.10 重审 + AST 守门 + L2 手动 trigger service 验真）+ 对比表加 v0.9.34 行 + §12.8/§12.9 关系句扩「生产执行路径」
+- 配套 evaluator.md §24（timer L2 接线检查）：手动 trigger service 验真与本节互引
+
+---
+
 ## v0.9.33 — 2026-06-06（B035/B036/B037 三例合并沉淀：read-only timer L2 接线检查）
 
 **来源批次：**

@@ -800,13 +800,24 @@ def test_critical_runtime_deps_pinned():
 3. **守门回归测试**：monkeypatch 资源缺失（删/改 repo-root path）断言请求路径仍工作 = 精确复现 prod deploy-artifact 缺口的回归（B034 用 AST 守门 `test_news_sleeve_tickers.py` 禁 import pandas/scripts）。
 4. **Evaluator L2 验证**：必测核心新路由真 VM **authenticated 200**（非仅 schema / health）；deploy artifact = 仅 `workbench_api/`。
 
-**与 §12.8 / §12.9 关系：** §12.8 抓 `workbench_api/` 内 top-level 第三方 import（runtime vs dev）；§12.10 抓「请求路径触碰 deploy artifact 之外（根级 `scripts/` + `data/fixtures/`）」这一层——互补，非重叠。
+#### §12.10.1 扩展：自包含审计覆盖**所有生产执行路径**，不止请求路径（v0.9.34 — B038 沉淀）
+
+**触发：** B038 Home 今日市场新闻 F003 L2 — `news/cli.py` 的 `_default_universe()` 运行时 `import scripts.universe_us_quality`（同 §12.10 二例 (1) 同根）。该缺陷**自 B033 起已存在**，但 news ingest 一直是 **manual-only CLI**（边界 (q) production-disabled），从未在 production 跑过，所以本地 + CI + 既有 L2 **全部系统性掩盖**。B038 把该 CLI 接入 `workbench-news.timer`（边界 (q)→(r) 收编）后，**首次在 production 执行 → `workbench-news.service` oneshot `ModuleNotFoundError`**。修复：复用包内 `ticker_match.equity_universe_tickers()`（值等价）+ AST 守门 `test_news_ingest_self_contained.py`（扫全 `workbench_api/` 包无 `scripts.*` import）。commit `d99c0af`。
+
+**规律（§12.10 的 scope 扩展）：** §12.10 原表述聚焦「**请求路径**」，但 deploy-artifact 自包含铁律对**任何会在 production 真实执行的代码路径**都成立——**请求路径（routes/services）+ scheduled/timer-invoked CLI 及其 import 闭包**。一段 manual-only 的 CLI/module 看似"非请求路径、不受 §12.10 约束"，但**一旦被接入 production 运行路径（systemd timer / cron / 任何自动触发），它及其完整 import 闭包立即落入 §12.10 边界**，必须重新审计自包含性。
+
+**规约（补 §12.10 规约 5）：**
+
+5. **把 manual-only CLI 接入 production 自动执行路径（timer/scheduler）时，必须把该 CLI 及其 import 闭包按 §12.10 重新审计**——不能因为"它原来只 manual 跑、本地一直 OK"就豁免。Spec acceptance（如 B038 F001）+ Generator checklist + 守门测试（AST 扫该 CLI 模块无 `scripts.*` import / 不 `open(repo-root/...)`）三处都要覆盖**新接入的执行路径**，不止请求路径。Evaluator L2 必须**手动 trigger 一次该 timer 的 service** 验真（不能只看 timer enabled），观察 oneshot 是否 `ModuleNotFoundError`/`FileNotFoundError`（配 evaluator.md §24 timer 接线检查同步做）。
+
+**与 §12.8 / §12.9 关系：** §12.8 抓 `workbench_api/` 内 top-level 第三方 import（runtime vs dev）；§12.10 抓「**生产执行路径**（请求路径 + timer/scheduled CLI）触碰 deploy artifact 之外（根级 `scripts/` + `data/fixtures/`）」这一层——互补，非重叠。
 
 **与 v0.9.X 系列 "local vs prod" 教训补一行：**
 
 | 版本 | 现象 | 防御 | 哪一层 |
 |---|---|---|---|
 | **v0.9.32 §12.10（本节）** | **请求路径 import 根级 scripts / 读 repo-root data/fixtures → prod 500（本地+CI 掩盖）** | **请求路径数据 materialise 入 workbench_api/ 包 + 缺失守门 + L2 真 VM 200** | **deploy artifact 边界** |
+| **v0.9.34 §12.10.1（B038）** | **manual-only CLI 接入 timer 后首次 prod 执行 → `import scripts.*` ModuleNotFoundError（B033 起隐患，manual-only 期全程掩盖）** | **接入自动执行路径时 CLI 及 import 闭包按 §12.10 重审 + AST 守门 + L2 手动 trigger service 验真** | **deploy artifact 边界（扩到所有生产执行路径）** |
 
 **来源：** B034 F003 fix-round（commit `d1c2b30`）+ F004 fix-round 1（commit `ec02894`）；signoff `docs/test-reports/B034-news-ticker-embedding-signoff-2026-06-04.md` §Framework Learnings first-class 列入 + proposed-learnings 二例合并；B034 done 阶段用户确认沉淀。
 

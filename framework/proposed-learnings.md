@@ -77,4 +77,6 @@
 
 **状态：** 待确认（单例；可与未来同类 sudoers/ops-privilege 案例二例合并，遵循"等二例再沉淀"原则）
 
+<!-- 2026-06-06: v0.9.34 沉淀完成（B038：§12.10 自包含审计扩到所有生产执行路径）：B038 F003 L2 blocker — news/cli.py 接入 workbench-news.timer 后首次 prod 执行触发 import scripts.* ModuleNotFoundError（B033 起隐患，manual-only 期全程掩盖）。signoff §Framework Learnings 由 Planner done 阶段裁定沉淀。写入 generator.md §12.10.1（manual-only CLI 接入自动执行路径时按 §12.10 重审 + 规约 5 + L2 手动 trigger service 验真 + 对比表 v0.9.34 行）+ CHANGELOG v0.9.34。边界 (q)→(r) 收编属产品边界（已落 project-status §永久硬边界），非 framework；B037-OPS1 durable 首验属预期行为确认，不单独沉淀。 -->
+
 <!-- 当前无活动候选（待确认条目）。 -->
