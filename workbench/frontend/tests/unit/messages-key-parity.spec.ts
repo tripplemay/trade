@@ -65,6 +65,23 @@ describe("messages bundle parity", () => {
     }
   });
 
+  it("metric tooltips are present + non-empty in both locales (B040)", () => {
+    // The 7 Robinhood metric tooltips must exist AND be non-empty in zh-CN +
+    // en (hand-written bilingual explanations; key parity above bans a
+    // one-sided key, this also bans an emptied tooltip).
+    const KEYS = ["sharpe", "sortino", "calmar", "cagr", "maxDrawdown", "volatility", "turnover"];
+    for (const bundle of [zhCNMessages, enMessages] as const) {
+      const tooltips = (
+        bundle as unknown as {
+          metrics?: { tooltips?: Record<string, string> };
+        }
+      ).metrics?.tooltips;
+      for (const key of KEYS) {
+        expect((tooltips?.[key] ?? "").trim().length, `metrics.tooltips.${key}`).toBeGreaterThan(0);
+      }
+    }
+  });
+
   it("every leaf value is a string in both bundles", () => {
     // Empty-string leaves are intentional in some namespaces (e.g.
     // ternary "override marker" suffixes that may render as no-op);

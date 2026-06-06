@@ -195,6 +195,17 @@
       "columnNotional": "Notional"
     }
   },
+  "metrics": {
+    "tooltips": {
+      "sharpe": "Risk-adjusted return: excess return earned per unit of volatility. Higher is better. A historical backtest statistic, not a future prediction.",
+      "sortino": "Like Sharpe, but penalises only downside volatility. Higher is better. Historical statistic, not a prediction.",
+      "calmar": "Annual return ÷ maximum drawdown — return earned per unit of drawdown. Higher is better. Historical statistic.",
+      "cagr": "Compound annual growth rate over the backtest period. A historical result, not a promised or expected return.",
+      "maxDrawdown": "Largest peak-to-trough drop during the backtest. Closer to 0 is better. Historical statistic.",
+      "volatility": "Annualised volatility — how much returns swing. Lower is steadier. Historical statistic, not a prediction.",
+      "turnover": "How often the portfolio rebalances. Lower generally means lower trading cost."
+    }
+  },
   "reports": {
     "title": "Reports",
     "count": "{count} reports",

@@ -19,11 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import {
   Select,
   SelectContent,
@@ -31,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MetricsDisplay, type MetricStat } from "@/components/metrics/MetricsDisplay";
 import { cn } from "@/lib/utils";
 import type { ColDef } from "ag-grid-community";
 import type { components } from "@/types/api";
@@ -58,31 +55,25 @@ function buildTradeColumns(
 
 function MetricsCard({ metrics }: { metrics: BacktestRunResponse["metrics"] | null }) {
   const t = useTranslations("backtest.metrics");
-  const Stat = ({ label, value }: { label: string; value: string }) => (
-    <div>
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className="numeric text-lg text-foreground">{value}</div>
-    </div>
-  );
+  // Calmar is derived (BacktestMetrics has no Calmar field): CAGR / |MDD|.
+  const calmar =
+    metrics && metrics.max_drawdown !== 0 ? metrics.cagr / Math.abs(metrics.max_drawdown) : null;
+  const stats: MetricStat[] = [
+    { key: "cagr", value: metrics?.cagr ?? null, format: "percent" },
+    { key: "sharpe", value: metrics?.sharpe ?? null, format: "ratio" },
+    { key: "sortino", value: metrics?.sortino ?? null, format: "ratio" },
+    { key: "calmar", value: calmar, format: "ratio" },
+    { key: "maxDrawdown", value: metrics?.max_drawdown ?? null, format: "percent" },
+    { key: "turnover", value: metrics?.turnover ?? null, format: "ratio" },
+  ];
   return (
     <Card data-testid="backtest-metrics">
       <CardHeader>
         <CardTitle>{t("title")}</CardTitle>
         <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
-      <CardContent className="grid grid-cols-3 gap-4 sm:grid-cols-6">
-        <Stat label={t("cagr")} value={metrics ? `${(metrics.cagr * 100).toFixed(2)}%` : "—"} />
-        <Stat label={t("sharpe")} value={metrics ? metrics.sharpe.toFixed(2) : "—"} />
-        <Stat label={t("sortino")} value={metrics?.sortino ? metrics.sortino.toFixed(2) : "—"} />
-        <Stat
-          label={t("maxDrawdown")}
-          value={metrics ? `${(metrics.max_drawdown * 100).toFixed(2)}%` : "—"}
-        />
-        <Stat label={t("turnover")} value={metrics ? metrics.turnover.toFixed(2) : "—"} />
-        <Stat
-          label={t("winRate")}
-          value={metrics?.win_rate ? `${(metrics.win_rate * 100).toFixed(2)}%` : "—"}
-        />
+      <CardContent>
+        <MetricsDisplay stats={stats} />
       </CardContent>
     </Card>
   );
@@ -170,7 +161,9 @@ export default function BacktestPage() {
         name: "SPY",
         color: "#888888",
         data: result.equity
-          .filter((p): p is typeof p & { benchmark_spy: number } => typeof p.benchmark_spy === "number")
+          .filter(
+            (p): p is typeof p & { benchmark_spy: number } => typeof p.benchmark_spy === "number",
+          )
           .map((p) => ({ time: p.date, value: p.benchmark_spy })),
       });
       series.push({
@@ -178,7 +171,9 @@ export default function BacktestPage() {
         name: "60/40",
         color: "#9ca3af",
         data: result.equity
-          .filter((p): p is typeof p & { benchmark_6040: number } => typeof p.benchmark_6040 === "number")
+          .filter(
+            (p): p is typeof p & { benchmark_6040: number } => typeof p.benchmark_6040 === "number",
+          )
           .map((p) => ({ time: p.date, value: p.benchmark_6040 })),
       });
     }
@@ -219,143 +214,140 @@ export default function BacktestPage() {
         data-testid="backtest-resizable-group"
         className="flex-1 overflow-hidden rounded-lg border border-border"
       >
-      <ResizablePanelGroup
-        orientation="horizontal"
-        className="h-full w-full"
-      >
-        <ResizablePanel defaultSize={28} minSize={20} className="overflow-y-auto">
-          <Card className="m-0 rounded-none border-0 shadow-none">
-            <CardHeader>
-              <CardTitle>{tSelector("title")}</CardTitle>
-              <CardDescription>{tSelector("description")}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <label className="block space-y-1 text-xs text-muted-foreground">
-                <span>{tSelector("strategyLabel")}</span>
-                <Select value={strategyId} onValueChange={setStrategyId}>
-                  <SelectTrigger data-testid="backtest-strategy-select">
-                    <SelectValue placeholder={tSelector("strategyPlaceholder")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {strategies.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </label>
-              <label className="block space-y-1 text-xs text-muted-foreground">
-                <span>{tSelector("snapshotLabel")}</span>
-                <Input
-                  data-testid="backtest-snapshot-input"
-                  value={snapshotId}
-                  onChange={(e) => setSnapshotId(e.target.value)}
-                />
-              </label>
-              <div className="grid grid-cols-2 gap-2">
+        <ResizablePanelGroup orientation="horizontal" className="h-full w-full">
+          <ResizablePanel defaultSize={28} minSize={20} className="overflow-y-auto">
+            <Card className="m-0 rounded-none border-0 shadow-none">
+              <CardHeader>
+                <CardTitle>{tSelector("title")}</CardTitle>
+                <CardDescription>{tSelector("description")}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
                 <label className="block space-y-1 text-xs text-muted-foreground">
-                  <span>{tSelector("startDate")}</span>
-                  <Input
-                    type="date"
-                    data-testid="backtest-start-date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                  />
+                  <span>{tSelector("strategyLabel")}</span>
+                  <Select value={strategyId} onValueChange={setStrategyId}>
+                    <SelectTrigger data-testid="backtest-strategy-select">
+                      <SelectValue placeholder={tSelector("strategyPlaceholder")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {strategies.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </label>
                 <label className="block space-y-1 text-xs text-muted-foreground">
-                  <span>{tSelector("endDate")}</span>
+                  <span>{tSelector("snapshotLabel")}</span>
                   <Input
-                    type="date"
-                    data-testid="backtest-end-date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
+                    data-testid="backtest-snapshot-input"
+                    value={snapshotId}
+                    onChange={(e) => setSnapshotId(e.target.value)}
                   />
                 </label>
-              </div>
-              <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                <input
-                  type="checkbox"
-                  data-testid="backtest-comparison-toggle"
-                  checked={comparisonOn}
-                  onChange={(e) => setComparisonOn(e.target.checked)}
-                />
-                <span>{tSelector("compare")}</span>
-              </label>
-              <Button
-                data-testid="backtest-run"
-                onClick={handleRun}
-                disabled={running || !strategyId}
-                className="w-full"
-              >
-                {running ? tSelector("running") : tSelector("run")}
-              </Button>
-            </CardContent>
-          </Card>
-        </ResizablePanel>
-
-        <ResizableHandle withHandle />
-
-        <ResizablePanel defaultSize={72} minSize={40} className="overflow-y-auto">
-          <div className="space-y-4 p-4">
-            <MetricsCard metrics={result?.metrics ?? null} />
-            <Card>
-              <CardHeader>
-                <CardTitle>{tEquity("title")}</CardTitle>
-                <CardDescription>{tEquity("description")}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <EquityCurveChart
-                  series={equitySeries}
-                  visibleRange={sharedRange}
-                  onVisibleRangeChange={setSharedRange}
-                  height={260}
-                />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>{tDrawdown("title")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <DrawdownChart
-                  data={drawdownData}
-                  visibleRange={sharedRange}
-                  onVisibleRangeChange={setSharedRange}
-                  height={160}
-                />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>{tTrades("title")}</CardTitle>
-                  <CardDescription>
-                    {tTrades("rows", { count: result?.trades.length ?? 0 })}
-                  </CardDescription>
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="block space-y-1 text-xs text-muted-foreground">
+                    <span>{tSelector("startDate")}</span>
+                    <Input
+                      type="date"
+                      data-testid="backtest-start-date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                    />
+                  </label>
+                  <label className="block space-y-1 text-xs text-muted-foreground">
+                    <span>{tSelector("endDate")}</span>
+                    <Input
+                      type="date"
+                      data-testid="backtest-end-date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                    />
+                  </label>
                 </div>
+                <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    data-testid="backtest-comparison-toggle"
+                    checked={comparisonOn}
+                    onChange={(e) => setComparisonOn(e.target.checked)}
+                  />
+                  <span>{tSelector("compare")}</span>
+                </label>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  data-testid="backtest-export-trades"
-                  onClick={() => tradesRef.current?.exportCsv("backtest-trades.csv")}
-                  disabled={!result || result.trades.length === 0}
+                  data-testid="backtest-run"
+                  onClick={handleRun}
+                  disabled={running || !strategyId}
+                  className="w-full"
                 >
-                  {tTrades("export")}
+                  {running ? tSelector("running") : tSelector("run")}
                 </Button>
-              </CardHeader>
-              <CardContent>
-                <DataTable<BacktestTrade>
-                  ref={tradesRef}
-                  rowData={result?.trades ?? []}
-                  columnDefs={tradeColumns}
-                  height={320}
-                />
               </CardContent>
             </Card>
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+          </ResizablePanel>
+
+          <ResizableHandle withHandle />
+
+          <ResizablePanel defaultSize={72} minSize={40} className="overflow-y-auto">
+            <div className="space-y-4 p-4">
+              <MetricsCard metrics={result?.metrics ?? null} />
+              <Card>
+                <CardHeader>
+                  <CardTitle>{tEquity("title")}</CardTitle>
+                  <CardDescription>{tEquity("description")}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <EquityCurveChart
+                    series={equitySeries}
+                    visibleRange={sharedRange}
+                    onVisibleRangeChange={setSharedRange}
+                    height={260}
+                  />
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>{tDrawdown("title")}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <DrawdownChart
+                    data={drawdownData}
+                    visibleRange={sharedRange}
+                    onVisibleRangeChange={setSharedRange}
+                    height={160}
+                  />
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>{tTrades("title")}</CardTitle>
+                    <CardDescription>
+                      {tTrades("rows", { count: result?.trades.length ?? 0 })}
+                    </CardDescription>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    data-testid="backtest-export-trades"
+                    onClick={() => tradesRef.current?.exportCsv("backtest-trades.csv")}
+                    disabled={!result || result.trades.length === 0}
+                  >
+                    {tTrades("export")}
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <DataTable<BacktestTrade>
+                    ref={tradesRef}
+                    rowData={result?.trades ?? []}
+                    columnDefs={tradeColumns}
+                    height={320}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     </section>
   );
