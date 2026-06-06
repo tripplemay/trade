@@ -1,0 +1,30 @@
+[
+  {
+    "locale": "zh-CN",
+    "disclaimerText": "这是研究参考，不是收益预测。最终决策由你判断。",
+    "disclaimerHasSnippet": true,
+    "disclaimerButtonCount": 0,
+    "advisorButtonCount": 0,
+    "oldDashboardCount": 0,
+    "syntheticBannerCount": 0,
+    "homeAdvisorVisible": true,
+    "consoleErrors": [],
+    "apiErrors": [],
+    "screenshot": "/Users/yixingzhou/project/trade/docs/screenshots/B039-home-advisor-disclaimer/advisor-disclaimer-zh-CN.png",
+    "url": "https://trade.guangai.ai/"
+  },
+  {
+    "locale": "en",
+    "disclaimerText": "This is a research reference, not an earnings prediction. The final decision is yours.",
+    "disclaimerHasSnippet": true,
+    "disclaimerButtonCount": 0,
+    "advisorButtonCount": 0,
+    "oldDashboardCount": 0,
+    "syntheticBannerCount": 0,
+    "homeAdvisorVisible": true,
+    "consoleErrors": [],
+    "apiErrors": [],
+    "screenshot": "/Users/yixingzhou/project/trade/docs/screenshots/B039-home-advisor-disclaimer/advisor-disclaimer-en.png",
+    "url": "https://trade.guangai.ai/"
+  }
+]

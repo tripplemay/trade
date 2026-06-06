@@ -19,7 +19,7 @@
       "title": "Codex L1 + L2 真 VM 验收（disclaimer 浏览器手验双语）+ signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "L1 (CI 内)：F001 验收脚本跑通 — frontend vitest ≥ baseline+ / lint / typecheck / Playwright Daily Journey disclaimer 可见不破；**i18n disclaimer 双语齐 + 无禁词 + 永存守门跑过**；**no-execution 守门**（AdvisorSection 含 disclaimer 无下单按钮 + 中文禁词 0）；backend 无 diff（确认纯前端）；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）；(2) /api/debug/recent-errors={count:0,records:[]}；(3) **Home AI Advisor 段 disclaimer 浏览器手验**：advice/引用下方 ⚠️ 研究声明「这是研究参考，不是收益预测」可见 + 双语切换（zh-CN/en）+ 无下单按钮（no-execution UI）；ok 态 + 若有 INSUFFICIENT sleeve 两态都带 disclaimer；截图；(4) Production HEAD ≡ main HEAD；(5) B026 banner 仍 absent。**本批纯前端无新路由/无新 timer**，§23 新路由 200 / §24 timer 接线检查标 N/A。Signoff: docs/test-reports/B039-home-advisor-disclaimer-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（§Production/HEAD + §Post-signoff Deploy；§23/§24 N/A）；docs/screenshots/B039-home-advisor-disclaimer/ ≥1 PNG（Home advisor 段 disclaimer，zh 或 +en）。Framework 候选：薄批次预计无；若有记 signoff §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]

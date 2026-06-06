@@ -1,8 +1,8 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "B039 Home AI Advisor disclaimer（Phase 3 / Stream 4.C，最小范围，前端-only）— 给 Home 第二段 AI Advisor 补缺失的双语 disclaimer。范围再定义（2026-06-06 用户已批）：roadmap S4.C 字面『Home 渲染 AI 一句话建议+引用+disclaimer+INSUFFICIENT fallback』经 codebase 核查，B037 复用 AdvisorSection 已渲染 advice/引用(quant_signal_sha+news_urls)/INSUFFICIENT_GROUNDING fallback(双语段位保留)/per-sleeve——唯一明确 gap=mockup §2『⚠️ 这是研究参考，不是收益预测』disclaimer 未渲染。后端 /api/advisor(B036) 已足够，无需后端改动。决策（★用户批）：①B039 最小范围=补 disclaimer+验证★；②Master 一句话总结不做★(需 B036 后端扩展，留后续)；③后端无改动。2 features：(F001 g) AdvisorSection 加双语 disclaimer(ok+INSUFFICIENT 两态)+i18n zh/en key+i18n-disclaimer-永存守门(v0.9.26)+AdvisorSection.spec 断言+no-execution 守门覆盖+Playwright Daily Journey 断言；(F002 c) L1+L2(disclaimer 浏览器手验双语+no-execution+永存守门)+signoff(纯前端无新路由/timer，§23/§24 标 N/A)。永久硬边界继承：no-execution UI / AI 边界(disclaimer 是固定模板非 AI 生成，不改 B036 生成式/red-team gate) / i18n disclaimer 双语永存(v0.9.26)。不做：Master 一句话总结 / 改 /api/advisor schema / 改 AdvisorSection 既有 advice/citations/fallback / 触 B038 新闻段/market-context/三段结构 / recommendations/risk/reports 页。",
   "total_features": 2,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
   "current_sprint": "F002",
   "last_updated": "2026-06-06",
@@ -19,16 +19,16 @@
   "docs": {
     "spec": "docs/specs/B039-home-advisor-disclaimer-spec.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/B039-home-advisor-disclaimer-signoff-2026-06-06.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
+  "evaluator_feedback": "PASS (2026-06-06): B039 F002 signed off. L1 targeted frontend vitest 38 passed (AdvisorSection + messages-key-parity + no-execution) and artifact secret grep 0 hits; backend diff confirmed none. L2 production /api/health.version=c4efd65 and authenticated /api/debug/recent-errors={count:0,records:[]}. Browser hand check zh-CN/en confirms advisor disclaimer visible with exact bilingual text, no buttons under advisor/disclaimer, old dashboard absent, synthetic banner absent, and no console/API errors. Pure frontend batch: §23/§24 N/A.",
   "generator_handoff": "B039 F001 完成 + Frontend CI success（commit c4efd65）+ 状态 building→verifying 交 Codex F002。**纯前端无 backend diff**（确认 git status 仅 workbench/frontend/）。交付：①AdvisorSection.tsx 加 card 级 `advisor-disclaimer` 元素（引用/advice 下方）——**ok + insufficient_grounding + empty 三态都常驻显示**（通用研究声明非 advice 专属），仅 loading/error 隐藏；②i18n `home.advisor.disclaimer` 双语（en「This is a research reference, not an earnings prediction. The final decision is yours.」/ zh「这是研究参考，不是收益预测。最终决策由你判断。」）；③守门：messages-key-parity 加 disclaimer 双语永存显式断言（v0.9.26 家族）+ no-execution 扩 AdvisorSection.tsx + AdvisorSection.spec +6（两态/empty/error/双语）+ b037-home Daily Journey 加 advisor-disclaimer 可见+无 button+双语文案。Gates：frontend lint0/typecheck/vitest 219(+10)/Playwright 绿；backend 不动。**关键设计**：disclaimer 在 empty 态也显示，故 CI/prod advisor 表空时 disclaimer 仍可见（Playwright 在 CI 空 advisor 下断言通过）。**F002 Codex L2**：health 200+SHA≡main；recent-errors=0；**Home AI Advisor 段 disclaimer 浏览器手验**（advice/引用下方 ⚠️ 研究声明可见+双语切换 zh/en+无下单按钮）+截图；HEAD≡main；B026 absent。**纯前端无新路由/timer，§23/§24 标 N/A**。本机 SSH id_ed25519 可登 VM 协助。",
   "session_notes": {
     "planner": "2026-06-06 长程会话：B037 done→框架 v0.9.33→B037-OPS1 done→B038 done→框架 v0.9.34→B039 规划。本段为 B039 planning。(1) B038 已干净流程签收(1 fix-round=§12.10 self-contain blocker，news/cli import scripts.* 接 timer 后首暴露)；边界 (q)→(r) 已落 project-status §永久硬边界(generator/codex 已写)。(2) **框架 v0.9.34（用户批立即沉淀）**：B038 signoff §Framework Learnings → generator.md §12.10.1『自包含审计扩到所有生产执行路径(含 timer 调用的 manual-only CLI)』+ 规约 5(接入自动执行路径时重审+AST 守门+L2 手动 trigger service 验真)+对比表 v0.9.34 行 + CHANGELOG。commit 9ee817e。(3) **B039 范围再定义(同 B038 模式)**：Explore 核查 B037 复用 AdvisorSection 已渲染 advice/引用/INSUFFICIENT fallback/per-sleeve；**唯一 gap=mockup §2 disclaimer 未渲染**。用户批最小范围=补 disclaimer(前端-only，后端 /api/advisor 已足够无需改)。Master 一句话总结(需 B036 后端生成)用户批不做留后续。(4) spec docs/specs/B039-home-advisor-disclaimer-spec.md 10 章；features.json 2(1g+1c)；progress building。(5) F001 交 Generator：AdvisorSection.tsx 引用块下加 disclaimer(data-testid=advisor-disclaimer，ok+INSUFFICIENT 两态都显示)+i18n zh/en disclaimer key+i18n-disclaimer-永存守门(v0.9.26 复用)+AdvisorSection.spec 断言+no-execution 守门+Playwright Daily Journey。(6) F002 Codex：纯前端无新路由/timer(§23/§24 N/A)；L2 disclaimer 浏览器手验双语+截图+signoff。(7) **下一会话 done 阶段注意**：薄批次预计无 framework 候选；project-status §Framework 状态仍停 v0.9.32，需在某次 done 一并更新到 v0.9.34(本会话已沉淀 v0.9.33+v0.9.34，project-status §Framework 段未同步——下次 done 补)。后续 B040 Reports Robinhood-style 重构(真实新批次，非 B037 复用 gap，需正常规划)。",
     "generator": "2026-06-06 B039 F001 完成（commit c4efd65），Frontend CI success，status→verifying 交 Codex F002。纯前端薄批次：AdvisorSection 补 mockup §2 唯一 gap=双语 research disclaimer。设计要点：disclaimer 放 card 级（CardContent 底部），ok+insufficient+empty 三态常驻、loading/error 隐藏——这样 CI/prod advisor 表空时 disclaimer 仍渲染（Playwright 在 CI 空 advisor 下断言可见才不 flake）。守门复用 messages-key-parity（双语 key parity 已自动锁，再加显式 disclaimer 非空永存断言）+ no-execution 扩 AdvisorSection.tsx。坑：messages-key-parity 类型断言需 `as unknown as` 中转（enMessages 具体类型不能直接 as 成 Record）。无 framework 候选（薄批次，符合 planner 预期）。",
-    "evaluator": null
+    "evaluator": "2026-06-06 B039 F002 首轮验收通过并签收。L1：frontend targeted vitest 38 passed（AdvisorSection.spec + messages-key-parity + no-execution），secret grep 0 hits，backend 无 diff。L2：prod /api/health.version=c4efd65f8e48eff3ff16b37cc49b0b2e28059bc7；authenticated /api/debug/recent-errors={count:0,records:[]}；production Home zh-CN/en 两轮手验均显示 advisor-disclaimer，文本分别为『这是研究参考，不是收益预测。最终决策由你判断。』与 'This is a research reference, not an earnings prediction. The final decision is yours.'；advisor/disclaimer 下均 0 button，old dashboard 0，synthetic banner 0，截图落 docs/screenshots/B039-home-advisor-disclaimer/。signoff=docs/test-reports/B039-home-advisor-disclaimer-signoff-2026-06-06.md。"
   },
   "features": [
     "F001",
