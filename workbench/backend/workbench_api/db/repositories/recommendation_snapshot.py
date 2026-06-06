@@ -1,0 +1,92 @@
+"""B044 F002 — RecommendationSnapshotRepository.
+
+Wraps the ``recommendation_snapshot`` table with the operations the daily
+recommendations precompute (``workbench-recommendations`` timer) and the
+``GET /api/recommendations/current`` read path need:
+
+- :meth:`save_batch` — idempotent write of one as_of_date's full target set.
+  Deletes any existing rows for that ``as_of_date`` then inserts the new batch,
+  so a same-day re-run replaces rather than duplicates (the daily precompute
+  recomputes "as of today" each run).
+- :meth:`latest_snapshot` — all rows of the most recent ``as_of_date`` (the
+  current target portfolio the request path maps to ``TargetPosition``).
+
+The repository never imports ``trade`` or touches the network/disk — the
+precompute job does the scoring and passes the rows in. That keeps the read
+path self-contained (§12.10) and lets tests exercise the repo against
+in-memory SQLite (mirrors B037 PriceSnapshotRepository).
+"""
+
+from __future__ import annotations
+
+from collections.abc import Sequence
+from datetime import UTC, date, datetime
+from typing import Any
+from uuid import UUID, uuid4
+
+from sqlalchemy import delete, select
+
+from workbench_api.db.models.recommendation_snapshot import RecommendationSnapshot
+from workbench_api.db.repositories.base import Repository
+
+
+class RecommendationSnapshotRepository(Repository[RecommendationSnapshot, UUID]):
+    model = RecommendationSnapshot
+    primary_key_attr = "id"
+
+    def save_batch(
+        self,
+        *,
+        as_of_date: date,
+        rows: Sequence[dict[str, Any]],
+        master_meta: dict[str, Any],
+        computed_at: datetime | None = None,
+    ) -> list[RecommendationSnapshot]:
+        """Replace the target set for ``as_of_date`` with ``rows``.
+
+        Each row dict carries ``symbol`` / ``sleeve`` / ``target_weight`` and an
+        optional ``rationale``. ``master_meta`` (planning_weights + data_source)
+        is denormalised onto every row of the batch. Idempotent: an existing
+        ``as_of_date`` is deleted first, so a daily re-run overwrites cleanly.
+        ``computed_at`` defaults to now(UTC) and is overridable for tests.
+        """
+
+        stamp = computed_at or datetime.now(UTC)
+        self._session.execute(
+            delete(RecommendationSnapshot).where(
+                RecommendationSnapshot.as_of_date == as_of_date
+            )
+        )
+        saved: list[RecommendationSnapshot] = []
+        for row in rows:
+            entry = RecommendationSnapshot(
+                id=uuid4(),
+                as_of_date=as_of_date,
+                symbol=row["symbol"],
+                sleeve=row["sleeve"],
+                target_weight=float(row["target_weight"]),
+                rationale=row.get("rationale"),
+                computed_at=stamp,
+                master_meta=master_meta,
+            )
+            self._session.add(entry)
+            saved.append(entry)
+        self._session.flush()
+        return saved
+
+    def latest_snapshot(self) -> list[RecommendationSnapshot]:
+        """Return all rows of the most recent ``as_of_date`` (empty if none)."""
+
+        latest_date = self._session.execute(
+            select(RecommendationSnapshot.as_of_date)
+            .order_by(RecommendationSnapshot.as_of_date.desc())
+            .limit(1)
+        ).scalar_one_or_none()
+        if latest_date is None:
+            return []
+        stmt = (
+            select(RecommendationSnapshot)
+            .where(RecommendationSnapshot.as_of_date == latest_date)
+            .order_by(RecommendationSnapshot.target_weight.desc())
+        )
+        return list(self._session.execute(stmt).scalars().all())

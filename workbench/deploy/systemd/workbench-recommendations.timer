@@ -1,0 +1,16 @@
+[Unit]
+Description=Daily timer for workbench recommendations precompute (boundary (r-c): read-only quant scoring)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B044-real-scoring-precompute-spec.md
+
+[Timer]
+# 03:00 UTC — after market-context (00:00), prices (00:30), advisor (01:00)
+# and news (02:00), so the Master Portfolio target is recomputed once the
+# day's read-only data fetches have landed. Persistent=true catches up a
+# missed run after a VM reboot; the precompute is idempotent
+# (RecommendationSnapshotRepository.save_batch overwrites the as_of_date).
+OnCalendar=*-*-* 03:00:00
+Persistent=true
+Unit=workbench-recommendations.service
+
+[Install]
+WantedBy=timers.target

@@ -26,14 +26,15 @@ MARKET_PKG = BACKEND_ROOT / "workbench_api" / "market"
 ADVISOR_PKG = BACKEND_ROOT / "workbench_api" / "advisor"
 PRICES_PKG = BACKEND_ROOT / "workbench_api" / "prices"
 NEWS_PKG = BACKEND_ROOT / "workbench_api" / "news"
-# Four scheduler packages are scanned: the market-context fetch (B035), the
-# AI advisor precompute (B036), the price-snapshot fetch (B037), and the
-# news ingest (B038, boundary (q)→(r)). Boundary (r) was revised in B036 — a
-# scheduler may run CI-safety-gated advisor precompute (which imports the LLM
-# gateway), but still never a trade-execution surface. The B037 price fetch
-# and the B038 news fetch are read-only data; news ingest is also
-# non-generative (B034 boundary — embed only, never advise).
-SCHEDULER_PKGS = (MARKET_PKG, ADVISOR_PKG, PRICES_PKG, NEWS_PKG)
+RECOMMENDATIONS_PKG = BACKEND_ROOT / "workbench_api" / "recommendations"
+# Five scheduler packages are scanned: the market-context fetch (B035), the
+# AI advisor precompute (B036), the price-snapshot fetch (B037), the news
+# ingest (B038, boundary (q)→(r)), and the recommendations precompute (B044,
+# boundary (r-c) determinstic quant scoring). Boundary (r) was revised in B036
+# — a scheduler may run CI-safety-gated advisor precompute (which imports the
+# LLM gateway); B044 adds quant scoring that imports the ``trade`` package —
+# but NONE may ever reach a trade-EXECUTION surface (broker/order/fills/...).
+SCHEDULER_PKGS = (MARKET_PKG, ADVISOR_PKG, PRICES_PKG, NEWS_PKG, RECOMMENDATIONS_PKG)
 REPO_ROOT = Path(__file__).resolve().parents[4]
 SYSTEMD_DIR = REPO_ROOT / "workbench" / "deploy" / "systemd"
 SERVICE_UNIT = SYSTEMD_DIR / "workbench-market-context.service"
@@ -44,6 +45,8 @@ PRICES_SERVICE_UNIT = SYSTEMD_DIR / "workbench-prices.service"
 PRICES_TIMER_UNIT = SYSTEMD_DIR / "workbench-prices.timer"
 NEWS_SERVICE_UNIT = SYSTEMD_DIR / "workbench-news.service"
 NEWS_TIMER_UNIT = SYSTEMD_DIR / "workbench-news.timer"
+RECO_SERVICE_UNIT = SYSTEMD_DIR / "workbench-recommendations.service"
+RECO_TIMER_UNIT = SYSTEMD_DIR / "workbench-recommendations.timer"
 DEPLOY_SH = REPO_ROOT / "workbench" / "deploy" / "scripts" / "deploy.sh"
 
 # Dotted-path fragments that mark a TRADE-EXECUTION surface a scheduler must
@@ -323,3 +326,54 @@ def test_news_timer_wired_by_dry_loop() -> None:
         "(B037-OPS1 durable auto-wiring — zero deploy.sh change)"
     )
     assert NEWS_TIMER_UNIT.is_file()
+
+
+# --- B044 recommendations precompute (boundary (r-c): read-only quant scoring) ---
+
+
+def test_recommendations_service_execstart_runs_reco_cli() -> None:
+    assert RECO_SERVICE_UNIT.is_file(), f"missing {RECO_SERVICE_UNIT}"
+    text = RECO_SERVICE_UNIT.read_text(encoding="utf-8")
+    execstart = [ln for ln in text.splitlines() if ln.strip().startswith("ExecStart=")]
+    assert len(execstart) == 1
+    assert "workbench_api.recommendations.cli" in execstart[0]
+    assert "EnvironmentFile=/etc/workbench/workbench.env" in text
+
+
+def test_recommendations_service_references_no_trade_execution() -> None:
+    directives = "\n".join(
+        ln
+        for ln in RECO_SERVICE_UNIT.read_text(encoding="utf-8").splitlines()
+        if not ln.strip().startswith("#")
+    ).lower()
+    for frag in ("broker", "order_ticket", "fills", "reconcile"):
+        assert frag not in directives, (
+            f"recommendations .service directive references trade-execution {frag!r} "
+            "(boundary (r-c))"
+        )
+
+
+def test_recommendations_timer_runs_daily_and_pulls_service() -> None:
+    assert RECO_TIMER_UNIT.is_file(), f"missing {RECO_TIMER_UNIT}"
+    text = RECO_TIMER_UNIT.read_text(encoding="utf-8")
+    assert "OnCalendar=" in text
+    assert "Unit=workbench-recommendations.service" in text
+    assert "WantedBy=timers.target" in text
+
+
+def test_recommendations_timer_wired_by_dry_loop() -> None:
+    """B044 timer installs via the B037-OPS1 workbench-*.timer loop — no
+    hardcoded enable literal in deploy.sh."""
+    text = DEPLOY_SH.read_text(encoding="utf-8")
+    assert "enable --now workbench-recommendations.timer" not in text
+    assert RECO_TIMER_UNIT.is_file()
+
+
+def test_recommendations_precompute_may_import_trade() -> None:
+    """Boundary (r-c, B044): the recommendations precompute is explicitly
+    ALLOWED to import the ``trade`` package (real Master Portfolio scoring) —
+    pin that it does, so a regression that severs the scoring import is caught.
+    The request path must NOT import trade (separate §12.10 AST guard)."""
+
+    precompute_src = (RECOMMENDATIONS_PKG / "precompute.py").read_text(encoding="utf-8")
+    assert "trade.backtest.master_portfolio" in precompute_src
