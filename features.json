@@ -6,7 +6,7 @@
       "title": "trade/ 可安装 + deploy.sh 装进 VM venv + CI build/install 纳入 trade/（backend 启动/部署不破）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【2026-06-06 用户已批：架构 precompute→DB→read + 评分位置 A（trade/ 入 VM venv），见 spec §2】(1) **trade/ 可安装**：trade/ 加 packaging（pyproject 或纳入 backend wheel 构建 / editable install），使其可装入 Python 环境；处理 trade/ 自身依赖（pandas/numpy 等）解析。(2) **deploy.sh 装进 venv**：deploy.sh 把 trade/ 装进 /opt/workbench/.venv（与 workbench_api 并存），best-effort 不崩 dev rehearsal。(3) **CI build/install 纳入**：backend CI build/test 流程确保 wheel/install 含 trade/ + 依赖正确（backend 启动不变）。(4) Gates：backend pytest ≥ baseline（trade/ install 不破既有测试）；ruff/mypy 0（trade/ 若纳入 lint scope 单独处理，否则隔离）；deploy.sh dev rehearsal 不崩；既有 backend 路由/启动不破。(5) 不动：workbench_api 既有逻辑 / 请求路径（本批 F003 才改 recommendations 读路径）/ 前端。(6) **注意**：本 feature 是后续 F002 precompute import trade/ 的前置；仅让 trade/ 在环境可用，不在本 feature 接评分。",
       "design_decisions": [
         "架构（2026-06-06 用户批）：precompute→DB→read（照 B036 advisor 读侧范式）。",
