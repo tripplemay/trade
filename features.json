@@ -6,7 +6,7 @@
       "title": "后端 ReportDetail.metrics 结构化解析（header-signature + 同义词 + Calmar 派生 + graceful null + body_markdown 不变）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【2026-06-06 用户已批：两个面都做，见 spec §2】(1) **Schema** schemas/reports.py：ReportDetail 加可选 metrics: ReportMetrics | None；新 ReportMetrics{sharpe, sortino, calmar, cagr, max_drawdown, volatility, turnover}（全 float|None）。(2) **解析** services/reports.py get_report() 扩：扫已解析 tables，**header-signature 匹配**识别指标表（含 sharpe + max_drawdown 等关键列签名），**同义词映射**（annualized_return→cagr / annualized_volatility→volatility / mdd→max_drawdown），**计算 Calmar=cagr/|max_drawdown|**（max_drawdown=0 时 None）；无可识别表→metrics=None（graceful，不抛错）。(3) **body_markdown 不变**：仅新增 metrics 字段，不改原文；既有 reports list/detail/_extract_tables/cross_links 契约不破。(4) regen api.ts（ReportDetail 加字段）。(5) pytest ≥8：真实语料样式指标表（B016 风格 annualized_return/annualized_volatility/sharpe/max_drawdown/turnover）解析正确 + 同义词映射 + Calmar 派生（含 mdd=0 → None）+ 无指标表→metrics=None + 多表选对 + body_markdown 完整性（解析前后原文 byte-identical）+ auth-gated 不破。(6) Gates：backend pytest ≥ baseline+≥8 / ruff 0 / mypy 0 / 不引新 secret。(7) 不动：reports 既有 list/table/cross_link 提取 / backtest 运行 / 其他 schema。",
       "design_decisions": [
         "目标面（2026-06-06 用户批）：两个面都做（/backtest 结构化 + /reports detail Markdown 解析）。",
