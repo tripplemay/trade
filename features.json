@@ -1,26 +1,47 @@
 {
-  "sprint": "B039-home-advisor-disclaimer",
+  "sprint": "B040-reports-robinhood",
   "features": [
     {
       "id": "F001",
-      "title": "AdvisorSection 加双语 disclaimer + i18n keys + 永存守门 + vitest + Playwright Daily Journey 断言",
+      "title": "后端 ReportDetail.metrics 结构化解析（header-signature + 同义词 + Calmar 派生 + graceful null + body_markdown 不变）",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【2026-06-06 用户已批：B039 最小范围=补 disclaimer + 验证，见 spec §1-2。B037 复用 AdvisorSection 已渲染 advice/引用/INSUFFICIENT fallback/per-sleeve；唯一 gap=缺 disclaimer】(1) **disclaimer 渲染**：components/advisor/AdvisorSection.tsx 在引用块（advisor-references）下方加 disclaimer 元素（data-testid=advisor-disclaimer），渲染固定模板文案，位置对齐 personas §2 mockup（advice→📎引用→⚠️disclaimer 顺序）；**ok 态 + INSUFFICIENT_GROUNDING 态两态都显示**（通用研究声明非 advice 专属，降级时不消失）。(2) **i18n**：messages/zh-CN.json + en.json advisor 命名空间加 disclaimer key——zh-CN「这是研究参考，不是收益预测。最终决策由你判断。」/ en「This is a research reference, not an earnings prediction. The final decision is yours.」；双语齐 + 无禁词。(3) **i18n-disclaimer-永存守门**（复用/扩 v0.9.26 既有 disclaimer 永存守门）：断言 advisor disclaimer key 在 zh-CN + en 双存，缺一即 fail。(4) **AdvisorSection.spec.tsx 加断言**：disclaimer 渲染（ok 态 + INSUFFICIENT 态）+ 双语 + 文案非空。(5) **no-execution 守门**覆盖 disclaimer 元素（无下单/执行按钮 + 中文禁词同级）。(6) **Playwright Daily Journey**：Home AI Advisor 段 disclaimer 可见（双 locale）。(7) Gates：frontend vitest ≥ baseline+ / lint 0 / typecheck / Playwright 不破；**backend 不动**（无后端 diff，/api/advisor schema 不改）。(8) 不动：AdvisorSection 既有 advice/citations/fallback 渲染（仅追加 disclaimer）/ B038 新闻段 / market-context / 三段 Home 结构 / recommendations/risk/reports 页 / B036 后端生成逻辑。",
+      "status": "pending",
+      "acceptance": "【2026-06-06 用户已批：两个面都做，见 spec §2】(1) **Schema** schemas/reports.py：ReportDetail 加可选 metrics: ReportMetrics | None；新 ReportMetrics{sharpe, sortino, calmar, cagr, max_drawdown, volatility, turnover}（全 float|None）。(2) **解析** services/reports.py get_report() 扩：扫已解析 tables，**header-signature 匹配**识别指标表（含 sharpe + max_drawdown 等关键列签名），**同义词映射**（annualized_return→cagr / annualized_volatility→volatility / mdd→max_drawdown），**计算 Calmar=cagr/|max_drawdown|**（max_drawdown=0 时 None）；无可识别表→metrics=None（graceful，不抛错）。(3) **body_markdown 不变**：仅新增 metrics 字段，不改原文；既有 reports list/detail/_extract_tables/cross_links 契约不破。(4) regen api.ts（ReportDetail 加字段）。(5) pytest ≥8：真实语料样式指标表（B016 风格 annualized_return/annualized_volatility/sharpe/max_drawdown/turnover）解析正确 + 同义词映射 + Calmar 派生（含 mdd=0 → None）+ 无指标表→metrics=None + 多表选对 + body_markdown 完整性（解析前后原文 byte-identical）+ auth-gated 不破。(6) Gates：backend pytest ≥ baseline+≥8 / ruff 0 / mypy 0 / 不引新 secret。(7) 不动：reports 既有 list/table/cross_link 提取 / backtest 运行 / 其他 schema。",
       "design_decisions": [
-        "范围（2026-06-06 用户批）：B039 字面目标 B037 复用 AdvisorSection 已完成；最小范围=补 disclaimer，前端-only 无后端改动。",
-        "Master 一句话总结不做（2026-06-06 用户批）：当前 per-sleeve 渲染可接受；统一 Master-level 需 B036 后端生成，留后续。",
-        "disclaimer 两态都显示（planner 决）：通用研究声明，ok + INSUFFICIENT_GROUNDING 两态均渲染。"
+        "目标面（2026-06-06 用户批）：两个面都做（/backtest 结构化 + /reports detail Markdown 解析）。",
+        "reports 解析（planner 决）：后端 Option A header-signature + 同义词映射 + graceful null；多数异构报告无指标表退回纯 Markdown。",
+        "Calmar 派生（planner 决）：BacktestMetrics 无 Calmar 字段，由 cagr/|max_drawdown| 计算。",
+        "body_markdown 字节不变（planner 决）：仅新增 metrics 字段，完整性守门 byte-identical。"
       ]
     },
     {
       "id": "F002",
-      "title": "Codex L1 + L2 真 VM 验收（disclaimer 浏览器手验双语）+ signoff",
+      "title": "前端共享 Robinhood 原语（MetricsDisplay 大数字卡 + colorForMetric 颜色工具 + 双语指标 tooltip）+ 接入 /backtest",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "(1) **MetricsDisplay** components/metrics/MetricsDisplay.tsx：抽取泛化自 /backtest MetricsCard/Stat（大数字网格 + label + 值）；props 接结构化指标 + loading。(2) **colorForMetric** lib/metric-color.ts：Sharpe/Sortino/Calmar ≥1.0 绿/0–1 琥珀/<0 红；CAGR >0 绿/<0 红；Max Drawdown >-0.05 绿/-0.2~-0.05 琥珀/<-0.2 红；Volatility/Turnover 中性无色（阈值初版默认，可微调）。(3) **双语指标 tooltip**：每个指标 label 包 components/ui/tooltip（radix 现成）；i18n metrics.tooltips.{sharpe,sortino,calmar,maxDrawdown,cagr,volatility,turnover}——英文术语名 + 中文手写解释（如 Sharpe=风险调整后回报…，强调历史统计非预测）；en + zh-CN 双语齐 + 无禁词 + 手动 parity 守门。(4) **接入 /backtest**：用 MetricsDisplay（颜色+tooltip）升级现有 MetricsCard；结构化 BacktestMetrics 现成 + 派生 Calmar。(5) **no-execution 守门**覆盖 MetricsDisplay（无下单/执行按钮 + 中文禁词）。(6) **定位 §1.1**：大数字=历史回测统计，不出预期收益数字；tooltip 确定性手写非 AI。(7) frontend vitest ≥ baseline+：MetricsDisplay 渲染 + colorForMetric 边界（Sharpe -1/0/2.5、CAGR 正负、MDD 三档、vol 中性）+ tooltip i18n 双语。(8) Gates：lint 0 / typecheck / 不破 backend / 不破 /backtest 既有功能。(9) 不动：/reports（F003）/ Home / 其他页 / B036 生成式。",
+      "design_decisions": [
+        "tooltip 确定性手写双语（planner 决）：AI tooltip 文案是 B043；本批手写固定。"
+      ]
+    },
+    {
+      "id": "F003",
+      "title": "前端 /reports/[slug] 接入 MetricsDisplay（metrics 非空渲染 / null graceful）+ body_markdown 完整性 + Playwright",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "(1) **/reports/[slug] 接入**：detail.metrics 非空时在 MarkdownRenderer **上方**渲染 MetricsDisplay 卡片（颜色+双语 tooltip，复用 F002 原语）；metrics=null 时跳过（graceful 纯 Markdown，不显空卡）。(2) **MarkdownRenderer 不动 + body_markdown 不变**：metrics 卡片是独立 section；守门断言 detail.body_markdown 渲染源未被 metrics 逻辑改动（byte-identical 完整性）。(3) frontend vitest：/reports detail metrics 有/无两态（有→大数字卡可见；无→仅 Markdown）+ body_markdown 完整性 + 颜色/tooltip 复用 F002。(4) **Playwright**（两面，双 locale）：/backtest 跑后大数字+颜色可见 + tooltip hover 出中文；/reports 某含指标报告大数字卡可见 + tooltip + Markdown 仍在下方完整。(5) no-execution 守门覆盖 /reports metrics 卡。(6) Gates：frontend vitest ≥ baseline+ / lint 0 / typecheck / Playwright 不破 / 不破 backend。(7) 不动：reports list 页 / _extract_tables / F002 /backtest 接入 / Home。",
+      "design_decisions": []
+    },
+    {
+      "id": "F004",
+      "title": "Codex L1 + L2 真 VM 验收（两面大数字/颜色/双语 tooltip + Markdown 保全）+ signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "L1 (CI 内)：F001 验收脚本跑通 — frontend vitest ≥ baseline+ / lint / typecheck / Playwright Daily Journey disclaimer 可见不破；**i18n disclaimer 双语齐 + 无禁词 + 永存守门跑过**；**no-execution 守门**（AdvisorSection 含 disclaimer 无下单按钮 + 中文禁词 0）；backend 无 diff（确认纯前端）；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）；(2) /api/debug/recent-errors={count:0,records:[]}；(3) **Home AI Advisor 段 disclaimer 浏览器手验**：advice/引用下方 ⚠️ 研究声明「这是研究参考，不是收益预测」可见 + 双语切换（zh-CN/en）+ 无下单按钮（no-execution UI）；ok 态 + 若有 INSUFFICIENT sleeve 两态都带 disclaimer；截图；(4) Production HEAD ≡ main HEAD；(5) B026 banner 仍 absent。**本批纯前端无新路由/无新 timer**，§23 新路由 200 / §24 timer 接线检查标 N/A。Signoff: docs/test-reports/B039-home-advisor-disclaimer-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（§Production/HEAD + §Post-signoff Deploy；§23/§24 N/A）；docs/screenshots/B039-home-advisor-disclaimer/ ≥1 PNG（Home advisor 段 disclaimer，zh 或 +en）。Framework 候选：薄批次预计无；若有记 signoff §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
+      "status": "pending",
+      "acceptance": "L1 (CI 内)：F001+F002+F003 全 generator 验收脚本跑通 — backend pytest ≥ baseline+≥8 / ruff / mypy / frontend vitest ≥ baseline+ / Playwright（两面）不破；**no-execution 守门**（/backtest + /reports metrics 卡无下单按钮 + 中文禁词 0）；**i18n 双语齐 + 无禁词 + tooltip parity 守门**；**body_markdown 完整性守门**跑过；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）；(2) /api/debug/recent-errors={count:0,records:[]}；(3) 既有路由 GET /api/reports/{slug} authenticated 200 + payload 含 metrics 字段（有指标报告非 null / 无指标报告 null）；anon 401；(4) **两面浏览器手验**：/backtest——跑回测后大数字 + 颜色编码（绿/琥珀/红）+ 英文术语 + 中文 tooltip（hover/tap 出现）；/reports/[slug]——含指标报告大数字卡 + 颜色 + tooltip + **Markdown 报告仍完整渲染在下方**；无下单按钮（no-execution UI）；双语切换 zh/en；定位 §1.1 无「预期收益」数字；截图（两面 ≥2 PNG）；(5) Production HEAD ≡ main HEAD；(6) B026 banner 仍 absent。**本批纯前端 UI + 后端解析无全新对外路由**（/reports/[slug] 既有路由验 metrics 字段；§24 timer N/A）。Signoff: docs/test-reports/B040-reports-robinhood-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（§Production/HEAD + §Post-signoff Deploy）；docs/screenshots/B040-reports-robinhood/ ≥2 PNG（/backtest + /reports，zh 或 +en）。Framework 候选：若 Markdown 指标解析 graceful null / 历史统计 vs 预测边界 出现新通用规律记 signoff §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
 }
