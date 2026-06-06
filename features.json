@@ -20,7 +20,7 @@
       "title": "前端共享 Robinhood 原语（MetricsDisplay 大数字卡 + colorForMetric 颜色工具 + 双语指标 tooltip）+ 接入 /backtest",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) **MetricsDisplay** components/metrics/MetricsDisplay.tsx：抽取泛化自 /backtest MetricsCard/Stat（大数字网格 + label + 值）；props 接结构化指标 + loading。(2) **colorForMetric** lib/metric-color.ts：Sharpe/Sortino/Calmar ≥1.0 绿/0–1 琥珀/<0 红；CAGR >0 绿/<0 红；Max Drawdown >-0.05 绿/-0.2~-0.05 琥珀/<-0.2 红；Volatility/Turnover 中性无色（阈值初版默认，可微调）。(3) **双语指标 tooltip**：每个指标 label 包 components/ui/tooltip（radix 现成）；i18n metrics.tooltips.{sharpe,sortino,calmar,maxDrawdown,cagr,volatility,turnover}——英文术语名 + 中文手写解释（如 Sharpe=风险调整后回报…，强调历史统计非预测）；en + zh-CN 双语齐 + 无禁词 + 手动 parity 守门。(4) **接入 /backtest**：用 MetricsDisplay（颜色+tooltip）升级现有 MetricsCard；结构化 BacktestMetrics 现成 + 派生 Calmar。(5) **no-execution 守门**覆盖 MetricsDisplay（无下单/执行按钮 + 中文禁词）。(6) **定位 §1.1**：大数字=历史回测统计，不出预期收益数字；tooltip 确定性手写非 AI。(7) frontend vitest ≥ baseline+：MetricsDisplay 渲染 + colorForMetric 边界（Sharpe -1/0/2.5、CAGR 正负、MDD 三档、vol 中性）+ tooltip i18n 双语。(8) Gates：lint 0 / typecheck / 不破 backend / 不破 /backtest 既有功能。(9) 不动：/reports（F003）/ Home / 其他页 / B036 生成式。",
       "design_decisions": [
         "tooltip 确定性手写双语（planner 决）：AI tooltip 文案是 B043；本批手写固定。"
@@ -31,7 +31,7 @@
       "title": "前端 /reports/[slug] 接入 MetricsDisplay（metrics 非空渲染 / null graceful）+ body_markdown 完整性 + Playwright",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) **/reports/[slug] 接入**：detail.metrics 非空时在 MarkdownRenderer **上方**渲染 MetricsDisplay 卡片（颜色+双语 tooltip，复用 F002 原语）；metrics=null 时跳过（graceful 纯 Markdown，不显空卡）。(2) **MarkdownRenderer 不动 + body_markdown 不变**：metrics 卡片是独立 section；守门断言 detail.body_markdown 渲染源未被 metrics 逻辑改动（byte-identical 完整性）。(3) frontend vitest：/reports detail metrics 有/无两态（有→大数字卡可见；无→仅 Markdown）+ body_markdown 完整性 + 颜色/tooltip 复用 F002。(4) **Playwright**（两面，双 locale）：/backtest 跑后大数字+颜色可见 + tooltip hover 出中文；/reports 某含指标报告大数字卡可见 + tooltip + Markdown 仍在下方完整。(5) no-execution 守门覆盖 /reports metrics 卡。(6) Gates：frontend vitest ≥ baseline+ / lint 0 / typecheck / Playwright 不破 / 不破 backend。(7) 不动：reports list 页 / _extract_tables / F002 /backtest 接入 / Home。",
       "design_decisions": []
     },
