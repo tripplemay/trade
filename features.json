@@ -18,7 +18,7 @@
       "title": "Codex L2 真 VM 验收：sudoers 应用后 deploy.sh 自动接线 timer + durable 验证 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "L1 (CI 内)：F001 守门测试全跑通 — deploy.sh 无残留 per-timer 硬编码块 + 每 *.timer 有 .service 兄弟 + sudoers 覆盖现存 timer；backend pytest 不破（≥757）；ruff/mypy（如有 py 守门）；security-reviewer 通配符裁决记录存在；artifact grep secret 泄漏=0。**Ops 前置（L2 前，admin 用户授权下执行）**：把 /etc/sudoers.d/deploy-workbench 替换为 F001 §5.1 新工件（visudo -c parsed OK + chmod 440）；这是一次性 admin VM 动作（角色边界例外，须用户授权，等同 B021 #3）。L2 (真 VM)：(1) re-deploy（dispatch workbench-deploy）后 deploy 日志**无 timer warn 行**（自动接线成功，非 best-effort 降级）；(2) `systemctl is-enabled workbench-{market-context,advisor,prices}.timer`=enabled + `status`=active(waiting)；(3) **durable 验证**：确认 deploy.sh 循环覆盖所有现存 timer（日志显示逐 timer install/enable），假想新增第 4 个 workbench-*.timer 会被同循环 + 同 sudoers 通配符覆盖（无需改 deploy.sh / 无需改 sudoers）；(4) health 200 + /api/debug/recent-errors={count:0,records:[]} + Production HEAD ≡ main HEAD（v0.9.25 等价性）；(5) timer 仍边界 (r) 只读非执行（scheduler scope 守门未破）。Signoff: docs/test-reports/B037-OPS1-deploy-timer-sudoers-hardening-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（含 §24 read-only timer 接线检查勾选 + §Production/HEAD + §Post-signoff Deploy + **§Soft-watch S1 标记 resolved**）。Framework 候选：若 sudoers durable wiring 出现新通用规律记 signoff §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
