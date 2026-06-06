@@ -1,35 +1,26 @@
 {
-  "sprint": "B038-home-market-news",
+  "sprint": "B039-home-advisor-disclaimer",
   "features": [
     {
       "id": "F001",
-      "title": "后端全局最新新闻 feed（repo+service+schema+GET /api/news/latest）+ workbench-news.timer（边界 (q)→(r)）+ scheduler scope 守门扩 news",
+      "title": "AdvisorSection 加双语 disclaimer + i18n keys + 永存守门 + vitest + Playwright Daily Journey 断言",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【2026-06-06 用户已批：B038 重定为「Home 今日市场新闻」+ 放开边界 (q) 加 news timer + 独立 endpoint，见 spec §2】(1) **Repository**：NewsRepository 新增 list_latest_global(*, limit=20, since=None, source=None, form_type=None)->list[News]（跨 ticker，newest-first，无 sleeve scoping）；不改既有 list_by_ticker/list_by_source。(2) **Service** services/news.py build_latest_news：按 recency + 可选 topic/source 过滤，不做 ticker 匹配/不需 sleeve；复用确定性 tag_topics()（非 AI）；metadata-only items。(3) **Schema** schemas/news.py LatestNewsResponse{items:[LatestNewsItem]}，LatestNewsItem 复用 B034 metadata 字段子集（news_id/title/source/url/published_at/topics[+可选 tickers]）——**守 B034 非生成式字段集（无 summary/advisory 自由文本）**。(4) **Route** routes/news.py GET /api/news/latest（auth-gated 200 / anon 401, same-origin）→build_latest_news；app.py 注册；regen api.ts + next.config PROXIED_PREFIXES + dev-rewrites guard + 新 vitest safety spec include 白名单。(5) **news timer（边界 (q)→(r)）** deploy/systemd/workbench-news.{service,timer}（每日 oneshot read-only，镜像 workbench-market-context.*）ExecStart 跑现有 python -m workbench_api.news.cli fetch --source=all（B033 CLI 复用，request_spacing/budget guard）；**零 deploy.sh/sudoers 改动（B037-OPS1 workbench-*.timer 循环+通配符自动覆盖）**。(6) **scheduler scope 守门** test_market_scheduler_scope.py 扩：允许 news ingest import，仍禁 broker/order_ticket/execution/tickets/fills/reconcile；**test_news_no_scheduler 仍绿**（systemd timer 非 in-process，不引 apscheduler/aiocron/schedule，不建 workbench_api/news/scheduler.py）。(7) **§12.10 自包含**：请求路径走 DB repo 不读 repo-root。(8) **边界 (p) 守门不破**：新 feed 只读 metadata 行，test_news_schema_metadata_only 不破；**B034 非生成式守门** test_b034_no_generative_ai 覆盖新 LatestNewsItem 字段集。(9) pytest ≥10：list_latest_global（newest-first/limit/source 过滤/空）；build_latest_news（recency 排序/topic 过滤/metadata-only/无 sleeve）；GET /api/news/latest 200+auth-gated(401)+schema pin；scope 守门含 news。(10) Gates：backend pytest ≥ baseline+≥10 / ruff 0 / mypy 0 / 复用 SEC_EDGAR_CONTACT_EMAIL 不引新 secret / frontend 不动。(11) 不动：B033/B034 既有 news 契约（仅加 global 查询）/ recommendations 页 news / B035 market-context / in-process scheduler 仍禁。",
+      "status": "pending",
+      "acceptance": "【2026-06-06 用户已批：B039 最小范围=补 disclaimer + 验证，见 spec §1-2。B037 复用 AdvisorSection 已渲染 advice/引用/INSUFFICIENT fallback/per-sleeve；唯一 gap=缺 disclaimer】(1) **disclaimer 渲染**：components/advisor/AdvisorSection.tsx 在引用块（advisor-references）下方加 disclaimer 元素（data-testid=advisor-disclaimer），渲染固定模板文案，位置对齐 personas §2 mockup（advice→📎引用→⚠️disclaimer 顺序）；**ok 态 + INSUFFICIENT_GROUNDING 态两态都显示**（通用研究声明非 advice 专属，降级时不消失）。(2) **i18n**：messages/zh-CN.json + en.json advisor 命名空间加 disclaimer key——zh-CN「这是研究参考，不是收益预测。最终决策由你判断。」/ en「This is a research reference, not an earnings prediction. The final decision is yours.」；双语齐 + 无禁词。(3) **i18n-disclaimer-永存守门**（复用/扩 v0.9.26 既有 disclaimer 永存守门）：断言 advisor disclaimer key 在 zh-CN + en 双存，缺一即 fail。(4) **AdvisorSection.spec.tsx 加断言**：disclaimer 渲染（ok 态 + INSUFFICIENT 态）+ 双语 + 文案非空。(5) **no-execution 守门**覆盖 disclaimer 元素（无下单/执行按钮 + 中文禁词同级）。(6) **Playwright Daily Journey**：Home AI Advisor 段 disclaimer 可见（双 locale）。(7) Gates：frontend vitest ≥ baseline+ / lint 0 / typecheck / Playwright 不破；**backend 不动**（无后端 diff，/api/advisor schema 不改）。(8) 不动：AdvisorSection 既有 advice/citations/fallback 渲染（仅追加 disclaimer）/ B038 新闻段 / market-context / 三段 Home 结构 / recommendations/risk/reports 页 / B036 后端生成逻辑。",
       "design_decisions": [
-        "范围（2026-06-06 用户批）：B038 字面市场指标卡片已被 B037 复用 MarketContextCard 完成；重定为补 mockup 真实 gap = Home 今日市场新闻。",
-        "边界 (q)→(r)（2026-06-06 用户批）：news ingest 纳入边界 (r) 只读市场数据拉取，允许 systemd timer（非 in-process scheduler）；Home 新闻生产有数据。",
-        "endpoint（planner 决）：独立 GET /api/news/latest self-fetch，与 MarketContextCard/AdvisorSection 同模式，不折叠进 /api/home。"
+        "范围（2026-06-06 用户批）：B039 字面目标 B037 复用 AdvisorSection 已完成；最小范围=补 disclaimer，前端-only 无后端改动。",
+        "Master 一句话总结不做（2026-06-06 用户批）：当前 per-sleeve 渲染可接受；统一 Master-level 需 B036 后端生成，留后续。",
+        "disclaimer 两态都显示（planner 决）：通用研究声明，ok + INSUFFICIENT_GROUNDING 两态均渲染。"
       ]
     },
     {
       "id": "F002",
-      "title": "前端 Home 第三段今日市场新闻元素（HomeNewsPanel self-fetch）+ 双语 + no-execution + vitest + Playwright Daily Journey",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "(1) Home 第三段 (protected)/page.tsx 在 MarketContextCard **下方**加新闻元素：改造 components/recommendations/NewsPanel→去 sleeve 下拉的 HomeNewsPanel（或参数化 NewsPanel 接受可选 sleeve，None=global），self-fetch GET /api/news/latest；(2) 渲染 compact 列表对齐 personas §2 mockup「📰 Today's market context」：标题 + source + 发布日期 + 外链（target=_blank rel=noopener noreferrer），top N（默认 5-8）；loading/empty/error 三态；(3) **双语 zh-CN + en** 新闻段所有文案（标题/空态/错误/段标题）；(4) **no-execution buttons 守门扩 Home**：新闻段无下单/执行按钮 + 中文等价禁词同级；(5) mockup 一致性（新闻段位置在第三段指标卡下方，同段）；(6) frontend vitest 新增 Home 新闻段测试（列表渲染 + 三态 + 双语 + 外链属性 + 无执行按钮）；(7) Playwright Daily Journey e2e 更新：Home 加载后新闻段可见（标题列表）+ 双 locale；(8) Gates：frontend vitest ≥ baseline+ / lint 0 / typecheck pass / Playwright 不破 / 不破既有 backend；(9) 不动：B037 三段 Home 结构（仅第三段追加）/ recommendations 页 NewsPanel / AI Advisor 段（B039）/ 其他 protected 页。",
-      "design_decisions": []
-    },
-    {
-      "id": "F003",
-      "title": "Codex L1 + L2 真 VM 验收 + signoff",
+      "title": "Codex L1 + L2 真 VM 验收（disclaimer 浏览器手验双语）+ signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "L1 (CI 内)：F001+F002 全 generator 验收脚本跑通 — backend pytest ≥ baseline+≥10 / ruff / mypy / frontend vitest ≥ baseline+ / Playwright 不破；**no-execution 守门**（Home 新闻段无下单按钮 + 中文禁词 0）；**i18n 双语齐 + 无禁词**；**§12.10 自包含**；**边界 (p) metadata-only + B034 非生成式 + test_news_no_scheduler 仍绿**；scheduler scope 守门含 news 跑过；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）；(2) /api/debug/recent-errors={count:0,records:[]}；(3) **v0.9.32 §23 新路由真 VM 200**：GET /api/news/latest authenticated 200 + 结构化 payload（items[]）；anon 401；(4) **§24 + B037-OPS1 durable 验证**：workbench-news.timer 经 deploy.sh 循环 + sudoers 通配符**自动 enabled+active（无手装、无 warn 行）**——首次验证 B037-OPS1 对全新 timer 的零成本覆盖；手动 trigger workbench-news.service 验真（有新闻行 / 或 SEC rate-limit 合规空，记录哪种）；(5) **Home 新闻段浏览器手验**（对齐 personas §2 mockup）：第三段指标卡下方新闻标题列表 + 外链 + 无下单按钮（no-execution UI）+ 双语切换；截图；(6) Production HEAD ≡ main HEAD；(7) B026 banner 仍 absent；(8) news ingest 仍边界 (r) 只读（scope 守门含 news 仍非执行）。Signoff: docs/test-reports/B038-home-market-news-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（含 §24 timer 接线勾选 + §L2 新路由 200 + §Production/HEAD + §Post-signoff Deploy）；docs/screenshots/B038-home-market-news/ ≥1 PNG（Home 新闻段 zh 或 + en）。Framework 候选：若边界 (q)→(r) 收编 / B037-OPS1 durable 首验 出现新通用规律记 signoff §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
+      "status": "pending",
+      "acceptance": "L1 (CI 内)：F001 验收脚本跑通 — frontend vitest ≥ baseline+ / lint / typecheck / Playwright Daily Journey disclaimer 可见不破；**i18n disclaimer 双语齐 + 无禁词 + 永存守门跑过**；**no-execution 守门**（AdvisorSection 含 disclaimer 无下单按钮 + 中文禁词 0）；backend 无 diff（确认纯前端）；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）；(2) /api/debug/recent-errors={count:0,records:[]}；(3) **Home AI Advisor 段 disclaimer 浏览器手验**：advice/引用下方 ⚠️ 研究声明「这是研究参考，不是收益预测」可见 + 双语切换（zh-CN/en）+ 无下单按钮（no-execution UI）；ok 态 + 若有 INSUFFICIENT sleeve 两态都带 disclaimer；截图；(4) Production HEAD ≡ main HEAD；(5) B026 banner 仍 absent。**本批纯前端无新路由/无新 timer**，§23 新路由 200 / §24 timer 接线检查标 N/A。Signoff: docs/test-reports/B039-home-advisor-disclaimer-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（§Production/HEAD + §Post-signoff Deploy；§23/§24 N/A）；docs/screenshots/B039-home-advisor-disclaimer/ ≥1 PNG（Home advisor 段 disclaimer，zh 或 +en）。Framework 候选：薄批次预计无；若有记 signoff §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
 }

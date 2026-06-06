@@ -4,7 +4,8 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B038-home-market-news：✅ `done`**（2026-06-06 Codex F003 fix-round 1 复验通过签收）。Phase 3 / Stream 4.B 已把今日市场新闻补进 Home 第三段。**最终证据（signoff：`docs/test-reports/B038-home-market-news-signoff-2026-06-06.md`）**：L1 targeted backend `45 passed`（含 `test_news_ingest_self_contained`）+ frontend `28 passed`；production `/api/news/latest` authed `200` 且返回真实 `items[]`、anon `401`、authenticated `/api/debug/recent-errors={"count":0,"records":[]}`；`workbench-news.timer` 通过 **B037-OPS1 durable** 自动 install+enable（deploy run `27052861855` 明示 `workbench-news.timer enabled`，无 wiring warn）；`workbench-news.service` 真机 `status=0/SUCCESS`，journal=`saved=782 skipped_existing=86 errors=0`；production Home zh-CN/en 两轮手验均显示 `home-news-card` + 8 条标题列表 + 0 button + 旧 dashboard 0 + `synthetic-data-banner` 0，截图已落 `docs/screenshots/B038-home-market-news/`。首轮 blocker（`scripts.universe_us_quality` 自包含缺陷）已在 fix-round 1 关闭。
+- **B039-home-advisor-disclaimer：`building`**（2026-06-06 启动；Phase 3 / Stream 4.C，**最小范围前端-only**）。**范围再定义（同 B038 模式，用户批 ★）**：roadmap S4.C 字面『Home AI 建议+引用+disclaimer+INSUFFICIENT fallback』经核查 **B037 复用 AdvisorSection 已渲染 advice/引用/INSUFFICIENT fallback/per-sleeve**；唯一 gap=mockup §2 `⚠️ 这是研究参考，不是收益预测` disclaimer 未渲染 → B039=★**补双语 disclaimer + 验证**（后端 /api/advisor 已足够，无改动）。Master 一句话总结★不做(需 B036 后端扩展，留后续)。2 features：(F001 g) AdvisorSection 加双语 disclaimer(ok+INSUFFICIENT 两态)+i18n zh/en+i18n-disclaimer-永存守门(v0.9.26)+spec 断言+no-execution 守门+Playwright；(F002 c) L1+L2(disclaimer 浏览器手验双语)+signoff(纯前端无新路由/timer，§23/§24 N/A)。spec `docs/specs/B039-home-advisor-disclaimer-spec.md`。
+- **B038-home-market-news：✅ `done`**（2026-06-06 Codex F003 fix-round 1 签收）。Phase 3 / Stream 4.B 今日市场新闻补进 Home 第三段。prod `/api/news/latest` authed 200 真实 `items[]`/anon 401；`workbench-news.timer` 经 **B037-OPS1 durable** 自动接线无 warn；`workbench-news.service` 真机 `saved=782 errors=0`；Home zh/en 手验 `home-news-card`+8 标题+0 button，截图已落。fix-round 1=`scripts.universe_us_quality` §12.10 自包含缺陷(接 timer 后首暴露)→ 沉淀 v0.9.34。signoff `docs/test-reports/B038-home-market-news-signoff-2026-06-06.md`。
 - **B037-OPS1-deploy-timer-sudoers-hardening：✅ `done`**（2026-06-06 Codex F002 签收，0 fix-round）。横切运维修复闭环，根治 B035/B036/B037 三批手装 timer（evaluator.md §24）。deploy run `27050937093` 三 timer 自动 install+enable 无 warn；prod health≡main HEAD `5393343`；三 timer enabled+active；Soft-watch S1 resolved；durable=deploy.sh 循环+sudoers wildcard+root wrapper。signoff `docs/test-reports/B037-OPS1-deploy-timer-sudoers-hardening-signoff-2026-06-06.md`。
 - **B037-home-restructure：✅ `done`**（2026-06-06，1 fix-round=prices.timer L2 blocker）。prod `/api/home`=200(`nav=0 day_pnl=null sleeves=3`)；三段 daily-engagement Home 替换旧 quant dashboard（§16 退役+§22）；`alembic=0009`。signoff `docs/test-reports/B037-home-restructure-signoff-2026-06-06.md`。
 - **🎯 Phase 2 完整收官（B031-B036 全签收）= 里程碑 B；B037/B038 已 done = 里程碑 C 主线继续。** Phase 3 主线：B039(Home AI)→B040-B043(Reports/Rec/Risk+AI 解释层)→里程碑 C。
@@ -29,9 +30,10 @@ type: project
 - AI 边界（v0.9.28 5 子条）：B034 非生成式（embedding）；**B036 首次全量生成式触发，硬 enforce**（prompt + 输出校验 references ⊆ input set；过 B032 red-team gate）
 
 ## Framework 状态
-- 最新版本 **v0.9.32**（2026-06-04 沉淀完成，B034 二例合并）：**请求路径 deploy-artifact 自包含铁律**——请求路径禁 import 根级 `scripts/` / 禁读 repo-root `data/fixtures/`（deploy artifact 只含 `workbench_api/` 包），数据须 materialise 入包；本地+CI 掩盖、唯 L2 真 VM 暴露。落地 generator.md §12.10 + evaluator.md §23（L2 必测核心新路由真 VM 200）+ signoff 模板 §L2 勾选行。
-- B035 signoff §Framework Learnings 标「本批次无」（systemd-units-in-release 修复属已沉淀 v0.9.32 §12.10 同族，generator 已吸收+守门）。
-- 仍 hold（等二例）：**B031 第三方 API live-validate**（B035 FRED/AV live-validate 成功未再撞，二例未达成；复用窗口 B036）+ B026 React event edge（单例）。
+- 最新版本 **v0.9.34**（2026-06-06，B038 沉淀）：**§12.10 自包含审计扩到所有生产执行路径**——generator.md §12.10.1，manual-only CLI 接入 timer/scheduler 后其 import 闭包按 §12.10 重审 + AST 守门 + L2 手动 trigger service 验真（来源 B038 F003 L2 `news/cli import scripts.*` 接 timer 后首暴露）。
+- **v0.9.33**（2026-06-06，B035/B036/B037 三例合并）：evaluator.md §24 **新增 read-only timer 时 L2 必查 systemd 接线状态**（is-enabled/status/手动 trigger，非只看 health+表结构）。
+- **v0.9.32**（B034 二例）：generator.md §12.10 请求路径 deploy-artifact 自包含 + evaluator.md §23 L2 必测新路由真 VM 200。
+- 仍 hold（等二例）：**B031 第三方 API live-validate**（单例）+ B026 React event edge（单例）。
 
 ## 已知 gap（非阻塞）
 - 本机 `python3` 为 3.9.6；所有检查必须用 `.venv/bin/python`。
