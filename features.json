@@ -1,25 +1,35 @@
 {
-  "sprint": "B037-OPS1-deploy-timer-sudoers-hardening",
+  "sprint": "B038-home-market-news",
   "features": [
     {
       "id": "F001",
-      "title": "版本化 sudoers 工件 + deploy.sh DRY timer 循环 + 守门测试 + runbook 更新",
+      "title": "后端全局最新新闻 feed（repo+service+schema+GET /api/news/latest）+ workbench-news.timer（边界 (q)→(r)）+ scheduler scope 守门扩 news",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【2026-06-06 用户已批：通配符 sudoers 范围 + 独立前缀 B037-OPS1，见 spec §3】(1) **版本化 sudoers 工件** `workbench/deploy/sudoers/deploy-workbench`（作为 VM /etc/sudoers.d/deploy-workbench 权威源）：保留现有 5 条（B021 systemctl restart/status workbench-{backend,frontend}.service + daemon-reload）+ 新增 3 条通配符授权 `/usr/bin/install -m 644 * /etc/systemd/system/workbench-*.service`、`... workbench-*.timer`、`/bin/systemctl enable --now workbench-*.timer`；范围锁 workbench- 前缀 + /etc/systemd/system/ 目录。(2) **security-reviewer 裁决（硬要求）**：sudoers 通配符 fnmatch 不带 FNM_PATHNAME（* 匹配 /），必须由 security-reviewer 评估目标 `workbench-*` 能否路径穿越逃逸 /etc/systemd/system/，出具裁决记录（接受/收紧/回退），写入 spec §5.1 注 + runbook 残留风险段。(3) **deploy.sh DRY 重构**：把 B035/B036/B037 三段硬编码 timer install/enable 块（L265-311）收敛为对 ${SYSTEMD_SRC}/workbench-*.timer 的单循环（每 timer：install .service 兄弟 + install .timer + daemon-reload + enable --now），保留 best-effort warn 语义 + 边界 (r) read-only 注释；未来新 timer 零改 deploy.sh 自动覆盖。(4) **守门测试**（tests/safety/ 或 deploy 测试目录）：(a) deploy.sh 无残留 per-timer 硬编码 enable 块（`enable --now workbench-` 字面只出现在循环体）；(b) workbench/deploy/systemd/ 下每个 *.timer 都有同名 .service 兄弟；(c) sudoers 工件通配符覆盖所有现存 timer（market-context/advisor/prices）。(5) **runbook 更新** docs/dev/B021-vm-setup-runbook.md sudoers 段：新授权内容 + 「装入后 deploy.sh 自动接线」+ 一次性 admin 应用步骤（visudo -c 校验 + chmod 440）。(6) **边界**：不新增 timer / 不改调度 / 不改边界 (r) 语义 / deploy 用户不得扩到任意 sudo；timer 仍只读非执行。(7) Gates：backend pytest 不破（baseline 757）/ ruff / mypy（若新增 py 守门）/ 既有 backend+frontend 部署路径不破 / deploy.sh 可 dev rehearsal（无 sudo / 单元缺失时 best-effort 不崩）。(8) 不动：现有 5 条 sudoers 语义 / timer 单元文件内容 / 产品代码 / Phase 3 工作。",
+      "status": "pending",
+      "acceptance": "【2026-06-06 用户已批：B038 重定为「Home 今日市场新闻」+ 放开边界 (q) 加 news timer + 独立 endpoint，见 spec §2】(1) **Repository**：NewsRepository 新增 list_latest_global(*, limit=20, since=None, source=None, form_type=None)->list[News]（跨 ticker，newest-first，无 sleeve scoping）；不改既有 list_by_ticker/list_by_source。(2) **Service** services/news.py build_latest_news：按 recency + 可选 topic/source 过滤，不做 ticker 匹配/不需 sleeve；复用确定性 tag_topics()（非 AI）；metadata-only items。(3) **Schema** schemas/news.py LatestNewsResponse{items:[LatestNewsItem]}，LatestNewsItem 复用 B034 metadata 字段子集（news_id/title/source/url/published_at/topics[+可选 tickers]）——**守 B034 非生成式字段集（无 summary/advisory 自由文本）**。(4) **Route** routes/news.py GET /api/news/latest（auth-gated 200 / anon 401, same-origin）→build_latest_news；app.py 注册；regen api.ts + next.config PROXIED_PREFIXES + dev-rewrites guard + 新 vitest safety spec include 白名单。(5) **news timer（边界 (q)→(r)）** deploy/systemd/workbench-news.{service,timer}（每日 oneshot read-only，镜像 workbench-market-context.*）ExecStart 跑现有 python -m workbench_api.news.cli fetch --source=all（B033 CLI 复用，request_spacing/budget guard）；**零 deploy.sh/sudoers 改动（B037-OPS1 workbench-*.timer 循环+通配符自动覆盖）**。(6) **scheduler scope 守门** test_market_scheduler_scope.py 扩：允许 news ingest import，仍禁 broker/order_ticket/execution/tickets/fills/reconcile；**test_news_no_scheduler 仍绿**（systemd timer 非 in-process，不引 apscheduler/aiocron/schedule，不建 workbench_api/news/scheduler.py）。(7) **§12.10 自包含**：请求路径走 DB repo 不读 repo-root。(8) **边界 (p) 守门不破**：新 feed 只读 metadata 行，test_news_schema_metadata_only 不破；**B034 非生成式守门** test_b034_no_generative_ai 覆盖新 LatestNewsItem 字段集。(9) pytest ≥10：list_latest_global（newest-first/limit/source 过滤/空）；build_latest_news（recency 排序/topic 过滤/metadata-only/无 sleeve）；GET /api/news/latest 200+auth-gated(401)+schema pin；scope 守门含 news。(10) Gates：backend pytest ≥ baseline+≥10 / ruff 0 / mypy 0 / 复用 SEC_EDGAR_CONTACT_EMAIL 不引新 secret / frontend 不动。(11) 不动：B033/B034 既有 news 契约（仅加 global 查询）/ recommendations 页 news / B035 market-context / in-process scheduler 仍禁。",
       "design_decisions": [
-        "sudoers 范围（2026-06-06 用户批）：通配符 workbench-*.{service,timer}，未来新 timer 零手工自动装，范围锁 workbench- 前缀 + systemd 目录。",
-        "批次编号（2026-06-06 用户批）：独立前缀 B037-OPS1，不占产品 roadmap 序号，Phase 3 B038-B043 不动。"
+        "范围（2026-06-06 用户批）：B038 字面市场指标卡片已被 B037 复用 MarketContextCard 完成；重定为补 mockup 真实 gap = Home 今日市场新闻。",
+        "边界 (q)→(r)（2026-06-06 用户批）：news ingest 纳入边界 (r) 只读市场数据拉取，允许 systemd timer（非 in-process scheduler）；Home 新闻生产有数据。",
+        "endpoint（planner 决）：独立 GET /api/news/latest self-fetch，与 MarketContextCard/AdvisorSection 同模式，不折叠进 /api/home。"
       ]
     },
     {
       "id": "F002",
-      "title": "Codex L2 真 VM 验收：sudoers 应用后 deploy.sh 自动接线 timer + durable 验证 + signoff",
+      "title": "前端 Home 第三段今日市场新闻元素（HomeNewsPanel self-fetch）+ 双语 + no-execution + vitest + Playwright Daily Journey",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "(1) Home 第三段 (protected)/page.tsx 在 MarketContextCard **下方**加新闻元素：改造 components/recommendations/NewsPanel→去 sleeve 下拉的 HomeNewsPanel（或参数化 NewsPanel 接受可选 sleeve，None=global），self-fetch GET /api/news/latest；(2) 渲染 compact 列表对齐 personas §2 mockup「📰 Today's market context」：标题 + source + 发布日期 + 外链（target=_blank rel=noopener noreferrer），top N（默认 5-8）；loading/empty/error 三态；(3) **双语 zh-CN + en** 新闻段所有文案（标题/空态/错误/段标题）；(4) **no-execution buttons 守门扩 Home**：新闻段无下单/执行按钮 + 中文等价禁词同级；(5) mockup 一致性（新闻段位置在第三段指标卡下方，同段）；(6) frontend vitest 新增 Home 新闻段测试（列表渲染 + 三态 + 双语 + 外链属性 + 无执行按钮）；(7) Playwright Daily Journey e2e 更新：Home 加载后新闻段可见（标题列表）+ 双 locale；(8) Gates：frontend vitest ≥ baseline+ / lint 0 / typecheck pass / Playwright 不破 / 不破既有 backend；(9) 不动：B037 三段 Home 结构（仅第三段追加）/ recommendations 页 NewsPanel / AI Advisor 段（B039）/ 其他 protected 页。",
+      "design_decisions": []
+    },
+    {
+      "id": "F003",
+      "title": "Codex L1 + L2 真 VM 验收 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "L1 (CI 内)：F001 守门测试全跑通 — deploy.sh 无残留 per-timer 硬编码块 + 每 *.timer 有 .service 兄弟 + sudoers 覆盖现存 timer；backend pytest 不破（≥757）；ruff/mypy（如有 py 守门）；security-reviewer 通配符裁决记录存在；artifact grep secret 泄漏=0。**Ops 前置（L2 前，admin 用户授权下执行）**：把 /etc/sudoers.d/deploy-workbench 替换为 F001 §5.1 新工件（visudo -c parsed OK + chmod 440）；这是一次性 admin VM 动作（角色边界例外，须用户授权，等同 B021 #3）。L2 (真 VM)：(1) re-deploy（dispatch workbench-deploy）后 deploy 日志**无 timer warn 行**（自动接线成功，非 best-effort 降级）；(2) `systemctl is-enabled workbench-{market-context,advisor,prices}.timer`=enabled + `status`=active(waiting)；(3) **durable 验证**：确认 deploy.sh 循环覆盖所有现存 timer（日志显示逐 timer install/enable），假想新增第 4 个 workbench-*.timer 会被同循环 + 同 sudoers 通配符覆盖（无需改 deploy.sh / 无需改 sudoers）；(4) health 200 + /api/debug/recent-errors={count:0,records:[]} + Production HEAD ≡ main HEAD（v0.9.25 等价性）；(5) timer 仍边界 (r) 只读非执行（scheduler scope 守门未破）。Signoff: docs/test-reports/B037-OPS1-deploy-timer-sudoers-hardening-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（含 §24 read-only timer 接线检查勾选 + §Production/HEAD + §Post-signoff Deploy + **§Soft-watch S1 标记 resolved**）。Framework 候选：若 sudoers durable wiring 出现新通用规律记 signoff §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
+      "status": "pending",
+      "acceptance": "L1 (CI 内)：F001+F002 全 generator 验收脚本跑通 — backend pytest ≥ baseline+≥10 / ruff / mypy / frontend vitest ≥ baseline+ / Playwright 不破；**no-execution 守门**（Home 新闻段无下单按钮 + 中文禁词 0）；**i18n 双语齐 + 无禁词**；**§12.10 自包含**；**边界 (p) metadata-only + B034 非生成式 + test_news_no_scheduler 仍绿**；scheduler scope 守门含 news 跑过；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）；(2) /api/debug/recent-errors={count:0,records:[]}；(3) **v0.9.32 §23 新路由真 VM 200**：GET /api/news/latest authenticated 200 + 结构化 payload（items[]）；anon 401；(4) **§24 + B037-OPS1 durable 验证**：workbench-news.timer 经 deploy.sh 循环 + sudoers 通配符**自动 enabled+active（无手装、无 warn 行）**——首次验证 B037-OPS1 对全新 timer 的零成本覆盖；手动 trigger workbench-news.service 验真（有新闻行 / 或 SEC rate-limit 合规空，记录哪种）；(5) **Home 新闻段浏览器手验**（对齐 personas §2 mockup）：第三段指标卡下方新闻标题列表 + 外链 + 无下单按钮（no-execution UI）+ 双语切换；截图；(6) Production HEAD ≡ main HEAD；(7) B026 banner 仍 absent；(8) news ingest 仍边界 (r) 只读（scope 守门含 news 仍非执行）。Signoff: docs/test-reports/B038-home-market-news-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（含 §24 timer 接线勾选 + §L2 新路由 200 + §Production/HEAD + §Post-signoff Deploy）；docs/screenshots/B038-home-market-news/ ≥1 PNG（Home 新闻段 zh 或 + en）。Framework 候选：若边界 (q)→(r) 收编 / B037-OPS1 durable 首验 出现新通用规律记 signoff §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
 }
