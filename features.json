@@ -1,47 +1,27 @@
 {
-  "sprint": "B040-reports-robinhood",
+  "sprint": "B041-recommendations-robinhood",
   "features": [
     {
       "id": "F001",
-      "title": "后端 ReportDetail.metrics 结构化解析（header-signature + 同义词 + Calmar 派生 + graceful null + body_markdown 不变）",
+      "title": "前端 Recommendations 简化 card 视图 + 专业 view toggle（Radix Tabs）+ 复用 B040 原语 + surface rationale + i18n + no-execution 守门",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【2026-06-06 用户已批：两个面都做，见 spec §2】(1) **Schema** schemas/reports.py：ReportDetail 加可选 metrics: ReportMetrics | None；新 ReportMetrics{sharpe, sortino, calmar, cagr, max_drawdown, volatility, turnover}（全 float|None）。(2) **解析** services/reports.py get_report() 扩：扫已解析 tables，**header-signature 匹配**识别指标表（含 sharpe + max_drawdown 等关键列签名），**同义词映射**（annualized_return→cagr / annualized_volatility→volatility / mdd→max_drawdown），**计算 Calmar=cagr/|max_drawdown|**（max_drawdown=0 时 None）；无可识别表→metrics=None（graceful，不抛错）。(3) **body_markdown 不变**：仅新增 metrics 字段，不改原文；既有 reports list/detail/_extract_tables/cross_links 契约不破。(4) regen api.ts（ReportDetail 加字段）。(5) pytest ≥8：真实语料样式指标表（B016 风格 annualized_return/annualized_volatility/sharpe/max_drawdown/turnover）解析正确 + 同义词映射 + Calmar 派生（含 mdd=0 → None）+ 无指标表→metrics=None + 多表选对 + body_markdown 完整性（解析前后原文 byte-identical）+ auth-gated 不破。(6) Gates：backend pytest ≥ baseline+≥8 / ruff 0 / mypy 0 / 不引新 secret。(7) 不动：reports 既有 list/table/cross_link 提取 / backtest 运行 / 其他 schema。",
+      "status": "pending",
+      "acceptance": "【2026-06-06 用户已批：UI 重构 now，富「为什么」留 B043，见 spec §1-2。前端-only 无后端改动】(1) **简化 card 视图** components/recommendations/PositionCards.tsx（新）：每个 target position 一张 card——symbol + 大数字（target_weight/current_weight/delta）+ delta 颜色编码（复用 lib/metric-color.ts，正=绿 buy/负=红 sell/0 中性）+ 现有 rationale 文本（占位 as-is，不夸大）；复用 B040 MetricsDisplay 模式/Home sleeve-card 布局/radix Tooltip（字段双语 tooltip 如 target_weight 解释）。(2) **专业 view toggle** components/ui/tabs.tsx（Radix 现成）：target-positions 区上方 toggle「简化/专业」两态——简化 tab=PositionCards（默认）；专业 tab=既有 DataTable（symbol/target_weight/current_weight/diff/rationale 全列，不动）；仅切 target-positions 呈现，页面其余（饼图/柱图/gate checks/wash-sale/export-to-ticket/NewsPanel）不动；toggle useState；i18n recommendations.view.{simple,professional}。(3) **i18n**：加 recommendations.view.* + recommendations.cards.*（card 字段 label + 双语 tooltip：target/current/delta 解释）；en+zh-CN 双语齐+无禁词+parity 守门。(4) **no-execution 守门**覆盖 PositionCards + toggle（无下单/执行按钮+中文禁词）。(5) **定位 §1.1**：card 显示 target/current/delta 权重（配置事实非收益预测）；不出预期收益数字；tooltip 确定性手写非 AI。(6) frontend vitest ≥ baseline+：PositionCards 渲染（大数字+delta 颜色+rationale 文本）+ toggle 切换两态（简化↔专业 table）+ 颜色边界 + tooltip i18n 双语 + 既有 table 仍渲染。(7) Playwright（双 locale）：默认简化 card 可见→toggle 切专业 table→切回；无下单按钮。(8) Gates：frontend vitest ≥ baseline+ / lint 0 / typecheck / Playwright 不破 / **backend 不动（无后端 diff）**。(9) 不动：后端 recommendations schema/引擎/equal-weight/F011 / 既有 DataTable 列/charts/gate/wash-sale/export-to-ticket(B023)/NewsPanel(B034) / Home/Reports(B040)/Risk(B042) / AI（富「为什么」是 B043）。",
       "design_decisions": [
-        "目标面（2026-06-06 用户批）：两个面都做（/backtest 结构化 + /reports detail Markdown 解析）。",
-        "reports 解析（planner 决）：后端 Option A header-signature + 同义词映射 + graceful null；多数异构报告无指标表退回纯 Markdown。",
-        "Calmar 派生（planner 决）：BacktestMetrics 无 Calmar 字段，由 cagr/|max_drawdown| 计算。",
-        "body_markdown 字节不变（planner 决）：仅新增 metrics 字段，完整性守门 byte-identical。"
+        "范围（2026-06-06 用户批）：UI 重构 now（简化 card + 专业 view toggle，前端-only），富「为什么这样建议」留 B043（真实评分 F011 + AI 未建）。",
+        "后端无改动（planner 决）：TargetPosition.rationale 字段已存在，占位文本 as-is surface。",
+        "view toggle（planner 决）：Radix Tabs 简化 card / 专业 table，默认简化；仅切 target-positions 呈现。",
+        "颜色（planner 决）：复用 B040 colorForMetric，delta 正绿 buy/负红 sell/0 中性。"
       ]
     },
     {
       "id": "F002",
-      "title": "前端共享 Robinhood 原语（MetricsDisplay 大数字卡 + colorForMetric 颜色工具 + 双语指标 tooltip）+ 接入 /backtest",
+      "title": "Codex L1 + L2 真 VM 验收（简化 card / 专业 toggle 浏览器手验 + 双语 tooltip + delta 颜色 + 工作流不破）+ signoff",
       "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "(1) **MetricsDisplay** components/metrics/MetricsDisplay.tsx：抽取泛化自 /backtest MetricsCard/Stat（大数字网格 + label + 值）；props 接结构化指标 + loading。(2) **colorForMetric** lib/metric-color.ts：Sharpe/Sortino/Calmar ≥1.0 绿/0–1 琥珀/<0 红；CAGR >0 绿/<0 红；Max Drawdown >-0.05 绿/-0.2~-0.05 琥珀/<-0.2 红；Volatility/Turnover 中性无色（阈值初版默认，可微调）。(3) **双语指标 tooltip**：每个指标 label 包 components/ui/tooltip（radix 现成）；i18n metrics.tooltips.{sharpe,sortino,calmar,maxDrawdown,cagr,volatility,turnover}——英文术语名 + 中文手写解释（如 Sharpe=风险调整后回报…，强调历史统计非预测）；en + zh-CN 双语齐 + 无禁词 + 手动 parity 守门。(4) **接入 /backtest**：用 MetricsDisplay（颜色+tooltip）升级现有 MetricsCard；结构化 BacktestMetrics 现成 + 派生 Calmar。(5) **no-execution 守门**覆盖 MetricsDisplay（无下单/执行按钮 + 中文禁词）。(6) **定位 §1.1**：大数字=历史回测统计，不出预期收益数字；tooltip 确定性手写非 AI。(7) frontend vitest ≥ baseline+：MetricsDisplay 渲染 + colorForMetric 边界（Sharpe -1/0/2.5、CAGR 正负、MDD 三档、vol 中性）+ tooltip i18n 双语。(8) Gates：lint 0 / typecheck / 不破 backend / 不破 /backtest 既有功能。(9) 不动：/reports（F003）/ Home / 其他页 / B036 生成式。",
-      "design_decisions": [
-        "tooltip 确定性手写双语（planner 决）：AI tooltip 文案是 B043；本批手写固定。"
-      ]
-    },
-    {
-      "id": "F003",
-      "title": "前端 /reports/[slug] 接入 MetricsDisplay（metrics 非空渲染 / null graceful）+ body_markdown 完整性 + Playwright",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "(1) **/reports/[slug] 接入**：detail.metrics 非空时在 MarkdownRenderer **上方**渲染 MetricsDisplay 卡片（颜色+双语 tooltip，复用 F002 原语）；metrics=null 时跳过（graceful 纯 Markdown，不显空卡）。(2) **MarkdownRenderer 不动 + body_markdown 不变**：metrics 卡片是独立 section；守门断言 detail.body_markdown 渲染源未被 metrics 逻辑改动（byte-identical 完整性）。(3) frontend vitest：/reports detail metrics 有/无两态（有→大数字卡可见；无→仅 Markdown）+ body_markdown 完整性 + 颜色/tooltip 复用 F002。(4) **Playwright**（两面，双 locale）：/backtest 跑后大数字+颜色可见 + tooltip hover 出中文；/reports 某含指标报告大数字卡可见 + tooltip + Markdown 仍在下方完整。(5) no-execution 守门覆盖 /reports metrics 卡。(6) Gates：frontend vitest ≥ baseline+ / lint 0 / typecheck / Playwright 不破 / 不破 backend。(7) 不动：reports list 页 / _extract_tables / F002 /backtest 接入 / Home。",
-      "design_decisions": []
-    },
-      {
-        "id": "F004",
-        "title": "Codex L1 + L2 真 VM 验收（两面大数字/颜色/双语 tooltip + Markdown 保全）+ signoff",
-        "priority": "high",
-        "executor": "codex",
-        "status": "done",
-        "acceptance": "L1 (CI 内)：F001+F002+F003 全 generator 验收脚本跑通 — backend pytest ≥ baseline+≥8 / ruff / mypy / frontend vitest ≥ baseline+ / Playwright（两面）不破；**no-execution 守门**（/backtest + /reports metrics 卡无下单按钮 + 中文禁词 0）；**i18n 双语齐 + 无禁词 + tooltip parity 守门**；**body_markdown 完整性守门**跑过；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）；(2) /api/debug/recent-errors={count:0,records:[]}；(3) 既有路由 GET /api/reports/{slug} authenticated 200 + payload 含 metrics 字段（有指标报告非 null / 无指标报告 null）；anon 401；(4) **两面浏览器手验**：/backtest——跑回测后大数字 + 颜色编码（绿/琥珀/红）+ 英文术语 + 中文 tooltip（hover/tap 出现）；/reports/[slug]——含指标报告大数字卡 + 颜色 + tooltip + **Markdown 报告仍完整渲染在下方**；无下单按钮（no-execution UI）；双语切换 zh/en；定位 §1.1 无「预期收益」数字；截图（两面 ≥2 PNG）；(5) Production HEAD ≡ main HEAD；(6) B026 banner 仍 absent。**本批纯前端 UI + 后端解析无全新对外路由**（/reports/[slug] 既有路由验 metrics 字段；§24 timer N/A）。Signoff: docs/test-reports/B040-reports-robinhood-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（§Production/HEAD + §Post-signoff Deploy）；docs/screenshots/B040-reports-robinhood/ ≥2 PNG（/backtest + /reports，zh 或 +en）。Framework 候选：若 Markdown 指标解析 graceful null / 历史统计 vs 预测边界 出现新通用规律记 signoff §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
-      }
+      "executor": "codex",
+      "status": "pending",
+      "acceptance": "L1 (CI 内)：F001 验收脚本跑通 — frontend vitest ≥ baseline+ / lint / typecheck / Playwright（toggle+双 locale）不破；**no-execution 守门**（PositionCards+toggle 无下单按钮+中文禁词 0）；**i18n 双语齐+无禁词+parity 守门**；backend 无 diff（确认纯前端）；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）；(2) /api/debug/recent-errors={count:0,records:[]}；(3) **浏览器手验**：Recommendations 默认简化 card（大数字 target/current/delta + delta 颜色绿/红/中性 + 双语 tooltip hover/tap）→ toggle 切专业 table（既有列全在）→ 切回；export-to-ticket 工作流仍可用（gate checks/wash-sale/export 不破）；无下单按钮（no-execution UI）；双语切换 zh/en；定位 §1.1 无「预期收益」数字；截图（简化+专业两态 ≥2 PNG）；(4) Production HEAD ≡ main HEAD；(5) B026 banner 仍 absent。**本批纯前端无新路由/无新 timer，§23/§24 N/A**。Signoff: docs/test-reports/B041-recommendations-robinhood-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（§Production/HEAD + §Post-signoff Deploy；§23/§24 N/A）；docs/screenshots/B041-recommendations-robinhood/ ≥2 PNG（简化 card + 专业 table，zh 或 +en）。Framework 候选：薄 UI 批次预计无；若有记 signoff §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
+    }
   ]
 }
