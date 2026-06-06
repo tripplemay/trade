@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { AdvisorSection } from "@/components/advisor/AdvisorSection";
+import { HomeNewsPanel } from "@/components/home/HomeNewsPanel";
 import { MarketContextCard } from "@/components/market/MarketContextCard";
 import { formatCurrency, formatPercent } from "@/components/table/columns";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -79,10 +80,16 @@ export default function HomePage() {
     <section data-testid="workbench-home" className="space-y-6">
       <header className="flex items-baseline justify-between">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("title")}</h1>
-        <span data-testid="home-state" className="flex items-center gap-2 text-xs text-muted-foreground">
+        <span
+          data-testid="home-state"
+          className="flex items-center gap-2 text-xs text-muted-foreground"
+        >
           <span
             aria-hidden
-            className={cn("inline-block h-2 w-2 rounded-full", data ? "bg-emerald-400" : "bg-muted-foreground/50")}
+            className={cn(
+              "inline-block h-2 w-2 rounded-full",
+              data ? "bg-emerald-400" : "bg-muted-foreground/50",
+            )}
           />
           {stateLabel}
         </span>
@@ -110,8 +117,10 @@ export default function HomePage() {
       {/* ② AI Advisor (B036 — reused in the restructured Home; B039 refines) */}
       <AdvisorSection />
 
-      {/* ③ Market context (B035 — reused) + sleeve breakdown */}
+      {/* ③ Market context (B035 — reused) + today's market news (B038) + sleeve breakdown */}
       <MarketContextCard />
+
+      <HomeNewsPanel />
 
       <Card data-testid="home-sleeves">
         <CardHeader>

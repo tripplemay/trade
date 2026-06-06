@@ -18,6 +18,8 @@ const SECTION_TESTIDS = [
   "home-day-pnl",
   "home-advisor-card",
   "home-market-context-card",
+  // B038 F002 — the Home "Today's market news" panel (third section).
+  "home-news-card",
   "home-sleeves",
 ];
 
@@ -26,7 +28,10 @@ test.describe("B037 F003 — Home Daily Journey", () => {
     const apiErrors: string[] = [];
     const consoleErrors: string[] = [];
     page.on("response", (response: Response) => {
-      if (response.status() >= 400 && response.url().includes("/api/home")) {
+      if (
+        response.status() >= 400 &&
+        (response.url().includes("/api/home") || response.url().includes("/api/news/latest"))
+      ) {
         apiErrors.push(`${response.request().method()} ${response.url()} → ${response.status()}`);
       }
     });
@@ -47,6 +52,8 @@ test.describe("B037 F003 — Home Daily Journey", () => {
     // order/execute button (no-execution UI boundary).
     await expect(page.getByTestId("home-hero").getByRole("button")).toHaveCount(0);
     await expect(page.getByTestId("home-sleeves").getByRole("button")).toHaveCount(0);
+    // B038 — the news panel is read-only headlines (links only, no order button).
+    await expect(page.getByTestId("home-news-card").getByRole("button")).toHaveCount(0);
 
     expect(apiErrors, `unexpected /home errors: ${apiErrors.join(", ")}`).toEqual([]);
     const appConsoleErrors = consoleErrors.filter(

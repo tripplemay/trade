@@ -77,6 +77,13 @@
       "loading": "加载中…",
       "error": "无法加载首页：{error}"
     },
+    "news": {
+      "title": "今日市场新闻",
+      "description": "最新市场动态标题（SEC EDGAR + Yahoo RSS），每日更新。仅标题，无 AI 解读。",
+      "loading": "正在加载市场新闻…",
+      "empty": "暂无市场新闻。配置完成后每日拉取会填充此处。",
+      "error": "无法加载市场新闻：{error}"
+    },
     "sleeves": {
       "title": "Sleeve 分解",
       "description": "各 sleeve 占已标记净资产的比例及当日盈亏。只读。",

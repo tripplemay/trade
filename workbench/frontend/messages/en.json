@@ -77,6 +77,13 @@
       "loading": "Loading…",
       "error": "Could not load Home: {error}"
     },
+    "news": {
+      "title": "Today's market news",
+      "description": "Latest market headlines (SEC EDGAR + Yahoo RSS), updated daily. Headlines only — no AI commentary.",
+      "loading": "Loading market news…",
+      "empty": "No market news yet. The daily fetch populates this once configured.",
+      "error": "Could not load market news: {error}"
+    },
     "sleeves": {
       "title": "Sleeve breakdown",
       "description": "Each sleeve's share of marked NAV + its day P&L. Read-only.",

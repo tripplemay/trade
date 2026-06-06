@@ -36,6 +36,10 @@ const EXECUTION_DIR = join(FRONTEND_ROOT, "src", "app", "(protected)", "executio
 // Scan it alongside the execution pages so a future Home edit can't add
 // an execution affordance in either language.
 const HOME_PAGE = join(FRONTEND_ROOT, "src", "app", "(protected)", "page.tsx");
+// B038 F002 — the Home "Today's market news" panel is part of the same
+// no-execution Home surface; scan it so a future edit can't add an
+// order/execute affordance (in either language) to the news element.
+const HOME_NEWS_PANEL = join(FRONTEND_ROOT, "src", "components", "home", "HomeNewsPanel.tsx");
 const MESSAGES_DIR = join(FRONTEND_ROOT, "messages");
 
 const EN_BANNED = ["execute", "place order", "send to broker"] as const;
@@ -82,10 +86,14 @@ function collectPageFiles(root: string): string[] {
 }
 
 describe("no execution buttons under (protected)/execution/** + Home", () => {
-  const files = [...collectPageFiles(EXECUTION_DIR), HOME_PAGE];
+  const files = [...collectPageFiles(EXECUTION_DIR), HOME_PAGE, HOME_NEWS_PANEL];
 
   it(`covers the Home page`, () => {
     expect(files).toContain(HOME_PAGE);
+  });
+
+  it(`covers the Home news panel`, () => {
+    expect(files).toContain(HOME_NEWS_PANEL);
   });
 
   it(`covers at least the 5 execution pages`, () => {
