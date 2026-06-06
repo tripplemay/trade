@@ -34,7 +34,7 @@
       "title": "Codex L1 + L2 真 VM 验收 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "L1 (CI 内): F001+F002+F003 全 generator 验收脚本跑通 — backend pytest ≥755 / ruff / mypy / frontend vitest ≥185 + Playwright ≥41；**no-execution buttons 守门** (Home 无下单按钮 + 中文禁词 0 命中)；**i18n 双语齐 + 无禁词**；**§12.10 自包含守门** (test_home_request_self_contained)；**§16 旧 Home 退役四处清理** (旧 i18n keys grep 0 + 旧组件/route 处理 + E2E presence→absence)；§22 E2E 翻转跑过；artifact grep secret 泄漏 = 0. L2 (真 VM): (1) curl /api/health 200 + SHA 与 main HEAD 等价 (v0.9.25)；(2) /api/debug/recent-errors = {count:0,records:[]}；(3) **v0.9.32 §23 新路由真 VM 200**: GET /api/home authenticated 200 + 结构化 payload (nav/day_pnl/sleeves)；anon 401；(4) **新三段 Home 浏览器手验** (对齐 personas §2 mockup): NAV+Day P&L 段 (涨跌颜色) + AI/market 占位段 + 4 sleeve breakdown；无下单按钮 (no-execution UI)；双语切换；截图；(5) **旧 quant dashboard 已 absent** (/ 渲染新 Home；旧 dashboard 元素 HTML grep 0；§16 L2 验证)；(6) Production HEAD ≡ main HEAD；(7) B026 banner 仍 absent；(8) **price_snapshot/timer L2**：workbench-prices.timer admin 安装 enabled；手动跑 prices CLI→price_snapshot 有行（或 TIINGO 缺→空表 day_pnl=null 亦可，记录哪种）；alembic_version=0009；scheduler scope 守门含 prices 仍只读非执行；(9) Post-signoff Deploy 段 (v0.9.27 §21). Signoff: docs/test-reports/B037-home-restructure-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md (含 §Post-signoff Deploy + §Production/HEAD + v0.9.32 §L2 新路由 200 勾选 + **§Decommission Checklist 旧 Home 退役**)；docs/screenshots/B037-home-restructure/ ≥2 PNG (新三段 Home zh + en 或 + 旧 absent 证据). Framework 候选: 若旧 Home 退役/三段占位/Day P&L mark 出现新通用规律记 signoff §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]

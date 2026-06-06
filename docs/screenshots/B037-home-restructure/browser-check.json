@@ -1,0 +1,30 @@
+[
+  {
+    "locale": "zh-CN",
+    "apiStatus": [
+      {
+        "url": "https://trade.guangai.ai/api/home",
+        "status": 200
+      }
+    ],
+    "heroButtons": 0,
+    "sleevesButtons": 0,
+    "oldDashboardCount": 0,
+    "consoleErrors": [],
+    "screenshot": "/Users/yixingzhou/project/trade/docs/screenshots/B037-home-restructure/home-zh-CN.png"
+  },
+  {
+    "locale": "en",
+    "apiStatus": [
+      {
+        "url": "https://trade.guangai.ai/api/home",
+        "status": 200
+      }
+    ],
+    "heroButtons": 0,
+    "sleevesButtons": 0,
+    "oldDashboardCount": 0,
+    "consoleErrors": [],
+    "screenshot": "/Users/yixingzhou/project/trade/docs/screenshots/B037-home-restructure/home-en.png"
+  }
+]

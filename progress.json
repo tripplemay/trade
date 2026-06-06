@@ -1,8 +1,8 @@
 {
-  "status": "reverifying",
+  "status": "done",
   "user_goal": "B037 Home 页架构改造 (Phase 3 / Stream 4.A) — 把 Home 从 quant dashboard 重构为 daily-engagement 中心，按 user-personas §2 Daily Journey mockup 落三段版式：① NAV + Day P&L 段 / ② AI Advisor 段(B039 填) / ③ market context(B038 填) + 4 sleeve breakdown 段。本批搭完整三段骨架 + 自己负责的 NAV/Day P&L/sleeve breakdown，AI/market 段留占位。Phase 3 首批 (其他 Home 整合 B038/B039 依赖它) → 里程碑 C (Layer 0.5) 起点。决策矩阵 (2026-06-05 用户已批，★=拍板)：Day P&L=★mark-to-market 持仓 (用 B027 价格快照 mark sleeve 持仓算当日 P&L) / 段落范围=★全三段骨架 + B038/B039 占位 / 旧 Home=★直接替换 (新 Home 上 /，不保留 /admin/legacy-home，偏离 path doc 但用户决) / 设计稿=design-draft 空→user-personas §2 mockup 权威 + acceptance 含一致性项 / NAV 源=复用 dashboard._aggregate_nav (Account cash+equity 手动录入 no-broker) / 双语 + Playwright Daily Journey。4 features: (F001) 后端 Home 数据 NAV+Day P&L mark-to-market+sleeve breakdown + GET /home + pytest≥8; (F002) 前端三段 Home 替换旧 dashboard + AI/market 占位 + 双语 + vitest; (F003) Playwright Daily Journey e2e + i18n safety + 旧 Home 退役四处清理 (v0.9.31 §16); (F004) Codex L1+L2 + signoff。**永久硬边界继承：no-broker (NAV=手动录入研究账户) / no-execution buttons (Home 无下单按钮+中文禁词) / 直接替换旧 Home 触发 v0.9.31 §16 退役四处清理 + E2E presence→absence / §12.10 自包含。** 本批不触 AI logic (AI Advisor 段仅占位)。不做：AI Advisor 内容(B039) / market context 渲染(B038) / Reports·Rec·Risk 重构(B040-B042) / 真 broker 账户 / 保留 legacy-home。预估 1 个中型批次 (前端为主)。",
   "total_features": 4,
-  "completed_features": 3,
+  "completed_features": 4,
   "fix_rounds": 1,
   "current_sprint": "F004",
   "last_updated": "2026-06-06",
@@ -22,23 +22,16 @@
   "docs": {
     "spec": "docs/specs/B037-home-restructure-spec.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/B037-home-restructure-signoff-2026-06-06.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "L1 全 PASS，但 L2 失败：production VM 缺少 B037 必需的 workbench-prices.service / workbench-prices.timer，当前不可签收。",
-    "pass_count": 8,
+    "summary": "B037 F004 复验通过：L1/L2 全 PASS，production /api/home、prices timer、旧 Home 退役与双语/no-execution UI 均满足签收条件。",
+    "pass_count": 9,
     "partial_count": 0,
-    "fail_count": 1,
-    "issues": [
-      {
-        "feature_id": "F004",
-        "result": "FAIL",
-        "description": "production `trade.guangai.ai` 的 `workbench-prices.timer` / `workbench-prices.service` 均不存在，违反 F004 L2 第 (8) 条『price_snapshot/timer L2：workbench-prices.timer admin 安装 enabled』。",
-        "steps_to_reproduce": "1. ssh tripplezhou@34.180.93.185 2. 运行 `systemctl status workbench-prices.timer --no-pager` 与 `systemctl status workbench-prices.service --no-pager` 3. 两者均返回 `Unit ... could not be found.`"
-      }
-    ]
+    "fail_count": 0,
+    "issues": []
   },
   "generator_fix_round_1": {
     "feature_id": "F004",
@@ -52,7 +45,7 @@
   "session_notes": {
     "planner": "2026-06-05 B036 done 收尾 (🎯 里程碑 B / Phase 2 终点达成) + Phase 3 启动 B037 一并完成。(1) B036 done 收尾：F004 首轮干净签收 (0 fix-round)；production /api/advisor 200 (3 sleeve haiku-4.5)；AI Safety Eval deploy gate 同 SHA success (red-team 15/15)。§Framework Learnings 无 (writer-lock 修复吸收)；§Soft-watch 无；proposed-learnings 无候选；B031 live-validate 候选仍 hold (B036 复用 gateway 无新 endpoint，单例)；role_assignments null。Phase 2 (B031-B036) 全签收 = 里程碑 B。(2) B037 启动 = implementation-path §4 Phase 3 / Stream 4.A 首批 (Home+UI 重构，B037-B043，→里程碑 C / Layer 0.5)。(3) **设计稿检查 (planner UI 规则)**：design-draft/ 空无 Home 稿 → 以 user-personas §2 Daily Journey mockup 为权威 (该 doc line 161 规定 UI 批次必引用)；acceptance 含 mockup 一致性项。(4) 6 决策对齐 (用户拍板 3 ★：Day P&L=mark-to-market B027 价格 / 段落范围=全三段骨架+B038/B039 占位 / 旧 Home=直接替换不留 legacy)。NAV 复用 dashboard._aggregate_nav (Account cash+equity 手动录入 no-broker)。(5) **偏离点明**：path doc B037 骨架原写「保留旧 Home 为 /admin/legacy-home 直到稳定」，用户选直接替换 → 尊重落地，spec §9 记丢回退路径风险 (旧组件 git 可恢复)。(6) **退役角度**：直接替换旧 Home = decommission → 触发 v0.9.31 §16 四处清理铁律 (旧 layout/route/i18n keys/守门 + E2E presence→absence，evaluator.md §22)；F003 负责。(7) Spec docs/specs/B037-home-restructure-spec.md 11 章；features.json 4 features (3g+1c)；progress building。(8) 用户协助：无需 (无新 secret)。(9) 下一会话 Generator 起 F001 关键注意点：① schemas/home.py HomeResponse {nav, day_pnl:{value,pct}|null, sleeves[]}；② Day P&L mark-to-market：最新 AccountSnapshot 持仓 × B027 最新价格快照 mark，当日 vs 前一交易日；价格/持仓缺→day_pnl=null (UI —)；只读不触发执行；③ NAV 复用 _aggregate_nav；④ 4 sleeve breakdown 走 strategies sleeve 分组；⑤ GET /home auth-gated + §12.10 自包含守门 test_home_request_self_contained；⑥ baseline backend pytest 735 (B036 收尾)，F001 后 ≥743。(10) F002：替换 (protected)/page.tsx 三段版式对齐 personas §2 mockup；② AI Advisor + ③ market 占位 slot (B038/B039 只填不改结构)；双语 zh+en；no-execution buttons 守门 (Home 无下单按钮+中文禁词)；vitest≥185。(11) F003：v0.9.31 §16 旧 quant dashboard 退役四处清理 (旧 i18n keys grep 0 + 旧 route/组件处理 + 守门) + §22 E2E presence→absence 翻转 + Playwright Daily Journey 流双 locale + i18n safety regression 扩集。(12) F004 Codex：v0.9.32 §23 GET /api/home 真 VM 200 + 新三段 Home 浏览器手验对齐 mockup + 旧 dashboard absent (§16 L2) + no-execution UI + 双语 + §Decommission Checklist。(13) 后续 Phase 3：B038 (Home 整合 market context) → B039 (Home 整合 AI Advisor) → B040-B043 (Reports/Rec/Risk 重构 + AI 解释层) → 里程碑 C。(14) 本会话经自主 loop 长程推进：B033 done→B034→v0.9.32→B035→B036 (里程碑 B)→B037 启动；pinned planner 全程不越界 (building/fixing/verifying 不做 generator/codex 活)，仅 done/planning 行动 + root-cause 建议 (B033 snapshot / B035 deploy blocker 均我 root-cause + surface)。",
     "generator": "2026-06-06 fix-round 1：F004 L2 blocker（prod 缺 workbench-prices.{service,timer}）已解，status fixing→reverifying。根因非代码——unit 随 release 下发(deploy.yml:176)+deploy.sh:300-313 best-effort install，但 deploy 用户 sudoers 无 install/enable 权 → 只 warn；和 B035/B036 同款一次性 admin 手装步骤，prices 这次漏跑。用户授权直接 VM admin(ssh tripplezhou@34.180.93.185，本机 key=~/.ssh/id_ed25519 或 kolmatrix_deploy 均通；runbook 的 id_ed25519_kolmatrix 本机无)，Generator 镜像 deploy.sh 一次性 install+enable+daemon-reload+手动 one-shot 验真。证据：timer enabled+active next 00:30 UTC；三只读 timer 全 enabled；service Result=success；journal=no-holdings(symbols=0)→price_snapshot 0 行属空账户合规路径(非 TIINGO 缺)。无代码改动，无 commit 产品码。详见 blocker 报告 §Resolution + progress.generator_fix_round_1。Durable 候选(已 surface)：扩 deploy sudoers 让 timer 自动装，消除 B035/B036/B037 反复手装。【B037 building 历史保留】三 generator F001-F003 一会话完成推送(b6c3d00/eda0265/38f86d2/77c50fa)；3 spec-vs-codebase gap 用户确认(price_snapshot 表+timer / positions sleeve 标签 / 复用 AdvisorSection+MarketContextCard 非空占位，spec §2.1)。CI 教训：mypy strict 覆盖 tests/；新 /api 路由须 regen api.ts + next.config PROXIED_PREFIXES + dev-rewrites guard + vitest.config include 白名单；改 Home 须同步翻 protected-routes e2e。",
-    "evaluator": "2026-06-05 F004 首轮验收完成，已置 status=fixing。L1 全绿：backend pytest 757/ruff0/mypy0；frontend lint0/typecheck0/vitest 198；Playwright 44 passed；本地 authed /api/home payload 形状符合 spec（空账户路径 nav=0 day_pnl=null）；local authed /api/debug/recent-errors={count:0}. L2：production /api/health=200 version 77c50fa db_connectivity=ok；/api/home unauth=401；root→/login 307；login HTML 正常；SHA 仅落后 aa7e140 一个 metadata commit，按 §10 接受等价不同步；VM alembic_version=0009_b037_price_snapshot。阻塞项：ssh tripplezhou@34.180.93.185 后 `systemctl status workbench-prices.timer` 与 `.service` 均显示 Unit could not be found，`systemctl list-unit-files | grep workbench-prices` 无结果，确认 production 缺失 B037 所需 timer/service，已写 blocker 报告 docs/test-reports/B037-home-restructure-blocker-2026-06-05.md。"
+    "evaluator": "2026-06-06 F004 复验完成并签收，已置 status=done。修复范围无产品代码变化，仅 production timer 安装与状态机推进，因此本轮复验聚焦 L2 blocker 关闭与真机验收。L2 结果：ssh tripplezhou@34.180.93.185 确认 `workbench-market-context.timer` / `workbench-advisor.timer` / `workbench-prices.timer` 全 `enabled`；`workbench-prices.timer` active(waiting) next 2026-06-07 00:30 UTC；`workbench-prices.service` 最近一次 2026-06-06 00:30 UTC `status=0/SUCCESS`，journal=`price_cli_no_holdings` 且 `symbols=0 saved=0 errors=0`，确认是空账户合规路径而非 TIINGO 缺失；`alembic_version=0009_b037_price_snapshot`；`price_snapshot` count=0 与空持仓一致。authenticated production：用 VM env 派生的临时 `__Secure-authjs.session-token` 验证 `/api/auth/session` 返回 allowlisted 用户，`/api/home` 返回 200 payload（nav=0 day_pnl=null sleeves=3），`/api/debug/recent-errors` 返回 `{count:0,records:[]}`。production 页面手验：authenticated `/` 返回 200；zh-CN / en 两轮浏览器截图已落 `docs/screenshots/B037-home-restructure/home-zh-CN.png` 与 `home-en.png`；`browser-check.json` 记录两轮 `/api/home` 都是 200、`home-hero`/`home-sleeves` 按钮数 0、旧 `dashboard-card-nav` 计数 0、console errors 空。HTML 抓取同时验证 zh/en 文案与新三段结构存在。SHA 等价性：production `/api/health.version=77c50fa...`，main HEAD=710e77e...；`git diff 77c50fa..710e77e` 仅含 progress/features/project-status/blocker-report，按 §10 接受等价不同步。补充 smoke：backend targeted pytest 21 passed；frontend targeted vitest 31 passed。signoff 已写 docs/test-reports/B037-home-restructure-signoff-2026-06-06.md。Soft-watch：deploy 用户 sudoers 仍不足以自动 install/enable 新 timer，已记入 signoff S1。"
   },
   "features": [
     "F001",
