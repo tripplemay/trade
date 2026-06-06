@@ -130,3 +130,23 @@ def test_sleeve_news_response_has_no_free_form_text_field() -> None:
         "score",
     }
     assert set(SleeveNewsResponse.model_fields) == {"items"}
+
+
+def test_latest_news_item_has_no_free_form_text_field() -> None:
+    """B038 F001 — the Home ``GET /api/news/latest`` feed item exposes
+    exactly the metadata + deterministic-topic field set. No free-form AI
+    text field (``summary`` / ``advice`` / ``rationale``) may slip in under
+    B034's non-generative boundary. Being a global (sleeve-less) feed it also
+    drops ``matched_tickers`` / ``score`` — those are sleeve-relevance fields."""
+
+    from workbench_api.schemas.news import LatestNewsItem, LatestNewsResponse
+
+    assert set(LatestNewsItem.model_fields) == {
+        "news_id",
+        "title",
+        "source",
+        "url",
+        "published_at",
+        "topics",
+    }
+    assert set(LatestNewsResponse.model_fields) == {"items"}

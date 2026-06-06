@@ -1,0 +1,41 @@
+[Unit]
+Description=Workbench news ingest daily fetch (SEC EDGAR + Yahoo RSS, read-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B038-home-market-news-spec.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=deploy
+Group=deploy
+WorkingDirectory=/srv/workbench/current/backend
+
+# Secrets (SEC_EDGAR_CONTACT_EMAIL, WORKBENCH_DB_URL, ...) live in
+# /etc/workbench/workbench.env (chmod 600 root:deploy). Never committed.
+EnvironmentFile=/etc/workbench/workbench.env
+
+# Persistent snapshot root so raw filing / article bodies survive release swaps
+# + the release GC (boundary (p): bodies live on disk, the news table holds only
+# metadata + snapshot_path). Mirrors the market-context snapshot location and the
+# directory deploy.sh provisions (B033 F004). Not a secret — a fixed path.
+Environment=WORKBENCH_NEWS_SNAPSHOT_DIR=/var/lib/workbench/data/snapshots/news
+
+# Permanent product boundary (r) (B038 spec §3, revises B033 (q)→(r)): this timer
+# does READ-ONLY news fetch ONLY — SEC EDGAR filings + Yahoo RSS headlines.
+# ExecStart invokes the news ingest CLI and nothing else — it never runs broker /
+# order-ticket / execution / recommendation / generative-LLM code (the CLI path is
+# non-generative; B034 boundary). tests/safety/test_market_scheduler_scope.py
+# greps this ExecStart line to enforce that. systemd timer ≠ in-process scheduler
+# (test_news_no_scheduler still bans apscheduler/aiocron/schedule imports).
+ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.news.cli fetch --source=all
+
+# Standard hardening (mirrors workbench-market-context.service): nothing here
+# needs a TTY or write access outside the persistent data + log roots.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/workbench /var/log/workbench /tmp
+
+# No [Install] section — this oneshot is pulled by workbench-news.timer,
+# never enabled / started directly.

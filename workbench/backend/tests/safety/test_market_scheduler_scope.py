@@ -25,12 +25,15 @@ BACKEND_ROOT = Path(__file__).resolve().parents[2]
 MARKET_PKG = BACKEND_ROOT / "workbench_api" / "market"
 ADVISOR_PKG = BACKEND_ROOT / "workbench_api" / "advisor"
 PRICES_PKG = BACKEND_ROOT / "workbench_api" / "prices"
-# Three scheduler packages are scanned: the market-context fetch (B035), the
-# AI advisor precompute (B036), and the price-snapshot fetch (B037).
-# Boundary (r) was revised in B036 — a scheduler may run CI-safety-gated
-# advisor precompute (which imports the LLM gateway), but still never a
-# trade-execution surface. The B037 price fetch is read-only market data.
-SCHEDULER_PKGS = (MARKET_PKG, ADVISOR_PKG, PRICES_PKG)
+NEWS_PKG = BACKEND_ROOT / "workbench_api" / "news"
+# Four scheduler packages are scanned: the market-context fetch (B035), the
+# AI advisor precompute (B036), the price-snapshot fetch (B037), and the
+# news ingest (B038, boundary (q)→(r)). Boundary (r) was revised in B036 — a
+# scheduler may run CI-safety-gated advisor precompute (which imports the LLM
+# gateway), but still never a trade-execution surface. The B037 price fetch
+# and the B038 news fetch are read-only data; news ingest is also
+# non-generative (B034 boundary — embed only, never advise).
+SCHEDULER_PKGS = (MARKET_PKG, ADVISOR_PKG, PRICES_PKG, NEWS_PKG)
 REPO_ROOT = Path(__file__).resolve().parents[4]
 SYSTEMD_DIR = REPO_ROOT / "workbench" / "deploy" / "systemd"
 SERVICE_UNIT = SYSTEMD_DIR / "workbench-market-context.service"
@@ -39,6 +42,8 @@ ADVISOR_SERVICE_UNIT = SYSTEMD_DIR / "workbench-advisor.service"
 ADVISOR_TIMER_UNIT = SYSTEMD_DIR / "workbench-advisor.timer"
 PRICES_SERVICE_UNIT = SYSTEMD_DIR / "workbench-prices.service"
 PRICES_TIMER_UNIT = SYSTEMD_DIR / "workbench-prices.timer"
+NEWS_SERVICE_UNIT = SYSTEMD_DIR / "workbench-news.service"
+NEWS_TIMER_UNIT = SYSTEMD_DIR / "workbench-news.timer"
 DEPLOY_SH = REPO_ROOT / "workbench" / "deploy" / "scripts" / "deploy.sh"
 
 # Dotted-path fragments that mark a TRADE-EXECUTION surface a scheduler must
@@ -273,3 +278,48 @@ def test_prices_timer_wired_by_dry_loop() -> None:
         "prices timer must be wired by the DRY loop, not a hardcoded enable"
     )
     assert (SYSTEMD_DIR / "workbench-prices.timer").is_file()
+
+
+# --- B038 news ingest timer (boundary (q)→(r): read-only news fetch) -------
+
+
+def test_news_service_execstart_runs_news_cli() -> None:
+    assert NEWS_SERVICE_UNIT.is_file(), f"missing {NEWS_SERVICE_UNIT}"
+    text = NEWS_SERVICE_UNIT.read_text(encoding="utf-8")
+    execstart = [ln for ln in text.splitlines() if ln.strip().startswith("ExecStart=")]
+    assert len(execstart) == 1
+    assert "workbench_api.news.cli fetch" in execstart[0]
+    assert "EnvironmentFile=/etc/workbench/workbench.env" in text
+
+
+def test_news_service_references_no_trade_execution() -> None:
+    directives = "\n".join(
+        ln
+        for ln in NEWS_SERVICE_UNIT.read_text(encoding="utf-8").splitlines()
+        if not ln.strip().startswith("#")
+    ).lower()
+    for frag in ("broker", "order_ticket", "execution", "ticket", "fills"):
+        assert frag not in directives, (
+            f"news .service directive references trade-execution {frag!r} "
+            "(boundary (r))"
+        )
+
+
+def test_news_timer_runs_daily_and_pulls_service() -> None:
+    assert NEWS_TIMER_UNIT.is_file(), f"missing {NEWS_TIMER_UNIT}"
+    text = NEWS_TIMER_UNIT.read_text(encoding="utf-8")
+    assert "OnCalendar=" in text
+    assert "Unit=workbench-news.service" in text
+    assert "WantedBy=timers.target" in text
+
+
+def test_news_timer_wired_by_dry_loop() -> None:
+    """B038 first exercises B037-OPS1's durable wiring: the news timer is
+    installed by the workbench-*.timer loop with ZERO deploy.sh / sudoers
+    changes. It must ship so the glob covers it; no hardcoded literal."""
+    text = DEPLOY_SH.read_text(encoding="utf-8")
+    assert "enable --now workbench-news.timer" not in text, (
+        "news timer must be wired by the DRY loop, not a hardcoded enable "
+        "(B037-OPS1 durable auto-wiring — zero deploy.sh change)"
+    )
+    assert NEWS_TIMER_UNIT.is_file()

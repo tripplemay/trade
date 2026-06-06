@@ -297,6 +297,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/news/latest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Latest News Route */
+        get: operations["get_latest_news_route_api_news_latest_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/advisor": {
         parameters: {
             query?: never;
@@ -1387,6 +1404,47 @@ export interface components {
              * @description Realised slippage vs the target prices, in bps.
              */
             slippage_bps: number;
+        };
+        /**
+         * LatestNewsItem
+         * @description One global-feed news headline (metadata-only).
+         */
+        LatestNewsItem: {
+            /**
+             * News Id
+             * @description News row UUID (string form).
+             */
+            news_id: string;
+            /** Title */
+            title: string;
+            /**
+             * Source
+             * @description 'sec_edgar' / 'yahoo_rss'.
+             */
+            source: string;
+            /**
+             * Url
+             * @description Source URL (rendered as an external link).
+             */
+            url: string;
+            /**
+             * Published At
+             * @description ISO-8601 publish timestamp.
+             */
+            published_at: string;
+            /**
+             * Topics
+             * @description Deterministic topic tags (财报 / 重大事件 / …); never LLM-generated.
+             */
+            topics?: string[];
+        };
+        /**
+         * LatestNewsResponse
+         * @description GET /api/news/latest payload — newest-first global market news.
+         */
+        LatestNewsResponse: {
+            /** Items */
+            items?: components["schemas"]["LatestNewsItem"][];
         };
         /**
          * MarketContextResponse
@@ -2559,6 +2617,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MarketContextResponse"];
+                };
+            };
+        };
+    };
+    get_latest_news_route_api_news_latest_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LatestNewsResponse"];
                 };
             };
         };

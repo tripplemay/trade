@@ -42,6 +42,8 @@ const REQUIRED_PREFIXES = [
   "advisor",
   // B037 F001: the Home NAV + Day P&L + sleeve-breakdown surface.
   "home",
+  // B038 F001: the Home "Today's market news" feed (GET /api/news/latest).
+  "news",
 ];
 
 describe("next.config dev rewrites cover all B022 backend prefixes", () => {

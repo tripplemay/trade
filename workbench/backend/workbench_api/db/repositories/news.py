@@ -112,6 +112,33 @@ class NewsRepository(Repository[News, UUID]):
         stmt = stmt.order_by(News.published_at.desc()).limit(limit)
         return list(self._session.execute(stmt).scalars().all())
 
+    def list_latest_global(
+        self,
+        *,
+        limit: int = 20,
+        since: datetime | None = None,
+        source: str | None = None,
+        form_type: str | None = None,
+    ) -> list[News]:
+        """B038 F001 — newest-first global feed across all tickers.
+
+        Unlike :meth:`list_by_ticker` / :meth:`list_by_source` this applies
+        no ticker scoping — it backs the Home "Today's market news" section
+        (``GET /api/news/latest``), which shows the freshest market-wide
+        headlines regardless of sleeve / ticker. Optional ``source`` /
+        ``form_type`` / ``since`` filters narrow the feed; all are ANDed.
+        """
+
+        stmt = select(News)
+        if since is not None:
+            stmt = stmt.where(News.published_at >= since)
+        if source is not None:
+            stmt = stmt.where(News.source == source)
+        if form_type is not None:
+            stmt = stmt.where(News.form_type == form_type)
+        stmt = stmt.order_by(News.published_at.desc()).limit(limit)
+        return list(self._session.execute(stmt).scalars().all())
+
     def list_all_rows(self) -> Sequence[News]:
         """Type-friendly alias around :meth:`list_all` for code that wants
         a ``Sequence[News]`` annotation rather than ``list[News]``.

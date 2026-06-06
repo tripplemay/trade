@@ -1,0 +1,16 @@
+[Unit]
+Description=Daily timer for workbench news ingest (boundary (r): read-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B038-home-market-news-spec.md
+
+[Timer]
+# 02:00 UTC — after the market-context (00:00), prices (00:30) and advisor
+# (01:00) timers, so the Home news section refreshes alongside the rest of the
+# daily data. Persistent=true catches up a missed run after a VM reboot /
+# downtime window; the fetch is idempotent via NewsRepository.save_if_new
+# (de-dups on (source, source_id)).
+OnCalendar=*-*-* 02:00:00
+Persistent=true
+Unit=workbench-news.service
+
+[Install]
+WantedBy=timers.target
