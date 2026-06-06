@@ -1,49 +1,49 @@
 {
-  "sprint": "B044-real-scoring-precompute",
+  "sprint": "B045-real-data-refresh-pipeline",
   "features": [
     {
       "id": "F001",
-      "title": "trade/ 可安装 + deploy.sh 装进 VM venv + CI build/install 纳入 trade/（backend 启动/部署不破）",
+      "title": "真实数据刷新 CLI（Tiingo prices + SEC EDGAR fundamentals → VM unified CSV store）+ workbench-data-refresh.{service,timer} + scope 守门",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【2026-06-06 用户已批：架构 precompute→DB→read + 评分位置 A（trade/ 入 VM venv），见 spec §2】(1) **trade/ 可安装**：trade/ 加 packaging（pyproject 或纳入 backend wheel 构建 / editable install），使其可装入 Python 环境；处理 trade/ 自身依赖（pandas/numpy 等）解析。(2) **deploy.sh 装进 venv**：deploy.sh 把 trade/ 装进 /opt/workbench/.venv（与 workbench_api 并存），best-effort 不崩 dev rehearsal。(3) **CI build/install 纳入**：backend CI build/test 流程确保 wheel/install 含 trade/ + 依赖正确（backend 启动不变）。(4) Gates：backend pytest ≥ baseline（trade/ install 不破既有测试）；ruff/mypy 0（trade/ 若纳入 lint scope 单独处理，否则隔离）；deploy.sh dev rehearsal 不崩；既有 backend 路由/启动不破。(5) 不动：workbench_api 既有逻辑 / 请求路径（本批 F003 才改 recommendations 读路径）/ 前端。(6) **注意**：本 feature 是后续 F002 precompute import trade/ 的前置；仅让 trade/ 在环境可用，不在本 feature 接评分。",
+      "status": "pending",
+      "acceptance": "【2026-06-07 用户已批：C live-refresh pipeline，见 spec §2】(1) **刷新 CLI** workbench_api/data_refresh/（或复用 prices/news 模块风格）：抓真实 prices（B027 Tiingo loader，深历史满足 risk_parity 120+ 日频 + global_etf_momentum ETF）+ fundamentals（B029 SEC EDGAR `fetch_quarterly_fundamentals` 真实季度财报满足 us_quality 5 因子）→ 写 unified CSV（schema 同 trade loaders 期望 prices_daily.csv + fundamentals.csv）到 /var/lib/workbench/data/snapshots/unified/；universe=master 各 sleeve 所需 symbol。(2) **workbench-data-refresh.{service,timer}**（每日 oneshot，镜像 market-context；B037-OPS1 循环+通配符零成本自动接线）。(3) 复用 B027 request_spacing/budget guard + B029 rate limit；复用 TIINGO_API_KEY + SEC_EDGAR_CONTACT_EMAIL（不引新 secret）。(4) **scheduler scope 守门**扩刷新 job（边界 r 只读市场数据，禁 broker/execution）。(5) pytest ≥8：刷新 job（fake Tiingo/EDGAR→写 unified CSV 正确 schema/行）；scope 守门含刷新 job。(6) Gates：backend pytest ≥ baseline+≥8 / ruff 0 / mypy 0。(7) 不动：B044 precompute/snapshot / master 评分逻辑 / 前端。",
       "design_decisions": [
-        "架构（2026-06-06 用户批）：precompute→DB→read（照 B036 advisor 读侧范式）。",
-        "评分位置（2026-06-06 用户批）：A=trade/ 装进 VM venv，VM timer 直接 import trade/ 评分；运维简单，§12.10 请求路径保护改由 AST 守门兜底（F003）。",
-        "范围拆两批（2026-06-06 用户批）：本批=核心评分闭环；B045=regime reconcile+account current_weight+精炼。"
+        "真数据路径（2026-06-07 用户批）：C live-refresh pipeline（非静态快照）。",
+        "数据 store（planner 决）：VM 文件 /var/lib/workbench/data/snapshots/unified/（贴合 trade loader CSV 期望，镜像 market-context/news snapshot 目录）。",
+        "数据源（planner 决）：prices=Tiingo(B027) / fundamentals=SEC EDGAR(B029)，两真实源已存在复用。",
+        "刷新 cadence（planner 决）：每日 timer（边界 r）。"
       ]
     },
     {
       "id": "F002",
-      "title": "recommendation_snapshot 表 + precompute CLI（import trade master_portfolio 真实评分）+ workbench-recommendations.timer + 真实数据可用性 + scheduler scope 守门",
+      "title": "trade loaders data-root env 覆盖（读 VM store / repo-root 兼容）+ precompute 设 env + fixture fallback 保留",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "(1) **recommendation_snapshot 表** db/models/recommendation_snapshot.py（as_of_date/symbol/sleeve/target_weight/rationale/computed_at/master_meta JSON 含 planning_weights+data_source 标记，UniqueConstraint(as_of_date,symbol)，镜像既有 snapshot 表）+ alembic 迁移（down_revision=0009）+ db/repositories/recommendation_snapshot.py（save_batch 幂等覆盖 as_of_date / latest_snapshot）。(2) **precompute CLI** workbench_api/recommendations/precompute.py + cli.py：**import trade.backtest.master_portfolio**，跑 _build_portfolio_target()/_resolve_child_weights() 真实评分「as of today」→ 最终 {symbol:weight}+per-sleeve breakdown → 写 recommendation_snapshot；**仅此模块允许 import trade/**（非请求路径）。(3) **workbench-recommendations.{service,timer}**（每日 oneshot 镜像 market-context；B037-OPS1 循环+通配符零成本自动接线）。(4) **真实数据可用性（关键）**：precompute 用 trade strategies 既有 loader（B030 unified CSV 真数据+fixture fallback）；**VM 须有真实输入**——unified CSV 随 release 下发 VM 可读路径 或 precompute 经 Tiingo（workbench_api 既有 loader）取价；**真数据不可用→fixture fallback 但显式标记 master_meta.data_source=fixture**（不得 fixture 当 real 蒙混，v0.9.21）。(5) **scheduler scope 守门**扩 recommendations precompute（边界 r-c：允许评分 import 含 trade/，仍禁 broker/order_ticket/execution/tickets/fills/reconcile）。(6) pytest ≥10：repo save_batch 幂等/latest；precompute（fake/real master scoring→写表+data_source 标记）；scheduler scope 含 recommendations。(7) Gates：backend pytest ≥ baseline+≥10 / ruff 0 / mypy 0 / 复用既有 secret（TIINGO_API_KEY 若用）。(8) 不动：既有 recommendations schema/请求路径（F003 改）/ backtest 引擎 / 5 因子与 master 权重逻辑（仅调用）。",
+      "status": "pending",
+      "acceptance": "(1) **loader data-root 覆盖**：trade loaders（trade/data/loader.py + us_quality_universe.py）读 unified CSV 路径加 env 覆盖（如 WORKBENCH_DATA_ROOT）：env 设则读该 root 下 snapshots/unified/，否则保持现有 repo-root 行为（本地/CI 不变）。(2) **precompute + 刷新 job 设 env** 指向 VM store（/var/lib/workbench/data/snapshots/unified/）→ loaders 读真实数据。(3) **fixture fallback 保留**：数据缺→fixture + data_source 标记（F003 用）；本地 FORCE_FIXTURE 等开关不动。(4) pytest：loader data-root env 覆盖双路径（env 设→读 VM store / 未设→repo-root 不变）；既有 trade loader 本地行为不破。(5) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0（trade/ 改动若纳入 lint scope 单独处理）。(6) 不动：master 评分逻辑 / B044 precompute→snapshot 架构（仅喂数据路径）/ 前端。",
       "design_decisions": [
-        "权威评分组成（planner 决）：trade/backtest/master_portfolio.py 现有组成（momentum/risk_parity/us_quality/hk_stub）；regime 注册项名实不符留 B045 reconcile。",
-        "数据源标记（planner 决）：master_meta.data_source=real/fixture 显式标记，L2 必记，不蒙混（v0.9.21）。"
+        "data-root env 覆盖（planner 决）：env 设→VM store / 未设→repo-root 本地 CI 兼容；§12.10 数据自包含（VM 上 repo-root 不存在的适配）。"
       ]
     },
     {
       "id": "F003",
-      "title": "/api/recommendations/current 读 recommendation_snapshot（替换 equal-weight）+ §12.10 AST 守门（请求路径禁 trade import）+ graceful",
+      "title": "precompute data_source 粒度真实标记（real/mixed/fixture）+ 全 sleeve real 路径（S3 sleeve_unavailable 消除）",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "(1) **读 snapshot 替换占位**：services/recommendations.py _build_target_positions 替换——读 recommendation_snapshot latest_snapshot → 映射 TargetPosition（target_weight 真实评分；current_weight 本批仍 0.0 或简单，读 AccountSnapshot 留 B045；diff=target-current）。(2) **graceful 无 snapshot**：precompute 未跑→空/占位（不抛错，记录『评分待生成』）。(3) **§12.10 AST 守门** tests/safety/test_recommendations_request_self_contained.py：断言 routes/recommendations.py + services/recommendations.py（请求路径）**不 import trade/**；仅 workbench_api/recommendations/precompute.py（job）允许 import trade/。(4) 既有契约不破：schema TargetPosition / gate_checks / wash_sale / export-to-ticket / NewsPanel 数据；regen api.ts（若 schema 变，本批预计不变）。(5) pytest：/api/recommendations/current 读 snapshot（有→真实权重 / 无→graceful）+ auth-gated(401) + §12.10 守门跑过。(6) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / 前端不动（数据源换透明）。(7) 不动：前端 Recommendations UI(B041) / equal-weight 之外的既有 recommendations 逻辑 / precompute(F002)。",
+      "status": "pending",
+      "acceptance": "(1) **data_source 粒度标记**：B044 precompute 现 data_source=fixture 硬标记 → 改为按实际数据源粒度标记（prices/fundamentals 各 sleeve 实际读 real 还是 fixture/fallback）；全 real→data_source=real；部分→mixed + 明细（v0.9.21 诚实不蒙混）。(2) **全 sleeve real 路径**：数据齐时 risk_parity（120+ 日频可用）/us_quality（fundamentals 可用）不再 sleeve_unavailable（S3 消失）→ 真实评分。(3) pytest：precompute data_source 粒度标记（全 real/mixed/fixture 三态）+ 数据齐时全 sleeve 评分非 stub。(4) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / 不破 B044 recommendation_snapshot 契约。(5) 不动：master 评分逻辑 / /api/recommendations/current 读路径（B044）/ 前端 / regime+current_weight（B046）。",
       "design_decisions": [
-        "§12.10 enforcement（planner 决）：trade/ 入 venv 后，请求路径禁 trade import 改由 AST 守门强制（物理缺席→守门兜底）；仅 precompute job 允许 import trade/。"
+        "data_source 粒度（planner 决）：real/mixed/fixture 明细标记，L2 必记，不蒙混（v0.9.21）；数据齐则全 sleeve real。"
       ]
     },
     {
       "id": "F004",
-      "title": "Codex L1 + L2 真 VM 验收（trade/ 入 venv + precompute 真实评分写表 + /current 真实权重 + 数据源 real/fixture + 请求路径无 trade import）+ signoff",
+      "title": "Codex L1 + L2 真 VM 验收（刷新 timer 自动接线 + 真机刷新写 unified 数据 + precompute data_source=real 全 sleeve + /current 真实权重）+ signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "L1 (CI 内)：F001+F002+F003 全 generator 验收脚本跑通 — backend pytest ≥ baseline+≥10 / ruff / mypy；**§12.10 AST 守门**（请求路径 routes/services/recommendations 无 trade import，仅 precompute 允许）；scheduler scope 守门含 recommendations；trade/ install 不破既有测试；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）；(2) /api/debug/recent-errors={count:0,records:[]}；(3) **trade/ 已入 venv**（VM python import trade.backtest.master_portfolio 不报错）；(4) **precompute 真机 trigger（systemctl start workbench-recommendations.service）→ recommendation_snapshot 有真实评分行**；**记录 master_meta.data_source=real 还是 fixture**（哪种 + 哪些 symbol/target_weight，参 prices/news 验真模式）；(5) **GET /api/recommendations/current authenticated 200 返回真实权重**（非 equal-weight 0.25 均分；target_weight 反映 master 评分组成）+ anon 401；(6) **workbench-recommendations.timer 经 B037-OPS1 deploy 循环+sudoers 通配符自动 enabled+active（无手装、无 warn）**（§24 + B037-OPS1 durable）；(7) **请求路径无 trade import** 守门跑过；(8) Production HEAD ≡ main HEAD；(9) B026 banner 仍 absent。Signoff: docs/test-reports/B044-real-scoring-precompute-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（§24 timer 接线勾选 + §L2 /current 真实权重 + §Production/HEAD + §Post-signoff Deploy + **数据源 real/fixture 显式声明**）。**Framework 候选（强）**：trade/ 入 artifact 改变 §12.10 enforcement 模型（物理缺席→AST 守门）；记 signoff §Framework Learnings 供 planner done 阶段裁定。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
+      "status": "pending",
+      "acceptance": "L1 (CI 内)：F001+F002+F003 全 generator 验收脚本跑通 — backend pytest ≥ baseline+≥8 / ruff / mypy；scheduler scope 守门含刷新 job；§12.10.2 请求路径无 trade import 守门仍绿；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）；(2) /api/debug/recent-errors={count:0,records:[]}；(3) **workbench-data-refresh.timer 经 B037-OPS1 deploy 循环+sudoers 通配符自动 enabled+active（无手装、无 warn）**（§24）；(4) **手动 trigger workbench-data-refresh.service → /var/lib/workbench/data/snapshots/unified/ 有真实 prices_daily.csv + fundamentals.csv**（记录抓了哪些 symbol/行数/日期范围）；(5) **手动 trigger workbench-recommendations.service（B044）→ recommendation_snapshot data_source=real（或 mixed 明细）+ risk_parity/us_quality 真实评分非 stub**（对比 B044 fixture，记录权重变化 + sleeve_unavailable 是否消失）；(6) **GET /api/recommendations/current authenticated 200 全 sleeve 真实权重**（非仅 momentum real）+ anon 401；(7) Production HEAD ≡ main HEAD；(8) B026 banner 仍 absent。Signoff: docs/test-reports/B045-real-data-refresh-pipeline-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（§24 timer 接线 + §Production/HEAD + §Post-signoff Deploy + **data_source real/mixed 显式声明 + 与 B044 fixture 对比 + disk 占用记录接 S1**）。Framework 候选：data-root env 跨 repo-root/VM 适配若出新通用规律记 §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
 }

@@ -4,7 +4,8 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前状态
-- **B044-real-scoring-precompute：✅ `done`**（2026-06-07，1 fix-round=环境 blocker，0 代码改动）。F001/F002/F003/F004 全签收。`/api/recommendations/current` 从 equal-weight 占位改为 Master Portfolio 真实评分（SGOV .6/EEM .2/SPY .2, data_source=fixture 诚实标记）。trade/ 入 VM venv，VM timer precompute→DB→read 闭环，§12.10 AST 守门（请求路径禁 trade import，仅 precompute 允许）。B037-OPS1 自动接线 timer enabled+active。signoff `docs/test-reports/B044-real-scoring-precompute-signoff-2026-06-07.md`。**强 framework 候选**：trade 入 artifact 改 §12.10 enforcement(物理缺席→AST 守门)。**留 B045**：regime reconcile + account current_weight(AccountSnapshot) + 评分精炼 + 真数据切换。
+- **B045-real-data-refresh-pipeline：`building`**（2026-06-07 启动；**真实数据刷新 pipeline**，B044 Batch 2 拆分后数据线；数据工程批次）。建 live-refresh pipeline 让 B044 precompute 在 VM 全 sleeve 跑真实数据（`data_source=real`），消除 B044 S2/S3 fixture stub（risk_parity 需 120+ 日频/us_quality 需 fundamentals，wheel fixture 不够→VM stub，仅 momentum real）。**决策（★用户批）：真数据路径=C live-refresh pipeline**（非静态快照）。planner 决（C 后拆分）：B045=pipeline / **B046=regime reconcile+account current_weight**（小，拆出）；数据 store=VM 文件 `/var/lib/workbench/data/snapshots/unified/`；数据源=prices Tiingo(B027)+fundamentals SEC EDGAR(B029 fetch_quarterly_fundamentals，两真实源已存在)；每日 timer(边界 r)。4 features：(F001 g)刷新 CLI(Tiingo+EDGAR→VM unified CSV)+workbench-data-refresh.timer(B037-OPS1 自动接线)+scope 守门；(F002 g)trade loaders data-root env 覆盖(读 VM store/repo-root 兼容)+precompute 设 env；(F003 g)precompute data_source 粒度标记(real/mixed/fixture)+全 sleeve real(S3 消除)；(F004 c)L2 真机刷新+precompute data_source=real 全 sleeve+/current 真实权重 vs B044 fixture+signoff。复用 TIINGO+SEC_EDGAR secret。**风险**：SEC EDGAR fundamentals 覆盖(部分 symbol 无财报→mixed 诚实标记) + disk(B044 S1 82%，unified CSV 增占用)。spec `docs/specs/B045-real-data-refresh-pipeline-spec.md`。
+- **B044-real-scoring-precompute：✅ `done`**（2026-06-07，1 fix-round=环境 blocker，0 代码改动）。`/api/recommendations/current` equal-weight→Master 真实评分（SGOV .6/EEM .2/SPY .2，**data_source=fixture 诚实**，仅 momentum real）。trade/ 入 VM venv，precompute→DB→read 闭环，§12.10 AST 守门。signoff `docs/test-reports/B044-real-scoring-precompute-signoff-2026-06-07.md`。沉淀 v0.9.35。**Soft-watch S1：VM disk 82%（曾致主机挂死，持续监控）**；S2/S3（fixture/sleeve stub）→ B045 真数据切换解决。
 - **B041-recommendations-robinhood：✅ `done`** / **B040-reports-robinhood：✅ `done`** / **B039-home-advisor-disclaimer：✅ `done`** / **B038-home-market-news：✅ `done`**（2026-06-06 全签收）。
 - **🎯 Phase 2 完整收官（B031-B036 全签收）= 里程碑 B；B037-B044 全签收 = 里程碑 C 巩固。** Phase 3 主线：B043-B045(Rec 精炼+AI 解释层 + regime reconcile)。
 - **B037-OPS1 ✅ / B037-home ✅ / B036 ✅ / B035 ✅ / B034 ✅**
@@ -24,8 +25,8 @@ type: project
 - AI 边界（v0.9.28）：非生成式 embedding（B034）；生成式 prompt+输出校验 references ⊆ input set + B032 red-team gate（B036）。
 
 ## Framework 状态
-- 最新版本 **v0.9.34**（2026-06-06 B038 沉淀）：§12.10 自包含审计扩到所有生产执行路径。
-- **v0.9.33**（evaluator.md §24 timer L2 接线检查）/ **v0.9.32**（generator.md §12.10 + evaluator.md §23 L2 新路由真 VM 200）。
+- 最新版本 **v0.9.35**（2026-06-07 B044 沉淀）：generator.md §12.10.2 enforcement 模型「物理缺席→AST 守门」（禁包打进 artifact 供 job 用时同 commit 落 AST 守门，规约 6）+ README §经验教训「生产部署/停机恢复」（长停机 SCP 静默失败→恢复后核对 prod==HEAD）。
+- **v0.9.34**（§12.10 自包含扩到所有生产执行路径）/ **v0.9.33**（evaluator.md §24 timer L2 接线检查）/ **v0.9.32**（generator.md §12.10 + evaluator.md §23）。
 - 仍 hold：B031 第三方 API live-validate（单例）+ B026 React event edge（单例）。
 
 ## 已知 gap
