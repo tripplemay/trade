@@ -31,7 +31,7 @@
       "title": "/api/recommendations/current 读 recommendation_snapshot（替换 equal-weight）+ §12.10 AST 守门（请求路径禁 trade import）+ graceful",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) **读 snapshot 替换占位**：services/recommendations.py _build_target_positions 替换——读 recommendation_snapshot latest_snapshot → 映射 TargetPosition（target_weight 真实评分；current_weight 本批仍 0.0 或简单，读 AccountSnapshot 留 B045；diff=target-current）。(2) **graceful 无 snapshot**：precompute 未跑→空/占位（不抛错，记录『评分待生成』）。(3) **§12.10 AST 守门** tests/safety/test_recommendations_request_self_contained.py：断言 routes/recommendations.py + services/recommendations.py（请求路径）**不 import trade/**；仅 workbench_api/recommendations/precompute.py（job）允许 import trade/。(4) 既有契约不破：schema TargetPosition / gate_checks / wash_sale / export-to-ticket / NewsPanel 数据；regen api.ts（若 schema 变，本批预计不变）。(5) pytest：/api/recommendations/current 读 snapshot（有→真实权重 / 无→graceful）+ auth-gated(401) + §12.10 守门跑过。(6) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / 前端不动（数据源换透明）。(7) 不动：前端 Recommendations UI(B041) / equal-weight 之外的既有 recommendations 逻辑 / precompute(F002)。",
       "design_decisions": [
         "§12.10 enforcement（planner 决）：trade/ 入 venv 后，请求路径禁 trade import 改由 AST 守门强制（物理缺席→守门兜底）；仅 precompute job 允许 import trade/。"
