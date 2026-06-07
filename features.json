@@ -6,7 +6,7 @@
       "title": "诊断+修 trade wheel deploy 自动装可靠性 + deploy 后 smoke import check（import trade 关键模块，失败硬报）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【2026-06-07 用户已批：先修 S4 再 B046 + deploy 后 smoke import check 铁律(v0.9.36)，见 spec §3】(1) **诊断 S4 根因**：真机诊断为何 fresh deploy 后 VM venv trade version 仍停旧版（候选：version bump 是否进构建 wheel / `--force-reinstall`+`--quiet` 在 deploy 用户实际行为 / pip cache）；记录根因。(2) **对症修自动装**：确保 fresh deploy 后 VM venv trade version == 构建 wheel version（无需手动 force-reinstall）。候选修法按诊断：version bump 进权威 build pyproject（repo-root）/ `--force-reinstall --no-deps`（trade 依赖已在 venv 避免 offline dep 解析失败）+ 去 `--quiet` 或捕获非零退出 / 清 pip cache。(3) **deploy 后 smoke import check（核心 durable 防线）**：deploy.sh trade install 后在 VM venv 跑 `python -c \"import trade.backtest.master_portfolio; import trade.data.data_root\"`（precompute 真实依赖关键模块）；**失败→deploy 硬失败/`::error::` 响亮告警（不被 --quiet 吞）**；不能只靠 pip 返回 0 当成功。(4) deploy.sh smoke check 段 dev rehearsal best-effort（venv 缺 trade 时 warn 不崩）。(5) 若有 deploy 守门测试，加 smoke check 存在断言。(6) Gates：backend pytest 不破 / 既有 backend+frontend 部署路径不破 / ruff/mypy 0（如有 py 改动）。(7) 不动：trade 评分/业务逻辑 / B045 数据 pipeline / §12.10.2 请求路径守门 / 前端 / deploy 用户 sudo（不扩）。",
       "design_decisions": [
         "优先级（2026-06-07 用户批）：先修 S4 再 B046（trade/ 自动装坏是可靠性债，未来 trade/ 改动会撞）。",
