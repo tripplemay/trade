@@ -63,6 +63,32 @@ def test_deploy_sh_installs_trade_wheel_into_venv() -> None:
     assert "skipping (B044 F001" in text
 
 
+def test_deploy_sh_trade_install_is_reliable_force_reinstall_no_deps() -> None:
+    """B045-OPS1 F001 — the trade wheel must (re)install deterministically:
+    --force-reinstall (a same-version wheel still overwrites; B045 F004 #2) and
+    --no-deps (pandas/numpy already in the venv; re-resolving them against PyPI
+    on the restricted VM is the S4 silent-failure cause)."""
+
+    text = DEPLOY_SH.read_text(encoding="utf-8")
+    assert "install --force-reinstall --no-deps" in text
+    # --upgrade alone must not gate the trade install (it skips same-version).
+    assert "install --quiet --upgrade \"${TRADE_WHEEL}\"" not in text
+
+
+def test_deploy_sh_has_trade_smoke_import_check() -> None:
+    """B045-OPS1 F001 — the durable defence (v0.9.36 铁律): after installing the
+    trade wheel, deploy.sh must import the exact modules precompute depends on
+    and HARD-FAIL loudly on failure (a stale wheel installs 'fine' but breaks
+    precompute at runtime; pip exit 0 is not proof)."""
+
+    text = DEPLOY_SH.read_text(encoding="utf-8")
+    # Imports the two precompute-critical modules in the VM venv python.
+    assert "import trade.backtest.master_portfolio; import trade.data.data_root" in text
+    # Loud, un-swallowable failure that aborts the deploy.
+    assert "::error::trade smoke import failed" in text
+    assert "exit 1" in text
+
+
 def test_backend_ci_installs_trade_package() -> None:
     text = BACKEND_CI.read_text(encoding="utf-8")
     # CI installs the repo-root trade package (working-directory is

@@ -62,14 +62,35 @@ echo "→ install trade package into /opt/workbench/.venv"
 TRADE_WHEEL=$(ls "${RELEASE_DIR}"/trade-dist/trade-*.whl 2>/dev/null | head -n 1 || true)
 if [[ -n "${TRADE_WHEEL}" ]]; then
   echo "  wheel: ${TRADE_WHEEL}"
-  # B045 F004 fix (Finding #2): --force-reinstall, NOT --upgrade. The trade
-  # wheel version is hand-maintained and easy to forget bumping; with --upgrade
-  # pip treats a same-version wheel as already-satisfied and SKIPS reinstall, so
-  # newly-added modules (e.g. B045 F002 trade/data/data_root.py) never land on
-  # the VM → precompute ModuleNotFoundError. --force-reinstall always overwrites
-  # the installed files with the freshly-built wheel, independent of the version
-  # string. The wheel is local (in the release dir) so deps resolve from cache.
-  "${VENV_PIP}" install --quiet --force-reinstall "${TRADE_WHEEL}"
+  # B045-OPS1 F001 — reliable trade-wheel (re)install. Lessons baked in:
+  #   --force-reinstall : a same-version wheel must STILL overwrite the installed
+  #     files (B045 F004 #2 — --upgrade skipped same-version 0.1.0 → 0.2.0 and
+  #     left trade.data.data_root absent → precompute ModuleNotFoundError).
+  #   --no-deps         : reinstall ONLY trade, never its deps. pandas/numpy are
+  #     already in the venv (the backend wheel installed just above pulls them in
+  #     transitively via yfinance), so re-resolving them here is pointless AND is
+  #     the S4 silent-failure root cause: --force-reinstall WITHOUT --no-deps
+  #     re-resolves pandas/numpy against PyPI, which on the restricted VM can
+  #     stall / fail and leave trade stale. --no-deps makes the reinstall a
+  #     deterministic, network-independent file overwrite from the local wheel.
+  #   no --quiet        : the resolved version must be visible in the deploy log.
+  "${VENV_PIP}" install --force-reinstall --no-deps "${TRADE_WHEEL}"
+  "${VENV_PIP}" show trade | grep -i '^Version:' || true
+
+  # B045-OPS1 F001 — smoke import check (the durable defence; v0.9.36 铁律).
+  # pip exiting 0 is NOT proof precompute can import trade: a stale wheel installs
+  # "fine" yet is missing a newly-added module (e.g. trade.data.data_root), then
+  # the recommendations precompute timer dies at runtime — invisible to the
+  # deploy. Import the exact two modules precompute depends on; any failure is a
+  # LOUD hard deploy failure (::error:: survives every quiet flag), never a
+  # silent pass. This catches ALL S4 root-cause candidates (stale wheel / missing
+  # module / broken deps), independent of why the install regressed.
+  echo "→ smoke import check: trade precompute modules"
+  if ! "${VENV_PYTHON}" -c "import trade.backtest.master_portfolio; import trade.data.data_root"; then
+    echo "::error::trade smoke import failed after install (${TRADE_WHEEL}) — precompute would break at runtime; failing the deploy"
+    exit 1
+  fi
+  echo "  trade smoke import OK"
 else
   echo "  no trade wheel under ${RELEASE_DIR}/trade-dist/; skipping (B044 F001 — precompute will be unavailable until shipped)"
 fi
