@@ -1,39 +1,41 @@
 {
-  "status": "done",
-  "user_goal": "B046 可交易 diff（mark-to-market）+ current_weight + regime reconcile（真实评分基础 Batch 3；里程碑 C 交易闭环关键拼图，backlog order 1）— 让『按系统指示交易』的 ticket 买卖 diff 真实准确。**Explore 关键发现**：可交易的 diff 不在 recommendations，在 execution get_position_diff()——它已算 current_weight 但用 持股×avg_cost 成本价/total_equity，成本价低估涨幅持仓权重→ticket 过度买入。真正修法=execution diff 改 mark-to-market。决策（★用户批）：①交易 diff 范围=★execution diff 改 mark-to-market（PriceProvider 最新收盘）+ rec 展示 current_weight 一致（两处复用 home.py B037 模式）；②★regime reconcile 纳入 B046（注册表对齐 master 实际 4-sleeve，验下游不破）。planner 决：NAV/估值基准=market-value（持仓×最新收盘）分子分母一致，不混成本/市价；avg_cost 保留（wash-sale/cost-basis 依赖，仅改权重/diff 估值不动记账）。3 features：(F001 g)共享 mark-to-market 助手+execution get_position_diff 改市价(核心可交易 diff)+recommendations 展示 current_weight+边界+pytest(B023 工作流/wash-sale 不破)；(F002 g)strategies 注册表对齐 master 实际 4-sleeve(加 momentum/hk_china，regime 留研究态)+验下游 home/advisor/news/strategies 不破；(F003 c)L1+L2 ticket diff mark-to-market 准确+rec current_weight 真实+注册表对齐+B023 工作流不破+signoff。永久硬边界继承：no-broker/no-execution(只出 ticket 指示用户手动下单)/B023 工作流不破(wash-sale/gate/cost-basis avg_cost 依赖不破)/定位 §1.1 不出收益预测/§12.10.2 请求路径禁 trade。不做：执行/下单/broker 能力/删 avg_cost/改 wash-sale/激活 regime(留 B013)/HK-China 实现(order3)/交易闭环冒烟(BL-B023-S1 order2)/改 master 评分/B044-B045 precompute/前端 Rec UI 结构。后续 backlog order：BL-B023-S1 闭环冒烟(order2,用本批真实 diff)→HK-China(order3)→B042 Risk UI→B043 AI 解释。",
-  "total_features": 3,
-  "completed_features": 3,
+  "status": "building",
+  "user_goal": "B048 F011 真实 per-sleeve NAV + 历史价格表 → 安全/风控/合规层 mark-to-market 真实化（里程碑 C 交易安全层真实化，backlog order 2；大批次 5 features）— 让交易闭环安全层从占位变真。来源 2026-06-07 全面占位核查：gate kill_switch 硬编码 pass / risk_panel per-sleeve 镜像占位 + master DD 成本价 / wash_sale 永空，共享 F011 根因（真实 per-sleeve NAV 从未实现）。决策（★用户批）：范围=★一次做全（含历史价格表 foundation，达真实 mark-to-market per-sleeve+master 回撤随时间）。planner 决：历史价格=新 price_history 表（深每日，job 从 B045 unified CSV materialize，不重载 price_snapshot Day P&L 语义）；kill_switch 阈值统一 0.15（rec 0.20→对齐 risk_panel 权威）；估值口径 mark-to-market 全程一致（复用 B046 mark_to_market.py）；历史不足 graceful degrade+标注不蒙混(v0.9.21)。Explore 核查：price_snapshot 已按(symbol,obs_date)累积但语义=Day P&L 最新+前一日→新 price_history 深历史；B045 unified CSV 深历史可回填；sleeve tag B037 加了但 execution 写路径(ui_edit/reconcile)丢失需补；FillJournalEntry 有 symbol/side/price/date wash_sale 可行；per-sleeve 回撤随时间需历史价格重建 NAV 历史(故纳入历史价格表)。5 features：(F001 g)price_history 表+repo+backfill job(B045 CSV→表)+scope 守门；(F002 g)sleeve tag 写路径补齐(PositionEntry+三写路径)+regen api.ts；(F003 g)risk_panel mark-to-market 回撤(master+per-sleeve 重建 NAV 历史)+kill_switch gate 真实化+阈值 0.15；(F004 g)wash_sale 检测(fills+avg_cost)+rec 用真实 flags；(F005 c)L1+L2 验收+signoff。永久硬边界继承：risk/gate 信息性不 gate ticket(B023)/§12.10 job 读 CSV 写 DB 请求只读+§12.10.2 请求路径禁 trade/B023 工作流不破/定位 §1.1 不出收益预测。不做：执行/下单能力/重载 price_snapshot/激活 regime/请求路径 import trade/历史不足蒙混。后续 backlog order：BL-B023-S1 闭环冒烟(order3，用真实 diff+真实安全层)→HK-China→B042 Risk UI(在真风控数据上)→B047→B049 全页面审计。",
+  "total_features": 5,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F003",
+  "current_sprint": "F001",
   "last_updated": "2026-06-07",
   "reference_docs": [
-    "docs/specs/B046-tradeable-diff-current-weight-spec.md",
+    "docs/specs/B048-real-risk-safety-layer-spec.md",
     "docs/product/progress-review-2026-06.md",
-    "docs/dev/workbench-manual-execution-runbook.md",
-    "workbench/backend/workbench_api/services/execution.py",
-    "workbench/backend/workbench_api/services/home.py",
+    "workbench/backend/workbench_api/services/risk_panel.py",
     "workbench/backend/workbench_api/services/recommendations.py",
-    "workbench/backend/workbench_api/services/strategies.py",
+    "workbench/backend/workbench_api/services/mark_to_market.py",
+    "workbench/backend/workbench_api/db/models/fill_journal_entry.py",
+    "workbench/backend/workbench_api/data_refresh/refresh.py",
     "framework/harness/generator.md",
     "framework/templates/signoff-report.md"
   ],
   "docs": {
-    "spec": "docs/specs/B046-tradeable-diff-current-weight-spec.md",
+    "spec": "docs/specs/B048-real-risk-safety-layer-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B046-tradeable-diff-current-weight-signoff-2026-06-07.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": "B046 F003 PASS。L1：161/161 ruff 0。L2：mark-to-market diff 生效(AAPL 成本13%→市价23%，total_equity=,096)；rec current_weight 真实(SGOV 0.3835 非0.0)；strategies 4-sleeve master+regime research；B023 ticket 不破；recent-errors=0。Prod HEAD≡main e7078a5。",
+  "evaluator_feedback": null,
   "generator_handoff": null,
   "session_notes": {
-    "planner": "2026-06-07 续长程会话：…→B045 done→v0.9.36→B045-OPS1 done(S4 resolved)→进度复盘+里程碑 C 重定义(交易闭环)+backlog 重组→B046 规划。本段 B046 planning。(1) B045-OPS1 干净签收(S4 resolved，trade wheel --force-reinstall --no-deps + smoke import check)。(2) **里程碑 C 重定义(用户拍板)**：加『用户交易闭环可用』；落 progress-review-2026-06.md + implementation-path §3/§6 + backlog order 串行(B046 order1→BL-B023-S1 order2→HK-China order3→B042/B043)。HK-China 用户确认实现(降级条件 B045/B036 已解除)。(3) **B046=交易闭环关键拼图**。Explore 三线核查出**重要意外**：可交易 diff 不在 recommendations(那是 0.0 展示占位)，在 execution get_position_diff()——已算 current_weight 但用 avg_cost 成本价(L168-173)，成本价低估涨幅持仓→ticket 过度买入。**真正修法=execution diff 改 mark-to-market**(用户批)。(4) 第二意外：ticket(tickets.py generate_ticket)读 execution get_position_diff，不读 recommendations 的 current_weight→改 execution 即自动让 ticket 准确。(5) regime reconcile 用户批纳入：注册表(strategies.py)对齐 master 实际 4-sleeve(momentum global_etf/risk_parity/us_quality/hk_china stub)，B013/B014/B015 regime 孤儿项留研究态(_resolve_child_weights weight>0 抛 BacktestError)；**下游 home _registry_sleeves/advisor precompute/news sleeve_tickers/api strategies 必验不破**。(6) planner 决：NAV=market-value 分子分母一致；avg_cost 保留(wash-sale/cost-basis 依赖，仅改权重估值)。(7) spec docs/specs/B046-tradeable-diff-current-weight-spec.md 10 章；features 3(2g+1c)；progress building。(8) F001 交 Generator：共享 mark-to-market 助手(复用 home.py PriceProvider+_aggregate_nav)+execution get_position_diff 改市价(核心)+recommendations current_weight+边界(无 mark degrade/无 snapshot/NAV=0)+**B023 回归不破**。(9) F002：注册表对齐 master+验 4 下游消费者不破。(10) F003 Codex：L2 手动 PUT 浮盈持仓验 diff mark-to-market vs cost-basis 差异+rec current_weight 真实+注册表对齐+B023 工作流不破。(11) **关键风险**：改 execution diff 触 B023 交易工作流(敏感)——保留 avg_cost+回归测试绿+L2 端到端验。(12) 后续 BL-B023-S1 交易闭环端到端冒烟(order2)用本批真实 diff 跑通→里程碑 C §5 确证。",
-    "generator": "2026-06-07 B046 F002 done：regime reconcile。services/strategies.py 注册表对齐 master 实际组成——加 B006-global-etf-momentum（sleeve momentum，strategy_id global_etf_momentum，0.40，active）+ B011-satellite-hk-china（sleeve satellite_hk_china，satellite_stub，0.10，status=stub，code_path master.py）；B013/B014/B015 regime 三项 status active→research（config 注 master_planning_weight=0.0 + 激活属未来 B013）；B016 config 加 master_strategy_id=risk_parity_vol_target 口径对齐。注册表顺序改为 master active-first（momentum/risk_parity/us_quality/hk_china）后接 regime research。下游全部自动 regroup 不破：home _registry_sleeves/advisor advisor_sleeves/news _known_sleeve_labels 均从 list_strategies().strategies 的 .sleeve 派生——新增 momentum+hk_china 自动进 skeleton（home 空账户 breakdown / advisor precompute / news is_known），新 sleeve 无 news universe→tickers ()（同 regime degrade）。测试：test_strategies +5（reflects_master 7-id 顺序/covers_master_four_active/momentum master_id/hk_china stub/risk_parity master_id）、home 空账户 5-sleeve 更新、advisor_sleeves cover master +1、news is_known/tickers +1。backend 870 passed（864→870 +6）/17 skip/ruff 0/mypy 0（271 files）/§12.10.2 strategies.py 无 trade import。前端 strategies.spec.tsx 用自带 2-sleeve mock fixture，与后端注册表解耦，不破。status→verifying 交 Codex F003（L1+L2 真 VM 验收 + signoff）。",
-    "evaluator": "2026-06-07 B046 F003 签收。PUT AAPL(avg=)+SGOV()→price snapshot→position-diff mark-to-market AAPL 0.2347(/sh) SGOV 0.3835(.45) total_equity=,096。对比成本口径 AAPL 0.13→市价0.23 证明mark-to-market生效。rec current_weight SGOV 0.3835 与execution一致。strategies 4master+3research。ticket work不破。"
+    "planner": "2026-06-07 续长程会话：B046 done→进度复盘+里程碑 C 重定义(交易闭环+全页面真实化硬标准)+多轮占位核查(B047 回测/Reports/B048 安全层/B049 审计 gate 入 backlog)→B048 规划。本段 B048 planning。(1) B046 干净签收(mark-to-market diff 生效 AAPL 成本 13%→市价 23.47%)。(2) 全面核查发现：交易闭环安全层多处占位共享 F011 根因(真实 per-sleeve NAV 未实现)。用户拍板 F011 根因批次统一做 B048 纳入里程碑 C。(3) **Explore B048 核查关键**：①per-sleeve 回撤随时间需历史价格重建 NAV 历史——price_snapshot 只存最新+前一日(语义 Day P&L)→撞硬墙；②但 price_snapshot 已按(symbol,obs_date)累积 + B045 unified CSV 有深历史可回填。用户批一次做全含历史价格表。(4) planner 决：新 price_history 表(深每日，job 从 B045 CSV materialize，不重载 price_snapshot)；kill_switch 阈值统一 0.15(rec 0.20 vs risk_panel 0.15→对齐权威)；mark-to-market 全程一致复用 B046 mark_to_market.py；历史不足 degrade+标注不蒙混。(5) **核查澄清**：kill_switch gate 其实易——master DD 本就真(从 snapshot 历史算)只是 gate 硬编码 pass 没读；wash_sale 可行(FillJournalEntry 数据足)；真正硬的是 per-sleeve+master DD mark-to-market 随时间(需历史价格)。(6) spec docs/specs/B048-real-risk-safety-layer-spec.md 10 章；features 5(4g+1c)；progress building。(7) F001 交 Generator：price_history 表+repo(close_on_or_before/since)+backfill job(B045 unified CSV→表)+scope 守门。(8) F002：sleeve tag 写路径补齐(PositionEntry+ui_edit/reconcile/bootstrap，现丢 B037 tag)+regen api.ts。(9) F003：risk_panel 重建 NAV 历史 mark-to-market master+per-sleeve DD+kill_switch gate 真实+阈值 0.15。(10) F004：wash_sale(fills+avg_cost 亏损卖+30 日回补)。(11) F005 Codex：L2 price_history backfill+真实回撤+kill_switch 真实+wash_sale 真实+B023 不破。(12) **大批次风险**：5 features，foundation(F001 价格/F002 tag)先行，F003/F004 消费；改 execution 写路径(F002)+risk(F003)+rec gate/wash(F003/F004)触 B023 敏感→回归绿+L2 端到端。(13) 后续 BL-B023-S1 闭环冒烟(order3)用真实 diff+真实安全层。",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",
     "F002",
-    "F003"
+    "F003",
+    "F004",
+    "F005"
   ]
 }
