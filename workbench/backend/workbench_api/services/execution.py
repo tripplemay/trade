@@ -32,6 +32,12 @@ from workbench_api.schemas.execution import (
     PositionDiffResponse,
     PositionEntry,
 )
+from workbench_api.services.mark_to_market import (
+    compute_mark_to_market,
+    latest_close,
+    marks_for,
+)
+from workbench_api.services.prices_provider import DbPriceProvider, PriceProvider
 from workbench_api.services.recommendations import get_current_recommendations
 
 _logger = logging.getLogger("workbench.execution")
@@ -115,34 +121,51 @@ def update_account(
     return _snapshot_to_payload(row)
 
 
-def _compute_total_equity(snapshot: AccountSnapshotPayload | None) -> float:
-    if snapshot is None:
-        return 0.0
-    total = snapshot.cash
-    for p in snapshot.positions:
-        total += p.shares * p.avg_cost
-    return total
-
-
-def get_position_diff(session: Session, as_of: str | None = None) -> PositionDiffResponse:
+def get_position_diff(
+    session: Session,
+    as_of: str | None = None,
+    *,
+    provider: PriceProvider | None = None,
+) -> PositionDiffResponse:
     """Build the position-diff response by joining snapshot + targets.
 
-    F002 uses the per-symbol ``avg_cost`` as the price reference for
-    share-count math. Target-only symbols (no prior position) get a
-    placeholder ``reference_price=None`` and surface in ``unmatched``
-    so the UI can flag them. This is research-only; no live market
-    data is fetched.
+    B046 F001 — the share-count + weight math is **mark-to-market**: the price
+    reference per symbol is the latest close a :class:`PriceProvider` resolves
+    (the ``price_snapshot`` table), NOT the per-symbol ``avg_cost``. Valuing at
+    cost understated an appreciated holding's weight, so the order ticket
+    (``generate_ticket`` reads this diff) over-bought it. ``total_equity`` is the
+    market-value NAV (``cash + Σ shares × latest_close``), keeping the diff's
+    numerator and denominator on one basis.
+
+    ``avg_cost`` is left untouched on the stored snapshot — cost-basis /
+    wash-sale accounting still reads it; only the *valuation* basis here changed.
+
+    A symbol with no mark (price_snapshot lacks two closes) keeps
+    ``reference_price=None`` and surfaces in ``unmatched`` so the UI flags it
+    rather than silently pricing it at zero.
     """
 
+    provider = provider or DbPriceProvider(session)
     snapshot = get_latest_account(session)
     as_of_date = as_of or date.today().isoformat()
     recommendations = get_current_recommendations(session)
-    total_equity = _compute_total_equity(snapshot)
 
     current_by_symbol: dict[str, PositionEntry] = {}
     if snapshot is not None:
         for p in snapshot.positions:
             current_by_symbol[p.symbol.upper()] = p
+
+    # One marks fetch over held ∪ target symbols feeds both the market-value NAV
+    # and the per-target reference price (target-only symbols are priced too).
+    target_symbols = {t.symbol.upper() for t in recommendations.target_positions}
+    marks = marks_for(provider, set(current_by_symbol) | target_symbols)
+    cash = snapshot.cash if snapshot is not None else 0.0
+    mtm = compute_mark_to_market(
+        [(p.symbol, p.shares) for p in snapshot.positions] if snapshot is not None else [],
+        cash,
+        marks,
+    )
+    total_equity = mtm.nav
 
     target_payload: list[PositionEntry] = []
     diff: list[PositionDiffEntry] = []
@@ -154,22 +177,16 @@ def get_position_diff(session: Session, as_of: str | None = None) -> PositionDif
         seen_symbols.add(symbol)
         current = current_by_symbol.get(symbol)
         current_shares = current.shares if current else 0.0
-        reference_price: float | None = (
-            current.avg_cost if current and current.avg_cost > 0 else None
-        )
+        reference_price = latest_close(marks, symbol)  # market price, not avg_cost
 
         target_dollar = target.target_weight * total_equity
         if reference_price is not None and reference_price > 0:
             target_shares = target_dollar / reference_price
         else:
-            target_shares = current_shares  # cannot rebalance without a price
+            target_shares = current_shares  # cannot rebalance without a mark
 
         delta_shares = target_shares - current_shares
-        current_weight = (
-            (current_shares * (reference_price or 0.0)) / total_equity
-            if total_equity > 0 and reference_price is not None
-            else 0.0
-        )
+        current_weight = mtm.current_weight(symbol)
         delta_weight = target.target_weight - current_weight
         delta_dollar = delta_shares * (reference_price or 0.0)
 
@@ -202,28 +219,25 @@ def get_position_diff(session: Session, as_of: str | None = None) -> PositionDif
     for symbol, current in current_by_symbol.items():
         if symbol in seen_symbols:
             continue
-        reference_price = current.avg_cost if current.avg_cost > 0 else None
-        current_weight = (
-            (current.shares * (reference_price or 0.0)) / total_equity
-            if total_equity > 0 and reference_price is not None
-            else 0.0
-        )
+        reference_price = latest_close(marks, symbol)
+        current_weight = mtm.current_weight(symbol)
         delta_shares = -current.shares
         delta_dollar = delta_shares * (reference_price or 0.0)
-        diff.append(
-            PositionDiffEntry(
-                symbol=symbol,
-                current_shares=current.shares,
-                target_shares=0.0,
-                delta_shares=delta_shares,
-                current_weight=current_weight,
-                target_weight=0.0,
-                delta_weight=-current_weight,
-                delta_dollar=delta_dollar,
-                reference_price=reference_price,
-                reason="held but no longer in target — sell to zero",
-            )
+        entry = PositionDiffEntry(
+            symbol=symbol,
+            current_shares=current.shares,
+            target_shares=0.0,
+            delta_shares=delta_shares,
+            current_weight=current_weight,
+            target_weight=0.0,
+            delta_weight=-current_weight,
+            delta_dollar=delta_dollar,
+            reference_price=reference_price,
+            reason="held but no longer in target — sell to zero",
         )
+        diff.append(entry)
+        if reference_price is None:
+            unmatched.append(entry)
 
     return PositionDiffResponse(
         as_of_date=as_of_date,

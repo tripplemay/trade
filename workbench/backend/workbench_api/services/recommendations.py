@@ -26,6 +26,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from workbench_api.db.models.account import Account
+from workbench_api.db.repositories.account_snapshot import AccountSnapshotRepository
 from workbench_api.db.repositories.recommendation_snapshot import (
     RecommendationSnapshotRepository,
 )
@@ -42,6 +43,8 @@ from workbench_api.schemas.recommendations import (
     SleeveNewsResponse,
     TargetPosition,
 )
+from workbench_api.services.mark_to_market import compute_mark_to_market, marks_for
+from workbench_api.services.prices_provider import DbPriceProvider, PriceProvider
 
 _logger = logging.getLogger("workbench.recommendations")
 
@@ -149,31 +152,65 @@ def _aggregate_account_state(session: Session) -> tuple[bool, float]:
     return True, total
 
 
-def _build_target_positions(session: Session) -> list[TargetPosition]:
+def _account_positions_and_cash(session: Session) -> tuple[list[tuple[str, float]], float]:
+    """Parse the latest AccountSnapshot into ``([(SYMBOL, shares)], cash)``.
+
+    Trust-nothing parse of the positions JSON (mirrors home / reconcile): drop
+    malformed entries. No snapshot → ``([], 0.0)``."""
+
+    snap = AccountSnapshotRepository(session).latest()
+    if snap is None:
+        return [], 0.0
+    positions: list[tuple[str, float]] = []
+    raw = snap.positions if isinstance(snap.positions, list) else []
+    for entry in raw:
+        if not isinstance(entry, dict):
+            continue
+        symbol = str(entry.get("symbol", "")).strip().upper()
+        if not symbol:
+            continue
+        try:
+            shares = float(entry.get("shares", 0.0))
+        except (TypeError, ValueError):
+            continue
+        positions.append((symbol, shares))
+    return positions, float(snap.cash or 0.0)
+
+
+def _build_target_positions(
+    session: Session, provider: PriceProvider | None = None
+) -> list[TargetPosition]:
     """Map the latest precomputed Master Portfolio target (B044 F002) to
     TargetPosition rows.
 
     Reads ``recommendation_snapshot`` (written by the recommendations
     precompute timer, which imports ``trade`` for the real scoring) — this
     request path NEVER imports ``trade`` (§12.10 AST guard). ``target_weight``
-    is the real (fixture-data) Master composition; ``current_weight`` stays
-    0.0 this batch (B045 wires it from AccountSnapshot), so ``diff`` reads
-    "buy from scratch". When no snapshot exists yet (precompute hasn't run),
-    returns ``[]`` — graceful "scoring pending", never an error."""
+    is the real Master composition; ``current_weight`` (B046 F001) is the
+    account's **mark-to-market** weight — held ``shares × latest_close`` over the
+    market-value NAV — on the SAME basis the execution position-diff uses, so the
+    two views agree. When no snapshot exists yet (precompute hasn't run), returns
+    ``[]`` — graceful "scoring pending", never an error."""
 
     repo = RecommendationSnapshotRepository(session)
     rows = repo.latest_snapshot()
     if not rows:
         return []
+    provider = provider or DbPriceProvider(session)
+    held, cash = _account_positions_and_cash(session)
+    target_symbols = {str(row.symbol).upper() for row in rows}
+    marks = marks_for(provider, target_symbols | {sym for sym, _ in held})
+    mtm = compute_mark_to_market(held, cash, marks)
+
     out: list[TargetPosition] = []
     for row in rows:
         target = float(row.target_weight)
-        current = 0.0  # B045 wires the account's current weight (AccountSnapshot)
+        current = mtm.current_weight(str(row.symbol))
         out.append(
             TargetPosition(
                 symbol=row.symbol,
                 target_weight=target,
-                current_weight=current,
+                current_weight=round(current, 6),
                 diff=round(target - current, 6),
                 rationale=row.rationale,
             )

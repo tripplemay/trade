@@ -17,6 +17,7 @@ Three contracts pinned, plus the **safety-bedrock** disclaimer assertion:
 from __future__ import annotations
 
 import time
+from collections.abc import Iterable
 from datetime import date
 from pathlib import Path
 
@@ -28,10 +29,13 @@ from workbench_api.app import create_app
 from workbench_api.auth.jwt_validator import JWT_ALGORITHM
 from workbench_api.db.engine import get_engine
 from workbench_api.db.models.account import Account
+from workbench_api.db.models.account_snapshot import AccountSnapshot
 from workbench_api.observability.active_users import active_users
+from workbench_api.services.prices_provider import PriceMark
 from workbench_api.services.recommendations import (
     DISCLAIMER_LITERAL,
     DISCLAIMER_LITERAL_ZH,
+    _build_target_positions,
 )
 from workbench_api.settings import Settings, get_settings
 
@@ -152,6 +156,80 @@ def test_current_returns_target_positions_from_snapshot(
     # Not equal-weight (the whole point of B044).
     weights = [p["target_weight"] for p in positions]
     assert len(set(weights)) > 1
+
+
+class _FakeProvider:
+    """PriceProvider returning fixed marks (B046 F001 — inject known closes)."""
+
+    def __init__(self, marks: dict[str, PriceMark]) -> None:
+        self._marks = marks
+
+    def get_marks(self, symbols: Iterable[str]) -> dict[str, PriceMark]:
+        return {s.upper(): self._marks[s.upper()] for s in symbols if s.upper() in self._marks}
+
+
+def _seed_account_snapshot(positions: list[dict[str, object]], cash: float) -> None:
+    from decimal import Decimal
+
+    from sqlalchemy.orm import Session
+
+    with Session(get_engine()) as session:
+        session.add(
+            AccountSnapshot(
+                id="rec-snap-1",
+                snapshot_at=date(2026, 6, 5),
+                cash=Decimal(str(cash)),
+                base_currency="USD",
+                positions=positions,
+                source="bootstrap",
+                created_at=date(2026, 6, 5),
+            )
+        )
+        session.commit()
+
+
+def test_target_positions_current_weight_is_mark_to_market(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """B046 F001 — current_weight is the account's mark-to-market weight (held
+    shares × latest close / market-value NAV), not the old hardcoded 0.0."""
+
+    _seed_snapshot()  # targets EEM/SPY/SGOV (target_weight 0.2/0.2/0.6)
+    # Hold 100 SGOV; cash 0; SGOV marks at $100 → NAV = 100×100 = 10000, SGOV = 1.0.
+    _seed_account_snapshot([{"symbol": "SGOV", "shares": 100, "avg_cost": 90.0}], cash=0.0)
+    provider = _FakeProvider({"SGOV": PriceMark(latest_close=100.0, prior_close=99.0)})
+
+    from sqlalchemy.orm import Session
+
+    with Session(get_engine()) as session:
+        positions = _build_target_positions(session, provider=provider)
+
+    by_symbol = {p.symbol: p for p in positions}
+    assert by_symbol["SGOV"].current_weight == pytest.approx(1.0)
+    # diff = target - current = 0.6 - 1.0 = -0.4 (already over-weight → sell).
+    assert by_symbol["SGOV"].diff == pytest.approx(0.6 - 1.0)
+    # Targets not held have current_weight 0.0 → diff == target.
+    assert by_symbol["EEM"].current_weight == 0.0
+    assert by_symbol["EEM"].diff == pytest.approx(0.2)
+
+
+def test_target_positions_current_weight_degrades_when_unmarked(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """A held symbol with no price mark degrades to current_weight 0.0 (not a
+    crash) — same trust-nothing posture as the execution diff."""
+
+    _seed_snapshot()
+    _seed_account_snapshot([{"symbol": "SGOV", "shares": 100, "avg_cost": 90.0}], cash=0.0)
+    provider = _FakeProvider({})  # no marks at all
+
+    from sqlalchemy.orm import Session
+
+    with Session(get_engine()) as session:
+        positions = _build_target_positions(session, provider=provider)
+
+    by_symbol = {p.symbol: p for p in positions}
+    assert by_symbol["SGOV"].current_weight == 0.0
 
 
 def test_export_ticket_writes_markdown_with_disclaimer_literal(

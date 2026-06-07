@@ -11,10 +11,11 @@ data, not mocks.
 from __future__ import annotations
 
 import time
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -26,6 +27,7 @@ from workbench_api.auth.jwt_validator import JWT_ALGORITHM
 from workbench_api.db.engine import get_engine
 from workbench_api.db.models.account import Account
 from workbench_api.db.models.account_snapshot import AccountSnapshot
+from workbench_api.db.models.price_snapshot import PriceSnapshot
 from workbench_api.observability.active_users import active_users
 from workbench_api.settings import Settings, get_settings
 
@@ -97,6 +99,29 @@ def _seed_snapshot(
                 created_at=snapshot_at or datetime(2026, 5, 18, 10, 0, 0),
             )
         )
+        session.commit()
+
+
+def _seed_price_snapshot(symbol: str, latest_close: float, prior_close: float) -> None:
+    """Two closes so DbPriceProvider yields a mark. B046 F001 — the position diff
+    is mark-to-market, so a symbol needs a price_snapshot mark to be priced
+    (else it degrades to unmatched / reference_price None)."""
+
+    with Session(get_engine()) as session:
+        for obs_date, close in [
+            (date(2026, 5, 16), prior_close),
+            (date(2026, 5, 17), latest_close),
+        ]:
+            session.add(
+                PriceSnapshot(
+                    id=uuid4(),
+                    symbol=symbol.upper(),
+                    obs_date=obs_date,
+                    close=close,
+                    source="tiingo",
+                    fetched_at=datetime(2026, 5, 18, tzinfo=UTC),
+                )
+            )
         session.commit()
 
 
@@ -250,15 +275,18 @@ def test_position_diff_sign_correctness(initialised_db: str, tmp_path: Path) -> 
     _seed_snapshot(
         cash=50_000.0,
         positions=[
-            # 10 shares × $500 cost basis = $5000 — well below the
-            # 25% equal-weight target on a $55k equity total.
+            # 10 shares cost $500 but now mark at $600 (appreciated). B046 F001
+            # prices the diff at market ($600), not cost — so total_equity is the
+            # market-value NAV (50k + 10×600 = 56k) and reference_price is 600.
             {"symbol": "B013", "shares": 10, "avg_cost": 500.0},
         ],
     )
+    _seed_price_snapshot("B013", latest_close=600.0, prior_close=580.0)
     client = _authed_client(_settings(tmp_path))
     payload = client.get("/api/execution/position-diff").json()
     assert payload["current"] is not None
-    assert payload["total_equity"] > 0
+    # Market-value NAV: cash 50k + 10 shares × $600 mark = 56k (NOT cost-basis).
+    assert payload["total_equity"] == pytest.approx(50_000.0 + 10 * 600.0)
 
     matching = [r for r in payload["diff"] if r["symbol"] == "B013"]
     assert len(matching) == 1
@@ -266,7 +294,8 @@ def test_position_diff_sign_correctness(initialised_db: str, tmp_path: Path) -> 
     assert row["current_shares"] == 10
     assert row["delta_shares"] > 0
     assert row["delta_weight"] > 0
-    assert row["reference_price"] == 500.0
+    # Mark-to-market reference price is the latest close, not the $500 avg_cost.
+    assert row["reference_price"] == 600.0
 
     # Every diff row must carry the canonical key set the frontend
     # destructures.
@@ -350,8 +379,12 @@ def test_put_account_then_position_diff_reflects_new_state(
     response = client.put("/api/execution/account", json=body)
     assert response.status_code == 200, response.text
 
+    # B046 F001 — diff is mark-to-market; seed SPY's mark so total_equity is the
+    # market-value NAV (cash + shares × latest close), not the cost-basis sum.
+    _seed_price_snapshot("SPY", latest_close=550.0, prior_close=540.0)
+
     # After PUT: position-diff sees the new state on the very next call.
     post = client.get("/api/execution/position-diff").json()
     assert post["current"] is not None
     assert post["current"]["cash"] == 60_000.0
-    assert post["total_equity"] == pytest.approx(60_000.0 + 20 * 500.0)
+    assert post["total_equity"] == pytest.approx(60_000.0 + 20 * 550.0)
