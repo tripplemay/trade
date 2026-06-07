@@ -29,9 +29,13 @@ import logging
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol
 
-from workbench_api.data.fundamentals_loader import FundamentalsRow
+from workbench_api.data.fundamentals_sync import (
+    get_ticker_sector,
+    load_close_prices,
+    raw_companyfacts_to_parsed_ratios,
+)
 from workbench_api.data.snapshot_loader import PriceBar
 
 logger = logging.getLogger(__name__)
@@ -66,9 +70,10 @@ class _PricesLoader(Protocol):
 
 
 class _FundamentalsLoader(Protocol):
-    def fetch_quarterly_fundamentals(
-        self, ticker: str, from_date: date, to_date: date, sector: str | None = ...
-    ) -> list[FundamentalsRow]: ...
+    @property
+    def ticker_cik_map(self) -> dict[str, int | None]: ...
+
+    def fetch_raw_companyfacts(self, ticker: str) -> dict[str, Any]: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -117,24 +122,13 @@ def _prices_to_rows(bars: list[PriceBar]) -> list[list[object]]:
     ]
 
 
-def _fundamentals_to_rows(rows: list[FundamentalsRow]) -> list[list[object]]:
-    return [
-        [
-            row.report_date.isoformat(),
-            row.ticker,
-            row.fiscal_quarter,
-            row.fiscal_quarter_end.isoformat(),
-            row.roe,
-            row.gross_margin,
-            row.fcf_yield,
-            row.debt_to_assets,
-            row.pe,
-            row.pb,
-            row.ev_ebitda,
-            row.earnings_yield,
-        ]
-        for row in rows
-    ]
+def _fundamentals_dict_to_row(row: dict[str, Any]) -> list[object]:
+    """Order a synthesised ratios dict into the unified CSV column order.
+
+    ``raw_companyfacts_to_parsed_ratios`` emits dicts keyed exactly by
+    :data:`FUNDAMENTALS_HEADER`, so this is a pure projection."""
+
+    return [row[column] for column in FUNDAMENTALS_HEADER]
 
 
 def _write_csv(path: Path, header: list[str], rows: list[list[object]]) -> None:
@@ -175,18 +169,37 @@ def run_refresh(
     _write_csv(prices_path, PRICES_HEADER, price_rows)
 
     # --- fundamentals (equities only; ETFs / synthetic tickers have none) ---
+    # Synthesise the eight quarterly ratios from live SEC companyfacts using the
+    # same logic the offline B029 backfill uses (workbench_api.data.
+    # fundamentals_sync — hoisted into the deploy artifact for B045 F004 #1).
+    # MarketCap-dependent ratios need close prices, sourced from the prices CSV
+    # we just wrote (so report-date closes resolve for the equities priced above).
+    close_prices = load_close_prices(prices_path)
     fundamental_rows: list[list[object]] = []
     equities = equity_universe()
+    cik_map = fundamentals_loader.ticker_cik_map
     for symbol in equities:
-        try:
-            rows = fundamentals_loader.fetch_quarterly_fundamentals(symbol, from_date, to_date)
-            fundamental_rows.extend(_fundamentals_to_rows(rows))
-        except ValueError:
-            # Synthetic ZQ* ticker (CIK is None) — no real filing; skip, not an error.
+        # A true synthetic ticker (CIK None / absent) has no SEC filing — skip,
+        # not an error. Only genuine fetch failures on a real CIK count as errors
+        # (the F004 #1 fix: never mask a real failure as a benign synthetic skip).
+        if cik_map.get(symbol) is None:
             logger.info("data_refresh_fundamentals_skip_synthetic", extra={"symbol": symbol})
-        except Exception:  # noqa: BLE001 — best-effort; skip a failing symbol
+            continue
+        try:
+            payload = fundamentals_loader.fetch_raw_companyfacts(symbol)
+        except Exception:  # noqa: BLE001 — best-effort; a real fetch failure is an error
             errors += 1
             logger.exception("data_refresh_fundamentals_fetch_failure", extra={"symbol": symbol})
+            continue
+        rows, skips = raw_companyfacts_to_parsed_ratios(
+            symbol, payload, prices=close_prices, sector=get_ticker_sector(symbol)
+        )
+        if not rows:
+            logger.warning(
+                "data_refresh_fundamentals_no_rows",
+                extra={"symbol": symbol, "skips": skips[:5]},
+            )
+        fundamental_rows.extend(_fundamentals_dict_to_row(row) for row in rows)
     _write_csv(fundamentals_path, FUNDAMENTALS_HEADER, fundamental_rows)
 
     summary = RefreshSummary(

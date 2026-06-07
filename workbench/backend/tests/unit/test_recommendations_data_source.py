@@ -22,6 +22,7 @@ from pathlib import Path
 import pytest
 from trade.data.data_root import (  # type: ignore[import-untyped]
     DATA_ROOT_ENV,
+    UNIFIED_FUNDAMENTALS_RELPATH,
     UNIFIED_PRICES_RELPATH,
 )
 
@@ -180,3 +181,50 @@ def test_score_master_target_real_daily_path_scores_risk_parity(
     assert result.master_meta["data_source"] in {DATA_SOURCE_REAL, DATA_SOURCE_MIXED}
     assert result.master_meta["data_source"] != DATA_SOURCE_FIXTURE
     assert sum(result.target_weights.values()) == pytest.approx(1.0, abs=1e-4)
+
+
+def test_score_master_target_full_real_reaches_data_source_real(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """The full real path: real equity prices + fundamentals (the B025 us_quality
+    data, served through the F002 ``WORKBENCH_DATA_ROOT`` override) make
+    us_quality score, and synthetic daily ETF bars make risk_parity score → every
+    implemented sleeve scores → ``data_source=real`` (B045 F004 #1 goal: real
+    fundamentals → us_quality off the stub). On the VM the same wiring reads the
+    F001 refresh's live SEC fundamentals instead of this fixture."""
+
+    from trade.data.us_quality_universe import DEFAULT_FIXTURE_DIR  # type: ignore[import-untyped]
+
+    monkeypatch.delenv("FORCE_FIXTURE_PATH", raising=False)
+
+    # Unified prices = the B025 equity rows (real us_quality data) + synthetic
+    # daily ETF bars (last 250 fixture dates) so risk_parity has vol history.
+    body = list(csv.reader((DEFAULT_FIXTURE_DIR / "prices_daily.csv").open(encoding="utf-8")))
+    header, rows = body[0], body[1:]
+    fixture_days = sorted({r[0] for r in rows})[-250:]
+    unified_prices = tmp_path.joinpath(*UNIFIED_PRICES_RELPATH)
+    unified_prices.parent.mkdir(parents=True, exist_ok=True)
+    with unified_prices.open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.writer(fh)
+        writer.writerow(header)
+        writer.writerows(rows)
+        for offset, symbol in enumerate(_ETF_UNIVERSE):
+            for i, day in enumerate(fixture_days):
+                px = 100 + offset + (i % 5)
+                writer.writerow([day, symbol, px, px + 1, px - 1, px, px, 1_000_000])
+
+    # Unified fundamentals = the B025 fixture fundamentals (real us_quality ratios).
+    unified_fund = tmp_path.joinpath(*UNIFIED_FUNDAMENTALS_RELPATH)
+    unified_fund.parent.mkdir(parents=True, exist_ok=True)
+    unified_fund.write_bytes((DEFAULT_FIXTURE_DIR / "fundamentals.csv").read_bytes())
+
+    monkeypatch.setenv(DATA_ROOT_ENV, str(tmp_path))
+
+    result = score_master_target()
+
+    status = result.master_meta["sleeve_status"]
+    assert result.master_meta["prices_source"] == _PRICES_SOURCE_REAL
+    assert status["risk_parity"] == _SLEEVE_STATUS_SCORED
+    assert status["satellite_us_quality"] == _SLEEVE_STATUS_SCORED
+    assert _SLEEVE_STATUS_STUBBED not in status.values()
+    assert result.master_meta["data_source"] == DATA_SOURCE_REAL

@@ -32,6 +32,16 @@ from pathlib import Path
 
 import pandas as pd  # type: ignore[import-untyped]
 
+# B045 F004 (#1) — the GICS sector map + get_ticker_sector moved into the
+# deploy artifact (workbench_api/data/fundamentals_sync.py) so the on-VM
+# data-refresh job can synthesise real fundamentals. Re-exported here so this
+# module stays the canonical import for backfill / news callers and its own
+# fixture-consistency assertion keeps validating the single source.
+from workbench_api.data.fundamentals_sync import (  # noqa: E402,F401
+    US_QUALITY_TICKER_SECTORS,
+    get_ticker_sector,
+)
+
 # B025 us_quality_momentum real-listed tickers — 27 entries that have
 # valid SEC CIKs and 10+ years of quarterly XBRL filings.
 US_QUALITY_REAL_TICKERS: tuple[str, ...] = (
@@ -52,75 +62,10 @@ B025_SYNTHETIC_TICKERS: tuple[str, ...] = (
 )
 
 
-# B030 F001 — GICS sector per ticker, mirrors the ``gics_sector``
-# column of ``data/fixtures/us_quality_momentum/universe.csv``. The
-# F002 backfill driver looks up the sector for each ticker and threads
-# it through :func:`workbench_api.data.xbrl_parser.get_concept_alias_chain`
-# so per-sector overrides (Financials / Utilities / Real Estate) front-
-# load the sector-idiomatic SEC concepts — the fix for the B029
-# Soft-watch S1 (6 sector tickers BAC/JPM/V/LIN/NEE/PLD producing 0
-# rows on the first-run backfill).
-#
-# LIN (Linde plc) is GICS Materials but uses Utilities-style XBRL
-# (``LongTermDebtNoncurrent`` as primary, ``OperatingExpenses`` rather
-# than COGS). The B030 spec §4.2 documents this dialect grouping; the
-# mapping below records LIN's **GICS sector** ("Materials") faithfully
-# and the alias resolver falls back to the default chain — which
-# happens to include the Utilities-style concepts as later positions,
-# so LIN still resolves. Force-aliasing LIN to "Utilities" was
-# considered and rejected (it would let the dialect leak into reports
-# and confuse downstream sector breakdowns).
-US_QUALITY_TICKER_SECTORS: dict[str, str] = {
-    "AAPL": "Information Technology",
-    "MSFT": "Information Technology",
-    "NVDA": "Information Technology",
-    "JNJ": "Health Care",
-    "UNH": "Health Care",
-    "JPM": "Financials",
-    "BAC": "Financials",
-    "V": "Financials",
-    "AMZN": "Consumer Discretionary",
-    "HD": "Consumer Discretionary",
-    "GOOGL": "Communication Services",
-    "META": "Communication Services",
-    "HON": "Industrials",
-    "UPS": "Industrials",
-    "CAT": "Industrials",
-    "PG": "Consumer Staples",
-    "KO": "Consumer Staples",
-    "WMT": "Consumer Staples",
-    "XOM": "Energy",
-    "CVX": "Energy",
-    "NEE": "Utilities",
-    "DUK": "Utilities",
-    "PLD": "Real Estate",
-    "AMT": "Real Estate",
-    "LIN": "Materials",
-    "APD": "Materials",
-    "ECL": "Materials",
-    # Synthetic tickers are skipped in the SEC backfill but kept here
-    # so :func:`get_ticker_sector` returns the B025 fixture value for
-    # consistency in non-backfill code paths.
-    "ZQAI": "Industrials",
-    "ZQPT": "Information Technology",
-    "ZQLH": "Health Care",
-}
-
-
-def get_ticker_sector(ticker: str) -> str | None:
-    """Return the GICS sector string for ``ticker``, or ``None`` if the
-    ticker is not in the B025 us_quality universe.
-
-    Used by the F002 backfill driver to thread sector into
-    :func:`workbench_api.data.xbrl_parser.get_concept_alias_chain` so
-    per-sector concept overrides apply when the filer's XBRL dialect
-    drifts from the default. Returning ``None`` (rather than raising)
-    matches the loose-coupling pattern the driver uses elsewhere —
-    callers can pass ``None`` straight through to the alias resolver,
-    which falls back to the default chain.
-    """
-
-    return US_QUALITY_TICKER_SECTORS.get(ticker)
+# US_QUALITY_TICKER_SECTORS + get_ticker_sector are re-exported from
+# workbench_api.data.fundamentals_sync (see the import at the top of this
+# module). The assertion below still validates that single-source map against
+# the B025 fixture's ``gics_sector`` column, so drift in either place fails CI.
 
 
 def us_quality_universe() -> list[str]:

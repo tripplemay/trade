@@ -15,10 +15,10 @@ from __future__ import annotations
 import csv
 from datetime import date
 from pathlib import Path
+from typing import Any
 
 import pytest
 
-from workbench_api.data.fundamentals_loader import FundamentalsRow
 from workbench_api.data.snapshot_loader import PriceBar
 from workbench_api.data_refresh import cli as refresh_cli
 from workbench_api.data_refresh.refresh import (
@@ -48,21 +48,48 @@ def _bar(ticker: str) -> PriceBar:
     )
 
 
-def _fund(ticker: str) -> FundamentalsRow:
-    return FundamentalsRow(
-        report_date=date(2024, 11, 1),
-        ticker=ticker,
-        fiscal_quarter="2024Q3",
-        fiscal_quarter_end=date(2024, 9, 30),
-        roe=0.25,
-        gross_margin=0.40,
-        fcf_yield=0.05,
-        debt_to_assets=0.30,
-        pe=20.0,
-        pb=5.0,
-        ev_ebitda=12.0,
-        earnings_yield=0.05,
-    )
+def _companyfacts(ticker: str) -> dict[str, Any]:
+    """Minimal live-shape SEC companyfacts that synthesises exactly one quarter
+    (2024Q3). ``filed`` is 2024-12-31 to match the fake price bar's date so the
+    MarketCap close resolves (the ratio math itself is covered exhaustively by
+    test_backfill_fundamentals.py; here we verify the refresh WIRING)."""
+
+    def entry(val: float) -> dict[str, Any]:
+        return {
+            "end": "2024-09-30",
+            "val": val,
+            "filed": "2024-12-31",
+            "fy": 2024,
+            "fp": "Q3",
+            "form": "10-Q",
+            "accn": "0000000000-24-000001",
+        }
+
+    def usd(val: float) -> dict[str, Any]:
+        return {"units": {"USD": [entry(val)]}}
+
+    def shares(val: float) -> dict[str, Any]:
+        return {"units": {"shares": [entry(val)]}}
+
+    return {
+        "cik": 111,
+        "facts": {
+            "us-gaap": {
+                "NetIncomeLoss": usd(1_000_000.0),
+                "StockholdersEquity": usd(5_000_000.0),
+                "Revenues": usd(10_000_000.0),
+                "CostOfGoodsAndServicesSold": usd(6_000_000.0),
+                "NetCashProvidedByUsedInOperatingActivities": usd(2_000_000.0),
+                "PaymentsToAcquirePropertyPlantAndEquipment": usd(500_000.0),
+                "LongTermDebt": usd(3_000_000.0),
+                "Assets": usd(20_000_000.0),
+                "CashAndCashEquivalentsAtCarryingValue": usd(1_000_000.0),
+                "OperatingIncomeLoss": usd(2_500_000.0),
+                "DepreciationDepletionAndAmortization": usd(400_000.0),
+            },
+            "dei": {"CommonStockSharesOutstanding": shares(1_000_000.0)},
+        },
+    }
 
 
 class _FakePrices:
@@ -76,15 +103,24 @@ class _FakePrices:
 
 
 class _FakeFundamentals:
-    def __init__(self, synthetic: set[str] | None = None) -> None:
-        self.synthetic = synthetic or set()
+    """Fake SEC loader matching the live interface refresh now uses:
+    ``ticker_cik_map`` (synthetic → CIK None) + ``fetch_raw_companyfacts``."""
 
-    def fetch_quarterly_fundamentals(
-        self, ticker: str, from_date: date, to_date: date, sector: str | None = None
-    ) -> list[FundamentalsRow]:
-        if ticker in self.synthetic:
-            raise ValueError(f"synthetic ticker has no SEC filing: {ticker}")
-        return [_fund(ticker)]
+    def __init__(self, synthetic: set[str] | None = None, fail: set[str] | None = None) -> None:
+        self.synthetic = synthetic or set()
+        self.fail = fail or set()
+
+    @property
+    def ticker_cik_map(self) -> dict[str, int | None]:
+        out: dict[str, int | None] = {ticker: 111 for ticker in equity_universe()}
+        for ticker in self.synthetic:
+            out[ticker] = None
+        return out
+
+    def fetch_raw_companyfacts(self, ticker: str) -> dict[str, Any]:
+        if ticker in self.fail:
+            raise RuntimeError(f"boom {ticker}")
+        return _companyfacts(ticker)
 
 
 def _run(
