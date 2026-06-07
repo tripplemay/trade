@@ -42,7 +42,7 @@
       "title": "wash_sale 检测（FillJournalEntry + avg_cost → 亏损卖+30 日回补）+ recommendations 用真实 flags",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) **wash_sale 服务** services/wash_sale.py：读 FillJournalEntry（symbol/side/fill_price/filled_at）+ AccountSnapshot avg_cost → 检测亏损卖出（卖出前 avg_cost > fill_price）+ 30 日内回补同标的 → WashSaleFlag（symbol/last_buy_date/days_since）。(2) recommendations.py 用真实 wash_sale_flags（去硬编码 []）。(3) B023 ticket 渲染 wash-sale 段自动填真（不改渲染逻辑）。(4) pytest：亏损卖+30 日内回补→flag；无损卖/超 30 日/无回补→无 flag；多事件。(5) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / **B023 ticket wash-sale 渲染不破**。(6) 不动：fills/journal 写路径 / B023 工作流 / F003 risk。",
       "design_decisions": [
         "wash_sale（planner 决）：FillJournalEntry + avg_cost 检测亏损卖+30 日回补，数据已足够，无需新表。"

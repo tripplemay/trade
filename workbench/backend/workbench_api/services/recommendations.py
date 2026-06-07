@@ -50,6 +50,7 @@ from workbench_api.services.nav_history import (
     reconstruct_nav_history,
 )
 from workbench_api.services.prices_provider import DbPriceProvider, PriceProvider
+from workbench_api.services.wash_sale import detect_wash_sales
 
 _logger = logging.getLogger("workbench.recommendations")
 
@@ -264,11 +265,10 @@ def get_current_recommendations(session: Session) -> RecommendationsResponse:
         as_of_date=as_of,
         target_positions=_build_target_positions(session),
         gate_checks=_build_gate_checks(session, total_equity),
-        # No trade journal in MVP → no heuristic source for wash-sale flags.
-        # F010 ships an empty list so the frontend's flag panel can render
-        # its "no flags" empty state. F012's backlog page may surface real
-        # signals later via a separate journal-import flow.
-        wash_sale_flags=[],
+        # B048 F004: real wash-sale flags from the fills journal (loss sale +
+        # same-symbol repurchase within 30 days). Empty when no fills / no
+        # qualifying pair — the frontend's flag panel renders its empty state.
+        wash_sale_flags=detect_wash_sales(session),
         account_present=account_present,
     )
 

@@ -359,3 +359,45 @@ def test_kill_switch_gate_passes_without_drawdown(
     payload = client.get("/api/recommendations/current").json()
     gates = {g["name"]: g for g in payload["gate_checks"]}
     assert gates["kill_switch"]["status"] == "pass"
+
+
+# --- B048 F004: real wash-sale flags surface through /current -------------
+
+
+def test_current_surfaces_real_wash_sale_flags(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """A loss sale + same-symbol repurchase within 30 days surfaces a real
+    wash_sale_flag on /current (was always [] pre-B048)."""
+
+    from sqlalchemy.orm import Session
+
+    from workbench_api.db.models.fill_journal_entry import FillJournalEntry
+
+    with Session(get_engine()) as session:
+        session.add(
+            AccountSnapshot(
+                id="ws-snap", snapshot_at=datetime(2026, 5, 1, 10, 0, 0),
+                cash=Decimal("0"), base_currency="USD",
+                positions=[{"symbol": "AAPL", "shares": 10, "avg_cost": 200.0}],
+                source="bootstrap", created_at=datetime(2026, 5, 1, 10, 0, 0),
+            )
+        )
+        for fid, side, price, at in [
+            ("ws-sell", "sell", 150.0, datetime(2026, 5, 10, 16, 0, 0)),
+            ("ws-buy", "buy", 155.0, datetime(2026, 5, 20, 16, 0, 0)),
+        ]:
+            session.add(
+                FillJournalEntry(
+                    id=fid, ticket_id=f"tkt-{fid}", order_seq=1, symbol="AAPL",
+                    side=side, shares=Decimal("10"), fill_price=Decimal(str(price)),
+                    commission=Decimal("0"), fees=Decimal("0"), currency="USD",
+                    filled_at=at, source="manual_entry", created_at=at,
+                )
+            )
+        session.commit()
+
+    client = _authed_client(tmp_path)
+    payload = client.get("/api/recommendations/current").json()
+    flags = {f["symbol"] for f in payload["wash_sale_flags"]}
+    assert "AAPL" in flags

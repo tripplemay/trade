@@ -30,3 +30,15 @@ class FillJournalEntryRepository(Repository[FillJournalEntry, str]):
             )
         )
         return list(self._session.execute(stmt).scalars().all())
+
+    def list_all_chronological(self) -> list[FillJournalEntry]:
+        """Every fill across all tickets, oldest ``filled_at`` first.
+
+        B048 F004: the wash-sale detector scans the whole fills history to
+        pair a loss sale with a repurchase of the same symbol within 30
+        days, so it needs the cross-ticket chronological view."""
+
+        stmt = select(FillJournalEntry).order_by(
+            FillJournalEntry.filled_at, FillJournalEntry.order_seq
+        )
+        return list(self._session.execute(stmt).scalars().all())
