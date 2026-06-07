@@ -1,8 +1,8 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "B045-OPS1 trade wheel deploy 可靠性（横切 ops 修复，非产品序列）— 让 trade/ wheel 在 deploy 时可靠自动装入 VM venv（无需手动 force-reinstall）+ 加 deploy 后 smoke import check 把静默安装失败转响亮失败。来源 B045 signoff §Soft-watch S4（--force-reinstall 首次 deploy 仍停旧版需手动）+ §Framework Learnings（已沉淀 v0.9.36 README §经验教训『venv 多包安装』+ smoke import check 铁律）。根因现状：CI 确实构建 trade wheel(workbench-deploy.yml L127)+下发 trade-dist/(L180-181)，deploy.sh L72 已 --force-reinstall，但 S4 首次 deploy 仍停 0.1.0 需手动——根因未确证（version bump 是否进构建 wheel / --force-reinstall+--quiet 在 deploy 用户行为 / pip cache），F001 真机诊断对症修。决策（★用户批）：先修 S4 再 B046★ / deploy 后 smoke import check 铁律(v0.9.36)★ / 命名独立前缀 B045-OPS1(planner 决，同 B037-OPS1 先例)。2 features：(F001 g)诊断+修 trade wheel 自动装(fresh deploy 后 version 自动匹配)+deploy.sh 加 smoke import check(import trade.backtest.master_portfolio+trade.data.data_root，失败硬报不被 --quiet 吞)+dev rehearsal best-effort；(F002 c)L2 fresh deploy 后 trade version 自动匹配无需手动+smoke check 跑过+precompute import 正常生成 snapshot+signoff(§Soft-watch S4 resolved)。永久硬边界继承：§12.10.2 请求路径禁 trade(AST 守门不破)/不改评分逻辑/不扩 deploy sudo。不做：trade 业务码/B045 数据 pipeline/regime+current_weight(B046)/disk S1 扩容(另议)。",
   "total_features": 2,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
   "current_sprint": "F002",
   "last_updated": "2026-06-07",
@@ -18,16 +18,16 @@
   "docs": {
     "spec": "docs/specs/B045-OPS1-trade-wheel-deploy-reliability-spec.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/B045-OPS1-trade-wheel-deploy-reliability-signoff-2026-06-07.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
+  "evaluator_feedback": "B045-OPS1 F002 PASS。L1：38 guard tests。L2：fresh deploy(27081690834) smoke import check OK；VM trade 0.2.0 自动匹配无需手动 force-reinstall；precompute saved=6 无 ModuleNotFoundError；/current 200 6 positions；recent-errors=0。Prod HEAD≡main d75eabf。B045 S4 resolved。",
   "generator_handoff": "B045-OPS1 F001 完成（trade wheel 自动装可靠性 + smoke import check），交 Codex F002 L2。诊断根因（代码分析）：deploy.sh 虽 set -euo pipefail + --force-reinstall，但未带 --no-deps → --force-reinstall 连 pandas/numpy 一起重解析；VM PyPI 受限/离线时卡住或失败留 trade 旧版（S4 最可能根因）。修复：(1) trade wheel 装法 → --force-reinstall --no-deps（pandas/numpy 已由 backend wheel 经 yfinance 传递装入，trade 只覆盖自身、确定性无关网络）+ 去 --quiet + pip show 打印版本；(2) 装完 smoke import check `import trade.backtest.master_portfolio; import trade.data.data_root`，失败 ::error:: + exit 1 硬失败（普适兜底所有 S4 候选）；(3) dev rehearsal best-effort（smoke 在 wheel-present 分支内）。deploy 守门测试 +2。本地 backend pytest 853 / ruff 0 / mypy 0 / bash -n 通过。commit 205e568。**F002 复验重点（真机 L2）**：fresh deploy（非手动）后 (1) VM venv trade version == 构建 wheel（0.2.0，无需手动 force-reinstall）；(2) deploy 日志见 smoke import check 跑过；(3) 故意装 stale/坏 wheel 时 smoke check 响亮硬失败（可选验证）；(4) precompute import 正常 / recent-errors=0；(5) §S4 resolved。注意真机确证根因（是否确为 dep 重解析），若根因不同请记录——但 smoke check 与根因无关地兜底。",
   "session_notes": {
     "planner": "2026-06-07 续长程会话：B044 done→v0.9.35→B045 规划→B045 done(fix-round 1)→v0.9.36→B045-OPS1 规划。本段 B045-OPS1 planning。(1) B045 done：data-refresh pipeline 真机跑通(16500 行 Tiingo prices+329 行 SEC EDGAR fundamentals)，risk_parity+us_quality 从 stub→真实评分，/current 6 positions 真实权重 data_source=mixed(唯一 stub=satellite_hk_china by-design SATELLITE_STUB 无实现，要 real 需 BL-B011-S2 实现 HK 策略；mixed 是现实天花板)。2 finding 已修(fundamentals 0→329；trade 0.1.0→0.2.0)。(2) **框架 v0.9.36(用户批沉淀)**：deploy --force-reinstall 仍可能静默跳版+smoke import check 铁律→README §经验教训『venv 多包安装』子节+CHANGELOG。commit f2bf609。(3) **下一步=先修 S4(用户批)**：trade wheel 自动装仍坏(S4)，B045 靠手动 force-reinstall 恢复。规划 B045-OPS1 ops 批次。(4) **S4 诊断线索**：CI 确实构建+下发 trade wheel(workbench-deploy.yml L127/L180-181)，deploy.sh L72 已 --force-reinstall→排除 wheel 缺失/skip；根因更隐蔽(version bump 进构建 wheel？/--force-reinstall+--quiet deploy 用户行为？/pip cache？)，F001 真机诊断。**核心 durable 防线无论根因=deploy 后 smoke import check**(import trade.backtest.master_portfolio+trade.data.data_root，失败硬报)。(5) spec docs/specs/B045-OPS1-...-spec.md 10 章；features.json 2(1g+1c)；progress building。(6) F001 交 Generator：真机诊断 S4 根因+对症修自动装+deploy.sh 加 smoke import check(失败不被 --quiet 吞，响亮告警)；候选修法 version bump 进权威 pyproject/--force-reinstall --no-deps/去 --quiet 捕非零退出。(7) F002 Codex：L2 fresh deploy 后 trade version 自动匹配无需手动+smoke check 跑过+precompute import 正常+§Soft-watch S4 resolved。(8) **B045-OPS1 后 B046**(regime reconcile 注册表对齐 master 实际 4-sleeve regime 留研究态+account current_weight AccountSnapshot+PriceProvider/NAV 复用 home.py)。(9) **遗留 soft-watch**：S1 disk 84% 爬升(B044 起，持续监控，曾致主机挂死)；B045 S2(hk_china 无数据源)+S3(us_quality 选 SGOV 策略行为非 bug)留 B046。(10) **数据诚实交付观**：B045 data_source=mixed 是诚实现实天花板(3/4 sleeve real)，非缺陷——hk_china 无策略实现。B043 AI 解释依赖 B044+B045+B046 齐。",
     "generator": null,
-    "evaluator": null
+    "evaluator": "2026-06-07 B045-OPS1 F002 签收。fresh deploy dispatch 27081690834 success，deploy log 见 smoke import check。VM trade 0.2.0 auto-matched(--force-reinstall --no-deps 生效)。precompute 正常无 ModuleNotFoundError。S4 resolved。"
   },
   "features": [
     "F001",

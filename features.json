@@ -19,7 +19,7 @@
       "title": "Codex L2 真 VM 验收：fresh deploy 后 trade version 自动匹配无需手动 + smoke check 跑过 + precompute import 正常 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "L1 (CI 内)：F001 验收脚本跑通 — backend pytest 不破 / ruff / mypy（如有 py 改动）；deploy 守门（smoke check 存在）；artifact grep secret 泄漏=0。L2 (真 VM)：(1) dispatch fresh deploy（gh workflow run \"Workbench Deploy\"）→ deploy log 显示 trade install + **smoke import check 跑过**；(2) **VM venv trade version == 构建 wheel version（无需手动 force-reinstall）**——对比 B045 S4 的需手动；(3) `python -c \"import trade.backtest.master_portfolio; import trade.data.data_root\"` 在部署 venv OK；(4) **手动 trigger workbench-recommendations.service → recommendation_snapshot 正常生成**（precompute import 不再 ModuleNotFoundError，对比 B045 round 1 的失败）；(5) curl /api/health 200 + SHA≡main HEAD；recent-errors=0；B026 absent。Signoff: docs/test-reports/B045-OPS1-trade-wheel-deploy-reliability-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（§Production/HEAD + §Post-signoff Deploy + **§Soft-watch S4 标记 resolved**）。Framework 候选：若 smoke-check-after-install 成通用部署规约记 §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
