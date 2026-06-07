@@ -31,7 +31,7 @@
       "title": "precompute data_source 粒度真实标记（real/mixed/fixture）+ 全 sleeve real 路径（S3 sleeve_unavailable 消除）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) **data_source 粒度标记**：B044 precompute 现 data_source=fixture 硬标记 → 改为按实际数据源粒度标记（prices/fundamentals 各 sleeve 实际读 real 还是 fixture/fallback）；全 real→data_source=real；部分→mixed + 明细（v0.9.21 诚实不蒙混）。(2) **全 sleeve real 路径**：数据齐时 risk_parity（120+ 日频可用）/us_quality（fundamentals 可用）不再 sleeve_unavailable（S3 消失）→ 真实评分。(3) pytest：precompute data_source 粒度标记（全 real/mixed/fixture 三态）+ 数据齐时全 sleeve 评分非 stub。(4) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / 不破 B044 recommendation_snapshot 契约。(5) 不动：master 评分逻辑 / /api/recommendations/current 读路径（B044）/ 前端 / regime+current_weight（B046）。",
       "design_decisions": [
         "data_source 粒度（planner 决）：real/mixed/fixture 明细标记，L2 必记，不蒙混（v0.9.21）；数据齐则全 sleeve real。"
