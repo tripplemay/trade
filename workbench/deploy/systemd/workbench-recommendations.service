@@ -14,6 +14,14 @@ WorkingDirectory=/srv/workbench/current/backend
 # (chmod 600 root:deploy). Never committed.
 EnvironmentFile=/etc/workbench/workbench.env
 
+# B045 F002 — point the trade loaders at the VM data root the B045
+# data-refresh job writes (same path workbench-data-refresh.service sets).
+# The trade unified-CSV loaders read <root>/snapshots/.../unified/* when this
+# is set, so the Master scoring reads REAL refreshed data instead of the
+# wheel-bundled B025 fixture. Not a secret — a fixed path. Local / CI leave it
+# unset and keep the repo-root behaviour unchanged.
+Environment=WORKBENCH_DATA_ROOT=/var/lib/workbench/data
+
 # Permanent product boundary (r-c) (B044 spec §3): this timer runs the
 # DETERMINISTIC QUANT scoring precompute ONLY — it imports the trade package
 # (Master Portfolio scoring) and writes the recommendation_snapshot table.

@@ -43,6 +43,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from trade.data.data_root import unified_fundamentals_path, unified_prices_path
+
 _REPO_ROOT: Path = Path(__file__).resolve().parents[2]
 DEFAULT_FIXTURE_DIR: Path = _REPO_ROOT / "data" / "fixtures" / "us_quality_momentum"
 
@@ -176,8 +178,11 @@ def _resolve_prices_path(fixture_dir: Path | None) -> Path:
         return _resolve_fixture_dir(fixture_dir) / PRICES_FILE_NAME
     if _force_fixture_path():
         return _resolve_fixture_dir(None) / PRICES_FILE_NAME
-    if UNIFIED_PRICES_PATH.exists():
-        return UNIFIED_PRICES_PATH
+    # B045 F002 — VM ``WORKBENCH_DATA_ROOT`` override; falls back to the
+    # repo-root constant when the env is unset (local / CI unchanged).
+    unified = unified_prices_path(UNIFIED_PRICES_PATH)
+    if unified.exists():
+        return unified
     return _resolve_fixture_dir(None) / PRICES_FILE_NAME
 
 
@@ -195,8 +200,10 @@ def _resolve_fundamentals_path(fixture_dir: Path | None) -> Path:
         return _resolve_fixture_dir(fixture_dir) / FUNDAMENTALS_FILE_NAME
     if _force_fixture_path():
         return _resolve_fixture_dir(None) / FUNDAMENTALS_FILE_NAME
-    if UNIFIED_FUNDAMENTALS_PATH.exists():
-        return UNIFIED_FUNDAMENTALS_PATH
+    # B045 F002 — VM ``WORKBENCH_DATA_ROOT`` override (see _resolve_prices_path).
+    unified = unified_fundamentals_path(UNIFIED_FUNDAMENTALS_PATH)
+    if unified.exists():
+        return unified
     return _resolve_fixture_dir(None) / FUNDAMENTALS_FILE_NAME
 
 

@@ -23,6 +23,8 @@ from typing import Any
 
 import pandas as pd
 
+from trade.data.data_root import unified_fundamentals_path, unified_prices_path
+
 FIXTURE_FILE_NAME = "market_prices.json"
 REQUIRED_PRICE_FIELDS = ("date", "symbol", "open", "close", "adjusted_close", "volume")
 
@@ -254,10 +256,17 @@ def load_prices(
 
 
 def _resolve_prices_source() -> Path | None:
-    """Pick the highest-priority on-disk source for :func:`load_prices`."""
+    """Pick the highest-priority on-disk source for :func:`load_prices`.
 
-    if UNIFIED_PRICES_PATH.exists():
-        return UNIFIED_PRICES_PATH
+    The unified path honours the ``WORKBENCH_DATA_ROOT`` override (B045 F002):
+    on the VM it resolves under the refresh job's data root; locally / in CI
+    (env unset) it stays :data:`UNIFIED_PRICES_PATH` under the repo root. The
+    B025 fixture fall-back is unchanged.
+    """
+
+    unified = unified_prices_path(UNIFIED_PRICES_PATH)
+    if unified.exists():
+        return unified
     if B025_FIXTURE_PRICES_PATH.exists():
         return B025_FIXTURE_PRICES_PATH
     return None
@@ -345,10 +354,16 @@ def load_fundamentals(
 
 
 def _resolve_fundamentals_source() -> Path | None:
-    """Pick the highest-priority on-disk source for :func:`load_fundamentals`."""
+    """Pick the highest-priority on-disk source for :func:`load_fundamentals`.
 
-    if UNIFIED_FUNDAMENTALS_PATH.exists():
-        return UNIFIED_FUNDAMENTALS_PATH
+    The unified path honours the ``WORKBENCH_DATA_ROOT`` override (B045 F002),
+    mirroring :func:`_resolve_prices_source`; the B025 fixture fall-back is
+    unchanged.
+    """
+
+    unified = unified_fundamentals_path(UNIFIED_FUNDAMENTALS_PATH)
+    if unified.exists():
+        return unified
     if B025_FIXTURE_FUNDAMENTALS_PATH.exists():
         return B025_FIXTURE_FUNDAMENTALS_PATH
     return None
