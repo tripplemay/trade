@@ -61,6 +61,18 @@ def test_advisor_sleeves_are_distinct_and_nonempty() -> None:
     assert "satellite_us_quality" in sleeves
 
 
+def test_advisor_sleeves_cover_master_active_sleeves() -> None:
+    """B046 F002 reconcile: the advisor precomputes for every registry
+    sleeve, so the newly surfaced momentum core + hk_china stub now get
+    advice generated alongside the pre-existing sleeves (regroups cleanly,
+    no duplicates)."""
+
+    sleeves = advisor_sleeves()
+    assert sleeves == sorted(set(sleeves))
+    for sleeve in ("momentum", "risk_parity", "satellite_us_quality", "satellite_hk_china"):
+        assert sleeve in sleeves
+
+
 def test_run_daily_persists_one_per_sleeve(ctx: SimpleNamespace) -> None:
     advisor = _FakeAdvisor()
     summary = run_daily(ctx.session, advisor)  # type: ignore[arg-type]

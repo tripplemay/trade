@@ -111,9 +111,13 @@ def test_empty_account_nav_zero_day_pnl_null(initialised_db: str) -> None:
         assert home.nav == 0.0
         assert home.day_pnl is None
         # Registry sleeves still render (stable skeleton), all empty.
+        # B046 F002: the registry now mirrors the Master's full sleeve set,
+        # so the breakdown gains the momentum core + the hk_china stub.
         assert {s.sleeve for s in home.sleeves} == {
+            "momentum",
             "regime",
             "risk_parity",
+            "satellite_hk_china",
             "satellite_us_quality",
         }
         assert all(s.day_pnl is None and s.positions_summary == "—" for s in home.sleeves)

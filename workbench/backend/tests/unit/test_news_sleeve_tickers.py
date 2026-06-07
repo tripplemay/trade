@@ -15,6 +15,7 @@ from pathlib import Path
 
 from workbench_api.news.sleeve_tickers import (
     build_sleeve_query_text,
+    is_known_sleeve,
     tickers_for_sleeve,
 )
 
@@ -41,6 +42,18 @@ def test_master_sleeve_resolves_news_universe_etfs() -> None:
 def test_unknown_sleeve_resolves_empty() -> None:
     assert tickers_for_sleeve("regime") == ()
     assert tickers_for_sleeve("nope") == ()
+
+
+def test_b046_new_sleeves_are_known_but_carry_no_news_universe() -> None:
+    """B046 F002 reconcile: the momentum + hk_china sleeves the registry
+    gained are recognised by the news layer (so the API stays forgiving),
+    but they trade instruments outside the news universe → no constituents
+    (graceful empty, no raise) — same posture as the regime sleeve."""
+
+    assert is_known_sleeve("momentum")
+    assert is_known_sleeve("satellite_hk_china")
+    assert tickers_for_sleeve("momentum") == ()
+    assert tickers_for_sleeve("satellite_hk_china") == ()
 
 
 def test_sleeve_query_text_includes_label_and_tickers() -> None:

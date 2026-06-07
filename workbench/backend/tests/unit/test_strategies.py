@@ -57,23 +57,89 @@ def test_strategies_list_requires_auth(initialised_db: str) -> None:
     assert client.get("/api/strategies").status_code == 401
 
 
-def test_strategies_list_returns_five_sleeves(initialised_db: str) -> None:
+def test_strategies_list_reflects_master_sleeves(initialised_db: str) -> None:
     client = _authed_client()
     response = client.get("/api/strategies")
     assert response.status_code == 200, response.text
     payload: dict[str, Any] = response.json()
     assert isinstance(payload["strategies"], list)
     ids = [entry["id"] for entry in payload["strategies"]]
-    # B022 F007 introduced the first four sleeves. B025 F005 adds the
-    # satellite_us_quality entry so the workbench surfaces the newly
-    # implemented strategy alongside the regime + risk parity sleeves.
+    # B046 F002 reconcile: the registry now mirrors the Master's real
+    # composition (trade/portfolio/master.py). The four active sleeves
+    # (momentum / risk_parity / satellite_us_quality / satellite_hk_china)
+    # lead, then the regime overlay entries (research-state, weight 0.0).
     assert ids == [
+        "B006-global-etf-momentum",
+        "B016-risk-parity-hrp",
+        "B025-us-quality-momentum",
+        "B011-satellite-hk-china",
         "B013-regime-quarterly",
         "B014-regime-stress",
         "B015-regime-active",
-        "B016-risk-parity-hrp",
-        "B025-us-quality-momentum",
     ]
+
+
+def test_strategies_list_covers_master_four_active_sleeves(
+    initialised_db: str,
+) -> None:
+    """The four sleeves the Master allocates to are all surfaced, and the
+    regime entries are research-state (not active)."""
+
+    client = _authed_client()
+    payload = client.get("/api/strategies").json()
+    by_id = {e["id"]: e for e in payload["strategies"]}
+
+    # Master's four default sleeves (master.default_master_portfolio_parameters).
+    active_sleeves = {
+        by_id["B006-global-etf-momentum"]["sleeve"],
+        by_id["B016-risk-parity-hrp"]["sleeve"],
+        by_id["B025-us-quality-momentum"]["sleeve"],
+        by_id["B011-satellite-hk-china"]["sleeve"],
+    }
+    assert active_sleeves == {
+        "momentum",
+        "risk_parity",
+        "satellite_us_quality",
+        "satellite_hk_china",
+    }
+
+    # The momentum core was missing pre-B046; now active.
+    assert by_id["B006-global-etf-momentum"]["status"] == "active"
+    # HK-China is a reserved stub, not an implemented strategy.
+    assert by_id["B011-satellite-hk-china"]["status"] == "stub"
+    # Regime overlay ships at weight 0.0 → research-state, not active.
+    for rid in ("B013-regime-quarterly", "B014-regime-stress", "B015-regime-active"):
+        assert by_id[rid]["sleeve"] == "regime"
+        assert by_id[rid]["status"] == "research"
+
+
+def test_strategy_detail_momentum_exposes_master_strategy_id(
+    initialised_db: str,
+) -> None:
+    client = _authed_client()
+    response = client.get("/api/strategies/B006-global-etf-momentum")
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["sleeve"] == "momentum"
+    assert payload["config"]["master_strategy_id"] == "global_etf_momentum"
+    assert payload["provenance"]["code_path"].endswith("global_etf_momentum.py")
+
+
+def test_strategy_detail_hk_china_stub_has_no_strategy(initialised_db: str) -> None:
+    client = _authed_client()
+    payload = client.get("/api/strategies/B011-satellite-hk-china").json()
+    assert payload["sleeve"] == "satellite_hk_china"
+    assert payload["status"] == "stub"
+    assert payload["config"]["sleeve_type"] == "satellite_stub"
+    assert payload["config"]["planning_weight"] == 0.10
+
+
+def test_strategy_detail_risk_parity_records_master_id(initialised_db: str) -> None:
+    client = _authed_client()
+    payload = client.get("/api/strategies/B016-risk-parity-hrp").json()
+    # B046 F002: the B016 HRP entry traces to the Master's
+    # risk_parity_vol_target sleeve id.
+    assert payload["config"]["master_strategy_id"] == "risk_parity_vol_target"
 
 
 def test_strategy_detail_us_quality_momentum_exposes_b025_config(

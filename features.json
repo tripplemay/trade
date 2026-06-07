@@ -19,7 +19,7 @@
       "title": "regime reconcile：strategies 注册表对齐 master 实际 4-sleeve + 验下游 home/advisor/news/strategies 不破",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) **注册表对齐 master** services/strategies.py 对齐 trade/portfolio/master.py 实际组成：加 global_etf_momentum（momentum 0.40 现缺）+ satellite_hk_china stub（0.10 现缺）条目；B013/B014/B015 regime 孤儿项重标研究态/deactivate（regime_adaptive master planning_weight=0.0 且 _resolve_child_weights weight>0 抛 BacktestError→留研究态，激活属未来 B013）；B016 strategy_id（B016-risk-parity-hrp vs master risk_parity_vol_target）口径对齐/注明。(2) **下游消费者必验不破**：/api/strategies（前端 Strategies 页）/ home.py _registry_sleeves（sleeve breakdown）/ advisor precompute universe / news sleeve_tickers——注册表变更后 regroup，验渲染/分组正确 + 相关测试更新。(3) pytest：注册表对齐（4-sleeve 反映 master，regime 研究态）+ 下游 home sleeve breakdown/advisor/news 不破。(4) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / 前端 Strategies 页不破（如有 vitest 更新）。(5) 不动：master 评分逻辑 / regime 激活（留 B013）/ F001 diff 逻辑。",
       "design_decisions": [
         "regime reconcile（2026-06-07 用户批纳入 B046）：注册表对齐 master 实际 4-sleeve，regime 留研究态不激活；验下游 home/advisor/news/strategies 不破。"

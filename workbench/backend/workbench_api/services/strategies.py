@@ -1,18 +1,38 @@
-"""Strategy registry adapter (B022 F007).
+"""Strategy registry adapter (B022 F007; B046 F002 reconcile).
 
-The four sleeves the workbench surfaces in Phase 1 mirror the
-specs that introduced them. F007's contract is the schema + a stable
-strategy id; the actual config / performance data lives in trade/ and
-will be wired through in B023 when the master portfolio runner has a
-batch-stable API the workbench can call without spawning a subprocess.
+The registry is the workbench's hand-curated mirror of the canonical
+Master Portfolio composition in ``trade/portfolio/master.py``. F007's
+contract is the schema + a stable strategy id; the actual config /
+performance data lives in ``trade/`` and is surfaced here so the
+frontend (which never imports ``trade/*`` directly, to keep the cloud
+build slim) has a stable read model.
 
-For F007 we ship a hand-curated registry that:
+**B046 F002 — regime reconcile.** Before B046 the registry surfaced
+three regime entries (B013/B014/B015) as ``active`` and was missing two
+sleeves the Master actually allocates to: the ``momentum`` core
+(``global_etf_momentum``, planning_weight 0.40) and the
+``satellite_hk_china`` reserved stub (0.10). The Master's real default
+sleeves are (see ``master.default_master_portfolio_parameters``):
+
+* ``momentum``            → ``global_etf_momentum``    (0.40, implemented)
+* ``risk_parity``         → ``risk_parity_vol_target`` (0.30, implemented)
+* ``satellite_us_quality``→ ``us_quality_momentum``    (0.20, implemented)
+* ``satellite_hk_china``  → reserved stub              (0.10, satellite_stub)
+* ``regime_adaptive``     → planning_weight 0.0 (loadable-but-inactive;
+  activating it is a future B013 batch — it stays research-state here).
+
+So this registry now lists the four active sleeves plus the regime
+entries marked ``status="research"`` (they describe the regime overlay
+that ships at zero weight). The registry is the read model, not the
+allocator — it does not change any Master weight or activate regime.
+
+The registry also:
 
 * uses the real spec paths under ``docs/specs/`` so the frontend's spec
   button (F007 acceptance — "spec/code 链按钮") resolves via
   ``/api/docs/{path}``;
-* uses the most-defensible ``trade/strategies/`` code path so the code
-  button does the same;
+* uses the most-defensible ``trade/`` code path so the code button does
+  the same;
 * points B013-regime-quarterly's ``last_sweep_path`` at the B019 retune
   report (the latest sweep that touched it; threshold=0.11);
 * leaves equity / drawdown / turnover series empty — F007 acceptance
@@ -48,54 +68,41 @@ def _summary(
     )
 
 
-# Single source of truth for the 4 sleeves. Adding a 5th requires a
-# spec; B023 is the next batch that can extend this registry.
+# Single source of truth: the registry mirrors trade/portfolio/master.py.
+# Order reflects the Master's default sleeves (active core + satellites
+# first), then the regime overlay entries (research-state, zero weight).
+# Adding a sleeve requires a spec.
 _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object]]] = {
-    "B013-regime-quarterly": (
+    # B046 F002: the Master's core trend engine (momentum sleeve,
+    # planning_weight 0.40). It was missing from the pre-B046 registry,
+    # which made /api/strategies + downstream sleeve consumers (home
+    # breakdown, advisor precompute, news association) blind to the
+    # single largest sleeve. strategy_id mirrors master.py's "momentum"
+    # sleeve → "global_etf_momentum".
+    "B006-global-etf-momentum": (
         _summary(
-            id="B013-regime-quarterly",
-            name="Regime-Adaptive Multi-Asset (quarterly)",
-            sleeve="regime",
-            last_sweep_date="2026-05-13",
+            id="B006-global-etf-momentum",
+            name="Global ETF Momentum / 全球 ETF 动量",
+            sleeve="momentum",
+            last_sweep_date="2026-05-12",
         ),
         StrategyProvenance(
-            spec_path="docs/specs/B013-regime-adaptive-multi-asset-mvp-spec.md",
-            code_path="trade/strategies/regime_adaptive",
+            spec_path="docs/specs/B006-global-etf-backtest-mvp-spec.md",
+            code_path="trade/strategies/global_etf_momentum.py",
             last_sweep_path=(
-                "docs/test-reports/B019-retune-recommendations-signoff-2026-05-15.md"
+                "docs/test-reports/B006-global-etf-backtest-mvp-signoff-2026-05-12.md"
             ),
         ),
         {
             "rebalance": "quarterly",
-            "activation_threshold": 0.11,
-            "note": "B019 retune set activation_threshold=0.11 (was 0.13).",
+            "top_n": 2,
+            "momentum_windows": "periods=3(0.4) periods=6(0.3) periods=9(0.3)",
+            "master_strategy_id": "global_etf_momentum",
+            "note": (
+                "Master core_trend_engine sleeve (planning_weight=0.40). "
+                "Synthetic fixture only; not live market data."
+            ),
         },
-    ),
-    "B014-regime-stress": (
-        _summary(
-            id="B014-regime-stress",
-            name="Regime-Adaptive Stress Validation",
-            sleeve="regime",
-        ),
-        StrategyProvenance(
-            spec_path="docs/specs/B014-regime-adaptive-stress-validation-spec.md",
-            code_path="trade/strategies/regime_adaptive",
-            last_sweep_path=None,
-        ),
-        {"role": "validation harness for B013 under stress windows."},
-    ),
-    "B015-regime-active": (
-        _summary(
-            id="B015-regime-active",
-            name="Regime-Adaptive Activation Policy",
-            sleeve="regime",
-        ),
-        StrategyProvenance(
-            spec_path="docs/specs/B015-regime-adaptive-activation-policy-spec.md",
-            code_path="trade/strategies/regime_adaptive",
-            last_sweep_path=None,
-        ),
-        {"role": "activation policy attached to B013."},
     ),
     "B016-risk-parity-hrp": (
         _summary(
@@ -108,7 +115,19 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
             code_path="trade/strategies/risk_parity_hrp.py",
             last_sweep_path=None,
         ),
-        {"rebalance": "monthly", "estimator": "HRP"},
+        {
+            "rebalance": "monthly",
+            "estimator": "HRP",
+            # B046 F002 id reconcile: the Master wires the risk_parity
+            # sleeve to strategy_id "risk_parity_vol_target"; this entry
+            # is the B016 HRP upgrade of that sleeve. Recorded so the two
+            # ids are traceable to the same sleeve.
+            "master_strategy_id": "risk_parity_vol_target",
+            "note": (
+                "Master core_stabilizer sleeve (planning_weight=0.30). "
+                "B016 HRP upgrades the risk_parity_vol_target sleeve."
+            ),
+        },
     ),
     # B025 F005: surfaces the US Quality Momentum satellite sleeve on the
     # /strategies list and detail panels. trade/portfolio/master.py is the
@@ -143,11 +162,112 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
             ),
         },
     ),
+    # B046 F002: the Master's reserved regional satellite stub
+    # (satellite_hk_china, planning_weight 0.10, sleeve_type
+    # satellite_stub — no strategy_id). It is a defensive placeholder
+    # interface, not an implemented strategy; the HK-China implementation
+    # is a future batch (backlog order 3). Surfaced so the registry +
+    # downstream sleeve consumers reflect the Master's true 10% allocation
+    # rather than silently dropping it.
+    "B011-satellite-hk-china": (
+        _summary(
+            id="B011-satellite-hk-china",
+            name="HK / China Satellite (reserved stub) / 港股中概卫星（预留）",
+            sleeve="satellite_hk_china",
+            status="stub",
+        ),
+        StrategyProvenance(
+            spec_path="docs/specs/B011-portfolio-allocation-risk-mvp-spec.md",
+            code_path="trade/portfolio/master.py",
+            last_sweep_path=None,
+        ),
+        {
+            "sleeve_type": "satellite_stub",
+            "planning_weight": 0.10,
+            "role_label": "satellite_regional_stub",
+            "note": (
+                "Reserved interface stub: weight falls through to the "
+                "defensive placeholder. No strategy implemented yet "
+                "(HK-China is a future batch). Not live market data."
+            ),
+        },
+    ),
+    # B046 F002: regime overlay entries kept as research-state. The
+    # Master loads regime_adaptive at planning_weight=0.0 (loadable but
+    # inactive — _resolve_child_weights raises if a >0 weight is set), so
+    # these describe the overlay that ships at zero weight. Activating
+    # regime is a future B013 batch, not this registry's job.
+    "B013-regime-quarterly": (
+        _summary(
+            id="B013-regime-quarterly",
+            name="Regime-Adaptive Multi-Asset (quarterly)",
+            sleeve="regime",
+            status="research",
+            last_sweep_date="2026-05-13",
+        ),
+        StrategyProvenance(
+            spec_path="docs/specs/B013-regime-adaptive-multi-asset-mvp-spec.md",
+            code_path="trade/strategies/regime_adaptive",
+            last_sweep_path=(
+                "docs/test-reports/B019-retune-recommendations-signoff-2026-05-15.md"
+            ),
+        ),
+        {
+            "rebalance": "quarterly",
+            "activation_threshold": 0.11,
+            "master_planning_weight": 0.0,
+            "note": (
+                "Research-state: Master loads regime_adaptive at weight 0.0 "
+                "(inactive). B019 retune set activation_threshold=0.11 "
+                "(was 0.13). Activation is a future B013 batch."
+            ),
+        },
+    ),
+    "B014-regime-stress": (
+        _summary(
+            id="B014-regime-stress",
+            name="Regime-Adaptive Stress Validation",
+            sleeve="regime",
+            status="research",
+        ),
+        StrategyProvenance(
+            spec_path="docs/specs/B014-regime-adaptive-stress-validation-spec.md",
+            code_path="trade/strategies/regime_adaptive",
+            last_sweep_path=None,
+        ),
+        {
+            "role": "validation harness for B013 under stress windows.",
+            "master_planning_weight": 0.0,
+            "note": "Research-state: regime overlay ships inactive (weight 0.0).",
+        },
+    ),
+    "B015-regime-active": (
+        _summary(
+            id="B015-regime-active",
+            name="Regime-Adaptive Activation Policy",
+            sleeve="regime",
+            status="research",
+        ),
+        StrategyProvenance(
+            spec_path="docs/specs/B015-regime-adaptive-activation-policy-spec.md",
+            code_path="trade/strategies/regime_adaptive",
+            last_sweep_path=None,
+        ),
+        {
+            "role": "activation policy attached to B013.",
+            "master_planning_weight": 0.0,
+            "note": "Research-state: regime overlay ships inactive (weight 0.0).",
+        },
+    ),
 }
 
 
 def list_strategies() -> StrategyListResponse:
-    """Return the 4 sleeves as the workbench's flat list view."""
+    """Return the registry sleeves as the workbench's flat list view.
+
+    Order mirrors ``trade/portfolio/master.py``: the active core +
+    satellite sleeves first, then the research-state regime overlay
+    entries (B046 F002 reconcile)."""
 
     return StrategyListResponse(strategies=[entry[0] for entry in _REGISTRY.values()])
 
