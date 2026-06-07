@@ -173,7 +173,7 @@ B027 → B028 → B029 → B030 (Phase 1 Real Data，严格顺序)
 |---|---|---|---|
 | **A — Layer 0→1** | Phase 1 全 4 batch；全 sleeve 真数据**进回测** | 回测指标第一次可信（注：真实评分进**线上推荐**归里程碑 C，见 progress-review §4）| 可启动 Phase 2 + Phase 3 |
 | **B — AI advisory 框架** | Phase 2 全 6 batch；AI MVP + safety eval | AI 建议必带引用 + 永无预测数字 + CI gate | 可整合到 Home（B039）|
-| **C — Layer 0.5 完整交付（2026-06-07 重定义）** | Phase 3 UI（B037-B043）+ **真实评分基础（B044/B045/B046）** + **交易安全/风控/合规层真实化（B048 F011 根因：kill-switch/risk-panel/wash-sale 去占位）** + **用户交易闭环端到端可用（真实评分+真实安全层→mark-to-market diff→ticket→fills→reconcile→journal，BL-B023-S1 生产冒烟）** + **HK-China 实现（BL-B011-S2，Master 4/4 真实）** + **回测页接真实引擎（B047，去合成 stub）** | 每日 Home 高频可用 + UI 简化 + **可按系统指示手动交易（含真实风控）** + 回测可信 | 进入 Phase 4 长尾按需 |
+| **C — Layer 0.5 完整交付（2026-06-07 重定义）** | Phase 3 UI（B037-B043）+ **真实评分基础（B044/B045/B046）** + **交易安全/风控/合规层真实化（B048 F011 根因）** + **用户交易闭环端到端可用（BL-B023-S1 生产冒烟）** + **HK-China 实现（BL-B011-S2，Master 4/4）** + **回测页接真实引擎（B047）** + **🎯 全页面真实化硬标准：所有用户投资页面显示内容均接真实引擎、无合成/占位（B049 穷举审计收口 gate；内部工具页 backlog/dev/docs 除外）** | 每日 Home 高频可用 + UI 简化 + **可按系统指示手动交易（含真实风控）** + 回测可信 + **全页面真实** | 进入 Phase 4 长尾按需 |
 
 ## 7. 永久边界（贯穿全程，继承 framework v0.9.28）
 

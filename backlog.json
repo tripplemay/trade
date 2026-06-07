@@ -152,18 +152,20 @@
     "milestone": "C — 回测页真实可信（接真实引擎）"
   },
   {
-    "id": "BL-SYNTH-CLEANUP",
-    "title": "[low] 残留合成/占位面清理（snapshots 进度动画 / strategies 元数据 / dashboard 残留）",
-    "description": "【2026-06-07 全面核查发现的低优先 cosmetic 占位，非里程碑 C 阻塞】(1) snapshots.py 刷新进度=5-stage synthetic SSE 动画（纯视觉，实际数据 B045 真）；manifest 占位待真数据。(2) strategies.py line 142 部分元数据 'Synthetic fixture only; not actual filings'。(3) services/dashboard.py 旧 quant dashboard 页已 §16 退役（前端无 dashboard 路由），但 service 残留 placeholder 零值字段 + routes/dashboard.py 可能服务空（_aggregate_nav 被 Home 复用是活的，其余可清）。本条=按需 cleanup（接真进度/清死路由/标注或去合成元数据），不阻塞里程碑 C。",
+    "id": "B049",
+    "title": "全页面真实化审计 + 残余显示真实化（里程碑 C 收口 gate：所有页面显示内容接真实引擎）",
+    "description": "【2026-06-07 用户拍板：里程碑 C 完成时所有页面显示内容均接真实引擎】里程碑 C 收口 gate，作为最后一批（在 B046/B048/B047/B043 等实质批次之后），逐页穷举审计每个用户投资页面显示无合成/占位，并修残余显示项：(1) **snapshots 刷新进度**——接真实子进程进度事件（去 5-stage synthetic SSE 动画；数据已 B045 真）；(2) **strategies 元数据**——note 'Synthetic fixture only; not actual filings' 已因 B045 真数据陈旧，更正/去除（factor_weights 等本就是真 config）；(3) **dashboard 死后端清理**——旧 dashboard 页已 §16 退役（前端无路由），清 routes/dashboard.py 死路由 + service 残留占位零值字段（保留 Home 复用的 _aggregate_nav）；(4) **全页面穷举审计**——Home/Recommendations/Reports/Risk/Strategies/Backtest/Snapshots/Execution 每页显示内容确认无合成/占位/硬编码 stub（grep synthetic/stub/placeholder/hardcode + 逐页手验）；内部工具页 backlog/dev/docs 不算投资内容、不在范围。审计通过 = 里程碑 C『所有页面接真实引擎』达成。",
     "decisions": [
-      "低优先 cosmetic，里程碑 C 不阻塞；按需或随相关批次顺手做",
-      "dashboard：保留 Home 复用的 _aggregate_nav，评估 routes/dashboard.py 是否死路由可去",
-      "snapshots 刷新进度：若接真子进程进度则去合成动画；否则保留（数据已真）"
+      "2026-06-07 用户拍板：里程碑 C 完成时所有页面显示内容均接真实引擎；本批=收口 gate（最后一批）",
+      "范围=用户投资页面显示内容；内部工具页（backlog/dev/docs）不算投资内容、排除",
+      "snapshots 进度若接真子进程进度过大可单列子批；strategies note/dashboard 死路由为小修",
+      "穷举审计：每页 grep synthetic/stub/placeholder/hardcode + 手验，留审计清单作里程碑 C 达成证据"
     ],
     "confirmed_at": "2026-06-07",
-    "priority": "low",
-    "source": "2026-06-07 全面占位核查（cosmetic 残留）",
-    "milestone": "Phase 4 / cleanup（非里程碑 C）"
+    "priority": "high",
+    "order": 7,
+    "source": "2026-06-07 全面占位核查 + 用户『里程碑 C 所有页面接真实引擎』标准",
+    "milestone": "C — 全页面真实化收口 gate（最后一批）"
   },
   {
     "id": "BL-B013-D1",
