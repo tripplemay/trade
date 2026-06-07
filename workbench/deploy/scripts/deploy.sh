@@ -62,7 +62,14 @@ echo "→ install trade package into /opt/workbench/.venv"
 TRADE_WHEEL=$(ls "${RELEASE_DIR}"/trade-dist/trade-*.whl 2>/dev/null | head -n 1 || true)
 if [[ -n "${TRADE_WHEEL}" ]]; then
   echo "  wheel: ${TRADE_WHEEL}"
-  "${VENV_PIP}" install --quiet --upgrade "${TRADE_WHEEL}"
+  # B045 F004 fix (Finding #2): --force-reinstall, NOT --upgrade. The trade
+  # wheel version is hand-maintained and easy to forget bumping; with --upgrade
+  # pip treats a same-version wheel as already-satisfied and SKIPS reinstall, so
+  # newly-added modules (e.g. B045 F002 trade/data/data_root.py) never land on
+  # the VM → precompute ModuleNotFoundError. --force-reinstall always overwrites
+  # the installed files with the freshly-built wheel, independent of the version
+  # string. The wheel is local (in the release dir) so deps resolve from cache.
+  "${VENV_PIP}" install --quiet --force-reinstall "${TRADE_WHEEL}"
 else
   echo "  no trade wheel under ${RELEASE_DIR}/trade-dist/; skipping (B044 F001 — precompute will be unavailable until shipped)"
 fi

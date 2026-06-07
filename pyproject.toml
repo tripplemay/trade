@@ -4,7 +4,9 @@ build-backend = "hatchling.build"
 
 [project]
 name = "trade"
-version = "0.1.0"
+# B045 F002 added trade/data/data_root.py; bump so a version-aware install path
+# reinstalls (defence-in-depth alongside deploy.sh --force-reinstall, F004 #2).
+version = "0.2.0"
 description = "Fixture-first Global ETF Momentum backtest MVP."
 readme = "README.md"
 requires-python = ">=3.11"
