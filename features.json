@@ -30,7 +30,7 @@
       "title": "Codex L1 + L2 真 VM 验收（ticket diff mark-to-market 准确 + rec current_weight 真实 + 注册表对齐 + B023 工作流不破）+ signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "L1 (CI 内)：F001+F002 全 generator 验收脚本跑通 — backend pytest ≥ baseline+≥10 / ruff / mypy；**B023 工作流回归测试绿**（ticket→fills→reconcile 不破，wash-sale 仍 avg_cost）；§12.10.2 请求路径禁 trade 守门不破；下游 home/advisor/news/strategies 测试绿；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）；(2) /api/debug/recent-errors={count:0,records:[]}；(3) **ticket diff mark-to-market**：手动 PUT 一段含浮盈持仓 → GET /api/execution/position-diff 的 current_weight 按市价（非成本价 avg_cost）+ ticket 买卖 delta 准确；**记录市价 vs 成本价口径差异**（证明已改 mark-to-market）；(4) **GET /api/recommendations/current current_weight 真实**（非 0.0，与 execution 同基准）+ anon 401；(5) **/api/strategies 反映 master 实际 4-sleeve**（momentum/risk_parity/us_quality/hk_china；regime 研究态）+ home sleeve breakdown/advisor/news 不破；(6) Production HEAD ≡ main HEAD；(7) B026 banner 仍 absent。Signoff: docs/test-reports/B046-tradeable-diff-current-weight-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（§Production/HEAD + §Post-signoff Deploy + **§交易 diff mark-to-market vs cost-basis 对比记录**）。Framework 候选：mark-to-market vs cost-basis 双估值口径若出新通用规律记 §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
