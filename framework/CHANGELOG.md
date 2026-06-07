@@ -5,6 +5,21 @@
 
 ---
 
+## v0.9.36 — 2026-06-07（B045 沉淀：venv 多包安装 deploy 静默装不上 + smoke import check 铁律）
+
+**来源批次：**
+- B045 真实数据刷新 pipeline，F004 round 1 Finding #2（`--upgrade` 同版本 skip）+ round 2 Soft-watch S4（`--force-reinstall` 仍停旧版，需手动）
+- signoff `docs/test-reports/B045-real-data-refresh-pipeline-signoff-2026-06-07.md` §Framework Learnings 新坑
+
+**触发原因：**
+- B044 把 `trade/` 装进既有 workbench venv（§12.10.2 模式 2）后，deploy 的 pip 安装两次静默不生效：`--upgrade` 对同版本号 skip（Finding #2）；改 `--force-reinstall` 后首次 deploy 仍停旧版（S4，根因未确证）。新增模块没落 VM → precompute `ModuleNotFoundError`。`--quiet` + silent skip 掩盖失败。
+
+**变更：**
+- `framework/README.md` §经验教训 新增「venv 多包安装：deploy 静默装不上」子节（两坑 + **铁律：deploy 后必加该包 smoke import check，不靠 pip 返回 0** + §12.10.2 模式 2 多包 deploy 脆弱性取舍提醒）
+- 配套：S4 的 durable 修复（诊断 trade wheel 自动装 + deploy 后 smoke import check）转 B045-OPS1 ops 批次跟踪
+
+---
+
 ## v0.9.35 — 2026-06-07（B044 沉淀：§12.10 enforcement 模型「物理缺席→AST 守门」+ 停机恢复 prod==HEAD 核对）
 
 **来源批次：**

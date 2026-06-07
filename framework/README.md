@@ -370,6 +370,13 @@ docs/test-reports/[批次名称]-signoff-YYYY-MM-DD.md
 - **环境恢复后必铁律核对 `prod /api/health.version == main HEAD`**，不等则手动 `gh workflow run "Workbench Deploy" --ref main` re-deploy（Evaluator 的 §Production/HEAD 等价性检查正是抓此类）。
 - VM 主机级挂死（TCP SYN 有应答但 nginx/sshd 应用握手超时）疑与资源耗尽相关；disk 使用率应作 soft-watch 持续监控，挂死前证据常被 reboot 清除、难定位确切根因。
 
+### venv 多包安装：deploy 静默装不上（来自 B044/B045）
+- **把第二个包（如 `trade/`）装进既有 workbench venv 时，deploy 的 pip 安装可能静默不生效**，新增模块没落到 VM → 运行时 `ModuleNotFoundError`：
+  - B044/B045 Finding #2：`pip install --upgrade <wheel>` 对**同版本号** wheel 视为 already-satisfied 而 **SKIP**（手维护版本号易忘 bump）→ 改 `--force-reinstall`。
+  - B045 S4：改 `--force-reinstall` 后**首次 deploy 仍停旧版**（需手动 force-reinstall），根因未确证（trade-dist/ 是否随 release 下发 / deploy 用户下 pip 行为 / `--quiet` 吞错）。
+- **铁律：deploy 后必加该包的 smoke import check**（`python -c "import trade.data.data_root"` 在部署 venv 内），失败即让 deploy 硬失败/告警——不能只靠「pip 命令返回 0」当成功。silent skip + `--quiet` 吞错是这类坑的根源。
+- 设计取舍提醒：§12.10.2 模式 2（禁包打进 artifact 供 job 用）的代价之一就是这类多包 deploy 脆弱性；能走模式 1（不打进 artifact）则避开。
+
 ### 成本控制
 - 聚合型服务商必须设白名单，否则同步全量模型导致健康检查成本爆炸
 - 图片生成的健康检查止步于 L2（格式验证），不执行 L3（真实生成），单次 $0.04–$0.19 不值得

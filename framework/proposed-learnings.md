@@ -81,4 +81,6 @@
 
 <!-- 2026-06-07: v0.9.35 沉淀完成（B044：§12.10 enforcement 模型转变 + 停机恢复 prod==HEAD）：两条 signoff §Framework Learnings 用户批立即沉淀。(1) 新规律 trade/ 入 venv → §12.10 物理缺席保护失效 → 转 AST 守门：写 generator.md §12.10.2 + 规约 6 + 对比表 v0.9.35 行。(2) 新坑 长停机 SCP 静默失败致 prod 卡上一版本：写 README §经验教训「生产部署/停机恢复」子节。CHANGELOG v0.9.35。Soft-watch S1（VM disk 82%）转 project-status 监控（用户选直接 B045，disk 不阻断）；S2/S3（fixture 数据/sleeve stub）留 B045 真数据切换。 -->
 
+<!-- 2026-06-07: v0.9.36 沉淀完成（B045：venv 多包安装 deploy 静默装不上 + smoke import check 铁律）：B045 F004 Finding #2（--upgrade 同版本 skip）+ S4（--force-reinstall 仍停旧版需手动）。用户批沉淀 README §经验教训「venv 多包安装」子节（铁律 deploy 后必加 smoke import check）+ CHANGELOG v0.9.36。S4 的 durable 修复（诊断 trade wheel 自动装根因 + deploy 后 smoke import check）转 B045-OPS1 ops 批次（用户选先修 S4 再 B046）。disk S1（84% 爬升）继续 project-status 监控；S2/S3（hk_china stub by-design / us_quality 选 SGOV 策略行为）留 B046。 -->
+
 <!-- 当前无活动候选（待确认条目）。 -->
