@@ -33,6 +33,10 @@ from workbench_api.db.models.news import _UuidString
 
 DATA_SOURCE_REAL = "real"
 DATA_SOURCE_FIXTURE = "fixture"
+# B045 F003 — partial provenance: real prices were read but at least one
+# implemented sleeve still stubbed to the defensive asset (its input data was
+# unavailable on the host). Marked honestly, never passed off as full real.
+DATA_SOURCE_MIXED = "mixed"
 
 
 class RecommendationSnapshot(Base):
