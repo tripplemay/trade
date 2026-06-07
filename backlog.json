@@ -16,6 +16,24 @@
     "milestone": "C — 交易闭环关键拼图（让 diff 真实可交易）"
   },
   {
+    "id": "B048",
+    "title": "F011 真实 per-sleeve NAV 跟踪 → 统一安全/风控/合规层真实化（kill-switch + risk panel + wash-sale）",
+    "description": "【2026-06-07 全面核查发现 + 用户确认：F011 根因批次统一做，纳入里程碑 C】根因：被推迟的『F011 真实 per-sleeve NAV 跟踪』从未实现，导致**交易闭环的安全/合规层多处占位**（一个基础缺失的多个症状）：(1) **gate_checks kill_switch 硬编码 always pass**（services/recommendations.py `_build_gate_checks`，Drawdown 0.00 写死）——用户『按系统指示交易』看到的风控门是假绿灯；(2) **Risk Panel per-sleeve 回撤占位**（risk_panel.py `_per_sleeve_drawdowns` 返回 master+satellite 都=master_dd 镜像）+ **master DD 用成本价 avg_cost**（与 B046 execution 同一成本价问题，应一并 mark-to-market 保持口径一致）；(3) **wash_sale_flags 永远返回 []**（recommendations.py 未实现洗售税务警示，B023 ticket 流该项是死的）。本批=建真实 per-sleeve NAV 跟踪 → 让上述安全/风控/合规层全部变真。**这是交易闭环可信的前提**（kill-switch 是安全机制，不能假）。",
+    "decisions": [
+      "2026-06-07 用户确认：F011 根因批次统一做（real per-sleeve NAV + gate kill_switch + risk_panel + wash_sale 一并），纳入里程碑 C",
+      "排 order 2（B046 mark-to-market 之后、交易闭环冒烟 BL-B023-S1 之前）——安全层须真才能宣布闭环可信；且早于 B042 Risk UI（不在假风控数据上打磨 UI）",
+      "复用 B046 mark-to-market 助手（services/mark_to_market.py）把 risk_panel master DD 也改市价，口径与 execution 一致",
+      "kill_switch gate 接真实 master DD（去硬编码 0.00）；per_sleeve_dd 接真实 per-sleeve nav（去镜像）",
+      "wash_sale 从 fills/positions 历史检测亏损卖出+30 日内回补（与 per-sleeve NAV 正交，可作本批可分拆 sub-thread；若过大单列）",
+      "research-only / no-broker 边界不变；§12.10.2 请求路径禁 trade 不破"
+    ],
+    "confirmed_at": "2026-06-07",
+    "priority": "high",
+    "order": 2,
+    "source": "2026-06-07 全面占位核查（gate kill_switch 硬编码 / risk_panel per-sleeve 占位 / wash_sale 未实现，共享 F011 根因）",
+    "milestone": "C — 交易安全/风控/合规层真实化（F011 根因）"
+  },
+  {
     "id": "BL-B023-S1",
     "title": "生产 recommendation-driven ticket 端到端冒烟（交易闭环确证）",
     "description": "【2026-06-07 提级 low→high：里程碑 C 用户交易闭环的端到端验证】B023 L2 验收时生产 recommendations/current.target_positions=[] 且 account/latest=null，evaluator 只能走 defensive=true 路径；常规 recommendation-driven ticket 的端到端真 VM 路径未物理覆盖。**现 B044/B045 已让 /current 返回真实评分权重**，本条升级为：用真实评分目标 + 真实 current_weight（B046）→ 准确 diff → order ticket → fills → reconcile → journal 跑通一次生产冒烟，确证『按系统指示交易』闭环可用（里程碑 C 完成标准 §5）。",
@@ -27,10 +45,19 @@
     ],
     "confirmed_at": "2026-05-20",
     "priority": "high",
-    "order": 2,
+    "order": 3,
     "priority_history": [
-      {"priority": "low", "since": "2026-05-20", "until": "2026-06-07", "reason": "原 B023 signoff soft-watch S1，equal-weight 占位时代价值有限"},
-      {"priority": "high", "since": "2026-06-07", "reason": "里程碑 C 重定义『用户交易闭环可用』后，本条成为闭环端到端确证（B044/B045 真实评分已就位）"}
+      {
+        "priority": "low",
+        "since": "2026-05-20",
+        "until": "2026-06-07",
+        "reason": "原 B023 signoff soft-watch S1，equal-weight 占位时代价值有限"
+      },
+      {
+        "priority": "high",
+        "since": "2026-06-07",
+        "reason": "里程碑 C 重定义『用户交易闭环可用』后，本条成为闭环端到端确证（B044/B045 真实评分已就位）"
+      }
     ],
     "source": "B023 signoff soft-watch S1",
     "milestone": "C — 交易闭环端到端确证"
@@ -49,16 +76,44 @@
     ],
     "confirmed_at": "2026-05-13",
     "priority": "high",
-    "order": 3,
+    "order": 4,
     "priority_history": [
-      {"priority": "medium", "since": "2026-05-13", "until": "2026-05-15", "reason": "原 B011 signoff soft-watch S2 默认"},
-      {"priority": "high", "since": "2026-05-15", "until": "2026-05-25", "reason": "B019 done：workbench Phase 1 展示 4 sleeve，satellite stub 直观可见，提优先级"},
-      {"priority": "low", "since": "2026-05-25", "until": "2026-06-07", "reason": "positioning §125 降级：仍 fixture、等真数据+AI advisory 框架成型再做"},
-      {"priority": "high", "since": "2026-06-07", "reason": "降级条件已解除（B045 真数据 pipeline + B036 AI 框架 done）；用户 2026-06-07 确认 HK-China 需实现，纳入里程碑 C 交易闭环（Master 4/4 真实）"}
+      {
+        "priority": "medium",
+        "since": "2026-05-13",
+        "until": "2026-05-15",
+        "reason": "原 B011 signoff soft-watch S2 默认"
+      },
+      {
+        "priority": "high",
+        "since": "2026-05-15",
+        "until": "2026-05-25",
+        "reason": "B019 done：workbench Phase 1 展示 4 sleeve，satellite stub 直观可见，提优先级"
+      },
+      {
+        "priority": "low",
+        "since": "2026-05-25",
+        "until": "2026-06-07",
+        "reason": "positioning §125 降级：仍 fixture、等真数据+AI advisory 框架成型再做"
+      },
+      {
+        "priority": "high",
+        "since": "2026-06-07",
+        "reason": "降级条件已解除（B045 真数据 pipeline + B036 AI 框架 done）；用户 2026-06-07 确认 HK-China 需实现，纳入里程碑 C 交易闭环（Master 4/4 真实）"
+      }
     ],
     "scope_history": [
-      {"scope": "US Quality + HK-China (2 satellites)", "since": "2026-05-13", "until": "2026-05-25", "reason": "原 B011 signoff soft-watch S2 默认两支 satellite 合并描述"},
-      {"scope": "HK-China only", "since": "2026-05-25", "reason": "B025 US Quality Momentum Satellite 已落地，US Quality 部分剥离"}
+      {
+        "scope": "US Quality + HK-China (2 satellites)",
+        "since": "2026-05-13",
+        "until": "2026-05-25",
+        "reason": "原 B011 signoff soft-watch S2 默认两支 satellite 合并描述"
+      },
+      {
+        "scope": "HK-China only",
+        "since": "2026-05-25",
+        "reason": "B025 US Quality Momentum Satellite 已落地，US Quality 部分剥离"
+      }
     ],
     "source": "B011 signoff soft-watch S2",
     "milestone": "C — Master 4/4 真实（去 hk_china by-design stub）"
@@ -75,7 +130,7 @@
     ],
     "confirmed_at": "2026-05-20",
     "priority": "medium",
-    "order": 4,
+    "order": 5,
     "source": "B023 signoff soft-watch S2",
     "milestone": "C — Risk UI（随 B042）"
   },
@@ -92,9 +147,23 @@
     ],
     "confirmed_at": "2026-06-07",
     "priority": "high",
-    "order": 5,
+    "order": 6,
     "source": "2026-06-07 回测页使用讨论（发现合成 stub）+ 里程碑 C 重定义",
     "milestone": "C — 回测页真实可信（接真实引擎）"
+  },
+  {
+    "id": "BL-SYNTH-CLEANUP",
+    "title": "[low] 残留合成/占位面清理（snapshots 进度动画 / strategies 元数据 / dashboard 残留）",
+    "description": "【2026-06-07 全面核查发现的低优先 cosmetic 占位，非里程碑 C 阻塞】(1) snapshots.py 刷新进度=5-stage synthetic SSE 动画（纯视觉，实际数据 B045 真）；manifest 占位待真数据。(2) strategies.py line 142 部分元数据 'Synthetic fixture only; not actual filings'。(3) services/dashboard.py 旧 quant dashboard 页已 §16 退役（前端无 dashboard 路由），但 service 残留 placeholder 零值字段 + routes/dashboard.py 可能服务空（_aggregate_nav 被 Home 复用是活的，其余可清）。本条=按需 cleanup（接真进度/清死路由/标注或去合成元数据），不阻塞里程碑 C。",
+    "decisions": [
+      "低优先 cosmetic，里程碑 C 不阻塞；按需或随相关批次顺手做",
+      "dashboard：保留 Home 复用的 _aggregate_nav，评估 routes/dashboard.py 是否死路由可去",
+      "snapshots 刷新进度：若接真子进程进度则去合成动画；否则保留（数据已真）"
+    ],
+    "confirmed_at": "2026-06-07",
+    "priority": "low",
+    "source": "2026-06-07 全面占位核查（cosmetic 残留）",
+    "milestone": "Phase 4 / cleanup（非里程碑 C）"
   },
   {
     "id": "BL-B013-D1",
