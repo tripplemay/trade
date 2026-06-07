@@ -53,7 +53,7 @@
       "title": "Codex L1 + L2 真 VM 验收（price_history backfill + 真实 mark-to-market 回撤 + kill_switch 真实 + wash_sale 真实 + B023 不破）+ signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "L1 (CI 内)：F001-F004 全 generator 验收脚本跑通 — backend pytest ≥ baseline+ / ruff / mypy；**B023 工作流回归绿**；§12.10.2 请求路径禁 trade 守门不破；scheduler scope 含 price_history backfill；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）+ recent-errors={count:0}；(2) **price_history backfill 真机有深历史行**（手动 trigger backfill→记录 symbol 数/日期跨度）；(3) **risk_panel master DD + per-sleeve DD 真实 mark-to-market**：PUT 含浮盈/浮亏持仓 + 历史 → GET risk-panel 真实回撤（非成本价、per-sleeve 非镜像；记录 vs 旧口径差异 + degrade 哪些点）；(4) **kill_switch gate 反映真实 DD**（GET /api/recommendations/current 的 gate 非硬编码 pass；阈值 0.15）；(5) **wash_sale 真实触发**（构造亏损卖+30 日回补 fills → /current wash_sale_flags 非空）；(6) **B023 工作流不破**（ticket→fills→reconcile→journal）；(7) HEAD≡main + B026 absent。Signoff: docs/test-reports/B048-real-risk-safety-layer-signoff-2026-MM-DD.md 用模板（§Production/HEAD + §Post-signoff Deploy + §24 若加 timer + **mark-to-market 回撤 vs 旧成本价对比 + 安全层占位→真实清单**）。Framework 候选：历史价格重建 NAV / 安全层占位→真实 若出新通用规律记 §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
