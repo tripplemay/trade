@@ -18,7 +18,7 @@
       "title": "sleeve tag 写路径补齐（PositionEntry schema + ui_edit/reconcile/bootstrap 保留 tag）+ regen api.ts",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) **PositionEntry 加可选 sleeve** schemas/execution.py；ui_edit（execution.py 写路径）/ fill_reconcile（reconcile.py 从 prior 重建）/ bootstrap **保留/填 sleeve tag**（现丢失 B037 加的 tag）→ per-sleeve 分组可靠。(2) schema-tolerant（旧无 tag→'unclassified' 沿用 home.py 语义）；regen api.ts。(3) pytest：三写路径 sleeve tag 保留（ui_edit/reconcile round-trip 不丢 tag）。(4) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / 既有 execution/reconcile 契约不破 / 前端 typecheck（api.ts 变）。(5) 不动：positions 其他字段语义 / B023 工作流 / risk_panel（F003）。",
       "design_decisions": [
         "sleeve tag（planner 决）：PositionEntry 加可选 sleeve，三写路径保留；schema-tolerant 旧→unclassified；per-sleeve NAV 分组前置。"

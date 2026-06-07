@@ -14,11 +14,24 @@ from pydantic import BaseModel, Field, model_validator
 
 
 class PositionEntry(BaseModel):
-    """One entry in an AccountSnapshot's ``positions`` list."""
+    """One entry in an AccountSnapshot's ``positions`` list.
+
+    ``sleeve`` (B048 F002) is the optional strategy-registry sleeve the
+    holding belongs to. B037 added the read side (Home / risk per-sleeve
+    grouping reads ``positions[].sleeve``), but the execution write paths
+    dropped the tag — so it could never round-trip. It is optional + the
+    reader treats a missing / null tag as ``unclassified`` (home.py
+    semantics), keeping the schema tolerant of pre-B048 snapshots.
+    """
 
     symbol: str = Field(min_length=1, max_length=16)
     shares: float = Field(ge=0.0)
     avg_cost: float = Field(ge=0.0)
+    sleeve: str | None = Field(
+        default=None,
+        max_length=64,
+        description="Strategy-registry sleeve; null/missing → unclassified.",
+    )
 
 
 class AccountSnapshotPayload(BaseModel):

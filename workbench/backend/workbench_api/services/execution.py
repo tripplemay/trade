@@ -43,6 +43,23 @@ from workbench_api.services.recommendations import get_current_recommendations
 _logger = logging.getLogger("workbench.execution")
 
 
+def _position_to_json(p: PositionEntry) -> dict[str, object]:
+    """Serialise a PositionEntry to the stored positions-JSON shape.
+
+    B048 F002: the ``sleeve`` key is written only when the tag is present,
+    so a tagless holding stays byte-identical to a pre-B048 row (the reader
+    treats a missing key as ``unclassified``)."""
+
+    entry: dict[str, object] = {
+        "symbol": p.symbol.upper(),
+        "shares": p.shares,
+        "avg_cost": p.avg_cost,
+    }
+    if p.sleeve:
+        entry["sleeve"] = p.sleeve
+    return entry
+
+
 def _snapshot_to_payload(row: AccountSnapshot) -> AccountSnapshotPayload:
     """Convert an ORM row to the wire-shape payload, normalising types."""
 
@@ -51,6 +68,9 @@ def _snapshot_to_payload(row: AccountSnapshot) -> AccountSnapshotPayload:
             symbol=str(entry.get("symbol", "")),
             shares=float(entry.get("shares", 0.0)),
             avg_cost=float(entry.get("avg_cost", 0.0)),
+            # B048 F002: carry the sleeve tag through the read path. A
+            # pre-B048 snapshot has no tag → None (reader → unclassified).
+            sleeve=(str(entry["sleeve"]) if entry.get("sleeve") else None),
         )
         for entry in (row.positions or [])
     ]
@@ -108,10 +128,7 @@ def update_account(
         snapshot_at=snapshot_at,
         cash=Decimal(str(body.cash)),
         base_currency=body.base_currency.upper(),
-        positions=[
-            {"symbol": p.symbol.upper(), "shares": p.shares, "avg_cost": p.avg_cost}
-            for p in body.positions
-        ],
+        positions=[_position_to_json(p) for p in body.positions],
         source="ui_edit",
         created_at=snapshot_at,
     )

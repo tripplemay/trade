@@ -107,6 +107,11 @@ def _apply_fills_to_positions(
     snapshot's cash: buys + commissions/fees subtract cash, sells add.
     """
 
+    # B048 F002: remember each prior holding's sleeve tag so the rebuilt
+    # snapshot keeps it (per-sleeve grouping stays reliable across a
+    # reconcile). A symbol introduced by a fill has no prior tag → left
+    # untagged (reader → unclassified).
+    sleeve_by_symbol: dict[str, str] = {}
     pos_by_symbol: dict[str, dict[str, Any]] = {}
     for entry in positions:
         if not isinstance(entry, dict):
@@ -114,6 +119,8 @@ def _apply_fills_to_positions(
         symbol = str(entry.get("symbol", "")).upper()
         if not symbol:
             continue
+        if entry.get("sleeve"):
+            sleeve_by_symbol[symbol] = str(entry["sleeve"])
         pos_by_symbol[symbol] = {
             "symbol": symbol,
             "shares": float(entry.get("shares", 0.0)),
@@ -157,7 +164,15 @@ def _apply_fills_to_positions(
             }
             cash_delta += shares * price - commission - fees
     # Stable ordering so the JSON round-trip is deterministic for tests.
-    out = [pos_by_symbol[s] for s in sorted(pos_by_symbol)]
+    # B048 F002: re-attach the preserved sleeve tag (only when known, so a
+    # tagless holding stays byte-identical to a pre-B048 row).
+    out: list[dict[str, Any]] = []
+    for symbol in sorted(pos_by_symbol):
+        entry = pos_by_symbol[symbol]
+        sleeve = sleeve_by_symbol.get(symbol)
+        if sleeve:
+            entry["sleeve"] = sleeve
+        out.append(entry)
     return out, cash_delta
 
 

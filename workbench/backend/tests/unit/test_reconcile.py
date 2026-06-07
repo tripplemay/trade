@@ -18,6 +18,7 @@ import time
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -32,7 +33,10 @@ from workbench_api.db.models.account_snapshot import AccountSnapshot
 from workbench_api.db.models.fill_journal_entry import FillJournalEntry
 from workbench_api.db.models.order_ticket import OrderTicket
 from workbench_api.observability.active_users import active_users
-from workbench_api.services.reconcile import _compute_slippage_bps
+from workbench_api.services.reconcile import (
+    _apply_fills_to_positions,
+    _compute_slippage_bps,
+)
 from workbench_api.settings import Settings, get_settings
 
 SECRET = "test-secret-do-not-use-in-prod"
@@ -454,3 +458,46 @@ def test_slippage_analytics_aggregates_rolling_window(
     assert payload["rolling_avg_bps"] == pytest.approx(150.0, rel=1e-6)
     assert payload["window"] == "3m"
     assert len(payload["trend"]) >= 1
+
+
+# --- B048 F002: sleeve tag preserved through reconcile rebuild ------------
+
+
+def _fill(symbol: str, side: str, shares: float, price: float) -> SimpleNamespace:
+    """A minimal fill object matching the attrs _apply_fills_to_positions reads."""
+
+    return SimpleNamespace(
+        symbol=symbol, side=side, shares=shares, fill_price=price,
+        commission=0.0, fees=0.0,
+    )
+
+
+def test_apply_fills_preserves_prior_sleeve_tag() -> None:
+    """A held position's sleeve tag survives a reconcile rebuild (buy adds
+    shares, tag stays); a symbol introduced by a fill has no prior tag."""
+
+    prior = [
+        {"symbol": "SPY", "shares": 100.0, "avg_cost": 500.0, "sleeve": "momentum"},
+        {"symbol": "GLD", "shares": 10.0, "avg_cost": 180.0, "sleeve": "risk_parity"},
+    ]
+    fills = [
+        _fill("SPY", "buy", 10.0, 510.0),   # accumulate a tagged holding
+        _fill("EEM", "buy", 5.0, 40.0),     # brand-new symbol, no prior tag
+    ]
+    new_positions, _cash = _apply_fills_to_positions(prior, fills)
+    by_symbol = {p["symbol"]: p for p in new_positions}
+    assert by_symbol["SPY"]["sleeve"] == "momentum"
+    assert by_symbol["SPY"]["shares"] == 110.0
+    assert by_symbol["GLD"]["sleeve"] == "risk_parity"
+    # New symbol from a fill carries no fabricated tag (reader → unclassified).
+    assert "sleeve" not in by_symbol["EEM"]
+
+
+def test_apply_fills_tagless_prior_stays_tagless() -> None:
+    """A pre-B048 prior position (no sleeve key) stays byte-identical —
+    reconcile never invents a tag."""
+
+    prior = [{"symbol": "IEF", "shares": 50.0, "avg_cost": 94.0}]
+    fills = [_fill("IEF", "sell", 10.0, 95.0)]
+    new_positions, _cash = _apply_fills_to_positions(prior, fills)
+    assert new_positions == [{"symbol": "IEF", "shares": 40.0, "avg_cost": 94.0}]

@@ -207,6 +207,31 @@ def test_put_account_inserts_snapshot(initialised_db: str, tmp_path: Path) -> No
     assert symbols == {"SPY", "IEF"}
 
 
+def test_put_account_round_trips_sleeve_tag(initialised_db: str, tmp_path: Path) -> None:
+    """B048 F002: the ui_edit write path persists the optional sleeve tag,
+    and a tagless position reads back as None (schema-tolerant)."""
+
+    client = _authed_client(_settings(tmp_path))
+    body = {
+        "cash": 50_000.0,
+        "base_currency": "USD",
+        "positions": [
+            {"symbol": "SPY", "shares": 100, "avg_cost": 500.0, "sleeve": "momentum"},
+            {"symbol": "GLD", "shares": 10, "avg_cost": 180.0, "sleeve": "risk_parity"},
+            {"symbol": "IEF", "shares": 50, "avg_cost": 94.0},  # no tag
+        ],
+    }
+    response = client.put("/api/execution/account", json=body)
+    assert response.status_code == 200, response.text
+
+    latest = client.get("/api/execution/account/latest").json()
+    by_symbol = {p["symbol"]: p for p in latest["positions"]}
+    assert by_symbol["SPY"]["sleeve"] == "momentum"
+    assert by_symbol["GLD"]["sleeve"] == "risk_parity"
+    # Tagless holding round-trips as null, not a fabricated tag.
+    assert by_symbol["IEF"]["sleeve"] is None
+
+
 def test_put_account_rejects_duplicate_symbols(initialised_db: str, tmp_path: Path) -> None:
     client = _authed_client(_settings(tmp_path))
     body = {
