@@ -6,7 +6,7 @@
       "title": "历史价格表 foundation：price_history 表+repo + backfill job（B045 unified CSV → price_history）+ scope 守门",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【2026-06-07 用户已批：一次做全含历史价格表，见 spec §2】(1) **price_history 表** db/models/price_history.py（symbol/obs_date/close/source/fetched_at；UniqueConstraint(symbol,obs_date)；深每日，与 price_snapshot 分离不重载其 Day P&L 语义）+ alembic 迁移（down_revision=当前 head）+ db/repositories/price_history.py（save_if_new 幂等 / close_on_or_before(symbol,date) / closes_by_symbol_since(symbol,since)）。(2) **backfill job** workbench_api/price_history/（CLI + 可挂 data-refresh timer）：读 B045 unified CSV（<data_root>/snapshots/prices/unified/prices_daily.csv 深历史）→ 写 price_history（master 全 universe symbol）；§12.10 job 读 CSV 写 DB，请求路径只读。(3) **scheduler scope 守门**扩 price_history backfill（边界 r 只读，禁 broker/execution）。(4) pytest ≥8：repo save/close_on_or_before/since；backfill（fake CSV→表正确）；scope 守门含 price_history。(5) Gates：backend pytest ≥ baseline+≥8 / ruff 0 / mypy 0 / 复用既有 secret。(6) 不动：price_snapshot 语义 / risk_panel（F003 用）/ 前端。",
       "design_decisions": [
         "范围（2026-06-07 用户批）：一次做全含历史价格表 foundation，达真实 mark-to-market per-sleeve+master 回撤随时间。",

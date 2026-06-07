@@ -28,13 +28,16 @@ PRICES_PKG = BACKEND_ROOT / "workbench_api" / "prices"
 NEWS_PKG = BACKEND_ROOT / "workbench_api" / "news"
 RECOMMENDATIONS_PKG = BACKEND_ROOT / "workbench_api" / "recommendations"
 DATA_REFRESH_PKG = BACKEND_ROOT / "workbench_api" / "data_refresh"
-# Five scheduler packages are scanned: the market-context fetch (B035), the
+PRICE_HISTORY_PKG = BACKEND_ROOT / "workbench_api" / "price_history"
+# Seven scheduler packages are scanned: the market-context fetch (B035), the
 # AI advisor precompute (B036), the price-snapshot fetch (B037), the news
-# ingest (B038, boundary (q)→(r)), and the recommendations precompute (B044,
-# boundary (r-c) determinstic quant scoring). Boundary (r) was revised in B036
-# — a scheduler may run CI-safety-gated advisor precompute (which imports the
-# LLM gateway); B044 adds quant scoring that imports the ``trade`` package —
-# but NONE may ever reach a trade-EXECUTION surface (broker/order/fills/...).
+# ingest (B038, boundary (q)→(r)), the recommendations precompute (B044,
+# boundary (r-c) deterministic quant scoring), the data-refresh job (B045),
+# and the price-history backfill (B048, reads the B045 unified CSV → DB).
+# Boundary (r) was revised in B036 — a scheduler may run CI-safety-gated
+# advisor precompute (which imports the LLM gateway); B044 adds quant scoring
+# that imports the ``trade`` package — but NONE may ever reach a
+# trade-EXECUTION surface (broker/order/fills/...).
 SCHEDULER_PKGS = (
     MARKET_PKG,
     ADVISOR_PKG,
@@ -42,6 +45,7 @@ SCHEDULER_PKGS = (
     NEWS_PKG,
     RECOMMENDATIONS_PKG,
     DATA_REFRESH_PKG,
+    PRICE_HISTORY_PKG,
 )
 REPO_ROOT = Path(__file__).resolve().parents[4]
 SYSTEMD_DIR = REPO_ROOT / "workbench" / "deploy" / "systemd"
@@ -86,6 +90,16 @@ def _imported_modules(py_path: Path) -> set[str]:
         elif isinstance(node, ast.ImportFrom) and node.module:
             out.add(node.module)
     return out
+
+
+def test_price_history_backfill_in_scheduler_scope() -> None:
+    """B048 F001: the price-history backfill job is a read-only data job
+    (reads the B045 unified CSV, writes price_history). Pin that its
+    package is covered by the boundary-(r) scope guard so a future import
+    of a trade-execution surface there is caught."""
+
+    assert PRICE_HISTORY_PKG in SCHEDULER_PKGS
+    assert PRICE_HISTORY_PKG.is_dir()
 
 
 def test_scheduler_packages_import_no_trade_execution_surface() -> None:
