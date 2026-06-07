@@ -93,6 +93,27 @@ def _alternative_defensive_ticket(master_dd: float) -> AlternativeDefensiveTicke
     )
 
 
+def _build_per_sleeve(real_dd: dict[str, float]) -> list[SleeveDrawdown]:
+    """Merge the strategy-registry sleeve skeleton with the real per-sleeve
+    drawdowns (mirrors ``home._registry_sleeves`` + extras).
+
+    Every registry sleeve renders (drawdown 0.0 when the account holds no
+    position in it) so the UI's per-sleeve table keeps a stable skeleton —
+    e.g. the B025 ``satellite_us_quality`` row stays visible regardless of
+    holdings. Any extra sleeve a position is tagged with (``unclassified``,
+    or a tag outside the registry) is appended after, so a real drawdown is
+    never dropped."""
+
+    from workbench_api.services.strategies import list_strategies
+
+    registry = sorted({s.sleeve for s in list_strategies().strategies})
+    extras = sorted(s for s in real_dd if s not in registry)
+    return [
+        SleeveDrawdown(sleeve=sleeve, drawdown=real_dd.get(sleeve, 0.0))
+        for sleeve in [*registry, *extras]
+    ]
+
+
 def get_risk_panel(
     session: Session,
     *,
@@ -103,10 +124,7 @@ def get_risk_panel(
     # sleeve drawdown read off the same series (one DB pass).
     nav = reconstruct_nav_history(session)
     master_dd = master_drawdown(nav)
-    per_sleeve = [
-        SleeveDrawdown(sleeve=sleeve, drawdown=dd)
-        for sleeve, dd in sorted(per_sleeve_drawdowns(nav).items())
-    ]
+    per_sleeve = _build_per_sleeve(per_sleeve_drawdowns(nav))
     state, kill_switch_triggered = _classify_state(
         master_dd,
         per_sleeve,

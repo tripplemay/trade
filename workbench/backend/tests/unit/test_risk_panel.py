@@ -250,6 +250,27 @@ def test_risk_panel_master_dd_is_mark_to_market(initialised_db: str, tmp_path: P
     assert by_sleeve["momentum"] == pytest.approx(0.12, rel=1e-3)
 
 
+def test_risk_panel_per_sleeve_keeps_registry_skeleton(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """B048 F003 regression: every registry sleeve renders even with no
+    matching position (drawdown 0.0), so the UI's per-sleeve table keeps a
+    stable skeleton — the B025 satellite_us_quality row must stay visible
+    (the b025 bilingual E2E asserts risk-sleeve-satellite_us_quality)."""
+
+    # An account holding only an untagged SPY — no satellite_us_quality position.
+    _seed_snapshot(
+        snap_id="s1", cash=100_000,
+        positions=[{"symbol": "SPY", "shares": 100, "avg_cost": 500}],
+        snapshot_at=datetime(2026, 5, 1, 10, 0, 0),
+    )
+    client = _authed_client(_settings(tmp_path))
+    payload = client.get("/api/execution/risk-panel").json()
+    sleeves = {s["sleeve"] for s in payload["per_sleeve_dd"]}
+    # Registry sleeves all present (B046 F002 set), skeleton stable.
+    assert {"momentum", "risk_parity", "satellite_us_quality", "satellite_hk_china"} <= sleeves
+
+
 def test_risk_panel_degrades_to_cost_without_price_history(
     initialised_db: str, tmp_path: Path
 ) -> None:
