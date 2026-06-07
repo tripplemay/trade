@@ -25,6 +25,9 @@ from trade.data.data_root import (  # type: ignore[import-untyped]
     UNIFIED_FUNDAMENTALS_RELPATH,
     UNIFIED_PRICES_RELPATH,
 )
+from trade.data.us_quality_universe import (  # type: ignore[import-untyped]
+    DEFAULT_FIXTURE_DIR,
+)
 
 from workbench_api.db.models.recommendation_snapshot import (
     DATA_SOURCE_FIXTURE,
@@ -43,6 +46,13 @@ from workbench_api.recommendations.precompute import (
 
 # risk_parity risk assets (SGOV is the defensive asset, excluded from vol).
 _ETF_UNIVERSE = ("SPY", "VEA", "AGG", "GLD", "SGOV", "EEM")
+
+# The full-real test needs the B025 us_quality fixture (prices + fundamentals +
+# universe.csv). It exists in an editable trade install (local dev / repo CI) but
+# NOT when trade is wheel-installed (the workbench backend CI venv / the VM),
+# where ``data/fixtures`` isn't bundled. Skip there — the full-real path is
+# exercised here when available and L2-verified on the VM.
+_FIXTURE_AVAILABLE = (DEFAULT_FIXTURE_DIR / "prices_daily.csv").exists()
 
 
 # ---------------------------------------------------------------------------
@@ -183,6 +193,11 @@ def test_score_master_target_real_daily_path_scores_risk_parity(
     assert sum(result.target_weights.values()) == pytest.approx(1.0, abs=1e-4)
 
 
+@pytest.mark.skipif(
+    not _FIXTURE_AVAILABLE,
+    reason="B025 fixture absent (trade wheel-installed without data/fixtures); "
+    "full-real path is L2-verified on the VM",
+)
 def test_score_master_target_full_real_reaches_data_source_real(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
@@ -192,8 +207,6 @@ def test_score_master_target_full_real_reaches_data_source_real(
     implemented sleeve scores → ``data_source=real`` (B045 F004 #1 goal: real
     fundamentals → us_quality off the stub). On the VM the same wiring reads the
     F001 refresh's live SEC fundamentals instead of this fixture."""
-
-    from trade.data.us_quality_universe import DEFAULT_FIXTURE_DIR  # type: ignore[import-untyped]
 
     monkeypatch.delenv("FORCE_FIXTURE_PATH", raising=False)
 
