@@ -83,4 +83,14 @@
 
 <!-- 2026-06-07: v0.9.36 沉淀完成（B045：venv 多包安装 deploy 静默装不上 + smoke import check 铁律）：B045 F004 Finding #2（--upgrade 同版本 skip）+ S4（--force-reinstall 仍停旧版需手动）。用户批沉淀 README §经验教训「venv 多包安装」子节（铁律 deploy 后必加 smoke import check）+ CHANGELOG v0.9.36。S4 的 durable 修复（诊断 trade wheel 自动装根因 + deploy 后 smoke import check）转 B045-OPS1 ops 批次（用户选先修 S4 再 B046）。disk S1（84% 爬升）继续 project-status 监控；S2/S3（hk_china stub by-design / us_quality 选 SGOV 策略行为）留 B046。 -->
 
+## [2026-06-07] Claude CLI — 来源：B048 F003 实施（kill_switch 阈值统一）
+
+**类型：** 新坑（同一阈值三处副本）
+
+**内容：** kill_switch 阈值在三处各有独立副本：`services/recommendations.py`（0.20）、`services/risk_panel.py`（0.15）、`services/dashboard.py`（0.20）。B048 F003 acceptance 仅授权统一 rec→risk_panel（0.15），已抽 `services/nav_history.KILL_SWITCH_THRESHOLD=0.15` 作单一来源，rec + risk_panel 均引用之。**`dashboard.py` 仍是第三份 0.20 副本**——其 `master_drawdown` 本身是硬编码 0.0 占位（field comment 已注明），且不在 F003 feature-号 grounding 内，故本批未动（铁律 10 防越界）。后续若做 Dashboard 真实化批次，应：①dashboard 引用 nav_history.KILL_SWITCH_THRESHOLD；②dashboard master_drawdown 接 nav_history（去 0.0 占位）；并更新 test_dashboard.py 的 `kill_switch_threshold == 0.2` 断言。
+
+**建议写入：** backlog 候选「Dashboard 真实化」（master_drawdown + 阈值统一）；或 framework §经验教训「同一风控常数多处副本 → 单一来源 + feature-号 grounding 决定本批改几处」。
+
+**状态：** 待确认（B048 done 阶段一并提出）
+
 <!-- 当前无活动候选（待确认条目）。 -->

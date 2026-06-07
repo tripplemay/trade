@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "B048 F011 真实 per-sleeve NAV + 历史价格表 → 安全/风控/合规层 mark-to-market 真实化（里程碑 C 交易安全层真实化，backlog order 2；大批次 5 features）— 让交易闭环安全层从占位变真。来源 2026-06-07 全面占位核查：gate kill_switch 硬编码 pass / risk_panel per-sleeve 镜像占位 + master DD 成本价 / wash_sale 永空，共享 F011 根因（真实 per-sleeve NAV 从未实现）。决策（★用户批）：范围=★一次做全（含历史价格表 foundation，达真实 mark-to-market per-sleeve+master 回撤随时间）。planner 决：历史价格=新 price_history 表（深每日，job 从 B045 unified CSV materialize，不重载 price_snapshot Day P&L 语义）；kill_switch 阈值统一 0.15（rec 0.20→对齐 risk_panel 权威）；估值口径 mark-to-market 全程一致（复用 B046 mark_to_market.py）；历史不足 graceful degrade+标注不蒙混(v0.9.21)。Explore 核查：price_snapshot 已按(symbol,obs_date)累积但语义=Day P&L 最新+前一日→新 price_history 深历史；B045 unified CSV 深历史可回填；sleeve tag B037 加了但 execution 写路径(ui_edit/reconcile)丢失需补；FillJournalEntry 有 symbol/side/price/date wash_sale 可行；per-sleeve 回撤随时间需历史价格重建 NAV 历史(故纳入历史价格表)。5 features：(F001 g)price_history 表+repo+backfill job(B045 CSV→表)+scope 守门；(F002 g)sleeve tag 写路径补齐(PositionEntry+三写路径)+regen api.ts；(F003 g)risk_panel mark-to-market 回撤(master+per-sleeve 重建 NAV 历史)+kill_switch gate 真实化+阈值 0.15；(F004 g)wash_sale 检测(fills+avg_cost)+rec 用真实 flags；(F005 c)L1+L2 验收+signoff。永久硬边界继承：risk/gate 信息性不 gate ticket(B023)/§12.10 job 读 CSV 写 DB 请求只读+§12.10.2 请求路径禁 trade/B023 工作流不破/定位 §1.1 不出收益预测。不做：执行/下单能力/重载 price_snapshot/激活 regime/请求路径 import trade/历史不足蒙混。后续 backlog order：BL-B023-S1 闭环冒烟(order3，用真实 diff+真实安全层)→HK-China→B042 Risk UI(在真风控数据上)→B047→B049 全页面审计。",
   "total_features": 5,
-  "completed_features": 2,
+  "completed_features": 3,
   "fix_rounds": 0,
-  "current_sprint": "F003",
+  "current_sprint": "F004",
   "last_updated": "2026-06-07",
   "reference_docs": [
     "docs/specs/B048-real-risk-safety-layer-spec.md",

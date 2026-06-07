@@ -5,7 +5,7 @@ ticket mode honoring.
 from __future__ import annotations
 
 import time
-from datetime import datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -20,6 +20,7 @@ from workbench_api.auth.jwt_validator import JWT_ALGORITHM
 from workbench_api.db.engine import get_engine
 from workbench_api.db.models.account import Account
 from workbench_api.db.models.account_snapshot import AccountSnapshot
+from workbench_api.db.repositories.price_history import PriceHistoryRepository
 from workbench_api.observability.active_users import active_users
 from workbench_api.settings import Settings, get_settings
 
@@ -206,6 +207,69 @@ def test_risk_panel_red_state_includes_defensive_ticket(
     # The single defensive symbol must be the workbench's B011 proxy.
     assert targets[0]["symbol"] == "SGOV"
     assert "kill-switch" in payload["alternative_defensive_ticket"]["rationale"].lower()
+
+
+# ---------------------------------------------------------------------------
+# B048 F003 — mark-to-market drawdown (master + per-sleeve, over time)
+# ---------------------------------------------------------------------------
+
+
+def _seed_prices(rows: list[tuple[str, date, float]]) -> None:
+    with Session(get_engine()) as session:
+        repo = PriceHistoryRepository(session)
+        for symbol, obs_date, close in rows:
+            repo.save_if_new(
+                symbol=symbol, obs_date=obs_date, close=close,
+                source="b045_unified_csv", fetched_at=datetime(2026, 6, 7, tzinfo=UTC),
+            )
+        session.commit()
+
+
+def test_risk_panel_master_dd_is_mark_to_market(initialised_db: str, tmp_path: Path) -> None:
+    """With price_history present, master DD reflects the market price drop
+    (not the flat cost basis), and valuation_basis is mark_to_market."""
+
+    # Flat shares + flat cash; only the market price falls 12%.
+    pos = [{"symbol": "SPY", "shares": 100, "avg_cost": 500, "sleeve": "momentum"}]
+    _seed_snapshot(
+        snap_id="s1", cash=0.0, positions=pos, snapshot_at=datetime(2026, 5, 1, 10, 0, 0)
+    )
+    _seed_snapshot(
+        snap_id="s2", cash=0.0, positions=pos, snapshot_at=datetime(2026, 5, 2, 10, 0, 0)
+    )
+    _seed_prices([("SPY", date(2026, 5, 1), 500.0), ("SPY", date(2026, 5, 2), 440.0)])
+
+    client = _authed_client(_settings(tmp_path))
+    payload = client.get("/api/execution/risk-panel").json()
+    # 500 → 440 = 12% drawdown, mark-to-market (cost basis would show 0%).
+    assert payload["master_dd"] == pytest.approx(0.12, rel=1e-3)
+    assert payload["valuation_basis"] == "mark_to_market"
+    assert payload["degraded_symbols"] == []
+    # The momentum sleeve carries the same real drawdown (per-sleeve, not mirrored).
+    by_sleeve = {s["sleeve"]: s["drawdown"] for s in payload["per_sleeve_dd"]}
+    assert by_sleeve["momentum"] == pytest.approx(0.12, rel=1e-3)
+
+
+def test_risk_panel_degrades_to_cost_without_price_history(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """No price_history → valuation degrades to cost basis and the symbol is
+    flagged (annotate, don't fabricate)."""
+
+    _seed_snapshot(
+        snap_id="s1", cash=100_000,
+        positions=[{"symbol": "SPY", "shares": 100, "avg_cost": 500}],
+        snapshot_at=datetime(2026, 5, 1, 10, 0, 0),
+    )
+    _seed_snapshot(
+        snap_id="s2", cash=80_000,
+        positions=[{"symbol": "SPY", "shares": 100, "avg_cost": 500}],
+        snapshot_at=datetime(2026, 5, 2, 10, 0, 0),
+    )
+    client = _authed_client(_settings(tmp_path))
+    payload = client.get("/api/execution/risk-panel").json()
+    assert payload["valuation_basis"] == "cost_degraded"
+    assert "SPY" in payload["degraded_symbols"]
 
 
 # ---------------------------------------------------------------------------

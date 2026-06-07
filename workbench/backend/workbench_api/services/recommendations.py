@@ -44,6 +44,11 @@ from workbench_api.schemas.recommendations import (
     TargetPosition,
 )
 from workbench_api.services.mark_to_market import compute_mark_to_market, marks_for
+from workbench_api.services.nav_history import (
+    KILL_SWITCH_THRESHOLD,
+    master_drawdown,
+    reconstruct_nav_history,
+)
 from workbench_api.services.prices_provider import DbPriceProvider, PriceProvider
 
 _logger = logging.getLogger("workbench.recommendations")
@@ -71,7 +76,10 @@ Changing this literal requires updating
 copy. Treat as a contract surface, not an editable string.
 """
 
-DEFAULT_KILL_SWITCH_THRESHOLD: float = 0.20
+# B048 F003: unified onto the risk_panel authority (was 0.20). The
+# kill-switch gate now reads the same threshold as the risk panel so the
+# two surfaces never disagree on whether the switch has tripped.
+DEFAULT_KILL_SWITCH_THRESHOLD: float = KILL_SWITCH_THRESHOLD
 
 
 def _to_news_item(relevance: SleeveNewsRelevance) -> SleeveNewsItem:
@@ -218,14 +226,26 @@ def _build_target_positions(
     return out
 
 
-def _build_gate_checks(total_equity: float) -> list[GateCheck]:
-    """Two placeholder gates so the page's gate panel has something to render."""
+def _build_gate_checks(session: Session, total_equity: float) -> list[GateCheck]:
+    """Build the gate panel's checks.
 
+    B048 F003: the kill-switch gate now reads the **real** master drawdown
+    (mark-to-market NAV history, shared with the risk panel) instead of a
+    hard-coded ``0.00`` pass — it fails when the master DD reaches the
+    unified ``DEFAULT_KILL_SWITCH_THRESHOLD`` (0.15). The gate stays
+    informational (B023 — it does not block ticket generation)."""
+
+    master_dd = master_drawdown(reconstruct_nav_history(session))
+    kill_switch_tripped = master_dd >= DEFAULT_KILL_SWITCH_THRESHOLD
+    comparator = "≥" if kill_switch_tripped else "≤"
     return [
         GateCheck(
             name="kill_switch",
-            status="pass",
-            detail=f"Drawdown 0.00 ≤ threshold {DEFAULT_KILL_SWITCH_THRESHOLD}.",
+            status="fail" if kill_switch_tripped else "pass",
+            detail=(
+                f"Master drawdown {master_dd:.4f} {comparator} threshold "
+                f"{DEFAULT_KILL_SWITCH_THRESHOLD}."
+            ),
         ),
         GateCheck(
             name="min_equity",
@@ -243,7 +263,7 @@ def get_current_recommendations(session: Session) -> RecommendationsResponse:
     return RecommendationsResponse(
         as_of_date=as_of,
         target_positions=_build_target_positions(session),
-        gate_checks=_build_gate_checks(total_equity),
+        gate_checks=_build_gate_checks(session, total_equity),
         # No trade journal in MVP → no heuristic source for wash-sale flags.
         # F010 ships an empty list so the frontend's flag panel can render
         # its "no flags" empty state. F012's backlog page may surface real

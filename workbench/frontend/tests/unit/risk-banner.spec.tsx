@@ -40,6 +40,7 @@ const GREEN: RiskPanelResponse = {
   kill_switch_triggered: false,
   per_sleeve_dd: [{ sleeve: "master", drawdown: 0.01 }],
   slippage_trend_3m_bps: 12.3,
+  valuation_basis: "mark_to_market",
   alternative_defensive_ticket: null,
 };
 
@@ -57,9 +58,7 @@ const RED: RiskPanelResponse = {
   kill_switch_triggered: true,
   per_sleeve_dd: [{ sleeve: "master", drawdown: 0.2 }],
   alternative_defensive_ticket: {
-    target_positions: [
-      { symbol: "SGOV", target_weight: 1.0, rationale: "kill-switch tripped" },
-    ],
+    target_positions: [{ symbol: "SGOV", target_weight: 1.0, rationale: "kill-switch tripped" }],
     rationale: "Master drawdown 20% ≥ kill-switch threshold (15%).",
   },
 };
@@ -104,8 +103,7 @@ interface TicketMockState {
 
 function buildTicketFetch(state: TicketMockState): typeof fetch {
   return vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-    const url =
-      typeof input === "string" ? input : (input as Request).url ?? input.toString();
+    const url = typeof input === "string" ? input : ((input as Request).url ?? input.toString());
     const method = init?.method ?? "GET";
     let body: unknown = null;
     if (init?.body && typeof init.body === "string") {

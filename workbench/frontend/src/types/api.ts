@@ -1811,6 +1811,18 @@ export interface components {
              * @description Rolling 3-month avg slippage bps from /slippage-analytics.
              */
             slippage_trend_3m_bps?: number | null;
+            /**
+             * Valuation Basis
+             * @description B048 F003: 'mark_to_market' when every NAV-history point priced from price_history; 'cost_degraded' when ≥1 snapshot date predated price coverage and fell back to cost basis.
+             * @default mark_to_market
+             * @enum {string}
+             */
+            valuation_basis: "mark_to_market" | "cost_degraded";
+            /**
+             * Degraded Symbols
+             * @description Symbols whose drawdown valuation fell back to cost basis.
+             */
+            degraded_symbols?: string[];
             /** @description Populated only when state == 'red'. The defensive target portfolio the user can choose instead of the normal ticket. */
             alternative_defensive_ticket?: components["schemas"]["AlternativeDefensiveTicket"] | null;
         };

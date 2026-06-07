@@ -18,7 +18,8 @@ from __future__ import annotations
 
 import time
 from collections.abc import Iterable
-from datetime import date
+from datetime import date, datetime
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -303,3 +304,58 @@ def test_export_ticket_path_includes_as_of_date(
     ).json()
     assert "2026-05-17" in payload["path"]
     assert payload["path"].endswith("order-ticket-2026-05-17.md")
+
+
+# --- B048 F003: kill_switch gate reads the real master drawdown -----------
+
+
+def _seed_two_snapshots(*, peak_cash: float, latest_cash: float) -> None:
+    """Two account snapshots so nav_history has a peak + latest. With no
+    price_history present, valuation degrades to cost basis (= cash here)."""
+
+    from sqlalchemy.orm import Session
+
+    with Session(get_engine()) as session:
+        session.add(
+            AccountSnapshot(
+                id="ks-peak", snapshot_at=datetime(2026, 5, 1, 10, 0, 0),
+                cash=Decimal(str(peak_cash)), base_currency="USD",
+                positions=[], source="bootstrap",
+                created_at=datetime(2026, 5, 1, 10, 0, 0),
+            )
+        )
+        session.add(
+            AccountSnapshot(
+                id="ks-now", snapshot_at=datetime(2026, 5, 2, 10, 0, 0),
+                cash=Decimal(str(latest_cash)), base_currency="USD",
+                positions=[], source="bootstrap",
+                created_at=datetime(2026, 5, 2, 10, 0, 0),
+            )
+        )
+        session.commit()
+
+
+def test_kill_switch_gate_fails_on_real_drawdown(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """100k → 80k = 20% master drawdown ≥ 0.15 → kill_switch gate FAILS
+    (B048 F003: real DD, not a hard-coded pass), at the unified 0.15."""
+
+    _seed_two_snapshots(peak_cash=100_000.0, latest_cash=80_000.0)
+    client = _authed_client(tmp_path)
+    payload = client.get("/api/recommendations/current").json()
+    gates = {g["name"]: g for g in payload["gate_checks"]}
+    assert gates["kill_switch"]["status"] == "fail"
+    assert "0.15" in gates["kill_switch"]["detail"]
+
+
+def test_kill_switch_gate_passes_without_drawdown(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """Flat equity → 0% drawdown → kill_switch gate passes."""
+
+    _seed_two_snapshots(peak_cash=100_000.0, latest_cash=100_000.0)
+    client = _authed_client(tmp_path)
+    payload = client.get("/api/recommendations/current").json()
+    gates = {g["name"]: g for g in payload["gate_checks"]}
+    assert gates["kill_switch"]["status"] == "pass"

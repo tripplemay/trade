@@ -1,4 +1,4 @@
-"""Risk-panel service (B023 F006).
+"""Risk-panel service (B023 F006; B048 F003 mark-to-market drawdown).
 
 The workbench is research-only. The risk panel is informational — it
 does not gate ticket generation; instead it tells the user "you may
@@ -7,14 +7,15 @@ trips (master DD ≥ ``kill_switch_threshold``), the response carries
 an ``alternative_defensive_ticket`` so the frontend can offer the
 normal-vs-defensive radio choice.
 
-Drawdown derivation: master DD is computed from the
-``account_snapshot`` history as (peak − latest) / peak on the
-``cash + Σ shares × avg_cost`` series. We do not currently track
-per-sleeve nav independently (the recommendations service emits
-synthetic B013/B014/B015/B016 sleeve symbols pre-F011), so
-``per_sleeve_dd`` falls back to a single ``master`` entry mirroring
-``master_dd``. F011 wires real per-sleeve drawdowns; this scaffolding
-keeps the schema stable.
+Drawdown derivation (B048 F003): both master and per-sleeve drawdowns
+are **mark-to-market over time** — :mod:`nav_history` rebuilds a NAV
+series from the ``account_snapshot`` history, valuing each snapshot's
+positions at the ``price_history`` close on-or-before its date, then
+takes peak-to-latest. This replaces (a) the pre-F003 cost-basis master
+series and (b) the pre-F011 placeholder that mirrored the master
+drawdown onto a fixed sleeve list. When price history is missing for a
+snapshot date the point degrades to cost basis and the symbol is flagged
+in ``degraded_symbols`` (v0.9.21 — annotate, don't fabricate).
 """
 
 from __future__ import annotations
@@ -22,23 +23,27 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from workbench_api.db.models.account_snapshot import AccountSnapshot
 from workbench_api.schemas.risk_panel import (
     AlternativeDefensiveTicket,
     DefensivePosition,
     RiskPanelResponse,
     SleeveDrawdown,
 )
+from workbench_api.services.nav_history import (
+    KILL_SWITCH_THRESHOLD,
+    master_drawdown,
+    per_sleeve_drawdowns,
+    reconstruct_nav_history,
+)
 from workbench_api.services.reconcile import get_slippage_analytics
 
 _logger = logging.getLogger("workbench.risk_panel")
 
-# Defaults from B011's risk policy. The kill_switch is the hard gate;
-# per_sleeve is the "yellow advisory" trigger.
-DEFAULT_KILL_SWITCH_THRESHOLD: float = 0.15
+# Defaults from B011's risk policy. The kill_switch is the hard gate
+# (shared authority in nav_history); per_sleeve is the "yellow advisory".
+DEFAULT_KILL_SWITCH_THRESHOLD: float = KILL_SWITCH_THRESHOLD
 DEFAULT_PER_SLEEVE_THRESHOLD: float = 0.08
 
 # The single defensive symbol the alternative ticket allocates to. SGOV
@@ -47,59 +52,6 @@ DEFAULT_PER_SLEEVE_THRESHOLD: float = 0.08
 # the user is fully out of risk assets; F011 may expand this to a
 # multi-row defensive portfolio.
 DEFENSIVE_SYMBOL: str = "SGOV"
-
-
-def _snapshot_equity(snapshot: AccountSnapshot) -> float:
-    """Sum cash + Σ (shares × avg_cost) on a snapshot's positions JSON."""
-
-    total = float(snapshot.cash)
-    for entry in snapshot.positions or []:
-        if not isinstance(entry, dict):
-            continue
-        try:
-            shares = float(entry.get("shares", 0.0))
-            avg_cost = float(entry.get("avg_cost", 0.0))
-        except (TypeError, ValueError):
-            continue
-        total += shares * avg_cost
-    return total
-
-
-def _master_drawdown_from_history(session: Session) -> float:
-    """Equity-peak-to-latest drawdown across all account_snapshot rows.
-
-    Returns a positive fraction (0.07 = 7%). Returns 0.0 when fewer
-    than 2 snapshots exist (no peak to measure against).
-    """
-
-    stmt = select(AccountSnapshot).order_by(AccountSnapshot.snapshot_at)
-    snapshots = list(session.execute(stmt).scalars().all())
-    if len(snapshots) < 2:
-        return 0.0
-    equities = [_snapshot_equity(snap) for snap in snapshots]
-    if not equities:
-        return 0.0
-    peak = max(equities[:-1])  # exclude the very latest from peak comparison
-    latest = equities[-1]
-    if peak <= 0:
-        return 0.0
-    drawdown = (peak - latest) / peak
-    return max(0.0, drawdown)
-
-
-def _per_sleeve_drawdowns(master_dd: float) -> list[SleeveDrawdown]:
-    """Placeholder until F011 wires real per-sleeve nav tracking.
-
-    We surface the ``master`` row plus a ``satellite_us_quality`` row so
-    the schema stays well-defined and the frontend's per-sleeve table
-    renders the new B025 sleeve. The satellite_us_quality drawdown is a
-    proxy of the master drawdown until F011 ships per-sleeve nav tracking.
-    """
-
-    return [
-        SleeveDrawdown(sleeve="master", drawdown=master_dd),
-        SleeveDrawdown(sleeve="satellite_us_quality", drawdown=master_dd),
-    ]
 
 
 def _classify_state(
@@ -147,8 +99,14 @@ def get_risk_panel(
     kill_switch_threshold: float = DEFAULT_KILL_SWITCH_THRESHOLD,
     per_sleeve_threshold: float = DEFAULT_PER_SLEEVE_THRESHOLD,
 ) -> RiskPanelResponse:
-    master_dd = _master_drawdown_from_history(session)
-    per_sleeve = _per_sleeve_drawdowns(master_dd)
+    # B048 F003: rebuild the mark-to-market NAV history once; master + every
+    # sleeve drawdown read off the same series (one DB pass).
+    nav = reconstruct_nav_history(session)
+    master_dd = master_drawdown(nav)
+    per_sleeve = [
+        SleeveDrawdown(sleeve=sleeve, drawdown=dd)
+        for sleeve, dd in sorted(per_sleeve_drawdowns(nav).items())
+    ]
     state, kill_switch_triggered = _classify_state(
         master_dd,
         per_sleeve,
@@ -166,6 +124,8 @@ def get_risk_panel(
         kill_switch_triggered=kill_switch_triggered,
         per_sleeve_dd=per_sleeve,
         slippage_trend_3m_bps=analytics.rolling_avg_bps,
+        valuation_basis=("cost_degraded" if nav.degraded else "mark_to_market"),
+        degraded_symbols=list(nav.degraded_symbols),
         alternative_defensive_ticket=(
             _alternative_defensive_ticket(master_dd) if kill_switch_triggered else None
         ),

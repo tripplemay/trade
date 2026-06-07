@@ -54,6 +54,18 @@ class RiskPanelResponse(BaseModel):
         default=None,
         description="Rolling 3-month avg slippage bps from /slippage-analytics.",
     )
+    valuation_basis: Literal["mark_to_market", "cost_degraded"] = Field(
+        default="mark_to_market",
+        description=(
+            "B048 F003: 'mark_to_market' when every NAV-history point priced "
+            "from price_history; 'cost_degraded' when ≥1 snapshot date "
+            "predated price coverage and fell back to cost basis."
+        ),
+    )
+    degraded_symbols: list[str] = Field(
+        default_factory=list,
+        description="Symbols whose drawdown valuation fell back to cost basis.",
+    )
     alternative_defensive_ticket: AlternativeDefensiveTicket | None = Field(
         default=None,
         description=(

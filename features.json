@@ -29,7 +29,7 @@
       "title": "risk_panel mark-to-market 回撤（master + per-sleeve 随时间，重建 NAV 历史）+ kill_switch gate 真实化 + 阈值统一 0.15",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) **重建 NAV 历史**：对每历史 AccountSnapshot（date D, positions）用 price_history.close_on_or_before(symbol,D) mark-to-market 每持仓 → snapshot NAV(D)；按 sleeve tag 分组 → per-sleeve NAV(D)；复用 mark_to_market.py(B046)。(2) **master DD** = peak-to-latest on mark-to-market NAV 历史（去成本价）；**per-sleeve DD** = 各 sleeve NAV 历史 peak-to-latest（去镜像占位）。(3) **历史价格不足** degrade（退成本价/剔除该点 + 标注，v0.9.21 不蒙混），DD 窗口限可 mark 范围。(4) _classify_state kill-switch/yellow 用真实 mark-to-market master/per-sleeve DD。(5) **kill_switch gate 真实化** recommendations.py _build_gate_checks 接真实 master DD（调 risk_panel 或共享 drawdown 函数）→ status 反映真实 DD vs 阈值；**阈值统一 0.15**（去 rec 的 0.20，对齐 risk_panel 权威）。(6) pytest：master/per-sleeve DD mark-to-market（已知历史价格+持仓→已知 DD；历史不足 degrade）；kill_switch gate 真实 DD + 阈值 0.15。(7) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / risk schema 不破 / §12.10.2 守门不破。(8) 不动：risk panel 信息性（不 gate ticket）/ master 评分 / 前端 Risk UI 结构（B042）。",
       "design_decisions": [
         "估值口径（planner 决）：mark-to-market 全程一致，复用 B046 mark_to_market.py，与 execution diff 口径一致。",
