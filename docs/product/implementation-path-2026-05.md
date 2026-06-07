@@ -44,8 +44,9 @@
 - 市场 / 行业 / 宏观新闻聚合（Stream 2）
 - 4 sleeve breakdown 基于真数据（Stream 1 完成）
 - Reports / Recommendations 走 Robinhood-style 简化呈现（Stream 5）
+- **用户交易闭环可用（2026-06-07 用户拍板新增）**：真实评分 → 真实 target vs current diff → order ticket（系统出"指示"）→ 用户手动 IBKR 下单 → fills → reconcile → journal 端到端跑通（B023 框架 + 真实评分喂入）。系统全程不下单、不连券商。
 
-参见 `docs/product/positioning-2026-05.md` §1 / `user-personas-and-journeys-2026-05.md` §2 Daily Journey 完整 Home 页 mockup。
+参见 `docs/product/positioning-2026-05.md` §1 / `user-personas-and-journeys-2026-05.md` §2 Daily Journey + §3 Quarterly Journey / `docs/product/progress-review-2026-06.md`（里程碑 C 重定义 + 交易闭环剩余工作序列）。
 
 ## 4. 4 Phase 划分
 
@@ -170,9 +171,9 @@ B027 → B028 → B029 → B030 (Phase 1 Real Data，严格顺序)
 
 | 里程碑 | 完成条件 | 价值释放 | 触发的下游 |
 |---|---|---|---|
-| **A — Layer 0→1** | Phase 1 全 4 batch；全 sleeve 真数据 | 回测指标第一次可信；Master target 可作真实参考 | 可启动 Phase 2 + Phase 3 |
+| **A — Layer 0→1** | Phase 1 全 4 batch；全 sleeve 真数据**进回测** | 回测指标第一次可信（注：真实评分进**线上推荐**归里程碑 C，见 progress-review §4）| 可启动 Phase 2 + Phase 3 |
 | **B — AI advisory 框架** | Phase 2 全 6 batch；AI MVP + safety eval | AI 建议必带引用 + 永无预测数字 + CI gate | 可整合到 Home（B039）|
-| **C — Layer 0.5 完整交付** | Phase 3 全 7 batch | 每日 Home 高频可用 + UI 简化 | 进入 Phase 4 长尾按需 |
+| **C — Layer 0.5 完整交付（2026-06-07 重定义）** | Phase 3 UI（B037-B043）+ **真实评分基础（B044/B045/B046）** + **用户交易闭环端到端可用（真实评分→diff→ticket→fills→reconcile→journal，BL-B023-S1 生产冒烟）** + HK-China 10% 决策 | 每日 Home 高频可用 + UI 简化 + **可按系统指示手动交易** | 进入 Phase 4 长尾按需 |
 
 ## 7. 永久边界（贯穿全程，继承 framework v0.9.28）
 
