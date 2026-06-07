@@ -42,7 +42,7 @@
       "title": "Codex L1 + L2 真 VM 验收（刷新 timer 自动接线 + 真机刷新写 unified 数据 + precompute data_source=real 全 sleeve + /current 真实权重）+ signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "L1 (CI 内)：F001+F002+F003 全 generator 验收脚本跑通 — backend pytest ≥ baseline+≥8 / ruff / mypy；scheduler scope 守门含刷新 job；§12.10.2 请求路径无 trade import 守门仍绿；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）；(2) /api/debug/recent-errors={count:0,records:[]}；(3) **workbench-data-refresh.timer 经 B037-OPS1 deploy 循环+sudoers 通配符自动 enabled+active（无手装、无 warn）**（§24）；(4) **手动 trigger workbench-data-refresh.service → /var/lib/workbench/data/snapshots/unified/ 有真实 prices_daily.csv + fundamentals.csv**（记录抓了哪些 symbol/行数/日期范围）；(5) **手动 trigger workbench-recommendations.service（B044）→ recommendation_snapshot data_source=real（或 mixed 明细）+ risk_parity/us_quality 真实评分非 stub**（对比 B044 fixture，记录权重变化 + sleeve_unavailable 是否消失）；(6) **GET /api/recommendations/current authenticated 200 全 sleeve 真实权重**（非仅 momentum real）+ anon 401；(7) Production HEAD ≡ main HEAD；(8) B026 banner 仍 absent。Signoff: docs/test-reports/B045-real-data-refresh-pipeline-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（§24 timer 接线 + §Production/HEAD + §Post-signoff Deploy + **data_source real/mixed 显式声明 + 与 B044 fixture 对比 + disk 占用记录接 S1**）。Framework 候选：data-root env 跨 repo-root/VM 适配若出新通用规律记 §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
