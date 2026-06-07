@@ -20,7 +20,7 @@
       "title": "trade loaders data-root env 覆盖（读 VM store / repo-root 兼容）+ precompute 设 env + fixture fallback 保留",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) **loader data-root 覆盖**：trade loaders（trade/data/loader.py + us_quality_universe.py）读 unified CSV 路径加 env 覆盖（如 WORKBENCH_DATA_ROOT）：env 设则读该 root 下 snapshots/unified/，否则保持现有 repo-root 行为（本地/CI 不变）。(2) **precompute + 刷新 job 设 env** 指向 VM store（/var/lib/workbench/data/snapshots/unified/）→ loaders 读真实数据。(3) **fixture fallback 保留**：数据缺→fixture + data_source 标记（F003 用）；本地 FORCE_FIXTURE 等开关不动。(4) pytest：loader data-root env 覆盖双路径（env 设→读 VM store / 未设→repo-root 不变）；既有 trade loader 本地行为不破。(5) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0（trade/ 改动若纳入 lint scope 单独处理）。(6) 不动：master 评分逻辑 / B044 precompute→snapshot 架构（仅喂数据路径）/ 前端。",
       "design_decisions": [
         "data-root env 覆盖（planner 决）：env 设→VM store / 未设→repo-root 本地 CI 兼容；§12.10 数据自包含（VM 上 repo-root 不存在的适配）。"
