@@ -135,6 +135,32 @@ def test_process_next_saves_error_on_engine_failure(
         assert row.finished_at is not None
 
 
+def test_process_next_records_structured_error_kind(
+    initialised_db: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """B047-OPS2 F001 — a classified engine failure stores error_kind so the
+    frontend maps a friendly bilingual message (not the raw exception)."""
+
+    with Session(get_engine()) as setup:
+        run = BacktestRunRepository(setup).enqueue(strategy_id="momentum", params={})
+        setup.commit()
+        run_id = run.run_id
+
+    def _insufficient(_run: object) -> dict[str, object]:
+        raise worker_mod.BacktestWorkerError(
+            "insufficient price history for any signal date in range: no valid "
+            "volatility estimates for risk assets"
+        )
+
+    monkeypatch.setattr(worker_mod, "run_backtest_job", _insufficient)
+    with Session(get_engine()) as session:
+        assert worker_mod.process_next(session) is True
+        row = BacktestRunRepository(session).get_by_run_id(run_id)
+        assert row is not None
+        assert row.status == STATUS_ERROR
+        assert row.error_kind == "insufficient_history"
+
+
 def test_process_next_empty_queue_returns_false(initialised_db: str) -> None:
     with Session(get_engine()) as session:
         assert worker_mod.process_next(session) is False

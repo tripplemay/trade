@@ -118,20 +118,31 @@ class BacktestRunRepository(Repository[BacktestRun, str]):
         row.trades = trades
         row.report_markdown = report_markdown
         row.error = None
+        row.error_kind = None
         row.finished_at = finished_at or _now()
         self._session.flush()
         return row
 
     def save_error(
-        self, run_id: str, error: str, *, finished_at: datetime | None = None
+        self,
+        run_id: str,
+        error: str,
+        *,
+        error_kind: str | None = None,
+        finished_at: datetime | None = None,
     ) -> BacktestRun | None:
-        """Mark the run ``error`` with a message."""
+        """Mark the run ``error`` with a message + structured ``error_kind``.
+
+        ``error_kind`` (B047-OPS2 F001) is the stable code the frontend i18n
+        maps to a bilingual friendly message; ``error`` keeps the raw text for
+        diagnostics / logs."""
 
         row = self.get_by_run_id(run_id)
         if row is None:
             return None
         row.status = STATUS_ERROR
         row.error = error
+        row.error_kind = error_kind
         row.finished_at = finished_at or _now()
         self._session.flush()
         return row

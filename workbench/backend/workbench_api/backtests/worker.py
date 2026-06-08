@@ -32,6 +32,7 @@ from typing import Any, Protocol
 
 from sqlalchemy.orm import Session, sessionmaker
 
+from workbench_api.backtests.error_kinds import classify_error_kind
 from workbench_api.backtests.mapping import (
     map_allocations,
     map_equity,
@@ -220,7 +221,11 @@ def process_next(session: Session) -> bool:
     except Exception as exc:  # noqa: BLE001 — any engine failure → error state
         logger.exception("backtest_worker_run_failed", extra={"run_id": run_id})
         session.rollback()
-        repo.save_error(run_id, f"{type(exc).__name__}: {exc}")
+        repo.save_error(
+            run_id,
+            f"{type(exc).__name__}: {exc}",
+            error_kind=classify_error_kind(exc),
+        )
         session.commit()
         return True
     repo.save_result(

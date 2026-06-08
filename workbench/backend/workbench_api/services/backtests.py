@@ -16,9 +16,13 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from workbench_api.db.models.backtest_run import STATUS_QUEUED, BacktestRun
+from workbench_api.db.repositories.backtest_data_window import (
+    BacktestDataWindowRepository,
+)
 from workbench_api.db.repositories.backtest_run import BacktestRunRepository
 from workbench_api.schemas.backtests import (
     AllocationBar,
+    BacktestDataRangeResponse,
     BacktestMetrics,
     BacktestRunRequest,
     BacktestRunResponse,
@@ -65,6 +69,23 @@ def get_backtest(session: Session, run_id: str) -> BacktestRunResponse | None:
     return _to_response(row)
 
 
+def get_data_range(session: Session) -> BacktestDataRangeResponse:
+    """Read the real data-coverage window (request-path, read-only).
+
+    Reads the ``backtest_data_window`` singleton the data-refresh job writes —
+    NEVER imports ``trade`` (§12.10.2). Returns all-``null`` fields when no
+    data-refresh has run yet (empty state → frontend shows "run data refresh")."""
+
+    window = BacktestDataWindowRepository(session).get_window()
+    if window is None:
+        return BacktestDataRangeResponse()
+    return BacktestDataRangeResponse(
+        data_start=window.data_start.isoformat(),
+        data_end=window.data_end.isoformat(),
+        min_usable_start=window.first_usable_signal_date.isoformat(),
+    )
+
+
 def _to_response(row: BacktestRun) -> BacktestRunResponse:
     metrics = BacktestMetrics(**row.metrics) if row.metrics else None
     return BacktestRunResponse(
@@ -76,4 +97,5 @@ def _to_response(row: BacktestRun) -> BacktestRunResponse:
         trades=[BacktestTrade(**t) for t in (row.trades or [])],
         report_markdown=row.report_markdown,
         error=row.error,
+        error_kind=row.error_kind,
     )

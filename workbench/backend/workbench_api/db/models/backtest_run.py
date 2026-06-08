@@ -67,6 +67,10 @@ class BacktestRun(Base):
     )
     report_markdown: Mapped[str | None] = mapped_column(Text, nullable=True)
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # B047-OPS2 F001 — structured error classification (insufficient_history /
+    # no_signal_dates / data_unavailable / unknown) so the frontend maps a
+    # bilingual friendly message instead of leaking the raw English exception.
+    error_kind: Mapped[str | None] = mapped_column(String(32), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     finished_at: Mapped[datetime | None] = mapped_column(

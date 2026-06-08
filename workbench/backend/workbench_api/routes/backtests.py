@@ -16,10 +16,15 @@ from workbench_api.auth.dependency import require_authenticated_user
 from workbench_api.auth.jwt_validator import AuthenticatedUser
 from workbench_api.db.session import SessionDep
 from workbench_api.i18n import t
-from workbench_api.schemas.backtests import BacktestRunRequest, BacktestRunResponse
+from workbench_api.schemas.backtests import (
+    BacktestDataRangeResponse,
+    BacktestRunRequest,
+    BacktestRunResponse,
+)
 from workbench_api.services.backtests import (
     UnknownStrategyError,
     get_backtest,
+    get_data_range,
     run_backtest,
 )
 
@@ -41,6 +46,18 @@ def run_backtest_route(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=t("backtest.unknown_strategy", id=str(exc)),
         ) from exc
+
+
+@router.get("/data-range", response_model=BacktestDataRangeResponse)
+def get_data_range_route(
+    session: SessionDep,
+    _user: AuthenticatedUserDep,
+) -> BacktestDataRangeResponse:
+    """Expose the real data-coverage window (read-only; never imports ``trade``,
+    §12.10.2). Registered before ``/{run_id}`` so the literal path is not
+    shadowed by the dynamic segment."""
+
+    return get_data_range(session)
 
 
 @router.get("/{run_id}", response_model=BacktestRunResponse)

@@ -281,7 +281,7 @@ PY
 # migration drift that leaves the schema short of these 6 tables fails
 # the deploy here, before the symlink flip + service restart.
 if [[ -n "${WORKBENCH_DB_URL:-}" ]]; then
-  echo "→ verifying schema (B021/B022/B023 + B034-B048 incl. price_history + B047 backtest_run/investment_report)"
+  echo "→ verifying schema (B021/B022/B023 + B034-B048 incl. price_history + B047 backtest_run/investment_report + B047-OPS2 backtest_data_window)"
   "${VENV_PYTHON}" - <<'PY'
 import os
 import sys
@@ -316,6 +316,11 @@ required = {
     # concretely here (belt-and-suspenders to the alembic==head assert above).
     "backtest_run",
     "investment_report",
+    # B047-OPS2 F001 — 0014 backtest_data_window (the data-coverage window the
+    # request-path GET /api/backtests/data-range reads so the frontend picks a
+    # valid default range). A short schema here means the backtest page falls
+    # back to the empty state — fail the deploy concretely.
+    "backtest_data_window",
 }
 missing = required - present
 if missing:

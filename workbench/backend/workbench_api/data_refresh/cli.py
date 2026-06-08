@@ -18,10 +18,15 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 from workbench_api.data_refresh.refresh import RefreshSummary, run_refresh
+from workbench_api.data_refresh.window import DataWindow, compute_data_window
 
-# ~2 years so risk_parity (120-day daily vol) + global_etf_momentum (9-month)
-# windows have enough history on the latest signal date.
-DEFAULT_LOOKBACK_DAYS = 730
+# B047-OPS2 F001 (L4 deep backfill): ~5 years. risk_parity (120-day daily vol)
+# + global_etf_momentum (~9-month) windows need history BEFORE the earliest
+# usable signal date, so a 2-year window left only ~1.3 years of usable band and
+# the default range fell off the front (open-the-box failure). 5 years gives the
+# user a multi-year usable band and heals the B048 S1 degenerate-curve watch.
+# Disk impact is small (~2.7 MB unified CSV at 5 years).
+DEFAULT_LOOKBACK_DAYS = 1825
 DEFAULT_DATA_ROOT = "/var/lib/workbench/data"
 
 LoaderFactory = Callable[[], tuple[object, object]]
@@ -81,6 +86,31 @@ def fetch_main(
     )
 
 
+def _persist_data_window(window: DataWindow) -> None:
+    """Upsert the singleton coverage window the request path exposes (L2).
+
+    Imported lazily so a CSV-only rehearsal / test never needs the DB stack."""
+
+    from sqlalchemy.orm import sessionmaker
+
+    from workbench_api.db.engine import get_engine
+    from workbench_api.db.repositories.backtest_data_window import (
+        BacktestDataWindowRepository,
+    )
+
+    factory = sessionmaker(bind=get_engine(), autoflush=False, future=True)
+    session = factory()
+    try:
+        BacktestDataWindowRepository(session).upsert_window(
+            data_start=window.data_start,
+            data_end=window.data_end,
+            first_usable_signal_date=window.first_usable_signal_date,
+        )
+        session.commit()
+    finally:
+        session.close()
+
+
 def main(argv: list[str] | None = None) -> int:
     logging.basicConfig(
         level=logging.INFO,
@@ -96,6 +126,35 @@ def main(argv: list[str] | None = None) -> int:
         f"fundamental_symbols={summary.fundamental_symbols} "
         f"fundamental_rows={summary.fundamental_rows} errors={summary.errors}"
     )
+
+    # B047-OPS2 F001 (L2) — record the real coverage window so the request-path
+    # GET /api/backtests/data-range can expose it (and the frontend can pick a
+    # valid default range + clamp the picker). The CSV is the primary deliverable
+    # and is already written above; the DB write is secondary, so it runs after.
+    #
+    # §12.11.1 entry-level env guard: this entry now WRITES the prod DB, so guard
+    # before the write — a bare hand-run without WORKBENCH_DB_URL must hard-fail
+    # loudly (::error::, non-zero) rather than silently write the window to the
+    # dev scratch DB while the API reads prod.
+    from workbench_api.db.require_production_db import (
+        ScratchDatabaseError,
+        require_production_db,
+    )
+
+    window = compute_data_window(Path(summary.prices_path))
+    if window is not None:
+        try:
+            require_production_db(entrypoint="data-refresh")
+        except ScratchDatabaseError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        _persist_data_window(window)
+        print(
+            "data window — "
+            f"data_start={window.data_start.isoformat()} "
+            f"data_end={window.data_end.isoformat()} "
+            f"first_usable_signal_date={window.first_usable_signal_date.isoformat()}"
+        )
     return 0 if summary.errors == 0 else 1
 
 

@@ -71,3 +71,27 @@ class BacktestRunResponse(BaseModel):
     trades: list[BacktestTrade] = Field(default_factory=list)
     report_markdown: str | None = None
     error: str | None = None
+    error_kind: str | None = Field(
+        default=None,
+        description=(
+            "B047-OPS2 — structured failure code (insufficient_history / "
+            "no_signal_dates / data_unavailable / unknown); the frontend maps it "
+            "to a bilingual friendly message instead of showing ``error``."
+        ),
+    )
+
+
+class BacktestDataRangeResponse(BaseModel):
+    """GET /api/backtests/data-range payload (B047-OPS2 F001).
+
+    The real backtest data-coverage window the data-refresh job recorded. The
+    frontend uses it to pick a valid default range (``end=data_end``,
+    ``start=max(min_usable_start, data_end−1y)``) and clamp the date picker. All
+    fields are ``null`` when no data-refresh has run yet (empty state)."""
+
+    data_start: str | None = Field(default=None, description="Earliest ISO date in coverage.")
+    data_end: str | None = Field(default=None, description="Latest ISO date in coverage.")
+    min_usable_start: str | None = Field(
+        default=None,
+        description="Earliest ISO start a backtest may use (lookback-safe floor).",
+    )
