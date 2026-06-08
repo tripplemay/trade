@@ -19,7 +19,7 @@
       "title": "Codex L2 真 VM 验收：fresh deploy 后 migrations 自动 apply（alembic==head 无需手动）+ 表存在 + 断言跑过 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "L1 (CI 内)：F001 验收脚本跑通 — backend pytest 不破 / ruff / mypy（如有 py 改动）；deploy 守门（alembic upgrade + assert-head 存在）；artifact grep secret 泄漏=0。L2 (真 VM)：(1) dispatch fresh deploy（gh workflow run \"Workbench Deploy\"）→ deploy log 显示 alembic upgrade + **alembic==head 断言跑过**；(2) **prod DB alembic current == head（无需手动 alembic upgrade head）**——对比 B048 Finding #1 的需手动；(3) **price_history（0011）+ 0007-0011 全部表存在**（market_context/advisor/prices/recommendation_snapshot/price_history）；(4) curl /api/health 200 + 依赖这些表的路由（risk_panel/recommendations/current）正常 + /api/debug/recent-errors={count:0}；(5) HEAD≡main + B026 absent。Signoff: docs/test-reports/B048-OPS1-alembic-deploy-reliability-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（§Production/HEAD + §Post-signoff Deploy + **§B048 Finding #1 / Soft-watch S2 resolved**）。Framework 候选：alembic-assert-head-after-deploy 若成通用部署规约（同 smoke import check 家族）记 §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
