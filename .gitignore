@@ -49,3 +49,8 @@ logs/
 .DS_Store
 *.swp
 *.swo
+
+# Local editor / SQLite transient artifacts
+.obsidian/
+*.db-shm
+*.db-wal
