@@ -32,7 +32,7 @@
       "title": "Codex L1+L2 真 VM——深回填落 5 年 + data-range API + 默认范围 Run 成功非退化 + 无效范围友好提示 + picker 钳制 + B023 不破 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "L1 (CI 内)：F001+F002 全门禁——backend pytest（data-refresh 覆盖窗口 / data-range API / worker error-kind / cli 1825）+ frontend vitest（动态默认 / picker 钳制 / error-kind 双语 / 空态）+ ruff/mypy/lint/typecheck/Playwright；§12.10.2 守门（data-range 请求路径无 trade）；no-execution 守门；i18n parity；artifact grep secret=0；alembic head（若加表）。L2 (真 VM)：(1) **data-refresh 深回填**：触发 `systemctl start workbench-data-refresh.service`（或确认 02:30 timer 跑过）→ unified CSV 覆盖 ~5 年（或 Tiingo 可达最长）+ data_start 据实；(2) **GET /api/backtests/data-range** 返合理 `{data_start, data_end, min_usable_start}`；(3) ★**默认范围点 Run→真实非退化结果**（前端默认范围落可用带；POST→轮询→done，equity 点数 >> 2、sharpe/max_drawdown 非退化 0.0——对比 B047 复验的 2-3 点退化，记差异为深回填生效证据）；(4) **无效范围**（手动选早于 min_usable_start）→ **中文友好提示，非原始 `BacktestWorkerError` 英文串**；(5) date picker 钳制生效（min/max）；(6) 「数据覆盖 X–Y」显示；(7) B023 交易闭环不破 + recent-errors={count:0} + HEAD≡main + B026 absent。Signoff: docs/test-reports/B047-OPS2-backtest-range-validation-signoff-2026-MM-DD.md 用模板（§Production/HEAD + §Post-signoff Deploy + **开箱即坏修复证据=默认范围 Run 成功 + 友好错误对比 + 深回填非退化曲线**）。**evaluator.md §25 适用**：默认范围 Run 成功是 core acceptance，必须正面证据（实际跑出非退化结果）才可 done，不得因『API schema 对』放行。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
