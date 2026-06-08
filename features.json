@@ -6,12 +6,13 @@
       "title": "交易闭环端到端生产冒烟（真实评分 target + 真实 current_weight + 真实安全层 → diff → ticket → fills → reconcile → journal，非 defensive 路径）+ 结果报告",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
+      "status": "pending",
       "acceptance": "【2026-06-08 用户已批：里程碑 C §6 交易闭环端到端确证；Codex-only 验证批次，不写产品代码，见 spec】L2（真 VM 端到端非 defensive 闭环）：(1) **Setup**：authenticated PUT 真实账户（cash + positions 含 sleeve tag post-B048-F002）；确认 data-refresh 近期价已拉，记录 valuation_basis（market / cost_degraded，B048 S1）。(2) **Recommendations**：GET /api/recommendations/current → 真实非空 target（B044/B045，如 SGOV/EEM/SPY）+ **current_weight≠0.0**（B046 mark-to-market）+ **gate_checks kill_switch 反映真实 master DD**（B048，非硬编码 pass，阈值 0.15）+ **wash_sale_flags 真实**（B048：构造亏损卖+30 日回补 fills 则非空 / 否则空合规）。(3) **position-diff**：GET /api/execution/position-diff → 真实 mark-to-market diff（买卖 shares 基于市价 NAV，非成本价/非空；记录 valuation_basis + degrade 哪些点）。(4) **order ticket**：POST /api/execution/tickets（非 defensive）→ Markdown 作业单含真实 diff + 双语 disclaimer。(5) **fills**：record fills（CSV/API）模拟执行。(6) **reconcile**：计划 vs fills 标偏差。(7) **journal**：整笔留痕。(8) **回归**：B026 absent / recent-errors=0 / health 200 / HEAD≡main。(9) **Cleanup**：ticket void + account 恢复，journal 留证。**结果报告** docs/test-reports/BL-B023-S1-trading-closed-loop-smoke-2026-MM-DD.md：闭环各步证据 + valuation_basis 诚实声明 + 非 defensive 路径确认（区别 B023 L2 仅 defensive）+ finding（若有）+ 里程碑 C §6 达成判定。**Finding 处置**：闭环发现真实缺陷→记 finding 转 Generator fix-round/新批次，本冒烟标 PARTIAL 不强过。更新 progress.json status→done / docs.signoff / evaluator_feedback。永久硬边界：no-broker（fills 模拟非真下单）/ B023 工作流不破 / 定位 §1.1 不出收益预测。",
       "design_decisions": [
         "Codex-only 验证批次（2026-06-07 backlog order 4 提级 high）：用既有真实流跑端到端，不写产品代码；交付物=结果报告。",
         "前置（planner 确认）：B046 真实 diff + B048 真实安全层 + B048-OPS1 deploy 可靠 + B044/B045 真实评分均 done。",
-        "非 defensive 路径：B023 L2 仅覆盖 defensive=true 空路径，本冒烟覆盖常规 recommendation-driven 真实 target 路径。"
+        "非 defensive 路径：B023 L2 仅覆盖 defensive=true 空路径，本冒烟覆盖常规 recommendation-driven 真实 target 路径。",
+        "RE-VERIFY（2026-06-08 planner 裁定+用户批）：首轮冒烟 8/9 PASS，reconcile 返回 404=冒烟调错 URL（调 /api/execution/reconcile 漏 ticket_id；路由 POST /api/execution/reconcile/{ticket_id} 存在已注册 routes/execution.py:198）非产品缺陷。复验剩余：Codex 用正确 URL POST /api/execution/reconcile/{ticket_id} 跑 reconcile→journal 正面验证闭合 9/9（plan vs fills 对账 + 持仓更新），更新 signoff 标 Finding #1=冒烟 URL 错非缺陷 + reconcile resolved + 9/9 全 PASS；其余 8 步首轮已过不必重跑。"
       ]
     }
   ]
