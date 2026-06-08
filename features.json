@@ -1,26 +1,39 @@
 {
-  "sprint": "B047-OPS1-backtest-deploy-env-reliability",
+  "sprint": "B047-OPS2-backtest-range-validation-data-depth",
   "features": [
     {
       "id": "F001",
-      "title": "canonical/worker CLI 缺 env 硬失败（不静默写 scratch DB）+ deploy.sh worker is-active / canonical timer is-enabled post-step 断言 + required-tables 含两新表 + 守门/测试",
+      "title": "后端——深化回填(cli 730→1825) + data-refresh 写覆盖窗口(data_start/end/first_usable) + GET /api/backtests/data-range(请求路径只读) + worker 结构化 error-kind + §12.10.2 守门 + 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【部署+env 可靠性硬化，见 spec §4.1-4.3。正交 B047 功能码，不改回测/reports 逻辑】(1) **canonical/worker CLI 缺 env 硬失败**：canonical.py main + worker.py main 入口启动时，若 `settings.WORKBENCH_DB_URL` 解析为 `DEFAULT_DEV_DB_URL`（env 未设回落 scratch）且非显式 dev opt-in → **响亮非零退出**（`::error::` 文案：WORKBENCH_DB_URL unset 将写 scratch 非 prod，请 source EnvironmentFile 或经 systemd 运行），**不静默写 scratch DB**（B048-OPS1 env-url 空硬失败家族 / v0.9.21 诚实失败）；建议抽共享守门 `db/require_production_db.py`（或入口内联）。允许显式 `WORKBENCH_DB_URL` / 显式 dev opt-in 放行（不破 dev/test）。(2) **deploy.sh post-step 断言**（§12.11）：worker enable loop 后加 `systemctl is-active workbench-backtest-worker.service` 非 active→响亮（warning，sudoers 未应用时不硬挂部署但醒目）；`systemctl is-enabled workbench-canonical-backtest.timer` 非 enabled→响亮。(3) **required-tables 兜底**：确认 deploy 后 schema check 的 required-tables 列表含 `backtest_run` + `investment_report`（Finding C 兜底，补 B048-OPS1 alembic heads 断言）。(4) **守门/测试**：guard test（env 未设跑 canonical/worker main→非零退出+不触 DB 写，monkeypatch settings 默认 URL）；deploy-wiring test（deploy.sh 含 worker is-active assert + canonical timer is-enabled assert + required-tables 含两新表，仿 test_deploy_timer_wiring.py）。(5) Gates：backend pytest ≥ baseline+≥4 / ruff 0 / mypy 0 / bash -n deploy.sh。(6) 不动：B047 worker/canonical 回测计算逻辑 / reports 读路径（已确认非 bug）/ §12.10.2 守门 / master 评分。",
+      "status": "pending",
+      "acceptance": "【生产 hotfix 后端，见 spec §4.1-4.4。根因=回测页默认范围开箱即坏 + 数据深度不足】(1) **L4 深化回填**：`data_refresh/cli.py` `DEFAULT_LOOKBACK_DAYS` 730→**1825**（~5 年）+ 更新注释（覆盖 momentum 9 月 + risk_parity 120 日 vol + 用户多年可用带）。(2) **L2 data-refresh 写覆盖窗口**：data-refresh job 写完 prices CSV 后，记录实际 `data_start`（CSV 最早日）/`data_end`（最晚日）/**`first_usable_signal_date`**（覆盖最长 lookback 后第一个可跑信号日）到持久化（DB 小表 `backtest_data_window` 或等价，单行 upsert）。**first_usable 机制 generator 定**：job 侧精确算（data-refresh 可 import trade，allowlist）或文档化保守常数（data_start + ~10 月覆盖 momentum 9 月+buffer）——二选一并注明理由。(3) **请求路径 API**：`GET /api/backtests/data-range` 返 `{data_start, data_end, min_usable_start}`，**只读持久化不 import trade**（§12.10.2）；无数据 graceful（null/空）。(4) **L3 worker 结构化 error-kind**：worker/服务把 `insufficient price history` / `no valid volatility estimates` / `no quarter-end signal dates` 映射为结构化 error-kind（如 `insufficient_history`/`no_signal_dates`），存 backtest_run.error 或新 error_kind 字段（前端据此 i18n）。(5) **§12.10.2 守门**：data-range API 路径无 trade import（worker/canonical/data-refresh allowlist 不变）。(6) **测试**：data-refresh 写覆盖窗口（min/max/first_usable）+ data-range API（有数据/空）+ worker error-kind 映射（三类→kind）+ cli DEFAULT_LOOKBACK_DAYS=1825 断言 + §12.10.2 守门。(7) Gates：backend pytest ≥ baseline+≥6 / ruff 0 / mypy 0 / alembic head（若加表）。(8) 不动：risk_parity/momentum lookback 算法 / master 评分 / async 架构 / canonical 逻辑。",
       "design_decisions": [
-        "env 硬失败套到新 CLI 入口（planner 决）：B048-OPS1/B022 F014 的 deploy.sh alembic env 守门未覆盖手动跑的 canonical/worker CLI——B047 re-verify 即栽在裸跑写 scratch DB；硬失败堵静默回落。",
-        "deploy post-step assert worker active + timer enabled（planner 决，§12.11）：命令返回 0 ≠ 服务真 active；显式断言 intended end-state。",
-        "worker is-active 用 warning 非 hard-fail（planner 决）：sudoers 一次性应用前部署不应硬挂，但须醒目暴露（同 B037-OPS1 timer warning 路径）。"
+        "深化回填 730→1825（用户 2026-06-09 拍板 L4）：扩大可用回测带，顺带治 B048 S1 退化曲线；disk 84% 可容（5 年 CSV ~2.7MB）。",
+        "数据窗口走 job→持久化→请求只读（planner 决，§12.10.2）：请求路径禁 import trade，覆盖窗口由 data-refresh job 写 DB，请求只读。",
+        "first_usable 机制留 generator 定（planner）：job 侧精确算 vs 文档化保守常数 data_start+~10 月（momentum 9 月 binding）。"
       ]
     },
     {
       "id": "F002",
-      "title": "Codex L2 真机（依赖用户触发 deploy）：deploy 链 alembic heads+两表 / worker auto-active / canonical timer enabled / canonical→prod DB→/api/reports≥1→/reports 渲染真实报告（B047 Reports 端到端闭合）/ CLI 缺 env 响亮失败 / on-demand 真实 / B023 不破 + signoff",
+      "title": "前端——动态有效默认范围(去硬编码 2024 H1) + date picker 钳制+「数据覆盖 X–Y」 + error-kind→i18n 双语友好提示 + 空数据态 + vitest/Playwright",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "【生产 hotfix 前端，见 spec §4.3-4.4。依赖 F001 data-range API + error-kind】(1) **L1 动态默认**：去 `backtest/page.tsx:93-94` 硬编码 `useState('2024-01-01')/('2024-06-30')`；启动 fetch `GET /api/backtests/data-range` → 默认 **`end=data_end`，`start=max(min_usable_start, data_end−1 年)`**（保证落可用带，默认 Run 必成功）；data-range 未就绪前禁 Run 或显 loading。(2) **L2 钳制**：date picker `min={min_usable_start} max={data_end}`（HTML min/max + 提交前校验，越界禁 Run/提示）；显「数据覆盖 {data_start}–{data_end}」说明（双语 i18n）。(3) **L3 友好错误**：按 F001 error-kind i18n 双语映射（`insufficient_history`→「所选范围历史数据不足以估算波动率，请选择 {min_usable_start} 之后的范围」/ EN 对应；`no_signal_dates`→对应文案），**不显原始英文异常串**。(4) **空数据态**：data-range 空→「暂无回测数据，请先运行数据刷新」双语。(5) **测试**：vitest（mock data-range→默认范围落可用带 / picker 钳制 / error-kind→双语文案 / 空数据态）+ Playwright（默认范围可 Run / 无效范围友好提示 / 双 locale）。(6) Gates：frontend vitest ≥ baseline+ / lint 0 / typecheck 0 / Playwright 不破 / i18n parity（backtest 新 key 双语齐）/ no-execution 守门。(7) 不动：B040 MetricsDisplay / async 轮询逻辑（backtest-poll.ts 不改，除非接 error-kind）/ 其他页。",
+      "design_decisions": [
+        "动态默认 end=data_end / start=max(min_usable_start, end−1yr)（planner 决 L1）：保证默认 Run 落可用带成功，根治开箱即坏。",
+        "picker min/max 钳制 + 数据覆盖文案（planner 决 L2）：防用户再选无效范围。",
+        "error-kind→i18n 映射在前端（planner 决 L3）：worker 给结构化 kind，前端双语化，不漏英文异常。"
+      ]
+    },
+    {
+      "id": "F003",
+      "title": "Codex L1+L2 真 VM——深回填落 5 年 + data-range API + 默认范围 Run 成功非退化 + 无效范围友好提示 + picker 钳制 + B023 不破 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "**前置**：F001 落 main 后**用户手动触发 Deploy workflow**（部署用户触发，CLAUDE.md；F002 依赖此）。L1 (CI 内)：F001 守门测试绿（canonical/worker 缺 env 非零退出+不写 scratch / deploy-wiring worker is-active+canonical timer+两表）；backend pytest ≥ baseline+ / ruff / mypy / bash -n；artifact grep secret=0。L2 (真 VM，部署后)：(1) **alembic current==heads**（含 0012 backtest_run / 0013 investment_report）+ 两表存在；(2) **`workbench-backtest-worker.service` 自动 active**（`systemctl is-enabled`+`is-active`，**确认非手动 enable**——若仍需手动则 S1 留存记 runbook + sudoers 应用步）；(3) `workbench-canonical-backtest.timer` enabled；(4) ★**canonical 经 systemd 跑（env 注入→prod DB）**：`sudo systemctl start workbench-canonical-backtest.service`（非裸跑）→ `investment_report` 写 **prod DB** ≥1 行 → `GET /api/reports` 返 ≥1 真实投资报告（kind=investment，含 Sharpe/MDD 真实指标）→ 浏览器 `/reports` 渲染真实报告（非空、非开发签收）【**B047 被推迟的 Reports 端到端，本批闭合**；记报告 slug/strategy_id/as_of_date/指标为证据】；(5) **canonical/worker CLI 缺 env→响亮非零退出**正向验（裸跑 `python -m workbench_api.backtests.canonical` 不 source env → error 退出，不写 scratch）；(6) on-demand backtest 仍真实（POST→轮询→done，真实引擎）+ B023 交易闭环不破 + recent-errors={count:0} + HEAD≡main + B026 absent。Signoff: docs/test-reports/B047-OPS1-backtest-deploy-env-reliability-signoff-2026-MM-DD.md 用模板（§24 worker+canonical 接线 + §Production/HEAD + §Post-signoff Deploy + **Reports 端到端闭合证据 = B047 遗留缺口关闭 + CLI 缺 env 硬失败正向验**）。**Framework 候选（强）**：新 CLI/job 入口必须套 env-硬失败守门（B048-OPS1 教训未自动传播到 B047 新入口）记 §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
+      "status": "pending",
+      "acceptance": "L1 (CI 内)：F001+F002 全门禁——backend pytest（data-refresh 覆盖窗口 / data-range API / worker error-kind / cli 1825）+ frontend vitest（动态默认 / picker 钳制 / error-kind 双语 / 空态）+ ruff/mypy/lint/typecheck/Playwright；§12.10.2 守门（data-range 请求路径无 trade）；no-execution 守门；i18n parity；artifact grep secret=0；alembic head（若加表）。L2 (真 VM)：(1) **data-refresh 深回填**：触发 `systemctl start workbench-data-refresh.service`（或确认 02:30 timer 跑过）→ unified CSV 覆盖 ~5 年（或 Tiingo 可达最长）+ data_start 据实；(2) **GET /api/backtests/data-range** 返合理 `{data_start, data_end, min_usable_start}`；(3) ★**默认范围点 Run→真实非退化结果**（前端默认范围落可用带；POST→轮询→done，equity 点数 >> 2、sharpe/max_drawdown 非退化 0.0——对比 B047 复验的 2-3 点退化，记差异为深回填生效证据）；(4) **无效范围**（手动选早于 min_usable_start）→ **中文友好提示，非原始 `BacktestWorkerError` 英文串**；(5) date picker 钳制生效（min/max）；(6) 「数据覆盖 X–Y」显示；(7) B023 交易闭环不破 + recent-errors={count:0} + HEAD≡main + B026 absent。Signoff: docs/test-reports/B047-OPS2-backtest-range-validation-signoff-2026-MM-DD.md 用模板（§Production/HEAD + §Post-signoff Deploy + **开箱即坏修复证据=默认范围 Run 成功 + 友好错误对比 + 深回填非退化曲线**）。**evaluator.md §25 适用**：默认范围 Run 成功是 core acceptance，必须正面证据（实际跑出非退化结果）才可 done，不得因『API schema 对』放行。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
 }
