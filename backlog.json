@@ -141,11 +141,11 @@
       "不进真 VM 风险样本生成自动化；用 workbench account 编辑临时触发再恢复",
       "演练后留一张红态 risk-banner 截图归入 docs/screenshots/",
       "不引入新功能，纯验证已有 F006 UI 红态逻辑",
-      "建议并入 B042 Risk Panel 微调批次一起做"
+      "建议并入 B042 Risk Panel 微调批次一起做",
+      "2026-06-08 RESOLVED：随 B042 完成——red 样本演练 PASS（PUT 风险快照 DD 0.70≥0.15→red banner+kill_switch fail+defensive ticket+radio，红态截图落）。"
     ],
     "confirmed_at": "2026-05-20",
-    "priority": "medium",
-    "order": 6,
+    "priority": "done",
     "source": "B023 signoff soft-watch S2",
     "milestone": "C — Risk UI（随 B042）"
   },
