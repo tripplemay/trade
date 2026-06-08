@@ -2,7 +2,7 @@
 
 The daily-engagement Home page needs three things, all read-only:
 
-* **NAV** — reuses :func:`dashboard._aggregate_nav` (cash + equity).
+* **NAV** — reuses :func:`nav.aggregate_nav` (cash + equity).
 * **Day P&L (mark-to-market)** — marks the latest ``AccountSnapshot``
   positions with the prices a :class:`PriceProvider` resolves (today's
   close vs the prior trading day's close) and sums ``shares * (latest -
@@ -27,7 +27,7 @@ from sqlalchemy.orm import Session
 
 from workbench_api.db.repositories.account_snapshot import AccountSnapshotRepository
 from workbench_api.schemas.home import DayPnl, HomeResponse, SleeveBreakdown
-from workbench_api.services.dashboard import _aggregate_nav
+from workbench_api.services.nav import aggregate_nav
 from workbench_api.services.prices_provider import (
     DbPriceProvider,
     PriceMark,
@@ -101,11 +101,11 @@ def build_home(
     (reads ``price_snapshot``); tests inject a fake to pin the closes.
     """
 
-    del settings  # reserved for future Home fields; NAV reads via _aggregate_nav
+    del settings  # reserved for future Home fields; NAV reads via aggregate_nav
     if provider is None:
         provider = DbPriceProvider(session)
 
-    nav = _aggregate_nav(session)
+    nav = aggregate_nav(session)
 
     snapshot = AccountSnapshotRepository(session).latest()
     positions = _parse_positions(snapshot.positions if snapshot else None)

@@ -31,7 +31,7 @@
       "title": "Dashboard 死路由清理——删前确认零消费者 + kill_switch 阈值单一来源统一 + master_drawdown 占位移除 + test 更新 + api.ts drift 同步",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【里程碑 C 收口 gate 残余 #3，见 spec §6】(1) **删前确认零运行时消费者(铁律：删除前看目标)**：grep 前端 fetch('/api/dashboard'/useDashboard/任何 /api/dashboard 运行时调用，确认仅 OpenAPI 生成类型引用、无页面/hook 消费后方可删 routes/dashboard.py+注销路由注册；**保留 Home 复用的 _aggregate_nav 等共享 helper**(移公共位置不随 dashboard service 死)。(2) kill_switch 阈值单一来源：services/dashboard.py:45 第三份 DEFAULT_KILL_SWITCH_THRESHOLD=0.20——随死路由整体移除则连带消失；若 service 仍被复用则改引用 nav_history.KILL_SWITCH_THRESHOLD(0.15)，同 recommendations.py:80(沉淀 v0.9.37)。(3) master_drawdown 占位：services/dashboard.py:159 master_drawdown=0.0——随死路由移除；若 service 复用字段则接真实 nav_history master DD。(4) 测试更新：tests/unit/test_dashboard.py:112 assert==0.2——随死路由移除对应测试或改断言 0.15/导入常量(依删/留裁定)。(5) **OpenAPI/api.ts drift 同步**：删 /api/dashboard endpoint→重生成前端 OpenAPI 类型，api.ts 无 drift(CI drift 检查绿)。(6) §12.10 边界：清理不引入新执行路径；保留 helper 仍守只读边界。(7) Gates：backend pytest ≥ baseline / ruff 0 / mypy 0；frontend api drift 0 / tsc 0 / lint 0。",
       "design_decisions": [
         "dashboard 路由前端零页面引用(Explore 核实)——但删前 generator 须再 grep 确认零运行时消费者(含 hook/fetch)，再删。",

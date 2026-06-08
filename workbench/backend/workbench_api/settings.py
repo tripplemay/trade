@@ -81,7 +81,10 @@ class Settings(BaseSettings):
     SENTRY_DSN: str | None = None
     WORKBENCH_BACKUP_LOG: str = DEFAULT_BACKUP_LOG_PATH
     WORKBENCH_LOG_DIR: str = DEFAULT_LOG_DIR
-    # B022 F006 — directory the Dashboard scans for `recent_reports`.
+    # B022 F006 — was the directory the dashboard scanned for `recent_reports`.
+    # B049 F003 removed the dead dashboard route + filesystem scanner (Reports
+    # now reads the investment_report DB table). Field retained for env-compat:
+    # `extra="forbid"` would reject a still-set WORKBENCH_REPORTS_DIR env var.
     WORKBENCH_REPORTS_DIR: str = DEFAULT_REPORTS_DIR
     # B022 F010 — directory the Recommendations export-ticket writes to.
     WORKBENCH_RUNS_DIR: str = DEFAULT_RUNS_DIR

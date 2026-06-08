@@ -53,10 +53,9 @@ def _authed_client() -> TestClient:
 
 # (method, path, body, expected feature marker, expected success status_code)
 #
-# /api/dashboard is no longer a stub — B022 F006 ships the real handler.
-# Its end-to-end coverage lives in tests/unit/test_dashboard.py; we still
-# keep auth-gate coverage there (anon → 401) so the boundary doesn't
-# silently regress when the handler grows.
+# /api/dashboard was removed entirely — B049 F003 deleted the dead route
+# (zero frontend runtime consumers); its removal is pinned in
+# tests/unit/test_dashboard_route_removed.py.
 STUB_ROUTES: list[tuple[str, str, dict[str, Any] | None, str, int]] = [
     # /api/strategies + /api/docs are no longer stubs — B022 F007 ships
     # the handlers; targeted coverage lives in tests/unit/test_strategies.py
@@ -132,10 +131,9 @@ def test_openapi_registers_all_b022_schemas(initialised_db: str) -> None:
     schemas = client.get("/openapi.json").json()["components"]["schemas"]
 
     expected = {
-        "DashboardResponse",
-        "LastRebalance",
-        "RecentReport",
-        "ActionItem",
+        # DashboardResponse / LastRebalance / RecentReport / ActionItem 不再
+        # registered — B049 F003 removed the dead /api/dashboard route + schema
+        # (zero frontend runtime consumers; Home reuses services.nav.aggregate_nav).
         "StrategyListResponse",
         "StrategyDetail",
         "StrategySummary",

@@ -3,7 +3,7 @@
 The daily-engagement Home page (B037) reads one payload:
 
 * ``nav`` — net asset value (cash + equity across the single research
-  account), reusing the dashboard's ``_aggregate_nav``.
+  account), reusing ``services.nav.aggregate_nav``.
 * ``day_pnl`` — read-only mark-to-market Day P&L of the latest account
   positions (today's close vs the prior trading day's close), or
   ``null`` when no position can be marked / there is no snapshot — the

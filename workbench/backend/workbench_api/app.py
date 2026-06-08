@@ -44,7 +44,6 @@ from workbench_api.observability.sentry import init_sentry
 from workbench_api.routes import advisor as advisor_routes
 from workbench_api.routes import backlog as backlog_routes
 from workbench_api.routes import backtests as backtests_routes
-from workbench_api.routes import dashboard as dashboard_routes
 from workbench_api.routes import execution as execution_routes
 from workbench_api.routes import home as home_routes
 from workbench_api.routes import market_context as market_context_routes
@@ -260,11 +259,11 @@ def create_app() -> FastAPI:
         records = get_recent_errors()
         return RecentErrorsResponse(count=len(records), records=records)
 
-    # B022 F002 — register the 7 vertical-slice schemas + 501 stubs so the
-    # OpenAPI → TypeScript pipeline emits stable types for F006-F012. Real
-    # handler bodies replace these in their owning features; the route
-    # surface itself stays frozen here.
-    api.include_router(dashboard_routes.router)
+    # B022 F002 — register the vertical-slice schemas + 501 stubs so the
+    # OpenAPI → TypeScript pipeline emits stable types. Real handler bodies
+    # replace these in their owning features; the route surface itself stays
+    # frozen here. B049 F003 removed the dead /api/dashboard route (zero
+    # frontend runtime consumers — Home reuses services.nav.aggregate_nav).
     api.include_router(home_routes.router)
     api.include_router(strategies_routes.router)
     api.include_router(backtests_routes.router)

@@ -1,8 +1,9 @@
-"""Reports list + detail service (B022 F009).
+"""Reports list + detail service (B022 F009; B047 F004 — DB-backed).
 
-Lists reports by reusing the F006 ``reports_scanner`` and re-shaping
-each hit into a ``ReportSummary``. Detail fetches one markdown file
-by slug match, returns the raw body, plus a structured table extract
+Lists the canonical INVESTMENT reports from the ``investment_report`` table
+(B047 F004 cut over from the F006 filesystem ``reports_scanner``, now removed),
+re-shaping each row into a ``ReportSummary``. Detail fetches one report by slug,
+returns the raw body, plus a structured table extract
 and cross-link list so the frontend can re-render heavy tables in
 AG Grid and rewrite ``docs/specs/...`` / ``docs/test-reports/...``
 cross-links into in-app routes.
