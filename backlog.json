@@ -160,7 +160,8 @@
       "2026-06-07 用户拍板：里程碑 C 完成时所有页面显示内容均接真实引擎；本批=收口 gate（最后一批）",
       "范围=用户投资页面显示内容；内部工具页（backlog/dev/docs）不算投资内容、排除",
       "snapshots 进度若接真子进程进度过大可单列子批；strategies note/dashboard 死路由为小修",
-      "穷举审计：每页 grep synthetic/stub/placeholder/hardcode + 手验，留审计清单作里程碑 C 达成证据"
+      "穷举审计：每页 grep synthetic/stub/placeholder/hardcode + 手验，留审计清单作里程碑 C 达成证据；审计看『内容类别是否该页应有的投资类别』不只 grep stub（来源 Reports 接开发签收语料的错配教训）",
+      "dashboard 清理含（B048 沉淀 v0.9.37）：dashboard.py 第三份 kill_switch 阈值 0.20 副本 → 引用 nav_history.KILL_SWITCH_THRESHOLD(0.15)；dashboard master_drawdown 硬编码 0.0 占位 → 接 nav_history 或确认死服务移除；更新 test_dashboard.py kill_switch_threshold 断言"
     ],
     "confirmed_at": "2026-06-07",
     "priority": "high",

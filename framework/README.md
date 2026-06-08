@@ -377,6 +377,11 @@ docs/test-reports/[批次名称]-signoff-YYYY-MM-DD.md
 - **铁律：deploy 后必加该包的 smoke import check**（`python -c "import trade.data.data_root"` 在部署 venv 内），失败即让 deploy 硬失败/告警——不能只靠「pip 命令返回 0」当成功。silent skip + `--quiet` 吞错是这类坑的根源。
 - 设计取舍提醒：§12.10.2 模式 2（禁包打进 artifact 供 job 用）的代价之一就是这类多包 deploy 脆弱性；能走模式 1（不打进 artifact）则避开。
 
+### 同一风控/业务常数多处副本 → 单一来源 + feature-grounding 决定本批改几处（来自 B048）
+- **同一个语义常数（如 kill_switch 阈值）散落多处且取值不一致**是隐患：B048 发现阈值三处副本——`recommendations.py`(0.20) / `risk_panel.py`(0.15) / `dashboard.py`(0.20)，前两者口径就不一致。
+- **修法：抽单一来源**（B048 抽 `services/nav_history.KILL_SWITCH_THRESHOLD=0.15`，rec+risk_panel 引用之）。
+- **但本批改几处由 feature-号 grounding 决定（铁律 10）**：B048 F003 acceptance 只授权 rec→risk_panel，`dashboard.py` 第三份不在 grounding 内 → **不越界改**，记 proposed-learnings + backlog 留对应批次（Dashboard 真实化）。**「该统一」与「本批授权改」是两回事**——发现散落副本时抽单一来源，但只改 feature-号覆盖的引用，其余入 backlog。
+
 ### 成本控制
 - 聚合型服务商必须设白名单，否则同步全量模型导致健康检查成本爆炸
 - 图片生成的健康检查止步于 L2（格式验证），不执行 L3（真实生成），单次 $0.04–$0.19 不值得

@@ -5,6 +5,21 @@
 
 ---
 
+## v0.9.37 — 2026-06-07（B048 沉淀：同一风控常数多处副本 → 单一来源 + feature-grounding 决定改几处）
+
+**来源批次：**
+- B048 F003 实施（kill_switch 阈值统一）+ generator proposed-learnings 候选
+- signoff `docs/test-reports/B048-real-risk-safety-layer-signoff-2026-06-07.md`
+
+**触发原因：**
+- kill_switch 阈值三处副本且不一致：recommendations.py(0.20) / risk_panel.py(0.15) / dashboard.py(0.20)。B048 抽 `nav_history.KILL_SWITCH_THRESHOLD=0.15` 单一来源，但按 feature-grounding（铁律 10）只改 rec→risk_panel，dashboard 第三份不越界改 → 入 backlog（Dashboard 真实化）。
+
+**变更：**
+- `framework/README.md` §经验教训 新增「同一风控/业务常数多处副本 → 单一来源 + feature-grounding 决定本批改几处」（抽单一来源 ≠ 本批全改；只改 feature-号覆盖的引用，其余入 backlog）
+- 配套：dashboard 第三份阈值 + master_drawdown 0.0 占位 → backlog（并入 B049 dashboard 清理）；Finding #1（alembic 未自动升级）→ B048-OPS1 ops 修复批次
+
+---
+
 ## v0.9.36 — 2026-06-07（B045 沉淀：venv 多包安装 deploy 静默装不上 + smoke import check 铁律）
 
 **来源批次：**
