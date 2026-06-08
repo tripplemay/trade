@@ -45,6 +45,14 @@ def _fill_to_trade(fill: Any, base_value: float) -> dict[str, Any] | None:
     }
 
 
+def _iso_date(value: Any) -> str:
+    """ISO ``YYYY-MM-DD`` from a date / pandas Timestamp / string."""
+
+    if hasattr(value, "isoformat"):
+        return str(value.isoformat())[:10]
+    return str(value)[:10]
+
+
 def _allocation_row(signal: Any) -> dict[str, Any]:
     """``AllocationBar`` row from a strategy signal (``signal_date`` +
     ``target_weights``) — the per-signal-date target the sleeve rebalanced to."""
@@ -91,3 +99,31 @@ def adapt_risk_parity(result: Any) -> dict[str, list[dict[str, Any]]]:
             if row is not None:
                 trades.append(row)
     return {"equity": map_equity(result), "allocations": allocations, "trades": trades}
+
+
+def adapt_us_quality(result: Any) -> dict[str, list[dict[str, Any]]]:
+    """Adapt ``UsQualityBacktestResult`` → equity/allocations/trades.
+
+    The equity curve is a daily ``pd.DataFrame`` (columns ``date`` / ``equity``),
+    converted to ``EquitySample`` rows here (the shared ``map_equity`` only
+    handles ``tuple[EquityPoint]``). Allocations come from ``rebalance_periods``
+    (``signal_date`` + ``target_weights``). The engine reports no per-leg fills,
+    so trades is intentionally **empty** — we surface the honest absence rather
+    than fabricate execution legs. Accesses the DataFrame/columns via their own
+    methods, so no pandas import is needed here."""
+
+    curve = result.equity_curve
+    equity = [
+        {"date": _iso_date(d), "nav": float(v)}
+        for d, v in zip(
+            curve["date"].tolist(), curve["equity"].tolist(), strict=False
+        )
+    ]
+    allocations = [
+        {
+            "date": _iso_date(period.signal_date),
+            "weights": {symbol: float(weight) for symbol, weight in period.target_weights.items()},
+        }
+        for period in result.rebalance_periods
+    ]
+    return {"equity": equity, "allocations": allocations, "trades": []}

@@ -33,7 +33,11 @@ from typing import Any, Protocol
 
 from sqlalchemy.orm import Session, sessionmaker
 
-from workbench_api.backtests.adapters import adapt_momentum, adapt_risk_parity
+from workbench_api.backtests.adapters import (
+    adapt_momentum,
+    adapt_risk_parity,
+    adapt_us_quality,
+)
 from workbench_api.backtests.error_kinds import classify_error_kind
 from workbench_api.backtests.mapping import (
     map_allocations,
@@ -355,12 +359,49 @@ def _run_risk_parity(snapshot: Any, run: BacktestRunLike) -> dict[str, Any]:
     }
 
 
-# B050 F001 — strategy_id → engine runner. Tier-1 (momentum / risk_parity /
-# master) here; us_quality (F002) + hk_china (F003) add their entries.
+def _run_us_quality(snapshot: Any, run: BacktestRunLike) -> dict[str, Any]:
+    """US Quality Momentum (monthly) — ``us_quality_momentum.engine.run_backtest``.
+
+    Unlike the records-based engines this one loads its own universe / prices /
+    fundamentals internally and takes ``start`` / ``end`` directly (not
+    ``records`` + ``signal_dates``); its equity curve is a daily ``pd.DataFrame``
+    and it reports no per-leg fills (the adapter surfaces empty trades)."""
+
+    from trade.backtest.us_quality_momentum.engine import (  # type: ignore[import-untyped]
+        run_backtest,
+    )
+    from trade.reporting.us_quality_momentum import (  # type: ignore[import-untyped]
+        build_us_quality_report_payload,
+        render_us_quality_markdown,
+    )
+    from trade.strategies.us_quality_momentum.parameters import (  # type: ignore[import-untyped]
+        UsQualityMomentumParameters,
+    )
+
+    params = _strategy_parameters(
+        "B025-us-quality-momentum", run, UsQualityMomentumParameters
+    )
+    request = run.params or {}
+    result = run_backtest(
+        parameters=params,
+        start=_parse_iso(request.get("start_date")),
+        end=_parse_iso(request.get("end_date")),
+    )
+    payload = build_us_quality_report_payload(result, snapshot, run.run_id)
+    return {
+        "metrics": map_metrics(payload),
+        **adapt_us_quality(result),
+        "report_markdown": render_us_quality_markdown(payload),
+    }
+
+
+# B050 — strategy_id → engine runner. F001 Tier-1 (master / momentum /
+# risk_parity); F002 us_quality; hk_china (F003) adds its entry next.
 _DISPATCH: dict[str, Callable[[Any, BacktestRunLike], dict[str, Any]]] = {
     MASTER_STRATEGY_ID: _run_master,
     "B006-global-etf-momentum": _run_momentum,
     "B016-risk-parity-hrp": _run_risk_parity,
+    "B025-us-quality-momentum": _run_us_quality,
 }
 
 

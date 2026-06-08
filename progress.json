@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "B050 回测页单策略调度接线（修复『选任何策略结果都一样』生产缺陷）。用户 2026-06-09 报现象：回测页选任何策略、相同时段结果完全一样。**Planner 根因裁定（铁律 9，不改产品码，已实地确证）**：回测请求链——前端选 strategy_id 随 POST 发出 → services/backtests.py:45 run_backtest 校验 strategy_id 存在并 enqueue(strategy_id=, params=) 入队(backtest_run.strategy_id 列已落库) → **❌ worker run_backtest_job(worker.py:147) 写死调用 run_master_portfolio_quarterly_backtest(worker.py:186) 只读 params 日期范围、从不读 strategy_id**(连 BacktestRunLike 协议 worker.py:52-57 都只暴露 run_id+params)→同一时段任何策略都跑同一 master 组合回测→结果完全相同。真实缺陷：策略选择器+单策略引擎都存在(trade/backtest/ 下 momentum/risk_parity/us_quality 现成)，只是 worker 没接(B047 仅接 master 一条)。**用户拍板完整 scope**：接线全 4 活跃策略+master 显式选项+新建 B011 港股中国独立引擎(原只在 master 内跑)；regime 3 个研究态(weight=0.0)友好排除 error_kind=inactive_strategy。5 features 4g+1c：F001 g 分发核心+Tier-1(momentum/risk_parity/master 显式项)+per-strategy adapter+regime 排除；F002 g us_quality 分发(新报告 builder+DataFrame/字段适配+空 fills 诚实口径)；F003 g 新建 B011 hk_china 独立引擎(trade/，复用 generate_hk_china_signal 同源信号严禁发散)+报告；F004 g 前端 inactive_strategy 双语+结果标注所跑策略+选择器含 master；F005 c L1+L2 真 VM ★每策略产不同非退化结果(核心反例证明不同策略→不同数据)+regime 友好+signoff。永久硬边界：§12.10.2 worker 唯一 trade importer/请求路径禁 import/no-execution/定位§1.1/i18n parity。不做：改信号评分算法/master 组合逻辑/激活 regime/broker/async 架构。spec docs/specs/B050-backtest-per-strategy-dispatch-spec.md(12 章)。**2026-06-09 交易/推荐保真度审查并入 F005**(用户批)：正常模式全链路忠实+风控 gate 真实，但发现①🔴CRITICAL 防守模式 SGOV 买入股数把美元当股数(tickets.py:245-246，~100倍超买)②🟡as_of_date 写死 today 隐藏信号日(recommendations.py:263)③🟢陈旧 docstring——F005 g 修复+数值保真测试，F006 c 验收加★防守 SGOV 股数保真(股数×市价≈权益)。审查报告 docs/product/trade-recommendation-fidelity-audit-2026-06.md。**里程碑 C 已达成(B049)，本批为里程碑 C 后用户报障修复+保真度审查产出，优先于 B043。**",
   "total_features": 6,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
-  "current_sprint": "F002",
+  "current_sprint": "F003",
   "last_updated": "2026-06-09",
   "reference_docs": [
     "docs/specs/B050-backtest-per-strategy-dispatch-spec.md",

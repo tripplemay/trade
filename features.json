@@ -19,7 +19,7 @@
       "title": "us_quality 分发——新报告 builder + DataFrame/字段适配 + 空 fills 诚实口径 + 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §6。B025 引擎现成但返回结构异构】(1) **新报告 builder**：trade/reporting/us_quality_momentum.py(或就近) build_us_quality_report_payload+render_us_quality_markdown(模仿 risk_parity report)。(2) **DataFrame 适配**：UsQualityBacktestResult.equity_curve(pd.DataFrame)→list[EquitySample](date/nav)；rebalance_periods(字段名异于 _results)→allocations；**无 fills**→trades 空列表或从 period 持仓变化派生(generator 定注明诚实口径，不伪造交易)。(3) **分发表加 B025-us-quality-momentum**：接 F001 分发表+adapter。(4) **测试**：us_quality 产非退化结果且**异于** momentum/risk_parity/master(同时段)+DataFrame 转换+空 fills 处理。(5) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0。依赖 F001 分发框架。",
       "design_decisions": [
         "us_quality equity_curve 是 pd.DataFrame（异于其它 tuple[EquityPoint]）+无 fills：显式 DataFrame→EquitySample 转换 + 空 fills 诚实口径（不伪造交易记录）。"
