@@ -41,7 +41,7 @@
       "title": "Codex L1 + L2 真 VM 验收（data-refresh 拉 HK ETF + precompute data_source=real 4/4 + /current 含 hk_china 真实权重 + master 4/4 + B023 不破）+ signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "L1 (CI 内)：F001-F003 全 generator 验收脚本跑通 — backend pytest ≥ baseline+ / ruff / mypy；hk_china 策略单测 + master 4/4 集成测试；§12.10.2 请求路径禁 trade 守门不破；既有 3 sleeve + B023 回归绿；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）+ recent-errors={count:0}；(2) **data-refresh 拉 MCHI/FXI/KWEB/ASHR prices**（手动 trigger workbench-data-refresh→unified CSV 含 4 新 ETF，记录行数/日期跨度）；(3) **precompute data_source=real（4/4 sleeve，hk_china 不再 stubbed）**——手动 trigger recommendations precompute→recommendation_snapshot data_source=real（对比 B045 mixed，记录 hk_china 真实权重 or 区域风险触发→defensive 哪种）；(4) **GET /api/recommendations/current 含 hk_china sleeve 真实权重**（或 defensive）+ anon 401；(5) **master backtest 4/4 真实评分**（可选 /api/backtests 或 precompute 证据）；(6) B026 absent + HEAD≡main。Signoff: docs/test-reports/BL-B011-S2-hk-china-satellite-signoff-2026-MM-DD.md 用模板（§Production/HEAD + §Post-signoff Deploy + **data_source mixed→real + Master 4/4 真实清单 + hk_china 权重/defensive 记录**）。Framework 候选：satellite 模板复用 / 区域风险确定性过滤 若出新规律记 §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
