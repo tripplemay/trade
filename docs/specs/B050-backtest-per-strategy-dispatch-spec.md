@@ -141,6 +141,8 @@
 | hk_china standalone 另写一套发散信号 | F003 强制复用 `generate_hk_china_signal`，与 master sleeve 同源 |
 | 修复后 master 无法再被选 | F001 注册表加显式 master_portfolio 条目 |
 | 某策略某时段数据不足退化 | 复用 B047-OPS2 drop-earliest 重试 + error_kind；L2 用有效范围验非退化 |
+| **canonical.py 被分发破坏** | `canonical.py:44-48` 构造 `run=SimpleNamespace(run_id,params={})` 调 `run_backtest_job`，**无 strategy_id 属性**——worker 改读 strategy_id 分发后会 AttributeError。F001 必须：canonical 的 run stand-in 设 `strategy_id="master_portfolio"`，或 worker 分发对缺失 strategy_id 默认 master（来源：2026-06-09 B050 类反模式审查）|
+| `parameters` 字段仍被忽略 | B050 修 strategy_id 同时应把 `params["parameters"]` 接进各引擎 `strategy_parameters`（risk_parity/momentum 都接受），或显式从 schema 移除——避免又一个 plumbed-but-ignored 字段（来源：同上审查；前端当前无 parameters 编辑器故潜伏）|
 
 ---
 
