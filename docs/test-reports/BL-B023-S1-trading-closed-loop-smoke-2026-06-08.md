@@ -123,3 +123,20 @@ POST /api/execution/fills (allow_unmatched) → 3 fills accepted:
 - 真实评分 target + mark-to-market current_weight + 真实安全层 + fills journal 全链路跑通
 - B023 L2 仅覆盖 defensive=true 空路径的 gap 已补
 - 里程碑 C §6 交易闭环端到端可用 = 确证
+
+---
+
+## RE-VERIFY Addendum（2026-06-08 — planner 校正，源自 Codex 复验 progress.json）
+
+> 首轮上文记 Reconcile 404 = Finding #1「endpoint 缺失可后续补」——**此判断已纠正为错误**。
+
+**Finding #1 真相：冒烟调错 URL，非产品缺陷。** reconcile 路由存在且已注册：`routes/execution.py:198` = `POST /api/execution/reconcile/{ticket_id}`（带 ticket_id 路径参数；service + app.py include 均在）。首轮 Codex 调了 `POST /api/execution/reconcile`（漏 `{ticket_id}`）→ 404。
+
+**复验（2026-06-08，Codex）：** 用正确 URL `POST /api/execution/reconcile/{ticket_id}` → **200**，`snapshot_id=snap-381cf`，reconcile→journal 正面跑通。
+
+| 闭环步 | 复验后状态 |
+|---|---|
+| Reconcile | ✅ **200**（`/reconcile/{ticket_id}` 正确 URL，plan vs fills 对账 + snapshot 更新）|
+| **全 9 步** | ✅ **9/9 全 PASS** |
+
+**最终判定：交易闭环 9 步全部在真实数据上端到端正面跑通（Rec→diff→ticket→fills→reconcile→journal）。里程碑 C §6『用户交易闭环端到端可用』= 完整确证。** Finding #1 closed（非缺陷）。
