@@ -43,7 +43,7 @@
       "title": "Codex L1+L2 真 VM——全页面穷举审计(8 页无合成/占位) + 3 残余修复确证 + 里程碑 C 达成裁定 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "【里程碑 C 收口 gate 验收，见 spec §7】L1(CI 内)：F001+F002+F003 全门禁——backend pytest(snapshots 真进度/strategies guard/dashboard 删后无回归)+frontend(若动 vitest/tsc/lint)+ruff/mypy+§12.10.2 守门+i18n parity+api.ts drift 0+artifact grep secret=0+alembic head(不涉及则确认不变)。L2(真 VM)：(1) **Snapshots 真进度**：触发 refresh→进度事件反映真实操作(非固定 0.05s 合成 5 段)；SnapshotMeta 列表显真实 manifest 数据。(2) **Strategies 页**：note 显真实数据来源文案不含『Synthetic fixture only』；诚实 stub/research 披露仍在。(3) **Dashboard 死路由**：GET /api/dashboard 返 404(已删)或确认无前端消费；Home 等复用页不破。(4) ★**全页面穷举审计(=里程碑 C 达成证据)**：逐页核查 Home/Recommendations/Reports/Risk/Strategies/Backtest/Snapshots/Execution 每页用户可见显示无合成/占位/硬编码 stub——**审计看『内容类别是否该页应有的真实投资类别』不只 grep stub**(来源 Reports 接开发签收语料错配教训)；grep synthetic/stub/placeholder/hardcode/占位+逐页手验；产出逐页审计清单(PASS/残余)写 signoff 作达成证据。(5) 回归：B023 交易闭环不破+recent-errors={count:0}+HEAD≡main+B026 absent。(6) Signoff：docs/test-reports/B049-all-pages-real-engine-audit-signoff-2026-MM-DD.md 用模板(§Production/HEAD 等价+§Post-signoff Deploy+§全页面真实化覆盖矩阵逐页裁定)。**evaluator.md §25 适用**：snapshots 真进度/strategies 真文案/全页面审计均须正面证据才可 done；审计任一页发现真实残余→不判 non-blocking 回 fixing。更新 progress.json status→done/docs.signoff/evaluator_feedback；审计通过则明确裁定**里程碑 C 达成**。"
     }
   ]
