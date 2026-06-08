@@ -18,6 +18,12 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 WORKER_SERVICE = (
     REPO_ROOT / "workbench" / "deploy" / "systemd" / "workbench-backtest-worker.service"
 )
+CANONICAL_SERVICE = (
+    REPO_ROOT / "workbench" / "deploy" / "systemd" / "workbench-canonical-backtest.service"
+)
+CANONICAL_TIMER = (
+    REPO_ROOT / "workbench" / "deploy" / "systemd" / "workbench-canonical-backtest.timer"
+)
 DEPLOY_SH = REPO_ROOT / "workbench" / "deploy" / "scripts" / "deploy.sh"
 
 _FORBIDDEN_IMPORT_FRAGMENTS: tuple[str, ...] = (
@@ -79,6 +85,22 @@ def test_worker_service_references_no_trade_execution() -> None:
         assert frag not in directives, (
             f"backtest-worker .service directive references trade-execution {frag!r}"
         )
+
+
+def test_canonical_service_execstart_runs_canonical_cli() -> None:
+    assert CANONICAL_SERVICE.is_file(), f"missing {CANONICAL_SERVICE}"
+    text = CANONICAL_SERVICE.read_text(encoding="utf-8")
+    execstart = [ln for ln in text.splitlines() if ln.strip().startswith("ExecStart=")]
+    assert len(execstart) == 1
+    assert "workbench_api.backtests.canonical" in execstart[0]
+    assert "Type=oneshot" in text  # timer-pulled, not a daemon
+    # Auto-wired by the deploy timer-glob loop (sibling of its .timer).
+    assert CANONICAL_TIMER.is_file()
+    directives = "\n".join(
+        ln for ln in text.splitlines() if not ln.strip().startswith("#")
+    ).lower()
+    for frag in ("broker", "order_ticket", "fills", "reconcile", "ticket"):
+        assert frag not in directives
 
 
 def test_deploy_installs_backtest_worker_daemon() -> None:

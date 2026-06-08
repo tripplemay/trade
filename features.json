@@ -45,7 +45,7 @@
       "title": "Reports 真实投资报告（canonical Master/各 sleeve 回测报告→investment_report kind=investment + 开发 signoff 过滤出用户 Reports）+ 前端",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【Reports 内容类别修正，见 spec §4.4。同源真实引擎】(1) **canonical 回测报告生成**：workbench_api/backtests/canonical.py（CLI 入口 python -m workbench_api.backtests.canonical，import trade allowlist）——对 Master + 各 sleeve 默认参数跑 `run_master_portfolio_quarterly_backtest` + `generate_master_portfolio_reports`→写 investment_report 表（run_id/strategy_id/as_of_date/title/markdown/metrics_json/kind='investment'）；可手动跑或 timer（workbench-canonical-backtest.timer，B037-OPS1 接线）。(2) **investment_report 表 + repo + alembic**：db/models + repositories；upsert by (strategy_id, as_of_date)。(3) **services/reports.py + reports_scanner.py**：用户 Reports 列表/详情**只显 kind=investment**（真实投资报告）；**docs/test-reports/ 开发 signoff 从用户 Reports 过滤出**（移除或挪 dev kind，用户视图不可见）；保留 B040 metrics 解析渲染真实报告指标。(4) **前端 Reports 页**：渲染真实投资报告（B040 metrics 卡 + Markdown body + 标题/as_of_date）；空态（无 canonical 报告时）友好文案『暂无投资报告，请先运行 canonical 回测』；research-only 标注。(5) **测试**：backend pytest（reports 列表只含 kind=investment / 开发 signoff 不在用户列表 / canonical 报告生成 monkeypatch 引擎→写 investment_report / get_report 渲染）；前端 vitest（Reports 渲染投资报告非开发签收 / 空态）；Playwright（/reports 显投资报告，双 locale）。(6) Gates：backend pytest ≥ baseline+≥4 / frontend vitest ≥ baseline+ / ruff/mypy/lint/typecheck 0 / §12.10.2 守门绿（canonical allowlist）/ alembic head。(7) 不动：F001-F003 / docs/test-reports/ 文件本身（仅过滤出用户视图，dev 可保留访问）/ B040 指标卡。",
       "design_decisions": [
         "Reports 报告源=canonical 定时回测（planner 决）：权威默认参数报告；on-demand 任意参数属 Backtest 页非 Reports。",

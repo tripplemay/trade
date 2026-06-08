@@ -1,0 +1,15 @@
+[Unit]
+Description=Daily timer for the workbench canonical investment report (read-only Master backtest)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B047-backtest-reports-real-engine-spec.md
+
+[Timer]
+# 04:00 UTC — after the data-refresh (00:30 prices) + recommendations (03:00)
+# have landed the day's real data, so the canonical backtest reads fresh
+# prices. Persistent=true catches a missed run after a reboot; the report job
+# is idempotent (investment_report upserts by strategy_id + as_of_date).
+OnCalendar=*-*-* 04:00:00
+Persistent=true
+Unit=workbench-canonical-backtest.service
+
+[Install]
+WantedBy=timers.target

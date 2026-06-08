@@ -27,7 +27,7 @@ import logging
 import os
 import time
 from datetime import date
-from typing import Any
+from typing import Any, Protocol
 
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -38,10 +38,17 @@ from workbench_api.backtests.mapping import (
     map_trades,
 )
 from workbench_api.db.engine import get_engine
-from workbench_api.db.models.backtest_run import BacktestRun
 from workbench_api.db.repositories.backtest_run import BacktestRunRepository
 
 logger = logging.getLogger(__name__)
+
+
+class BacktestRunLike(Protocol):
+    """Structural view of a queued run the engine needs — a ``BacktestRun``
+    row, or the canonical job's lightweight stand-in."""
+
+    run_id: str
+    params: dict[str, Any] | None
 
 POLL_SECONDS = float(os.environ.get("WORKBENCH_BACKTEST_POLL_SECONDS", "3.0"))
 
@@ -131,7 +138,7 @@ def _load_backtest_snapshot() -> Any:
     )
 
 
-def run_backtest_job(run: BacktestRun) -> dict[str, Any]:
+def run_backtest_job(run: BacktestRunLike) -> dict[str, Any]:
     """Run the real Master Portfolio backtest for one queued run and return
     the mapped result + report markdown. Imports ``trade`` lazily so the
     module loads without the heavy stack (and so the AST guard scans the

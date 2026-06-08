@@ -211,12 +211,12 @@
     "title": "报告",
     "count": "{count} 份报告",
     "card": {
-      "title": "签收 / 扫盘 / 复盘",
-      "descriptionPrefix": "来源于 ",
-      "descriptionPath": "docs/test-reports/",
-      "descriptionSuffix": "。点击标题渲染 markdown;若表格 ≥10 行将使用 AG Grid 排序。"
+      "title": "投资报告",
+      "descriptionPrefix": "权威 Master Portfolio 回测报告（",
+      "descriptionPath": "真实引擎",
+      "descriptionSuffix": "）。点击标题渲染 markdown;若表格 ≥10 行将使用 AG Grid 排序。历史回测结果,非收益预测。"
     },
-    "empty": "暂无报告。",
+    "empty": "暂无投资报告——请先运行 canonical 回测生成。",
     "detail": {
       "back": "← 返回报告列表",
       "metricsTitle": "核心指标",

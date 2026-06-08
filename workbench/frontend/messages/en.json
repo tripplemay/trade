@@ -211,12 +211,12 @@
     "title": "Reports",
     "count": "{count} reports",
     "card": {
-      "title": "Sign-offs, sweeps, reviews",
-      "descriptionPrefix": "Sourced from ",
-      "descriptionPath": "docs/test-reports/",
-      "descriptionSuffix": ". Click a title to render the markdown with sortable AG Grid for any table with 10+ rows."
+      "title": "Investment reports",
+      "descriptionPrefix": "Canonical Master Portfolio backtest reports (",
+      "descriptionPath": "real engine",
+      "descriptionSuffix": "). Click a title to render the markdown with sortable AG Grid for any table with 10+ rows. Historical backtest results, not a forecast."
     },
-    "empty": "No reports surfaced yet.",
+    "empty": "No investment reports yet — run the canonical backtest to generate one.",
     "detail": {
       "back": "← back to reports",
       "metricsTitle": "Headline metrics",

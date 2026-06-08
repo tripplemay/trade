@@ -61,15 +61,33 @@ def test_backtests_request_path_does_not_import_trade() -> None:
     )
 
 
-def test_worker_allowlist_imports_trade_when_present() -> None:
-    """The worker / canonical jobs ARE the allowed trade importers. They are
-    added in F002 / F004 — assert the positive contract only once they exist so
-    a future refactor that severs the real-engine import is caught."""
+def _imports_worker(py_path: Path) -> bool:
+    tree = ast.parse(py_path.read_text(encoding="utf-8"))
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and (node.module or "").startswith(
+            "workbench_api.backtests.worker"
+        ):
+            return True
+    return False
 
-    for module in (WORKER_MODULE, CANONICAL_MODULE):
-        if module.is_file():
-            assert _imports_trade(module), (
-                f"{module.relative_to(BACKEND_ROOT)} is the off-request-path "
-                "real-engine job and must import trade; if the engine moved, "
-                "update this allowlist + the request-path guard"
-            )
+
+def test_worker_imports_trade_when_present() -> None:
+    """The worker IS the allowed trade importer (the real engine). Pin it once
+    it exists so a refactor that severs the real-engine import is caught."""
+
+    if WORKER_MODULE.is_file():
+        assert _imports_trade(WORKER_MODULE), (
+            "workbench_api/backtests/worker.py drives the real engine and must "
+            "import trade; if the engine moved, update this allowlist + guard"
+        )
+
+
+def test_canonical_drives_the_real_engine_when_present() -> None:
+    """The canonical job runs the real engine — directly importing trade or via
+    the worker (which does). Pin the positive contract once it exists."""
+
+    if CANONICAL_MODULE.is_file():
+        assert _imports_trade(CANONICAL_MODULE) or _imports_worker(CANONICAL_MODULE), (
+            "workbench_api/backtests/canonical.py must drive the real engine "
+            "(import trade, or the worker that does)"
+        )

@@ -1,0 +1,32 @@
+[Unit]
+Description=Workbench canonical investment report (Master Portfolio backtest, read-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B047-backtest-reports-real-engine-spec.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=deploy
+Group=deploy
+WorkingDirectory=/srv/workbench/current/backend
+
+EnvironmentFile=/etc/workbench/workbench.env
+
+# Read the real unified daily prices the data-refresh job writes (the monthly
+# fixture can't drive the Master backtest).
+Environment=WORKBENCH_DATA_ROOT=/var/lib/workbench/data
+
+# Permanent product boundary (r) (B047 spec §3): runs the DETERMINISTIC Master
+# Portfolio backtest + report generation ONLY — imports the trade package and
+# writes the investment_report table. ExecStart invokes the canonical CLI and
+# nothing else; it never runs broker / order-ticket / execution / fills /
+# reconcile code. Backtests are historical, never a forward prediction (§1.1).
+ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.backtests.canonical
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/workbench /var/log/workbench /tmp
+
+# No [Install] — pulled by workbench-canonical-backtest.timer.

@@ -19,21 +19,17 @@ the frontend can rewrite them on render without re-parsing markdown.
 from __future__ import annotations
 
 import re
-from pathlib import Path
+from typing import Any
 
+from sqlalchemy.orm import Session
+
+from workbench_api.db.repositories.investment_report import InvestmentReportRepository
 from workbench_api.schemas.reports import (
     ReportDetail,
     ReportListResponse,
     ReportMetrics,
     ReportSummary,
     ReportTable,
-)
-from workbench_api.services.reports_scanner import (
-    _batch_from_name,
-    _date_from_name,
-    _kind_from_name,
-    _slug_from_name,
-    recent_reports,
 )
 
 
@@ -47,64 +43,83 @@ _TABLE_LINE_RE = re.compile(r"^\s*\|.+\|\s*$")
 _SEPARATOR_RE = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$")
 
 
-def list_reports(reports_dir: Path, *, limit: int = 50) -> ReportListResponse:
-    """List the most recent reports under ``reports_dir`` as schema rows."""
+def list_reports(session: Session) -> ReportListResponse:
+    """List the canonical INVESTMENT reports (B047 F004).
 
-    scanned = recent_reports(reports_dir, limit=limit)
+    The user Reports page now surfaces real Master/sleeve backtest reports
+    written by the canonical job (``kind='investment'``), NOT the development
+    sign-offs under ``docs/test-reports/`` (those stay reachable via the
+    /api/docs deep links, but are filtered out of the user Reports list)."""
+
+    reports = InvestmentReportRepository(session).list_reports()
     rows = [
         ReportSummary(
-            slug=entry["id"],
-            title=entry["title"],
-            date=entry["date"],
-            batch=_batch_from_name(Path(entry["path"]).name),
-            kind=entry["status"],
-            path=entry["path"],
+            slug=report.slug,
+            title=report.title,
+            date=report.as_of_date.isoformat(),
+            batch=report.strategy_id,
+            kind=report.kind,
+            path="",
         )
-        for entry in scanned
+        for report in reports
     ]
     return ReportListResponse(reports=rows)
 
 
-def get_report(slug: str, reports_dir: Path) -> ReportDetail:
-    """Resolve ``slug`` to a markdown file and parse it into a ReportDetail.
+def get_report(session: str | Session, slug: str | None = None) -> ReportDetail:
+    """Resolve ``slug`` to an investment report and shape it into a ReportDetail.
 
-    Raises ``ReportNotFoundError`` when no file matches.
-    """
+    Raises ``ReportNotFoundError`` when no report matches."""
 
-    if not reports_dir.is_dir():
-        raise ReportNotFoundError(f"reports_dir does not exist: {reports_dir}")
+    # Backwards-tolerant arg order during the F004 cut-over: callers pass
+    # (session, slug). The legacy (slug, reports_dir) path is gone.
+    if slug is None:
+        raise ReportNotFoundError("slug is required")
+    if not isinstance(session, Session):
+        raise ReportNotFoundError("a DB session is required")
 
-    # Two acceptable match shapes:
-    #   1. Exact slug match (after stripping date + .md)
-    #   2. Substring match (slug embedded in filename) — handy when the
-    #      caller used a partial like "B019-retune"
-    candidates: list[Path] = []
-    for entry in reports_dir.glob("*.md"):
-        if _slug_from_name(entry.name) == slug:
-            candidates = [entry]
-            break
-        if slug in entry.name:
-            candidates.append(entry)
+    report = InvestmentReportRepository(session).get_by_slug(slug)
+    if report is None:
+        raise ReportNotFoundError(f"No investment report matches slug={slug!r}")
 
-    if not candidates:
-        raise ReportNotFoundError(f"No report file matches slug={slug!r}")
-    path = candidates[0]
-    body = path.read_text(encoding="utf-8", errors="replace")
-
-    tables = _extract_tables(body)
-    cross_links = _extract_cross_links(body)
-    metrics = _parse_metrics(tables)
-
+    tables = _extract_tables(report.markdown)
+    cross_links = _extract_cross_links(report.markdown)
     return ReportDetail(
-        slug=_slug_from_name(path.name),
-        title=_slug_from_name(path.name).replace("-", " ").strip(),
-        date=_date_from_name(path.name, path.stat().st_mtime),
-        batch=_batch_from_name(path.name),
-        kind=_kind_from_name(path.name),
-        body_markdown=body,
+        slug=report.slug,
+        title=report.title,
+        date=report.as_of_date.isoformat(),
+        batch=report.strategy_id,
+        kind=report.kind,
+        body_markdown=report.markdown,
         tables=tables,
         cross_links=cross_links,
-        metrics=metrics,
+        metrics=_metrics_from_json(report.metrics_json),
+    )
+
+
+def _metrics_from_json(metrics_json: dict[str, Any] | None) -> ReportMetrics | None:
+    """Map the worker's stored metrics dict to the ReportMetrics card shape.
+
+    The engine emits cagr / sharpe / sortino / max_drawdown / turnover; calmar
+    is derived (CAGR / |max_drawdown|), volatility is not computed → None."""
+
+    if not metrics_json:
+        return None
+    cagr = metrics_json.get("cagr")
+    max_dd = metrics_json.get("max_drawdown")
+    calmar = (
+        cagr / abs(max_dd)
+        if isinstance(cagr, (int, float)) and isinstance(max_dd, (int, float)) and max_dd
+        else None
+    )
+    return ReportMetrics(
+        sharpe=metrics_json.get("sharpe"),
+        sortino=metrics_json.get("sortino"),
+        calmar=calmar,
+        cagr=cagr,
+        max_drawdown=max_dd,
+        volatility=None,
+        turnover=metrics_json.get("turnover"),
     )
 
 

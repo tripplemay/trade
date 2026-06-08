@@ -15,6 +15,7 @@ from workbench_api.db.models.backlog_entry import BacklogEntry
 from workbench_api.db.models.backtest_run import BacktestRun
 from workbench_api.db.models.base import Base
 from workbench_api.db.models.fill_journal_entry import FillJournalEntry
+from workbench_api.db.models.investment_report import InvestmentReport
 from workbench_api.db.models.llm_budget_log import LLMBudgetLog
 from workbench_api.db.models.market_context import MarketContextObservation
 from workbench_api.db.models.news import News
@@ -34,6 +35,7 @@ __all__ = [
     "BacktestRun",
     "Base",
     "FillJournalEntry",
+    "InvestmentReport",
     "LLMBudgetLog",
     "MarketContextObservation",
     "News",

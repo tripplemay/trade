@@ -13,17 +13,12 @@ strategy-performance conclusion (v0.9.21 fixture-vs-real-signal policy).
 
 from __future__ import annotations
 
-import time
-from pathlib import Path
-
 import pytest
 from fastapi.testclient import TestClient
-from jose import jwt
 
 from workbench_api.app import create_app
-from workbench_api.auth.jwt_validator import JWT_ALGORITHM
 from workbench_api.schemas.reports import ReportTable
-from workbench_api.services.reports import _parse_metrics, get_report
+from workbench_api.services.reports import _parse_metrics
 from workbench_api.settings import Settings, get_settings
 
 SECRET = "test-secret-do-not-use-in-prod"
@@ -128,78 +123,16 @@ def test_first_data_row_is_used() -> None:
     assert metrics.sharpe == pytest.approx(1.1)  # first row, not the second
 
 
-# --- get_report integration + route ---------------------------------------
-
-_REPORT_MD = """# B016 Risk Parity vs HRP
-
-Some narrative text above the table.
-
-| method | annualized_return | sharpe | max_drawdown | turnover |
-|---|---|---|---|---|
-| risk_parity | 0.1966 | 0.6268 | -0.1966 | 1.09 |
-| hrp | 0.1500 | 0.5000 | -0.2500 | 0.90 |
-
-Conclusion paragraph below.
-"""
-
-_NO_METRICS_MD = "# B099 Note\n\nJust prose, no metrics table.\n"
+# B047 F004: the get_report integration + /api/reports route metrics tests
+# moved to test_reports.py (the route is now DB-backed — investment reports,
+# not the filesystem). The pure `_parse_metrics` table-parser unit tests above
+# stay (the parser is retained as a helper).
 
 
-def _authed_client(reports_dir: Path) -> TestClient:
+def test_route_detail_requires_auth(initialised_db: str) -> None:
     app = create_app()
     app.dependency_overrides[get_settings] = lambda: Settings(
-        NEXTAUTH_SECRET=SECRET,
-        ALLOWED_USER_EMAIL=ALLOWED_EMAIL,
-        WORKBENCH_REPORTS_DIR=str(reports_dir),
+        NEXTAUTH_SECRET=SECRET, ALLOWED_USER_EMAIL=ALLOWED_EMAIL
     )
     client = TestClient(app)
-    now = int(time.time())
-    token = jwt.encode(
-        {"email": ALLOWED_EMAIL, "sub": "rpt", "iat": now, "exp": now + 3600},
-        SECRET,
-        algorithm=JWT_ALGORITHM,
-    )
-    client.cookies.set("authjs.session-token", token)
-    return client
-
-
-def test_get_report_parses_metrics_and_keeps_body_byte_identical(tmp_path: Path) -> None:
-    md_path = tmp_path / "B016-risk-parity-2026-05-14.md"
-    md_path.write_text(_REPORT_MD, encoding="utf-8")
-    detail = get_report("B016-risk-parity", tmp_path)
-    assert detail.metrics is not None
-    assert detail.metrics.sharpe == pytest.approx(0.6268)
-    assert detail.metrics.calmar == pytest.approx(0.1966 / 0.1966)  # derived
-    # body_markdown must be the original source, byte-for-byte.
-    assert detail.body_markdown == _REPORT_MD
-
-
-def test_route_returns_metrics_field_when_present(
-    initialised_db: str, tmp_path: Path  # noqa: ARG001
-) -> None:
-    (tmp_path / "B016-risk-parity-2026-05-14.md").write_text(_REPORT_MD, encoding="utf-8")
-    client = _authed_client(tmp_path)
-    payload = client.get("/api/reports/B016-risk-parity").json()
-    assert payload["metrics"] is not None
-    assert payload["metrics"]["sharpe"] == pytest.approx(0.6268)
-
-
-def test_route_metrics_is_null_without_metrics_table(
-    initialised_db: str, tmp_path: Path  # noqa: ARG001
-) -> None:
-    (tmp_path / "B099-note-2026-05-14.md").write_text(_NO_METRICS_MD, encoding="utf-8")
-    client = _authed_client(tmp_path)
-    payload = client.get("/api/reports/B099-note").json()
-    assert payload["metrics"] is None
-
-
-def test_route_detail_requires_auth(initialised_db: str, tmp_path: Path) -> None:  # noqa: ARG001
-    (tmp_path / "B016-risk-parity-2026-05-14.md").write_text(_REPORT_MD, encoding="utf-8")
-    app = create_app()
-    app.dependency_overrides[get_settings] = lambda: Settings(
-        NEXTAUTH_SECRET=SECRET,
-        ALLOWED_USER_EMAIL=ALLOWED_EMAIL,
-        WORKBENCH_REPORTS_DIR=str(tmp_path),
-    )
-    client = TestClient(app)
-    assert client.get("/api/reports/B016-risk-parity").status_code == 401
+    assert client.get("/api/reports/B016-risk-parity-2026-05-14").status_code == 401
