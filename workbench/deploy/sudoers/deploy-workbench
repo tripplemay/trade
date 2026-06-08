@@ -42,3 +42,12 @@ deploy ALL=(ALL) NOPASSWD: /bin/systemctl daemon-reload
 deploy ALL=(ALL) NOPASSWD: /usr/local/bin/workbench-install-unit * workbench-*.service
 deploy ALL=(ALL) NOPASSWD: /usr/local/bin/workbench-install-unit * workbench-*.timer
 deploy ALL=(ALL) NOPASSWD: /bin/systemctl enable --now workbench-*.timer
+
+# B047 F002 — long-running backtest worker DAEMON (workbench-*-worker.service).
+# Unlike the timer oneshots, a daemon is enabled + restarted directly. Scoped
+# to the `-worker.service` suffix (not all workbench services) so the grant
+# can't enable/restart the backend/frontend units. Same bounded residual risk
+# as the timer wildcard (the deploy account already runs the backend code).
+deploy ALL=(ALL) NOPASSWD: /bin/systemctl enable --now workbench-*-worker.service
+deploy ALL=(ALL) NOPASSWD: /bin/systemctl restart workbench-*-worker.service
+deploy ALL=(ALL) NOPASSWD: /bin/systemctl status workbench-*-worker.service

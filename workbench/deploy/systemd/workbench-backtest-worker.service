@@ -1,0 +1,45 @@
+[Unit]
+Description=Workbench backtest worker (on-demand Master Portfolio backtest engine, read-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B047-backtest-reports-real-engine-spec.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# B047 F002 — long-running DAEMON (not a timer oneshot): it polls the
+# backtest_run queue continuously so on-demand Run requests get picked up with
+# low latency. Restart=always so a crash mid-run self-heals (the claimed row
+# is left `running`; a future sweep / re-enqueue handles stragglers).
+Type=simple
+Restart=always
+RestartSec=5
+User=deploy
+Group=deploy
+WorkingDirectory=/srv/workbench/current/backend
+
+# Secrets (WORKBENCH_DB_URL, ...) live in /etc/workbench/workbench.env.
+EnvironmentFile=/etc/workbench/workbench.env
+
+# Point the trade loaders at the VM data root the data-refresh job writes, so
+# the backtest reads the REAL unified daily prices (the monthly fixture cannot
+# drive the Master backtest — risk_parity needs daily vol history).
+Environment=WORKBENCH_DATA_ROOT=/var/lib/workbench/data
+
+# Permanent product boundary (r) (B047 spec §3): this worker runs the
+# DETERMINISTIC Master Portfolio backtest engine ONLY — it imports the trade
+# package (real backtest + report generation) and writes the backtest_run
+# table. ExecStart invokes the worker module and nothing else — it never runs
+# broker / order-ticket / execution / fills / reconcile code.
+# tests/safety/test_backtest_worker_scope.py greps this ExecStart line and
+# scans the backtests package to enforce that. Backtests are read-only history,
+# never a forward prediction (positioning §1.1).
+ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.backtests.worker
+
+# Standard hardening (mirrors workbench-recommendations.service).
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/workbench /var/log/workbench /tmp
+
+[Install]
+WantedBy=multi-user.target

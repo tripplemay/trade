@@ -409,6 +409,24 @@ if [[ -d "${SYSTEMD_SRC}" ]]; then
       echo "::warning::Could not install/enable ${timer_unit}. Apply the versioned sudoers artifact workbench/deploy/sudoers/deploy-workbench to /etc/sudoers.d/deploy-workbench AND install workbench/deploy/sudoers/workbench-install-unit to /usr/local/bin/workbench-install-unit (root:root 0755), then re-deploy (B037-OPS1). Deploy continues; this timer will not run until granted." >&2
     fi
   done
+
+  # B047 F002 — long-running DAEMON worker services (workbench-*-worker.service):
+  # unlike the timer oneshots above these have no sibling .timer, so they are
+  # install + enable --now + restart directly. The deploy-workbench sudoers
+  # grants `enable --now` / `restart` for workbench-*-worker.service.
+  for worker_path in "${SYSTEMD_SRC}"/workbench-*-worker.service; do
+    [[ -e "${worker_path}" ]] || continue
+    worker_unit=$(basename "${worker_path}")
+    echo "→ install + enable + restart ${worker_unit} (boundary (r) read-only backtest daemon)"
+    if sudo "${INSTALL_UNIT}" "${worker_path}" "${worker_unit}" \
+      && sudo /bin/systemctl daemon-reload \
+      && sudo /bin/systemctl enable --now "${worker_unit}" \
+      && sudo /bin/systemctl restart "${worker_unit}"; then
+      echo "✓ ${worker_unit} enabled + restarted"
+    else
+      echo "::warning::Could not install/enable ${worker_unit}. Apply the versioned sudoers artifact workbench/deploy/sudoers/deploy-workbench (now includes enable/restart for workbench-*-worker.service) to /etc/sudoers.d/deploy-workbench, then re-deploy. Deploy continues; the backtest worker will not run until granted." >&2
+    fi
+  done
 fi
 
 echo "✓ deploy complete: ${RELEASE_DIR}"
