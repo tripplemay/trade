@@ -120,6 +120,19 @@ if [[ -r "${ENV_FILE}" ]]; then
   # shellcheck disable=SC1090
   . "${ENV_FILE}"
   set +a
+  # B048-OPS1 F001 — root-cause guard for Finding #1. A *readable* env file
+  # is the production path; if WORKBENCH_DB_URL is still unset after sourcing
+  # it, the env file is missing the key and alembic would silently migrate
+  # the DEFAULT_DEV_DB_URL scratch DB instead of prod (exactly the B022 F014
+  # regression — and a likely cause of prod stalling at an old revision).
+  # Fail LOUDLY here rather than migrate the wrong DB + skip the schema check.
+  if [[ -z "${WORKBENCH_DB_URL:-}" ]]; then
+    echo "::error::${ENV_FILE} is readable but WORKBENCH_DB_URL is unset after sourcing it." >&2
+    echo "  alembic would migrate the DEFAULT_DEV_DB_URL scratch DB, not prod." >&2
+    echo "  Add WORKBENCH_DB_URL=sqlite:////var/lib/workbench/db/workbench.db to the" >&2
+    echo "  env file (re-run the bootstrap-env workflow) and redeploy." >&2
+    exit 71
+  fi
 else
   echo "  warning: ${ENV_FILE} not readable; alembic will use DEFAULT_DEV_DB_URL" >&2
 fi
@@ -216,7 +229,45 @@ fi
 echo "→ alembic upgrade head"
 (
   cd "${RELEASE_DIR}/backend"
-  exec "${VENV_PYTHON}" -m alembic upgrade head
+  "${VENV_PYTHON}" -m alembic upgrade head
+)
+
+# 2a. B048-OPS1 F001 — assert alembic actually reached head on the DB it
+# migrated (core durable defense). This turns the Finding #1 silent failure
+# (prod stalled at 0006, missing 0007-0011) into a LOUD deploy failure: if
+# the DB's current revision != the migration tree's head, emit `::error::`
+# and exit 1. Reads the URL from the same Settings model alembic's env.py
+# uses, so it checks exactly the DB that was just migrated. Idempotent +
+# read-only (no migration side effects).
+echo "→ asserting alembic at head (B048-OPS1)"
+(
+  cd "${RELEASE_DIR}/backend"
+  "${VENV_PYTHON}" - <<'PY'
+import sys
+
+from alembic.config import Config
+from alembic.runtime.migration import MigrationContext
+from alembic.script import ScriptDirectory
+from sqlalchemy import create_engine
+
+from workbench_api.settings import get_settings
+
+url = get_settings().WORKBENCH_DB_URL
+cfg = Config("alembic.ini")
+cfg.set_main_option("script_location", "workbench_api/db/migrations")
+heads = set(ScriptDirectory.from_config(cfg).get_heads())
+engine = create_engine(url)
+with engine.connect() as conn:
+    current = set(MigrationContext.configure(conn).get_current_heads())
+if current != heads:
+    print(
+        f"::error::alembic NOT at head after upgrade: current={sorted(current)} "
+        f"heads={sorted(heads)} db={url}. Migrations did not apply to this DB.",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+print(f"  ✓ alembic at head {sorted(heads)} (db={url})")
+PY
 )
 
 # 2b. Post-alembic safety check — assert the workbench tables exist in
@@ -230,7 +281,7 @@ echo "→ alembic upgrade head"
 # migration drift that leaves the schema short of these 6 tables fails
 # the deploy here, before the symlink flip + service restart.
 if [[ -n "${WORKBENCH_DB_URL:-}" ]]; then
-  echo "→ verifying schema (account / backlog_entry / snapshot_meta / order_ticket / fill_journal_entry / account_snapshot / tiingo_budget_log)"
+  echo "→ verifying schema (B021/B022/B023 + B034-B048 tables incl. price_history)"
   "${VENV_PYTHON}" - <<'PY'
 import os
 import sys
@@ -248,6 +299,15 @@ required = {
     "fill_journal_entry",
     "account_snapshot",
     "tiingo_budget_log",
+    # B048-OPS1 F001 — the 0007-0011 era tables prod was missing in
+    # Finding #1 (alembic stalled at 0006). Listing them here makes a short
+    # schema fail the deploy concretely (belt-and-suspenders to the
+    # alembic==head assert above).
+    "market_context_observation",
+    "advisor_recommendation",
+    "price_snapshot",
+    "recommendation_snapshot",
+    "price_history",
 }
 missing = required - present
 if missing:

@@ -1,10 +1,10 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "B048-OPS1 deploy alembic 自动升级可靠性（横切 ops 修复，非产品序列）— 让 deploy 时 DB migrations 可靠自动 apply 到 prod（无需手动 alembic upgrade head）+ deploy 后断言 alembic current==head（失败硬报）。来源 B048 signoff §Finding #1 + §Soft-watch S2：deploy 后 prod alembic 停 0006 缺 0007-0011 共 5 migration，price_history 等表不存在需手动 upgrade。决策（★用户批）：拆 B048-OPS1 修部署★（alembic 缺陷正交 B048 功能、影响所有后续批次，同 B045-OPS1）/ durable 防线=deploy 后断言 alembic==head（v0.9.36 同思路）/ 排 order 3 BL-B023-S1 之前（闭环需 deploy 可靠建表）。根因现状（待真机诊断）：deploy.sh 有 alembic 步骤(源 env 后跑)但 prod 停 0006，候选=ENV_FILE 未加载→alembic 跑 scratch DB(B022 同款坑注释已载)/silent fail/B044-B045 中断部署期未达。2 features：(F001 g)真机诊断根因+对症修自动升级(prod DB 升 head)+deploy 后断言 alembic==head 硬失败+deploy 守门；(F002 c)L2 fresh deploy 后 migrations 自动 apply(alembic==head 无需手动)+0007-0011 表存在+断言跑过+signoff(§Finding #1/S2 resolved)。永久硬边界继承：单 VM sqlite alembic 幂等/§12.10.2/B023/deploy 用户 sudo 不扩。不做：改 migration 内容/B048 功能码/评分。后续：里程碑 C 路径恢复 BL-B023-S1 闭环冒烟(deploy 可靠建表)→HK-China→B042/B047/B049。",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-06-07",
   "reference_docs": [
     "docs/specs/B048-OPS1-alembic-deploy-reliability-spec.md",
@@ -26,7 +26,7 @@
   "generator_handoff": null,
   "session_notes": {
     "planner": "2026-06-07/08 续长程会话：B048 done(5/5)→done 阶段裁定→B048-OPS1 规划。本段 B048-OPS1 planning。(1) B048 功能签收 PASS：安全层从占位变真（price_history 深历史表+risk_panel master/per-sleeve DD 真实 mark-to-market+kill_switch gate 真实阈值 0.15+wash_sale 真实），B023 不破。(2) **但 signoff 带 Finding #1（medium）**：deploy 后 prod alembic 停 0006 缺 0007-0011，price_history 表不存在需手动 upgrade——Codex 标 done 却说『需 Generator fix』自相矛盾，我裁定=真实部署缺陷必须修。(3) **2 决策（用户批）**：①Finding #1 → 拆 B048-OPS1 修部署（同 B045-OPS1，正交功能、影响所有后续）；②proposed-learnings(kill_switch 阈值三处副本+dashboard master_drawdown 0.0) → 沉淀 framework v0.9.37(README §经验教训『同一风控常数多处副本→单一来源+feature-grounding』)+记 backlog(dashboard 细化并入 B049)。(4) **framework v0.9.37 已沉淀**(commit e83f945)：抽单一来源 ≠ 本批全改，只改 feature-号覆盖引用其余入 backlog。(5) **B048-OPS1 诊断线索**：deploy.sh 有 alembic 步骤但 prod 停 0006；deploy.sh 注释自载 B022 同款坑(ENV_FILE 未加载→alembic 跑 DEFAULT_DEV_DB_URL scratch DB)→最可能根因；durable 防线=deploy 后断言 alembic==head 硬失败(无论根因兜底)。(6) spec docs/specs/B048-OPS1-...-spec.md 10 章；features 2(1g+1c)；progress building；排 backlog order 3 BL-B023-S1 之前。(7) F001 交 Generator：真机诊断(prod DB revision+env 加载+alembic 对哪 DB 跑)+对症修+deploy.sh 加 alembic==head 断言硬失败。(8) F002 Codex：L2 fresh deploy alembic==head 无需手动+0007-0011 表存在+断言跑过+§Finding #1/S2 resolved。(9) **B048 Soft-watch S1**(cost_degraded：price_history 不覆盖 2026-06-07 近期 snapshot 日期 low，data-refresh 拉近期价后改善)继续监控。(10) 后续 BL-B023-S1 闭环冒烟(用真实 diff+真实安全层，deploy 可靠建表)。",
-    "generator": null,
+    "generator": "2026-06-08 B048-OPS1 F001 done，status→verifying 交 Codex F002（L2 真 VM）。**诊断（code-level，无 VM 访问）**：deploy.sh 已源 env+跑 alembic upgrade head(env.py 经 Settings 读 WORKBENCH_DB_URL)，workflow SSH 跑 deploy.sh 带 set -e；故硬失败本应可见。**真正静默漏洞确认**：post-alembic schema-check 由 `if [[ -n WORKBENCH_DB_URL ]]` 守门——env 未导出 URL 时 alembic 迁 scratch DB + 该 check 被静默跳过（prod 永不迁移且无报警）= Finding #1 最可能机理（与 B022 F014 同族）。候选根因(待 F002 VM log 实证)：(a) env 文件缺 WORKBENCH_DB_URL→scratch；(b) alembic 静默；(c) B044/B045 中断部署期未达。**修(3 处 deploy.sh)**：①env 可读但 sourced 后 WORKBENCH_DB_URL 仍空→`::error::`+exit 71 硬失败(堵 scratch 路径，不再静默跳过)；②alembic upgrade 后断言 `alembic current==heads`(ScriptDirectory.get_heads vs MigrationContext.get_current_heads，读 Settings 同 URL)，不等→`::error::`+exit 1(核心 durable 防线，根因无关)；③schema-check required 表加 0007-0011(market_context_observation/advisor_recommendation/price_snapshot/recommendation_snapshot/price_history)直接抓 Finding #1 缺表。**验证**：bash -n 过；assert-head 片段本地实测 fresh DB→at head(0011)绿、stalled@0006→exit 1+::error:: 红(正确捕获)；deploy 守门 test +2(assert-head+env-url-fail)且 required 表加 price_history 等；backend 902 passed(900→902)/ruff/mypy 0。**未做**：真机诊断(无 VM 访问，留 F002 实证根因 + 验 fresh deploy alembic==head 无需手动+0007-0011 表存在)。Framework 候选：alembic-assert-head-after-deploy(同 v0.9.36 smoke-import-check 家族)留 F002 signoff §Framework Learnings。",
     "evaluator": null
   },
   "features": [

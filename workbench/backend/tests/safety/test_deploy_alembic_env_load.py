@@ -90,9 +90,51 @@ def test_deploy_script_verifies_required_tables_post_alembic() -> None:
         "order_ticket",
         "fill_journal_entry",
         "account_snapshot",
+        # B048-OPS1 F001 — the 0007-0011 era tables prod was missing in
+        # Finding #1 (alembic stalled at 0006). price_history (0011) is the
+        # concrete Finding #1 table; the rest round out the gap.
+        "market_context_observation",
+        "advisor_recommendation",
+        "price_snapshot",
+        "recommendation_snapshot",
+        "price_history",
     )
     for table in required:
         assert table in text, (
             f"deploy.sh post-alembic check must verify presence of '{table}' "
             f"table — missing reference"
         )
+
+
+def test_deploy_script_asserts_alembic_at_head_after_upgrade() -> None:
+    """B048-OPS1 F001 (core durable defense) — deploy.sh must assert
+    ``alembic current == heads`` after the upgrade and fail LOUDLY
+    (``::error::`` + non-zero exit) on a mismatch. This turns the Finding #1
+    silent stall (prod stuck at 0006) into a visible deploy failure."""
+
+    text = DEPLOY_SH.read_text(encoding="utf-8")
+    assert "get_current_heads" in text, (
+        "deploy.sh must compare the DB's current revision to the migration "
+        "tree head after `alembic upgrade head`"
+    )
+    assert "ScriptDirectory" in text, (
+        "deploy.sh must resolve the migration tree head via alembic's "
+        "ScriptDirectory to compare against the DB"
+    )
+    # The assert must fail loudly — GitHub Actions error annotation + exit.
+    assert "::error::alembic NOT at head" in text, (
+        "the alembic==head assertion must emit a `::error::` annotation so a "
+        "silent stall becomes a visible failure"
+    )
+
+
+def test_deploy_script_fails_when_db_url_missing_from_readable_env() -> None:
+    """B048-OPS1 F001 — a readable env file (the prod path) with no
+    WORKBENCH_DB_URL must fail the deploy, not silently migrate the
+    DEFAULT_DEV_DB_URL scratch DB (the B022 F014 / Finding #1 vector)."""
+
+    text = DEPLOY_SH.read_text(encoding="utf-8")
+    assert "::error::${ENV_FILE} is readable but WORKBENCH_DB_URL is unset" in text, (
+        "deploy.sh must hard-fail when the env file is readable but does not "
+        "export WORKBENCH_DB_URL"
+    )
