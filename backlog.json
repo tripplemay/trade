@@ -34,6 +34,21 @@
     "milestone": "C — 交易安全/风控/合规层真实化（F011 根因）"
   },
   {
+    "id": "B048-OPS1",
+    "title": "deploy alembic 自动升级可靠性（migrations 自动 apply + 后置断言 head）",
+    "description": "【2026-06-07 用户确认拆出修部署：B048 Finding #1】B048 deploy 后 prod alembic 停 0006、缺 0007-0011 共 5 migration（price_history 等表不存在），需手动 alembic upgrade head。这是真实部署可靠性缺陷——每次带 migration 的 deploy 都不会自动建表/升级（影响所有后续批次），正交 B048 功能码（同 B045-OPS1 先例）。deploy.sh 有 alembic 步骤但失效，候选根因=ENV_FILE 未加载→alembic 跑 DEFAULT_DEV_DB_URL scratch DB（deploy.sh 注释自载 B022 同款坑）/silent fail/B044-B045 中断部署期未达。本条=真机诊断+对症修使 fresh deploy 后 prod alembic==head（无需手动）+ **deploy 后断言 alembic current==head 硬失败**（v0.9.36 smoke check 同思路兜底）。spec docs/specs/B048-OPS1-alembic-deploy-reliability-spec.md（已起草，building 中）。",
+    "decisions": [
+      "2026-06-07 用户批：拆 B048-OPS1 修部署（正交 B048 功能、影响所有后续批次）",
+      "durable 防线=deploy 后断言 alembic==head 硬失败，静默失败→响亮（v0.9.36 smoke check 家族）",
+      "排 order 3，BL-B023-S1 闭环冒烟之前（闭环需 deploy 可靠建表）"
+    ],
+    "confirmed_at": "2026-06-07",
+    "priority": "high",
+    "order": 3,
+    "source": "B048 signoff §Finding #1 + §Soft-watch S2（alembic 未自动升级）",
+    "milestone": "C — 部署可靠性（alembic 自动升级，BL-B023-S1 前置）"
+  },
+  {
     "id": "BL-B023-S1",
     "title": "生产 recommendation-driven ticket 端到端冒烟（交易闭环确证）",
     "description": "【2026-06-07 提级 low→high：里程碑 C 用户交易闭环的端到端验证】B023 L2 验收时生产 recommendations/current.target_positions=[] 且 account/latest=null，evaluator 只能走 defensive=true 路径；常规 recommendation-driven ticket 的端到端真 VM 路径未物理覆盖。**现 B044/B045 已让 /current 返回真实评分权重**，本条升级为：用真实评分目标 + 真实 current_weight（B046）→ 准确 diff → order ticket → fills → reconcile → journal 跑通一次生产冒烟，确证『按系统指示交易』闭环可用（里程碑 C 完成标准 §5）。",
@@ -45,7 +60,7 @@
     ],
     "confirmed_at": "2026-05-20",
     "priority": "high",
-    "order": 3,
+    "order": 4,
     "priority_history": [
       {
         "priority": "low",
@@ -76,7 +91,7 @@
     ],
     "confirmed_at": "2026-05-13",
     "priority": "high",
-    "order": 4,
+    "order": 5,
     "priority_history": [
       {
         "priority": "medium",
@@ -130,7 +145,7 @@
     ],
     "confirmed_at": "2026-05-20",
     "priority": "medium",
-    "order": 5,
+    "order": 6,
     "source": "B023 signoff soft-watch S2",
     "milestone": "C — Risk UI（随 B042）"
   },
@@ -148,7 +163,7 @@
     ],
     "confirmed_at": "2026-06-07",
     "priority": "high",
-    "order": 6,
+    "order": 7,
     "source": "2026-06-07 回测页讨论（发现合成 stub）+ Reports 页讨论（发现接开发签收语料错配）+ 里程碑 C 重定义",
     "milestone": "C — 回测+Reports 真实可信（接真实引擎）"
   },
@@ -165,7 +180,7 @@
     ],
     "confirmed_at": "2026-06-07",
     "priority": "high",
-    "order": 7,
+    "order": 8,
     "source": "2026-06-07 全面占位核查 + 用户『里程碑 C 所有页面接真实引擎』标准",
     "milestone": "C — 全页面真实化收口 gate（最后一批）"
   },

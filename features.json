@@ -1,60 +1,26 @@
 {
-  "sprint": "B048-real-risk-safety-layer",
+  "sprint": "B048-OPS1-alembic-deploy-reliability",
   "features": [
     {
       "id": "F001",
-      "title": "历史价格表 foundation：price_history 表+repo + backfill job（B045 unified CSV → price_history）+ scope 守门",
+      "title": "诊断+修 deploy alembic 自动升级（prod DB 升到 head）+ deploy 后断言 alembic current==head 硬失败 + deploy 守门",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【2026-06-07 用户已批：一次做全含历史价格表，见 spec §2】(1) **price_history 表** db/models/price_history.py（symbol/obs_date/close/source/fetched_at；UniqueConstraint(symbol,obs_date)；深每日，与 price_snapshot 分离不重载其 Day P&L 语义）+ alembic 迁移（down_revision=当前 head）+ db/repositories/price_history.py（save_if_new 幂等 / close_on_or_before(symbol,date) / closes_by_symbol_since(symbol,since)）。(2) **backfill job** workbench_api/price_history/（CLI + 可挂 data-refresh timer）：读 B045 unified CSV（<data_root>/snapshots/prices/unified/prices_daily.csv 深历史）→ 写 price_history（master 全 universe symbol）；§12.10 job 读 CSV 写 DB，请求路径只读。(3) **scheduler scope 守门**扩 price_history backfill（边界 r 只读，禁 broker/execution）。(4) pytest ≥8：repo save/close_on_or_before/since；backfill（fake CSV→表正确）；scope 守门含 price_history。(5) Gates：backend pytest ≥ baseline+≥8 / ruff 0 / mypy 0 / 复用既有 secret。(6) 不动：price_snapshot 语义 / risk_panel（F003 用）/ 前端。",
+      "status": "pending",
+      "acceptance": "【2026-06-07 用户已批：拆 B048-OPS1 修部署 + deploy 后断言 alembic==head，见 spec §3】(1) **诊断 Finding #1 根因**：真机诊断为何 B048 deploy 后 prod alembic 停 0006 缺 0007-0011（候选：ENV_FILE 未加载→alembic 跑 DEFAULT_DEV_DB_URL scratch DB(deploy.sh 注释载 B022 同款坑) / alembic silent fail / B044-B045 中断部署期未达）；记录根因（确认 prod DB 当前 revision + env 是否加载 + alembic 对哪个 DB 跑）。(2) **对症修自动升级**：确保 fresh deploy 后 prod DB（WORKBENCH_DB_URL=sqlite:////var/lib/workbench/db/workbench.db）alembic current == head（无需手动）。候选修法按诊断：ENV_FILE 可靠加载使 alembic 对 prod 跑 / 去 --quiet + 捕获 alembic 非零退出→deploy 硬失败 / 确认 alembic 步骤 install 成功后必达。(3) **deploy 后断言 alembic==head（核心 durable 防线）**：deploy.sh alembic upgrade 后断言 alembic current == alembic heads（对 prod DB）；**不等→`::error::` + exit 1 硬失败（不静默吞）**；echo 当前 revision 便排查。(4) deploy.sh 段 dev rehearsal best-effort 不崩。(5) deploy 守门测试加 alembic-upgrade + assert-head 步骤存在断言。(6) Gates：backend pytest 不破 / 既有 backend+frontend+trade 部署路径不破 / ruff/mypy 0（如有 py 改动）。(7) 不动：migration 内容 / B048 功能码 / §12.10.2 / B023 / deploy 用户 sudo。",
       "design_decisions": [
-        "范围（2026-06-07 用户批）：一次做全含历史价格表 foundation，达真实 mark-to-market per-sleeve+master 回撤随时间。",
-        "历史价格（planner 决）：新 price_history 表（深每日），job 从 B045 unified CSV materialize；不重载 price_snapshot（Day P&L 最新+前一日语义）。"
+        "处理方式（2026-06-07 用户批）：拆 B048-OPS1 修部署（alembic 缺陷正交 B048 功能、影响所有后续批次，同 B045-OPS1）。",
+        "durable 防线（planner 决）：deploy 后断言 alembic current==head，静默失败→响亮硬失败（v0.9.36 smoke check 同思路）。",
+        "排序（planner 决）：order 3，BL-B023-S1 闭环冒烟之前（闭环需 deploy 可靠建表）。"
       ]
     },
     {
       "id": "F002",
-      "title": "sleeve tag 写路径补齐（PositionEntry schema + ui_edit/reconcile/bootstrap 保留 tag）+ regen api.ts",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "(1) **PositionEntry 加可选 sleeve** schemas/execution.py；ui_edit（execution.py 写路径）/ fill_reconcile（reconcile.py 从 prior 重建）/ bootstrap **保留/填 sleeve tag**（现丢失 B037 加的 tag）→ per-sleeve 分组可靠。(2) schema-tolerant（旧无 tag→'unclassified' 沿用 home.py 语义）；regen api.ts。(3) pytest：三写路径 sleeve tag 保留（ui_edit/reconcile round-trip 不丢 tag）。(4) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / 既有 execution/reconcile 契约不破 / 前端 typecheck（api.ts 变）。(5) 不动：positions 其他字段语义 / B023 工作流 / risk_panel（F003）。",
-      "design_decisions": [
-        "sleeve tag（planner 决）：PositionEntry 加可选 sleeve，三写路径保留；schema-tolerant 旧→unclassified；per-sleeve NAV 分组前置。"
-      ]
-    },
-    {
-      "id": "F003",
-      "title": "risk_panel mark-to-market 回撤（master + per-sleeve 随时间，重建 NAV 历史）+ kill_switch gate 真实化 + 阈值统一 0.15",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "(1) **重建 NAV 历史**：对每历史 AccountSnapshot（date D, positions）用 price_history.close_on_or_before(symbol,D) mark-to-market 每持仓 → snapshot NAV(D)；按 sleeve tag 分组 → per-sleeve NAV(D)；复用 mark_to_market.py(B046)。(2) **master DD** = peak-to-latest on mark-to-market NAV 历史（去成本价）；**per-sleeve DD** = 各 sleeve NAV 历史 peak-to-latest（去镜像占位）。(3) **历史价格不足** degrade（退成本价/剔除该点 + 标注，v0.9.21 不蒙混），DD 窗口限可 mark 范围。(4) _classify_state kill-switch/yellow 用真实 mark-to-market master/per-sleeve DD。(5) **kill_switch gate 真实化** recommendations.py _build_gate_checks 接真实 master DD（调 risk_panel 或共享 drawdown 函数）→ status 反映真实 DD vs 阈值；**阈值统一 0.15**（去 rec 的 0.20，对齐 risk_panel 权威）。(6) pytest：master/per-sleeve DD mark-to-market（已知历史价格+持仓→已知 DD；历史不足 degrade）；kill_switch gate 真实 DD + 阈值 0.15。(7) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / risk schema 不破 / §12.10.2 守门不破。(8) 不动：risk panel 信息性（不 gate ticket）/ master 评分 / 前端 Risk UI 结构（B042）。",
-      "design_decisions": [
-        "估值口径（planner 决）：mark-to-market 全程一致，复用 B046 mark_to_market.py，与 execution diff 口径一致。",
-        "kill_switch 阈值（planner 决）：统一 0.15（rec 0.20→对齐 risk_panel 权威）；信息性非 gate ticket，行为变更记 signoff。",
-        "历史不足（planner 决）：graceful degrade + 标注，不蒙混（v0.9.21）。"
-      ]
-    },
-    {
-      "id": "F004",
-      "title": "wash_sale 检测（FillJournalEntry + avg_cost → 亏损卖+30 日回补）+ recommendations 用真实 flags",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "(1) **wash_sale 服务** services/wash_sale.py：读 FillJournalEntry（symbol/side/fill_price/filled_at）+ AccountSnapshot avg_cost → 检测亏损卖出（卖出前 avg_cost > fill_price）+ 30 日内回补同标的 → WashSaleFlag（symbol/last_buy_date/days_since）。(2) recommendations.py 用真实 wash_sale_flags（去硬编码 []）。(3) B023 ticket 渲染 wash-sale 段自动填真（不改渲染逻辑）。(4) pytest：亏损卖+30 日内回补→flag；无损卖/超 30 日/无回补→无 flag；多事件。(5) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / **B023 ticket wash-sale 渲染不破**。(6) 不动：fills/journal 写路径 / B023 工作流 / F003 risk。",
-      "design_decisions": [
-        "wash_sale（planner 决）：FillJournalEntry + avg_cost 检测亏损卖+30 日回补，数据已足够，无需新表。"
-      ]
-    },
-    {
-      "id": "F005",
-      "title": "Codex L1 + L2 真 VM 验收（price_history backfill + 真实 mark-to-market 回撤 + kill_switch 真实 + wash_sale 真实 + B023 不破）+ signoff",
+      "title": "Codex L2 真 VM 验收：fresh deploy 后 migrations 自动 apply（alembic==head 无需手动）+ 表存在 + 断言跑过 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "L1 (CI 内)：F001-F004 全 generator 验收脚本跑通 — backend pytest ≥ baseline+ / ruff / mypy；**B023 工作流回归绿**；§12.10.2 请求路径禁 trade 守门不破；scheduler scope 含 price_history backfill；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）+ recent-errors={count:0}；(2) **price_history backfill 真机有深历史行**（手动 trigger backfill→记录 symbol 数/日期跨度）；(3) **risk_panel master DD + per-sleeve DD 真实 mark-to-market**：PUT 含浮盈/浮亏持仓 + 历史 → GET risk-panel 真实回撤（非成本价、per-sleeve 非镜像；记录 vs 旧口径差异 + degrade 哪些点）；(4) **kill_switch gate 反映真实 DD**（GET /api/recommendations/current 的 gate 非硬编码 pass；阈值 0.15）；(5) **wash_sale 真实触发**（构造亏损卖+30 日回补 fills → /current wash_sale_flags 非空）；(6) **B023 工作流不破**（ticket→fills→reconcile→journal）；(7) HEAD≡main + B026 absent。Signoff: docs/test-reports/B048-real-risk-safety-layer-signoff-2026-MM-DD.md 用模板（§Production/HEAD + §Post-signoff Deploy + §24 若加 timer + **mark-to-market 回撤 vs 旧成本价对比 + 安全层占位→真实清单**）。Framework 候选：历史价格重建 NAV / 安全层占位→真实 若出新通用规律记 §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
+      "status": "pending",
+      "acceptance": "L1 (CI 内)：F001 验收脚本跑通 — backend pytest 不破 / ruff / mypy（如有 py 改动）；deploy 守门（alembic upgrade + assert-head 存在）；artifact grep secret 泄漏=0。L2 (真 VM)：(1) dispatch fresh deploy（gh workflow run \"Workbench Deploy\"）→ deploy log 显示 alembic upgrade + **alembic==head 断言跑过**；(2) **prod DB alembic current == head（无需手动 alembic upgrade head）**——对比 B048 Finding #1 的需手动；(3) **price_history（0011）+ 0007-0011 全部表存在**（market_context/advisor/prices/recommendation_snapshot/price_history）；(4) curl /api/health 200 + 依赖这些表的路由（risk_panel/recommendations/current）正常 + /api/debug/recent-errors={count:0}；(5) HEAD≡main + B026 absent。Signoff: docs/test-reports/B048-OPS1-alembic-deploy-reliability-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（§Production/HEAD + §Post-signoff Deploy + **§B048 Finding #1 / Soft-watch S2 resolved**）。Framework 候选：alembic-assert-head-after-deploy 若成通用部署规约（同 smoke import check 家族）记 §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
 }
