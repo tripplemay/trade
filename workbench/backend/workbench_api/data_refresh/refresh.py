@@ -41,9 +41,21 @@ from workbench_api.data.snapshot_loader import PriceBar
 logger = logging.getLogger(__name__)
 
 # ETF set the Master needs: risk_parity universe (SPY/VEA/AGG/GLD/SGOV) + EEM
-# (the global_etf_momentum sleeve trades the broad ETF set). ETFs have no SEC
-# fundamentals, so they are priced-only.
-ETF_UNIVERSE: tuple[str, ...] = ("AGG", "EEM", "GLD", "SGOV", "SPY", "VEA")
+# (the global_etf_momentum sleeve trades the broad ETF set) + the BL-B011-S2
+# HK-China satellite ETFs (MCHI/FXI/KWEB/ASHR — US-listed Phase 1, USD-priced).
+# ETFs have no SEC fundamentals, so they are priced-only.
+ETF_UNIVERSE: tuple[str, ...] = (
+    "AGG",
+    "ASHR",
+    "EEM",
+    "FXI",
+    "GLD",
+    "KWEB",
+    "MCHI",
+    "SGOV",
+    "SPY",
+    "VEA",
+)
 
 PRICES_RELPATH = ("snapshots", "prices", "unified", "prices_daily.csv")
 FUNDAMENTALS_RELPATH = ("snapshots", "fundamentals", "unified", "fundamentals.csv")

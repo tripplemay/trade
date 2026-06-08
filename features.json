@@ -6,7 +6,7 @@
       "title": "数据：MCHI/FXI/KWEB/ASHR 入 B045 data_refresh ETF_UNIVERSE + trade/data/hk_china_universe.py loader（price-only）+ fixture",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【2026-06-08 用户已批实现 HK-China + planner 按设计说明书定 Phase 1 US-listed/price-only，见 spec §2】(1) **data_refresh ETF_UNIVERSE** workbench_api/data_refresh/refresh.py：ETF_UNIVERSE += MCHI/FXI/KWEB/ASHR（B045 pipeline 拉其 daily prices 入 unified CSV；price_universe() 自动含；ETF 不取 fundamentals）。(2) **hk_china loader** 新 trade/data/hk_china_universe.py：load_universe(as_of)（HK-China ETF 列表 + 最小元数据 ticker/name/exposure，无 sector）+ load_prices(as_of)（镜像 us_quality_universe.load_prices：读 unified CSV/fixture 长格式 OHLCV，筛 HK-China ETF symbol，resolution priority 同 B025）；**无 load_fundamentals/load_earnings_calendar**（price-only 策略）。(3) **fixture** 合成 HK-China ETF prices（足够 momentum 12m + 200D MA 窗口）。(4) pytest：load_universe/load_prices（unified + fixture 路径，as_of 筛）；data_refresh 含 4 新 ETF。(5) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / 复用 TIINGO secret 不引新。(6) 不动：既有 ETF_UNIVERSE 6 symbol / us_quality loader / fundamentals 路径。",
       "design_decisions": [
         "Phase 1 universe（planner 决，设计 §4.3）：US-listed MCHI/FXI/KWEB/ASHR（USD 无汇率/港股日历复杂度）；HK-listed 留 Phase 2。",

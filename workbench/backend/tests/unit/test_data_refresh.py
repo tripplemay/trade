@@ -149,6 +149,13 @@ def test_price_universe_is_etfs_plus_equities_sorted_unique() -> None:
     assert len(universe) == len(set(universe))
 
 
+def test_etf_universe_includes_hk_china_phase1_etfs() -> None:
+    """BL-B011-S2 F001 — the HK-China satellite Phase 1 ETFs are priced by
+    the refresh pipeline so the hk_china loader resolves real data."""
+
+    assert {"MCHI", "FXI", "KWEB", "ASHR"}.issubset(set(ETF_UNIVERSE))
+
+
 # --- prices CSV ---
 
 
