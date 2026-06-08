@@ -82,6 +82,7 @@
 2. **分发表**：`strategy_id → (engine_fn, result_adapter, report_builder)`，覆盖 `B006-global-etf-momentum`（`run_multi_monthly_backtest`）、`B016-risk-parity-hrp`（`run_risk_parity_monthly_backtest`）、`master_portfolio`（现有 `run_master_portfolio_quarterly_backtest`）。各引擎所需 `signal_dates`/`records`/`params` 按现有 `_load_backtest_snapshot` + `_signal_dates_in_range` 复用；引擎间 cadence 差异（monthly vs quarterly）按各引擎契约传入。
 3. **结果适配器**：momentum / risk_parity / master 各一个 adapter，result → `metrics`/`equity`/`allocations`/`trades`（处理 `portfolio_target_weights` vs `signal.target_weights` 字段名差异）。保留现 `map_*` 为 master adapter。
 4. **master 显式注册项**：`services/strategies.py` 注册表加 `master_portfolio` 条目（旗舰组合，显式可选；否则修复后用户无法再跑 master）；前端选择器据 `/api/strategies` 自动呈现。
+4b. **`parameters` 接线（2026-06-09 审查产出，用户批并入）**：把 `run.params["parameters"]` 接进各引擎的 `strategy_parameters`（risk_parity/momentum 都接受对应 Parameters 类型）——每策略 adapter 解析自己的参数类型，空 dict→None 用引擎默认（保持当前行为兼容）。**canonical 依赖（必修）**：`canonical.py:44-48` 的 `run` stand-in 设 `strategy_id="master_portfolio"`（或 worker 分发对缺 strategy_id 默认 master），否则 B050 分发后 canonical 每日报告 AttributeError。
 5. **regime 友好排除**：`B013/B014/B015`（research 态 weight=0.0）→ worker 抛 `error_kind=inactive_strategy`（不跑 master 兜底）。`services/backtests.py` 校验层可提前挡（research 态不入队，返 422/友好）或入队后 worker 标 error_kind——generator 二选一并注明。
 6. **测试**：分发表三策略各产**不同** metrics/equity（断言彼此不相等，核心反例）+ regime→inactive_strategy + strategy_id 读取 + 适配器字段映射。
 7. **Gates**：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / §12.10.2 守门（worker 仍是唯一 importer，请求路径不变）。

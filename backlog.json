@@ -206,5 +206,18 @@
     "confirmed_at": "2026-05-13",
     "priority": "obsolete",
     "source": "B010 signoff soft-watch S1"
+  },
+  {
+    "id": "BL-B050-S1",
+    "title": "backlog status 字段被忽略（编辑后恢复 open）",
+    "description": "【2026-06-09 B050 类反模式系统审查发现】backlog 条目的 status 字段是 B050 类反模式：BacklogUpdateRequest.status 被 schema 接收，但 services/backlog.py:248 显式不存（注释『request.status is not stored』），读时 services/backlog.py:112 硬编码 status='open'。用户症状：编辑 backlog 把 status 改为 in_progress/done→提交→刷新恢复 'open'，状态管理完全无效。根因：BacklogEntryModel 无 status 列（存它需 migration）。backlog 是内部工具页（非用户投资页，里程碑 C 已排除），影响面小=低优先。修复=建 status 列+migration+update 存+read 返真实值+测试；或若产品上 backlog 不需状态流转则显式从 schema 移除 status 字段消除误导（generator 起时按产品意图二选一）。",
+    "decisions": [
+      "2026-06-09 用户批：加需求池小修，未来批次顺手做（低优先不打断当前 B050）",
+      "二选一：建 status 列真实存读 vs 显式移除 status 字段（按产品是否需要 backlog 状态流转定）",
+      "内部工具页，非里程碑 C 范围；不阻塞任何投资功能"
+    ],
+    "confirmed_at": "2026-06-09",
+    "priority": "low",
+    "source": "B050 类反模式系统审查（docs/product/b050-class-decorative-control-audit-2026-06.md §3.2）"
   }
 ]
