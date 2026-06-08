@@ -28,17 +28,49 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MetricsDisplay, type MetricStat } from "@/components/metrics/MetricsDisplay";
-import { BacktestTimeoutError, runBacktest } from "@/lib/backtest-poll";
+import { BacktestRunError, BacktestTimeoutError, runBacktest } from "@/lib/backtest-poll";
 import { cn } from "@/lib/utils";
 import type { ColDef } from "ag-grid-community";
 import type { components } from "@/types/api";
 
 type BacktestRunResponse = components["schemas"]["BacktestRunResponse"];
+type BacktestDataRange = components["schemas"]["BacktestDataRangeResponse"];
 type StrategyListResponse = components["schemas"]["StrategyListResponse"];
 type StrategySummary = components["schemas"]["StrategySummary"];
 type BacktestTrade = components["schemas"]["BacktestTrade"];
 
 const STRATEGIES_URL = "/api/strategies";
+const DATA_RANGE_URL = "/api/backtests/data-range";
+
+const ERROR_KINDS = [
+  "insufficient_history",
+  "no_signal_dates",
+  "data_unavailable",
+  "unknown",
+] as const;
+type ErrorKind = (typeof ERROR_KINDS)[number];
+
+function normaliseErrorKind(kind: string | null): ErrorKind {
+  return (ERROR_KINDS as readonly string[]).includes(kind ?? "") ? (kind as ErrorKind) : "unknown";
+}
+
+/** ISO date minus one calendar year (UTC, rolls Feb-29 → Mar-1). */
+function isoMinusOneYear(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(Date.UTC((y ?? 0) - 1, (m ?? 1) - 1, d ?? 1)).toISOString().slice(0, 10);
+}
+
+/** Default window that always lands in the usable band: end = data_end,
+ * start = max(min_usable_start, data_end − 1y). ISO strings compare
+ * chronologically, so `max` is a lexical comparison. */
+function defaultWindow(range: BacktestDataRange): { start: string; end: string } {
+  const end = range.data_end ?? "";
+  const min = range.min_usable_start ?? "";
+  const oneYearBack = end ? isoMinusOneYear(end) : min;
+  return { start: oneYearBack > min ? oneYearBack : min, end };
+}
+
+type RangeStatus = "loading" | "empty" | "ready";
 
 function buildTradeColumns(
   t: ReturnType<typeof useTranslations<"backtest.trades">>,
@@ -82,6 +114,7 @@ function MetricsCard({ metrics }: { metrics: BacktestRunResponse["metrics"] | nu
 export default function BacktestPage() {
   const t = useTranslations("backtest");
   const tSelector = useTranslations("backtest.selector");
+  const tErrorKind = useTranslations("backtest.errorKind");
   const tEquity = useTranslations("backtest.equity");
   const tDrawdown = useTranslations("backtest.drawdown");
   const tTrades = useTranslations("backtest.trades");
@@ -90,12 +123,18 @@ export default function BacktestPage() {
   const [strategies, setStrategies] = useState<StrategySummary[]>([]);
   const [strategyId, setStrategyId] = useState<string>("");
   const [snapshotId, setSnapshotId] = useState<string>("snap-fixture");
-  const [startDate, setStartDate] = useState<string>("2024-01-01");
-  const [endDate, setEndDate] = useState<string>("2024-06-30");
+  // B047-OPS2 F002 (L1): no hardcoded default — the window is derived from the
+  // real data-coverage range once it loads (so the default Run always lands in
+  // the usable band). Empty until data-range resolves.
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [dataRange, setDataRange] = useState<BacktestDataRange | null>(null);
+  const [rangeStatus, setRangeStatus] = useState<RangeStatus>("loading");
   const [comparisonOn, setComparisonOn] = useState<boolean>(true);
   const [result, setResult] = useState<BacktestRunResponse | null>(null);
   const [running, setRunning] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorKind, setErrorKind] = useState<string | null>(null);
   const [sharedRange, setSharedRange] = useState<EquityCurveRange | null>(null);
   const tradesRef = useRef<DataTableHandle>(null);
 
@@ -120,10 +159,53 @@ export default function BacktestPage() {
     };
   }, []);
 
+  // B047-OPS2 F002 (L1/L2): load the real data-coverage window, then seed the
+  // default range inside the usable band + clamp the picker. Empty / unreachable
+  // → empty state (Run disabled, "run a data refresh" prompt).
+  useEffect(() => {
+    let cancelled = false;
+    fetch(DATA_RANGE_URL)
+      .then(async (response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return (await response.json()) as BacktestDataRange;
+      })
+      .then((range) => {
+        if (cancelled) return;
+        setDataRange(range);
+        if (range.data_start && range.data_end && range.min_usable_start) {
+          const window = defaultWindow(range);
+          setStartDate(window.start);
+          setEndDate(window.end);
+          setRangeStatus("ready");
+        } else {
+          setRangeStatus("empty");
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setRangeStatus("empty");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const minUsableStart = dataRange?.min_usable_start ?? null;
+  const dataEnd = dataRange?.data_end ?? null;
+  // The selected window is valid when it loaded, both bounds are set, and it sits
+  // within the coverage band (start ≥ min_usable_start, end ≤ data_end, ordered).
+  const rangeValid =
+    rangeStatus === "ready" &&
+    startDate !== "" &&
+    endDate !== "" &&
+    (minUsableStart === null || startDate >= minUsableStart) &&
+    (dataEnd === null || endDate <= dataEnd) &&
+    startDate <= endDate;
+
   const handleRun = async () => {
-    if (!strategyId) return;
+    if (!strategyId || !rangeValid) return;
     setRunning(true);
     setError(null);
+    setErrorKind(null);
     setResult(null);
     try {
       // B047 async: enqueue → poll until the worker finishes (or errors / times
@@ -138,13 +220,16 @@ export default function BacktestPage() {
       setResult(data);
       setSharedRange(null);
     } catch (reason: unknown) {
-      const message =
-        reason instanceof BacktestTimeoutError
-          ? t("timeout")
-          : reason instanceof Error
-            ? reason.message
-            : String(reason);
-      setError(message);
+      // B047-OPS2 F002 (L3): a structured worker failure → bilingual friendly
+      // message keyed by error_kind (never the raw English exception). Timeout
+      // keeps its own copy; anything else falls back to the raw message.
+      if (reason instanceof BacktestRunError) {
+        setErrorKind(normaliseErrorKind(reason.errorKind));
+      } else if (reason instanceof BacktestTimeoutError) {
+        setError(t("timeout"));
+      } else {
+        setError(reason instanceof Error ? reason.message : String(reason));
+      }
     } finally {
       setRunning(false);
     }
@@ -193,8 +278,13 @@ export default function BacktestPage() {
     });
   }, [result]);
 
-  const stateLabel = error
-    ? tCommon("errorPrefix", { error })
+  // error_kind (structured) → friendly bilingual copy; otherwise the raw error
+  // string (timeout / network). The raw English worker exception is never shown.
+  const displayError = errorKind
+    ? tErrorKind(normaliseErrorKind(errorKind), { minUsableStart: minUsableStart ?? "" })
+    : error;
+  const stateLabel = displayError
+    ? tCommon("errorPrefix", { error: displayError })
     : running
       ? t("stateRunning")
       : result
@@ -255,6 +345,8 @@ export default function BacktestPage() {
                       type="date"
                       data-testid="backtest-start-date"
                       value={startDate}
+                      min={minUsableStart ?? undefined}
+                      max={dataEnd ?? undefined}
                       onChange={(e) => setStartDate(e.target.value)}
                     />
                   </label>
@@ -264,10 +356,35 @@ export default function BacktestPage() {
                       type="date"
                       data-testid="backtest-end-date"
                       value={endDate}
+                      min={minUsableStart ?? undefined}
+                      max={dataEnd ?? undefined}
                       onChange={(e) => setEndDate(e.target.value)}
                     />
                   </label>
                 </div>
+                {rangeStatus === "loading" && (
+                  <p data-testid="backtest-range-loading" className="text-xs text-muted-foreground">
+                    {tSelector("rangeLoading")}
+                  </p>
+                )}
+                {rangeStatus === "empty" && (
+                  <p data-testid="backtest-empty-data" className="text-xs text-amber-500">
+                    {t("emptyData")}
+                  </p>
+                )}
+                {rangeStatus === "ready" && dataRange?.data_start && dataEnd && (
+                  <p data-testid="backtest-data-coverage" className="text-xs text-muted-foreground">
+                    {tSelector("dataCoverage", { start: dataRange.data_start, end: dataEnd })}
+                  </p>
+                )}
+                {rangeStatus === "ready" && !rangeValid && (
+                  <p data-testid="backtest-invalid-range" className="text-xs text-amber-500">
+                    {t("invalidRange", {
+                      minUsableStart: minUsableStart ?? "",
+                      dataEnd: dataEnd ?? "",
+                    })}
+                  </p>
+                )}
                 <label className="flex items-center gap-2 text-xs text-muted-foreground">
                   <input
                     type="checkbox"
@@ -280,7 +397,7 @@ export default function BacktestPage() {
                 <Button
                   data-testid="backtest-run"
                   onClick={handleRun}
-                  disabled={running || !strategyId}
+                  disabled={running || !strategyId || !rangeValid}
                   className="w-full"
                 >
                   {running ? tSelector("running") : tSelector("run")}

@@ -165,7 +165,17 @@
       "endDate": "结束日期",
       "compare": "对比 SPY + 60/40",
       "run": "运行回测",
-      "running": "运行中…"
+      "running": "运行中…",
+      "dataCoverage": "数据覆盖 {start} – {end}",
+      "rangeLoading": "正在加载数据范围…"
+    },
+    "emptyData": "暂无回测数据，请先运行数据刷新。",
+    "invalidRange": "请选择在数据覆盖范围内的区间（{minUsableStart} – {dataEnd}）。",
+    "errorKind": {
+      "insufficient_history": "所选范围历史数据不足以估算波动率，请选择 {minUsableStart} 之后的开始日期。",
+      "no_signal_dates": "所选范围内没有季度末调仓信号日，请扩大范围。",
+      "data_unavailable": "回测数据尚未就绪，请先运行数据刷新。",
+      "unknown": "该范围无法完成回测，请尝试其他范围。"
     },
     "metrics": {
       "title": "核心指标",

@@ -19,7 +19,7 @@
       "title": "前端——动态有效默认范围(去硬编码 2024 H1) + date picker 钳制+「数据覆盖 X–Y」 + error-kind→i18n 双语友好提示 + 空数据态 + vitest/Playwright",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【生产 hotfix 前端，见 spec §4.3-4.4。依赖 F001 data-range API + error-kind】(1) **L1 动态默认**：去 `backtest/page.tsx:93-94` 硬编码 `useState('2024-01-01')/('2024-06-30')`；启动 fetch `GET /api/backtests/data-range` → 默认 **`end=data_end`，`start=max(min_usable_start, data_end−1 年)`**（保证落可用带，默认 Run 必成功）；data-range 未就绪前禁 Run 或显 loading。(2) **L2 钳制**：date picker `min={min_usable_start} max={data_end}`（HTML min/max + 提交前校验，越界禁 Run/提示）；显「数据覆盖 {data_start}–{data_end}」说明（双语 i18n）。(3) **L3 友好错误**：按 F001 error-kind i18n 双语映射（`insufficient_history`→「所选范围历史数据不足以估算波动率，请选择 {min_usable_start} 之后的范围」/ EN 对应；`no_signal_dates`→对应文案），**不显原始英文异常串**。(4) **空数据态**：data-range 空→「暂无回测数据，请先运行数据刷新」双语。(5) **测试**：vitest（mock data-range→默认范围落可用带 / picker 钳制 / error-kind→双语文案 / 空数据态）+ Playwright（默认范围可 Run / 无效范围友好提示 / 双 locale）。(6) Gates：frontend vitest ≥ baseline+ / lint 0 / typecheck 0 / Playwright 不破 / i18n parity（backtest 新 key 双语齐）/ no-execution 守门。(7) 不动：B040 MetricsDisplay / async 轮询逻辑（backtest-poll.ts 不改，除非接 error-kind）/ 其他页。",
       "design_decisions": [
         "动态默认 end=data_end / start=max(min_usable_start, end−1yr)（planner 决 L1）：保证默认 Run 落可用带成功，根治开箱即坏。",

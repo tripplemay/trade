@@ -25,6 +25,21 @@ export class BacktestTimeoutError extends Error {
   }
 }
 
+/**
+ * B047-OPS2 F002 — a terminal `error` run, carrying the backend's structured
+ * `error_kind` (insufficient_history / no_signal_dates / data_unavailable /
+ * unknown). The page maps `errorKind` to a bilingual friendly message; the raw
+ * `message` (the English `error`) is kept for diagnostics only, never shown.
+ */
+export class BacktestRunError extends Error {
+  readonly errorKind: string | null;
+  constructor(message: string, errorKind: string | null = null) {
+    super(message);
+    this.name = "BacktestRunError";
+    this.errorKind = errorKind;
+  }
+}
+
 export interface RunOptions {
   fetchImpl?: typeof fetch;
   sleep?: (ms: number) => Promise<void>;
@@ -63,7 +78,7 @@ export async function pollBacktest(
     const data = (await response.json()) as BacktestRunResponse;
     if (data.status === "done") return data;
     if (data.status === "error") {
-      throw new Error(data.error ?? "backtest failed");
+      throw new BacktestRunError(data.error ?? "backtest failed", data.error_kind ?? null);
     }
     // queued / running → wait and poll again.
     await sleep(intervalMs);

@@ -4,6 +4,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  BacktestRunError,
   BacktestTimeoutError,
   enqueueBacktest,
   pollBacktest,
@@ -48,7 +49,14 @@ function done(): Resp {
   return {
     run_id: "bt-1",
     status: "done",
-    metrics: { cagr: 0.1, sharpe: 1.0, sortino: null, max_drawdown: -0.2, turnover: 2, win_rate: null },
+    metrics: {
+      cagr: 0.1,
+      sharpe: 1.0,
+      sortino: null,
+      max_drawdown: -0.2,
+      turnover: 2,
+      win_rate: null,
+    },
     equity: [{ date: "2024-12-31", nav: 110 }],
     allocations: [],
     trades: [],
@@ -57,10 +65,21 @@ function done(): Resp {
   };
 }
 
-function status(s: Resp["status"], error: string | null = null): Resp {
+function status(
+  s: Resp["status"],
+  error: string | null = null,
+  error_kind: string | null = null,
+): Resp {
   return {
-    run_id: "bt-1", status: s, metrics: null, equity: [], allocations: [],
-    trades: [], report_markdown: null, error,
+    run_id: "bt-1",
+    status: s,
+    metrics: null,
+    equity: [],
+    allocations: [],
+    trades: [],
+    report_markdown: null,
+    error,
+    error_kind,
   };
 }
 
@@ -72,7 +91,9 @@ describe("enqueueBacktest", () => {
   });
 
   it("throws on a non-ok enqueue", async () => {
-    const fetchImpl = vi.fn(async () => new Response("no", { status: 404 })) as unknown as typeof fetch;
+    const fetchImpl = vi.fn(
+      async () => new Response("no", { status: 404 }),
+    ) as unknown as typeof fetch;
     await expect(enqueueBacktest(REQUEST, { fetchImpl })).rejects.toThrow(/HTTP 404/);
   });
 });
@@ -90,6 +111,23 @@ describe("pollBacktest", () => {
     await expect(pollBacktest("bt-1", { fetchImpl, sleep: noSleep })).rejects.toThrow(
       /engine blew up/,
     );
+  });
+
+  it("rejects with a BacktestRunError carrying the structured error_kind (B047-OPS2)", async () => {
+    const fetchImpl = sequenceFetch([
+      status("error", "insufficient price history…", "insufficient_history"),
+    ]);
+    await expect(pollBacktest("bt-1", { fetchImpl, sleep: noSleep })).rejects.toMatchObject({
+      name: "BacktestRunError",
+      errorKind: "insufficient_history",
+    });
+  });
+
+  it("BacktestRunError defaults errorKind to null when the backend omits it", async () => {
+    const fetchImpl = sequenceFetch([status("error", "boom")]);
+    const err = await pollBacktest("bt-1", { fetchImpl, sleep: noSleep }).catch((e) => e);
+    expect(err).toBeInstanceOf(BacktestRunError);
+    expect((err as BacktestRunError).errorKind).toBeNull();
   });
 
   it("times out after maxAttempts of non-terminal status", async () => {

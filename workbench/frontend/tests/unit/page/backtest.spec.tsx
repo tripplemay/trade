@@ -66,6 +66,18 @@ const STRATEGY_LIST: components["schemas"]["StrategyListResponse"] = {
   ],
 };
 
+// B047-OPS2 F002: the page seeds its default window + clamp from this.
+const DATA_RANGE: components["schemas"]["BacktestDataRangeResponse"] = {
+  data_start: "2021-06-01",
+  data_end: "2026-06-08",
+  min_usable_start: "2022-04-02",
+};
+const EMPTY_RANGE: components["schemas"]["BacktestDataRangeResponse"] = {
+  data_start: null,
+  data_end: null,
+  min_usable_start: null,
+};
+
 // B047 async: POST /run returns a queued run_id; GET /{run_id} returns done.
 const QUEUED: components["schemas"]["BacktestRunResponse"] = {
   run_id: "abc123",
@@ -127,7 +139,13 @@ afterEach(() => {
 
 describe("BacktestPage (B022 F008)", () => {
   it("renders the ResizablePanel scaffold + state line idle", async () => {
-    vi.stubGlobal("fetch", buildFetch({ "/api/strategies": STRATEGY_LIST }));
+    vi.stubGlobal(
+      "fetch",
+      buildFetch({
+        "/api/strategies": STRATEGY_LIST,
+        "/api/backtests/data-range": DATA_RANGE,
+      }),
+    );
     const { getByTestId } = renderWithIntl(<BacktestPage />);
     expect(getByTestId("page-backtest")).toBeInTheDocument();
     expect(getByTestId("backtest-resizable-group")).toBeInTheDocument();
@@ -141,6 +159,7 @@ describe("BacktestPage (B022 F008)", () => {
       "fetch",
       buildFetch({
         "/api/strategies": STRATEGY_LIST,
+        "/api/backtests/data-range": DATA_RANGE,
         "/api/backtests/run": QUEUED, // POST enqueue → run_id abc123
         "/api/backtests/abc123": DONE_RESULT, // GET poll → done (first poll)
       }),
@@ -162,7 +181,13 @@ describe("BacktestPage (B022 F008)", () => {
   it("comparison toggle controls whether SPY + 60/40 layers ship", async () => {
     // Toggle behaviour is internal state — assert via the rendered control
     // since the chart wrapper is mocked. Default-on per F008 acceptance.
-    vi.stubGlobal("fetch", buildFetch({ "/api/strategies": STRATEGY_LIST }));
+    vi.stubGlobal(
+      "fetch",
+      buildFetch({
+        "/api/strategies": STRATEGY_LIST,
+        "/api/backtests/data-range": DATA_RANGE,
+      }),
+    );
     const { getByTestId } = renderWithIntl(<BacktestPage />);
     const toggle = getByTestId("backtest-comparison-toggle") as HTMLInputElement;
     expect(toggle.checked).toBe(true);
@@ -175,6 +200,7 @@ describe("BacktestPage (B022 F008)", () => {
       "fetch",
       buildFetch({
         "/api/strategies": STRATEGY_LIST,
+        "/api/backtests/data-range": DATA_RANGE,
       }),
     );
     const { getByTestId } = renderWithIntl(<BacktestPage />);
@@ -184,6 +210,108 @@ describe("BacktestPage (B022 F008)", () => {
     fireEvent.click(getByTestId("backtest-run"));
     await waitFor(() => {
       expect(getByTestId("backtest-state")).toHaveTextContent(/error/);
+    });
+  });
+});
+
+const ERROR_RUN = (
+  error: string,
+  error_kind: string,
+): components["schemas"]["BacktestRunResponse"] => ({
+  run_id: "bt-1",
+  status: "error",
+  metrics: null,
+  equity: [],
+  allocations: [],
+  trades: [],
+  report_markdown: null,
+  error,
+  error_kind,
+});
+
+describe("BacktestPage data range (B047-OPS2 F002)", () => {
+  it("seeds the default window inside the usable band once data-range loads", async () => {
+    vi.stubGlobal(
+      "fetch",
+      buildFetch({ "/api/strategies": STRATEGY_LIST, "/api/backtests/data-range": DATA_RANGE }),
+    );
+    const { getByTestId } = renderWithIntl(<BacktestPage />);
+    await waitFor(() => {
+      // end = data_end; start = max(min_usable_start, data_end − 1y) = 2025-06-08.
+      expect(getByTestId("backtest-end-date")).toHaveValue("2026-06-08");
+      expect(getByTestId("backtest-start-date")).toHaveValue("2025-06-08");
+    });
+    expect(getByTestId("backtest-run")).not.toBeDisabled();
+  });
+
+  it("clamps the pickers to the coverage band + shows the coverage caption", async () => {
+    vi.stubGlobal(
+      "fetch",
+      buildFetch({ "/api/strategies": STRATEGY_LIST, "/api/backtests/data-range": DATA_RANGE }),
+    );
+    const { getByTestId } = renderWithIntl(<BacktestPage />);
+    await waitFor(() => {
+      expect(getByTestId("backtest-start-date")).toHaveAttribute("min", "2022-04-02");
+    });
+    expect(getByTestId("backtest-start-date")).toHaveAttribute("max", "2026-06-08");
+    expect(getByTestId("backtest-end-date")).toHaveAttribute("min", "2022-04-02");
+    expect(getByTestId("backtest-end-date")).toHaveAttribute("max", "2026-06-08");
+    const coverage = getByTestId("backtest-data-coverage");
+    expect(coverage).toHaveTextContent("2021-06-01");
+    expect(coverage).toHaveTextContent("2026-06-08");
+  });
+
+  it("shows the empty state + disables Run when no data-refresh has run", async () => {
+    vi.stubGlobal(
+      "fetch",
+      buildFetch({ "/api/strategies": STRATEGY_LIST, "/api/backtests/data-range": EMPTY_RANGE }),
+    );
+    const { getByTestId } = renderWithIntl(<BacktestPage />);
+    await waitFor(() => {
+      expect(getByTestId("backtest-empty-data")).toBeInTheDocument();
+    });
+    expect(getByTestId("backtest-run")).toBeDisabled();
+  });
+
+  it("flags an out-of-band manual start date as invalid (Run disabled)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      buildFetch({ "/api/strategies": STRATEGY_LIST, "/api/backtests/data-range": DATA_RANGE }),
+    );
+    const { getByTestId } = renderWithIntl(<BacktestPage />);
+    await waitFor(() => {
+      expect(getByTestId("backtest-run")).not.toBeDisabled();
+    });
+    fireEvent.change(getByTestId("backtest-start-date"), { target: { value: "2021-07-01" } });
+    await waitFor(() => {
+      expect(getByTestId("backtest-invalid-range")).toBeInTheDocument();
+      expect(getByTestId("backtest-run")).toBeDisabled();
+    });
+  });
+
+  it("maps error_kind to a friendly message, never the raw English exception", async () => {
+    vi.stubGlobal(
+      "fetch",
+      buildFetch({
+        "/api/strategies": STRATEGY_LIST,
+        "/api/backtests/data-range": DATA_RANGE,
+        "/api/backtests/run": QUEUED,
+        "/api/backtests/abc123": ERROR_RUN(
+          "insufficient price history for any signal date in range",
+          "insufficient_history",
+        ),
+      }),
+    );
+    const { getByTestId } = renderWithIntl(<BacktestPage />, { locale: "en" });
+    await waitFor(() => {
+      expect(getByTestId("backtest-run")).not.toBeDisabled();
+    });
+    fireEvent.click(getByTestId("backtest-run"));
+    await waitFor(() => {
+      const state = getByTestId("backtest-state");
+      expect(state).toHaveTextContent(/lacks enough price history/);
+      expect(state).toHaveTextContent("2022-04-02");
+      expect(state).not.toHaveTextContent(/insufficient price history/);
     });
   });
 });
