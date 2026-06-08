@@ -134,3 +134,24 @@ POST /api/backtests/run (B006-global-etf-momentum, 2024-06→2025-05)
 ### Conclusion (re-verify)
 
 Backtest 真实引擎工作 ✓（on-demand run CACR 0.31, sharpe 2.54, 12 trades）。Reports 基础设施就位（canonical job 写入 DB）但读路径待修。剩余 B049 全页面审计可并行进行。
+
+---
+
+## ⟳⟳ Planner 裁定（2026-06-08，纠正 re-verify 误诊 + 拆 B047-OPS1）
+
+**re-verify 的「读路径待修」是误诊，根因是验证操作本身踩了 env 坑：**
+
+- `canonical.py` 用 `get_engine()` 解析 DB，**依赖 `WORKBENCH_DB_URL` 环境变量**（与 backend service 同一套解析）。
+- systemd 单元 `workbench-canonical-backtest.service` 有 `EnvironmentFile=/etc/workbench/workbench.env`（→ prod DB）。但 re-verify 是**裸跑 `python -m workbench_api.backtests.canonical` 且 deploy-gaps 表自承「canonical job 缺 env 手动传入」**——未 source `WORKBENCH_DB_URL` → `get_engine()` 回落默认 dev/scratch DB → **canonical 写进 scratch DB，而 API 读 prod DB → 返回 0**。这是 B048-OPS1 / B022 F014 同款 env-未导出坑，**非 `list_reports` 读路径代码缺陷**（该代码 inspection 无 kind/租户过滤，同 DB 必返回）。
+
+**判定：B047 PASS（done）。** 交付实质达成：
+- Backtest on-demand 真实引擎端到端 ✓（非退化，sharpe 2.54）。
+- Reports 真实投资报告**基础设施完整且单测过**（canonical 写 DB confirmed、investment_report 表/repo/service/前端齐、§12.10.2 守门）。
+- 唯一缺口=**真机端到端 Reports 验证被部署/env 可靠性 gap 阻塞**（与 F004 产品码正交），同 B048 Finding #1 → B048-OPS1 先例。
+
+**三个部署可靠性 gap 收进 B047-OPS1（用户 2026-06-08 拍板拆批）：**
+1. **canonical/worker CLI 缺 env 静默写 scratch DB** → 硬失败（B048-OPS1 env-url 空硬失败教训未套到 B047 新 CLI 入口）。
+2. **worker 初始 disabled（S1）** → sudoers 应用 + deploy 后断言 `workbench-backtest-worker.service` 自动 active（§12.11）。
+3. **alembic 0012-0013 未自动升 / 部署链是否真跑过 B047**（部署用户手动触发）→ 核实 + deploy 后断言。
+
+**B047-OPS1 的 L2 一并完成被推迟的 Reports 端到端**：deploy 链可靠后，canonical service（env 注入→prod DB）产出 → `/api/reports` ≥1 → `/reports` 渲染真实报告。B047 不再 ping-pong。
