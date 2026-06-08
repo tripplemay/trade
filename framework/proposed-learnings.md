@@ -112,3 +112,13 @@
 **状态：** 待确认（单例，等二例再沉淀）。
 
 <!-- 当前活动候选：BL-B011-S2 satellite 权重口径（④）+ B047 async worker 范式（③），均单例待二例。 -->
+
+## [2026-06-09] Claude CLI — 来源：B047-OPS2 F002 CI flake
+
+**类型：** 新坑（CI flaky test）
+
+**内容：** `workbench/frontend/tests/unit/risk-banner.spec.tsx > TicketPage F006 integration > red risk banner: keeping defensive posts defensive=true` 在 CI 负载下偶发失败（`expected {defensive:false} to deeply equal {defensive:true}`，266/267），本地连跑 5/5 通过、CI re-run 即绿。疑似 happy-dom 集成测试在 CI 高并发下的 waitFor/状态竞态（CI tests 6.5s vs 本地快）。与 B047-OPS2 改动无关（F002 只动 backtest 页/poll/i18n）。
+
+**建议写入：** 该 spec 加显式 `await waitFor` 稳态断言或 quarantine；或 evaluator.md §18 E2E 稳定性补一条「单测集成态 flake 先本地复跑 N 次定性，确认与本批无关后 re-run CI，不阻塞」。
+
+**状态：** 待确认（软关注，非阻塞；B047-OPS2 done 阶段一并提出）。

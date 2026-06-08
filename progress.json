@@ -1,5 +1,5 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "B047-OPS2 回测页生产 hotfix（默认范围开箱即坏 + 数据深度）。用户 2026-06-09 报生产故障：回测页 Run 报 `BacktestWorkerError: insufficient price history for any signal date in range: no valid volatility estimates for risk assets`。**Planner 根因分析（铁律 9 流程，不改产品码）**：四因子——(1) 回测页默认范围硬编码 2024-01-01~2024-06-30(page.tsx:93-94)，今 2026-06、B045 数据滚动 2 年窗(today−730≈2024-06 至今)→默认范围几乎整段早于数据起点→**任何用户用默认范围必然失败(开箱即坏)**；(2) risk_parity 需 120 交易日 vol lookback(risk_parity.py:34/155/206)，momentum 需 ~9 月(binding)；(3) 可用回测带=数据起点+~9-10 月，2 年窗实际仅最近~1.3 年信号日可用，worker drop-earliest 重试耗尽报错(worker.py:182-193)；(4) 无校验/钳制+原始英文异常漏 UI。**用户拍板前三层+深化回填(全四层)**：L1 动态有效默认范围(去硬编码)；L2 API 暴露数据覆盖窗口(data_start/end/min_usable_start)+date picker 钳制+「数据覆盖 X–Y」；L3 worker 结构化 error-kind→前端 i18n 双语友好提示；L4 DEFAULT_LOOKBACK_DAYS 730→1825(~5 年)+VM 深回填(顺带治 B048 S1 退化曲线)。3 features：(F001 g)后端 cli 1825+data-refresh 写覆盖窗口+GET /api/backtests/data-range(请求路径只读§12.10.2)+worker error-kind+测试；(F002 g)前端动态默认+picker 钳制+error-kind 双语+空态+vitest/Playwright；(F003 c)L2 真 VM 深回填+默认范围 Run 成功非退化+无效范围友好提示+signoff。永久硬边界：§12.10.2 请求路径禁 trade(数据窗口走 job→持久化→请求只读)/定位§1.1/no-execution/边界 r/i18n。不做：改 risk_parity/momentum lookback 算法/master 评分/async 架构/canonical 逻辑/无限深回填。**优先于 B049/B043**(里程碑 C 收尾决定暂搁，本 hotfix done 后回到 B049 vs B043 讨论)。",
   "total_features": 3,
   "completed_features": 2,
