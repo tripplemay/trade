@@ -401,6 +401,17 @@
     "killSwitchThreshold": "Kill-switch threshold {value}%",
     "perSleeveThreshold": "per-sleeve advisory {value}%",
     "slippageTrend": "3m slippage {value} bps",
+    "defensiveLabel": "Defensive ticket",
+    "perSleeveLabel": "Per-sleeve drawdown",
+    "tooltips": {
+      "masterDrawdown": "Current equity drawdown vs the all-time high, valued mark-to-market. It trips the kill-switch when it exceeds the threshold. A historical risk fact, not a forecast.",
+      "killSwitch": "Hard threshold on master drawdown. Once tripped, the panel only suggests defensive (risk-reducing) weight moves — it never blocks ticket generation (research-only).",
+      "perSleeveDrawdown": "Each sleeve's own drawdown from its peak. Any sleeve at or above the per-sleeve advisory flips the panel to yellow.",
+      "defensiveTicket": "An alternative target that rotates fully to the defensive asset (SGOV). Offered for comparison only — it is not auto-executed."
+    },
+    "valuationBasis": {
+      "costDegraded": "Some dates lacked price history, so drawdown is estimated on cost basis for those points"
+    },
     "page": {
       "title": "Risk panel",
       "subtitle": "Live master drawdown, kill-switch threshold, and per-sleeve advisories",

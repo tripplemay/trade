@@ -6,7 +6,7 @@
       "title": "RiskBanner Robinhood 微调：colorForRiskState 一致调色板 + per-sleeve 严重度配色 + 风控术语双语 tooltip + valuation_basis 诚实指示 + 字体一致化",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【前端-only UI 微调，B048 已让 risk 数据真实，见 spec §2。planner 按 roadmap『微调』定 Option A 最小不重构】(1) **颜色一致化**：lib/metric-color.ts 扩 colorForRiskState(state)→{border,bg,text}（green=emerald/yellow=amber/red=destructive，统一 B040 调色板）；components/risk/RiskBanner.tsx STATE_STYLES 改用之（去 ad-hoc green-700/950 等）；per-sleeve 行严重度配色复用 colorForDelta 逻辑映射 drawdown（<5% 绿/5-8% 琥珀/≥per_sleeve_threshold 红）。(2) **风控术语 tooltip**：复用 B040/B041 radix tooltip 模式，RiskBanner master DD/kill-switch/per-sleeve drawdown 术语 label 包 tooltip；i18n 加 risk.tooltips.{masterDrawdown,killSwitch,perSleeveDrawdown,defensiveTicket} 双语（英文术语+中文手写解释）+ parity 守门。(3) **valuation_basis 诚实指示**：渲染 valuation_basis——mark_to_market 正常 / cost_degraded 显式标注（『部分日期价格历史不足，回撤按成本价估算』+ degraded_symbols，接 B048 S1 不蒙混 v0.9.21）。(4) **字体/间距一致化**：RiskBanner text 层级规范（headline text-sm font-semibold/数值 font-mono/label muted-foreground）对齐 B040 MetricsDisplay。(5) **no-execution 守门**覆盖（无下单按钮+中文禁词）。(6) frontend vitest ≥ baseline+：colorForRiskState 三态 + per-sleeve 严重度配色边界 + 风控 tooltip i18n 双语 + valuation_basis 两态渲染（复用既有 risk-banner red/yellow/green fixtures）。(7) Playwright：/risk 三态渲染 + tooltip + 双 locale（red 真机演练交 F002）。(8) Gates：frontend vitest ≥ baseline+ / lint 0 / typecheck / Playwright 不破 / **backend 不动**。(9) 不动：B048 risk 后端/schema / per-sleeve 不重构成卡片 / 既有 red 态 ticket 联动逻辑 / 其他页。",
       "design_decisions": [
         "范围（planner 决，roadmap『微调』）：前端-only UI polish（B048 数据已真）；per-sleeve Option A 最小保 grid+严重度配色，不重构成卡片。",

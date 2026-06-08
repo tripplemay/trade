@@ -401,6 +401,17 @@
     "killSwitchThreshold": "Kill-switch 阈值 {value}%",
     "perSleeveThreshold": "单 sleeve 预警 {value}%",
     "slippageTrend": "近 3 个月滑点 {value} bps",
+    "defensiveLabel": "防御票据",
+    "perSleeveLabel": "单 sleeve 回撤",
+    "tooltips": {
+      "masterDrawdown": "当前权益相对历史高点的回撤，按市价（mark-to-market）计算。超过阈值即触发 kill-switch。这是历史风险事实，非收益预测。",
+      "killSwitch": "对主组合回撤的硬阈值。触发后面板只会建议防御性（降风险）的调仓，绝不阻断票据生成（仅研究用途）。",
+      "perSleeveDrawdown": "每个 sleeve 自身相对其峰值的回撤。任一 sleeve 达到或超过单 sleeve 预警阈值，面板即转为黄色。",
+      "defensiveTicket": "一个全部轮动到防御资产（SGOV）的备选目标。仅供对比参考，不会自动执行。"
+    },
+    "valuationBasis": {
+      "costDegraded": "部分日期缺少价格历史，这些点的回撤按成本价估算"
+    },
     "page": {
       "title": "风险面板",
       "subtitle": "实时显示主组合回撤、kill-switch 阈值、单 sleeve 预警",

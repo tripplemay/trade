@@ -4,6 +4,8 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { colorForDrawdown, colorForRiskState } from "@/lib/metric-color";
 import { cn } from "@/lib/utils";
 import type { components } from "@/types/api";
 
@@ -11,11 +13,8 @@ export type RiskPanelResponse = components["schemas"]["RiskPanelResponse"];
 
 const RISK_URL = "/api/execution/risk-panel";
 
-const STATE_STYLES: Record<RiskPanelResponse["state"], string> = {
-  green: "border-green-700/60 bg-green-950/30 text-green-200",
-  yellow: "border-amber-700/60 bg-amber-950/40 text-amber-100",
-  red: "border-destructive bg-destructive/20 text-destructive-foreground",
-};
+/** Shared dotted-underline "has a tooltip" affordance (matches MetricsDisplay). */
+const TERM_CLASS = "cursor-help underline decoration-dotted underline-offset-2";
 
 export interface RiskBannerProps {
   /** Override the fetched payload (used by tests + the optional pre-fetched flow). */
@@ -78,55 +77,130 @@ export function RiskBanner({ data, noFetch, className }: RiskBannerProps) {
       </Card>
     );
   }
+  const degradedSymbols = payload.degraded_symbols ?? [];
   return (
-    <Card
-      data-testid="risk-banner"
-      data-state={payload.state}
-      className={cn(STATE_STYLES[payload.state], className)}
-    >
-      <CardContent className="space-y-1 py-3 text-sm">
-        <div className="flex items-center justify-between">
-          <strong>{t(`headlines.${payload.state}`)}</strong>
-          <span className="font-mono text-xs">
-            {t("masterDd", { value: (payload.master_dd * 100).toFixed(2) })}
-          </span>
-        </div>
-        <p className="text-xs">
-          {t("killSwitchThreshold", {
-            value: (payload.kill_switch_threshold * 100).toFixed(0),
-          })}{" "}
-          ·{" "}
-          {t("perSleeveThreshold", {
-            value: (payload.per_sleeve_threshold * 100).toFixed(0),
-          })}
-          {payload.slippage_trend_3m_bps != null
-            ? ` · ${t("slippageTrend", { value: payload.slippage_trend_3m_bps.toFixed(1) })}`
-            : ""}
-        </p>
-        {payload.alternative_defensive_ticket ? (
-          <p data-testid="risk-banner-defensive-rationale" className="text-xs">
-            {payload.alternative_defensive_ticket.rationale}
-          </p>
-        ) : null}
-        {payload.per_sleeve_dd && payload.per_sleeve_dd.length > 0 ? (
-          <ul
-            data-testid="risk-banner-per-sleeve-list"
-            className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs sm:grid-cols-3"
-          >
-            {payload.per_sleeve_dd.map((sleeve) => (
-              <li
-                key={sleeve.sleeve}
-                data-testid={`risk-sleeve-${sleeve.sleeve}`}
-                className="font-mono"
+    <TooltipProvider delayDuration={150}>
+      <Card
+        data-testid="risk-banner"
+        data-state={payload.state}
+        className={cn(colorForRiskState(payload.state), className)}
+      >
+        <CardContent className="space-y-1.5 py-3 text-sm">
+          <div className="flex items-center justify-between gap-2">
+            <strong className="font-semibold">{t(`headlines.${payload.state}`)}</strong>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  data-testid="risk-term-masterDrawdown"
+                  className={cn("font-mono text-xs", TERM_CLASS)}
+                >
+                  {t("masterDd", { value: (payload.master_dd * 100).toFixed(2) })}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent
+                data-testid="risk-tooltip-masterDrawdown"
+                className="max-w-[240px] text-xs leading-snug"
               >
-                <span className="text-muted-foreground">{sleeve.sleeve}</span>
-                {": "}
-                {(sleeve.drawdown * 100).toFixed(2)}%
-              </li>
-            ))}
-          </ul>
-        ) : null}
-      </CardContent>
-    </Card>
+                {t("tooltips.masterDrawdown")}
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span data-testid="risk-term-killSwitch" className={TERM_CLASS}>
+                  {t("killSwitchThreshold", {
+                    value: (payload.kill_switch_threshold * 100).toFixed(0),
+                  })}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent
+                data-testid="risk-tooltip-killSwitch"
+                className="max-w-[240px] text-xs leading-snug"
+              >
+                {t("tooltips.killSwitch")}
+              </TooltipContent>
+            </Tooltip>
+            {" · "}
+            {t("perSleeveThreshold", {
+              value: (payload.per_sleeve_threshold * 100).toFixed(0),
+            })}
+            {payload.slippage_trend_3m_bps != null
+              ? ` · ${t("slippageTrend", { value: payload.slippage_trend_3m_bps.toFixed(1) })}`
+              : ""}
+          </p>
+          {payload.valuation_basis === "cost_degraded" ? (
+            <p data-testid="risk-banner-valuation-degraded" className="text-xs text-amber-200/90">
+              {t("valuationBasis.costDegraded")}
+              {degradedSymbols.length > 0 ? ` (${degradedSymbols.join(", ")})` : ""}
+            </p>
+          ) : null}
+          {payload.alternative_defensive_ticket ? (
+            <p data-testid="risk-banner-defensive-rationale" className="text-xs">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    data-testid="risk-term-defensiveTicket"
+                    className={cn("font-semibold", TERM_CLASS)}
+                  >
+                    {t("defensiveLabel")}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent
+                  data-testid="risk-tooltip-defensiveTicket"
+                  className="max-w-[240px] text-xs leading-snug"
+                >
+                  {t("tooltips.defensiveTicket")}
+                </TooltipContent>
+              </Tooltip>{" "}
+              {payload.alternative_defensive_ticket.rationale}
+            </p>
+          ) : null}
+          {payload.per_sleeve_dd && payload.per_sleeve_dd.length > 0 ? (
+            <div className="mt-2 space-y-1">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    data-testid="risk-term-perSleeveDrawdown"
+                    className={cn(
+                      "text-[10px] uppercase tracking-wide text-muted-foreground",
+                      TERM_CLASS,
+                    )}
+                  >
+                    {t("perSleeveLabel")}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent
+                  data-testid="risk-tooltip-perSleeveDrawdown"
+                  className="max-w-[240px] text-xs leading-snug"
+                >
+                  {t("tooltips.perSleeveDrawdown")}
+                </TooltipContent>
+              </Tooltip>
+              <ul
+                data-testid="risk-banner-per-sleeve-list"
+                className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs sm:grid-cols-3"
+              >
+                {payload.per_sleeve_dd.map((sleeve) => (
+                  <li
+                    key={sleeve.sleeve}
+                    data-testid={`risk-sleeve-${sleeve.sleeve}`}
+                    className="font-mono"
+                  >
+                    <span className="text-muted-foreground">{sleeve.sleeve}</span>
+                    {": "}
+                    <span
+                      className={colorForDrawdown(sleeve.drawdown, payload.per_sleeve_threshold)}
+                    >
+                      {(sleeve.drawdown * 100).toFixed(2)}%
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   );
 }

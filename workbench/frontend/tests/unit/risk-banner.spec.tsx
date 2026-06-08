@@ -26,6 +26,7 @@ vi.mock("@/components/markdown/MarkdownRenderer", () => ({
 }));
 
 import { RiskBanner } from "@/components/risk/RiskBanner";
+import { colorForDrawdown } from "@/lib/metric-color";
 import TicketPage from "@/app/(protected)/execution/ticket/page";
 
 type RiskPanelResponse = components["schemas"]["RiskPanelResponse"];
@@ -91,6 +92,59 @@ describe("RiskBanner standalone (B023 F006)", () => {
     expect(banner.getAttribute("data-state")).toBe("red");
     expect(banner).toHaveTextContent(/kill-switch tripped/);
     expect(getByTestId("risk-banner-defensive-rationale")).toHaveTextContent(/15%/);
+  });
+});
+
+describe("RiskBanner B042 Robinhood polish", () => {
+  it("wires risk-term tooltips on master DD / kill-switch / per-sleeve / defensive", () => {
+    const { getByTestId } = renderWithIntl(<RiskBanner data={RED} noFetch />);
+    expect(getByTestId("risk-term-masterDrawdown")).toBeInTheDocument();
+    expect(getByTestId("risk-term-killSwitch")).toBeInTheDocument();
+    expect(getByTestId("risk-term-perSleeveDrawdown")).toBeInTheDocument();
+    expect(getByTestId("risk-term-defensiveTicket")).toBeInTheDocument();
+  });
+
+  it("colours per-sleeve rows by drawdown severity", () => {
+    const payload: RiskPanelResponse = {
+      ...GREEN,
+      per_sleeve_threshold: 0.08,
+      per_sleeve_dd: [
+        { sleeve: "momentum", drawdown: 0.01 }, // steady → positive
+        { sleeve: "risk_parity", drawdown: 0.06 }, // mid → warning
+        { sleeve: "satellite_us_quality", drawdown: 0.12 }, // ≥ threshold → negative
+      ],
+    };
+    const { getByTestId } = renderWithIntl(<RiskBanner data={payload} noFetch />);
+    const valueClass = (sleeve: string) =>
+      (getByTestId(`risk-sleeve-${sleeve}`).querySelector("span:last-child") as HTMLElement)
+        .className;
+    expect(valueClass("momentum")).toContain(colorForDrawdown(0.01, 0.08));
+    expect(valueClass("risk_parity")).toContain(colorForDrawdown(0.06, 0.08));
+    expect(valueClass("satellite_us_quality")).toContain(colorForDrawdown(0.12, 0.08));
+  });
+
+  it("surfaces cost_degraded valuation honestly with degraded symbols", () => {
+    const degraded: RiskPanelResponse = {
+      ...GREEN,
+      valuation_basis: "cost_degraded",
+      degraded_symbols: ["AAPL", "MSFT"],
+    };
+    const { getByTestId } = renderWithIntl(<RiskBanner data={degraded} noFetch />);
+    const note = getByTestId("risk-banner-valuation-degraded");
+    expect(note).toHaveTextContent(/cost basis/i);
+    expect(note).toHaveTextContent(/AAPL/);
+    expect(note).toHaveTextContent(/MSFT/);
+  });
+
+  it("hides the degraded note when valuation is mark_to_market", () => {
+    const { queryByTestId } = renderWithIntl(<RiskBanner data={GREEN} noFetch />);
+    expect(queryByTestId("risk-banner-valuation-degraded")).toBeNull();
+  });
+
+  it("has no execution / order affordances (informational only)", () => {
+    const { container } = renderWithIntl(<RiskBanner data={RED} noFetch />);
+    expect(container.querySelectorAll("button").length).toBe(0);
+    expect(container.querySelector('[data-testid*="execute"]')).toBeNull();
   });
 });
 

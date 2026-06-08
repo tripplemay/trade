@@ -71,3 +71,42 @@ export function colorForDelta(value: number | null | undefined): MetricColor {
   if (value < 0) return METRIC_COLOR.negative;
   return METRIC_COLOR.neutral;
 }
+
+export type RiskState = "green" | "yellow" | "red";
+
+/**
+ * B042 — banner container classes per risk state, on the shared B040
+ * palette (emerald / amber / destructive). Centralises what used to be
+ * RiskBanner's ad-hoc ``green-700/950`` so the Risk panel reads with the
+ * same colour vocabulary as the rest of the Robinhood-style surfaces.
+ * Colour is an at-a-glance risk cue only — the panel is informational and
+ * never gates ticket generation (research-only).
+ */
+export const RISK_STATE_STYLES: Record<RiskState, string> = {
+  green: "border-emerald-700/60 bg-emerald-950/30 text-emerald-200",
+  yellow: "border-amber-700/60 bg-amber-950/40 text-amber-100",
+  red: "border-destructive bg-destructive/20 text-destructive-foreground",
+};
+
+export function colorForRiskState(state: RiskState): string {
+  return RISK_STATE_STYLES[state];
+}
+
+/**
+ * B042 — per-sleeve drawdown severity colour (text class). ``drawdown`` is a
+ * positive fraction (0.08 = 8%). Steadier (small) drawdowns read green,
+ * mid-range amber, and at/above the per-sleeve advisory threshold red —
+ * mirroring the banner's own green/yellow/red logic so a sleeve's colour
+ * matches why the panel is in its state. Null/NaN → neutral.
+ */
+export function colorForDrawdown(
+  drawdown: number | null | undefined,
+  perSleeveThreshold: number,
+): MetricColor {
+  if (drawdown === null || drawdown === undefined || Number.isNaN(drawdown)) {
+    return METRIC_COLOR.neutral;
+  }
+  if (drawdown >= perSleeveThreshold) return METRIC_COLOR.negative;
+  if (drawdown >= 0.05) return METRIC_COLOR.warning;
+  return METRIC_COLOR.positive;
+}
