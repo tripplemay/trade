@@ -58,7 +58,7 @@
       "title": "Codex L1 + L2 真 VM 验收（worker service 接线 + on-demand Run→真实回测结果 + Reports 投资报告非开发签收 + §12.10.2 守门 + B023 不破）+ signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "L1 (CI 内)：F001-F004 全门禁——backend pytest（含 backtest_run repo / worker map / reports kind 过滤）/ frontend vitest（轮询 hook / Reports 渲染）/ ruff/mypy/lint/typecheck/Playwright；**§12.10.2 守门绿**（请求路径 routes/services/backtests + reports 无 import trade；worker/canonical allowlist）；**scope 守门**（worker 禁 broker/execution）；**no-execution 守门**（Backtest/Reports 无下单按钮+中文禁词 0）；i18n 双语 parity（backtest/reports 文案）；artifact grep secret=0；alembic upgrade head 干净。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD + recent-errors={count:0} + **alembic current==heads**（B048-OPS1）；(2) **workbench-backtest-worker.service 接线 active**（systemctl is-active；B037-OPS1 自动接线验证；canonical timer 若设亦验）；(3) **on-demand Run→真实回测结果**：authenticated POST /api/backtests/run→拿 run_id→轮询 GET /{run_id} 至 done→**metrics/equity 来自真实 master_portfolio 引擎非 synthetic**（记录 vs 旧 seed 合成值差异为证据；若数据 degraded 诚实标注亦记）；(4) **Reports 显真实投资报告**：/api/reports 列表/详情=真实 Master/sleeve 回测业绩（Sharpe/MDD 等），**非 docs/test-reports/ 开发 signoff**（确认开发签收已过滤出用户 Reports）；(5) **§12.10.2 请求路径无 trade** 守门 + worker 允许；(6) B023 交易闭环不破（recommendations/execution 路径正常）+ B026 absent；(7) HEAD≡main。Signoff: docs/test-reports/B047-backtest-reports-real-engine-signoff-2026-MM-DD.md 用模板（§24 worker service 接线 + §Production/HEAD + §Post-signoff Deploy + **synthetic→real 回测对比证据 + Reports 内容类别修正证据**）。**Framework 候选（强）**：async worker（请求→队列→worker→DB→轮询）若成通用范式 / Reports 内容类别错配教训 记 §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
