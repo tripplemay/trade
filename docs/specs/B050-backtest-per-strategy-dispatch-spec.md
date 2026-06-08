@@ -72,7 +72,24 @@
 | F002 | generator | us_quality 分发——新报告 builder + DataFrame/字段适配 + 测试 |
 | F003 | generator | **新建 B011 港股中国独立回测引擎**（trade/）+ 报告 builder + 分发 + 测试 |
 | F004 | generator | 前端——inactive_strategy 双语友好提示 + 结果标注所跑策略 + 选择器含 master + vitest/Playwright |
-| F005 | codex | L1+L2 真 VM——★每策略产**不同非退化**结果 + regime 友好 + signoff |
+| F005 | generator | **交易指令保真度修复**（2026-06-09 审查并入）——★防守 SGOV 股数 CRITICAL + as_of_date 真实信号日 + 陈旧 docstring + 数值保真测试 |
+| F006 | codex | L1+L2 真 VM——★每策略不同非退化 + ★防守 SGOV 股数保真 + regime 友好 + signoff |
+
+> **F005 来源：** `docs/product/trade-recommendation-fidelity-audit-2026-06.md`（2026-06-09 交易/推荐链路保真度审查）。正常模式全链路忠实、风控 gate 真实；但发现**防守模式 SGOV 买入股数把美元当股数（~100 倍超买）**（`tickets.py:245-246` CRITICAL）+ `as_of_date` 写死 today 隐藏信号日（Medium）。用户批并入本批（同属交易/推荐保真度主题）。详见 §12。
+
+## 12. F005 — 交易指令保真度修复（generator）
+
+### 12.1 🔴 CRITICAL — 防守模式 SGOV 股数
+`services/tickets.py:240-257` `_defensive_diff_rows` SGOV 买入行 `target_shares/delta_shares = total_equity`（美元金额当股数）→ SGOV~$100/股时用户照防守 ticket 下单超买 ~100 倍。修：取真实 SGOV 市价（在价格 universe，复用 `marks_for`）→ `delta_shares = total_equity / sgov_mark`（对齐正常路径 `execution.py:201` `target_dollar/reference_price`）；`reference_price` 填真实市价；无市价时诚实只显金额、股数留 None + 标注「执行时按市价折算」，绝不美元当股数。**数值保真单测**：`delta_shares × sgov_mark ≈ total_equity`（非 `== total_equity`）。
+
+### 12.2 🟡 Medium — as_of_date 真实信号日
+`services/recommendations.py:263` 去 `date.today()` 硬编码 → 返回 snapshot 真实 `as_of_date`（信号日）；可加 `computed_at`。测试断言来自 snapshot 非恒 today。
+
+### 12.3 🟢 Low — 陈旧 docstring
+`recommendations.py:1-16` 去「equal-weight until F011」；`schemas/execution.py:85-87` reference_price avg_cost→latest_close。
+
+### 12.4 边界
+不改 master 评分 / diff 正常路径 / gate 逻辑；§12.10.2 不破。
 
 ---
 
