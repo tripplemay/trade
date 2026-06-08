@@ -7,17 +7,19 @@ performance data lives in ``trade/`` and is surfaced here so the
 frontend (which never imports ``trade/*`` directly, to keep the cloud
 build slim) has a stable read model.
 
-**B046 F002 — regime reconcile.** Before B046 the registry surfaced
-three regime entries (B013/B014/B015) as ``active`` and was missing two
-sleeves the Master actually allocates to: the ``momentum`` core
-(``global_etf_momentum``, planning_weight 0.40) and the
-``satellite_hk_china`` reserved stub (0.10). The Master's real default
-sleeves are (see ``master.default_master_portfolio_parameters``):
+**B046 F002 — regime reconcile; BL-B011-S2 — hk_china implemented.**
+Before B046 the registry surfaced three regime entries (B013/B014/B015)
+as ``active`` and was missing two sleeves the Master actually allocates
+to: the ``momentum`` core (``global_etf_momentum``, planning_weight 0.40)
+and the ``satellite_hk_china`` sleeve (0.10, then a reserved stub).
+BL-B011-S2 then implemented the HK-China sleeve (Master 4/4 real). The
+Master's real default sleeves are (see
+``master.default_master_portfolio_parameters``):
 
 * ``momentum``            → ``global_etf_momentum``    (0.40, implemented)
 * ``risk_parity``         → ``risk_parity_vol_target`` (0.30, implemented)
 * ``satellite_us_quality``→ ``us_quality_momentum``    (0.20, implemented)
-* ``satellite_hk_china``  → reserved stub              (0.10, satellite_stub)
+* ``satellite_hk_china``  → ``hk_china_momentum``      (0.10, implemented; BL-B011-S2)
 * ``regime_adaptive``     → planning_weight 0.0 (loadable-but-inactive;
   activating it is a future B013 batch — it stays research-state here).
 
@@ -100,7 +102,8 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
             "master_strategy_id": "global_etf_momentum",
             "note": (
                 "Master core_trend_engine sleeve (planning_weight=0.40). "
-                "Synthetic fixture only; not live market data."
+                "Scored on real daily prices (Tiingo, B045 data-refresh). "
+                "Research-only advisory — not a return forecast."
             ),
         },
     ),
@@ -158,37 +161,41 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
             ),
             "note": (
                 "B025 satellite_us_quality (planning_weight=0.20). "
-                "Synthetic fixture only; not actual filings."
+                "Scored on real prices (Tiingo) + real SEC EDGAR filings "
+                "(B045 data-refresh). Research-only advisory — not a return forecast."
             ),
         },
     ),
-    # B046 F002: the Master's reserved regional satellite stub
-    # (satellite_hk_china, planning_weight 0.10, sleeve_type
-    # satellite_stub — no strategy_id). It is a defensive placeholder
-    # interface, not an implemented strategy; the HK-China implementation
-    # is a future batch (backlog order 3). Surfaced so the registry +
-    # downstream sleeve consumers reflect the Master's true 10% allocation
-    # rather than silently dropping it.
+    # BL-B011-S2: the HK-China satellite is now an IMPLEMENTED strategy
+    # (was the reserved satellite_stub). master.py flipped sleeve_type →
+    # implemented + strategy_id "hk_china_momentum" (Master 4/4 real,
+    # precompute data_source=real, 0 stub); planning_weight unchanged
+    # (0.10). The registry mirrors that — the prior "reserved stub / no
+    # strategy implemented / not live market data" note is now stale.
     "B011-satellite-hk-china": (
         _summary(
             id="B011-satellite-hk-china",
-            name="HK / China Satellite (reserved stub) / 港股中概卫星（预留）",
+            name="HK / China Satellite Momentum / 港股中概卫星动量",
             sleeve="satellite_hk_china",
-            status="stub",
         ),
         StrategyProvenance(
-            spec_path="docs/specs/B011-portfolio-allocation-risk-mvp-spec.md",
-            code_path="trade/portfolio/master.py",
-            last_sweep_path=None,
+            spec_path="docs/specs/BL-B011-S2-hk-china-satellite-spec.md",
+            code_path="trade/strategies/hk_china_momentum",
+            last_sweep_path=(
+                "docs/test-reports/BL-B011-S2-hk-china-satellite-signoff-2026-06-08.md"
+            ),
         ),
         {
-            "sleeve_type": "satellite_stub",
+            "sleeve_type": "implemented",
             "planning_weight": 0.10,
-            "role_label": "satellite_regional_stub",
+            "role_label": "satellite_regional",
+            "master_strategy_id": "hk_china_momentum",
             "note": (
-                "Reserved interface stub: weight falls through to the "
-                "defensive placeholder. No strategy implemented yet "
-                "(HK-China is a future batch). Not live market data."
+                "Master satellite_hk_china sleeve (planning_weight=0.10), "
+                "implemented in BL-B011-S2. Trend-scored on the US-listed "
+                "HK/China ETF set (MCHI/FXI/KWEB/ASHR) using real daily prices "
+                "(Tiingo, B045 data-refresh). Research-only advisory — not a "
+                "return forecast."
             ),
         },
     ),

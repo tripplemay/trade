@@ -19,7 +19,7 @@
       "title": "Strategies note 更正——去陈旧 synthetic note(保留诚实 stub/research 披露) + hk_china note 核查 + 守门回归测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【里程碑 C 收口 gate 残余 #2，见 spec §5】(1) 更正陈旧 note：services/strategies.py:101-104(global_etf_momentum)+:159-162(us_quality) 去『Synthetic fixture only; not live market data / not actual filings』，改反映 B045 真实数据来源诚实文案(标注真实价格/真实 filings+planning_weight)，不夸大(仍 research-only advisory，不宣称收益预测)。(2) **保留诚实披露(严禁动)**：spec §1.2 satellite_stub(:167-171)/regime research-state(:218+/:240/:258) weight 0.0 占位不动(动了反隐瞒真相)。(3) i18n：note 若有前端 i18n key 双语 parity；后端直出串则确认前端展示必要时纳入 i18n。(4) **守门回归测试**：guard 断言用户可见 strategy note 不含『Synthetic fixture only/not live market data/not actual filings』陈旧合成词，同时不误伤诚实 stub/research 披露。(5) **hk_china 核查**：BL-B011-S2 已实现 hk_china(Master 4/4 真实)，核查 satellite_stub note 是否仍指 hk_china——已激活则该 note 陈旧应一并更正，指其它未实现 sleeve 则保留；据 master_portfolio 实际组成裁定并 commit 注明。(6) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / i18n parity(若涉及)。",
       "design_decisions": [
         "只改陈旧 synthetic 文案，保留诚实 stub/research-state 披露(里程碑 C 要真实不要隐瞒；诚实披露 stub 状态 = 真实)。",

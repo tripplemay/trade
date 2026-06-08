@@ -105,8 +105,9 @@ def test_strategies_list_covers_master_four_active_sleeves(
 
     # The momentum core was missing pre-B046; now active.
     assert by_id["B006-global-etf-momentum"]["status"] == "active"
-    # HK-China is a reserved stub, not an implemented strategy.
-    assert by_id["B011-satellite-hk-china"]["status"] == "stub"
+    # BL-B011-S2: HK-China is now an implemented strategy (Master 4/4 real),
+    # no longer the reserved stub.
+    assert by_id["B011-satellite-hk-china"]["status"] == "active"
     # Regime overlay ships at weight 0.0 → research-state, not active.
     for rid in ("B013-regime-quarterly", "B014-regime-stress", "B015-regime-active"):
         assert by_id[rid]["sleeve"] == "regime"
@@ -125,12 +126,16 @@ def test_strategy_detail_momentum_exposes_master_strategy_id(
     assert payload["provenance"]["code_path"].endswith("global_etf_momentum.py")
 
 
-def test_strategy_detail_hk_china_stub_has_no_strategy(initialised_db: str) -> None:
+def test_strategy_detail_hk_china_is_implemented(initialised_db: str) -> None:
+    """BL-B011-S2: the HK-China satellite is an implemented strategy now
+    (Master 4/4 real) — the registry mirrors master.py's sleeve_type flip."""
+
     client = _authed_client()
     payload = client.get("/api/strategies/B011-satellite-hk-china").json()
     assert payload["sleeve"] == "satellite_hk_china"
-    assert payload["status"] == "stub"
-    assert payload["config"]["sleeve_type"] == "satellite_stub"
+    assert payload["status"] == "active"
+    assert payload["config"]["sleeve_type"] == "implemented"
+    assert payload["config"]["master_strategy_id"] == "hk_china_momentum"
     assert payload["config"]["planning_weight"] == 0.10
 
 
@@ -176,6 +181,41 @@ def test_strategy_detail_known_id_returns_provenance(initialised_db: str) -> Non
     # B019 retune sets activation_threshold=0.11; pinned so a future
     # config edit that drops the field surfaces here.
     assert payload["config"]["activation_threshold"] == 0.11
+
+
+_STALE_SYNTHETIC_PHRASES = (
+    "Synthetic fixture only",
+    "not live market data",
+    "not actual filings",
+)
+
+
+def test_no_strategy_note_carries_stale_synthetic_copy(initialised_db: str) -> None:
+    """B049 F002 guard: after B045 connected real data, no user-visible strategy
+    note may still claim synthetic/non-live data. Regression for the stale notes
+    on global_etf_momentum / us_quality / hk_china."""
+
+    client = _authed_client()
+    ids = [entry["id"] for entry in client.get("/api/strategies").json()["strategies"]]
+    for strategy_id in ids:
+        config = client.get(f"/api/strategies/{strategy_id}").json()["config"]
+        note = str(config.get("note", ""))
+        for phrase in _STALE_SYNTHETIC_PHRASES:
+            assert phrase not in note, (
+                f"{strategy_id} note still carries stale synthetic copy "
+                f"{phrase!r}: {note!r}"
+            )
+
+
+def test_honest_research_disclosures_are_preserved(initialised_db: str) -> None:
+    """B049 F002 §1.2: the guard must not scrub the honest research-state
+    disclosure on the regime overlay (weight 0.0, inactive) — that is a true
+    statement, not stale synthetic copy."""
+
+    client = _authed_client()
+    note = client.get("/api/strategies/B013-regime-quarterly").json()["config"]["note"]
+    assert "Research-state" in note
+    assert "weight 0.0" in note.lower() or "weight=0.0" in note.lower()
 
 
 def test_strategy_detail_unknown_id_returns_404(initialised_db: str) -> None:
