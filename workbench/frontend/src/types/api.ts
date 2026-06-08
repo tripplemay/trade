@@ -155,6 +155,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/backtests/data-range": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Data Range Route
+         * @description Expose the real data-coverage window (read-only; never imports ``trade``,
+         *     §12.10.2). Registered before ``/{run_id}`` so the literal path is not
+         *     shadowed by the dynamic segment.
+         */
+        get: operations["get_data_range_route_api_backtests_data_range_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/backtests/{run_id}": {
         parameters: {
             query?: never;
@@ -838,6 +860,32 @@ export interface components {
             status?: string | null;
         };
         /**
+         * BacktestDataRangeResponse
+         * @description GET /api/backtests/data-range payload (B047-OPS2 F001).
+         *
+         *     The real backtest data-coverage window the data-refresh job recorded. The
+         *     frontend uses it to pick a valid default range (``end=data_end``,
+         *     ``start=max(min_usable_start, data_end−1y)``) and clamp the date picker. All
+         *     fields are ``null`` when no data-refresh has run yet (empty state).
+         */
+        BacktestDataRangeResponse: {
+            /**
+             * Data Start
+             * @description Earliest ISO date in coverage.
+             */
+            data_start?: string | null;
+            /**
+             * Data End
+             * @description Latest ISO date in coverage.
+             */
+            data_end?: string | null;
+            /**
+             * Min Usable Start
+             * @description Earliest ISO start a backtest may use (lookback-safe floor).
+             */
+            min_usable_start?: string | null;
+        };
+        /**
          * BacktestMetrics
          * @description Headline metrics for the result card stack.
          */
@@ -913,6 +961,11 @@ export interface components {
             report_markdown?: string | null;
             /** Error */
             error?: string | null;
+            /**
+             * Error Kind
+             * @description B047-OPS2 — structured failure code (insufficient_history / no_signal_dates / data_unavailable / unknown); the frontend maps it to a bilingual friendly message instead of showing ``error``.
+             */
+            error_kind?: string | null;
         };
         /**
          * BacktestTrade
@@ -2453,6 +2506,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_data_range_route_api_backtests_data_range_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BacktestDataRangeResponse"];
                 };
             };
         };
