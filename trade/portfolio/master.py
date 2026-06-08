@@ -55,12 +55,15 @@ _DEFAULT_SLEEVES: tuple[MasterSleeveConfig, ...] = (
         planning_weight=0.20,
         role_label="satellite_alpha",
     ),
+    # BL-B011-S2: the HK-China satellite is now an implemented strategy
+    # (was a reserved SATELLITE_STUB). planning_weight is unchanged (0.10);
+    # only the type + strategy_id flip, so the Master is 4/4 real.
     MasterSleeveConfig(
         sleeve_id="satellite_hk_china",
-        sleeve_type=SLEEVE_TYPE_SATELLITE_STUB,
-        strategy_id=None,
+        sleeve_type=SLEEVE_TYPE_IMPLEMENTED,
+        strategy_id="hk_china_momentum",
         planning_weight=0.10,
-        role_label="satellite_regional_stub",
+        role_label="satellite_regional",
     ),
 )
 

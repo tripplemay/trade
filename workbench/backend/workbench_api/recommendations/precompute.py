@@ -117,6 +117,9 @@ def score_master_target() -> MasterTargetResult:
     from trade.strategies.global_etf_momentum import (  # type: ignore[import-untyped]
         MomentumParameters,
     )
+    from trade.strategies.hk_china_momentum.parameters import (  # type: ignore[import-untyped]
+        HkChinaMomentumParameters,
+    )
     from trade.strategies.risk_parity import (  # type: ignore[import-untyped]
         RiskParityParameters,
     )
@@ -135,6 +138,7 @@ def score_master_target() -> MasterTargetResult:
     momentum = MomentumParameters()
     risk_parity = RiskParityParameters()
     us_quality = UsQualityMomentumParameters()
+    hk_china = HkChinaMomentumParameters()
 
     portfolio_target: dict[str, float] = {}
     symbol_sleeve: dict[str, str] = {}
@@ -153,6 +157,7 @@ def score_master_target() -> MasterTargetResult:
                 momentum_params=momentum,
                 risk_parity_params=risk_parity,
                 us_quality_params=us_quality,
+                hk_china_params=hk_china,
             )
             sleeve_status[sleeve.sleeve_id] = _SLEEVE_STATUS_SCORED
         except Exception as exc:  # noqa: BLE001 — sleeve input data unavailable on host

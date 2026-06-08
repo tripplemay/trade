@@ -19,12 +19,20 @@ import pytest
 from sqlalchemy.orm import Session, sessionmaker
 
 from workbench_api.db.engine import get_engine
-from workbench_api.db.models.recommendation_snapshot import DATA_SOURCE_FIXTURE
+from workbench_api.db.models.recommendation_snapshot import (
+    DATA_SOURCE_FIXTURE,
+    DATA_SOURCE_MIXED,
+    DATA_SOURCE_REAL,
+)
 from workbench_api.db.repositories.recommendation_snapshot import (
     RecommendationSnapshotRepository,
 )
 from workbench_api.recommendations.precompute import (
+    _PRICES_SOURCE_REAL,
+    _SLEEVE_STATUS_SCORED,
+    _SLEEVE_STATUS_STUBBED,
     MasterTargetResult,
+    _classify_data_source,
     run_precompute,
     score_master_target,
 )
@@ -147,6 +155,37 @@ def test_score_master_target_runs_real_master_scoring_on_fixture() -> None:
         "satellite_us_quality",
         "satellite_hk_china",
     }
+
+
+_FOUR_SLEEVES = ("momentum", "risk_parity", "satellite_us_quality", "satellite_hk_china")
+
+
+def test_score_master_target_invokes_hk_china_sleeve() -> None:
+    """BL-B011-S2 F003: the activated satellite_hk_china sleeve is auto-invoked
+    by precompute (no extra wiring) — it appears in sleeve_status, scored (it
+    falls back to defensive on the bundled ETF fixture, but the strategy ran,
+    not the old stub)."""
+
+    result = score_master_target()
+    assert result.master_meta["sleeve_status"]["satellite_hk_china"] == _SLEEVE_STATUS_SCORED
+
+
+def test_data_source_real_when_all_four_sleeves_scored() -> None:
+    """With real prices and ALL FOUR sleeves scored (hk_china now implemented),
+    data_source reaches 'real' — the headline BL-B011-S2 unlock vs B045's
+    'mixed' (which was caused by the hk_china stub)."""
+
+    all_scored = {s: _SLEEVE_STATUS_SCORED for s in _FOUR_SLEEVES}
+    assert _classify_data_source(_PRICES_SOURCE_REAL, all_scored) == DATA_SOURCE_REAL
+
+
+def test_data_source_mixed_when_hk_china_stubbed() -> None:
+    """If hk_china's data is unavailable on the host (its dispatch raises →
+    stubbed), real prices degrade to 'mixed' honestly."""
+
+    status = {s: _SLEEVE_STATUS_SCORED for s in _FOUR_SLEEVES}
+    status["satellite_hk_china"] = _SLEEVE_STATUS_STUBBED
+    assert _classify_data_source(_PRICES_SOURCE_REAL, status) == DATA_SOURCE_MIXED
 
 
 def test_score_master_target_is_non_equal_weight() -> None:

@@ -30,7 +30,7 @@
       "title": "master 激活（stub→implemented + dispatch case + KNOWN_IMPLEMENTED + params）+ 集成测试（4/4 backtest）+ precompute data_source 验",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) **master.py 激活** trade/portfolio/master.py：satellite_hk_china sleeve SLEEVE_TYPE_SATELLITE_STUB→IMPLEMENTED + strategy_id=None→'hk_china_momentum'（validation 自动切 IMPLEMENTED 分支：strategy_id 必非 None）；planning_weight 仍 0.10 不动。(2) **master_portfolio.py dispatch** trade/backtest/master_portfolio.py：KNOWN_IMPLEMENTED_STRATEGY_IDS += 'hk_china_momentum'；MasterChildStrategyParameters += hk_china_momentum 字段；_resolve_child_weights 加 dispatch case（镜像 us_quality：调 generate_signal(hk_china_params, signal_date)→weights_dict()；数据缺/symbol 不全→defensive fallback {SGOV:1.0}）。(3) **集成测试**：master backtest 4/4 sleeve 真实评分（hk_china 有数据→真实权重；缺→defensive）；既有 3 sleeve（momentum/risk_parity/us_quality）不破。(4) **precompute data_source**：precompute score_master_target 激活后自动调 hk_china（无额外 wiring）；data_source 达 real（prices_source=real + 全 4 sleeve 有数据）；pytest fake 全 sleeve 数据→data_source=real。(5) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / §12.10.2 守门不破。(6) 不动：master 其他 sleeve/planning_weight/评分逻辑 / F001 数据 / F002 策略内部。",
       "design_decisions": [
         "master 激活（planner 决）：SATELLITE_STUB→IMPLEMENTED + strategy_id=hk_china_momentum；planning_weight 0.10 不动；dispatch 镜像 us_quality + defensive fallback。"

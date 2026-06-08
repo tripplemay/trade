@@ -24,6 +24,10 @@ from trade.strategies.global_etf_momentum import (
     MomentumParameters,
     generate_momentum_signal,
 )
+from trade.strategies.hk_china_momentum.parameters import HkChinaMomentumParameters
+from trade.strategies.hk_china_momentum.signal import (
+    generate_signal as generate_hk_china_signal,
+)
 from trade.strategies.risk_parity import (
     RiskParityParameters,
     generate_risk_parity_signal,
@@ -45,6 +49,7 @@ KNOWN_IMPLEMENTED_STRATEGY_IDS: frozenset[str] = frozenset(
         "risk_parity_vol_target",
         "regime_adaptive_multi_asset",
         "us_quality_momentum",
+        "hk_china_momentum",
     }
 )
 
@@ -56,6 +61,7 @@ class MasterChildStrategyParameters:
     momentum: MomentumParameters | None = None
     risk_parity: RiskParityParameters | None = None
     us_quality_momentum: UsQualityMomentumParameters | None = None
+    hk_china_momentum: HkChinaMomentumParameters | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -235,6 +241,9 @@ def run_master_portfolio_quarterly_backtest(
     us_quality_params = (
         child_parameters.us_quality_momentum or UsQualityMomentumParameters()
     )
+    hk_china_params = (
+        child_parameters.hk_china_momentum or HkChinaMomentumParameters()
+    )
 
     by_symbol_date = {(record.symbol, record.date): record for record in records}
     all_dates = tuple(sorted({record.date for record in records}))
@@ -301,6 +310,7 @@ def run_master_portfolio_quarterly_backtest(
             momentum_params=momentum_params,
             risk_parity_params=risk_parity_params,
             us_quality_params=us_quality_params,
+            hk_china_params=hk_china_params,
         )
 
         if kill_switch_active:
@@ -400,6 +410,7 @@ def _build_portfolio_target(
     momentum_params: MomentumParameters,
     risk_parity_params: RiskParityParameters,
     us_quality_params: UsQualityMomentumParameters,
+    hk_china_params: HkChinaMomentumParameters,
 ) -> tuple[tuple[MasterSleeveContribution, ...], dict[str, float]]:
     contributions: list[MasterSleeveContribution] = []
     portfolio_target: dict[str, float] = {}
@@ -432,6 +443,7 @@ def _build_portfolio_target(
             momentum_params=momentum_params,
             risk_parity_params=risk_parity_params,
             us_quality_params=us_quality_params,
+            hk_china_params=hk_china_params,
         )
         contribution_weights = {
             symbol: round(sleeve.planning_weight * weight, WEIGHT_ROUND_DIGITS)
@@ -463,6 +475,7 @@ def _resolve_child_weights(
     momentum_params: MomentumParameters,
     risk_parity_params: RiskParityParameters,
     us_quality_params: UsQualityMomentumParameters,
+    hk_china_params: HkChinaMomentumParameters,
 ) -> dict[str, float]:
     if sleeve.sleeve_type == SLEEVE_TYPE_SATELLITE_STUB:
         return {defensive_asset: 1.0}
@@ -498,6 +511,24 @@ def _resolve_child_weights(
             record.symbol
             for record in records
             if record.date == signal_date
+        }
+        if not target_weights or not records_symbols_on_signal_date.issuperset(
+            target_weights
+        ):
+            return {defensive_asset: 1.0}
+        return target_weights
+    if sleeve.strategy_id == "hk_china_momentum":
+        # BL-B011-S2 — mirror the us_quality dispatch: the strategy reads its
+        # own Repository (unified CSV / fixture) and returns sleeve-relative
+        # weights summing to 1.0 over the HK-China ETFs + SGOV. When the
+        # Master ``records`` do not cover the chosen tickers on ``signal_date``
+        # (legacy fixtures shipping only the core ETFs), fall back to the
+        # defensive asset so the Master backtest stays green; production-shaped
+        # fixtures exercise the real path (BL-B011-S2 F003 integration tests).
+        hk_china_signal = generate_hk_china_signal(hk_china_params, signal_date)
+        target_weights = hk_china_signal.weights_dict()
+        records_symbols_on_signal_date = {
+            record.symbol for record in records if record.date == signal_date
         }
         if not target_weights or not records_symbols_on_signal_date.issuperset(
             target_weights

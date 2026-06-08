@@ -87,4 +87,14 @@
 
 <!-- 2026-06-08: v0.9.38 沉淀完成（B022/B045-OPS1/B048-OPS1 三例合并：deploy 步骤必须 post-step assert 验证 intended end-state）：deploy 步骤静默失效三例（env→scratch DB / trade wheel install 没装上 / alembic 守门条件静默跳过），均致 prod 静默破坏。用户批沉淀 generator.md §12.11（命令返回 0/守门通过 ≠ 成功；必须 post-step ASSERT end-state 硬失败；守门条件不静默跳过关键步骤）+ CHANGELOG v0.9.38。统一 v0.9.36 smoke import check（其为本规则在包安装步骤的实例）。 -->
 
+## [2026-06-08] Claude CLI — 来源：BL-B011-S2 F002 实施（satellite 策略权重口径）
+
+**类型：** 新规律（master sleeve 策略权重口径约定）
+
+**内容：** master sleeve 子策略 `generate_signal().weights_dict()` 必须返回 **sleeve-relative 权重求和=1.0**（master_portfolio._resolve_child_weights 直接当 sleeve-relative 用，再按 planning_weight 缩放）。故策略说明书里的 **total-portfolio caps**（如 HK-China 设计 §9.1 per-ETF≤10% total / KWEB≤5-10% total）实施时必须换算为 sleeve-relative（÷planning_weight）：sleeve 占 10% 时，per-ETF total 10% = sleeve-relative 1.0（单标的可占满 sleeve）。**坑**：planner 把 total-level cap 值（max_position_weight=0.10）直接写进 feature acceptance 作为策略参数，与 sleeve-relative sum=1.0 不兼容（top_n × 0.10 < 1.0 永远填不满）。本批按权威设计说明书 §8.2（Top-1 占满模块）裁定=sleeve-relative，max_position_weight 默认 1.0 + 文档详注，total cap 由 master planning_weight 承担。
+
+**建议写入：** `framework/harness/planner.md`（spec 写 satellite 策略 acceptance 时，cap 参数须标注 total-level vs sleeve-relative，避免 generator 二义）；或 strategy-design 约定文档「master 子策略权重口径 = sleeve-relative sum-to-1.0」。
+
+**状态：** 待确认（BL-B011-S2 done 阶段一并提出；evaluator F004 可复核口径是否正确）
+
 <!-- 当前无活动候选（待确认条目）。 -->

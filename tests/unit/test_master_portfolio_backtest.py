@@ -123,11 +123,12 @@ def test_master_portfolio_backtest_records_per_sleeve_contributions() -> None:
     assert contributions_by_id["satellite_hk_china"].planning_weight == 0.10
 
 
-def test_master_portfolio_satellite_stub_contribution_falls_through_to_defensive_asset() -> None:
-    # B025 F004 flipped satellite_us_quality from stub → implemented; the only
-    # remaining stub sleeve is satellite_hk_china (planning_weight 0.10),
-    # slated for B026 implementation. Its stub fall-through still routes to
-    # the defensive asset.
+def test_master_portfolio_hk_china_falls_through_to_defensive_when_records_missing() -> None:
+    # BL-B011-S2 F003 flipped satellite_hk_china stub → implemented. When the
+    # Master ``records`` don't cover the HK-China ETFs on the signal date
+    # (this fixture ships only the core ETFs), the dispatch's records-coverage
+    # guard routes the sleeve to the defensive asset — same contribution the
+    # old stub produced, now via the implemented strategy's fallback.
     records = _synthetic_daily_universe(
         ("SPY", "VEA", "AGG", "GLD", "SGOV"), SINGLE_QUARTER_DAYS
     )
@@ -141,14 +142,15 @@ def test_master_portfolio_satellite_stub_contribution_falls_through_to_defensive
     )
 
     period = result.rebalance_results[0]
-    stub = next(
+    hk_china = next(
         contribution
         for contribution in period.sleeve_contributions
         if contribution.sleeve_id == "satellite_hk_china"
     )
-    assert stub.sleeve_type == SLEEVE_TYPE_SATELLITE_STUB
-    assert stub.child_target_weights == {"SGOV": 1.0}
-    assert stub.contribution_weights == {"SGOV": pytest.approx(0.10)}
+    assert hk_china.sleeve_type == SLEEVE_TYPE_IMPLEMENTED
+    assert hk_china.strategy_id == "hk_china_momentum"
+    assert hk_china.child_target_weights == {"SGOV": 1.0}
+    assert hk_china.contribution_weights == {"SGOV": pytest.approx(0.10)}
 
 
 def test_master_portfolio_executes_at_t_plus_1_open() -> None:

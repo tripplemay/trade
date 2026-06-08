@@ -11,7 +11,7 @@ from trade.portfolio.master import (
 )
 
 
-def test_default_master_portfolio_combines_three_implemented_sleeves_and_one_stub() -> None:
+def test_default_master_portfolio_combines_four_implemented_sleeves() -> None:
     parameters = default_master_portfolio_parameters()
     sleeves_by_id = {sleeve.sleeve_id: sleeve for sleeve in parameters.sleeves}
 
@@ -29,9 +29,10 @@ def test_default_master_portfolio_combines_three_implemented_sleeves_and_one_stu
     # IMPLEMENTED with strategy_id 'us_quality_momentum'.
     assert sleeves_by_id["satellite_us_quality"].sleeve_type == SLEEVE_TYPE_IMPLEMENTED
     assert sleeves_by_id["satellite_us_quality"].strategy_id == "us_quality_momentum"
-    # satellite_hk_china remains a stub — slated for B026.
-    assert sleeves_by_id["satellite_hk_china"].sleeve_type == SLEEVE_TYPE_SATELLITE_STUB
-    assert sleeves_by_id["satellite_hk_china"].strategy_id is None
+    # BL-B011-S2: satellite_hk_china flipped from SATELLITE_STUB to IMPLEMENTED
+    # with strategy_id 'hk_china_momentum' → the Master is 4/4 real.
+    assert sleeves_by_id["satellite_hk_china"].sleeve_type == SLEEVE_TYPE_IMPLEMENTED
+    assert sleeves_by_id["satellite_hk_china"].strategy_id == "hk_china_momentum"
 
 
 def test_default_master_portfolio_planning_weights_match_strategy_doc() -> None:
