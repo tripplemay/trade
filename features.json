@@ -6,7 +6,7 @@
       "title": "canonical/worker CLI 缺 env 硬失败（不静默写 scratch DB）+ deploy.sh worker is-active / canonical timer is-enabled post-step 断言 + required-tables 含两新表 + 守门/测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【部署+env 可靠性硬化，见 spec §4.1-4.3。正交 B047 功能码，不改回测/reports 逻辑】(1) **canonical/worker CLI 缺 env 硬失败**：canonical.py main + worker.py main 入口启动时，若 `settings.WORKBENCH_DB_URL` 解析为 `DEFAULT_DEV_DB_URL`（env 未设回落 scratch）且非显式 dev opt-in → **响亮非零退出**（`::error::` 文案：WORKBENCH_DB_URL unset 将写 scratch 非 prod，请 source EnvironmentFile 或经 systemd 运行），**不静默写 scratch DB**（B048-OPS1 env-url 空硬失败家族 / v0.9.21 诚实失败）；建议抽共享守门 `db/require_production_db.py`（或入口内联）。允许显式 `WORKBENCH_DB_URL` / 显式 dev opt-in 放行（不破 dev/test）。(2) **deploy.sh post-step 断言**（§12.11）：worker enable loop 后加 `systemctl is-active workbench-backtest-worker.service` 非 active→响亮（warning，sudoers 未应用时不硬挂部署但醒目）；`systemctl is-enabled workbench-canonical-backtest.timer` 非 enabled→响亮。(3) **required-tables 兜底**：确认 deploy 后 schema check 的 required-tables 列表含 `backtest_run` + `investment_report`（Finding C 兜底，补 B048-OPS1 alembic heads 断言）。(4) **守门/测试**：guard test（env 未设跑 canonical/worker main→非零退出+不触 DB 写，monkeypatch settings 默认 URL）；deploy-wiring test（deploy.sh 含 worker is-active assert + canonical timer is-enabled assert + required-tables 含两新表，仿 test_deploy_timer_wiring.py）。(5) Gates：backend pytest ≥ baseline+≥4 / ruff 0 / mypy 0 / bash -n deploy.sh。(6) 不动：B047 worker/canonical 回测计算逻辑 / reports 读路径（已确认非 bug）/ §12.10.2 守门 / master 评分。",
       "design_decisions": [
         "env 硬失败套到新 CLI 入口（planner 决）：B048-OPS1/B022 F014 的 deploy.sh alembic env 守门未覆盖手动跑的 canonical/worker CLI——B047 re-verify 即栽在裸跑写 scratch DB；硬失败堵静默回落。",
