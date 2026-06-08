@@ -18,7 +18,7 @@
       "title": "策略：trade/strategies/hk_china_momentum/（parameters/factors momentum+trend+区域风险/signal/construction top 1-2+caps+defensive）+ 单测",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "(1) **新模块** trade/strategies/hk_china_momentum/（复用 B025 模板，约 80%）：parameters.py（frozen dataclass + parameter_hash：top_n=2/max_position_weight=0.10/kweb_sublimit 0.05-0.10/rebalance=quarterly）+ factors.py（momentum=0.4·r3m+0.3·r6m+0.3·r12m + trend=price>200D MA & r6m>0 + 区域风险触发，price-only，复用 B025 factor 结构 + percent_rank）+ signal.py（generate_signal(parameters, as_of_date)→SignalResult，签名同 B025，weights_dict()）+ construction.py（top 1-2 过 trend + per-ETF≤10%/KWEB 子限 caps + 区域风险触发或无 ETF 过滤→defensive(SGOV)；简化版无 earnings blackout/sector caps）。(2) **区域风险过滤** 用 universe 内 ETF 价格（KWEB/MCHI/FXI 200D MA + 6M return），不用 HSI（不在 universe）；manual policy override 不编码。(3) 单测 B025 风格：已知 prices→已知 weights；trend 过滤；区域风险→defensive；caps；top 1-2 选股；KWEB 子限。(4) Gates：ruff 0 / mypy 0 / 策略单测全绿。(5) 不动：master（F003）/ 其他策略 / data loader（F001）。",
       "design_decisions": [
         "信号（planner 决，设计 §）：3 因子 momentum+trend+区域风险，price-only；选 top 1-2 ETF 过 trend，余额 defensive；非 B025 equal-weight top-15。",
