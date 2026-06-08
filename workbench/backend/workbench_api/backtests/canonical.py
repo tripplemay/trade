@@ -24,6 +24,10 @@ from sqlalchemy.orm import Session, sessionmaker
 from workbench_api.backtests.worker import run_backtest_job
 from workbench_api.db.engine import get_engine
 from workbench_api.db.repositories.investment_report import InvestmentReportRepository
+from workbench_api.db.require_production_db import (
+    ScratchDatabaseError,
+    require_production_db,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +67,14 @@ def main(argv: list[str] | None = None) -> int:
         description="B047 canonical investment report generation (real Master backtest).",
     )
     parser.parse_args(argv)
+    # B047-OPS1 F001 — hard-fail before any DB access if WORKBENCH_DB_URL is
+    # unset (would silently write the dev scratch DB, not prod — the B047
+    # re-verify root cause). Loud non-zero exit, no DB write.
+    try:
+        require_production_db(entrypoint="canonical")
+    except ScratchDatabaseError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
     factory = sessionmaker(bind=get_engine(), autoflush=False, future=True)
     session = factory()
     try:

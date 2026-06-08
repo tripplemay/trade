@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import logging
 import os
+import sys
 import time
 from datetime import date
 from typing import Any, Protocol
@@ -39,6 +40,10 @@ from workbench_api.backtests.mapping import (
 )
 from workbench_api.db.engine import get_engine
 from workbench_api.db.repositories.backtest_run import BacktestRunRepository
+from workbench_api.db.require_production_db import (
+    ScratchDatabaseError,
+    require_production_db,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -239,6 +244,14 @@ def main(*, poll_seconds: float = POLL_SECONDS, max_iterations: int | None = Non
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s %(message)s",
     )
+    # B047-OPS1 F001 — hard-fail before opening a session if WORKBENCH_DB_URL is
+    # unset (the daemon would drain the queue into the dev scratch DB, not prod).
+    # Loud non-zero exit, no DB write.
+    try:
+        require_production_db(entrypoint="worker")
+    except ScratchDatabaseError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
     factory = sessionmaker(bind=get_engine(), autoflush=False, future=True)
     iterations = 0
     logger.info("backtest_worker_started", extra={"poll_seconds": poll_seconds})

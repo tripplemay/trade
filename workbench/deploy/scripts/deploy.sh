@@ -281,7 +281,7 @@ PY
 # migration drift that leaves the schema short of these 6 tables fails
 # the deploy here, before the symlink flip + service restart.
 if [[ -n "${WORKBENCH_DB_URL:-}" ]]; then
-  echo "→ verifying schema (B021/B022/B023 + B034-B048 tables incl. price_history)"
+  echo "→ verifying schema (B021/B022/B023 + B034-B048 incl. price_history + B047 backtest_run/investment_report)"
   "${VENV_PYTHON}" - <<'PY'
 import os
 import sys
@@ -308,6 +308,14 @@ required = {
     "price_snapshot",
     "recommendation_snapshot",
     "price_history",
+    # B047-OPS1 F001 — Finding C backstop. The B047 backtest infra added
+    # 0012 backtest_run (on-demand queue) + 0013 investment_report (the
+    # canonical Reports page source). If the deploy chain never ran B047's
+    # migrations, prod is missing these two tables and the canonical report
+    # generator / Reports page silently surface nothing — fail the deploy
+    # concretely here (belt-and-suspenders to the alembic==head assert above).
+    "backtest_run",
+    "investment_report",
 }
 missing = required - present
 if missing:
@@ -427,6 +435,30 @@ if [[ -d "${SYSTEMD_SRC}" ]]; then
       echo "::warning::Could not install/enable ${worker_unit}. Apply the versioned sudoers artifact workbench/deploy/sudoers/deploy-workbench (now includes enable/restart for workbench-*-worker.service) to /etc/sudoers.d/deploy-workbench, then re-deploy. Deploy continues; the backtest worker will not run until granted." >&2
     fi
   done
+
+  # B047-OPS1 F001 — post-step assert the intended end-state (§12.11): an
+  # install/enable command returning 0 does NOT prove the unit ended up
+  # active/enabled. The on-demand backtest worker must be ACTIVE and the
+  # canonical-report timer ENABLED after deploy. We WARN (not hard-fail) because
+  # the one-time sudoers application may still be pending on a fresh VM — F002
+  # L2 confirms the end-state on the real machine. `is-active` / `is-enabled`
+  # are read-only and need no sudo.
+  WORKER_UNIT="workbench-backtest-worker.service"
+  if [[ -e "${SYSTEMD_SRC}/${WORKER_UNIT}" ]]; then
+    if systemctl is-active --quiet "${WORKER_UNIT}"; then
+      echo "✓ ${WORKER_UNIT} is active"
+    else
+      echo "::warning::${WORKER_UNIT} is NOT active after deploy (state: $(systemctl is-active "${WORKER_UNIT}" 2>/dev/null || echo unknown)). Apply the deploy-workbench sudoers artifact + re-deploy; the on-demand backtest queue will not drain until it runs (B047-OPS1)." >&2
+    fi
+  fi
+  CANONICAL_TIMER="workbench-canonical-backtest.timer"
+  if [[ -e "${SYSTEMD_SRC}/${CANONICAL_TIMER}" ]]; then
+    if systemctl is-enabled --quiet "${CANONICAL_TIMER}"; then
+      echo "✓ ${CANONICAL_TIMER} is enabled"
+    else
+      echo "::warning::${CANONICAL_TIMER} is NOT enabled after deploy (state: $(systemctl is-enabled "${CANONICAL_TIMER}" 2>/dev/null || echo unknown)). Apply the deploy-workbench sudoers artifact + re-deploy; canonical investment reports will not regenerate on schedule (B047-OPS1)." >&2
+    fi
+  fi
 fi
 
 echo "✓ deploy complete: ${RELEASE_DIR}"
