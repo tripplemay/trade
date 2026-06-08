@@ -1,39 +1,41 @@
 {
-  "status": "done",
-  "user_goal": "B047-OPS2 回测页生产 hotfix（默认范围开箱即坏 + 数据深度）。用户 2026-06-09 报生产故障：回测页 Run 报 `BacktestWorkerError: insufficient price history for any signal date in range: no valid volatility estimates for risk assets`。**Planner 根因分析（铁律 9 流程，不改产品码）**：四因子——(1) 回测页默认范围硬编码 2024-01-01~2024-06-30(page.tsx:93-94)，今 2026-06、B045 数据滚动 2 年窗(today−730≈2024-06 至今)→默认范围几乎整段早于数据起点→**任何用户用默认范围必然失败(开箱即坏)**；(2) risk_parity 需 120 交易日 vol lookback(risk_parity.py:34/155/206)，momentum 需 ~9 月(binding)；(3) 可用回测带=数据起点+~9-10 月，2 年窗实际仅最近~1.3 年信号日可用，worker drop-earliest 重试耗尽报错(worker.py:182-193)；(4) 无校验/钳制+原始英文异常漏 UI。**用户拍板前三层+深化回填(全四层)**：L1 动态有效默认范围(去硬编码)；L2 API 暴露数据覆盖窗口(data_start/end/min_usable_start)+date picker 钳制+「数据覆盖 X–Y」；L3 worker 结构化 error-kind→前端 i18n 双语友好提示；L4 DEFAULT_LOOKBACK_DAYS 730→1825(~5 年)+VM 深回填(顺带治 B048 S1 退化曲线)。3 features：(F001 g)后端 cli 1825+data-refresh 写覆盖窗口+GET /api/backtests/data-range(请求路径只读§12.10.2)+worker error-kind+测试；(F002 g)前端动态默认+picker 钳制+error-kind 双语+空态+vitest/Playwright；(F003 c)L2 真 VM 深回填+默认范围 Run 成功非退化+无效范围友好提示+signoff。永久硬边界：§12.10.2 请求路径禁 trade(数据窗口走 job→持久化→请求只读)/定位§1.1/no-execution/边界 r/i18n。不做：改 risk_parity/momentum lookback 算法/master 评分/async 架构/canonical 逻辑/无限深回填。**优先于 B049/B043**(里程碑 C 收尾决定暂搁，本 hotfix done 后回到 B049 vs B043 讨论)。",
-  "total_features": 3,
-  "completed_features": 3,
+  "status": "building",
+  "user_goal": "B049 全页面真实化审计 gate（里程碑 C 收口）。用户 2026-06-09 拍板 B047-OPS2 done 后下一批做 B049（B049 先收口、B043 AI 解释后做）。**里程碑 C 硬标准**：所有用户投资页面显示内容接真实引擎、无合成/占位。前序批次已逐页真实化，本批=收口 gate：修实地审计确认的 3 个残余 + 独立 evaluator 全页面穷举审计 + 里程碑 C 达成裁定。**Planner 实地审计基线（Explore 2026-06-09，无新增残余）**：(#1) Snapshots 合成进度——services/snapshots.py:93-110 _iter_stages() 5 段硬编码+固定 0.05s sleep；docstring 自述真实 scripts/refresh_public_snapshot 从未接入（planner 核实：该脚本物理不存在，真实刷新操作=data_refresh/cli.py 已 allowlist）；数据已 B045 真，仅进度动画假。(#2) Strategies 陈旧 synthetic note——strategies.py:101-104/159-162「Synthetic fixture only; not live market data/not actual filings」（B045 已接真数据陈旧）。(#3) Dashboard 死路由+占位——routes/dashboard.py 前端零页面引用 + dashboard.py:45 第三份 kill_switch 0.20（应引 nav_history:46 单一来源 0.15）+ :159 master_drawdown=0.0 占位 + test_dashboard.py:112 断言 0.2 陈旧。**严禁动诚实声明式占位**（strategies satellite_stub:167-171 / regime research-state:218+ weight 0.0——诚实披露 stub/research 状态=真实，动了反隐瞒）。4 features 3g+1c：F001 g Snapshots 真进度（架构决策点 generator 定：A 轻量真实 manifest[planner 倾向] vs B 重跑 data_refresh 子进程）；F002 g Strategies note 更正+hk_china note 核查+守门；F003 g Dashboard 死路由清理+kill_switch 单一来源+master_drawdown 移除+api.ts drift；F004 c L1+L2 真 VM 全页面穷举审计（8 页无合成/占位）+里程碑 C 达成裁定+signoff。永久硬边界：§12.10.2 请求路径禁 import trade/no-execution/定位§1.1/i18n parity/删前看目标。不做：改 master 评分/激活 regime/动诚实占位/内部工具页/无限深回填/broker。**审计通过=里程碑 C 正式达成**，之后回 B043 AI 解释层。spec docs/specs/B049-all-pages-real-engine-audit-spec.md（9 章）。",
+  "total_features": 4,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F003",
+  "current_sprint": "F001",
   "last_updated": "2026-06-09",
   "reference_docs": [
-    "docs/specs/B047-OPS2-backtest-range-validation-data-depth-spec.md",
-    "workbench/frontend/src/app/(protected)/backtest/page.tsx",
+    "docs/specs/B049-all-pages-real-engine-audit-spec.md",
+    "workbench/backend/workbench_api/services/snapshots.py",
+    "workbench/backend/workbench_api/routes/snapshots.py",
     "workbench/backend/workbench_api/data_refresh/cli.py",
-    "workbench/backend/workbench_api/data_refresh/refresh.py",
-    "workbench/backend/workbench_api/backtests/worker.py",
-    "trade/strategies/risk_parity.py",
-    "workbench/backend/workbench_api/routes/backtests.py",
-    "workbench/backend/tests/safety/test_backtests_request_self_contained.py"
+    "workbench/backend/workbench_api/services/strategies.py",
+    "workbench/backend/workbench_api/routes/dashboard.py",
+    "workbench/backend/workbench_api/services/dashboard.py",
+    "workbench/backend/workbench_api/services/nav_history.py",
+    "workbench/backend/tests/unit/test_dashboard.py",
+    "docs/product/progress-review-2026-06.md"
   ],
   "docs": {
-    "spec": "docs/specs/B047-OPS2-backtest-range-validation-data-depth-spec.md",
+    "spec": "docs/specs/B049-all-pages-real-engine-audit-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B047-OPS2-backtest-default-range-hotfix-signoff-2026-06-08.md",
-    "framework_reviewed": true
+    "signoff": null,
+    "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": "B047-OPS2 F003 PASS。L1:959。L2:data-range real(2021-2025);默认Run非退化(6pt/112trades/sharpe3.16);无效range友好error(no_signal_dates);errors=0。热修复四层全生效。",
+  "evaluator_feedback": null,
   "generator_handoff": null,
   "session_notes": {
-    "planner": "2026-06-09 B047-OPS2 planning，status→building 交 Generator F001。**生产 hotfix**：用户报回测页 Run 报 insufficient price history。**Planner 根因链(读码确证)**：回测页默认硬编码 2024-01-01~2024-06-30(page.tsx:93-94)+B045 滚动 2 年数据窗(cli.py:24 DEFAULT_LOOKBACK_DAYS=730，每天重写 CSV today−730≈2024-06 至今)→默认范围整段早于数据起点；risk_parity 需 120 交易日 vol(risk_parity.py:34/155/206 len(returns)<lookback→RiskParityDataError，全 risk 资产失败→no valid volatility estimates)+momentum~9 月 binding；worker run_backtest_job drop-earliest 重试耗尽→insufficient price history(worker.py:182-193)；原始英文异常漏 UI。**关键严重度**：默认范围开箱即坏(任何用户首跑必撞)，非刁钻范围。**用户拍板全四层(前三层+深化回填)**。方案 F001 g：cli 730→1825+data-refresh 写覆盖窗口(data_start/end/first_usable，first_usable 机制 generator 定=job 侧精确 import trade 或保守常数 data_start+~10 月)+GET /api/backtests/data-range(请求路径只读§12.10.2)+worker 结构化 error-kind(insufficient_history/no_signal_dates)+测试。F002 g：前端去硬编码动态默认(end=data_end/start=max(min_usable_start,end−1yr))+picker min/max 钳制+「数据覆盖 X–Y」双语+error-kind→i18n 双语友好提示+空态。F003 c：L2 深回填落 5 年+data-range API+★默认范围 Run 成功非退化(equity>>2 点)+无效范围中文友好提示非原始串+picker 钳制+B023 不破。**evaluator.md §25 适用**(刚沉淀)：默认范围 Run 成功是 core acceptance 必须正面证据。spec docs/specs/B047-OPS2-...-spec.md 10 章。**优先于 B049/B043**(里程碑 C 收尾搁置，hotfix done 后回到讨论)。**F001 交 Generator**：见 features.json F001 acceptance。 ▌**【下次 planner 续接交接】** 当前 status=building（B047-OPS2 hotfix，Generator 跑 F001→F002，再 Codex F003）。**planner 下次介入时机**：(a) 用户来『检查批次状态』且 B047-OPS2 到 done → 做 done 收尾（framework 沉淀检查/project-status/signoff 核对）；(b) Generator 实施中抛架构疑点（如 first_usable_signal_date 机制选 job 侧精确 vs 保守常数）。**到 done 后必做**：回到**搁置的 B049 vs B043 决定**（里程碑 C 仅剩这两批：B049 全页面真实化审计 gate order8 收口 / B043 AI 解释并行；planner 倾向 B049 先收口里程碑 C，但用户选『先讨论再定』未决）。**复验纪律**：F003 用 evaluator.md §25（默认范围 Run 成功=core acceptance 须正面证据非退化结果才可 done；Codex 本会话累犯标 done 留未验，已沉淀 §25 须盯）。**framework 队列**：③async worker ④satellite 权重口径 仍单例待二例（proposed-learnings）。**里程碑 C 现状**：交易闭环+Master4/4+Risk UI+Backtest+Reports 全真实端到端 均达成；余 B049+B043+本 hotfix。prod=7bb8000，worker/canonical/timer auto-wired。",
-    "generator": "2026-06-09 F001 后端 done（building，下一条 F002 前端）。**实现**：(L4) cli.py DEFAULT_LOOKBACK_DAYS 730→1825+注释。(L2) 新表 backtest_data_window（singleton id='default'，model+repo+migration 0014）+ data_refresh/window.py compute_data_window（纯 CSV 读 min/max；first_usable=**保守常数 data_start+305 天≈10 月**，momentum ~9 月 binding，避免 data-refresh import trade，偏晚=安全方向）+ cli.main 写完 CSV 后 require_production_db(entrypoint='data-refresh') 守门(§12.11.1 入口级)→upsert window（CSV 主交付先写，DB 写其后）。(请求路径) GET /api/backtests/data-range 只读 backtest_data_window 返 {data_start,data_end,min_usable_start}，无数据全 null；route 注册在 /{run_id} **之前**防 shadow。(L3) backtests/error_kinds.py classify_error_kind（字符串匹配 insufficient_history/no_signal_dates/data_unavailable/unknown）+ worker 失败路径存 error_kind + repo.save_error(error_kind=) + save_result 清 error_kind + BacktestRunResponse.error_kind 暴露。migration 0014 加 backtest_run.error_kind 列。deploy.sh required 表加 backtest_data_window。**测试 +19**：window 计算/clamp/missing/empty + repo singleton + cli main 端到端写 window + cli 1825 + error_kinds 7 参数 + data-range API(auth/空/有值/不被 shadow) + worker error_kind 持久化。**gates 全绿**：pytest 959 passed 17 skip(baseline 957→+19，远超 +6)/ruff 0/mypy 0/alembic 单 head 0014 升级干净。§12.10.2 守门 + market-scheduler-scope 守门仍过（DB 写非 execution 面，与 B048 backfill 同族）。**F002 待做**：前端 page.tsx:93-94 去硬编码动态默认(end=data_end/start=max(min_usable_start,end−1yr))+picker min/max 钳制+「数据覆盖 X–Y」双语+error-kind→i18n 双语+空态+vitest/Playwright，依赖本 F001 的 data-range API + error_kind。",
-    "evaluator": "B047-OPS2 F003签收。price_history backfill→18463行37symbol。data-range返回。默认Run 6pt/112trades/sharpe3.16非退化。无效range error_kind=no_signal_dates友好。L1+L2+L3+L4全OK。",
-    "generator-f002": "2026-06-09 F002 前端 done。**实现**：(L1) backtest/page.tsx 去硬编码 2024 H1 默认（startDate/endDate 初值改空串）；新增 useEffect fetch GET /api/backtests/data-range → 有数据则 setRangeStatus('ready')+默认 end=data_end / start=max(min_usable_start, isoMinusOneYear(data_end))（ISO 串字典序=时序，UTC 减一年含 Feb29 处理）；空/不可达→'empty'；加载中→'loading'。(L2) date picker min={min_usable_start} max={data_end} 钳制 + rangeValid 校验（start>=min/end<=dataEnd/有序）+「数据覆盖 X–Y」caption(testid backtest-data-coverage) + 越界 hint(backtest-invalid-range) + Run disabled 直到 rangeValid。(L3) backtest-poll.ts 新增 BacktestRunError 携 errorKind（pollBacktest 在 status==error 时抛带 error_kind）；page handleRun 捕获→setErrorKind→stateLabel 用 tErrorKind(kind,{minUsableStart}) 双语友好文案，不漏原始英文异常；normaliseErrorKind 兜底 unknown。(空态) backtest-empty-data 「暂无回测数据，请先运行数据刷新」双语。(i18n) en+zh-CN backtest 加 selector.dataCoverage/rangeLoading + emptyData + invalidRange + errorKind.{insufficient_history,no_signal_dates,data_unavailable,unknown}，parity 测试过。**测试**：page spec 扩 5 例(默认范围落可用带/picker 钳制+caption/空态 Run disabled/越界 invalid/error_kind 友好不漏原文)+ 既有 B022 F008 4 例补 data-range mock(否则 Run disabled 破)；backtest-poll +2 例(errorKind 携带/null 兜底)；e2e 重写 mock data-range(page.route)：默认范围 Run+空态+error_kind 友好(双 locale)，因 CI 空 DB data-range 返 null 会 disable Run。**gates 本地**：vitest 267 passed(45 files)/typecheck 0/lint 0/api.ts 无 drift(F002 不改后端 schema)。**待 CI 跑 Playwright**。**F003 交 Codex**：L1 全门禁 + L2 真 VM 触发 data-refresh 深回填→默认范围 Run 成功非退化 + 无效范围友好提示 + picker 钳制 + signoff。"
+    "planner": "2026-06-09 B049 planning，status→building 交 Generator F001。**里程碑 C 收口 gate**（用户拍板 B047-OPS2 done 后 B049 先收口、B043 后做）。**Planner 实地审计基线（Explore+读码 2026-06-09）**：3 残余无新增——#1 Snapshots 合成进度（snapshots.py:93-110 _iter_stages 5 段硬编码+固定 0.05s sleep；真实脚本 scripts/refresh_public_snapshot 物理不存在，真实刷新=data_refresh/cli.py）；#2 Strategies 陈旧 synthetic note（strategies.py:101-104/159-162）；#3 Dashboard 死路由+第三份 kill_switch 0.20+master_drawdown 0.0+test 断言 0.2 陈旧。**严禁动诚实声明式占位**（satellite_stub/regime research-state weight 0.0=诚实披露=真实）。**F001 架构决策点**：refresh 真实语义未定，spec §4.2 留 A(轻量真实 manifest，planner 倾向，不重跑 pipeline/§12.10.2 安全) vs B(spawn data_refresh 子进程) generator 定并文档化。**F003 删前看目标**：generator 删 dashboard 路由前须 grep 确认零运行时消费者(含 hook/fetch)，保留 Home 复用 _aggregate_nav。**F002 hk_china 核查**：BL-B011-S2 已实现 hk_china，核 satellite_stub note 是否仍指它(已激活则陈旧应更正)。**F004 审计纪律**：evaluator.md §25——snapshots 真进度/strategies 真文案/全页面 8 页审计须正面证据；审计看内容类别不只 grep(Reports 错配教训)；任一页真实残余→不判 non-blocking 回 fixing。审计全 PASS=**里程碑 C 正式达成**。 ▌**【下次 planner 续接】** status=building（Generator 跑 F001→F002→F003，再 Codex F004）。planner 下次介入：(a) B049 到 done→done 收尾(framework 沉淀/project-status/里程碑 C 达成写入 progress-review 覆盖矩阵全绿)+开 **B043 AI 解释层** 讨论(里程碑 C 后唯一剩批，解释干净全真实系统，受 no-AI 硬边界约束)；(b) Generator 抛 F001 架构疑点(A vs B)或 F003 删路由疑点。**framework 队列**：③async worker ④satellite 权重口径 仍单例待二例；B047-OPS2 CI flake(risk-banner.spec)软关注未沉淀。**里程碑 C 现状**：交易闭环+Master4/4+Risk UI+Backtest+Reports 全真实达成；B049 收口 gate 进行中=最后一块。prod=dda9eef 之前的 7bb8000 系列(B047-OPS2 已部署)。",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",
     "F002",
-    "F003"
+    "F003",
+    "F004"
   ]
 }

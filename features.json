@@ -1,39 +1,50 @@
 {
-  "sprint": "B047-OPS2-backtest-range-validation-data-depth",
+  "sprint": "B049-all-pages-real-engine-audit",
   "features": [
     {
       "id": "F001",
-      "title": "后端——深化回填(cli 730→1825) + data-refresh 写覆盖窗口(data_start/end/first_usable) + GET /api/backtests/data-range(请求路径只读) + worker 结构化 error-kind + §12.10.2 守门 + 测试",
+      "title": "Snapshots 真进度——去合成 5 段动画，接真实刷新操作进度 + 真实 manifest + docstring 去 synthetic + §12.10.2 守门 + 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【生产 hotfix 后端，见 spec §4.1-4.4。根因=回测页默认范围开箱即坏 + 数据深度不足】(1) **L4 深化回填**：`data_refresh/cli.py` `DEFAULT_LOOKBACK_DAYS` 730→**1825**（~5 年）+ 更新注释（覆盖 momentum 9 月 + risk_parity 120 日 vol + 用户多年可用带）。(2) **L2 data-refresh 写覆盖窗口**：data-refresh job 写完 prices CSV 后，记录实际 `data_start`（CSV 最早日）/`data_end`（最晚日）/**`first_usable_signal_date`**（覆盖最长 lookback 后第一个可跑信号日）到持久化（DB 小表 `backtest_data_window` 或等价，单行 upsert）。**first_usable 机制 generator 定**：job 侧精确算（data-refresh 可 import trade，allowlist）或文档化保守常数（data_start + ~10 月覆盖 momentum 9 月+buffer）——二选一并注明理由。(3) **请求路径 API**：`GET /api/backtests/data-range` 返 `{data_start, data_end, min_usable_start}`，**只读持久化不 import trade**（§12.10.2）；无数据 graceful（null/空）。(4) **L3 worker 结构化 error-kind**：worker/服务把 `insufficient price history` / `no valid volatility estimates` / `no quarter-end signal dates` 映射为结构化 error-kind（如 `insufficient_history`/`no_signal_dates`），存 backtest_run.error 或新 error_kind 字段（前端据此 i18n）。(5) **§12.10.2 守门**：data-range API 路径无 trade import（worker/canonical/data-refresh allowlist 不变）。(6) **测试**：data-refresh 写覆盖窗口（min/max/first_usable）+ data-range API（有数据/空）+ worker error-kind 映射（三类→kind）+ cli DEFAULT_LOOKBACK_DAYS=1825 断言 + §12.10.2 守门。(7) Gates：backend pytest ≥ baseline+≥6 / ruff 0 / mypy 0 / alembic head（若加表）。(8) 不动：risk_parity/momentum lookback 算法 / master 评分 / async 架构 / canonical 逻辑。",
+      "status": "pending",
+      "acceptance": "【里程碑 C 收口 gate 残余 #1，见 spec §4】根因：services/snapshots.py docstring 自述真实 scripts/refresh_public_snapshot 从未接入，F011 ship 合成 5 段进度（_iter_stages 行 93-110 硬编码 + _STAGE_DELAY_SECONDS 固定 0.05s sleep）；该脚本物理不存在，真实刷新操作=data_refresh/cli.py(已 allowlist)。**架构决策点 generator 定（spec §4.2 二选一注明理由）**：(A) 轻量真实 manifest——refresh 读当前真实数据状态(CSV/price_history/backtest_data_window 覆盖窗口)构建真实 manifest，stage 反映真实工作，SnapshotMeta 写真实 manifest 数据(真实 symbol 数/行数/覆盖窗口/quality)，不重跑 pipeline，§12.10.2 安全(planner 倾向)；(B) spawn data_refresh CLI 子进程解析真实 stdout 进度(重，须自包含 §12.10+不阻塞)。**Acceptance**：(1) 删 _iter_stages 固定 5 段硬编码+固定 sleep 表演，进度事件反映真实刷新操作实际阶段边界。(2) _persist_snapshot 去 `del detail # placeholder`，SnapshotMeta 写真实 manifest 数据(非恒 'ok' 占位)。(3) services/snapshots.py 模块 docstring + routes/snapshots.py 路由 docstring 删 synthetic/hasn't-been-wired 陈述改述真实接线。(4) 前端 snapshots/page.tsx 已通用化消费 event.stage/detail；若 stage 变则同步展示+i18n，否则验证不破。(5) 边界：snapshots refresh 请求路径不进程内 import trade(§12.10.2 AST 守门)；选(B)则子进程走 allowlist+§12.10 自包含；错误路径仍 yield stage:error 不漏栈。(6) 测试：真实进度事件(非固定 sleep)+SnapshotMeta 真实字段+错误路径+§12.10.2 守门+前端 vitest(若改 stage)。(7) Gates：backend pytest ≥ baseline / ruff 0 / mypy 0；frontend(若动) vitest/lint/tsc 0。(8) 不动：B045 timer data-refresh job / canonical / 评分。",
       "design_decisions": [
-        "深化回填 730→1825（用户 2026-06-09 拍板 L4）：扩大可用回测带，顺带治 B048 S1 退化曲线；disk 84% 可容（5 年 CSV ~2.7MB）。",
-        "数据窗口走 job→持久化→请求只读（planner 决，§12.10.2）：请求路径禁 import trade，覆盖窗口由 data-refresh job 写 DB，请求只读。",
-        "first_usable 机制留 generator 定（planner）：job 侧精确算 vs 文档化保守常数 data_start+~10 月（momentum 9 月 binding）。"
+        "refresh 真实语义未定，spec §4.2 留 A/B 决策点 generator 定并文档化；planner 倾向 (A) 轻量真实 manifest(不重跑昂贵 pipeline/不撞 B045 timer/§12.10.2 安全)。",
+        "scripts/refresh_public_snapshot 物理不存在(planner 2026-06-09 核实)；真实刷新操作=workbench_api/data_refresh/cli.py。",
+        "前端已为真接线设计(通用消费 event.stage/detail)，后端换真主要触 _iter_stages/_persist_snapshot 函数体。"
       ]
     },
     {
       "id": "F002",
-      "title": "前端——动态有效默认范围(去硬编码 2024 H1) + date picker 钳制+「数据覆盖 X–Y」 + error-kind→i18n 双语友好提示 + 空数据态 + vitest/Playwright",
+      "title": "Strategies note 更正——去陈旧 synthetic note(保留诚实 stub/research 披露) + hk_china note 核查 + 守门回归测试",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【生产 hotfix 前端，见 spec §4.3-4.4。依赖 F001 data-range API + error-kind】(1) **L1 动态默认**：去 `backtest/page.tsx:93-94` 硬编码 `useState('2024-01-01')/('2024-06-30')`；启动 fetch `GET /api/backtests/data-range` → 默认 **`end=data_end`，`start=max(min_usable_start, data_end−1 年)`**（保证落可用带，默认 Run 必成功）；data-range 未就绪前禁 Run 或显 loading。(2) **L2 钳制**：date picker `min={min_usable_start} max={data_end}`（HTML min/max + 提交前校验，越界禁 Run/提示）；显「数据覆盖 {data_start}–{data_end}」说明（双语 i18n）。(3) **L3 友好错误**：按 F001 error-kind i18n 双语映射（`insufficient_history`→「所选范围历史数据不足以估算波动率，请选择 {min_usable_start} 之后的范围」/ EN 对应；`no_signal_dates`→对应文案），**不显原始英文异常串**。(4) **空数据态**：data-range 空→「暂无回测数据，请先运行数据刷新」双语。(5) **测试**：vitest（mock data-range→默认范围落可用带 / picker 钳制 / error-kind→双语文案 / 空数据态）+ Playwright（默认范围可 Run / 无效范围友好提示 / 双 locale）。(6) Gates：frontend vitest ≥ baseline+ / lint 0 / typecheck 0 / Playwright 不破 / i18n parity（backtest 新 key 双语齐）/ no-execution 守门。(7) 不动：B040 MetricsDisplay / async 轮询逻辑（backtest-poll.ts 不改，除非接 error-kind）/ 其他页。",
+      "status": "pending",
+      "acceptance": "【里程碑 C 收口 gate 残余 #2，见 spec §5】(1) 更正陈旧 note：services/strategies.py:101-104(global_etf_momentum)+:159-162(us_quality) 去『Synthetic fixture only; not live market data / not actual filings』，改反映 B045 真实数据来源诚实文案(标注真实价格/真实 filings+planning_weight)，不夸大(仍 research-only advisory，不宣称收益预测)。(2) **保留诚实披露(严禁动)**：spec §1.2 satellite_stub(:167-171)/regime research-state(:218+/:240/:258) weight 0.0 占位不动(动了反隐瞒真相)。(3) i18n：note 若有前端 i18n key 双语 parity；后端直出串则确认前端展示必要时纳入 i18n。(4) **守门回归测试**：guard 断言用户可见 strategy note 不含『Synthetic fixture only/not live market data/not actual filings』陈旧合成词，同时不误伤诚实 stub/research 披露。(5) **hk_china 核查**：BL-B011-S2 已实现 hk_china(Master 4/4 真实)，核查 satellite_stub note 是否仍指 hk_china——已激活则该 note 陈旧应一并更正，指其它未实现 sleeve 则保留；据 master_portfolio 实际组成裁定并 commit 注明。(6) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / i18n parity(若涉及)。",
       "design_decisions": [
-        "动态默认 end=data_end / start=max(min_usable_start, end−1yr)（planner 决 L1）：保证默认 Run 落可用带成功，根治开箱即坏。",
-        "picker min/max 钳制 + 数据覆盖文案（planner 决 L2）：防用户再选无效范围。",
-        "error-kind→i18n 映射在前端（planner 决 L3）：worker 给结构化 kind，前端双语化，不漏英文异常。"
+        "只改陈旧 synthetic 文案，保留诚实 stub/research-state 披露(里程碑 C 要真实不要隐瞒；诚实披露 stub 状态 = 真实)。",
+        "新增 guard 测试防 synthetic note 回归(同 v0.9.31 decommission E2E presence→absence 思路)。"
       ]
     },
     {
       "id": "F003",
-      "title": "Codex L1+L2 真 VM——深回填落 5 年 + data-range API + 默认范围 Run 成功非退化 + 无效范围友好提示 + picker 钳制 + B023 不破 + signoff",
+      "title": "Dashboard 死路由清理——删前确认零消费者 + kill_switch 阈值单一来源统一 + master_drawdown 占位移除 + test 更新 + api.ts drift 同步",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "【里程碑 C 收口 gate 残余 #3，见 spec §6】(1) **删前确认零运行时消费者(铁律：删除前看目标)**：grep 前端 fetch('/api/dashboard'/useDashboard/任何 /api/dashboard 运行时调用，确认仅 OpenAPI 生成类型引用、无页面/hook 消费后方可删 routes/dashboard.py+注销路由注册；**保留 Home 复用的 _aggregate_nav 等共享 helper**(移公共位置不随 dashboard service 死)。(2) kill_switch 阈值单一来源：services/dashboard.py:45 第三份 DEFAULT_KILL_SWITCH_THRESHOLD=0.20——随死路由整体移除则连带消失；若 service 仍被复用则改引用 nav_history.KILL_SWITCH_THRESHOLD(0.15)，同 recommendations.py:80(沉淀 v0.9.37)。(3) master_drawdown 占位：services/dashboard.py:159 master_drawdown=0.0——随死路由移除；若 service 复用字段则接真实 nav_history master DD。(4) 测试更新：tests/unit/test_dashboard.py:112 assert==0.2——随死路由移除对应测试或改断言 0.15/导入常量(依删/留裁定)。(5) **OpenAPI/api.ts drift 同步**：删 /api/dashboard endpoint→重生成前端 OpenAPI 类型，api.ts 无 drift(CI drift 检查绿)。(6) §12.10 边界：清理不引入新执行路径；保留 helper 仍守只读边界。(7) Gates：backend pytest ≥ baseline / ruff 0 / mypy 0；frontend api drift 0 / tsc 0 / lint 0。",
+      "design_decisions": [
+        "dashboard 路由前端零页面引用(Explore 核实)——但删前 generator 须再 grep 确认零运行时消费者(含 hook/fetch)，再删。",
+        "保留 Home 复用 _aggregate_nav(backlog B049 decision 明确)；删/留 service 视复用情况，连带处理第三份阈值副本+master_drawdown 占位+陈旧测试断言。"
+      ]
+    },
+    {
+      "id": "F004",
+      "title": "Codex L1+L2 真 VM——全页面穷举审计(8 页无合成/占位) + 3 残余修复确证 + 里程碑 C 达成裁定 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "L1 (CI 内)：F001+F002 全门禁——backend pytest（data-refresh 覆盖窗口 / data-range API / worker error-kind / cli 1825）+ frontend vitest（动态默认 / picker 钳制 / error-kind 双语 / 空态）+ ruff/mypy/lint/typecheck/Playwright；§12.10.2 守门（data-range 请求路径无 trade）；no-execution 守门；i18n parity；artifact grep secret=0；alembic head（若加表）。L2 (真 VM)：(1) **data-refresh 深回填**：触发 `systemctl start workbench-data-refresh.service`（或确认 02:30 timer 跑过）→ unified CSV 覆盖 ~5 年（或 Tiingo 可达最长）+ data_start 据实；(2) **GET /api/backtests/data-range** 返合理 `{data_start, data_end, min_usable_start}`；(3) ★**默认范围点 Run→真实非退化结果**（前端默认范围落可用带；POST→轮询→done，equity 点数 >> 2、sharpe/max_drawdown 非退化 0.0——对比 B047 复验的 2-3 点退化，记差异为深回填生效证据）；(4) **无效范围**（手动选早于 min_usable_start）→ **中文友好提示，非原始 `BacktestWorkerError` 英文串**；(5) date picker 钳制生效（min/max）；(6) 「数据覆盖 X–Y」显示；(7) B023 交易闭环不破 + recent-errors={count:0} + HEAD≡main + B026 absent。Signoff: docs/test-reports/B047-OPS2-backtest-range-validation-signoff-2026-MM-DD.md 用模板（§Production/HEAD + §Post-signoff Deploy + **开箱即坏修复证据=默认范围 Run 成功 + 友好错误对比 + 深回填非退化曲线**）。**evaluator.md §25 适用**：默认范围 Run 成功是 core acceptance，必须正面证据（实际跑出非退化结果）才可 done，不得因『API schema 对』放行。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
+      "status": "pending",
+      "acceptance": "【里程碑 C 收口 gate 验收，见 spec §7】L1(CI 内)：F001+F002+F003 全门禁——backend pytest(snapshots 真进度/strategies guard/dashboard 删后无回归)+frontend(若动 vitest/tsc/lint)+ruff/mypy+§12.10.2 守门+i18n parity+api.ts drift 0+artifact grep secret=0+alembic head(不涉及则确认不变)。L2(真 VM)：(1) **Snapshots 真进度**：触发 refresh→进度事件反映真实操作(非固定 0.05s 合成 5 段)；SnapshotMeta 列表显真实 manifest 数据。(2) **Strategies 页**：note 显真实数据来源文案不含『Synthetic fixture only』；诚实 stub/research 披露仍在。(3) **Dashboard 死路由**：GET /api/dashboard 返 404(已删)或确认无前端消费；Home 等复用页不破。(4) ★**全页面穷举审计(=里程碑 C 达成证据)**：逐页核查 Home/Recommendations/Reports/Risk/Strategies/Backtest/Snapshots/Execution 每页用户可见显示无合成/占位/硬编码 stub——**审计看『内容类别是否该页应有的真实投资类别』不只 grep stub**(来源 Reports 接开发签收语料错配教训)；grep synthetic/stub/placeholder/hardcode/占位+逐页手验；产出逐页审计清单(PASS/残余)写 signoff 作达成证据。(5) 回归：B023 交易闭环不破+recent-errors={count:0}+HEAD≡main+B026 absent。(6) Signoff：docs/test-reports/B049-all-pages-real-engine-audit-signoff-2026-MM-DD.md 用模板(§Production/HEAD 等价+§Post-signoff Deploy+§全页面真实化覆盖矩阵逐页裁定)。**evaluator.md §25 适用**：snapshots 真进度/strategies 真文案/全页面审计均须正面证据才可 done；审计任一页发现真实残余→不判 non-blocking 回 fixing。更新 progress.json status→done/docs.signoff/evaluator_feedback；审计通过则明确裁定**里程碑 C 达成**。"
     }
   ]
 }
