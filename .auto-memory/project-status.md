@@ -24,8 +24,9 @@ type: project
 - B045 market data refresh (r) 只读 + §12.10.2 AST 守门 + data self-contained。
 
 ## Framework 状态
-- **v0.9.36**（B045）：README §经验教训「venv 多包安装：deploy 静默装不上」+ smoke import check 铁律。
-- v0.9.35（B044）：§12.10.2 enforcement 物理缺席→AST 守门 + README 长停机 prod==HEAD 教训。
+- **v0.9.38**（B022/B045-OPS1/B048-OPS1 三例）：generator.md §12.11 **deploy 步骤必须 post-step assert 验证 intended end-state**（命令返回 0/守门通过 ≠ 成功；守门条件不静默跳过关键步骤）；统一 v0.9.36 smoke check。
+- **v0.9.37**（B048）：README 同一风控常数多处副本→单一来源+feature-grounding。
+- **v0.9.36**（B045）：README venv 多包安装 deploy 静默装不上 + smoke import check。v0.9.35（B044）：§12.10.2 物理缺席→AST 守门。
 
 ## 已知 gap
 - 本机 python3=3.9.6，用 .venv/bin/python。

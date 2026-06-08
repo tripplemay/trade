@@ -1,36 +1,34 @@
 {
-  "status": "done",
-  "user_goal": "B048-OPS1 deploy alembic 自动升级可靠性（横切 ops 修复，非产品序列）— 让 deploy 时 DB migrations 可靠自动 apply 到 prod（无需手动 alembic upgrade head）+ deploy 后断言 alembic current==head（失败硬报）。来源 B048 signoff §Finding #1 + §Soft-watch S2：deploy 后 prod alembic 停 0006 缺 0007-0011 共 5 migration，price_history 等表不存在需手动 upgrade。决策（★用户批）：拆 B048-OPS1 修部署★（alembic 缺陷正交 B048 功能、影响所有后续批次，同 B045-OPS1）/ durable 防线=deploy 后断言 alembic==head（v0.9.36 同思路）/ 排 order 3 BL-B023-S1 之前（闭环需 deploy 可靠建表）。根因现状（待真机诊断）：deploy.sh 有 alembic 步骤(源 env 后跑)但 prod 停 0006，候选=ENV_FILE 未加载→alembic 跑 scratch DB(B022 同款坑注释已载)/silent fail/B044-B045 中断部署期未达。2 features：(F001 g)真机诊断根因+对症修自动升级(prod DB 升 head)+deploy 后断言 alembic==head 硬失败+deploy 守门；(F002 c)L2 fresh deploy 后 migrations 自动 apply(alembic==head 无需手动)+0007-0011 表存在+断言跑过+signoff(§Finding #1/S2 resolved)。永久硬边界继承：单 VM sqlite alembic 幂等/§12.10.2/B023/deploy 用户 sudo 不扩。不做：改 migration 内容/B048 功能码/评分。后续：里程碑 C 路径恢复 BL-B023-S1 闭环冒烟(deploy 可靠建表)→HK-China→B042/B047/B049。",
-  "total_features": 2,
-  "completed_features": 2,
+  "status": "verifying",
+  "user_goal": "BL-B023-S1 交易闭环端到端生产冒烟（Codex-only 验证批次；里程碑 C §6『按系统指示交易』闭环可用的端到端确证）— 在 production VM 用真实评分 target（B044/B045）+ 真实 current_weight（B046 mark-to-market）+ 真实安全层（B048 kill_switch/wash_sale）跑通一次非 defensive 路径的交易闭环：Recommendations→position-diff→order ticket→fills→reconcile→journal。来源 B023 signoff §Soft-watch S1（B023 L2 仅 defensive=true 空路径，常规 recommendation-driven 端到端未物理覆盖）+ 里程碑 C 交易闭环重定义。前置 B046+B048+B048-OPS1 均 done、B044/B045 就位。决策（★用户批）：启动 BL-B023-S1 闭环冒烟。**Codex-only 批次**（executor:codex，跳过 building，planning→verifying→done）：不写产品代码，用既有真实流跑端到端+记录证据+cleanup(ticket void/account 恢复)；闭环发现真实缺陷→记 finding 转 Generator fix-round/新批次冒烟标 PARTIAL。永久硬边界：no-broker(fills 模拟非真下单)/B023 工作流不破/定位 §1.1 不出收益预测。注意 B048 S1 cost_degraded（price_history 不覆盖近期 snapshot 日期）→先确认 data-refresh 拉近期价 + 冒烟记录 valuation_basis 诚实声明(v0.9.21)。1 feature F001(codex)：端到端非 defensive 闭环 9 步+结果报告 docs/test-reports/BL-B023-S1-...+里程碑 C §6 达成判定。冒烟过=里程碑 C 交易闭环可信确证；后续 backlog order：HK-China(5)→B042/Risk UI(6)→B047 Backtest+Reports(7)→B049 全页面审计(8)。",
+  "total_features": 1,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F002",
-  "last_updated": "2026-06-07",
+  "current_sprint": "F001",
+  "last_updated": "2026-06-08",
   "reference_docs": [
-    "docs/specs/B048-OPS1-alembic-deploy-reliability-spec.md",
+    "docs/specs/BL-B023-S1-trading-closed-loop-smoke-spec.md",
+    "docs/dev/workbench-manual-execution-runbook.md",
+    "docs/product/progress-review-2026-06.md",
     "docs/test-reports/B048-real-risk-safety-layer-signoff-2026-06-07.md",
-    "workbench/deploy/scripts/deploy.sh",
-    ".github/workflows/workbench-deploy.yml",
-    "framework/harness/generator.md",
-    "framework/README.md",
+    "framework/harness/evaluator.md",
     "framework/templates/signoff-report.md"
   ],
   "docs": {
-    "spec": "docs/specs/B048-OPS1-alembic-deploy-reliability-spec.md",
+    "spec": "docs/specs/BL-B023-S1-trading-closed-loop-smoke-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B048-OPS1-alembic-deploy-reliability-signoff-2026-06-08.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": "B048-OPS1 F002 PASS。L1:119 guard。L2:fresh deploy(27119352795) alembic upgrade+assert head 跑过(0011,db=workbench.db)；无需手动upgrade；API全正常；errors=0。HEAD≡prod e0c035c。B048 Finding #1/S2 resolved。",
+  "evaluator_feedback": null,
   "generator_handoff": null,
   "session_notes": {
-    "planner": "2026-06-07/08 续长程会话：B048 done(5/5)→done 阶段裁定→B048-OPS1 规划。本段 B048-OPS1 planning。(1) B048 功能签收 PASS：安全层从占位变真（price_history 深历史表+risk_panel master/per-sleeve DD 真实 mark-to-market+kill_switch gate 真实阈值 0.15+wash_sale 真实），B023 不破。(2) **但 signoff 带 Finding #1（medium）**：deploy 后 prod alembic 停 0006 缺 0007-0011，price_history 表不存在需手动 upgrade——Codex 标 done 却说『需 Generator fix』自相矛盾，我裁定=真实部署缺陷必须修。(3) **2 决策（用户批）**：①Finding #1 → 拆 B048-OPS1 修部署（同 B045-OPS1，正交功能、影响所有后续）；②proposed-learnings(kill_switch 阈值三处副本+dashboard master_drawdown 0.0) → 沉淀 framework v0.9.37(README §经验教训『同一风控常数多处副本→单一来源+feature-grounding』)+记 backlog(dashboard 细化并入 B049)。(4) **framework v0.9.37 已沉淀**(commit e83f945)：抽单一来源 ≠ 本批全改，只改 feature-号覆盖引用其余入 backlog。(5) **B048-OPS1 诊断线索**：deploy.sh 有 alembic 步骤但 prod 停 0006；deploy.sh 注释自载 B022 同款坑(ENV_FILE 未加载→alembic 跑 DEFAULT_DEV_DB_URL scratch DB)→最可能根因；durable 防线=deploy 后断言 alembic==head 硬失败(无论根因兜底)。(6) spec docs/specs/B048-OPS1-...-spec.md 10 章；features 2(1g+1c)；progress building；排 backlog order 3 BL-B023-S1 之前。(7) F001 交 Generator：真机诊断(prod DB revision+env 加载+alembic 对哪 DB 跑)+对症修+deploy.sh 加 alembic==head 断言硬失败。(8) F002 Codex：L2 fresh deploy alembic==head 无需手动+0007-0011 表存在+断言跑过+§Finding #1/S2 resolved。(9) **B048 Soft-watch S1**(cost_degraded：price_history 不覆盖 2026-06-07 近期 snapshot 日期 low，data-refresh 拉近期价后改善)继续监控。(10) 后续 BL-B023-S1 闭环冒烟(用真实 diff+真实安全层，deploy 可靠建表)。",
-    "generator": "2026-06-08 B048-OPS1 F001 done，status→verifying 交 Codex F002（L2 真 VM）。**诊断（code-level，无 VM 访问）**：deploy.sh 已源 env+跑 alembic upgrade head(env.py 经 Settings 读 WORKBENCH_DB_URL)，workflow SSH 跑 deploy.sh 带 set -e；故硬失败本应可见。**真正静默漏洞确认**：post-alembic schema-check 由 `if [[ -n WORKBENCH_DB_URL ]]` 守门——env 未导出 URL 时 alembic 迁 scratch DB + 该 check 被静默跳过（prod 永不迁移且无报警）= Finding #1 最可能机理（与 B022 F014 同族）。候选根因(待 F002 VM log 实证)：(a) env 文件缺 WORKBENCH_DB_URL→scratch；(b) alembic 静默；(c) B044/B045 中断部署期未达。**修(3 处 deploy.sh)**：①env 可读但 sourced 后 WORKBENCH_DB_URL 仍空→`::error::`+exit 71 硬失败(堵 scratch 路径，不再静默跳过)；②alembic upgrade 后断言 `alembic current==heads`(ScriptDirectory.get_heads vs MigrationContext.get_current_heads，读 Settings 同 URL)，不等→`::error::`+exit 1(核心 durable 防线，根因无关)；③schema-check required 表加 0007-0011(market_context_observation/advisor_recommendation/price_snapshot/recommendation_snapshot/price_history)直接抓 Finding #1 缺表。**验证**：bash -n 过；assert-head 片段本地实测 fresh DB→at head(0011)绿、stalled@0006→exit 1+::error:: 红(正确捕获)；deploy 守门 test +2(assert-head+env-url-fail)且 required 表加 price_history 等；backend 902 passed(900→902)/ruff/mypy 0。**未做**：真机诊断(无 VM 访问，留 F002 实证根因 + 验 fresh deploy alembic==head 无需手动+0007-0011 表存在)。Framework 候选：alembic-assert-head-after-deploy(同 v0.9.36 smoke-import-check 家族)留 F002 signoff §Framework Learnings。",
-    "evaluator": "B048-OPS1 F002 签收。deploy 27119352795 success，log见alembic env加载+upgrade+assert head 0011。DB tables全，API正常。Finding #1 resolved。"
+    "planner": "2026-06-08 续长程会话：B048 done→B048-OPS1 done→框架 v0.9.37/v0.9.38→BL-B023-S1 规划。本段 BL-B023-S1 planning。(1) B048-OPS1 干净签收(Finding #1 resolved，根因 env 未导出 WORKBENCH_DB_URL→alembic 跑 scratch DB+post-alembic schema-check 被 if[[-n VAR]]静默跳过，B022 F014 同族；修 env-url 硬失败+alembic==head 断言+required 表扩)。(2) **框架 v0.9.38(用户批沉淀)**：deploy 步骤静默失效三例(B022/B045-OPS1/B048-OPS1)→generator.md §12.11『deploy 步骤必须 post-step assert 验证 intended end-state』(命令返回 0/守门通过≠成功；守门条件不静默跳过关键步骤)，统一 v0.9.36 smoke check。commit 9a06623。v0.9.37(B048 同一风控常数多处副本)已先沉淀。(3) **下一批次=BL-B023-S1(用户批)**：里程碑 C §6 交易闭环端到端确证。部署已可靠(B048-OPS1)，真实 diff(B046)+真实安全层(B048)+真实评分(B044/B045)都齐→可跑可信闭环冒烟。(4) **Codex-only 批次**(executor:codex，status 直接 verifying 跳 building)：不写产品代码，VM 上 PUT 真实账户+跑 Recommendations→diff→ticket→fills→reconcile→journal 非 defensive 路径+留 journal 证据+cleanup。(5) spec docs/specs/BL-B023-S1-...-spec.md 8 章(冒烟 9 步=acceptance)；features 1(codex)；progress verifying。(6) **关键注意交 Codex**：①B023 L2 仅 defensive=true 空路径，本冒烟覆盖常规 recommendation-driven 真实 target 路径；②B048 S1 cost_degraded→先确认 data-refresh 拉近期价+记 valuation_basis 诚实；③current_weight≠0/gate kill_switch 真实/wash_sale 真实(B046/B048)；④发现缺陷记 finding 转 fix/新批次 PARTIAL 不强过。(7) **冒烟过=里程碑 C 交易闭环可信确证**(§5 交易闭环端到端可用达成)。(8) 后续 backlog order：HK-China(5)→B042 Risk UI(6，在真风控数据上)→B047 Backtest+Reports(7)→B049 全页面审计 gate(8)。",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
-    "F001",
-    "F002"
+    "F001"
   ]
 }

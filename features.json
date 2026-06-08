@@ -1,26 +1,18 @@
 {
-  "sprint": "B048-OPS1-alembic-deploy-reliability",
+  "sprint": "BL-B023-S1-trading-closed-loop-smoke",
   "features": [
     {
       "id": "F001",
-      "title": "诊断+修 deploy alembic 自动升级（prod DB 升到 head）+ deploy 后断言 alembic current==head 硬失败 + deploy 守门",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "【2026-06-07 用户已批：拆 B048-OPS1 修部署 + deploy 后断言 alembic==head，见 spec §3】(1) **诊断 Finding #1 根因**：真机诊断为何 B048 deploy 后 prod alembic 停 0006 缺 0007-0011（候选：ENV_FILE 未加载→alembic 跑 DEFAULT_DEV_DB_URL scratch DB(deploy.sh 注释载 B022 同款坑) / alembic silent fail / B044-B045 中断部署期未达）；记录根因（确认 prod DB 当前 revision + env 是否加载 + alembic 对哪个 DB 跑）。(2) **对症修自动升级**：确保 fresh deploy 后 prod DB（WORKBENCH_DB_URL=sqlite:////var/lib/workbench/db/workbench.db）alembic current == head（无需手动）。候选修法按诊断：ENV_FILE 可靠加载使 alembic 对 prod 跑 / 去 --quiet + 捕获 alembic 非零退出→deploy 硬失败 / 确认 alembic 步骤 install 成功后必达。(3) **deploy 后断言 alembic==head（核心 durable 防线）**：deploy.sh alembic upgrade 后断言 alembic current == alembic heads（对 prod DB）；**不等→`::error::` + exit 1 硬失败（不静默吞）**；echo 当前 revision 便排查。(4) deploy.sh 段 dev rehearsal best-effort 不崩。(5) deploy 守门测试加 alembic-upgrade + assert-head 步骤存在断言。(6) Gates：backend pytest 不破 / 既有 backend+frontend+trade 部署路径不破 / ruff/mypy 0（如有 py 改动）。(7) 不动：migration 内容 / B048 功能码 / §12.10.2 / B023 / deploy 用户 sudo。",
-      "design_decisions": [
-        "处理方式（2026-06-07 用户批）：拆 B048-OPS1 修部署（alembic 缺陷正交 B048 功能、影响所有后续批次，同 B045-OPS1）。",
-        "durable 防线（planner 决）：deploy 后断言 alembic current==head，静默失败→响亮硬失败（v0.9.36 smoke check 同思路）。",
-        "排序（planner 决）：order 3，BL-B023-S1 闭环冒烟之前（闭环需 deploy 可靠建表）。"
-      ]
-    },
-    {
-      "id": "F002",
-      "title": "Codex L2 真 VM 验收：fresh deploy 后 migrations 自动 apply（alembic==head 无需手动）+ 表存在 + 断言跑过 + signoff",
+      "title": "交易闭环端到端生产冒烟（真实评分 target + 真实 current_weight + 真实安全层 → diff → ticket → fills → reconcile → journal，非 defensive 路径）+ 结果报告",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "L1 (CI 内)：F001 验收脚本跑通 — backend pytest 不破 / ruff / mypy（如有 py 改动）；deploy 守门（alembic upgrade + assert-head 存在）；artifact grep secret 泄漏=0。L2 (真 VM)：(1) dispatch fresh deploy（gh workflow run \"Workbench Deploy\"）→ deploy log 显示 alembic upgrade + **alembic==head 断言跑过**；(2) **prod DB alembic current == head（无需手动 alembic upgrade head）**——对比 B048 Finding #1 的需手动；(3) **price_history（0011）+ 0007-0011 全部表存在**（market_context/advisor/prices/recommendation_snapshot/price_history）；(4) curl /api/health 200 + 依赖这些表的路由（risk_panel/recommendations/current）正常 + /api/debug/recent-errors={count:0}；(5) HEAD≡main + B026 absent。Signoff: docs/test-reports/B048-OPS1-alembic-deploy-reliability-signoff-2026-MM-DD.md 用 framework/templates/signoff-report.md（§Production/HEAD + §Post-signoff Deploy + **§B048 Finding #1 / Soft-watch S2 resolved**）。Framework 候选：alembic-assert-head-after-deploy 若成通用部署规约（同 smoke import check 家族）记 §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
+      "status": "pending",
+      "acceptance": "【2026-06-08 用户已批：里程碑 C §6 交易闭环端到端确证；Codex-only 验证批次，不写产品代码，见 spec】L2（真 VM 端到端非 defensive 闭环）：(1) **Setup**：authenticated PUT 真实账户（cash + positions 含 sleeve tag post-B048-F002）；确认 data-refresh 近期价已拉，记录 valuation_basis（market / cost_degraded，B048 S1）。(2) **Recommendations**：GET /api/recommendations/current → 真实非空 target（B044/B045，如 SGOV/EEM/SPY）+ **current_weight≠0.0**（B046 mark-to-market）+ **gate_checks kill_switch 反映真实 master DD**（B048，非硬编码 pass，阈值 0.15）+ **wash_sale_flags 真实**（B048：构造亏损卖+30 日回补 fills 则非空 / 否则空合规）。(3) **position-diff**：GET /api/execution/position-diff → 真实 mark-to-market diff（买卖 shares 基于市价 NAV，非成本价/非空；记录 valuation_basis + degrade 哪些点）。(4) **order ticket**：POST /api/execution/tickets（非 defensive）→ Markdown 作业单含真实 diff + 双语 disclaimer。(5) **fills**：record fills（CSV/API）模拟执行。(6) **reconcile**：计划 vs fills 标偏差。(7) **journal**：整笔留痕。(8) **回归**：B026 absent / recent-errors=0 / health 200 / HEAD≡main。(9) **Cleanup**：ticket void + account 恢复，journal 留证。**结果报告** docs/test-reports/BL-B023-S1-trading-closed-loop-smoke-2026-MM-DD.md：闭环各步证据 + valuation_basis 诚实声明 + 非 defensive 路径确认（区别 B023 L2 仅 defensive）+ finding（若有）+ 里程碑 C §6 达成判定。**Finding 处置**：闭环发现真实缺陷→记 finding 转 Generator fix-round/新批次，本冒烟标 PARTIAL 不强过。更新 progress.json status→done / docs.signoff / evaluator_feedback。永久硬边界：no-broker（fills 模拟非真下单）/ B023 工作流不破 / 定位 §1.1 不出收益预测。",
+      "design_decisions": [
+        "Codex-only 验证批次（2026-06-07 backlog order 4 提级 high）：用既有真实流跑端到端，不写产品代码；交付物=结果报告。",
+        "前置（planner 确认）：B046 真实 diff + B048 真实安全层 + B048-OPS1 deploy 可靠 + B044/B045 真实评分均 done。",
+        "非 defensive 路径：B023 L2 仅覆盖 defensive=true 空路径，本冒烟覆盖常规 recommendation-driven 真实 target 路径。"
+      ]
     }
   ]
 }
