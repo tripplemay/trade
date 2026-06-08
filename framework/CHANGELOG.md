@@ -5,6 +5,20 @@
 
 ---
 
+## v0.9.38 — 2026-06-08（B022/B045-OPS1/B048-OPS1 三例合并：deploy 步骤必须 post-step assert 验证 intended end-state）
+
+**来源批次：**
+- B048-OPS1 F001/F002（deploy.sh env-url 硬失败 + alembic==head 断言 + required 表扩，commit `e0c035c`）
+- signoff `docs/test-reports/B048-OPS1-alembic-deploy-reliability-signoff-2026-06-08.md`；三例合并 B022 F014（env→scratch）+ B045-OPS1 v0.9.36（trade wheel install）+ B048-OPS1（alembic）
+
+**触发原因：**
+- deploy 步骤的「成功」靠命令返回 0 / 守门条件通过判定不可靠：命令可静默 no-op，守门条件（`if [[ -n VAR ]]`）本身可在变量空时静默跳过。三例均致 production 静默破坏（prod 跑 scratch DB 永不迁移 / 新模块没落 VM / 表不存在需手动）。过「等二例再合并」门槛。
+
+**变更：**
+- `framework/harness/generator.md` 新增 §12.11「deploy 步骤的成功必须 post-step assert 验证 intended end-state」（三例表 + 4 条规约：每 deploy 步骤配 end-state assert / 守门条件不静默跳过关键步骤 → error / assert 用 end-state 非退出码 / Evaluator L2 验 + 与 v0.9.36 关系）
+
+---
+
 ## v0.9.37 — 2026-06-07（B048 沉淀：同一风控常数多处副本 → 单一来源 + feature-grounding 决定改几处）
 
 **来源批次：**

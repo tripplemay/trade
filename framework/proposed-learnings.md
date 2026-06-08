@@ -85,4 +85,6 @@
 
 <!-- 2026-06-07: v0.9.37 沉淀完成（B048：同一风控常数多处副本 → 单一来源 + feature-grounding）：kill_switch 阈值三处副本(rec 0.20/risk_panel 0.15/dashboard 0.20)不一致。用户批沉淀 README §经验教训「同一风控/业务常数多处副本 → 单一来源 + feature-grounding 决定本批改几处」(抽单一来源 ≠ 本批全改) + CHANGELOG v0.9.37。dashboard 第三份阈值 + master_drawdown 0.0 占位 → 并入 B049 dashboard 清理(backlog)。Finding #1(alembic 未自动升级)→ B048-OPS1 ops 修复批次(用户批拆出)。 -->
 
+<!-- 2026-06-08: v0.9.38 沉淀完成（B022/B045-OPS1/B048-OPS1 三例合并：deploy 步骤必须 post-step assert 验证 intended end-state）：deploy 步骤静默失效三例（env→scratch DB / trade wheel install 没装上 / alembic 守门条件静默跳过），均致 prod 静默破坏。用户批沉淀 generator.md §12.11（命令返回 0/守门通过 ≠ 成功；必须 post-step ASSERT end-state 硬失败；守门条件不静默跳过关键步骤）+ CHANGELOG v0.9.38。统一 v0.9.36 smoke import check（其为本规则在包安装步骤的实例）。 -->
+
 <!-- 当前无活动候选（待确认条目）。 -->

@@ -836,6 +836,31 @@ def test_critical_runtime_deps_pinned():
 
 ---
 
+## 12.11 deploy 步骤的「成功」必须 post-step assert 验证 intended end-state（v0.9.38 — B022/B045-OPS1/B048-OPS1 三例合并沉淀）
+
+**规律：** deploy 步骤的成功**不能靠「命令返回 0」或「守门条件通过」判定**——命令可能静默 no-op，守门条件本身可能在变量空/资源缺时**静默跳过**。每个有 intended end-state 的 deploy 步骤，**必须紧跟一个 post-step ASSERT 验证那个 end-state，不等则 `::error::` + 非零退出硬失败**（不被 `--quiet` / `set -e` 之外的静默路径吞）。
+
+**三例（均致 production 静默破坏）：**
+
+| 实例 | deploy 步骤 | 静默失效机理 | intended end-state assert |
+|---|---|---|---|
+| **B022 F014**（v0.9.25 §12.6 前身）| `alembic upgrade head` | env 未加载 → 跑 `DEFAULT_DEV_DB_URL` scratch DB，prod 永不迁移 | post-alembic schema-assert（required 表存在）|
+| **B045-OPS1**（v0.9.36）| `pip install --force-reinstall <wheel>` | 同版本 skip / dep 重解析失败，新模块没落 VM | deploy 后 `python -c "import <关键模块>"` smoke check |
+| **B048-OPS1**（v0.9.38 本节）| `alembic upgrade head` | env 未导出 `WORKBENCH_DB_URL` → scratch DB + post-alembic schema-check 被 `if [[ -n VAR ]]` **静默跳过** | deploy 后断言 `alembic current == heads` + required 表加全 + env-url 空硬失败（堵 scratch） |
+
+**规约：**
+
+1. **写/改任何 deploy 步骤时，同 commit 配 post-step assert**：包安装→import 关键模块；DB 迁移→`alembic current==heads` + required 表存在；version 升级→`pip show`/version 匹配；env 依赖→变量非空否则硬失败（不静默跳过）。
+2. **守门条件（`if [[ -n VAR ]]` / `if [[ -f X ]]`）不得在「应该有但没有」时静默跳过关键步骤**——该情形是 error 不是 skip：变量空/文件缺 → `::error::` + exit，而非默默不做。
+3. **assert 用 INTENDED end-state，不是 step 退出码**：B048-OPS1 的 alembic 步骤退出码 0，但跑的是 scratch DB——只有断言 prod DB 的 revision/表才暴露。
+4. Evaluator L2 验 deploy log 含这些 assert 且跑过；fresh deploy（非手动补救）后 end-state 达成。
+
+**与 v0.9.36 关系：** v0.9.36 README §「venv 多包安装」是本规则在「包安装」步骤的具体实例；本节是跨所有 deploy 步骤的泛化（alembic / install / version / env 通用）。
+
+**来源：** B048-OPS1 F001/F002（commit `e0c035c`，deploy.sh env-url 硬失败 + alembic==head 断言 + required 表扩）+ signoff `docs/test-reports/B048-OPS1-alembic-deploy-reliability-signoff-2026-06-08.md`；三例合并（B022 F014 + B045-OPS1 v0.9.36 + B048-OPS1），过「等二例再合并」门槛。
+
+---
+
 ## 13. Frontend SSR vs Browser context（v0.9.24 — B021 沉淀）
 
 **触发：** B021 F006 fix-round 5 — Codex L2 reverify 失败因生产首页登录后显示 `Backend unreachable: Failed to fetch`。根因：`workbench/frontend/src/app/(protected)/page.tsx` 的 `HEALTH_URL` 默认硬编码 `http://127.0.0.1:8723/api/health`。SSR build 时这个值被 inline 进 client bundle，浏览器在用户笔记本上 fetch 127.0.0.1:8723（用户机器，不是 VM）必失败。
