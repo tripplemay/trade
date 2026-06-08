@@ -164,7 +164,8 @@ def test_refresh_error_path_yields_error_event_and_reraises(
     def _boom(_root: Path) -> inventory.CsvInventory:
         raise RuntimeError("disk exploded")
 
-    monkeypatch.setattr(snapshots_service.inventory, "prices_inventory", _boom)
+    # Patch the shared inventory module object the service calls into.
+    monkeypatch.setattr(inventory, "prices_inventory", _boom)
 
     async def _run() -> list[dict[str, object]]:
         events: list[dict[str, object]] = []
