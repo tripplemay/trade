@@ -75,6 +75,36 @@ def _summary(
 # first), then the regime overlay entries (research-state, zero weight).
 # Adding a sleeve requires a spec.
 _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object]]] = {
+    # B050 F001: the Master Portfolio flagship as an explicit, backtestable
+    # entry. Before B050 the worker always ran the Master regardless of the
+    # selected strategy; now each sleeve dispatches to its own engine, so the
+    # Master needs a first-class registry entry (strategy_id="master_portfolio",
+    # the worker's dispatch + canonical default) or users could no longer run the
+    # full combined portfolio. Listed first as the flagship default.
+    "master_portfolio": (
+        _summary(
+            id="master_portfolio",
+            name="Master Portfolio / 旗舰组合",
+            sleeve="master",
+        ),
+        StrategyProvenance(
+            spec_path="docs/specs/B011-portfolio-allocation-risk-mvp-spec.md",
+            code_path="trade/backtest/master_portfolio.py",
+            last_sweep_path=None,
+        ),
+        {
+            "rebalance": "quarterly",
+            "composition": (
+                "momentum 0.40 / risk_parity 0.30 / us_quality 0.20 / hk_china 0.10"
+            ),
+            "note": (
+                "The full combined portfolio across all four active sleeves "
+                "(quarterly rebalance, kill-switch + drawdown controls). Backtested "
+                "on real daily prices (Tiingo, B045 data-refresh). Research-only "
+                "advisory — not a return forecast."
+            ),
+        },
+    ),
     # B046 F002: the Master's core trend engine (momentum sleeve,
     # planning_weight 0.40). It was missing from the pre-B046 registry,
     # which made /api/strategies + downstream sleeve consumers (home
@@ -269,14 +299,33 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
 }
 
 
-def list_strategies() -> StrategyListResponse:
-    """Return the registry sleeves as the workbench's flat list view.
+# B050 F001 — portfolio-level entries are selectable backtests (the full combined
+# portfolio) but are NOT constituent sleeves; sleeve-derivation consumers (home
+# breakdown, advisor precompute, risk panel, news tickers) must exclude them so
+# they don't materialise an empty "master" sleeve.
+PORTFOLIO_LEVEL_STRATEGY_IDS = frozenset({"master_portfolio"})
 
-    Order mirrors ``trade/portfolio/master.py``: the active core +
-    satellite sleeves first, then the research-state regime overlay
-    entries (B046 F002 reconcile)."""
+
+def list_strategies() -> StrategyListResponse:
+    """Return the full registry as the workbench's flat list view.
+
+    Order mirrors ``trade/portfolio/master.py``: the Master flagship (B050 F001),
+    then the active core + satellite sleeves, then the research-state regime
+    overlay entries (B046 F002 reconcile)."""
 
     return StrategyListResponse(strategies=[entry[0] for entry in _REGISTRY.values()])
+
+
+def sleeve_strategies() -> list[StrategySummary]:
+    """Registry entries that are constituent sleeves (excludes portfolio-level
+    flagships like ``master_portfolio``). The single source of truth for the
+    sleeve set the home / advisor / risk-panel / news consumers group by."""
+
+    return [
+        entry[0]
+        for entry in _REGISTRY.values()
+        if entry[0].id not in PORTFOLIO_LEVEL_STRATEGY_IDS
+    ]
 
 
 def get_strategy(strategy_id: str) -> StrategyDetail | None:

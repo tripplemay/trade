@@ -33,7 +33,7 @@ from workbench_api.services.prices_provider import (
     PriceMark,
     PriceProvider,
 )
-from workbench_api.services.strategies import list_strategies
+from workbench_api.services.strategies import sleeve_strategies
 from workbench_api.settings import Settings
 
 UNCLASSIFIED_SLEEVE = "unclassified"
@@ -79,7 +79,7 @@ def _parse_positions(raw: object) -> list[_Position]:
 def _registry_sleeves() -> list[str]:
     """Distinct sleeves from the strategy registry (stable order)."""
 
-    return sorted({s.sleeve for s in list_strategies().strategies})
+    return sorted({s.sleeve for s in sleeve_strategies()})
 
 
 def _day_pnl(value: float, prior_value: float) -> DayPnl | None:

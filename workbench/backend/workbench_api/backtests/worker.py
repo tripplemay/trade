@@ -27,11 +27,13 @@ import logging
 import os
 import sys
 import time
+from collections.abc import Callable
 from datetime import date
 from typing import Any, Protocol
 
 from sqlalchemy.orm import Session, sessionmaker
 
+from workbench_api.backtests.adapters import adapt_momentum, adapt_risk_parity
 from workbench_api.backtests.error_kinds import classify_error_kind
 from workbench_api.backtests.mapping import (
     map_allocations,
@@ -51,16 +53,39 @@ logger = logging.getLogger(__name__)
 
 class BacktestRunLike(Protocol):
     """Structural view of a queued run the engine needs — a ``BacktestRun``
-    row, or the canonical job's lightweight stand-in."""
+    row, or the canonical job's lightweight stand-in.
+
+    B050 F001: ``strategy_id`` (already a ``backtest_run`` column) is read to
+    dispatch to the right engine. The canonical stand-in sets it explicitly to
+    ``"master_portfolio"``; ``run_backtest_job`` also defaults a missing value to
+    master so an older stand-in never breaks."""
 
     run_id: str
+    strategy_id: str
     params: dict[str, Any] | None
 
 POLL_SECONDS = float(os.environ.get("WORKBENCH_BACKTEST_POLL_SECONDS", "3.0"))
 
+# B050 F001 — Master Portfolio is the default / fallback strategy_id (the
+# canonical report job + any stand-in without a strategy_id resolve to it).
+MASTER_STRATEGY_ID = "master_portfolio"
+
+# B050 F001 — regime overlays ship research-state at planning_weight 0.0; they
+# have no standalone backtest, so the worker excludes them with a structured
+# error_kind (the frontend maps it to a bilingual "not supported" message)
+# instead of silently running master.
+INACTIVE_STRATEGY_IDS = frozenset(
+    {"B013-regime-quarterly", "B014-regime-stress", "B015-regime-active"}
+)
+
 
 class BacktestWorkerError(RuntimeError):
     """A backtest run could not be executed (mapped to the run's ``error``)."""
+
+
+class InactiveStrategyError(BacktestWorkerError):
+    """The requested strategy is research-state (planning_weight 0.0) and has no
+    standalone backtest — surfaced to the user as ``error_kind=inactive_strategy``."""
 
 
 def _parse_iso(value: object) -> date | None:
@@ -85,6 +110,70 @@ def _signal_dates_in_range(
         for d in quarter_ends
         if (start is None or d >= start) and (end is None or d <= end)
     )
+
+
+def _monthly_signal_dates(
+    all_dates: tuple[date, ...], params: dict[str, Any]
+) -> tuple[date, ...]:
+    """Last trading day of each month within the request's [start, end] window.
+
+    Reuses ``trade.analysis.parameter_sweep.build_monthly_signal_dates`` (the
+    canonical month-end builder) so the monthly engines (momentum / risk_parity)
+    rebalance on the same cadence the rest of the package uses. Absent bounds
+    default to the full data range."""
+
+    from trade.analysis.parameter_sweep import (  # type: ignore[import-untyped]
+        build_monthly_signal_dates,
+    )
+
+    if not all_dates:
+        return ()
+    start = _parse_iso(params.get("start_date")) or all_dates[0]
+    end = _parse_iso(params.get("end_date")) or all_dates[-1]
+    return tuple(build_monthly_signal_dates(all_dates, start, end))
+
+
+def _strategy_parameters(strategy_id: str, run: BacktestRunLike, param_type: Any) -> Any:
+    """Build a strategy ``Parameters`` object from ``run.params["parameters"]``.
+
+    An empty / absent override → ``None`` so the engine uses its locked defaults
+    (the current behaviour — the frontend has no parameter editor yet). A
+    non-empty override is constructed into the strategy's ``Parameters`` type;
+    bad keys surface as a clear ``BacktestWorkerError`` rather than a 500."""
+
+    raw = (run.params or {}).get("parameters") or {}
+    if not raw:
+        return None
+    try:
+        return param_type(**raw)
+    except (TypeError, ValueError) as exc:
+        raise BacktestWorkerError(
+            f"invalid parameters for strategy {strategy_id}: {exc}"
+        ) from exc
+
+
+def _drop_earliest_retry(
+    run_fn: Callable[[tuple[date, ...]], Any],
+    signal_dates: tuple[date, ...],
+    lookback_errors: tuple[type[BaseException], ...],
+) -> Any:
+    """Run ``run_fn(signal_dates)``, dropping the earliest signal date and
+    retrying while the engine raises a lookback-shortfall error.
+
+    The earliest signal dates may lack the lookback the sleeves need; dropping
+    them lets the backtest span whatever the data supports rather than failing
+    outright (B047 behaviour, now shared across the dispatched engines)."""
+
+    usable = list(signal_dates)
+    while True:
+        try:
+            return run_fn(tuple(usable))
+        except lookback_errors as exc:
+            if len(usable) <= 1:
+                raise BacktestWorkerError(
+                    f"insufficient price history for any signal date in range: {exc}"
+                ) from exc
+            usable = usable[1:]
 
 
 def _load_backtest_snapshot() -> Any:
@@ -144,11 +233,8 @@ def _load_backtest_snapshot() -> Any:
     )
 
 
-def run_backtest_job(run: BacktestRunLike) -> dict[str, Any]:
-    """Run the real Master Portfolio backtest for one queued run and return
-    the mapped result + report markdown. Imports ``trade`` lazily so the
-    module loads without the heavy stack (and so the AST guard scans the
-    import here, the allowed location)."""
+def _run_master(snapshot: Any, run: BacktestRunLike) -> dict[str, Any]:
+    """Master Portfolio (quarterly) — the existing real-engine path."""
 
     from trade.backtest.master_portfolio import (  # type: ignore[import-untyped]
         identify_quarter_end_signal_dates,
@@ -165,7 +251,6 @@ def run_backtest_job(run: BacktestRunLike) -> dict[str, Any]:
         RiskParityDataError,
     )
 
-    snapshot = _load_backtest_snapshot()
     records = snapshot.records
     all_dates = tuple(sorted({record.date for record in records}))
     quarter_ends = identify_quarter_end_signal_dates(all_dates)
@@ -174,24 +259,11 @@ def run_backtest_job(run: BacktestRunLike) -> dict[str, Any]:
         raise BacktestWorkerError(
             "no quarter-end signal dates available in the requested date range"
         )
-
-    # The earliest quarter-ends may lack the lookback the momentum / risk-parity
-    # sleeves need (always true for the monthly fixture; never for the VM's daily
-    # unified data). Drop the earliest signal date and retry until the window is
-    # satisfied, so the backtest spans whatever the data supports rather than
-    # failing outright.
-    usable = list(signal_dates)
-    while True:
-        try:
-            result = run_master_portfolio_quarterly_backtest(records, tuple(usable))
-            break
-        except (MomentumSignalError, RiskParityDataError) as exc:
-            if len(usable) <= 1:
-                raise BacktestWorkerError(
-                    "insufficient price history for any signal date in range: "
-                    f"{exc}"
-                ) from exc
-            usable = usable[1:]
+    result = _drop_earliest_retry(
+        lambda usable: run_master_portfolio_quarterly_backtest(records, usable),
+        signal_dates,
+        (MomentumSignalError, RiskParityDataError),
+    )
     payload = build_master_portfolio_report_payload(result, snapshot, run.run_id)
     return {
         "metrics": map_metrics(payload),
@@ -200,6 +272,121 @@ def run_backtest_job(run: BacktestRunLike) -> dict[str, Any]:
         "trades": map_trades(result),
         "report_markdown": render_master_portfolio_markdown(payload),
     }
+
+
+def _run_momentum(snapshot: Any, run: BacktestRunLike) -> dict[str, Any]:
+    """Global ETF Momentum (monthly) — ``run_multi_monthly_backtest``."""
+
+    from trade.backtest.monthly import (  # type: ignore[import-untyped]
+        run_multi_monthly_backtest,
+    )
+    from trade.reporting.reports import (  # type: ignore[import-untyped]
+        build_report_payload,
+        render_markdown_report,
+    )
+    from trade.strategies.global_etf_momentum import (
+        MomentumParameters,
+        MomentumSignalError,
+    )
+
+    records = snapshot.records
+    all_dates = tuple(sorted({record.date for record in records}))
+    signal_dates = _monthly_signal_dates(all_dates, run.params or {})
+    if not signal_dates:
+        raise BacktestWorkerError(
+            "no monthly signal dates available in the requested date range"
+        )
+    params = _strategy_parameters("B006-global-etf-momentum", run, MomentumParameters)
+    result = _drop_earliest_retry(
+        lambda usable: run_multi_monthly_backtest(
+            records, usable, strategy_parameters=params
+        ),
+        signal_dates,
+        (MomentumSignalError,),
+    )
+    payload = build_report_payload(result, snapshot, run.run_id)
+    return {
+        "metrics": map_metrics(payload),
+        **adapt_momentum(result),
+        "report_markdown": render_markdown_report(payload),
+    }
+
+
+def _run_risk_parity(snapshot: Any, run: BacktestRunLike) -> dict[str, Any]:
+    """Risk Parity (monthly) — ``run_risk_parity_monthly_backtest``.
+
+    Runs with the engine's locked defaults (inverse-volatility weighting); the
+    HRP weighting the B016 registry name references is a parameter not yet wired
+    from the UI (no parameter editor) — it would flow through ``_strategy_parameters``
+    when a future override is sent."""
+
+    from trade.backtest.risk_parity import (  # type: ignore[import-untyped]
+        run_risk_parity_monthly_backtest,
+    )
+    from trade.reporting.risk_parity import (  # type: ignore[import-untyped]
+        build_risk_parity_report_payload,
+        render_risk_parity_markdown,
+    )
+    from trade.strategies.risk_parity import (
+        RiskParityDataError,
+        RiskParityParameters,
+    )
+
+    records = snapshot.records
+    all_dates = tuple(sorted({record.date for record in records}))
+    signal_dates = _monthly_signal_dates(all_dates, run.params or {})
+    if not signal_dates:
+        raise BacktestWorkerError(
+            "no monthly signal dates available in the requested date range"
+        )
+    params = _strategy_parameters("B016-risk-parity-hrp", run, RiskParityParameters)
+    result = _drop_earliest_retry(
+        lambda usable: run_risk_parity_monthly_backtest(
+            records, usable, strategy_parameters=params
+        ),
+        signal_dates,
+        (RiskParityDataError,),
+    )
+    payload = build_risk_parity_report_payload(result, snapshot, run.run_id)
+    return {
+        "metrics": map_metrics(payload),
+        **adapt_risk_parity(result),
+        "report_markdown": render_risk_parity_markdown(payload),
+    }
+
+
+# B050 F001 — strategy_id → engine runner. Tier-1 (momentum / risk_parity /
+# master) here; us_quality (F002) + hk_china (F003) add their entries.
+_DISPATCH: dict[str, Callable[[Any, BacktestRunLike], dict[str, Any]]] = {
+    MASTER_STRATEGY_ID: _run_master,
+    "B006-global-etf-momentum": _run_momentum,
+    "B016-risk-parity-hrp": _run_risk_parity,
+}
+
+
+def run_backtest_job(run: BacktestRunLike) -> dict[str, Any]:
+    """Run the backtest for one queued run, dispatched by ``strategy_id``.
+
+    Reads ``run.strategy_id`` (a ``backtest_run`` column), looks up the engine in
+    ``_DISPATCH`` and returns the mapped result + report markdown. Imports
+    ``trade`` lazily inside each runner so the module loads without the heavy
+    stack (and so the §12.10.2 AST guard scans the imports here, the allowed
+    location). A missing ``strategy_id`` defaults to master (the canonical
+    stand-in); a research-state strategy raises ``InactiveStrategyError``."""
+
+    strategy_id = getattr(run, "strategy_id", None) or MASTER_STRATEGY_ID
+    if strategy_id in INACTIVE_STRATEGY_IDS:
+        raise InactiveStrategyError(
+            f"strategy {strategy_id} is research-state (planning_weight 0.0) and "
+            "has no standalone backtest"
+        )
+    runner = _DISPATCH.get(strategy_id)
+    if runner is None:
+        raise BacktestWorkerError(
+            f"no backtest engine wired for strategy_id={strategy_id!r}"
+        )
+    snapshot = _load_backtest_snapshot()
+    return runner(snapshot, run)
 
 
 def process_next(session: Session) -> bool:

@@ -104,9 +104,9 @@ def _build_per_sleeve(real_dd: dict[str, float]) -> list[SleeveDrawdown]:
     or a tag outside the registry) is appended after, so a real drawdown is
     never dropped."""
 
-    from workbench_api.services.strategies import list_strategies
+    from workbench_api.services.strategies import sleeve_strategies
 
-    registry = sorted({s.sleeve for s in list_strategies().strategies})
+    registry = sorted({s.sleeve for s in sleeve_strategies()})
     extras = sorted(s for s in real_dd if s not in registry)
     return [
         SleeveDrawdown(sleeve=sleeve, drawdown=real_dd.get(sleeve, 0.0))

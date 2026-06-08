@@ -41,8 +41,12 @@ def generate_canonical_reports(session: Session, *, as_of: date | None = None) -
     engine cannot run — e.g. no unified data on the host."""
 
     report_date = as_of or date.today()
+    # B050 F001: the worker now dispatches by ``strategy_id`` — set it explicitly
+    # on the stand-in so the canonical job keeps running the Master backtest (the
+    # worker also defaults a missing strategy_id to master, but be explicit).
     run = SimpleNamespace(
         run_id=f"canonical-{MASTER_STRATEGY_ID}-{report_date.isoformat()}",
+        strategy_id=MASTER_STRATEGY_ID,
         params={},
     )
     result = run_backtest_job(run)  # real engine; raises BacktestWorkerError on no data

@@ -69,6 +69,8 @@ def test_strategies_list_reflects_master_sleeves(initialised_db: str) -> None:
     # (momentum / risk_parity / satellite_us_quality / satellite_hk_china)
     # lead, then the regime overlay entries (research-state, weight 0.0).
     assert ids == [
+        # B050 F001: Master Portfolio flagship leads (explicit backtestable entry).
+        "master_portfolio",
         "B006-global-etf-momentum",
         "B016-risk-parity-hrp",
         "B025-us-quality-momentum",
@@ -216,6 +218,33 @@ def test_honest_research_disclosures_are_preserved(initialised_db: str) -> None:
     note = client.get("/api/strategies/B013-regime-quarterly").json()["config"]["note"]
     assert "Research-state" in note
     assert "weight 0.0" in note.lower() or "weight=0.0" in note.lower()
+
+
+def test_strategy_detail_master_portfolio_is_backtestable(initialised_db: str) -> None:
+    """B050 F001: the Master Portfolio flagship is an explicit registry entry so
+    the backtest selector can run the full combined portfolio."""
+
+    client = _authed_client()
+    response = client.get("/api/strategies/master_portfolio")
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["id"] == "master_portfolio"
+    assert payload["sleeve"] == "master"
+    assert payload["status"] == "active"
+    assert payload["provenance"]["code_path"].endswith("master_portfolio.py")
+
+
+def test_sleeve_strategies_excludes_master_flagship(initialised_db: str) -> None:
+    """B050 F001: sleeve-derivation (home / advisor / risk panel / news) must not
+    treat the portfolio-level master as a constituent sleeve."""
+
+    from workbench_api.services.strategies import list_strategies, sleeve_strategies
+
+    all_ids = {s.id for s in list_strategies().strategies}
+    sleeve_ids = {s.id for s in sleeve_strategies()}
+    assert "master_portfolio" in all_ids
+    assert "master_portfolio" not in sleeve_ids
+    assert "master" not in {s.sleeve for s in sleeve_strategies()}
 
 
 def test_strategy_detail_unknown_id_returns_404(initialised_db: str) -> None:

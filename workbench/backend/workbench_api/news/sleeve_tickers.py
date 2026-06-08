@@ -3,8 +3,8 @@
 The news↔sleeve association needs each sleeve's constituent tickers to
 compute the hard match (``sleeve tickers ∩ news mentions``). The
 workbench's sleeves come from the strategy registry
-(:func:`workbench_api.services.strategies.list_strategies`, sleeve
-field) plus the ``master`` ETF sleeve the risk panel surfaces. Only two
+(:func:`workbench_api.services.strategies.sleeve_strategies`, sleeve
+field — excludes the portfolio-level master flagship). Only two
 of those carry tickers in the B034 news universe (B025 27 equities +
 the 4 master ETFs the news CLI ingests):
 
@@ -59,9 +59,9 @@ def _known_sleeve_labels() -> frozenset[str]:
     treated as "no constituents" rather than raising, so the API stays
     forgiving of an unknown query."""
 
-    from workbench_api.services.strategies import list_strategies
+    from workbench_api.services.strategies import sleeve_strategies
 
-    labels = {s.sleeve for s in list_strategies().strategies}
+    labels = {s.sleeve for s in sleeve_strategies()}
     labels.add("master")
     return frozenset(labels)
 

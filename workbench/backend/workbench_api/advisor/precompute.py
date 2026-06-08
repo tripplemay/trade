@@ -29,7 +29,7 @@ from workbench_api.advisor.service import AdvisorService
 from workbench_api.db.repositories.advisor_recommendation import (
     AdvisorRecommendationRepository,
 )
-from workbench_api.services.strategies import list_strategies
+from workbench_api.services.strategies import sleeve_strategies
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ def advisor_sleeves() -> list[str]:
     """Distinct sleeves the advisor precomputes for — the strategy
     registry's sleeves (each has a derivable quant signal)."""
 
-    return sorted({s.sleeve for s in list_strategies().strategies})
+    return sorted({s.sleeve for s in sleeve_strategies()})
 
 
 def run_daily(

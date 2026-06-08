@@ -17,10 +17,11 @@ from __future__ import annotations
 INSUFFICIENT_HISTORY = "insufficient_history"
 NO_SIGNAL_DATES = "no_signal_dates"
 DATA_UNAVAILABLE = "data_unavailable"
+INACTIVE_STRATEGY = "inactive_strategy"
 UNKNOWN = "unknown"
 
 ERROR_KINDS = frozenset(
-    {INSUFFICIENT_HISTORY, NO_SIGNAL_DATES, DATA_UNAVAILABLE, UNKNOWN}
+    {INSUFFICIENT_HISTORY, NO_SIGNAL_DATES, DATA_UNAVAILABLE, INACTIVE_STRATEGY, UNKNOWN}
 )
 
 # Substrings the worker uses in its BacktestWorkerError messages, mapped to the
@@ -28,7 +29,10 @@ ERROR_KINDS = frozenset(
 _SIGNATURES: tuple[tuple[str, str], ...] = (
     ("no real price data available", DATA_UNAVAILABLE),
     ("unified price data yielded no rows", DATA_UNAVAILABLE),
+    # B050 F001 — research-state strategy excluded from standalone backtest.
+    ("is research-state", INACTIVE_STRATEGY),
     ("no quarter-end signal dates", NO_SIGNAL_DATES),
+    ("no monthly signal dates", NO_SIGNAL_DATES),
     ("insufficient price history", INSUFFICIENT_HISTORY),
     ("no valid volatility estimates", INSUFFICIENT_HISTORY),
 )
