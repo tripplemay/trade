@@ -154,6 +154,7 @@
     "stateIdle": "空闲",
     "stateRunning": "运行中…",
     "stateRunWithId": "运行 {id}",
+    "timeout": "回测耗时超出预期——worker 可能繁忙或离线，请稍后重试。",
     "selector": {
       "title": "参数",
       "description": "选择策略、快照、时间窗口后点击运行。",

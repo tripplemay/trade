@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MetricsDisplay, type MetricStat } from "@/components/metrics/MetricsDisplay";
+import { BacktestTimeoutError, runBacktest } from "@/lib/backtest-poll";
 import { cn } from "@/lib/utils";
 import type { ColDef } from "ag-grid-community";
 import type { components } from "@/types/api";
@@ -38,7 +39,6 @@ type StrategySummary = components["schemas"]["StrategySummary"];
 type BacktestTrade = components["schemas"]["BacktestTrade"];
 
 const STRATEGIES_URL = "/api/strategies";
-const RUN_URL = "/api/backtests/run";
 
 function buildTradeColumns(
   t: ReturnType<typeof useTranslations<"backtest.trades">>,
@@ -124,26 +124,27 @@ export default function BacktestPage() {
     if (!strategyId) return;
     setRunning(true);
     setError(null);
+    setResult(null);
     try {
-      const response = await fetch(RUN_URL, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          strategy_id: strategyId,
-          snapshot_id: snapshotId,
-          start_date: startDate,
-          end_date: endDate,
-          parameters: {},
-        }),
+      // B047 async: enqueue → poll until the worker finishes (or errors / times
+      // out). The request path returns 202 immediately; the result lands later.
+      const data = await runBacktest({
+        strategy_id: strategyId,
+        snapshot_id: snapshotId,
+        start_date: startDate,
+        end_date: endDate,
+        parameters: {},
       });
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      const data = (await response.json()) as BacktestRunResponse;
       setResult(data);
       setSharedRange(null);
     } catch (reason: unknown) {
-      setError(reason instanceof Error ? reason.message : String(reason));
+      const message =
+        reason instanceof BacktestTimeoutError
+          ? t("timeout")
+          : reason instanceof Error
+            ? reason.message
+            : String(reason);
+      setError(message);
     } finally {
       setRunning(false);
     }
@@ -151,7 +152,8 @@ export default function BacktestPage() {
 
   const equitySeries: EquityCurveSeries[] = useMemo(() => {
     if (!result) return [];
-    const masterData = result.equity.map((p) => ({ time: p.date, value: p.nav }));
+    const equity = result.equity ?? [];
+    const masterData = equity.map((p) => ({ time: p.date, value: p.nav }));
     const series: EquityCurveSeries[] = [
       { id: "master", name: "Master", color: "#00c853", data: masterData },
     ];
@@ -160,7 +162,7 @@ export default function BacktestPage() {
         id: "spy",
         name: "SPY",
         color: "#888888",
-        data: result.equity
+        data: equity
           .filter(
             (p): p is typeof p & { benchmark_spy: number } => typeof p.benchmark_spy === "number",
           )
@@ -170,7 +172,7 @@ export default function BacktestPage() {
         id: "60-40",
         name: "60/40",
         color: "#9ca3af",
-        data: result.equity
+        data: equity
           .filter(
             (p): p is typeof p & { benchmark_6040: number } => typeof p.benchmark_6040 === "number",
           )
@@ -181,9 +183,10 @@ export default function BacktestPage() {
   }, [result, comparisonOn]);
 
   const drawdownData = useMemo(() => {
-    if (!result || result.equity.length === 0) return [];
-    let peak = result.equity[0]!.nav;
-    return result.equity.map((p) => {
+    const equity = result?.equity ?? [];
+    if (equity.length === 0) return [];
+    let peak = equity[0]!.nav;
+    return equity.map((p) => {
       peak = Math.max(peak, p.nav);
       const dd = peak === 0 ? 0 : (p.nav - peak) / peak;
       return { time: p.date, value: dd };
@@ -323,7 +326,7 @@ export default function BacktestPage() {
                   <div>
                     <CardTitle>{tTrades("title")}</CardTitle>
                     <CardDescription>
-                      {tTrades("rows", { count: result?.trades.length ?? 0 })}
+                      {tTrades("rows", { count: result?.trades?.length ?? 0 })}
                     </CardDescription>
                   </div>
                   <Button
@@ -331,7 +334,7 @@ export default function BacktestPage() {
                     size="sm"
                     data-testid="backtest-export-trades"
                     onClick={() => tradesRef.current?.exportCsv("backtest-trades.csv")}
-                    disabled={!result || result.trades.length === 0}
+                    disabled={!result || (result.trades?.length ?? 0) === 0}
                   >
                     {tTrades("export")}
                   </Button>

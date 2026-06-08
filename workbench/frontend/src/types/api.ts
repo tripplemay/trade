@@ -887,23 +887,32 @@ export interface components {
         };
         /**
          * BacktestRunResponse
-         * @description Full POST /api/backtests/run + GET /api/backtests/{run_id} payload.
+         * @description POST /api/backtests/run + GET /api/backtests/{run_id} payload (B047 async).
+         *
+         *     ``POST /run`` enqueues a ``backtest_run`` and returns ``202`` with
+         *     ``status='queued'`` and no result yet; the frontend polls ``GET /{run_id}``
+         *     until ``status='done'`` (result populated) or ``'error'`` (``error`` set).
+         *     The heavy result fields are nullable / empty while ``queued`` / ``running``.
          */
         BacktestRunResponse: {
             /** Run Id */
             run_id: string;
             /**
              * Status
-             * @description 'ok' / 'queued' / 'error'.
+             * @description 'queued' / 'running' / 'done' / 'error'.
              */
             status: string;
-            metrics: components["schemas"]["BacktestMetrics"];
+            metrics?: components["schemas"]["BacktestMetrics"] | null;
             /** Equity */
-            equity: components["schemas"]["EquitySample"][];
+            equity?: components["schemas"]["EquitySample"][];
             /** Allocations */
-            allocations: components["schemas"]["AllocationBar"][];
+            allocations?: components["schemas"]["AllocationBar"][];
             /** Trades */
-            trades: components["schemas"]["BacktestTrade"][];
+            trades?: components["schemas"]["BacktestTrade"][];
+            /** Report Markdown */
+            report_markdown?: string | null;
+            /** Error */
+            error?: string | null;
         };
         /**
          * BacktestTrade
@@ -2429,7 +2438,7 @@ export interface operations {
         };
         responses: {
             /** @description Successful Response */
-            200: {
+            202: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -32,7 +32,7 @@
       "title": "Backtest API async（POST /run enqueue 202+run_id / GET /{run_id} DB 读，去 synthetic）+ 前端 Run→轮询→真实结果渲染",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【接 API + 前端，见 spec §4.3。依赖 F001/F002】(1) **POST /api/backtests/run**：去 `_compute_synthetic_backtest` 同步路径；改 enqueue(request)→返回 **202 + {run_id, status:queued}**（请求路径**不 import trade**，§12.10.2）。(2) **GET /api/backtests/{run_id}**：读 backtest_run DB（status + 完成则 metrics/equity/allocations/trades + report_markdown）；queued/running 返回状态无结果；error 返回 error 信息。(3) **services/backtests.py**：去 synthetic stub；读 backtest_run repo。(4) **前端 Backtest 页**：Run → POST /run → 拿 run_id → **轮询 GET /{run_id}**（queued/running 显进度 spinner+文案 → done 渲染真实 metrics/equity/trades，复用 B040 MetricsDisplay 指标卡 + 权益曲线 + 成交表）；error 态友好提示；无 worker/超时（N 次轮询无果）graceful 降级文案。(5) **research-only 标注**：结果区标『历史回测，非收益预测』（定位 §1.1）。(6) **测试**：backend pytest（POST 返回 202+run_id 不 import trade / GET 各状态 queued|running|done|error 正确）；前端 vitest（轮询 hook：queued→running→done 状态机 + error + 超时降级）；Playwright（/backtest Run→轮询→结果渲染，双 locale，可 mock GET 返回 done fixture）。(7) Gates：backend pytest ≥ baseline+ / frontend vitest ≥ baseline+ / ruff/mypy/lint/typecheck 0 / §12.10.2 守门绿（请求路径无 trade）/ Playwright 不破。(8) 不动：F001/F002 / worker / B040 指标卡组件（复用不改）。",
       "design_decisions": [
         "202+run_id+轮询（planner 决，Option A）：请求路径不阻塞、不 import trade；前端轮询 GET 直到 done。",

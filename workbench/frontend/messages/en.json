@@ -154,6 +154,7 @@
     "stateIdle": "idle",
     "stateRunning": "running…",
     "stateRunWithId": "run {id}",
+    "timeout": "Backtest is taking longer than expected — the worker may be busy or offline. Try again shortly.",
     "selector": {
       "title": "Selector",
       "description": "Pick a strategy + snapshot + window, then Run.",

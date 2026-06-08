@@ -80,6 +80,7 @@ export default defineConfig({
         "e2e/b040-metrics.spec.ts",
         "e2e/b041-recommendations.spec.ts",
         "e2e/b042-risk-tooltips.spec.ts",
+        "e2e/b047-backtest-async.spec.ts",
       ],
     },
   ],

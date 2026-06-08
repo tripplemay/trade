@@ -1,15 +1,12 @@
-"""B022 F008 — backtest runner + result cache endpoint coverage.
+"""B047 F003 — async backtest request path (enqueue + poll).
 
-The runner is synthetic (F008 ships placeholder math until B023 wires
-real ``trade.master.run_backtest``), but the contract this test pins
-is stable:
+Replaces the B022 F008 synchronous synthetic coverage. The request path now:
 
-* Auth gate — anon must 401.
-* run-then-fetch round trip — POST returns a run_id; GET by that id
-  returns the same payload (deterministic via the seed helper).
-* Unknown strategy_id → 404 (sanitises bad input before the synthetic
-  math runs).
-* Unknown run_id → 404 (cache misses don't 500).
+* Auth gate — anon → 401.
+* POST /run → 202 + {run_id, status: 'queued'} (no result yet; no trade import).
+* GET /{run_id} reflects DB state — queued (no result), then done (result) /
+  error after the worker writes it.
+* Unknown strategy_id → 404; unknown run_id → 404.
 """
 
 from __future__ import annotations
@@ -20,11 +17,13 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 from jose import jwt
+from sqlalchemy.orm import Session
 
 from workbench_api.app import create_app
 from workbench_api.auth.jwt_validator import JWT_ALGORITHM
+from workbench_api.db.engine import get_engine
+from workbench_api.db.repositories.backtest_run import BacktestRunRepository
 from workbench_api.observability.active_users import active_users
-from workbench_api.services.backtests import reset_cache
 from workbench_api.settings import Settings, get_settings
 
 SECRET = "test-secret-do-not-use-in-prod"
@@ -34,7 +33,6 @@ ALLOWED_EMAIL = "owner@example.com"
 @pytest.fixture(autouse=True)
 def _reset_state() -> None:
     active_users.clear()
-    reset_cache()
 
 
 def _authed_client() -> TestClient:
@@ -71,23 +69,64 @@ def test_backtest_run_requires_auth(initialised_db: str) -> None:
     assert client.post("/api/backtests/run", json=SAMPLE_REQUEST).status_code == 401
 
 
-def test_backtest_run_then_fetch_round_trip(initialised_db: str) -> None:
+def test_backtest_run_enqueues_and_returns_202_queued(initialised_db: str) -> None:
     client = _authed_client()
     response = client.post("/api/backtests/run", json=SAMPLE_REQUEST)
-    assert response.status_code == 200, response.text
+    assert response.status_code == 202, response.text
     payload = response.json()
-    assert payload["status"] == "ok"
-    run_id = payload["run_id"]
-    assert isinstance(run_id, str) and run_id
-    # Headline schema fields present + non-empty.
-    assert payload["metrics"]["cagr"] != 0 or payload["metrics"]["sharpe"] != 0
-    assert len(payload["equity"]) > 0
-    assert payload["equity"][0]["nav"] > 0
-    assert len(payload["trades"]) > 0
+    assert payload["status"] == "queued"
+    assert isinstance(payload["run_id"], str) and payload["run_id"]
+    # No result while queued — the worker fills it in.
+    assert payload["metrics"] is None
+    assert payload["equity"] == []
 
-    fetched = client.get(f"/api/backtests/{run_id}")
-    assert fetched.status_code == 200
-    assert fetched.json() == payload
+    # GET reflects the queued state (worker hasn't run in the test).
+    fetched = client.get(f"/api/backtests/{payload['run_id']}").json()
+    assert fetched["status"] == "queued"
+    assert fetched["metrics"] is None
+
+
+def test_backtest_get_reflects_done_result(initialised_db: str) -> None:
+    """Once the worker writes a result, GET surfaces the mapped done payload."""
+
+    client = _authed_client()
+    run_id = client.post("/api/backtests/run", json=SAMPLE_REQUEST).json()["run_id"]
+
+    # Simulate the worker: claim + save a result.
+    with Session(get_engine()) as session:
+        repo = BacktestRunRepository(session)
+        repo.claim_next_queued()
+        repo.save_result(
+            run_id,
+            metrics={"cagr": 0.12, "sharpe": 1.3, "sortino": None,
+                     "max_drawdown": -0.15, "turnover": 3.0, "win_rate": None},
+            equity=[{"date": "2024-03-31", "nav": 10500.0}],
+            allocations=[{"date": "2024-03-31", "weights": {"SPY": 1.0}}],
+            trades=[{"date": "2024-04-01", "symbol": "SPY", "side": "buy",
+                     "quantity": 1.0, "price": 100.0, "notional": 100.0}],
+            report_markdown="# Master Portfolio Report",
+        )
+        session.commit()
+
+    fetched = client.get(f"/api/backtests/{run_id}").json()
+    assert fetched["status"] == "done"
+    assert fetched["metrics"]["cagr"] == 0.12
+    assert fetched["equity"][0]["nav"] == 10500.0
+    assert fetched["trades"][0]["symbol"] == "SPY"
+    assert fetched["report_markdown"].startswith("# Master Portfolio Report")
+
+
+def test_backtest_get_reflects_error(initialised_db: str) -> None:
+    client = _authed_client()
+    run_id = client.post("/api/backtests/run", json=SAMPLE_REQUEST).json()["run_id"]
+    with Session(get_engine()) as session:
+        repo = BacktestRunRepository(session)
+        repo.claim_next_queued()
+        repo.save_error(run_id, "no real price data available")
+        session.commit()
+    fetched = client.get(f"/api/backtests/{run_id}").json()
+    assert fetched["status"] == "error"
+    assert "no real price data" in fetched["error"]
 
 
 def test_backtest_run_unknown_strategy_returns_404(initialised_db: str) -> None:
@@ -102,21 +141,4 @@ def test_backtest_run_unknown_strategy_returns_404(initialised_db: str) -> None:
 
 def test_backtest_get_unknown_run_id_returns_404(initialised_db: str) -> None:
     client = _authed_client()
-    response = client.get("/api/backtests/no-such-run")
-    assert response.status_code == 404
-
-
-def test_backtest_finishes_under_five_seconds(initialised_db: str) -> None:
-    """F008 acceptance target: synchronous run < 5s on a canned snapshot.
-
-    The synthetic engine runs in < 100ms on commodity hardware; this
-    test guards against a future regression that swaps in a slower
-    implementation without updating the page UX.
-    """
-
-    client = _authed_client()
-    start = time.perf_counter()
-    response = client.post("/api/backtests/run", json=SAMPLE_REQUEST)
-    elapsed = time.perf_counter() - start
-    assert response.status_code == 200
-    assert elapsed < 5.0, f"backtest took {elapsed:.2f}s (>=5s)"
+    assert client.get("/api/backtests/no-such-run").status_code == 404

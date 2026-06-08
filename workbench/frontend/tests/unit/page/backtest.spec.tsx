@@ -49,9 +49,7 @@ vi.mock("@/components/ui/select", () => ({
   ),
   SelectContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   SelectItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  SelectValue: ({ placeholder }: { placeholder?: string }) => (
-    <span>{placeholder ?? ""}</span>
-  ),
+  SelectValue: ({ placeholder }: { placeholder?: string }) => <span>{placeholder ?? ""}</span>,
 }));
 
 import BacktestPage from "@/app/(protected)/backtest/page";
@@ -68,9 +66,21 @@ const STRATEGY_LIST: components["schemas"]["StrategyListResponse"] = {
   ],
 };
 
-const RUN_RESULT: components["schemas"]["BacktestRunResponse"] = {
+// B047 async: POST /run returns a queued run_id; GET /{run_id} returns done.
+const QUEUED: components["schemas"]["BacktestRunResponse"] = {
   run_id: "abc123",
-  status: "ok",
+  status: "queued",
+  metrics: null,
+  equity: [],
+  allocations: [],
+  trades: [],
+  report_markdown: null,
+  error: null,
+};
+
+const DONE_RESULT: components["schemas"]["BacktestRunResponse"] = {
+  run_id: "abc123",
+  status: "done",
   metrics: {
     cagr: 0.085,
     sharpe: 1.42,
@@ -94,11 +104,13 @@ const RUN_RESULT: components["schemas"]["BacktestRunResponse"] = {
       notional: 11000,
     },
   ],
+  report_markdown: "# Master Portfolio Report",
+  error: null,
 };
 
 function buildFetch(map: Record<string, unknown>): typeof fetch {
   return vi.fn(async (input: RequestInfo | URL) => {
-    const url = typeof input === "string" ? input : (input as Request).url ?? input.toString();
+    const url = typeof input === "string" ? input : ((input as Request).url ?? input.toString());
     const body = map[url];
     if (body === undefined) return new Response("not-found", { status: 404 });
     return new Response(JSON.stringify(body), {
@@ -124,16 +136,16 @@ describe("BacktestPage (B022 F008)", () => {
     });
   });
 
-  it("clicks Run → posts to /api/backtests/run → surfaces metrics + state line", async () => {
+  it("Run → enqueue (202) → poll GET → surfaces done metrics + state line", async () => {
     vi.stubGlobal(
       "fetch",
       buildFetch({
         "/api/strategies": STRATEGY_LIST,
-        "/api/backtests/run": RUN_RESULT,
+        "/api/backtests/run": QUEUED, // POST enqueue → run_id abc123
+        "/api/backtests/abc123": DONE_RESULT, // GET poll → done (first poll)
       }),
     );
     const { getByTestId } = renderWithIntl(<BacktestPage />);
-    // Wait for the strategy list to land so the Run button is enabled.
     await waitFor(() => {
       expect(getByTestId("backtest-run")).not.toBeDisabled();
     });
@@ -141,7 +153,7 @@ describe("BacktestPage (B022 F008)", () => {
     await waitFor(() => {
       expect(getByTestId("backtest-state")).toHaveTextContent(/run abc123/);
     });
-    // Headline metrics populated from RUN_RESULT.
+    // Headline metrics populated from the done result (after polling).
     const metricsCard = getByTestId("backtest-metrics");
     expect(metricsCard).toHaveTextContent(/8\.50%/); // cagr 0.085
     expect(metricsCard).toHaveTextContent(/1\.42/); // sharpe

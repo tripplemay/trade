@@ -55,11 +55,19 @@ class BacktestTrade(BaseModel):
 
 
 class BacktestRunResponse(BaseModel):
-    """Full POST /api/backtests/run + GET /api/backtests/{run_id} payload."""
+    """POST /api/backtests/run + GET /api/backtests/{run_id} payload (B047 async).
+
+    ``POST /run`` enqueues a ``backtest_run`` and returns ``202`` with
+    ``status='queued'`` and no result yet; the frontend polls ``GET /{run_id}``
+    until ``status='done'`` (result populated) or ``'error'`` (``error`` set).
+    The heavy result fields are nullable / empty while ``queued`` / ``running``.
+    """
 
     run_id: str
-    status: str = Field(description="'ok' / 'queued' / 'error'.")
-    metrics: BacktestMetrics
-    equity: list[EquitySample]
-    allocations: list[AllocationBar]
-    trades: list[BacktestTrade]
+    status: str = Field(description="'queued' / 'running' / 'done' / 'error'.")
+    metrics: BacktestMetrics | None = None
+    equity: list[EquitySample] = Field(default_factory=list)
+    allocations: list[AllocationBar] = Field(default_factory=list)
+    trades: list[BacktestTrade] = Field(default_factory=list)
+    report_markdown: str | None = None
+    error: str | None = None
