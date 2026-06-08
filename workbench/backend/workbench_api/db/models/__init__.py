@@ -12,6 +12,7 @@ from workbench_api.db.models.account import Account
 from workbench_api.db.models.account_snapshot import AccountSnapshot
 from workbench_api.db.models.advisor_recommendation import AdvisorRecommendation
 from workbench_api.db.models.backlog_entry import BacklogEntry
+from workbench_api.db.models.backtest_run import BacktestRun
 from workbench_api.db.models.base import Base
 from workbench_api.db.models.fill_journal_entry import FillJournalEntry
 from workbench_api.db.models.llm_budget_log import LLMBudgetLog
@@ -30,6 +31,7 @@ __all__ = [
     "AccountSnapshot",
     "AdvisorRecommendation",
     "BacklogEntry",
+    "BacktestRun",
     "Base",
     "FillJournalEntry",
     "LLMBudgetLog",

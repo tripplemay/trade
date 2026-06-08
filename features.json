@@ -6,7 +6,7 @@
       "title": "backtest_run 队列+结果表（alembic）+ repo（enqueue/claim 原子/save_result/get）+ §12.10.2 worker allowlist 守门",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【Option A async 基础设施第一层，见 spec §4.1】(1) **backtest_run 表 + alembic 迁移**：db/models/backtest_run.py——run_id(str PK)/strategy_id/params(JSON)/status(queued|running|done|error)/metrics(JSON nullable)/equity(JSON nullable)/allocations(JSON nullable)/trades(JSON nullable)/report_markdown(text nullable)/error(text nullable)/created_at/finished_at；alembic 迁移（接 0011 之后，head 递增）。(2) **repository**：db/repositories/backtest_run.py——enqueue(request)→写 queued 行返回 run_id；claim_next_queued()→**原子**取最早 queued 行置 running（SELECT…+UPDATE 单事务或乐观锁，防多 worker 并发重复领取）；save_result(run_id, metrics/equity/allocations/trades/report_markdown)→置 done+finished_at；save_error(run_id, error)→置 error；get_by_run_id(run_id)。(3) **§12.10.2 worker allowlist 守门**：tests/safety/test_backtests_request_self_contained.py——AST 扫 routes/backtests.py + services/backtests.py **禁 import trade**（请求路径）；允许 workbench_api/backtests/worker.py + canonical.py import trade（allowlist 仿 test_recommendations_request_self_contained.py 模式）。(4) **pytest**：repo enqueue/claim 原子（两次 claim 不重领同一行）/save_result/save_error/get_by_run_id；表迁移 round-trip。(5) Gates：backend pytest ≥ baseline+≥6 / ruff 0 / mypy 0 / alembic upgrade head 干净。(6) 不动：现 routes/backtests.py 行为（F003 改）/ services synthetic（F003 去）/ 其他表。",
       "design_decisions": [
         "Option A async（用户 2026-06-08 拍板）：请求路径只读 DB，worker import trade，守 §12.10.2。",
