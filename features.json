@@ -6,7 +6,7 @@
       "title": "Snapshots 真进度——去合成 5 段动画，接真实刷新操作进度 + 真实 manifest + docstring 去 synthetic + §12.10.2 守门 + 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【里程碑 C 收口 gate 残余 #1，见 spec §4】根因：services/snapshots.py docstring 自述真实 scripts/refresh_public_snapshot 从未接入，F011 ship 合成 5 段进度（_iter_stages 行 93-110 硬编码 + _STAGE_DELAY_SECONDS 固定 0.05s sleep）；该脚本物理不存在，真实刷新操作=data_refresh/cli.py(已 allowlist)。**架构决策点 generator 定（spec §4.2 二选一注明理由）**：(A) 轻量真实 manifest——refresh 读当前真实数据状态(CSV/price_history/backtest_data_window 覆盖窗口)构建真实 manifest，stage 反映真实工作，SnapshotMeta 写真实 manifest 数据(真实 symbol 数/行数/覆盖窗口/quality)，不重跑 pipeline，§12.10.2 安全(planner 倾向)；(B) spawn data_refresh CLI 子进程解析真实 stdout 进度(重，须自包含 §12.10+不阻塞)。**Acceptance**：(1) 删 _iter_stages 固定 5 段硬编码+固定 sleep 表演，进度事件反映真实刷新操作实际阶段边界。(2) _persist_snapshot 去 `del detail # placeholder`，SnapshotMeta 写真实 manifest 数据(非恒 'ok' 占位)。(3) services/snapshots.py 模块 docstring + routes/snapshots.py 路由 docstring 删 synthetic/hasn't-been-wired 陈述改述真实接线。(4) 前端 snapshots/page.tsx 已通用化消费 event.stage/detail；若 stage 变则同步展示+i18n，否则验证不破。(5) 边界：snapshots refresh 请求路径不进程内 import trade(§12.10.2 AST 守门)；选(B)则子进程走 allowlist+§12.10 自包含；错误路径仍 yield stage:error 不漏栈。(6) 测试：真实进度事件(非固定 sleep)+SnapshotMeta 真实字段+错误路径+§12.10.2 守门+前端 vitest(若改 stage)。(7) Gates：backend pytest ≥ baseline / ruff 0 / mypy 0；frontend(若动) vitest/lint/tsc 0。(8) 不动：B045 timer data-refresh job / canonical / 评分。",
       "design_decisions": [
         "refresh 真实语义未定，spec §4.2 留 A/B 决策点 generator 定并文档化；planner 倾向 (A) 轻量真实 manifest(不重跑昂贵 pipeline/不撞 B045 timer/§12.10.2 安全)。",

@@ -1,24 +1,25 @@
-"""Snapshots list + SSE-streamed refresh (B022 F011).
+"""Snapshots list + SSE-streamed refresh (B022 F011, B049 F001).
 
 GET path reads the SnapshotMeta repo and shapes rows into the schema
 the frontend's DataTable consumes; nothing fancy.
 
-POST refresh is the more interesting surface — it streams a sequence
-of stage events back as Server-Sent Events so the frontend can render
-live progress. The real ``scripts/refresh_public_snapshot`` subprocess
-hasn't been wired into the workbench yet (B023 takes that on); F011
-ships a *synthetic* 5-stage progress generator that gives the modal
-something to render and inserts a SnapshotMeta row on completion so
-the list reflects the refresh.
+POST refresh streams a sequence of stage events back as Server-Sent
+Events so the frontend can render live progress. **B049 F001 (milestone-C
+close-out):** the refresh now reflects the *real* on-disk data state. It
+reads the unified prices + fundamentals CSVs the B045 data-refresh job
+wrote (``data_refresh/inventory``) and the persisted coverage window,
+grades the coverage, and records a SnapshotMeta row whose ``manifest_path``
+and ``quality_status`` reflect the real data — replacing the F011 synthetic
+5-stage animation (fixed sleeps) and the constant ``"ok"`` placeholder row.
 
-The synthetic stages mirror the shape the real subprocess will emit
-(prepare → fetch → process → store → complete), so swapping in the
-real wiring later only touches the body of ``_iter_stages``.
+The request path stays read-only and self-contained (§12.10.2): it reads
+CSV/DB and writes only its own SnapshotMeta row — no ``trade`` import, no
+subprocess, no execution. The heavy data fetch remains the B045 daily
+``data_refresh.cli`` timer job; this surface only catalogs what that wrote.
 """
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 import uuid
@@ -28,7 +29,11 @@ from datetime import UTC, datetime
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from workbench_api.data_refresh import inventory
 from workbench_api.db.models.snapshot_meta import SnapshotMeta
+from workbench_api.db.repositories.backtest_data_window import (
+    BacktestDataWindowRepository,
+)
 from workbench_api.db.repositories.snapshot import SnapshotMetaRepository
 from workbench_api.schemas.snapshots import (
     SnapshotListResponse,
@@ -36,11 +41,6 @@ from workbench_api.schemas.snapshots import (
 )
 
 _logger = logging.getLogger("workbench.snapshots")
-
-# Sleep between synthetic stages. Kept very short so the modal feels
-# responsive in dev and tests finish quickly; F014 Codex L2 runs the
-# real subprocess on the VM where the cadence is dictated by I/O.
-_STAGE_DELAY_SECONDS: float = 0.05
 
 
 def list_snapshots(session: Session) -> SnapshotListResponse:
@@ -90,56 +90,122 @@ def _format_sse(event: dict[str, object]) -> str:
     return f"data: {json.dumps(event)}\n\n"
 
 
-async def _iter_stages(job_id: str) -> AsyncIterator[dict[str, object]]:
-    """Yield the 5-stage synthetic progress event sequence."""
+def _event(job_id: str, stage: str, detail: str) -> dict[str, object]:
+    return {
+        "job_id": job_id,
+        "stage": stage,
+        "detail": detail,
+        "ts": datetime.now(tz=UTC).isoformat(timespec="seconds"),
+    }
 
-    stages: list[tuple[str, str]] = [
-        ("prepare", "Resolving snapshot config + cache paths."),
-        ("fetch", "Downloading public data + verifying checksums."),
-        ("process", "Building manifest + computing quality status."),
-        ("store", "Writing manifest to disk + indexing."),
-        ("complete", "Refresh complete."),
-    ]
-    for stage, detail in stages:
-        await asyncio.sleep(_STAGE_DELAY_SECONDS)
-        yield {
-            "job_id": job_id,
-            "stage": stage,
-            "detail": detail,
-            "ts": datetime.now(tz=UTC).isoformat(timespec="seconds"),
-        }
+
+def _window_detail(session: Session, prices: inventory.CsvInventory) -> str:
+    """Describe the coverage window, preferring the persisted backtest window.
+
+    The data-refresh job writes the authoritative ``backtest_data_window`` row;
+    when present it carries the conservative ``first_usable_signal_date`` the
+    backtest page clamps to. Falls back to the prices CSV's own date range when
+    no refresh has persisted a window yet."""
+
+    try:
+        window = BacktestDataWindowRepository(session).get_window()
+    except SQLAlchemyError:
+        session.rollback()
+        window = None
+    if window is not None:
+        return (
+            f"Coverage {window.data_start.isoformat()}–{window.data_end.isoformat()} "
+            f"(first usable {window.first_usable_signal_date.isoformat()})."
+        )
+    if prices.data_start is not None and prices.data_end is not None:
+        return (
+            f"Coverage {prices.data_start.isoformat()}–{prices.data_end.isoformat()} "
+            "(from prices CSV)."
+        )
+    return "No coverage window persisted yet — run the data-refresh job."
+
+
+async def _iter_refresh_stages(
+    session: Session, job_id: str
+) -> AsyncIterator[dict[str, object]]:
+    """Read the real on-disk data state and yield real progress events.
+
+    Each stage is a genuine read of the data the B045 data-refresh job wrote —
+    the cadence is dictated by file/DB I/O, not a fixed sleep. The final
+    ``complete`` stage persists a SnapshotMeta row reflecting the real coverage.
+    """
+
+    root = inventory.data_root()
+    yield _event(job_id, "locate", f"Resolving data root {root}.")
+
+    prices = inventory.prices_inventory(root)
+    if prices.present:
+        yield _event(
+            job_id,
+            "read_prices",
+            f"Prices: {prices.symbols} symbols, {prices.rows} rows.",
+        )
+    else:
+        yield _event(job_id, "read_prices", f"Prices CSV not found at {prices.path}.")
+
+    fundamentals = inventory.fundamentals_inventory(root)
+    if fundamentals.present:
+        yield _event(
+            job_id,
+            "read_fundamentals",
+            f"Fundamentals: {fundamentals.symbols} symbols, {fundamentals.rows} rows.",
+        )
+    else:
+        yield _event(
+            job_id,
+            "read_fundamentals",
+            f"Fundamentals CSV not found at {fundamentals.path}.",
+        )
+
+    quality = inventory.grade_quality(prices, fundamentals)
+    yield _event(
+        job_id,
+        "grade",
+        f"{_window_detail(session, prices)} Quality: {quality}.",
+    )
+
+    snapshot_id = f"snap-{job_id}"
+    manifest_path = str(prices.path)
+    _persist_snapshot(session, snapshot_id, manifest_path, quality)
+    yield _event(
+        job_id,
+        "complete",
+        f"Recorded {snapshot_id} (quality {quality}).",
+    )
 
 
 async def refresh_event_stream(
     session_factory: Callable[[], Session],
 ) -> AsyncIterator[str]:
-    """Run the synthetic refresh and yield SSE-encoded events.
+    """Run the real refresh and yield SSE-encoded progress events.
 
     **B022 F014 fixing-round 2:** the previous signature took a Session
     from FastAPI's ``get_session`` dependency. That session is torn
     down by the dependency generator the moment the route handler
     returns its StreamingResponse — i.e. *before* this async generator
-    starts streaming. The first ORM call inside ``_persist_snapshot``
-    then raised against a closed session and Codex L2 saw
-    ``unreachable: HTTP 500`` in the Snapshots refresh modal.
+    starts streaming. The first ORM call then raised against a closed
+    session and Codex L2 saw ``unreachable: HTTP 500`` in the modal.
 
     Fix: the route passes a ``session_factory`` (an unbound
     sessionmaker call) and we own the session inside this generator's
     ``try/finally``, outliving the streaming response and any other
     FastAPI cleanup.
 
-    The final ``complete`` stage commits a SnapshotMeta row so the
-    Snapshots page's list refresh shows the new entry. Failures inside
-    the loop yield a ``stage: error`` event and re-raise so the
-    client treats lack of ``complete`` as a failed run.
+    The ``complete`` stage commits a SnapshotMeta row so the Snapshots
+    page's list refresh shows the new entry. Failures inside the loop
+    yield a ``stage: error`` event and re-raise so the client treats
+    lack of ``complete`` as a failed run.
     """
 
     job_id = uuid.uuid4().hex[:12]
     session = session_factory()
     try:
-        async for event in _iter_stages(job_id):
-            if event["stage"] == "complete":
-                _persist_snapshot(session, job_id, str(event["detail"]))
+        async for event in _iter_refresh_stages(session, job_id):
             yield _format_sse(event)
     except Exception as exc:
         session.rollback()
@@ -156,17 +222,22 @@ async def refresh_event_stream(
         session.close()
 
 
-def _persist_snapshot(session: Session, job_id: str, detail: str) -> None:
-    """Insert (or refresh) the SnapshotMeta row for this run."""
+def _persist_snapshot(
+    session: Session, snapshot_id: str, manifest_path: str, quality_status: str
+) -> None:
+    """Insert (or refresh) the SnapshotMeta row for this run.
 
-    del detail  # currently unused — placeholder until real manifest data lands
+    Records the real ``manifest_path`` (the unified prices CSV this snapshot
+    catalogs) and the real ``quality_status`` graded from coverage — no
+    placeholder."""
+
     repo = SnapshotMetaRepository(session)
     now = datetime.now(tz=UTC).replace(tzinfo=None)
     repo.upsert(
         SnapshotMeta(
-            snapshot_id=f"snap-{job_id}",
-            manifest_path=f"data/public-cache/{job_id}/manifest.json",
-            quality_status="ok",
+            snapshot_id=snapshot_id,
+            manifest_path=manifest_path,
+            quality_status=quality_status,
             created_at=now,
         )
     )

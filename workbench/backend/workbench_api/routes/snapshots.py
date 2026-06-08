@@ -51,12 +51,15 @@ def refresh_snapshots_route(
 ) -> StreamingResponse:
     """POST /api/snapshots/refresh — streams SSE progress events.
 
-    The synthetic generator yields 5 stages; the final ``complete``
-    stage inserts/updates a SnapshotMeta row before the event reaches
-    the client so a subsequent GET shows the refreshed entry. The
-    session is owned by the generator (see ``_streaming_session_factory``
-    docstring) — passing FastAPI's request-scoped session would close
-    it before the first ORM call.
+    B049 F001: the generator reads the real on-disk data state (the unified
+    prices + fundamentals CSVs the B045 data-refresh job wrote + the persisted
+    coverage window), grades coverage, and on the final ``complete`` stage
+    inserts/updates a SnapshotMeta row reflecting that real data before the
+    event reaches the client, so a subsequent GET shows the refreshed entry.
+    Read-only + self-contained (§12.10.2): no ``trade`` import, no subprocess.
+    The session is owned by the generator (see ``_streaming_session_factory``
+    docstring) — passing FastAPI's request-scoped session would close it before
+    the first ORM call.
     """
 
     factory = _streaming_session_factory()

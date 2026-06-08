@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "B049 全页面真实化审计 gate（里程碑 C 收口）。用户 2026-06-09 拍板 B047-OPS2 done 后下一批做 B049（B049 先收口、B043 AI 解释后做）。**里程碑 C 硬标准**：所有用户投资页面显示内容接真实引擎、无合成/占位。前序批次已逐页真实化，本批=收口 gate：修实地审计确认的 3 个残余 + 独立 evaluator 全页面穷举审计 + 里程碑 C 达成裁定。**Planner 实地审计基线（Explore 2026-06-09，无新增残余）**：(#1) Snapshots 合成进度——services/snapshots.py:93-110 _iter_stages() 5 段硬编码+固定 0.05s sleep；docstring 自述真实 scripts/refresh_public_snapshot 从未接入（planner 核实：该脚本物理不存在，真实刷新操作=data_refresh/cli.py 已 allowlist）；数据已 B045 真，仅进度动画假。(#2) Strategies 陈旧 synthetic note——strategies.py:101-104/159-162「Synthetic fixture only; not live market data/not actual filings」（B045 已接真数据陈旧）。(#3) Dashboard 死路由+占位——routes/dashboard.py 前端零页面引用 + dashboard.py:45 第三份 kill_switch 0.20（应引 nav_history:46 单一来源 0.15）+ :159 master_drawdown=0.0 占位 + test_dashboard.py:112 断言 0.2 陈旧。**严禁动诚实声明式占位**（strategies satellite_stub:167-171 / regime research-state:218+ weight 0.0——诚实披露 stub/research 状态=真实，动了反隐瞒）。4 features 3g+1c：F001 g Snapshots 真进度（架构决策点 generator 定：A 轻量真实 manifest[planner 倾向] vs B 重跑 data_refresh 子进程）；F002 g Strategies note 更正+hk_china note 核查+守门；F003 g Dashboard 死路由清理+kill_switch 单一来源+master_drawdown 移除+api.ts drift；F004 c L1+L2 真 VM 全页面穷举审计（8 页无合成/占位）+里程碑 C 达成裁定+signoff。永久硬边界：§12.10.2 请求路径禁 import trade/no-execution/定位§1.1/i18n parity/删前看目标。不做：改 master 评分/激活 regime/动诚实占位/内部工具页/无限深回填/broker。**审计通过=里程碑 C 正式达成**，之后回 B043 AI 解释层。spec docs/specs/B049-all-pages-real-engine-audit-spec.md（9 章）。",
   "total_features": 4,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-06-09",
   "reference_docs": [
     "docs/specs/B049-all-pages-real-engine-audit-spec.md",
