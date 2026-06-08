@@ -20,7 +20,7 @@
     "spec": "docs/specs/B047-OPS2-backtest-range-validation-data-depth-spec.md",
     "test_cases": null,
     "signoff": "docs/test-reports/B047-OPS2-backtest-default-range-hotfix-signoff-2026-06-08.md",
-    "framework_reviewed": false
+    "framework_reviewed": true
   },
   "role_assignments": null,
   "evaluator_feedback": "B047-OPS2 F003 PASS。L1:959。L2:data-range real(2021-2025);默认Run非退化(6pt/112trades/sharpe3.16);无效range友好error(no_signal_dates);errors=0。热修复四层全生效。",
