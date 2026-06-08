@@ -6,7 +6,10 @@ build-backend = "hatchling.build"
 name = "trade"
 # B045 F002 added trade/data/data_root.py; bump so a version-aware install path
 # reinstalls (defence-in-depth alongside deploy.sh --force-reinstall, F004 #2).
-version = "0.2.0"
+# BL-B011-S2 F003 fix-round: 0.2.1 adds hk_china_momentum + force-includes the
+# satellite fixtures into the wheel (so the VM's wheel-installed loaders resolve
+# them — fixes the F004 Finding #1 both-satellites-stub regression).
+version = "0.2.1"
 description = "Fixture-first Global ETF Momentum backtest MVP."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -30,6 +33,21 @@ dev = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["trade"]
+
+# BL-B011-S2 F003 fix-round — bundle the satellite strategies' fixtures into
+# the wheel. The us_quality + hk_china loaders resolve their universe (and
+# us_quality's earnings calendar) from ``<repo_root>/data/fixtures/...`` where
+# ``repo_root = parents[2]`` of the loader module. In an editable install that
+# is the real repo root (fixtures present); in a wheel install it is
+# ``site-packages`` — so without shipping the fixtures there, ``load_universe``
+# raises on the VM and BOTH satellite sleeves stub (root cause of the F004
+# Finding #1 regression). force-include lands them at
+# ``site-packages/data/fixtures/...`` so the loaders resolve identically to a
+# source checkout. On the VM prices/fundamentals still come from the unified
+# real-data CSV (WORKBENCH_DATA_ROOT); these fixtures supply universe/earnings.
+[tool.hatch.build.targets.wheel.force-include]
+"data/fixtures/us_quality_momentum" = "data/fixtures/us_quality_momentum"
+"data/fixtures/hk_china_momentum" = "data/fixtures/hk_china_momentum"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
