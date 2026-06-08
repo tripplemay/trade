@@ -1,48 +1,26 @@
 {
-  "sprint": "BL-B011-S2-hk-china-satellite",
+  "sprint": "B042-risk-panel-robinhood",
   "features": [
     {
       "id": "F001",
-      "title": "数据：MCHI/FXI/KWEB/ASHR 入 B045 data_refresh ETF_UNIVERSE + trade/data/hk_china_universe.py loader（price-only）+ fixture",
+      "title": "RiskBanner Robinhood 微调：colorForRiskState 一致调色板 + per-sleeve 严重度配色 + 风控术语双语 tooltip + valuation_basis 诚实指示 + 字体一致化",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【2026-06-08 用户已批实现 HK-China + planner 按设计说明书定 Phase 1 US-listed/price-only，见 spec §2】(1) **data_refresh ETF_UNIVERSE** workbench_api/data_refresh/refresh.py：ETF_UNIVERSE += MCHI/FXI/KWEB/ASHR（B045 pipeline 拉其 daily prices 入 unified CSV；price_universe() 自动含；ETF 不取 fundamentals）。(2) **hk_china loader** 新 trade/data/hk_china_universe.py：load_universe(as_of)（HK-China ETF 列表 + 最小元数据 ticker/name/exposure，无 sector）+ load_prices(as_of)（镜像 us_quality_universe.load_prices：读 unified CSV/fixture 长格式 OHLCV，筛 HK-China ETF symbol，resolution priority 同 B025）；**无 load_fundamentals/load_earnings_calendar**（price-only 策略）。(3) **fixture** 合成 HK-China ETF prices（足够 momentum 12m + 200D MA 窗口）。(4) pytest：load_universe/load_prices（unified + fixture 路径，as_of 筛）；data_refresh 含 4 新 ETF。(5) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / 复用 TIINGO secret 不引新。(6) 不动：既有 ETF_UNIVERSE 6 symbol / us_quality loader / fundamentals 路径。",
+      "status": "pending",
+      "acceptance": "【前端-only UI 微调，B048 已让 risk 数据真实，见 spec §2。planner 按 roadmap『微调』定 Option A 最小不重构】(1) **颜色一致化**：lib/metric-color.ts 扩 colorForRiskState(state)→{border,bg,text}（green=emerald/yellow=amber/red=destructive，统一 B040 调色板）；components/risk/RiskBanner.tsx STATE_STYLES 改用之（去 ad-hoc green-700/950 等）；per-sleeve 行严重度配色复用 colorForDelta 逻辑映射 drawdown（<5% 绿/5-8% 琥珀/≥per_sleeve_threshold 红）。(2) **风控术语 tooltip**：复用 B040/B041 radix tooltip 模式，RiskBanner master DD/kill-switch/per-sleeve drawdown 术语 label 包 tooltip；i18n 加 risk.tooltips.{masterDrawdown,killSwitch,perSleeveDrawdown,defensiveTicket} 双语（英文术语+中文手写解释）+ parity 守门。(3) **valuation_basis 诚实指示**：渲染 valuation_basis——mark_to_market 正常 / cost_degraded 显式标注（『部分日期价格历史不足，回撤按成本价估算』+ degraded_symbols，接 B048 S1 不蒙混 v0.9.21）。(4) **字体/间距一致化**：RiskBanner text 层级规范（headline text-sm font-semibold/数值 font-mono/label muted-foreground）对齐 B040 MetricsDisplay。(5) **no-execution 守门**覆盖（无下单按钮+中文禁词）。(6) frontend vitest ≥ baseline+：colorForRiskState 三态 + per-sleeve 严重度配色边界 + 风控 tooltip i18n 双语 + valuation_basis 两态渲染（复用既有 risk-banner red/yellow/green fixtures）。(7) Playwright：/risk 三态渲染 + tooltip + 双 locale（red 真机演练交 F002）。(8) Gates：frontend vitest ≥ baseline+ / lint 0 / typecheck / Playwright 不破 / **backend 不动**。(9) 不动：B048 risk 后端/schema / per-sleeve 不重构成卡片 / 既有 red 态 ticket 联动逻辑 / 其他页。",
       "design_decisions": [
-        "Phase 1 universe（planner 决，设计 §4.3）：US-listed MCHI/FXI/KWEB/ASHR（USD 无汇率/港股日历复杂度）；HK-listed 留 Phase 2。",
-        "price-only（planner 决，设计 §6）：HK-China ETF 只需 prices（momentum/trend/vol），无 fundamentals。"
+        "范围（planner 决，roadmap『微调』）：前端-only UI polish（B048 数据已真）；per-sleeve Option A 最小保 grid+严重度配色，不重构成卡片。",
+        "颜色一致化（planner 决）：扩 metric-color colorForRiskState 统一 B040 emerald/amber/red 调色板，RiskBanner 去 ad-hoc 颜色。",
+        "valuation_basis（planner 决）：surface cost_degraded 诚实指示（接 B048 S1，v0.9.21）。"
       ]
     },
     {
       "id": "F002",
-      "title": "策略：trade/strategies/hk_china_momentum/（parameters/factors momentum+trend+区域风险/signal/construction top 1-2+caps+defensive）+ 单测",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "(1) **新模块** trade/strategies/hk_china_momentum/（复用 B025 模板，约 80%）：parameters.py（frozen dataclass + parameter_hash：top_n=2/max_position_weight=0.10/kweb_sublimit 0.05-0.10/rebalance=quarterly）+ factors.py（momentum=0.4·r3m+0.3·r6m+0.3·r12m + trend=price>200D MA & r6m>0 + 区域风险触发，price-only，复用 B025 factor 结构 + percent_rank）+ signal.py（generate_signal(parameters, as_of_date)→SignalResult，签名同 B025，weights_dict()）+ construction.py（top 1-2 过 trend + per-ETF≤10%/KWEB 子限 caps + 区域风险触发或无 ETF 过滤→defensive(SGOV)；简化版无 earnings blackout/sector caps）。(2) **区域风险过滤** 用 universe 内 ETF 价格（KWEB/MCHI/FXI 200D MA + 6M return），不用 HSI（不在 universe）；manual policy override 不编码。(3) 单测 B025 风格：已知 prices→已知 weights；trend 过滤；区域风险→defensive；caps；top 1-2 选股；KWEB 子限。(4) Gates：ruff 0 / mypy 0 / 策略单测全绿。(5) 不动：master（F003）/ 其他策略 / data loader（F001）。",
-      "design_decisions": [
-        "信号（planner 决，设计 §）：3 因子 momentum+trend+区域风险，price-only；选 top 1-2 ETF 过 trend，余额 defensive；非 B025 equal-weight top-15。",
-        "区域风险（planner 决）：用 universe 内 ETF 价格触发（KWEB/MCHI/FXI 200D MA+6M return），不用 HSI 指数；manual policy override 是用户判断不编码（研究-only）。"
-      ]
-    },
-    {
-      "id": "F003",
-      "title": "master 激活（stub→implemented + dispatch case + KNOWN_IMPLEMENTED + params）+ 集成测试（4/4 backtest）+ precompute data_source 验",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "(1) **master.py 激活** trade/portfolio/master.py：satellite_hk_china sleeve SLEEVE_TYPE_SATELLITE_STUB→IMPLEMENTED + strategy_id=None→'hk_china_momentum'（validation 自动切 IMPLEMENTED 分支：strategy_id 必非 None）；planning_weight 仍 0.10 不动。(2) **master_portfolio.py dispatch** trade/backtest/master_portfolio.py：KNOWN_IMPLEMENTED_STRATEGY_IDS += 'hk_china_momentum'；MasterChildStrategyParameters += hk_china_momentum 字段；_resolve_child_weights 加 dispatch case（镜像 us_quality：调 generate_signal(hk_china_params, signal_date)→weights_dict()；数据缺/symbol 不全→defensive fallback {SGOV:1.0}）。(3) **集成测试**：master backtest 4/4 sleeve 真实评分（hk_china 有数据→真实权重；缺→defensive）；既有 3 sleeve（momentum/risk_parity/us_quality）不破。(4) **precompute data_source**：precompute score_master_target 激活后自动调 hk_china（无额外 wiring）；data_source 达 real（prices_source=real + 全 4 sleeve 有数据）；pytest fake 全 sleeve 数据→data_source=real。(5) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / §12.10.2 守门不破。(6) 不动：master 其他 sleeve/planning_weight/评分逻辑 / F001 数据 / F002 策略内部。",
-      "design_decisions": [
-        "master 激活（planner 决）：SATELLITE_STUB→IMPLEMENTED + strategy_id=hk_china_momentum；planning_weight 0.10 不动；dispatch 镜像 us_quality + defensive fallback。"
-      ]
-    },
-    {
-      "id": "F004",
-      "title": "Codex L1 + L2 真 VM 验收（data-refresh 拉 HK ETF + precompute data_source=real 4/4 + /current 含 hk_china 真实权重 + master 4/4 + B023 不破）+ signoff",
+      "title": "Codex L1 + L2 真 VM 验收（Risk Panel 三态 + 双语 tooltip + 颜色一致 + BL-B023-S2 red 样本演练）+ signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "L1 (CI 内)：F001-F003 全 generator 验收脚本跑通 — backend pytest ≥ baseline+ / ruff / mypy；hk_china 策略单测 + master 4/4 集成测试；§12.10.2 请求路径禁 trade 守门不破；既有 3 sleeve + B023 回归绿；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD（v0.9.25）+ recent-errors={count:0}；(2) **data-refresh 拉 MCHI/FXI/KWEB/ASHR prices**（手动 trigger workbench-data-refresh→unified CSV 含 4 新 ETF，记录行数/日期跨度）；(3) **precompute data_source=real（4/4 sleeve，hk_china 不再 stubbed）**——手动 trigger recommendations precompute→recommendation_snapshot data_source=real（对比 B045 mixed，记录 hk_china 真实权重 or 区域风险触发→defensive 哪种）；(4) **GET /api/recommendations/current 含 hk_china sleeve 真实权重**（或 defensive）+ anon 401；(5) **master backtest 4/4 真实评分**（可选 /api/backtests 或 precompute 证据）；(6) B026 absent + HEAD≡main。Signoff: docs/test-reports/BL-B011-S2-hk-china-satellite-signoff-2026-MM-DD.md 用模板（§Production/HEAD + §Post-signoff Deploy + **data_source mixed→real + Master 4/4 真实清单 + hk_china 权重/defensive 记录**）。Framework 候选：satellite 模板复用 / 区域风险确定性过滤 若出新规律记 §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
+      "status": "pending",
+      "acceptance": "L1 (CI 内)：F001 验收脚本跑通 — frontend vitest ≥ baseline+ / lint / typecheck / Playwright（三态+双 locale）；**no-execution 守门**（Risk Panel 无下单按钮+中文禁词 0）；**i18n risk.tooltips 双语齐+无禁词+parity**；backend 无 diff（确认纯前端）；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD + recent-errors={count:0}；(2) **Risk Panel 三态浏览器手验**：颜色一致（green/yellow/red = emerald/amber/red 调色板）+ 风控术语 tooltip hover/tap 双语（masterDrawdown/killSwitch/perSleeveDrawdown）+ valuation_basis 标注（cost_degraded 时显式）；(3) **BL-B023-S2 red 样本演练（bundle）**：authenticated PUT 风险样本账户（master DD > kill_switch_threshold 0.15 触发）→ **red banner + 并排 normal/defensive ticket + radio 选择 → generate-ticket honors 选择**全链路；红态截图 ≥1 PNG（docs/screenshots/B042-risk-panel/）；演练后 account 恢复；(4) 双语切换 zh/en + 无下单按钮（no-execution）；(5) HEAD≡main + B026 absent。Signoff: docs/test-reports/B042-risk-panel-robinhood-signoff-2026-MM-DD.md 用模板（§Production/HEAD + §Post-signoff Deploy + **red 态演练证据 + valuation_basis 渲染 + BL-B023-S2 resolved**）。Framework 候选：薄 UI 批次预计无；若有记 §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
 }
