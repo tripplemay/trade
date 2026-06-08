@@ -522,3 +522,25 @@ nvm use                          # 不一致时切换；无 nvm 装 Node 20 LTS
 | `/api/home` 200 + `alembic=0009` + recent-errors=0 全绿，但 `workbench-prices.timer` production 未 enabled | 新 timer 单元随 release 下发，deploy 用户 sudoers 不足以自动 install/enable，需 admin 手装；首轮 L2 漏查 systemctl 状态 | F004 fix-round 1 commit `710e77e`：admin 一次性安装并 enable `workbench-prices.{service,timer}` + 手动 trigger 验只读路径（`price_cli_no_holdings symbols=0 saved=0`）；blocker 留档 `B037-home-restructure-blocker-2026-06-05.md`；Soft-watch S1 跟踪 durable sudoers fix |
 
 **来源：** B037 F004 L2 blocker（commit `710e77e`）+ signoff `docs/test-reports/B037-home-restructure-signoff-2026-06-06.md` §Framework Learnings 新坑 + §Soft-watch S1；三例同根（B035 market-context / B036 advisor / B037 prices timer），过「等二例再合并」门槛。配套 generator.md §12（systemctl 多 service vs sudoers）+ §12.9 production secret 三处接线铁律 同族 ops-wiring 教训。
+
+---
+
+## 25. core acceptance 项必须正面证据才可 done；0-result/空态不得判 non-blocking；定位代码缺陷前先排除验证操作自身的 env/DB-path 错误（v0.9.40 — 一会话四例沉淀）
+
+**背景：** 在一个会话内连续四次出现同一类评估纪律失误——**标 PASS/done，却把核心 acceptance 项的「零证据 / 空结果」当 non-blocking 放行，甚至把验证操作自身的操作失误误诊成产品代码缺陷**：
+
+| 实例 | 失误 | 真相（planner 复核） |
+|---|---|---|
+| B048 | 标 done，却写「需 Generator fix」（alembic 未自动升级）| 真部署缺陷 → 拆 B048-OPS1 |
+| BL-B023-S1 | reconcile 404，签收称「endpoint 缺失可后续补」标 done | 路由存在（`routes/execution.py:198`），冒烟**调错 URL**（漏 ticket_id）；复验正确 URL 200 |
+| B047 首轮 | `/api/reports → 0 items` 判 **non-blocking** 放行，**未执行 generator handoff 明确要求的「手动跑 canonical 才能验」**| 核心交付（Reports 显真实报告）零真机证据 |
+| B047 复验 | 仍 0 items，诊断为「**读路径代码待修**」| 实为**裸跑 canonical 缺 env → 写 scratch DB**，API 读 prod；`list_reports` 代码无辜（无 kind/租户过滤同 DB 必返回）|
+
+**规约（Evaluator verify / reverify 硬要求）：**
+
+1. **core acceptance 项必须有正面证据才可 done**：spec 的核心交付（「X 页显示真实 Y」「端到端跑通 Z」）要拿到**那条正面观测**（非空列表 / 200 + 预期内容 / 渲染出真实数据）。**0-result / 空态 / null 不是 PASS，更不得自判「non-blocking 后续补」**——是否可放行由 **planner 裁定**，evaluator 据实记 blocker/soft-watch，不替 planner 决定核心项可省。
+2. **执行 generator handoff 里点名的验证步骤**：handoff 写明「必须手动跑 X 才能验第 N 条」时，跳过该步 = 该条未验，不得据缺失证据反推 PASS。
+3. **判产品代码缺陷前，先排除验证操作自身的 env/DB-path 错误**（与 generator.md §12.11.1 对偶）：现象是「写了 DB 但 API 读不到」「prod 行为异常」时，**先核**：验证用的进程是否 source 了正确的 `WORKBENCH_DB_URL`/EnvironmentFile？是否经 systemd（env 注入）还是裸跑（回落 scratch DB）？是否同一个 DB？——B048 env-scratch 家族是高频根因，**误把自己写错 DB 诊断成代码 bug 会误导整个修复方向**。优先经 `systemctl start <unit>`（env 注入）而非裸 `python -m ...` 做 prod 验证。
+4. **signoff 据实**：复验更新 progress.json 的同时**必须同步更新 signoff `.md`**（不止 JSON）；写清「哪种空」（业务空 vs 接线/env 缺失）。
+
+**来源：** B048 / BL-B023-S1 / B047 首轮+复验 四例（planner 复核 signoff §⟳⟳ / RE-VERIFY addendum）；配套 generator.md §12.11.1（入口级 env 守门，对偶）+ §22（presence→absence 翻转）+ 本文件 §12（首轮 verifying 硬条件）。远超「等二例」门槛。

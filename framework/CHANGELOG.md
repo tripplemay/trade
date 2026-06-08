@@ -5,6 +5,22 @@
 
 ---
 
+## v0.9.40 — 2026-06-08（B047/B047-OPS1 二例：入口级 env 守门 + B048/BL-B023-S1/B047 四例：evaluator 纪律）
+
+**来源批次：**
+- B047-OPS1 F001/F002（`db/require_production_db.py` + canonical/worker main env 守门，commit `8a3e325`；L2 Reports 端到端闭合，deploy `7bb8000`）
+- signoff `docs/test-reports/B047-OPS1-backtest-reports-deploy-reliability-signoff-2026-06-08.md` + B047 signoff `docs/test-reports/B047-backtest-reports-real-engine-signoff-2026-06-08.md` §⟳⟳ Planner 裁定
+
+**触发原因：**
+- **入口级 env 守门（二例）**：§12.11 的 deploy.sh env-硬失败守门不传递覆盖绕过 deploy.sh 的入口；`get_engine()` 在 env 未设时静默回落 `DEFAULT_DEV_DB_URL` scratch。B047 新增的 canonical/worker CLI 入口裸跑写 scratch DB、API 读 prod → `/api/reports` 0（且被误诊为读路径代码缺陷）。二例合并 B048-OPS1（deploy.sh 层）+ B047-OPS1（CLI 入口层）。
+- **evaluator 纪律（一会话四例）**：B048（标 done 却写需 fix）/ BL-B023-S1（reconcile 冒烟调错 URL 判 done）/ B047 首轮（Reports 0-items 判 non-blocking 放行）/ B047 复验（把自己写错 DB 误诊成读路径代码缺陷）。远超「等二例」门槛。
+
+**变更：**
+- `framework/harness/generator.md` §12.11 新增子节 §12.11.1「env-硬失败守门是入口级不变量——每个新写生产 DB 的 CLI/job/service 入口都必须重新套用」（二例表 + 4 条规约：新入口第一件事是 env 守门 / 守门先于 DB 访问 / 放行 dev-test / 判缺陷前排除验证操作 env 错误）
+- `framework/harness/evaluator.md` 新增 §25「core acceptance 项必须正面证据才可 done；0-result/空态不得判 non-blocking；定位代码缺陷前先排除验证操作自身的 env/DB-path 错误」（四例表 + 4 条规约 + 与 generator.md §12.11.1 对偶）
+
+---
+
 ## v0.9.39 — 2026-06-08（B034/BL-B011-S2 二例合并：wheel `packages=[...]` 只打源码树，运行时非包数据须 force-include）
 
 **来源批次：**

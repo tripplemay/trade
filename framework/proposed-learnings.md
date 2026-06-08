@@ -99,21 +99,16 @@
 
 <!-- 2026-06-08: v0.9.39 沉淀完成（B034/BL-B011-S2 二例：wheel packages 只打源码树，运行时非包数据须 force-include）：BL-B011-S2 trade wheel 缺 repo-root data/fixtures→satellite 双 stub（editable 掩盖 wheel-on-VM 暴露，同 §12.10 机理）。用户批沉淀 generator.md §12.10.3（force-include/materialise 进包目录+守门测试+L2 fresh deploy 验不 stub）+对比表 v0.9.39 行+CHANGELOG。 -->
 
-## [2026-06-08] Claude CLI — 来源：B047 done 阶段裁定（三条强候选）
+<!-- 2026-06-08: v0.9.40 沉淀完成（B047/B047-OPS1 二例 + B048/BL-B023-S1/B047 四例，用户批沉淀 ①②）：①入口级 env 守门（env-硬失败守门是入口级不变量，每个新写生产 DB 的 CLI/job/service 入口都须重新套用，deploy.sh 守门不传递覆盖）→ generator.md §12.11.1；②evaluator 纪律（core acceptance 项必须正面证据才可 done / 0-result 不得判 non-blocking / 判代码缺陷前先排除验证操作自身 env-DB-path 错误）→ evaluator.md §25。CHANGELOG v0.9.40。③async worker 范式（单例）+ ④satellite 权重口径（单例）留队列等二例。 -->
 
-**类型：** 新规律 ×2 + 铁律补充 ×1
+## [2026-06-08] Claude CLI — 来源：B047 async worker 范式（候选③，留队列等二例）
 
-**1. 新 CLI/job 入口必须套 env-硬失败守门（B048-OPS1/v0.9.38 教训未自动传播到新入口）**
-B048-OPS1/B022 F014 已在 deploy.sh 给 alembic 步骤加 env-未导出硬失败守门（WORKBENCH_DB_URL 空→不静默写 scratch DB）。但 B047 新增的 canonical/worker CLI 入口**绕过 deploy.sh**直接 `get_engine()→settings.WORKBENCH_DB_URL→DEFAULT_DEV_DB_URL 静默回落**，B047 re-verify 即栽在裸跑 canonical 写 scratch DB、API 读 prod→/api/reports 0（被误诊『读路径 bug』）。**规律：env-硬失败守门是「入口级」不变量，每新增一个会写生产 DB 的 CLI/job/service 入口都必须重新套用，不能假设 deploy.sh 的守门覆盖手动入口。** 建议写入 generator.md §12.11（post-step assert 同节）或 §12.10 家族：「新增写库 CLI/job 入口 checklist：env-硬失败 + 不静默回落 scratch」。→ B047-OPS1 F001 正在落地。
+**类型：** 新规律（async job 范式）
 
-**2. async worker 范式（请求→队列→worker→DB→轮询）**
-B047 新建首个 async 模式：请求路径 enqueue(202+run_id)→长驻 worker service(import trade) claim_next_queued 原子领取→跑→save_result→前端轮询 GET。守 §12.10.2（请求路径只读 DB，worker allowlist import trade）。若未来再现同类（on-demand 重计算撞请求路径禁 import）可复用。建议写入 generator.md 新 §（async job 范式）或 patterns。**状态：单例，可等二例再沉淀。**
+**内容：** B047 新建首个 async 模式：请求路径 enqueue(202+run_id)→长驻 worker service(import trade) claim_next_queued 原子领取→跑→save_result→前端轮询 GET。守 §12.10.2（请求路径只读 DB，worker allowlist import trade）。若未来再现同类（on-demand 重计算撞请求路径禁 import）可复用。
 
-**3. 铁律补充/evaluator 纪律累犯：标 done 留核心 acceptance 未验 + 误诊**
-本会话第 4 例（B048 alembic / BL-B023-S1 reconcile / B047 首轮 Reports / B047 re-verify 误诊读路径）：Codex 反复标 PASS+done 却留核心 acceptance 项零正面证据，且本批 re-verify 把自己 env 操作失误（裸跑写 scratch DB）误诊成产品代码缺陷。**建议**：evaluator.md 补「core acceptance 项必须正面证据才可 done；0-result/空态不得判 non-blocking 放行」+「定位缺陷前先排除验证操作自身的 env/DB-path 错误（B048 env 家族）」。**状态：累犯已达沉淀阈值，建议本次正式沉淀。**
+**建议写入：** generator.md 新 §（async job 范式）或 patterns。
 
-**建议写入：** generator.md §12.11（入口级 env 守门）；evaluator.md（core-acceptance 正面证据 + 误诊排查）；async worker 范式待二例。
+**状态：** 待确认（单例，等二例再沉淀）。
 
-**状态：** 待确认（B047-OPS1 done 阶段或本次一并提出；条目 1 已由 B047-OPS1 F001 落地，沉淀文档同步）。
-
-<!-- 当前活动候选：上方 BL-B011-S2 satellite 权重口径 + B047 三条。 -->
+<!-- 当前活动候选：BL-B011-S2 satellite 权重口径（④）+ B047 async worker 范式（③），均单例待二例。 -->

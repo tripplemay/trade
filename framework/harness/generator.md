@@ -872,6 +872,28 @@ def test_critical_runtime_deps_pinned():
 
 ---
 
+### §12.11.1 env-硬失败守门是「入口级」不变量——每个新写生产 DB 的 CLI/job/service 入口都必须重新套用（v0.9.40 — B048-OPS1/B047-OPS1 二例沉淀）
+
+**规律：** §12.11 的 env-硬失败守门（env 未导出 `WORKBENCH_DB_URL` → `::error::` 不静默写 scratch DB）是 **deploy.sh 单点**的守门——它**不会传递覆盖任何绕过 deploy.sh 的入口**。`get_engine()` 经 `settings.WORKBENCH_DB_URL` 在 env 未设时**静默回落 `DEFAULT_DEV_DB_URL`（dev scratch）**，所以**每个新增的、会写生产 DB 的进程入口（manual CLI / 新 job / 新 service ExecStart）都是一个独立的「裸入口」，必须各自重新套 env-硬失败守门**。假设 deploy.sh 的守门覆盖了它们 = B047 根因。
+
+**二例（同一 scratch-DB 写入 bug，不同入口层）：**
+
+| 实例 | 入口 | 机理 | 修 |
+|---|---|---|---|
+| **B048-OPS1**（v0.9.38 §12.11）| deploy.sh `alembic upgrade head` | env 未导出 → alembic 跑 scratch | deploy.sh env-url 空硬失败 |
+| **B047/B047-OPS1**（本节）| **新增 CLI 入口** `python -m workbench_api.backtests.canonical` / worker `main` | 绕过 deploy.sh，`get_engine()` 静默回落 scratch；B047 re-verify 裸跑 canonical 写 scratch、API 读 prod → `/api/reports` 0（且**被误诊为读路径代码缺陷**）| 入口内调 `require_production_db(entrypoint=...)`：`WORKBENCH_DB_URL` 解析为默认 dev → `ScratchDatabaseError` → `::error::` + 非零退出**先于任何 DB 访问**；放行=显式非默认 URL 或显式 dev opt-in（`WORKBENCH_ALLOW_DEV_DB=1`）|
+
+**规约：**
+
+1. **新增任何会写生产 DB 的进程入口（CLI `main` / job / 新 service）时，入口处第一件事是 env-硬失败守门**（在开 session / `get_engine()` 之前）：prod DB env 缺失 → 响亮非零退出，**绝不静默回落 scratch**。抽共享守门（如 `require_production_db()`）复用，别每入口手写。
+2. **守门必须先于 DB 访问**：测试 monkeypatch `get_engine=boom` 证明守门在触 DB 前就拦截（B047-OPS1 `test_require_production_db.py` 实例）。
+3. **放行 dev/test**：显式 `WORKBENCH_DB_URL`（非默认）或显式 opt-in env，避免误伤本地/CI。
+4. **判缺陷前先排除「验证操作自身的 env/DB-path 错误」**（与 evaluator.md §25 对偶）：B047 的「读路径 bug」实为裸跑写错 DB——代码无辜。
+
+**来源：** B047-OPS1 F001（commit `8a3e325`，`db/require_production_db.py` + canonical/worker main 守门）+ B047 signoff §⟳⟳ Planner 裁定（根因=env→scratch DB 非读路径缺陷）+ B047-OPS1 signoff。二例合并（B048-OPS1 deploy.sh 层 + B047-OPS1 CLI 入口层），过门槛。
+
+---
+
 ## 13. Frontend SSR vs Browser context（v0.9.24 — B021 沉淀）
 
 **触发：** B021 F006 fix-round 5 — Codex L2 reverify 失败因生产首页登录后显示 `Backend unreachable: Failed to fetch`。根因：`workbench/frontend/src/app/(protected)/page.tsx` 的 `HEALTH_URL` 默认硬编码 `http://127.0.0.1:8723/api/health`。SSR build 时这个值被 inline 进 client bundle，浏览器在用户笔记本上 fetch 127.0.0.1:8723（用户机器，不是 VM）必失败。

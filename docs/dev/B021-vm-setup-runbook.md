@@ -256,6 +256,24 @@ sudoers wildcards use `fnmatch(3)` **without** `FNM_PATHNAME`, so `*` matches `/
 
 The `enable --now workbench-*.timer` grant still allows a compromised `deploy` user to plant a legitimately-named `workbench-*.timer` (+ a same-named service with no `User=`, defaulting to root) and enable it → root code execution. This is **bounded by the deploy account's existing trust**: `deploy` already writes the release tree that `workbench-backend.service` executes and can restart it (i.e. it already has deploy-level RCE), so this is an *incremental* escalation in the single-VM model, not a new boundary breach. The reviewer's further tightening (explicit per-timer `enable` lines, no wildcard) would close it but defeats the zero-touch durability that is the whole point of this batch; the user chose to keep the wildcard (2026-06-06). Re-evaluate if the VM ever becomes multi-tenant.
 
+### B047-OPS1 — worker-daemon sudoers grant applied (2026-06-08)
+
+> **Why:** B047 F002 shipped the first **long-running daemon** (`workbench-backtest-worker.service`, `Restart=always`), not a timer-oneshot. The B037-OPS1 sudoers grants only cover `workbench-*.timer` (`enable --now`) — they do **not** authorize `enable --now` / `restart` for a `-worker.service`. So the worker landed **disabled** on first deploy (signoff S1) and `deploy.sh`'s worker-enable loop hit `::warning::Could not install/enable`. B047 F002 added 3 grants to the versioned `deploy-workbench` artifact: `enable --now` / `restart` / `status` for `workbench-*-worker.service` (suffix-scoped, can't touch backend/frontend).
+
+> **Role-boundary note:** Applied by the **Generator** agent under explicit user authorization to SSH the VM (2026-06-08), same boundary exception as Item #3 / B037-OPS1.
+
+One-time admin action (run as `tripplezhou`, full sudo — deploy user cannot self-grant):
+
+```bash
+# Re-install the versioned sudoers drop-in (now carries the 3 worker grants).
+sudo install -m 440 -o root -g root \
+  /srv/workbench/current/sudoers/deploy-workbench \
+  /etc/sudoers.d/deploy-workbench
+sudo visudo -c -f /etc/sudoers.d/deploy-workbench    # must print "parsed OK"
+```
+
+**VM state after execution (verified 2026-06-08):** full sudoers tree `parsed OK`; `sudo -u deploy sudo -n systemctl restart workbench-backtest-worker.service` succeeds (deploy grant live); worker restarted onto the F001 release (`backtest_worker_started`, no env-guard error because systemd `EnvironmentFile=` injects the prod `WORKBENCH_DB_URL`). After this, `deploy.sh`'s `workbench-*-worker.service` loop auto-enables + restarts the worker onto new code every deploy — **a future daemon needs zero admin action**. B047-OPS1 F002 L2 confirmed worker auto-active + canonical timer enabled + Reports end-to-end (canonical → prod DB → `/api/reports` → `/reports`).
+
 ---
 
 ## Item #4 — executed 2026-05-15 (Planner ran it after user `gcloud auth login`)
