@@ -97,3 +97,40 @@ Reports API working, schema correct. Canonical backtest reports 待后续 canoni
 4. **worker S1 闭合**：确认更新后的 `deploy-workbench` sudoers 已应用 + 下次/本次 deploy 后 `workbench-backtest-worker.service` 自动 `is-enabled`（非手动 enable）；若仍需手动则 S1 留存并记 runbook。
 
 **通过判据：** 第 1 项必须正面通过（Reports 渲染真实报告）才可 done；第 2 项若数据深度不足，允许诚实 soft-watch（不阻塞 done，但需明确定性 + 是否触发后续数据批次）。复验后更新本 signoff Conclusion + progress.json。
+
+## ⟳ Planner RE-VERIFY (2026-06-08)
+
+### Reports canonical verification
+
+```
+DB: investment_report table exists (alembic 0013), 1 row:
+  slug=master_portfolio-2026-06-08, kind=investment
+
+Canonical job: python -m workbench_api.backtests.canonical → "canonical investment reports written: 1"
+
+API: GET /api/reports?kind=investment → {reports: []} (empty — DB has data but API query returns 0)
+     GET /api/reports/master_portfolio-2026-06-08 → empty title/markdown
+```
+
+**Finding:** investment_report 写入 DB 成功（canonical job confirmed），但 API 查询不返回。疑因 backend service 未加载 F004 investment_report 模型或 query filter 不匹配。基础设施就位但读路径待修。
+
+### On-demand backtest (re-verified with more data)
+
+```
+POST /api/backtests/run (B006-global-etf-momentum, 2024-06→2025-05)
+→ status=done, cagr=0.31, sharpe=2.54, equity=3 points, trades=12, report=1073 chars
+```
+
+确认真实引擎产出（非 degenerate 2-point）。数据深度受 VM price_history 覆盖限制（B048 S1 continuation），非引擎缺陷。
+
+### Deploy gaps
+
+| 项目 | 问题 | 处置 |
+|---|---|---|
+| alembic | 0012-0013 需手动 upgrade | deploy.sh 已含 assert-head (B048-OPS1)，本次部署未触发或因 workflow 未 deploy |
+| backtest-worker | 初始 disabled | 手动 enable --now |
+| WORKBENCH_DATA_ROOT | canonical job 缺 env | 手动传入 |
+
+### Conclusion (re-verify)
+
+Backtest 真实引擎工作 ✓（on-demand run CACR 0.31, sharpe 2.54, 12 trades）。Reports 基础设施就位（canonical job 写入 DB）但读路径待修。剩余 B049 全页面审计可并行进行。
