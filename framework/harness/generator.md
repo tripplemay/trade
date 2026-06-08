@@ -822,6 +822,16 @@ def test_critical_runtime_deps_pinned():
 
 6. **把一个原本 artifact 之外的包打进 artifact（供 precompute/job 用）时，必须同 commit 落 AST 守门**——`tests/safety/test_<feature>_request_self_contained.py` 断言请求路径调用链零 import 该包，仅 allowlisted job 模块允许（B044 `test_recommendations_request_self_contained.py`：routes/services/recommendations 无 `import trade`，仅 `recommendations/precompute.py` 允许）。Spec acceptance 必声明此守门；Evaluator L2 验守门跑过 + 请求路径行为不依赖该包（即使 import 误入也不会在请求时触发重依赖）。**默认仍优先模式 1**（能不打进 artifact 就不打）；仅当 job 确需该包且运维取舍倾向单机 timer（非 CI 算→ingest）时走模式 2 + 守门。
 
+#### §12.10.3 wheel `packages=[...]` 只打包源码树——运行时读的非包数据文件必须 force-include（v0.9.39 — B034/BL-B011-S2 二例合并沉淀）
+
+**触发：** BL-B011-S2 F004 fresh deploy — us_quality + hk_china 两个 satellite 策略的 loader 运行时读 **repo-root `data/fixtures/<strategy>/universe.csv`**，但 trade wheel 的 `packages=["trade"]` **只打包 `trade/` 源码树（含 `trade/data/fixtures/` 3 个 json），不含 repo-root `data/fixtures/`** → VM wheel 装时 loader raise → **两个 satellite 双双 stub**（data_source 卡 mixed）。**editable 本地装（repo_root=真实仓库根，fixture 在）系统性掩盖；唯 wheel-on-VM fresh deploy 暴露。** 修：pyproject `[tool.hatch.build.targets.wheel.force-include]` 把 `data/fixtures/{...}` 打进 wheel（落 `site-packages/data/fixtures/`，与 loader 的 `_REPO_ROOT/data/fixtures` 解析一致）+ 版本 bump + 守门 `test_trade_wheel_bundles_fixtures.py`（断言 force-include 配置在，防再丢）。
+
+**规律：** `packages=[...]` / hatch wheel target **只抓包源码树**；包在**运行时 `open()` 的非包数据文件**（repo-root `data/fixtures/` / 任何包目录外的 CSV/JSON）**不会自动进 wheel**——必须 `force-include`（或 materialise 进包目录）。这是 §12.10「请求/执行路径自包含」在**打包层**的实例：editable/完整 checkout 掩盖，wheel/VM 暴露（同 §12.10 二例的 local-vs-prod 掩盖机理）。**二例（两个 wheel）：** B034 workbench_api wheel 缺 repo-root data → §12.10 原案；BL-B011-S2 trade wheel 缺 repo-root `data/fixtures/` → 本节。
+
+**规约（补 §12.10 规约 7）：**
+
+7. **任何把含 fixture/数据-文件-loader 的包打成 wheel 时**：① loader 读的非包数据文件 `force-include` 进 wheel（pyproject hatch `force-include`），落点与 loader 解析路径一致；② 同 commit 落守门测试（构 wheel / 模拟 site-packages 断言数据文件 resolve，如 `test_trade_wheel_bundles_fixtures.py`）；③ **优先 materialise 进包目录**（如 `trade/data/fixtures/`，随 `packages` 自动进）而非依赖 repo-root + force-include——前者更稳。Evaluator L2 fresh deploy 验该 loader 不 stub（数据 resolve）。
+
 **与 §12.8 / §12.9 关系：** §12.8 抓 `workbench_api/` 内 top-level 第三方 import（runtime vs dev）；§12.10 抓「**生产执行路径**（请求路径 + timer/scheduled CLI）触碰 deploy artifact 之外（根级 `scripts/` + `data/fixtures/`）」这一层——互补，非重叠。
 
 **与 v0.9.X 系列 "local vs prod" 教训补一行：**
@@ -831,6 +841,7 @@ def test_critical_runtime_deps_pinned():
 | **v0.9.32 §12.10（本节）** | **请求路径 import 根级 scripts / 读 repo-root data/fixtures → prod 500（本地+CI 掩盖）** | **请求路径数据 materialise 入 workbench_api/ 包 + 缺失守门 + L2 真 VM 200** | **deploy artifact 边界** |
 | **v0.9.34 §12.10.1（B038）** | **manual-only CLI 接入 timer 后首次 prod 执行 → `import scripts.*` ModuleNotFoundError（B033 起隐患，manual-only 期全程掩盖）** | **接入自动执行路径时 CLI 及 import 闭包按 §12.10 重审 + AST 守门 + L2 手动 trigger service 验真** | **deploy artifact 边界（扩到所有生产执行路径）** |
 | **v0.9.35 §12.10.2（B044）** | **被禁包 `trade/` 被有意打进 venv 供 precompute → 物理缺席保护失效，请求路径理论上可 import** | **同 commit 落 AST 守门（请求路径零 import 该包，仅 job 模块 allowlist）；默认仍优先模式 1 不打进 artifact** | **enforcement 模型（物理缺席→AST 守门）** |
+| **v0.9.39 §12.10.3（B034/BL-B011-S2）** | **wheel `packages=[...]` 只打源码树，包 loader 运行时读的 repo-root `data/fixtures/` 没进 wheel → VM wheel 装 loader raise → 策略 stub（editable 本地掩盖）** | **pyproject `force-include` 数据文件进 wheel（或 materialise 进包目录）+ 守门测试断言 wheel 含数据 + L2 fresh deploy 验不 stub** | **打包层（wheel force-include 非包数据）** |
 
 **来源：** B034 F003 fix-round（commit `d1c2b30`）+ F004 fix-round 1（commit `ec02894`）；signoff `docs/test-reports/B034-news-ticker-embedding-signoff-2026-06-04.md` §Framework Learnings first-class 列入 + proposed-learnings 二例合并；B034 done 阶段用户确认沉淀。
 

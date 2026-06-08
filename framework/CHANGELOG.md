@@ -5,6 +5,20 @@
 
 ---
 
+## v0.9.39 — 2026-06-08（B034/BL-B011-S2 二例合并：wheel `packages=[...]` 只打源码树，运行时非包数据须 force-include）
+
+**来源批次：**
+- BL-B011-S2（HK-China satellite）F004 fresh deploy fix-round 1（commit force-include + trade 0.2.1 + 守门 test_trade_wheel_bundles_fixtures.py）
+- signoff `docs/test-reports/BL-B011-S2-hk-china-satellite-signoff-2026-06-08.md`；二例合并 B034（workbench_api wheel 缺 repo-root data → §12.10 原案）+ BL-B011-S2（trade wheel 缺 repo-root data/fixtures/）
+
+**触发原因：**
+- trade wheel `packages=["trade"]` 只打源码树，satellite loader 运行时读的 repo-root `data/fixtures/<strategy>/universe.csv` 没进 wheel → VM wheel 装时 us_quality+hk_china 双 stub（data_source 卡 mixed）。editable 本地装系统性掩盖，唯 wheel-on-VM fresh deploy 暴露（同 §12.10 local-vs-prod 机理）。
+
+**变更：**
+- `framework/harness/generator.md` §12.10 新增子节 §12.10.3「wheel packages 只打源码树，运行时非包数据须 force-include」（规约 7：force-include 或 materialise 进包目录 + 守门测试 + L2 fresh deploy 验不 stub；优先 materialise 进包目录）+ 对比表 v0.9.39 行
+
+---
+
 ## v0.9.38 — 2026-06-08（B022/B045-OPS1/B048-OPS1 三例合并：deploy 步骤必须 post-step assert 验证 intended end-state）
 
 **来源批次：**

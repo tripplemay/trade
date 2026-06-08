@@ -97,4 +97,6 @@
 
 **状态：** 待确认（BL-B011-S2 done 阶段一并提出；evaluator F004 可复核口径是否正确）
 
+<!-- 2026-06-08: v0.9.39 沉淀完成（B034/BL-B011-S2 二例：wheel packages 只打源码树，运行时非包数据须 force-include）：BL-B011-S2 trade wheel 缺 repo-root data/fixtures→satellite 双 stub（editable 掩盖 wheel-on-VM 暴露，同 §12.10 机理）。用户批沉淀 generator.md §12.10.3（force-include/materialise 进包目录+守门测试+L2 fresh deploy 验不 stub）+对比表 v0.9.39 行+CHANGELOG。 -->
+
 <!-- 当前无活动候选（待确认条目）。 -->
