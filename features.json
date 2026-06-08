@@ -19,7 +19,7 @@
       "title": "Codex L1 + L2 真 VM 验收（Risk Panel 三态 + 双语 tooltip + 颜色一致 + BL-B023-S2 red 样本演练）+ signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "L1 (CI 内)：F001 验收脚本跑通 — frontend vitest ≥ baseline+ / lint / typecheck / Playwright（三态+双 locale）；**no-execution 守门**（Risk Panel 无下单按钮+中文禁词 0）；**i18n risk.tooltips 双语齐+无禁词+parity**；backend 无 diff（确认纯前端）；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD + recent-errors={count:0}；(2) **Risk Panel 三态浏览器手验**：颜色一致（green/yellow/red = emerald/amber/red 调色板）+ 风控术语 tooltip hover/tap 双语（masterDrawdown/killSwitch/perSleeveDrawdown）+ valuation_basis 标注（cost_degraded 时显式）；(3) **BL-B023-S2 red 样本演练（bundle）**：authenticated PUT 风险样本账户（master DD > kill_switch_threshold 0.15 触发）→ **red banner + 并排 normal/defensive ticket + radio 选择 → generate-ticket honors 选择**全链路；红态截图 ≥1 PNG（docs/screenshots/B042-risk-panel/）；演练后 account 恢复；(4) 双语切换 zh/en + 无下单按钮（no-execution）；(5) HEAD≡main + B026 absent。Signoff: docs/test-reports/B042-risk-panel-robinhood-signoff-2026-MM-DD.md 用模板（§Production/HEAD + §Post-signoff Deploy + **red 态演练证据 + valuation_basis 渲染 + BL-B023-S2 resolved**）。Framework 候选：薄 UI 批次预计无；若有记 §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
