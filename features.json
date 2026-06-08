@@ -1,26 +1,65 @@
 {
-  "sprint": "B042-risk-panel-robinhood",
+  "sprint": "B047-backtest-reports-real-engine",
   "features": [
     {
       "id": "F001",
-      "title": "RiskBanner Robinhood 微调：colorForRiskState 一致调色板 + per-sleeve 严重度配色 + 风控术语双语 tooltip + valuation_basis 诚实指示 + 字体一致化",
+      "title": "backtest_run 队列+结果表（alembic）+ repo（enqueue/claim 原子/save_result/get）+ §12.10.2 worker allowlist 守门",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【前端-only UI 微调，B048 已让 risk 数据真实，见 spec §2。planner 按 roadmap『微调』定 Option A 最小不重构】(1) **颜色一致化**：lib/metric-color.ts 扩 colorForRiskState(state)→{border,bg,text}（green=emerald/yellow=amber/red=destructive，统一 B040 调色板）；components/risk/RiskBanner.tsx STATE_STYLES 改用之（去 ad-hoc green-700/950 等）；per-sleeve 行严重度配色复用 colorForDelta 逻辑映射 drawdown（<5% 绿/5-8% 琥珀/≥per_sleeve_threshold 红）。(2) **风控术语 tooltip**：复用 B040/B041 radix tooltip 模式，RiskBanner master DD/kill-switch/per-sleeve drawdown 术语 label 包 tooltip；i18n 加 risk.tooltips.{masterDrawdown,killSwitch,perSleeveDrawdown,defensiveTicket} 双语（英文术语+中文手写解释）+ parity 守门。(3) **valuation_basis 诚实指示**：渲染 valuation_basis——mark_to_market 正常 / cost_degraded 显式标注（『部分日期价格历史不足，回撤按成本价估算』+ degraded_symbols，接 B048 S1 不蒙混 v0.9.21）。(4) **字体/间距一致化**：RiskBanner text 层级规范（headline text-sm font-semibold/数值 font-mono/label muted-foreground）对齐 B040 MetricsDisplay。(5) **no-execution 守门**覆盖（无下单按钮+中文禁词）。(6) frontend vitest ≥ baseline+：colorForRiskState 三态 + per-sleeve 严重度配色边界 + 风控 tooltip i18n 双语 + valuation_basis 两态渲染（复用既有 risk-banner red/yellow/green fixtures）。(7) Playwright：/risk 三态渲染 + tooltip + 双 locale（red 真机演练交 F002）。(8) Gates：frontend vitest ≥ baseline+ / lint 0 / typecheck / Playwright 不破 / **backend 不动**。(9) 不动：B048 risk 后端/schema / per-sleeve 不重构成卡片 / 既有 red 态 ticket 联动逻辑 / 其他页。",
+      "status": "pending",
+      "acceptance": "【Option A async 基础设施第一层，见 spec §4.1】(1) **backtest_run 表 + alembic 迁移**：db/models/backtest_run.py——run_id(str PK)/strategy_id/params(JSON)/status(queued|running|done|error)/metrics(JSON nullable)/equity(JSON nullable)/allocations(JSON nullable)/trades(JSON nullable)/report_markdown(text nullable)/error(text nullable)/created_at/finished_at；alembic 迁移（接 0011 之后，head 递增）。(2) **repository**：db/repositories/backtest_run.py——enqueue(request)→写 queued 行返回 run_id；claim_next_queued()→**原子**取最早 queued 行置 running（SELECT…+UPDATE 单事务或乐观锁，防多 worker 并发重复领取）；save_result(run_id, metrics/equity/allocations/trades/report_markdown)→置 done+finished_at；save_error(run_id, error)→置 error；get_by_run_id(run_id)。(3) **§12.10.2 worker allowlist 守门**：tests/safety/test_backtests_request_self_contained.py——AST 扫 routes/backtests.py + services/backtests.py **禁 import trade**（请求路径）；允许 workbench_api/backtests/worker.py + canonical.py import trade（allowlist 仿 test_recommendations_request_self_contained.py 模式）。(4) **pytest**：repo enqueue/claim 原子（两次 claim 不重领同一行）/save_result/save_error/get_by_run_id；表迁移 round-trip。(5) Gates：backend pytest ≥ baseline+≥6 / ruff 0 / mypy 0 / alembic upgrade head 干净。(6) 不动：现 routes/backtests.py 行为（F003 改）/ services synthetic（F003 去）/ 其他表。",
       "design_decisions": [
-        "范围（planner 决，roadmap『微调』）：前端-only UI polish（B048 数据已真）；per-sleeve Option A 最小保 grid+严重度配色，不重构成卡片。",
-        "颜色一致化（planner 决）：扩 metric-color colorForRiskState 统一 B040 emerald/amber/red 调色板，RiskBanner 去 ad-hoc 颜色。",
-        "valuation_basis（planner 决）：surface cost_degraded 诚实指示（接 B048 S1，v0.9.21）。"
+        "Option A async（用户 2026-06-08 拍板）：请求路径只读 DB，worker import trade，守 §12.10.2。",
+        "claim 原子（planner 决）：防多 worker / worker 重启并发重复领取同一 queued 行。",
+        "表既是队列又是结果存储（planner 决）：单表 status 流转，避免双表。"
       ]
     },
     {
       "id": "F002",
-      "title": "Codex L1 + L2 真 VM 验收（Risk Panel 三态 + 双语 tooltip + 颜色一致 + BL-B023-S2 red 样本演练）+ signoff",
+      "title": "async worker（import trade 跑真实 master_portfolio 回测 + 生成报告 → DB）+ workbench-backtest-worker.service + scope 守门",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "【async worker daemon，见 spec §4.2。依赖 F001 表/repo】(1) **worker 模块**：workbench_api/backtests/worker.py——**import trade.backtest.master_portfolio + trade.reporting.master_portfolio**；长驻循环：claim_next_queued()→有则跑 `run_master_portfolio_quarterly_backtest(params)`（params 映射 strategy/start/end/parameters；复用 B045 unified 真数据 loader，数据不足→报告标 degraded 诚实 v0.9.21）→ map MasterPortfolioBacktestResult→metrics(cagr/sharpe/sortino/max_drawdown/turnover/win_rate)/equity(EquityPoint→date,nav)/allocations(rebalance target_weights)/trades(fills) + `generate_master_portfolio_reports`→report_markdown → save_result(done)；异常→save_error(error)；空队列 sleep（~2-5s 低延迟，可配 env）。(2) **systemd service**：deploy/systemd/workbench-backtest-worker.service（长驻 Restart=always，ExecStart=python -m workbench_api.backtests.worker，env-file 同其他 unit；B037-OPS1 sudoers/wrapper 覆盖 workbench-*.service 自动接线——确认 deploy.sh install-unit 列表含本 service）。(3) **scope 守门扩 worker**：test_market_scheduler_scope.py（或新 test_backtest_worker_scope.py）——worker 禁 import broker/execution 模块（边界 r：确定性回测计算，非交易执行）。(4) **pytest**：worker 单测——monkeypatch run_master_portfolio_quarterly_backtest 返回 fake MasterPortfolioBacktestResult→save_result done + metrics/equity 映射正确；引擎抛异常→save_error；claim 空→不崩；map 函数（result→schema）单测。(5) Gates：backend pytest ≥ baseline+≥6 / ruff 0 / mypy 0 / §12.10.2 守门绿（worker 允许 import trade）。(6) 不动：F001 表/repo / 请求路径（F003） / master 评分逻辑。",
+      "design_decisions": [
+        "长驻 systemd service 轮询队列（planner 决）：无 async infra；低延迟取任务优于 timer poll；Restart=always 崩溃自恢复。",
+        "worker import trade 合法（§12.10.2 allowlist，仿 recommendations/precompute.py）：请求路径才禁。",
+        "数据不足→报告 degraded 诚实标注（v0.9.21），不蒙混。"
+      ]
+    },
+    {
+      "id": "F003",
+      "title": "Backtest API async（POST /run enqueue 202+run_id / GET /{run_id} DB 读，去 synthetic）+ 前端 Run→轮询→真实结果渲染",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "【接 API + 前端，见 spec §4.3。依赖 F001/F002】(1) **POST /api/backtests/run**：去 `_compute_synthetic_backtest` 同步路径；改 enqueue(request)→返回 **202 + {run_id, status:queued}**（请求路径**不 import trade**，§12.10.2）。(2) **GET /api/backtests/{run_id}**：读 backtest_run DB（status + 完成则 metrics/equity/allocations/trades + report_markdown）；queued/running 返回状态无结果；error 返回 error 信息。(3) **services/backtests.py**：去 synthetic stub；读 backtest_run repo。(4) **前端 Backtest 页**：Run → POST /run → 拿 run_id → **轮询 GET /{run_id}**（queued/running 显进度 spinner+文案 → done 渲染真实 metrics/equity/trades，复用 B040 MetricsDisplay 指标卡 + 权益曲线 + 成交表）；error 态友好提示；无 worker/超时（N 次轮询无果）graceful 降级文案。(5) **research-only 标注**：结果区标『历史回测，非收益预测』（定位 §1.1）。(6) **测试**：backend pytest（POST 返回 202+run_id 不 import trade / GET 各状态 queued|running|done|error 正确）；前端 vitest（轮询 hook：queued→running→done 状态机 + error + 超时降级）；Playwright（/backtest Run→轮询→结果渲染，双 locale，可 mock GET 返回 done fixture）。(7) Gates：backend pytest ≥ baseline+ / frontend vitest ≥ baseline+ / ruff/mypy/lint/typecheck 0 / §12.10.2 守门绿（请求路径无 trade）/ Playwright 不破。(8) 不动：F001/F002 / worker / B040 指标卡组件（复用不改）。",
+      "design_decisions": [
+        "202+run_id+轮询（planner 决，Option A）：请求路径不阻塞、不 import trade；前端轮询 GET 直到 done。",
+        "复用 B040 MetricsDisplay（不重造）：只换数据源 synthetic→真实 DB。",
+        "graceful 降级（无 worker/超时）：诚实文案，不假装有结果。"
+      ]
+    },
+    {
+      "id": "F004",
+      "title": "Reports 真实投资报告（canonical Master/各 sleeve 回测报告→investment_report kind=investment + 开发 signoff 过滤出用户 Reports）+ 前端",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "【Reports 内容类别修正，见 spec §4.4。同源真实引擎】(1) **canonical 回测报告生成**：workbench_api/backtests/canonical.py（CLI 入口 python -m workbench_api.backtests.canonical，import trade allowlist）——对 Master + 各 sleeve 默认参数跑 `run_master_portfolio_quarterly_backtest` + `generate_master_portfolio_reports`→写 investment_report 表（run_id/strategy_id/as_of_date/title/markdown/metrics_json/kind='investment'）；可手动跑或 timer（workbench-canonical-backtest.timer，B037-OPS1 接线）。(2) **investment_report 表 + repo + alembic**：db/models + repositories；upsert by (strategy_id, as_of_date)。(3) **services/reports.py + reports_scanner.py**：用户 Reports 列表/详情**只显 kind=investment**（真实投资报告）；**docs/test-reports/ 开发 signoff 从用户 Reports 过滤出**（移除或挪 dev kind，用户视图不可见）；保留 B040 metrics 解析渲染真实报告指标。(4) **前端 Reports 页**：渲染真实投资报告（B040 metrics 卡 + Markdown body + 标题/as_of_date）；空态（无 canonical 报告时）友好文案『暂无投资报告，请先运行 canonical 回测』；research-only 标注。(5) **测试**：backend pytest（reports 列表只含 kind=investment / 开发 signoff 不在用户列表 / canonical 报告生成 monkeypatch 引擎→写 investment_report / get_report 渲染）；前端 vitest（Reports 渲染投资报告非开发签收 / 空态）；Playwright（/reports 显投资报告，双 locale）。(6) Gates：backend pytest ≥ baseline+≥4 / frontend vitest ≥ baseline+ / ruff/mypy/lint/typecheck 0 / §12.10.2 守门绿（canonical allowlist）/ alembic head。(7) 不动：F001-F003 / docs/test-reports/ 文件本身（仅过滤出用户视图，dev 可保留访问）/ B040 指标卡。",
+      "design_decisions": [
+        "Reports 报告源=canonical 定时回测（planner 决）：权威默认参数报告；on-demand 任意参数属 Backtest 页非 Reports。",
+        "开发 signoff 过滤出用户 Reports（用户拍板）：kind=investment 只显真实投资报告；dev signoff 不在用户视图。",
+        "investment_report 表 upsert by (strategy_id, as_of_date)：每策略每日一份权威报告。"
+      ]
+    },
+    {
+      "id": "F005",
+      "title": "Codex L1 + L2 真 VM 验收（worker service 接线 + on-demand Run→真实回测结果 + Reports 投资报告非开发签收 + §12.10.2 守门 + B023 不破）+ signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "L1 (CI 内)：F001 验收脚本跑通 — frontend vitest ≥ baseline+ / lint / typecheck / Playwright（三态+双 locale）；**no-execution 守门**（Risk Panel 无下单按钮+中文禁词 0）；**i18n risk.tooltips 双语齐+无禁词+parity**；backend 无 diff（确认纯前端）；artifact grep secret 泄漏=0。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD + recent-errors={count:0}；(2) **Risk Panel 三态浏览器手验**：颜色一致（green/yellow/red = emerald/amber/red 调色板）+ 风控术语 tooltip hover/tap 双语（masterDrawdown/killSwitch/perSleeveDrawdown）+ valuation_basis 标注（cost_degraded 时显式）；(3) **BL-B023-S2 red 样本演练（bundle）**：authenticated PUT 风险样本账户（master DD > kill_switch_threshold 0.15 触发）→ **red banner + 并排 normal/defensive ticket + radio 选择 → generate-ticket honors 选择**全链路；红态截图 ≥1 PNG（docs/screenshots/B042-risk-panel/）；演练后 account 恢复；(4) 双语切换 zh/en + 无下单按钮（no-execution）；(5) HEAD≡main + B026 absent。Signoff: docs/test-reports/B042-risk-panel-robinhood-signoff-2026-MM-DD.md 用模板（§Production/HEAD + §Post-signoff Deploy + **red 态演练证据 + valuation_basis 渲染 + BL-B023-S2 resolved**）。Framework 候选：薄 UI 批次预计无；若有记 §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
+      "status": "pending",
+      "acceptance": "L1 (CI 内)：F001-F004 全门禁——backend pytest（含 backtest_run repo / worker map / reports kind 过滤）/ frontend vitest（轮询 hook / Reports 渲染）/ ruff/mypy/lint/typecheck/Playwright；**§12.10.2 守门绿**（请求路径 routes/services/backtests + reports 无 import trade；worker/canonical allowlist）；**scope 守门**（worker 禁 broker/execution）；**no-execution 守门**（Backtest/Reports 无下单按钮+中文禁词 0）；i18n 双语 parity（backtest/reports 文案）；artifact grep secret=0；alembic upgrade head 干净。L2 (真 VM)：(1) curl /api/health 200 + SHA≡main HEAD + recent-errors={count:0} + **alembic current==heads**（B048-OPS1）；(2) **workbench-backtest-worker.service 接线 active**（systemctl is-active；B037-OPS1 自动接线验证；canonical timer 若设亦验）；(3) **on-demand Run→真实回测结果**：authenticated POST /api/backtests/run→拿 run_id→轮询 GET /{run_id} 至 done→**metrics/equity 来自真实 master_portfolio 引擎非 synthetic**（记录 vs 旧 seed 合成值差异为证据；若数据 degraded 诚实标注亦记）；(4) **Reports 显真实投资报告**：/api/reports 列表/详情=真实 Master/sleeve 回测业绩（Sharpe/MDD 等），**非 docs/test-reports/ 开发 signoff**（确认开发签收已过滤出用户 Reports）；(5) **§12.10.2 请求路径无 trade** 守门 + worker 允许；(6) B023 交易闭环不破（recommendations/execution 路径正常）+ B026 absent；(7) HEAD≡main。Signoff: docs/test-reports/B047-backtest-reports-real-engine-signoff-2026-MM-DD.md 用模板（§24 worker service 接线 + §Production/HEAD + §Post-signoff Deploy + **synthetic→real 回测对比证据 + Reports 内容类别修正证据**）。**Framework 候选（强）**：async worker（请求→队列→worker→DB→轮询）若成通用范式 / Reports 内容类别错配教训 记 §Framework Learnings。更新 progress.json status→done / docs.signoff / evaluator_feedback。"
     }
   ]
 }

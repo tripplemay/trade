@@ -150,24 +150,6 @@
     "milestone": "C — Risk UI（随 B042）"
   },
   {
-    "id": "B047",
-    "title": "回测引擎真实化（Backtest 页 + Reports 页接真实 trade 引擎，去合成 stub / 去开发签收语料）",
-    "description": "【2026-06-07 用户确认：纳入里程碑 C；Reports 真实化并入本条】两个用户投资页面都需接真实回测引擎（同源 trade/backtest/master_portfolio.py，B044 评分 precompute 已在用）：\n**(A) Backtest 页**——现 /api/backtests/run 是 `_compute_synthetic_backtest` 确定性合成 stub（services/backtests.py 按请求哈希 seed 生成伪随机指标/曲线/成交），**非真实回测**；注释『B023 will swap for a real call』未兑现。接真实引擎出可信策略指标/权益曲线/成交。\n**(B) Reports 页**——**现 Reports 读 docs/test-reports/（108 份 AI 开发 harness 工程签收/复核文档，开发 QA 非投资内容）**，对投资者是噪音；按 user-personas §7 Reports 应是『用户策略/组合业绩报告』（Master + 各 sleeve 历史回测 Sharpe/Sortino/Calmar/MDD，B040 已 Robinhood 化指标卡）。本条让 Reports **改为渲染真实回测业绩报告**（由真实引擎生成），开发签收文档挪 dev/admin 视图或从用户 Reports 移除。\n**⚠️ 架构 wrinkle**：on-demand 回测（用户点 Run）撞 §12.10.2——请求路径禁 import trade/。候选：(a) 异步 job——Run 入队 → job(可 import trade/)跑回测写 DB → 前端轮询/SSE（请求路径只读 DB，守 §12.10.2）；(b) Reports 业绩报告可走 precompute→DB（定期生成 Master/sleeve 回测报告入库，请求只读，更贴近 B044 范式）。规划时先定架构（同 B044 评分位置决策量级）。",
-    "decisions": [
-      "2026-06-07 用户确认：回测引擎真实化纳入里程碑 C；**Reports 真实化并入 B047**（同源真实引擎）",
-      "Reports 现状=展示开发签收语料(docs/test-reports/)，错误类别；改为真实投资业绩报告(Master/sleeve 回测+季度组合复盘)，开发签收挪 dev/admin 视图",
-      "架构未定（规划时拍板）：Backtest on-demand 撞 §12.10.2→异步 job→DB→前端轮询；Reports 业绩报告可 precompute→DB（定期生成）",
-      "复用真实引擎 trade/backtest/master_portfolio.py（B044 已验证可调）；前端 Backtest UI + B040 Reports 指标卡已建，仅换数据源",
-      "若暂不接：UI 显式标注『合成演示数据 / 开发记录』防误用——降级选项",
-      "数据走 B045 data-refresh real 数据；data_source 诚实标记 real/mixed/fixture（同 B044/B045）"
-    ],
-    "confirmed_at": "2026-06-07",
-    "priority": "high",
-    "order": 7,
-    "source": "2026-06-07 回测页讨论（发现合成 stub）+ Reports 页讨论（发现接开发签收语料错配）+ 里程碑 C 重定义",
-    "milestone": "C — 回测+Reports 真实可信（接真实引擎）"
-  },
-  {
     "id": "B049",
     "title": "全页面真实化审计 + 残余显示真实化（里程碑 C 收口 gate：所有页面显示内容接真实引擎）",
     "description": "【2026-06-07 用户拍板：里程碑 C 完成时所有页面显示内容均接真实引擎】里程碑 C 收口 gate，作为最后一批（在 B046/B048/B047/B043 等实质批次之后），逐页穷举审计每个用户投资页面显示无合成/占位，并修残余显示项：(1) **snapshots 刷新进度**——接真实子进程进度事件（去 5-stage synthetic SSE 动画；数据已 B045 真）；(2) **strategies 元数据**——note 'Synthetic fixture only; not actual filings' 已因 B045 真数据陈旧，更正/去除（factor_weights 等本就是真 config）；(3) **dashboard 死后端清理**——旧 dashboard 页已 §16 退役（前端无路由），清 routes/dashboard.py 死路由 + service 残留占位零值字段（保留 Home 复用的 _aggregate_nav）；(4) **全页面穷举审计**——Home/Recommendations/Reports/Risk/Strategies/Backtest/Snapshots/Execution 每页显示内容确认无合成/占位/硬编码 stub（grep synthetic/stub/placeholder/hardcode + 逐页手验）；内部工具页 backlog/dev/docs 不算投资内容、不在范围。审计通过 = 里程碑 C『所有页面接真实引擎』达成。",

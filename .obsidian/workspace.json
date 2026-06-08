@@ -1,0 +1,235 @@
+{
+  "main": {
+    "id": "47402e8d3459fbfb",
+    "type": "split",
+    "children": [
+      {
+        "id": "053916ae8c035796",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "36e39d68defd19fe",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/product/implementation-path-2026-05.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "implementation-path-2026-05"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "e31a23bd5a2e1d30",
+    "type": "split",
+    "children": [
+      {
+        "id": "adca1f8a50cbe38b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d427b70b594dd810",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "文件列表"
+            }
+          },
+          {
+            "id": "bb05b139f977eb52",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "搜索"
+            }
+          },
+          {
+            "id": "aeb2f21f9d9dffff",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "书签"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "27fc8f959ddebf75",
+    "type": "split",
+    "children": [
+      {
+        "id": "5cb1ad6e4a510d97",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "0fb38c4e7d5c9d6b",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "docs/product/implementation-path-2026-05.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "implementation-path-2026-05 的反向链接列表"
+            }
+          },
+          {
+            "id": "ee0a9ac87b74a96b",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "docs/product/implementation-path-2026-05.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "implementation-path-2026-05 的出链列表"
+            }
+          },
+          {
+            "id": "8446297d240a1b3d",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "标签"
+            }
+          },
+          {
+            "id": "662c0852395a39e9",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "添加笔记属性"
+            }
+          },
+          {
+            "id": "0d042539aecd4a4e",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "docs/product/implementation-path-2026-05.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "implementation-path-2026-05 的大纲"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false,
+      "bases:新建数据库": false
+    }
+  },
+  "active": "36e39d68defd19fe",
+  "lastOpenFiles": [
+    "workbench/frontend/tests/e2e/b037-home.spec.ts",
+    "workbench/frontend/tests/safety/legacy-home-decommissioned.spec.ts",
+    "workbench/frontend/tests/unit/page/home.spec.tsx",
+    "workbench/backend/workbench-dev.db-shm",
+    "workbench/backend/workbench-dev.db-wal",
+    "workbench/backend/workbench_api/prices/cli.py.tmp.89774.ac29eecf00a1",
+    "workbench/backend/workbench_api/db/migrations/versions/__pycache__/0009_b037_price_snapshot.cpython-311.pyc",
+    "workbench/backend/workbench_api/prices/__pycache__/cli.cpython-311.pyc",
+    "workbench/backend/workbench_api/prices/__pycache__/__init__.cpython-311.pyc",
+    "workbench/backend/workbench_api/prices/__pycache__",
+    "workbench/backend/tests/unit/__pycache__/test_prices_cli.cpython-311-pytest-9.0.3.pyc",
+    "docs/specs/B037-home-restructure-spec.md",
+    "docs/test-reports/B036-ai-advisor-mvp-signoff-2026-06-05.md",
+    "docs/screenshots/B036-ai-advisor-mvp/alembic-current-0008.png",
+    "docs/screenshots/B036-ai-advisor-mvp/strategies-banner-absence.png",
+    "docs/screenshots/B036-ai-advisor-mvp/home-ai-advisor-production.png",
+    "docs/specs/B036-ai-advisor-mvp-spec.md",
+    "docs/test-reports/B035-market-context-signoff-2026-06-05.md",
+    "docs/screenshots/B035-market-context/alembic-current-0007.png",
+    "docs/screenshots/B035-market-context/strategies-banner-absence.png",
+    "docs/screenshots/B035-market-context/home-market-context-production.png",
+    "docs/test-reports/B035-market-context-blocker-2026-06-05.md",
+    "workbench/frontend/test-results/e2e-b035-market-context-B0-026dd-ard-from-api-market-context-authed-retry1/error-context.md",
+    "workbench/frontend/test-results/e2e-b035-market-context-B0-026dd-ard-from-api-market-context-authed-retry1/test-failed-1.png",
+    "workbench/frontend/test-results/e2e-b035-market-context-B0-026dd-ard-from-api-market-context-authed/error-context.md",
+    "workbench/frontend/test-results/e2e-b035-market-context-B0-026dd-ard-from-api-market-context-authed/test-failed-1.png",
+    "docs/specs/B035-market-context-spec.md",
+    "framework/archive/proposed-learnings-archive-v0.9.32.md",
+    "docs/screenshots/B034-news-ticker-embedding/alembic-0006.png",
+    "docs/screenshots/B034-news-ticker-embedding/recommendations-news-200.png",
+    "docs/test-reports/B034-news-ticker-embedding-signoff-2026-06-04.md",
+    "docs/test-reports/B034-news-ticker-embedding-blocker-2026-06-04.md",
+    "docs/specs/B034-news-ticker-embedding-spec.md",
+    "docs/test-reports/B033-news-ingest-signoff-2026-06-01.md",
+    "docs/test-reports/B033-news-ingest-blocker-2026-06-01.md",
+    "workbench/frontend/test-results/e2e-protected-routes-click-fe384-es-without-losing-the-shell-authed-retry1/error-context.md",
+    "workbench/frontend/test-results/e2e-protected-routes-Home--04229--dashboard-cards-B022-F006--authed-retry1/error-context.md",
+    "workbench/frontend/test-results/e2e-protected-routes-Strat-45fb4-rd-export-button-B022-F007--authed-retry1/error-context.md",
+    "workbench/frontend/test-results/e2e-protected-routes-Backt-e4c7a-Panel-Run-button-B022-F008--authed-retry1/error-context.md",
+    "workbench/frontend/test-results/e2e-protected-routes-shell-disclaimer-render-on-backlog-authed-retry1/error-context.md",
+    "workbench/frontend/test-results/e2e-protected-routes-click-fe384-es-without-losing-the-shell-authed/error-context.md",
+    "workbench/frontend/test-results/e2e-protected-routes-Home--04229--dashboard-cards-B022-F006--authed/error-context.md",
+    "workbench/frontend/test-results/e2e-protected-routes-Backt-e4c7a-Panel-Run-button-B022-F008--authed/error-context.md",
+    "workbench/frontend/test-results/e2e-protected-routes-Strat-45fb4-rd-export-button-B022-F007--authed/error-context.md",
+    "workbench/frontend/test-results/e2e-protected-routes-shell-disclaimer-render-on-backlog-authed/error-context.md",
+    "workbench/frontend/test-results/e2e-protected-routes-shell-disclaimer-render-on-snapshots-authed-retry1/error-context.md"
+  ]
+}
