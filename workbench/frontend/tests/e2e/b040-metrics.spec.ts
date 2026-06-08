@@ -10,9 +10,12 @@
  */
 import { expect, test } from "@playwright/test";
 
-// A committed report whose markdown carries a B016-style wide metrics table;
-// the backend resolves this slug by substring match against the filename.
-const METRICS_REPORT_SLUG = "B016-risk-parity-hrp-comparison";
+// B047 F004: Reports are now DB-backed investment reports, not filesystem
+// dev sign-offs. The e2e DB is seeded with one canonical Master Portfolio
+// report (scripts/seed_e2e_reports.py) whose metrics_json drives the headline
+// card and whose markdown carries a B016-style wide metrics table. Slug =
+// f"{strategy_id}-{as_of_date}".
+const METRICS_REPORT_SLUG = "master_portfolio-2026-06-01";
 
 for (const { locale, tooltipSnippet } of [
   { locale: "en", tooltipSnippet: "Risk-adjusted return" },

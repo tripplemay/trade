@@ -120,6 +120,11 @@ jobs:
           set -euxo pipefail
           rm -f e2e-workbench.db
           ${{ env.pythonLocation }}/bin/python -m alembic upgrade head
+          # B047 F004: Reports is DB-backed (kind='investment'). Seed one
+          # canonical Master Portfolio investment report so /reports +
+          # /reports/[slug] (b040 metrics-card e2e) have a real DB row to
+          # render — the canonical engine itself is too heavy to run in CI.
+          ${{ env.pythonLocation }}/bin/python scripts/seed_e2e_reports.py
           ${{ env.pythonLocation }}/bin/python -m uvicorn workbench_api.app:app \
             --host 127.0.0.1 --port 8723 --log-level warning \
             > /tmp/uvicorn-e2e.log 2>&1 &

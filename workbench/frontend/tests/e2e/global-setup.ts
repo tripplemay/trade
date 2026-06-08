@@ -93,7 +93,7 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
     const paths = new Set<string>([
       "/login",
       ...NAV_ITEMS.map((item) => item.href),
-      "/reports/B025-us-quality-momentum-backtest",
+      "/reports/master_portfolio-2026-06-01",
     ]);
     for (const href of paths) {
       try {

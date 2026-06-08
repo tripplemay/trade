@@ -18,7 +18,6 @@
 import { expect, test, type BrowserContext } from "@playwright/test";
 
 const LOCALE_COOKIE = "NEXT_LOCALE";
-const REPORT_SLUG = "B025-us-quality-momentum-backtest";
 
 async function setLocaleCookie(context: BrowserContext, locale: "zh-CN" | "en"): Promise<void> {
   const { hostname } = new URL(test.info().project.use.baseURL ?? "http://127.0.0.1:3000");
@@ -111,22 +110,14 @@ for (const locale of ["zh-CN", "en"] as const) {
       }
     });
 
-    test(`reports list surfaces the B025 backtest entry (${locale})`, async ({ page }) => {
-      await page.goto("/reports");
-      // The reports list renders all *.md under docs/test-reports/; the
-      // B025 backtest file lands there from F005. We assert on the
-      // per-row testid (slug-only id stays English on purpose) so we
-      // do not depend on locale-specific copy.
-      await expect(page.getByTestId(`report-link-${REPORT_SLUG}`)).toBeVisible();
-    });
-
-    test(`report detail shows the bilingual disclaimer + tables (${locale})`, async ({ page }) => {
-      await page.goto(`/reports/${REPORT_SLUG}`);
-      // The disclaimer literal is bilingual by design (B024 v0.9.26
-      // pattern); both halves must appear regardless of locale.
-      await expect(page.locator("body").getByText("research-only").first()).toBeVisible();
-      await expect(page.locator("body").getByText("仅供研究使用").first()).toBeVisible();
-    });
+    // B047 F004: the Reports page now lists DB-backed canonical INVESTMENT
+    // reports, not the docs/test-reports/ dev sign-offs — so the old "reports
+    // list surfaces the B025 backtest entry" + "report detail" e2e tests (which
+    // asserted the B025 dev sign-off appeared in the user Reports list) were
+    // removed. The B025 report stays reachable via the /api/docs deep links;
+    // the new Reports behaviour (investment reports + empty state) is covered
+    // by the reports page vitest, and the real render by F005 L2 (canonical
+    // job on the VM).
   });
 }
 
