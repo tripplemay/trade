@@ -46,6 +46,7 @@ const ERROR_KINDS = [
   "insufficient_history",
   "no_signal_dates",
   "data_unavailable",
+  "inactive_strategy",
   "unknown",
 ] as const;
 type ErrorKind = (typeof ERROR_KINDS)[number];
@@ -132,6 +133,10 @@ export default function BacktestPage() {
   const [rangeStatus, setRangeStatus] = useState<RangeStatus>("loading");
   const [comparisonOn, setComparisonOn] = useState<boolean>(true);
   const [result, setResult] = useState<BacktestRunResponse | null>(null);
+  // B050 F004: the strategy name the current result was produced for — shown in
+  // the result panel so the user confirms the run used the strategy they picked
+  // (eliminates the "every strategy looks the same" ambiguity B050 fixes).
+  const [ranStrategyName, setRanStrategyName] = useState<string | null>(null);
   const [running, setRunning] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [errorKind, setErrorKind] = useState<string | null>(null);
@@ -207,6 +212,7 @@ export default function BacktestPage() {
     setError(null);
     setErrorKind(null);
     setResult(null);
+    setRanStrategyName(null);
     try {
       // B047 async: enqueue → poll until the worker finishes (or errors / times
       // out). The request path returns 202 immediately; the result lands later.
@@ -218,6 +224,7 @@ export default function BacktestPage() {
         parameters: {},
       });
       setResult(data);
+      setRanStrategyName(strategies.find((s) => s.id === strategyId)?.name ?? strategyId);
       setSharedRange(null);
     } catch (reason: unknown) {
       // B047-OPS2 F002 (L3): a structured worker failure → bilingual friendly
@@ -410,6 +417,14 @@ export default function BacktestPage() {
 
           <ResizablePanel defaultSize={72} minSize={40} className="overflow-y-auto">
             <div className="space-y-4 p-4">
+              {ranStrategyName && (
+                <p
+                  data-testid="backtest-ran-strategy"
+                  className="text-xs font-medium text-foreground"
+                >
+                  {t("ranStrategy", { name: ranStrategyName })}
+                </p>
+              )}
               <MetricsCard metrics={result?.metrics ?? null} />
               <Card>
                 <CardHeader>

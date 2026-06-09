@@ -154,6 +154,7 @@
     "stateIdle": "空闲",
     "stateRunning": "运行中…",
     "stateRunWithId": "运行 {id}",
+    "ranStrategy": "策略：{name}",
     "timeout": "回测耗时超出预期——worker 可能繁忙或离线，请稍后重试。",
     "selector": {
       "title": "参数",
@@ -175,7 +176,8 @@
       "insufficient_history": "所选范围历史数据不足以估算波动率，请选择 {minUsableStart} 之后的开始日期。",
       "no_signal_dates": "所选范围内没有季度末调仓信号日，请扩大范围。",
       "data_unavailable": "回测数据尚未就绪，请先运行数据刷新。",
-      "unknown": "该范围无法完成回测，请尝试其他范围。"
+      "unknown": "该范围无法完成回测，请尝试其他范围。",
+      "inactive_strategy": "研究态策略暂不支持独立回测，请选择已激活的策略。"
     },
     "metrics": {
       "title": "核心指标",

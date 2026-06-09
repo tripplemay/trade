@@ -315,3 +315,88 @@ describe("BacktestPage data range (B047-OPS2 F002)", () => {
     });
   });
 });
+
+// B050 F004 — per-strategy dispatch UX: master in the selector, inactive_strategy
+// friendly copy, and the result labelled with the strategy it ran.
+const B050_STRATEGY_LIST: components["schemas"]["StrategyListResponse"] = {
+  strategies: [
+    {
+      id: "master_portfolio",
+      name: "Master Portfolio / 旗舰组合",
+      sleeve: "master",
+      status: "active",
+    },
+    {
+      id: "B016-risk-parity-hrp",
+      name: "Risk Parity HRP",
+      sleeve: "risk_parity",
+      status: "active",
+    },
+    {
+      id: "B013-regime-quarterly",
+      name: "Regime-Adaptive Multi-Asset (quarterly)",
+      sleeve: "regime",
+      status: "research",
+    },
+  ],
+};
+
+describe("BacktestPage per-strategy dispatch (B050 F004)", () => {
+  it("renders the Master Portfolio flagship in the strategy selector", async () => {
+    vi.stubGlobal(
+      "fetch",
+      buildFetch({
+        "/api/strategies": B050_STRATEGY_LIST,
+        "/api/backtests/data-range": DATA_RANGE,
+      }),
+    );
+    const { findByText } = renderWithIntl(<BacktestPage />);
+    expect(await findByText("Master Portfolio / 旗舰组合")).toBeInTheDocument();
+  });
+
+  it("labels the result with the strategy it ran (kills the 'all the same' ambiguity)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      buildFetch({
+        "/api/strategies": B050_STRATEGY_LIST,
+        "/api/backtests/data-range": DATA_RANGE,
+        "/api/backtests/run": QUEUED,
+        "/api/backtests/abc123": DONE_RESULT,
+      }),
+    );
+    const { getByTestId } = renderWithIntl(<BacktestPage />, { locale: "en" });
+    await waitFor(() => {
+      expect(getByTestId("backtest-run")).not.toBeDisabled();
+    });
+    fireEvent.click(getByTestId("backtest-run"));
+    await waitFor(() => {
+      // Default selection is the first strategy (the Master flagship).
+      expect(getByTestId("backtest-ran-strategy")).toHaveTextContent(/Strategy: Master Portfolio/);
+    });
+  });
+
+  it("maps inactive_strategy to bilingual friendly copy, not the raw exception", async () => {
+    vi.stubGlobal(
+      "fetch",
+      buildFetch({
+        "/api/strategies": B050_STRATEGY_LIST,
+        "/api/backtests/data-range": DATA_RANGE,
+        "/api/backtests/run": QUEUED,
+        "/api/backtests/abc123": ERROR_RUN(
+          "strategy B013-regime-quarterly is research-state (planning_weight 0.0)",
+          "inactive_strategy",
+        ),
+      }),
+    );
+    const { getByTestId } = renderWithIntl(<BacktestPage />, { locale: "en" });
+    await waitFor(() => {
+      expect(getByTestId("backtest-run")).not.toBeDisabled();
+    });
+    fireEvent.click(getByTestId("backtest-run"));
+    await waitFor(() => {
+      const state = getByTestId("backtest-state");
+      expect(state).toHaveTextContent(/don't support a standalone backtest/);
+      expect(state).not.toHaveTextContent(/research-state \(planning_weight/);
+    });
+  });
+});
