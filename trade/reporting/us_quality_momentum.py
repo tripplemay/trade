@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import math
 from datetime import UTC, date, datetime
+from typing import Any
 
 from trade import __version__
 from trade.backtest.us_quality_momentum.engine import UsQualityBacktestResult
@@ -22,11 +23,11 @@ from trade.data.quality import evaluate_data_quality
 _TRADING_DAYS_PER_YEAR = 252.0
 
 
-def _iso_date(value: object) -> str:
+def _iso_date(value: Any) -> str:
     """ISO ``YYYY-MM-DD`` from a date / pandas Timestamp / string."""
 
     if hasattr(value, "isoformat"):
-        return value.isoformat()[:10]  # type: ignore[attr-defined]
+        return str(value.isoformat())[:10]
     return str(value)[:10]
 
 

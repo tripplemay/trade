@@ -159,7 +159,9 @@ def run_hk_china_quarterly_backtest(
         period_value, fills, period_flags = _execute_period(
             by_symbol_date,
             current_capital,
-            signal,
+            # Structurally compatible: _execute_period only reads ``signal_date``
+            # + ``target_weights``, both present on HkChinaResolvedSignal.
+            signal,  # type: ignore[arg-type]
             execution_date,
             valuation_date,
             backtest_parameters,
