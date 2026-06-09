@@ -66,7 +66,7 @@
       "title": "Codex L1+L2 真 VM——★每策略产不同非退化结果 + ★防守 SGOV 股数保真 + as_of_date 真实信号日 + regime 友好 + 回归 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "【见 spec §9。core acceptance=证明『不同策略→不同数据』+ 交易指令保真】L1：F001-F005 全门禁——backend pytest(分发/各适配器/hk_china 引擎/regime inactive/防守 SGOV 数值保真/as_of_date)+frontend vitest/tsc/lint+ruff/mypy+§12.10.2 守门+i18n parity+api.ts drift 0+artifact grep secret=0。L2(真 VM)：(1) ★**核心反例**：同一时段依次跑 B006 momentum/B016 risk_parity/B025 us_quality/B011 hk_china/master_portfolio——每个产**非退化**结果(equity 点数>>2/有交易/metrics 非占位)且**彼此不相等**(metrics 或 equity 曲线明显不同)。证明『不同策略→不同数据』。(2) ★**防守 SGOV 股数保真(CRITICAL 验证)**：风险红态生成防守 ticket→SGOV 买入**股数 × SGOV 市价 ≈ 账户权益**(非美元当股数~100倍)；Markdown/导出股数正确。(3) **as_of_date**：推荐 as_of_date 显真实信号日(非恒 today)。(4) **regime**：选 B013/B014/B015→中文友好『研究态暂不支持独立回测』非原始异常串非静默跑 master。**evaluator.md §25 适用**：每策略互异+防守 SGOV 数值正确均须正面证据(实跑数字)，不得因『代码写了』放行。(5) **回归**：B047-OPS2 默认范围 Run 仍 OK；正常模式 diff/ticket 不破；recent-errors={count:0}；HEAD≡main；B026 absent；B023 闭环不破。(6) **Signoff**：docs/test-reports/B050-backtest-per-strategy-dispatch-signoff-2026-MM-DD.md 用模板(§Production/HEAD 等价+§Post-signoff Deploy+**§每策略结果差异性证据表**+**§防守 SGOV 股数保真证据**(股数×市价≈权益))。更新 progress.json status→done/docs.signoff/evaluator_feedback。"
     }
   ]
