@@ -34,4 +34,10 @@ type: reference
 - **所有 pytest / ruff / mypy / compileall 命令必须显式使用 `.venv/bin/python`**（或激活 venv 后调用）。
 - 来源：B012 signoff soft-watch S1（2026-05-14，Codex L1 验收）。
 
+## CI 分层：改 `trade/` 须本地 `mypy trade` 自检（v0.9.41 — B050 沉淀）
+
+- 有**两条独立 CI**：Workbench Backend CI 只查 `workbench_api`；独立「Python CI」对仓库根跑 `mypy trade` + `ruff check .` + 全 root pytest，**比 backend CI 严**。
+- **改了 `trade/` 包的代码，本地门禁必须额外跑 `.venv/bin/mypy trade`**（不止 workbench 那套），否则 backend CI 绿但 Python CI 红。
+- 来源：B050 F002/F003 触红（hotfix `8728621`：us_quality `_iso_date` 用 `Any`+`str()`、hk_china `_execute_period` 复用加 `arg-type` ignore）。
+
 <!-- 写入规则：由 Planner 统一维护，环境变更后及时更新。账号密码避免明文，必要时引用 secret manager。 -->

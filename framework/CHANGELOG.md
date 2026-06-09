@@ -5,6 +5,18 @@
 
 ---
 
+## v0.9.41 — 2026-06-09（B050：装饰性控件反模式三例 + CI mypy trade 分层陷阱）
+
+**来源批次：** B050 backtest-per-strategy-dispatch（用户报「回测页选任何策略结果都一样」→ worker 写死 master 无视 strategy_id）+ 两次系统审查（`docs/product/b050-class-decorative-control-audit-2026-06.md` + `trade-recommendation-fidelity-audit-2026-06.md`）。signoff `docs/test-reports/B050-backtest-per-strategy-dispatch-signoff-2026-06-09.md`（L2 三策略互异 +8.48%/+1.57%/-6.98% + 防守 SGOV 109 股保真）。
+
+**沉淀内容（用户批 A+B）：**
+- **A 装饰性控件 / plumbed-but-ignored 反模式**（三例：strategy_id 落库被 worker 忽略 / backtest parameters / backlog status）→ `generator.md §17`（输入必须追踪到执行层真正消费；要么接线要么删字段；反向自查「用户改了它屏幕数字会变吗」）+ `evaluator.md §26`（验收核「换不同输入→输出真不同」核心反例式 + 数值保真，§25 对偶）。
+- **B CI mypy trade 分层陷阱**（B050 F002/F003 触红，hotfix `8728621`）→ `.auto-memory/environment.md`（改 `trade/` 须本地 `mypy trade` 自检；独立 Python CI 比 Workbench Backend CI 严）。
+
+**未沉淀（留队列等二例）：** async worker 范式（③单例）+ satellite 权重口径（④单例）+ B037-OPS1 sudoers wrapper（单例）+ B047-OPS2 CI flake（软关注）。B050「同结构引擎复用 `_execute_period` 私有原语 + per-strategy adapter」属实现模式，复用窗口窄，不沉淀。
+
+---
+
 ## v0.9.40 — 2026-06-08（B047/B047-OPS1 二例：入口级 env 守门 + B048/BL-B023-S1/B047 四例：evaluator 纪律）
 
 **来源批次：**
