@@ -69,6 +69,22 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+describe("RiskBanner B043 explanation", () => {
+  it("surfaces the precomputed grounded explanation when present", () => {
+    const withExplanation: RiskPanelResponse = {
+      ...GREEN,
+      explanation: "Green risk state — master drawdown 1% is well under the kill-switch threshold.",
+    };
+    const { getByTestId } = renderWithIntl(<RiskBanner data={withExplanation} noFetch />);
+    expect(getByTestId("risk-banner-explanation")).toHaveTextContent(/master drawdown 1%/);
+  });
+
+  it("renders no explanation block when none was precomputed (graceful)", () => {
+    const { queryByTestId } = renderWithIntl(<RiskBanner data={GREEN} noFetch />);
+    expect(queryByTestId("risk-banner-explanation")).toBeNull();
+  });
+});
+
 describe("RiskBanner standalone (B023 F006)", () => {
   it("green state — neutral banner, no defensive rationale", () => {
     const { getByTestId, queryByTestId } = renderWithIntl(<RiskBanner data={GREEN} noFetch />);

@@ -117,6 +117,7 @@ export default function BacktestPage() {
   const tSelector = useTranslations("backtest.selector");
   const tErrorKind = useTranslations("backtest.errorKind");
   const tEquity = useTranslations("backtest.equity");
+  const tExplanation = useTranslations("backtest.explanation");
   const tDrawdown = useTranslations("backtest.drawdown");
   const tTrades = useTranslations("backtest.trades");
   const tCommon = useTranslations("common");
@@ -426,6 +427,17 @@ export default function BacktestPage() {
                 </p>
               )}
               <MetricsCard metrics={result?.metrics ?? null} />
+              {result?.explanation ? (
+                <Card data-testid="backtest-explanation">
+                  <CardHeader>
+                    <CardTitle>{tExplanation("title")}</CardTitle>
+                    <CardDescription>{tExplanation("aiNote")}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="text-sm text-muted-foreground">
+                    {result.explanation}
+                  </CardContent>
+                </Card>
+              ) : null}
               <Card>
                 <CardHeader>
                   <CardTitle>{tEquity("title")}</CardTitle>

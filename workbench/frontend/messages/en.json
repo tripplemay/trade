@@ -206,6 +206,10 @@
       "columnQty": "Qty",
       "columnPrice": "Price",
       "columnNotional": "Notional"
+    },
+    "explanation": {
+      "title": "Why these results",
+      "aiNote": "AI-generated explanation, grounded in the backtest's real metrics."
     }
   },
   "metrics": {
@@ -434,7 +438,8 @@
       "explainKillSwitch": "= hard threshold on master drawdown; only defensive weight moves are accepted once tripped.",
       "explainPerSleeve": "= advisory threshold on per-sleeve drawdown; any sleeve over it flips the panel to yellow.",
       "sleeveNote": "satellite_us_quality currently surfaces master_dd as a per-sleeve proxy; F011 wires real per-sleeve nav."
-    }
+    },
+    "explanationLabel": "AI explanation:"
   },
   "execution": {
     "positionDiff": {

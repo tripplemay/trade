@@ -43,7 +43,7 @@
       "title": "前端——3 页面 surface 解释（Recommendations/Backtest/Risk）+ 空态/降级态 + i18n + 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §8。依赖 F001-F003 后端字段】(1) **Recommendations**：per-position 显 rationale（rich『为什么』复用 B041 Robinhood UI rationale 槽）；空/降级态显确定性占位或留白不破。(2) **Backtest**：结果区显 explanation（与报告分区）；无 explanation 只显报告。(3) **Risk**：风险面板显 explanation；无则不显解释块。(4) **i18n**：解释文本按当前 locale 生成（generator 定：grounding 传 locale 让 LLM 出对应语言 vs 先英文）；UI 框架文案（『为什么』『AI 解释』标签）双语 parity。(5) **测试**：vitest（3 页面渲染解释/空态/降级态）+i18n parity+api.ts drift 0。(6) Gates：frontend vitest ≥ baseline+ / lint 0 / tsc 0 / api.ts drift 0 / no-execution 守门。",
       "design_decisions": [
         "解释 surface 为增强（空/降级时优雅留白），不破现有页面；复用 B041 rationale 槽。"

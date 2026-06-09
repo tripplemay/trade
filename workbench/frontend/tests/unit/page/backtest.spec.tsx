@@ -375,6 +375,52 @@ describe("BacktestPage per-strategy dispatch (B050 F004)", () => {
     });
   });
 
+  it("surfaces the grounded backtest explanation when the result carries one", async () => {
+    const withExplanation = {
+      ...DONE_RESULT,
+      explanation:
+        "The 8.5% CAGR and 1.42 Sharpe reflect steady returns with a shallow 6.3% drawdown.",
+    };
+    vi.stubGlobal(
+      "fetch",
+      buildFetch({
+        "/api/strategies": B050_STRATEGY_LIST,
+        "/api/backtests/data-range": DATA_RANGE,
+        "/api/backtests/run": QUEUED,
+        "/api/backtests/abc123": withExplanation,
+      }),
+    );
+    const { getByTestId } = renderWithIntl(<BacktestPage />, { locale: "en" });
+    await waitFor(() => {
+      expect(getByTestId("backtest-run")).not.toBeDisabled();
+    });
+    fireEvent.click(getByTestId("backtest-run"));
+    await waitFor(() => {
+      expect(getByTestId("backtest-explanation")).toHaveTextContent(/8\.5% CAGR and 1\.42 Sharpe/);
+    });
+  });
+
+  it("renders no explanation block when the result has none (graceful)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      buildFetch({
+        "/api/strategies": B050_STRATEGY_LIST,
+        "/api/backtests/data-range": DATA_RANGE,
+        "/api/backtests/run": QUEUED,
+        "/api/backtests/abc123": DONE_RESULT, // no explanation field
+      }),
+    );
+    const { getByTestId, queryByTestId } = renderWithIntl(<BacktestPage />, { locale: "en" });
+    await waitFor(() => {
+      expect(getByTestId("backtest-run")).not.toBeDisabled();
+    });
+    fireEvent.click(getByTestId("backtest-run"));
+    await waitFor(() => {
+      expect(getByTestId("backtest-metrics")).toHaveTextContent(/8\.50%/);
+    });
+    expect(queryByTestId("backtest-explanation")).toBeNull();
+  });
+
   it("maps inactive_strategy to bilingual friendly copy, not the raw exception", async () => {
     vi.stubGlobal(
       "fetch",

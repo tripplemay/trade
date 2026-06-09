@@ -206,6 +206,10 @@
       "columnQty": "数量",
       "columnPrice": "价格",
       "columnNotional": "金额"
+    },
+    "explanation": {
+      "title": "为什么是这个结果",
+      "aiNote": "AI 生成的解释，基于回测的真实指标。"
     }
   },
   "metrics": {
@@ -434,7 +438,8 @@
       "explainKillSwitch": "= 主组合回撤的硬阈值，触发后只接受防御性持仓变动。",
       "explainPerSleeve": "= 单 sleeve 回撤预警阈值；任一 sleeve 越线即转 yellow。",
       "sleeveNote": "satellite_us_quality 的 per-sleeve 回撤当前以 master_dd 代理显示，待 F011 接入真实 per-sleeve nav。"
-    }
+    },
+    "explanationLabel": "AI 解释："
   },
   "execution": {
     "positionDiff": {

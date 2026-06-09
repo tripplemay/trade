@@ -199,6 +199,15 @@ export function RiskBanner({ data, noFetch, className }: RiskBannerProps) {
               </ul>
             </div>
           ) : null}
+          {payload.explanation ? (
+            <p
+              data-testid="risk-banner-explanation"
+              className="mt-2 border-t border-border/40 pt-2 text-xs text-muted-foreground"
+            >
+              <span className="font-semibold text-foreground">{t("explanationLabel")}</span>{" "}
+              {payload.explanation}
+            </p>
+          ) : null}
         </CardContent>
       </Card>
     </TooltipProvider>
