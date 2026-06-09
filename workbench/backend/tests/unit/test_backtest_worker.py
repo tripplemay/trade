@@ -100,7 +100,7 @@ def test_process_next_saves_done_result(
         setup.commit()
         run_id = run.run_id
 
-    monkeypatch.setattr(worker_mod, "run_backtest_job", lambda _run: _MAPPED)
+    monkeypatch.setattr(worker_mod, "run_backtest_job", lambda _run, _explainer=None: _MAPPED)
     with Session(get_engine()) as session:
         handled = worker_mod.process_next(session)
         assert handled is True
@@ -121,7 +121,7 @@ def test_process_next_saves_error_on_engine_failure(
         setup.commit()
         run_id = run.run_id
 
-    def _boom(_run: object) -> dict[str, object]:
+    def _boom(_run: object, _explainer: object = None) -> dict[str, object]:
         raise worker_mod.BacktestWorkerError("no data")
 
     monkeypatch.setattr(worker_mod, "run_backtest_job", _boom)
@@ -146,7 +146,7 @@ def test_process_next_records_structured_error_kind(
         setup.commit()
         run_id = run.run_id
 
-    def _insufficient(_run: object) -> dict[str, object]:
+    def _insufficient(_run: object, _explainer: object = None) -> dict[str, object]:
         raise worker_mod.BacktestWorkerError(
             "insufficient price history for any signal date in range: no valid "
             "volatility estimates for risk assets"

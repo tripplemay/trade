@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "B043 AI 解释层（给 Recommendations/Backtest/Risk 三页面加 LLM『为什么这样建议』简洁解释）。里程碑 C 后唯一明确剩批，用户 2026-06-09/10 拍板：三页面全覆盖 + 简洁 per-position rationale（非长篇 narrative）。**目标**：里程碑 C 已让所有页面真实化、无占位（recommendations/precompute.py:280 rationale 现是确定性占位，注释明确 rich why is B043）；B043 填这个槽——LLM 生成简洁『为什么』，**grounded 在真实计算值上**（sleeve 权重/因子/信号/回测数字/风险 DD），受 no-AI 硬边界（复用 B036 advisor 5 规则：no 自动执行/no 收益预测/no 替代 quant/必须可引用/允许 summarize）。**架构（planner 定）**：生成全 off 请求路径（§12.10.2）——A Recommendations 在 precompute 时同步生成存 recommendation_snapshot.rationale；B Backtest 在 worker 生成结果时同步生成存 backtest_run.explanation 新列；**C Risk 架构关键**：risk_panel 是请求路径只读禁塞 LLM→新建 risk 解释 precompute job + 新表 risk_explanation_snapshot，risk_panel 改读 snapshot。降级=LLM 不可用/budget 超/拒答→回退确定性占位（诚实，解释是增强非依赖）。复用 B031 gateway(advise+routing+cost_guard $200 cap)+B036 护栏链(sentinel 拒答+references_valid+_strip_code_fence)+B032 judge(safety_judge 抽验)。model 默认 haiku-4.5+温度 0.2。5 features 4g+1c：F001 g 共享解释基建+Recommendations rationale(核心)；F002 g Backtest 解释(worker)；F003 g Risk 解释(新表+新 job+risk_panel 读 snapshot)；F004 g 前端 3 页面 surface+空态/降级；F005 c L1+L2 grounded 解释+★no-AI 边界 adversarial 验证+降级+signoff。永久硬边界：§12.10.2 解释生成不在请求路径/no-AI 5 规则/cost_guard 不绕过/i18n parity。不做：改 master 评分/回测引擎/风控算法/激活 regime。spec docs/specs/B043-ai-explanation-layer-spec.md(11 章)。**里程碑 C 已达成(B049)+B050 修复 done，本批为路线图最后一块。**",
   "total_features": 5,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
-  "current_sprint": "F002",
+  "current_sprint": "F003",
   "last_updated": "2026-06-10",
   "reference_docs": [
     "docs/specs/B043-ai-explanation-layer-spec.md",

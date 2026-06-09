@@ -19,7 +19,7 @@
       "title": "Backtest 结果解释（注入 B，worker 生成时同步）+ no-预测边界 + 降级 + 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §6。依赖 F001 解释基建】(1) **Backtest explanation prompt**：grounding=真实 metrics(cagr/sharpe/max_dd/turnover)+trades 数+equity 点数+策略名+日期范围（worker.py:240-278 各 runner 手上即有）；输出简洁『为什么这个 Sharpe/回撤是这样』explain 真实历史输出，**不预测未来/不给调参建议**。(2) **注入 worker**：backtests/worker.py 各 runner 返回 / process_next save_result 前同步生成 explanation；存 backtest_run.explanation 新列（migration，建议独立列便于前端分区）。**降级**：拒答/budget/异常→explanation=None 不阻断回测结果落库。(3) **§12.10.2**：worker 已 off 请求路径+allowlist；请求路径 services/backtests.py 只读不变。(4) **测试**：explanation 生成（mock gateway，grounded 真实 metrics）+no-预测边界（断言不含未来收益语/不含调参建议）+降级 None+migration。(5) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / alembic head（加列）/ §12.10.2 守门。",
       "design_decisions": [
         "explanation 独立列（非并入 report_markdown）便于前端分区显示+降级时只缺解释不缺报告。",

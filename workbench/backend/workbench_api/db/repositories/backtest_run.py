@@ -104,6 +104,7 @@ class BacktestRunRepository(Repository[BacktestRun, str]):
         allocations: list[Any] | None,
         trades: list[Any] | None,
         report_markdown: str | None,
+        explanation: str | None = None,
         finished_at: datetime | None = None,
     ) -> BacktestRun | None:
         """Write the successful result and mark the run ``done``."""
@@ -117,6 +118,7 @@ class BacktestRunRepository(Repository[BacktestRun, str]):
         row.allocations = allocations
         row.trades = trades
         row.report_markdown = report_markdown
+        row.explanation = explanation
         row.error = None
         row.error_kind = None
         row.finished_at = finished_at or _now()

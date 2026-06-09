@@ -17,12 +17,15 @@ becomes INSUFFICIENT_GROUNDING.
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Protocol
 
 from workbench_api.llm.gateway import ChatRequest, ChatResult
 from workbench_api.llm.routing import route_task
+
+logger = logging.getLogger(__name__)
 from workbench_api.services.explanation.schema import (
     INSUFFICIENT_GROUNDING_SIGNAL,
     parse_explanation_output,
@@ -144,3 +147,23 @@ class ExplanationService:
             raw_output=raw_output or f"{INSUFFICIENT_GROUNDING_SIGNAL}: {reason}",
             model=model,
         )
+
+
+def build_default_explainer() -> ExplanationService | None:
+    """Construct the production LLM explainer, or ``None`` when unavailable.
+
+    Returns ``None`` (callers degrade to a deterministic placeholder / no
+    explanation) when the AIGC gateway key is unset (local / CI), so the
+    off-request-path jobs stay green offline. B043: the explanation is an
+    enhancement, not a dependency. Production entrypoints (recommendations CLI /
+    backtest worker / risk-explanation job) call this once and pass the result
+    down; the jobs themselves default to no explainer so unit tests never touch
+    the network."""
+
+    try:
+        from workbench_api.llm.gateway import LLMGateway
+
+        return ExplanationService(LLMGateway())
+    except Exception as exc:  # noqa: BLE001 — no key / import issue → degrade
+        logger.info("explanation_llm_unavailable", extra={"reason": str(exc)})
+        return None

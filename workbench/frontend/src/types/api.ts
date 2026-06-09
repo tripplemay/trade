@@ -924,6 +924,11 @@ export interface components {
             trades?: components["schemas"]["BacktestTrade"][];
             /** Report Markdown */
             report_markdown?: string | null;
+            /**
+             * Explanation
+             * @description B043 — grounded LLM 'why this Sharpe/drawdown' explanation generated off the request path; null when the LLM refused / was over budget / unavailable (the frontend then shows the report only).
+             */
+            explanation?: string | null;
             /** Error */
             error?: string | null;
             /**

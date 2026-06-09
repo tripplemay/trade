@@ -19,6 +19,7 @@ from workbench_api.services.explanation.service import (
     STATUS_OK,
     ExplanationResult,
     ExplanationService,
+    build_default_explainer,
 )
 
 __all__ = [
@@ -27,6 +28,7 @@ __all__ = [
     "ExplanationOutput",
     "ExplanationResult",
     "ExplanationService",
+    "build_default_explainer",
     "parse_explanation_output",
     "references_grounded",
 ]

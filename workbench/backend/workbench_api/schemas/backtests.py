@@ -70,6 +70,14 @@ class BacktestRunResponse(BaseModel):
     allocations: list[AllocationBar] = Field(default_factory=list)
     trades: list[BacktestTrade] = Field(default_factory=list)
     report_markdown: str | None = None
+    explanation: str | None = Field(
+        default=None,
+        description=(
+            "B043 — grounded LLM 'why this Sharpe/drawdown' explanation generated "
+            "off the request path; null when the LLM refused / was over budget / "
+            "unavailable (the frontend then shows the report only)."
+        ),
+    )
     error: str | None = None
     error_kind: str | None = Field(
         default=None,

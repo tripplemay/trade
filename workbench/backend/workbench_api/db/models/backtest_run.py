@@ -66,6 +66,11 @@ class BacktestRun(Base):
         JSON().with_variant(JSONB(), "postgresql"), nullable=True
     )
     report_markdown: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # B043 F002 — grounded LLM "why this Sharpe/drawdown" explanation, generated
+    # by the worker (off the request path). Nullable: the explanation is an
+    # enhancement, so a refusal / over-budget / LLM-down run still stores the
+    # full backtest result with explanation=None (the frontend shows the report).
+    explanation: Mapped[str | None] = mapped_column(Text, nullable=True)
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
     # B047-OPS2 F001 — structured error classification (insufficient_history /
     # no_signal_dates / data_unavailable / unknown) so the frontend maps a

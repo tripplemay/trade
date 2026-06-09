@@ -14,10 +14,8 @@ import sys
 from sqlalchemy.orm import sessionmaker
 
 from workbench_api.db.engine import get_engine
-from workbench_api.recommendations.precompute import (
-    build_default_explainer,
-    run_precompute,
-)
+from workbench_api.recommendations.precompute import run_precompute
+from workbench_api.services.explanation import build_default_explainer
 
 
 def main(argv: list[str] | None = None) -> int:  # noqa: ARG001

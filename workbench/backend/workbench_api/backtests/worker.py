@@ -39,6 +39,7 @@ from workbench_api.backtests.adapters import (
     adapt_us_quality,
 )
 from workbench_api.backtests.error_kinds import classify_error_kind
+from workbench_api.backtests.explanation import generate_backtest_explanation
 from workbench_api.backtests.mapping import (
     map_allocations,
     map_equity,
@@ -46,6 +47,10 @@ from workbench_api.backtests.mapping import (
     map_trades,
 )
 from workbench_api.db.engine import get_engine
+from workbench_api.services.explanation import (
+    ExplanationService,
+    build_default_explainer,
+)
 from workbench_api.db.repositories.backtest_run import BacktestRunRepository
 from workbench_api.db.require_production_db import (
     ScratchDatabaseError,
@@ -451,7 +456,9 @@ _DISPATCH: dict[str, Callable[[Any, BacktestRunLike], dict[str, Any]]] = {
 }
 
 
-def run_backtest_job(run: BacktestRunLike) -> dict[str, Any]:
+def run_backtest_job(
+    run: BacktestRunLike, explainer: ExplanationService | None = None
+) -> dict[str, Any]:
     """Run the backtest for one queued run, dispatched by ``strategy_id``.
 
     Reads ``run.strategy_id`` (a ``backtest_run`` column), looks up the engine in
@@ -459,7 +466,12 @@ def run_backtest_job(run: BacktestRunLike) -> dict[str, Any]:
     ``trade`` lazily inside each runner so the module loads without the heavy
     stack (and so the §12.10.2 AST guard scans the imports here, the allowed
     location). A missing ``strategy_id`` defaults to master (the canonical
-    stand-in); a research-state strategy raises ``InactiveStrategyError``."""
+    stand-in); a research-state strategy raises ``InactiveStrategyError``.
+
+    B043 F002: when an ``explainer`` is supplied (the worker daemon builds one),
+    a grounded "why these results" ``explanation`` is added to the mapped dict
+    from the real metrics; ``None`` explainer (canonical / tests) → no LLM call,
+    ``explanation`` is ``None``."""
 
     strategy_id = getattr(run, "strategy_id", None) or MASTER_STRATEGY_ID
     if strategy_id in INACTIVE_STRATEGY_IDS:
@@ -473,10 +485,12 @@ def run_backtest_job(run: BacktestRunLike) -> dict[str, Any]:
             f"no backtest engine wired for strategy_id={strategy_id!r}"
         )
     snapshot = _load_backtest_snapshot()
-    return runner(snapshot, run)
+    mapped = runner(snapshot, run)
+    mapped["explanation"] = generate_backtest_explanation(explainer, run, mapped)
+    return mapped
 
 
-def process_next(session: Session) -> bool:
+def process_next(session: Session, explainer: ExplanationService | None = None) -> bool:
     """Claim + process one queued run. Returns ``True`` if a run was handled
     (so the caller skips the idle sleep), ``False`` when the queue was empty.
 
@@ -491,7 +505,7 @@ def process_next(session: Session) -> bool:
     session.commit()
     run_id = run.run_id
     try:
-        mapped = run_backtest_job(run)
+        mapped = run_backtest_job(run, explainer)
     except Exception as exc:  # noqa: BLE001 — any engine failure → error state
         logger.exception("backtest_worker_run_failed", extra={"run_id": run_id})
         session.rollback()
@@ -509,6 +523,7 @@ def process_next(session: Session) -> bool:
         allocations=mapped["allocations"],
         trades=mapped["trades"],
         report_markdown=mapped["report_markdown"],
+        explanation=mapped.get("explanation"),
     )
     session.commit()
     logger.info("backtest_worker_run_done", extra={"run_id": run_id})
@@ -532,13 +547,16 @@ def main(*, poll_seconds: float = POLL_SECONDS, max_iterations: int | None = Non
         print(str(exc), file=sys.stderr)
         return 1
     factory = sessionmaker(bind=get_engine(), autoflush=False, future=True)
+    # B043 F002: build the LLM explainer once (None on a host without the gateway
+    # key → backtests run with explanation=None, no LLM call).
+    explainer = build_default_explainer()
     iterations = 0
     logger.info("backtest_worker_started", extra={"poll_seconds": poll_seconds})
     while max_iterations is None or iterations < max_iterations:
         iterations += 1
         session = factory()
         try:
-            handled = process_next(session)
+            handled = process_next(session, explainer)
         except Exception:  # noqa: BLE001 — never let the daemon die on a DB blip
             logger.exception("backtest_worker_loop_error")
             session.rollback()

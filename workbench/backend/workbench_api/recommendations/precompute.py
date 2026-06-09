@@ -253,28 +253,6 @@ def _classify_data_source(prices_source: str, sleeve_status: dict[str, str]) -> 
     return DATA_SOURCE_REAL
 
 
-def build_default_explainer() -> ExplanationService | None:
-    """Construct the production LLM explainer, or ``None`` when unavailable.
-
-    Returns ``None`` (→ deterministic placeholder rationale) when the AIGC
-    gateway key is unset (local / CI), so the precompute stays green offline.
-    B043 F001: the explanation is an enhancement, not a dependency. The CLI /
-    timer entrypoint calls this and passes the result to ``run_precompute``;
-    ``run_precompute`` itself defaults to no explainer so unit tests never touch
-    the network."""
-
-    try:
-        from workbench_api.llm.gateway import LLMGateway
-
-        return ExplanationService(LLMGateway())
-    except Exception as exc:  # noqa: BLE001 — no key / import issue → degrade
-        logger.info(
-            "recommendations_rationale_llm_unavailable",
-            extra={"reason": str(exc)},
-        )
-        return None
-
-
 def run_precompute(
     session: Session,
     *,

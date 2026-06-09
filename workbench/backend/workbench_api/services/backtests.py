@@ -96,6 +96,7 @@ def _to_response(row: BacktestRun) -> BacktestRunResponse:
         allocations=[AllocationBar(**a) for a in (row.allocations or [])],
         trades=[BacktestTrade(**t) for t in (row.trades or [])],
         report_markdown=row.report_markdown,
+        explanation=row.explanation,
         error=row.error,
         error_kind=row.error_kind,
     )
