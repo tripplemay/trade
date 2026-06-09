@@ -1479,13 +1479,12 @@ export interface components {
          * @description One row in the position-diff table.
          *
          *     ``delta_*`` are signed so a positive value means "buy" and a negative
-         *     value means "sell". Reference price is the per-symbol ``avg_cost``
-         *     from the latest snapshot — workbench is research-only and does not
-         *     fetch live market data; F002 uses the cost basis as a placeholder
-         *     price reference. When the symbol has no current price reference
-         *     (target-only symbol with no prior position), ``reference_price`` is
-         *     ``None`` and the row is mirrored into ``unmatched`` so the frontend
-         *     can flag it.
+         *     value means "sell". Reference price is the per-symbol **latest close**
+         *     a ``PriceProvider`` resolves (B046 — mark-to-market, replacing the old
+         *     ``avg_cost`` cost-basis placeholder). When the symbol has no current
+         *     price reference (target-only symbol with no prior position),
+         *     ``reference_price`` is ``None`` and the row is mirrored into
+         *     ``unmatched`` so the frontend can flag it.
          */
         PositionDiffEntry: {
             /** Symbol */
