@@ -47,7 +47,10 @@ from workbench_api.db.models.recommendation_snapshot import (
 from workbench_api.db.repositories.recommendation_snapshot import (
     RecommendationSnapshotRepository,
 )
-from workbench_api.recommendations.rationale import generate_rationale
+from workbench_api.recommendations.rationale import (
+    deterministic_rationale,
+    generate_rationale,
+)
 from workbench_api.services.explanation import ExplanationService
 
 if TYPE_CHECKING:
@@ -283,16 +286,23 @@ def run_precompute(
 
     repo = RecommendationSnapshotRepository(session)
 
-    # Idempotent reuse: if the latest snapshot is already for this as_of_date,
-    # reuse its rationales (no LLM re-call for an unchanged target).
+    # Idempotent reuse — but only of a GENUINE LLM rationale, never a
+    # deterministic placeholder. The pre-B043 snapshots (and any earlier
+    # LLM-down run) hold placeholder rationales; reusing those would keep
+    # showing placeholders for the whole quarter after B043 deploys. A row
+    # whose stored rationale equals the placeholder it would generate is
+    # therefore regenerated (heals on the next daily run, retries when the LLM
+    # was down); a real LLM rationale is reused (no re-bill for an unchanged
+    # target). The placeholder is computed against the row's OWN stored
+    # data_source (denormalised in master_meta) so the comparison is exact.
     existing = repo.latest_snapshot()
-    existing_rationale: dict[str, str] = {
-        row.symbol: row.rationale
-        for row in existing
-        if row.as_of_date == result.as_of_date and row.rationale
-    }
-    # Reuse path: existing rationales for this as_of_date → no LLM re-call.
-    active_explainer = None if existing_rationale else explainer
+    existing_rationale: dict[str, str] = {}
+    for row in existing:
+        if row.as_of_date != result.as_of_date or not row.rationale:
+            continue
+        row_data_source = (row.master_meta or {}).get("data_source")
+        if row.rationale != deterministic_rationale(row.sleeve, row_data_source):
+            existing_rationale[row.symbol] = row.rationale
 
     data_source = result.master_meta.get("data_source")
     planning_weights = result.master_meta.get("planning_weights") or {}
@@ -306,7 +316,7 @@ def run_precompute(
             rationale = existing_rationale[symbol]
         else:
             rationale = generate_rationale(
-                active_explainer,
+                explainer,
                 symbol=symbol,
                 sleeve=sleeve,
                 target_weight=weight,

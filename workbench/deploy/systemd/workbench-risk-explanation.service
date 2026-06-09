@@ -1,0 +1,35 @@
+[Unit]
+Description=Workbench risk explanation precompute (B043 F003 — grounded LLM "why", read-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B043-ai-explanation-layer-spec.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=deploy
+Group=deploy
+WorkingDirectory=/srv/workbench/current/backend
+
+# Secrets (WORKBENCH_DB_URL + AIGC_GATEWAY_API_KEY for the LLM gateway) live in
+# /etc/workbench/workbench.env (chmod 600 root:deploy). Never committed.
+EnvironmentFile=/etc/workbench/workbench.env
+
+# Permanent product boundary (r) + §12.10.2: this timer runs the risk-EXPLANATION
+# precompute ONLY. It reuses the read-only risk-panel computation to build the
+# grounding (master / per-sleeve drawdown, kill-switch threshold, state) and asks
+# the LLM gateway for a short grounded "why this risk state", then writes the
+# risk_explanation_snapshot table. It NEVER places an order or touches the
+# broker / order-ticket / execution / fills / reconcile WRITE surfaces. The
+# risk panel REQUEST path is read-only and never calls the LLM — that is exactly
+# why the explanation is precomputed here, off the request path.
+ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.services.risk_explanation
+
+# Standard hardening (mirrors workbench-recommendations.service).
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/workbench /var/log/workbench /tmp
+
+# No [Install] section — this oneshot is pulled by
+# workbench-risk-explanation.timer, never enabled / started directly.

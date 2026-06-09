@@ -233,6 +233,45 @@ def test_run_precompute_injects_llm_rationale_then_reuses_idempotently(
     assert explainer.calls == 2  # unchanged — reuse path
 
 
+def test_run_precompute_regenerates_over_a_stored_placeholder(
+    session: Session,
+) -> None:
+    """B043 F005 fix: a pre-B043 / LLM-down snapshot holds *placeholder*
+    rationales for this as_of_date. The next run must REGENERATE them (not reuse
+    the placeholder), so the LLM rationale actually lands after deploy instead of
+    being frozen for the quarter."""
+
+    # Seed the snapshot the way the pre-B043 precompute did: placeholder text.
+    repo = RecommendationSnapshotRepository(session)
+    repo.save_batch(
+        as_of_date=date(2026, 3, 31),
+        rows=[
+            {
+                "symbol": "AAPL",
+                "sleeve": "satellite_us_quality",
+                "target_weight": 0.2,
+                "rationale": deterministic_rationale(
+                    "satellite_us_quality", DATA_SOURCE_REAL
+                ),
+            },
+            {
+                "symbol": "SGOV",
+                "sleeve": "risk_parity",
+                "target_weight": 0.8,
+                "rationale": deterministic_rationale("risk_parity", DATA_SOURCE_REAL),
+            },
+        ],
+        master_meta={"data_source": DATA_SOURCE_REAL},
+    )
+    session.commit()
+
+    explainer = _StubExplainer(_ok_result())
+    run_precompute(session, score_fn=_fake_result, explainer=explainer)  # type: ignore[arg-type]
+    assert explainer.calls == 2  # regenerated, did NOT reuse the placeholder
+    rows = RecommendationSnapshotRepository(session).latest_snapshot()
+    assert {r.rationale for r in rows} == {"grounded why"}
+
+
 def test_run_precompute_degrades_to_placeholder_without_explainer(
     session: Session,
 ) -> None:

@@ -61,6 +61,11 @@ RECO_SERVICE_UNIT = SYSTEMD_DIR / "workbench-recommendations.service"
 RECO_TIMER_UNIT = SYSTEMD_DIR / "workbench-recommendations.timer"
 REFRESH_SERVICE_UNIT = SYSTEMD_DIR / "workbench-data-refresh.service"
 REFRESH_TIMER_UNIT = SYSTEMD_DIR / "workbench-data-refresh.timer"
+RISK_EXPL_SERVICE_UNIT = SYSTEMD_DIR / "workbench-risk-explanation.service"
+RISK_EXPL_TIMER_UNIT = SYSTEMD_DIR / "workbench-risk-explanation.timer"
+RISK_EXPL_MODULE = (
+    BACKEND_ROOT / "workbench_api" / "services" / "risk_explanation.py"
+)
 DEPLOY_SH = REPO_ROOT / "workbench" / "deploy" / "scripts" / "deploy.sh"
 
 # Dotted-path fragments that mark a TRADE-EXECUTION surface a scheduler must
@@ -442,3 +447,64 @@ def test_data_refresh_timer_wired_by_dry_loop() -> None:
     text = DEPLOY_SH.read_text(encoding="utf-8")
     assert "enable --now workbench-data-refresh.timer" not in text
     assert REFRESH_TIMER_UNIT.is_file()
+
+
+# --- B043 F003 risk-explanation timer (boundary (r) + §12.10.2: read-only
+# risk grounding + off-request-path LLM; no execution) ---
+
+
+def test_risk_explanation_service_execstart_runs_risk_module() -> None:
+    assert RISK_EXPL_SERVICE_UNIT.is_file(), f"missing {RISK_EXPL_SERVICE_UNIT}"
+    text = RISK_EXPL_SERVICE_UNIT.read_text(encoding="utf-8")
+    execstart = [ln for ln in text.splitlines() if ln.strip().startswith("ExecStart=")]
+    assert len(execstart) == 1
+    assert "workbench_api.services.risk_explanation" in execstart[0]
+    assert "EnvironmentFile=/etc/workbench/workbench.env" in text
+
+
+def test_risk_explanation_service_references_no_trade_execution() -> None:
+    directives = "\n".join(
+        ln
+        for ln in RISK_EXPL_SERVICE_UNIT.read_text(encoding="utf-8").splitlines()
+        if not ln.strip().startswith("#")
+    ).lower()
+    for frag in ("broker", "order_ticket", "fills", "reconcile", "ticket"):
+        assert frag not in directives, (
+            f"risk-explanation .service directive references trade-execution "
+            f"{frag!r} (boundary (r))"
+        )
+
+
+def test_risk_explanation_timer_runs_daily_and_pulls_service() -> None:
+    assert RISK_EXPL_TIMER_UNIT.is_file(), f"missing {RISK_EXPL_TIMER_UNIT}"
+    text = RISK_EXPL_TIMER_UNIT.read_text(encoding="utf-8")
+    assert "OnCalendar=" in text
+    assert "Unit=workbench-risk-explanation.service" in text
+    assert "WantedBy=timers.target" in text
+
+
+def test_risk_explanation_timer_wired_by_dry_loop() -> None:
+    """B043 F003 timer installs via the B037-OPS1 workbench-*.timer loop — zero
+    deploy.sh change, no hardcoded enable literal."""
+    text = DEPLOY_SH.read_text(encoding="utf-8")
+    assert "enable --now workbench-risk-explanation.timer" not in text
+    assert RISK_EXPL_TIMER_UNIT.is_file()
+
+
+def test_risk_explanation_module_imports_no_trade_execution_surface() -> None:
+    """The risk-explanation scheduler entry module must not DIRECTLY import a
+    trade-execution surface (it reuses the read-only risk-panel computation + the
+    LLM gateway only). Mirrors the SCHEDULER_PKGS boundary for a job that lives
+    under services/ (which legitimately also contains execution code, so the
+    whole package can't be in SCHEDULER_PKGS)."""
+
+    hits = sorted(
+        m
+        for m in _imported_modules(RISK_EXPL_MODULE)
+        for frag in _FORBIDDEN_IMPORT_FRAGMENTS
+        if frag in m
+    )
+    assert not hits, (
+        f"risk_explanation scheduler entry imports a trade-execution surface {hits} "
+        "(boundary (r))"
+    )

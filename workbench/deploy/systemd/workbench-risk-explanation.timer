@@ -1,0 +1,15 @@
+[Unit]
+Description=Daily timer for workbench risk explanation precompute (B043 F003 — read-only grounded LLM "why")
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B043-ai-explanation-layer-spec.md
+
+[Timer]
+# 03:30 UTC — after recommendations (03:00), so the day's drawdown / risk state
+# is settled before the risk explanation is generated. Persistent=true catches
+# up a missed run after a VM reboot; the job is idempotent (upserts one row per
+# as_of_date and reuses a same-day explanation).
+OnCalendar=*-*-* 03:30:00
+Persistent=true
+Unit=workbench-risk-explanation.service
+
+[Install]
+WantedBy=timers.target
