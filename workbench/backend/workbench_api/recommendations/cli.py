@@ -14,7 +14,10 @@ import sys
 from sqlalchemy.orm import sessionmaker
 
 from workbench_api.db.engine import get_engine
-from workbench_api.recommendations.precompute import run_precompute
+from workbench_api.recommendations.precompute import (
+    build_default_explainer,
+    run_precompute,
+)
 
 
 def main(argv: list[str] | None = None) -> int:  # noqa: ARG001
@@ -25,7 +28,9 @@ def main(argv: list[str] | None = None) -> int:  # noqa: ARG001
     factory = sessionmaker(bind=get_engine(), autoflush=False, future=True)
     session = factory()
     try:
-        summary = run_precompute(session)
+        # B043 F001: build the production LLM explainer (grounded "why"); None on
+        # the timer host without the gateway key → deterministic placeholder.
+        summary = run_precompute(session, explainer=build_default_explainer())
     finally:
         session.close()
 

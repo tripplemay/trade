@@ -47,6 +47,11 @@ ROUTING_TABLE: Final[dict[str, str]] = {
     "topic_tagging": "claude-haiku-4.5",
     "sharpe_tooltip": "claude-haiku-4.5",
     "robinhood_simplify": "claude-haiku-4.5",
+    # B043 — grounded "why" explanation layer (Recommendations / Backtest / Risk).
+    # Short grounded outputs, same tier as daily_advisor — Haiku 4.5 is plenty.
+    "recommendation_rationale": "claude-haiku-4.5",
+    "backtest_explanation": "claude-haiku-4.5",
+    "risk_explanation": "claude-haiku-4.5",
     "embedding": "bge-m3",
     # B032 F001 — Sonnet 4.6 single-judge for the AI safety eval CI
     # gate. Per ai-safety-evals-2026-05.md §4: judge prompts need

@@ -6,7 +6,7 @@
       "title": "共享解释基建 + Recommendations rationale（注入 A，核心）+ 护栏复用 + 降级 + 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §5。B043 核心=填 recommendations/precompute.py:280 的 rationale 占位槽】(1) **共享解释生成器**：新建 services/explanation/（或就近）复用 llm/gateway.py advise(ChatRequest(task=)) + 护栏链（judge.py INSUFFICIENT_GROUNDING_SIGNAL sentinel 拒答 + advisor/schema.py references_valid 适配 + _strip_code_fence + cost_guard 月 cap）；routing.py ROUTING_TABLE 加 recommendation_rationale/backtest_explanation/risk_explanation→claude-haiku-4.5 + PRICE_TABLE 对应。(2) **Recommendation rationale prompt**：复用 advisor/service.py 5 规则系统 prompt（no 自动执行/no 收益预测/no 替代 quant/必须可引用/允许 summarize），user content=grounding（per-symbol sleeve/target_weight/planning_weight/sleeve_status/data_source/signal_date，来自 MasterTargetResult.master_meta precompute.py:67-76/182-191）；输出简洁 per-position『为什么这个权重』1-2 句 grounded 引 sleeve 组成+信号日。(3) **注入 precompute**：recommendations/precompute.py:280 占位改调解释生成器；**幂等**（同 as_of_date 已生成跳过，对齐 advisor precompute）；**降级**：拒答/budget/异常→回退现确定性占位文案不阻断写库。(4) **§12.10.2**：生成在 precompute（已 allowlist import trade），请求路径 services/recommendations.py 只读 rationale 不变。(5) **测试**：grounding 组装+解释生成（mock gateway）+references_valid 适配（引用越界→拒答）+降级回退占位+幂等+routing task 注册。(6) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0（含 mypy trade 若动 trade/，见 environment.md）/ §12.10.2 守门 / cost_guard 不被绕过。",
       "design_decisions": [
         "复用 B036 advisor 护栏链（sentinel+references_valid+5 规则 prompt）+B031 gateway+cost_guard，不重造；3 新 routing task→haiku-4.5（最廉价层够用，对齐 daily_advisor）+温度 0.2 稳定。",

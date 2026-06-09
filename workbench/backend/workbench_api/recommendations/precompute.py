@@ -47,6 +47,8 @@ from workbench_api.db.models.recommendation_snapshot import (
 from workbench_api.db.repositories.recommendation_snapshot import (
     RecommendationSnapshotRepository,
 )
+from workbench_api.recommendations.rationale import generate_rationale
+from workbench_api.services.explanation import ExplanationService
 
 if TYPE_CHECKING:
     from trade.data.loader import PriceBar  # type: ignore[import-untyped]
@@ -251,17 +253,49 @@ def _classify_data_source(prices_source: str, sleeve_status: dict[str, str]) -> 
     return DATA_SOURCE_REAL
 
 
+def build_default_explainer() -> ExplanationService | None:
+    """Construct the production LLM explainer, or ``None`` when unavailable.
+
+    Returns ``None`` (→ deterministic placeholder rationale) when the AIGC
+    gateway key is unset (local / CI), so the precompute stays green offline.
+    B043 F001: the explanation is an enhancement, not a dependency. The CLI /
+    timer entrypoint calls this and passes the result to ``run_precompute``;
+    ``run_precompute`` itself defaults to no explainer so unit tests never touch
+    the network."""
+
+    try:
+        from workbench_api.llm.gateway import LLMGateway
+
+        return ExplanationService(LLMGateway())
+    except Exception as exc:  # noqa: BLE001 — no key / import issue → degrade
+        logger.info(
+            "recommendations_rationale_llm_unavailable",
+            extra={"reason": str(exc)},
+        )
+        return None
+
+
 def run_precompute(
     session: Session,
     *,
     score_fn: ScoreFn = score_master_target,
     computed_at: datetime | None = None,
+    explainer: ExplanationService | None = None,
 ) -> PrecomputeSummary:
     """Score the current Master Portfolio target and persist it.
 
     ``score_fn`` is injectable so tests can supply a fake target without
     importing trade. On a scoring failure the snapshot is left untouched (the
-    request path stays graceful on the previous / empty snapshot)."""
+    request path stays graceful on the previous / empty snapshot).
+
+    B043 F001: each row's ``rationale`` is a grounded LLM "why" (via
+    ``explainer``; the CLI builds the production one with
+    :func:`build_default_explainer`, tests inject a stub or leave it ``None``).
+    Idempotent — when a snapshot for the computed ``as_of_date`` already exists
+    (the signal date only changes quarterly, but the timer runs daily) the
+    existing per-symbol rationale is reused, so the LLM is not re-billed for an
+    unchanged target. ``explainer is None`` (default) → deterministic
+    placeholder, so unit tests never touch the network."""
 
     try:
         result = score_fn()
@@ -269,23 +303,49 @@ def run_precompute(
         logger.exception("recommendations_precompute_failed")
         return PrecomputeSummary(saved=0, as_of_date=None, data_source=None, error=str(exc))
 
+    repo = RecommendationSnapshotRepository(session)
+
+    # Idempotent reuse: if the latest snapshot is already for this as_of_date,
+    # reuse its rationales (no LLM re-call for an unchanged target).
+    existing = repo.latest_snapshot()
+    existing_rationale: dict[str, str] = {
+        row.symbol: row.rationale
+        for row in existing
+        if row.as_of_date == result.as_of_date and row.rationale
+    }
+    # Reuse path: existing rationales for this as_of_date → no LLM re-call.
+    active_explainer = None if existing_rationale else explainer
+
+    data_source = result.master_meta.get("data_source")
+    planning_weights = result.master_meta.get("planning_weights") or {}
+    sleeve_status = result.master_meta.get("sleeve_status") or {}
+    signal_date = result.master_meta.get("signal_date")
+
     rows: list[dict[str, Any]] = []
     for symbol, weight in result.target_weights.items():
         sleeve = result.symbol_sleeve.get(symbol, "master")
+        if symbol in existing_rationale:
+            rationale = existing_rationale[symbol]
+        else:
+            rationale = generate_rationale(
+                active_explainer,
+                symbol=symbol,
+                sleeve=sleeve,
+                target_weight=weight,
+                planning_weight=planning_weights.get(sleeve),
+                sleeve_status=sleeve_status.get(sleeve),
+                data_source=data_source,
+                signal_date=signal_date,
+            )
         rows.append(
             {
                 "symbol": symbol,
                 "sleeve": sleeve,
                 "target_weight": weight,
-                # Placeholder rationale (rich "why" is B043); honest, not inflated.
-                "rationale": (
-                    f"{sleeve} sleeve target from the Master Portfolio composition "
-                    f"(data_source={result.master_meta.get('data_source')})."
-                ),
+                "rationale": rationale,
             }
         )
 
-    repo = RecommendationSnapshotRepository(session)
     saved = repo.save_batch(
         as_of_date=result.as_of_date,
         rows=rows,
