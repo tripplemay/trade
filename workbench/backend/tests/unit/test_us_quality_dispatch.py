@@ -111,3 +111,9 @@ def test_us_quality_report_payload_metrics_are_readable() -> None:
 
 def test_dispatch_table_wires_us_quality() -> None:
     assert worker_mod._DISPATCH["B025-us-quality-momentum"] is worker_mod._run_us_quality
+
+
+def test_dispatch_table_wires_hk_china() -> None:
+    # B050 F003: the standalone HK-China engine is wired; its result is
+    # risk_parity-isomorphic so it reuses adapt_risk_parity.
+    assert worker_mod._DISPATCH["B011-satellite-hk-china"] is worker_mod._run_hk_china

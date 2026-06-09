@@ -30,7 +30,7 @@
       "title": "新建 B011 港股中国独立回测引擎（trade/）+ 报告 builder + 分发 + 信号同源核验 + 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §7。B011 当前无独立引擎，只在 master 内部跑——用户拍板本批建独立引擎，触 trade/ 包】(1) **新建独立引擎**：trade/backtest/hk_china.py run_hk_china_quarterly_backtest(或 monthly，cadence 对齐该 sleeve 在 master 内实际 cadence，generator 据 master.py sleeve 配置定并注明)，**复用现有 generate_hk_china_signal**(master_portfolio.py:520-537 已用)，**严禁另写发散信号逻辑**——standalone 必须与 master 内 sleeve 同源信号，否则两个 hk_china 回测口径背离。result 同构 risk_parity(equity_curve/rebalance_results/fills)。(2) **新建报告 builder**：trade/reporting/hk_china.py build_hk_china_report_payload+render_hk_china_markdown。(3) **分发表加 B011-satellite-hk-china**+结果适配器。(4) **守门**：新引擎随 trade wheel 打包(§12.10.3 force-include 若涉及 fixtures)；§12.10.2 仍只 worker import。(5) **测试**：hk_china standalone 产非退化结果且**异于**其它策略(同时段)+信号同源核验(与 master 内 sleeve 信号一致性至少结构层)+trade 包单测。(6) Gates：backend pytest(含 trade/ 包)≥ baseline+ / ruff 0 / mypy 0。依赖 F001 分发框架。",
       "design_decisions": [
         "hk_china standalone 强制复用 generate_hk_china_signal（与 master 内 sleeve 同源），不另写发散信号逻辑——否则两个 hk_china 回测口径背离误导用户。",

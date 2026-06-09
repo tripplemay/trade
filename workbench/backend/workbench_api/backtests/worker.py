@@ -395,13 +395,59 @@ def _run_us_quality(snapshot: Any, run: BacktestRunLike) -> dict[str, Any]:
     }
 
 
+def _run_hk_china(snapshot: Any, run: BacktestRunLike) -> dict[str, Any]:
+    """HK-China Momentum (quarterly) — the B050 F003 standalone engine.
+
+    Quarterly cadence (matches the sleeve's config inside the Master); reuses the
+    shared ``generate_hk_china_signal`` (same source as the Master sleeve) and a
+    risk_parity-isomorphic result, so ``adapt_risk_parity`` maps it."""
+
+    from trade.backtest.hk_china import (  # type: ignore[import-untyped]
+        run_hk_china_quarterly_backtest,
+    )
+    from trade.backtest.master_portfolio import identify_quarter_end_signal_dates
+    from trade.reporting.hk_china import (  # type: ignore[import-untyped]
+        build_hk_china_report_payload,
+        render_hk_china_markdown,
+    )
+    from trade.strategies.hk_china_momentum.parameters import (  # type: ignore[import-untyped]
+        HkChinaMomentumParameters,
+    )
+
+    records = snapshot.records
+    all_dates = tuple(sorted({record.date for record in records}))
+    quarter_ends = identify_quarter_end_signal_dates(all_dates)
+    signal_dates = _signal_dates_in_range(quarter_ends, run.params or {})
+    if not signal_dates:
+        raise BacktestWorkerError(
+            "no quarter-end signal dates available in the requested date range"
+        )
+    params = _strategy_parameters(
+        "B011-satellite-hk-china", run, HkChinaMomentumParameters
+    )
+    result = _drop_earliest_retry(
+        lambda usable: run_hk_china_quarterly_backtest(
+            records, usable, strategy_parameters=params
+        ),
+        signal_dates,
+        (KeyError,),
+    )
+    payload = build_hk_china_report_payload(result, snapshot, run.run_id)
+    return {
+        "metrics": map_metrics(payload),
+        **adapt_risk_parity(result),
+        "report_markdown": render_hk_china_markdown(payload),
+    }
+
+
 # B050 — strategy_id → engine runner. F001 Tier-1 (master / momentum /
-# risk_parity); F002 us_quality; hk_china (F003) adds its entry next.
+# risk_parity); F002 us_quality; F003 hk_china (standalone engine).
 _DISPATCH: dict[str, Callable[[Any, BacktestRunLike], dict[str, Any]]] = {
     MASTER_STRATEGY_ID: _run_master,
     "B006-global-etf-momentum": _run_momentum,
     "B016-risk-parity-hrp": _run_risk_parity,
     "B025-us-quality-momentum": _run_us_quality,
+    "B011-satellite-hk-china": _run_hk_china,
 }
 
 
