@@ -53,7 +53,7 @@
       "title": "交易指令保真度修复——防守模式 SGOV 股数(CRITICAL，美元当股数~100倍) + as_of_date 真实信号日 + 陈旧 docstring + 数值保真测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【2026-06-09 交易/推荐保真度审查产出，用户批并入 B050，见 docs/product/trade-recommendation-fidelity-audit-2026-06.md】(1) ★**CRITICAL 防守 SGOV 股数**：services/tickets.py:240-257 _defensive_diff_rows 的 SGOV 买入行去掉 target_shares/delta_shares=total_equity（把美元金额当股数，SGOV~$100/股时~100倍超买）；改取**真实 SGOV 市价**（SGOV 在价格 universe，复用 PriceProvider marks_for）→ delta_shares=total_equity/sgov_mark（对齐正常路径 execution.py:201 target_dollar/reference_price 模式），reference_price 填真实 SGOV 市价；**无市价时诚实**只显 delta_dollar、股数留 None + 标注『执行时按市价折算』，绝不美元当股数。卖出行(sell to zero)不变。(2) **数值保真单测**：防守 SGOV 行断言 delta_shares × sgov_mark ≈ total_equity（金额一致），**非** delta_shares==total_equity；扩 test_risk_panel.py 防守 ticket 测试加数值核（现仅断言含 SGOV 文本）。(3) **Medium as_of_date**：services/recommendations.py:263 get_current_recommendations 去 date.today() 硬编码，返回 snapshot 真实 as_of_date（信号日）；无快照回退合理（空态）；可加 computed_at 暴露 precompute 时点。测试断言 as_of_date 来自 snapshot 非恒 today。(4) **Low 陈旧 docstring**：recommendations.py:1-16 模块 docstring 去『equal-weight across 4 sleeves until F011』陈旧（B044 已真实权重）；schemas/execution.py:85-87 reference_price docstring avg_cost→latest_close（B046 改）。(5) **边界**：不改 master 评分/diff 正常路径/gate 逻辑；§12.10.2 不破（tickets/recommendations 请求路径不 import trade）。(6) Gates：backend pytest ≥ baseline+（含防守数值保真+as_of_date 新测）/ ruff 0 / mypy 0 / api.ts drift（若 schema 加 computed_at 则同步）。",
       "design_decisions": [
         "防守 SGOV 取真实 SGOV 市价折算股数（对齐正常路径 target_dollar/reference_price 模式）；无市价诚实留空+标注不伪造，绝不把美元当股数。",

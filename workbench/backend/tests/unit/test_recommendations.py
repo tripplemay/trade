@@ -138,6 +138,19 @@ def test_current_graceful_empty_when_no_snapshot(
     assert payload["wash_sale_flags"] == []
 
 
+def test_current_as_of_date_is_snapshot_signal_date_not_today(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """B050 F005: as_of_date is the snapshot's real signal date, not date.today()
+    (which hid how stale the recommendation was)."""
+
+    _seed_snapshot()  # seeds as_of_date 2024-12-31
+    client = _authed_client(tmp_path)
+    payload = client.get("/api/recommendations/current").json()
+    assert payload["as_of_date"] == "2024-12-31"
+    assert payload["as_of_date"] != date.today().isoformat()
+
+
 def test_current_returns_target_positions_from_snapshot(
     initialised_db: str, tmp_path: Path
 ) -> None:

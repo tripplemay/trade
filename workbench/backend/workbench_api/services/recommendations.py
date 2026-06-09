@@ -8,11 +8,11 @@ exported markdown carries a mandatory disclaimer (see
 ``DISCLAIMER_LITERAL``); the F010 acceptance pins that literal via
 ``tests/unit/test_recommendations.py``.
 
-For F010 the target portfolio is computed from the strategies registry
-(equal-weight across the 4 sleeves until F011 wires a real master
-portfolio aggregator); current_weights come from the Account row(s)
-when present, otherwise 0. ``account_present=False`` lights the
-frontend's empty state.
+The target portfolio is the latest precomputed Master Portfolio target
+(B044 — real per-sleeve scoring written to ``recommendation_snapshot``,
+not the old equal-weight placeholder); current_weights come from the
+Account row(s)' mark-to-market value when present, otherwise 0.
+``account_present=False`` lights the frontend's empty state.
 """
 
 from __future__ import annotations
@@ -257,10 +257,20 @@ def _build_gate_checks(session: Session, total_equity: float) -> list[GateCheck]
 
 
 def get_current_recommendations(session: Session) -> RecommendationsResponse:
-    """Build the RecommendationsResponse for ``GET /api/recommendations/current``."""
+    """Build the RecommendationsResponse for ``GET /api/recommendations/current``.
+
+    B050 F005: ``as_of_date`` is the **real signal date** of the latest precompute
+    snapshot (was ``date.today()``, which hid how stale the recommendation was —
+    it could lag the live date by weeks). Falls back to today only when no
+    precompute snapshot exists yet (empty state)."""
 
     account_present, total_equity = _aggregate_account_state(session)
-    as_of = date.today().isoformat()
+    snapshot_rows = RecommendationSnapshotRepository(session).latest_snapshot()
+    as_of = (
+        snapshot_rows[0].as_of_date.isoformat()
+        if snapshot_rows
+        else date.today().isoformat()
+    )
     return RecommendationsResponse(
         as_of_date=as_of,
         target_positions=_build_target_positions(session),

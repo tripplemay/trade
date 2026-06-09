@@ -85,8 +85,13 @@ def render_ticket_markdown(
     """
 
     t_plus_one = ticket_date + timedelta(days=1)
+    # Keep a leg when it moves shares OR (B050 F005) only carries a dollar delta —
+    # the no-mark defensive buy has delta_shares=None but a real dollar amount.
     trades = [
-        row for row in diff_rows if float(cast(Any, row.get("delta_shares") or 0.0)) != 0.0
+        row
+        for row in diff_rows
+        if float(cast(Any, row.get("delta_shares") or 0.0)) != 0.0
+        or float(cast(Any, row.get("delta_dollar") or 0.0)) != 0.0
     ]
 
     lines: list[str] = []
@@ -134,8 +139,17 @@ def render_ticket_markdown(
         )
         lines.append("|---|---|---|---:|---|---:|---:|")
         for index, row in enumerate(trades, start=1):
-            delta = float(cast(Any, row.get("delta_shares") or 0.0))
-            action = "BUY" if delta > 0 else "SELL"
+            raw_delta = row.get("delta_shares")
+            delta_dollar = float(cast(Any, row.get("delta_dollar") or 0.0))
+            if raw_delta is None:
+                # B050 F005: no mark → shares sized at execution; direction from
+                # the dollar delta, shares column shows "at market" (never 0/fake).
+                action = "BUY" if delta_dollar > 0 else "SELL"
+                shares_str = "at market / 按市价"
+            else:
+                delta = float(cast(Any, raw_delta or 0.0))
+                action = "BUY" if delta > 0 else "SELL"
+                shares_str = _format_shares(abs(delta))
             symbol = str(row.get("symbol", ""))
             reason = str(row.get("reason") or "")
             reference_price = row.get("reference_price")
@@ -151,7 +165,7 @@ def render_ticket_markdown(
                         str(index),
                         action,
                         symbol,
-                        _format_shares(abs(delta)),
+                        shares_str,
                         reason,
                         ref_str,
                         ref_str,
@@ -197,17 +211,39 @@ def render_ticket_markdown(
     return "\n".join(lines)
 
 
+def _defensive_reference_price(session: Any) -> float | None:
+    """Latest market close for the defensive symbol (SGOV), or ``None``.
+
+    SGOV is in the price universe, so the defensive buy line can size real
+    shares from a real mark — the same source the normal diff path uses
+    (``mark_to_market.marks_for`` / ``latest_close``)."""
+
+    from workbench_api.services.mark_to_market import latest_close, marks_for
+    from workbench_api.services.prices_provider import DbPriceProvider
+    from workbench_api.services.risk_panel import DEFENSIVE_SYMBOL
+
+    marks = marks_for(DbPriceProvider(session), {DEFENSIVE_SYMBOL})
+    return latest_close(marks, DEFENSIVE_SYMBOL)
+
+
 def _defensive_diff_rows(
     total_equity: float,
     snapshot: Any,
+    defensive_mark: float | None,
 ) -> list[dict[str, Any]]:
     """B023 F006 — compute the diff rows for a 100%-defensive rotation.
 
-    Every existing position sells to zero; the defensive symbol (SGOV)
-    buys to consume the full equity. Reference prices fall back to
-    each symbol's cost basis from the prior snapshot so the ticket's
-    Markdown table can show the same `Limit hint` / `Reference close`
-    columns as the normal flow.
+    Every existing position sells to zero; the defensive symbol (SGOV) buys to
+    consume the full equity. Reference prices for the sell legs fall back to each
+    symbol's cost basis from the prior snapshot.
+
+    **B050 F005 (CRITICAL fix):** the SGOV buy line previously set
+    ``target_shares = delta_shares = total_equity`` — i.e. it put the **dollar
+    amount in the share column** (≈100× over-buy at SGOV ~$100/share). It now
+    sizes shares from the real SGOV mark (``total_equity / defensive_mark``, the
+    same ``target_dollar / reference_price`` model the normal path uses). When no
+    mark is available it is honest: shares stay ``None`` (rendered "at market")
+    and only the dollar amount is shown — never dollars-as-shares.
     """
 
     from workbench_api.services.risk_panel import DEFENSIVE_SYMBOL
@@ -235,26 +271,47 @@ def _defensive_diff_rows(
                 "reason": "Defensive rotation — sell to zero.",
             }
         )
-    # The defensive symbol buy line. Without a real reference price we
-    # leave reference_price None; the Markdown renderer surfaces "—".
+    # The defensive symbol buy line — size shares from the real SGOV mark.
     if total_equity > 0:
-        rows.append(
-            {
-                "symbol": DEFENSIVE_SYMBOL,
-                "current_shares": 0.0,
-                "target_shares": total_equity,
-                "delta_shares": total_equity,
-                "current_weight": 0.0,
-                "target_weight": 1.0,
-                "delta_weight": 1.0,
-                "delta_dollar": total_equity,
-                "reference_price": None,
-                "reason": (
-                    "Defensive rotation — allocate full equity to the "
-                    "defensive sleeve."
-                ),
-            }
-        )
+        if defensive_mark is not None and defensive_mark > 0:
+            shares = total_equity / defensive_mark
+            rows.append(
+                {
+                    "symbol": DEFENSIVE_SYMBOL,
+                    "current_shares": 0.0,
+                    "target_shares": shares,
+                    "delta_shares": shares,
+                    "current_weight": 0.0,
+                    "target_weight": 1.0,
+                    "delta_weight": 1.0,
+                    "delta_dollar": total_equity,
+                    "reference_price": defensive_mark,
+                    "reason": (
+                        "Defensive rotation — allocate full equity to the "
+                        "defensive sleeve."
+                    ),
+                }
+            )
+        else:
+            # No mark → honest: show the dollar amount, never dollars-as-shares.
+            rows.append(
+                {
+                    "symbol": DEFENSIVE_SYMBOL,
+                    "current_shares": 0.0,
+                    "target_shares": None,
+                    "delta_shares": None,
+                    "current_weight": 0.0,
+                    "target_weight": 1.0,
+                    "delta_weight": 1.0,
+                    "delta_dollar": total_equity,
+                    "reference_price": None,
+                    "reason": (
+                        "Defensive rotation — allocate full equity "
+                        f"({_format_currency(total_equity)}) to the defensive "
+                        "sleeve; shares sized at execution market price."
+                    ),
+                }
+            )
     return rows
 
 
@@ -326,7 +383,11 @@ def generate_ticket(
         # to the defensive sleeve" target, computed against the current
         # cash + holdings. The diff rows then drive _render_ticket_markdown
         # the same way the normal flow does.
-        diff_rows = _defensive_diff_rows(diff_response.total_equity, snapshot)
+        diff_rows = _defensive_diff_rows(
+            diff_response.total_equity,
+            snapshot,
+            _defensive_reference_price(session),
+        )
     else:
         diff_rows = [entry.model_dump() for entry in diff_response.diff]
     flags = [flag.model_dump() for flag in recommendations.wash_sale_flags]
