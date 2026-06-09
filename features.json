@@ -1,73 +1,61 @@
 {
-  "sprint": "B050-backtest-per-strategy-dispatch",
+  "sprint": "B043-ai-explanation-layer",
   "features": [
     {
       "id": "F001",
-      "title": "分发核心 + Tier-1 适配（worker 读 strategy_id + 分发表 momentum/risk_parity/master 显式项 + 结果适配器）+ regime 友好排除 + 测试",
+      "title": "共享解释基建 + Recommendations rationale（注入 A，核心）+ 护栏复用 + 降级 + 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【生产缺陷修复核心，见 spec §5。根因=worker 写死跑 master 无视 strategy_id】(1) **worker 读 strategy_id**：backtests/worker.py BacktestRunLike 协议加 strategy_id:str（已落库 backtest_run.strategy_id 列），run_backtest_job 按 strategy_id 查分发表，不再写死 master。(2) **分发表** strategy_id→(engine_fn, result_adapter, report_builder) 覆盖 B006-global-etf-momentum(trade/backtest/monthly.py run_multi_monthly_backtest)+B016-risk-parity-hrp(trade/backtest/risk_parity.py run_risk_parity_monthly_backtest)+master_portfolio(现有 run_master_portfolio_quarterly_backtest)；signal_dates/records/params 复用现 _load_backtest_snapshot+_signal_dates_in_range，cadence 差异(monthly vs quarterly)按各引擎契约传入。(3) **结果适配器** momentum/risk_parity/master 各一 adapter：result→metrics/equity/allocations/trades(处理 portfolio_target_weights vs signal.target_weights 字段名差异)；保留现 backtests/mapping.py map_* 为 master adapter。(4) **master 显式注册项**：services/strategies.py 注册表加 master_portfolio 条目(旗舰组合显式可选，否则修复后用户无法再跑 master)，前端据 /api/strategies 自动呈现。(4b) **parameters 接线(2026-06-09 审查产出，用户批并入)**：run.params['parameters'] 接进各引擎 strategy_parameters(risk_parity/momentum 接受对应 Parameters 类型)，每策略 adapter 解析自己参数类型，空 dict→None 用引擎默认(兼容当前行为)。**canonical 必修**：canonical.py:44-48 的 run stand-in 设 strategy_id='master_portfolio'(或 worker 分发缺 strategy_id 默认 master)，否则分发后 canonical 每日报告 AttributeError。(5) **regime 友好排除**：B013/B014/B015(research 态 weight=0.0)→error_kind=inactive_strategy(不跑 master 兜底)；services/backtests.py 校验层提前挡 vs worker 标 error_kind generator 二选一注明。(6) **测试**：分发表三策略各产**不同** metrics/equity(断言彼此不相等=核心反例)+regime→inactive_strategy+strategy_id 读取+适配器字段映射。(7) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / §12.10.2 守门(worker 仍唯一 importer，请求路径不变)。(8) 不动：信号/评分算法/master 组合逻辑。",
+      "status": "pending",
+      "acceptance": "【见 spec §5。B043 核心=填 recommendations/precompute.py:280 的 rationale 占位槽】(1) **共享解释生成器**：新建 services/explanation/（或就近）复用 llm/gateway.py advise(ChatRequest(task=)) + 护栏链（judge.py INSUFFICIENT_GROUNDING_SIGNAL sentinel 拒答 + advisor/schema.py references_valid 适配 + _strip_code_fence + cost_guard 月 cap）；routing.py ROUTING_TABLE 加 recommendation_rationale/backtest_explanation/risk_explanation→claude-haiku-4.5 + PRICE_TABLE 对应。(2) **Recommendation rationale prompt**：复用 advisor/service.py 5 规则系统 prompt（no 自动执行/no 收益预测/no 替代 quant/必须可引用/允许 summarize），user content=grounding（per-symbol sleeve/target_weight/planning_weight/sleeve_status/data_source/signal_date，来自 MasterTargetResult.master_meta precompute.py:67-76/182-191）；输出简洁 per-position『为什么这个权重』1-2 句 grounded 引 sleeve 组成+信号日。(3) **注入 precompute**：recommendations/precompute.py:280 占位改调解释生成器；**幂等**（同 as_of_date 已生成跳过，对齐 advisor precompute）；**降级**：拒答/budget/异常→回退现确定性占位文案不阻断写库。(4) **§12.10.2**：生成在 precompute（已 allowlist import trade），请求路径 services/recommendations.py 只读 rationale 不变。(5) **测试**：grounding 组装+解释生成（mock gateway）+references_valid 适配（引用越界→拒答）+降级回退占位+幂等+routing task 注册。(6) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0（含 mypy trade 若动 trade/，见 environment.md）/ §12.10.2 守门 / cost_guard 不被绕过。",
       "design_decisions": [
-        "per-strategy adapter（每策略适配器）而非巨型分支 mapper：各引擎 result 不同构，隔离适配更清晰可测。",
-        "master 加显式注册条目（planner 决）：修复后 sleeve 各跑独立引擎，master 旗舰组合须保留显式入口否则无法再跑。",
-        "regime research 态 weight=0.0→error_kind=inactive_strategy 友好排除（不静默跑 master）。"
+        "复用 B036 advisor 护栏链（sentinel+references_valid+5 规则 prompt）+B031 gateway+cost_guard，不重造；3 新 routing task→haiku-4.5（最廉价层够用，对齐 daily_advisor）+温度 0.2 稳定。",
+        "解释生成在 precompute（off 请求路径§12.10.2）+幂等+降级回退确定性占位（解释是增强非依赖，LLM 失败不阻断核心写库）。",
+        "references_valid 按注入点适配 citation schema（rationale 引 sleeve/weight/signal_date/data_source，非 advisor 的 news_urls）。"
       ]
     },
     {
       "id": "F002",
-      "title": "us_quality 分发——新报告 builder + DataFrame/字段适配 + 空 fills 诚实口径 + 测试",
+      "title": "Backtest 结果解释（注入 B，worker 生成时同步）+ no-预测边界 + 降级 + 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §6。B025 引擎现成但返回结构异构】(1) **新报告 builder**：trade/reporting/us_quality_momentum.py(或就近) build_us_quality_report_payload+render_us_quality_markdown(模仿 risk_parity report)。(2) **DataFrame 适配**：UsQualityBacktestResult.equity_curve(pd.DataFrame)→list[EquitySample](date/nav)；rebalance_periods(字段名异于 _results)→allocations；**无 fills**→trades 空列表或从 period 持仓变化派生(generator 定注明诚实口径，不伪造交易)。(3) **分发表加 B025-us-quality-momentum**：接 F001 分发表+adapter。(4) **测试**：us_quality 产非退化结果且**异于** momentum/risk_parity/master(同时段)+DataFrame 转换+空 fills 处理。(5) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0。依赖 F001 分发框架。",
+      "status": "pending",
+      "acceptance": "【见 spec §6。依赖 F001 解释基建】(1) **Backtest explanation prompt**：grounding=真实 metrics(cagr/sharpe/max_dd/turnover)+trades 数+equity 点数+策略名+日期范围（worker.py:240-278 各 runner 手上即有）；输出简洁『为什么这个 Sharpe/回撤是这样』explain 真实历史输出，**不预测未来/不给调参建议**。(2) **注入 worker**：backtests/worker.py 各 runner 返回 / process_next save_result 前同步生成 explanation；存 backtest_run.explanation 新列（migration，建议独立列便于前端分区）。**降级**：拒答/budget/异常→explanation=None 不阻断回测结果落库。(3) **§12.10.2**：worker 已 off 请求路径+allowlist；请求路径 services/backtests.py 只读不变。(4) **测试**：explanation 生成（mock gateway，grounded 真实 metrics）+no-预测边界（断言不含未来收益语/不含调参建议）+降级 None+migration。(5) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / alembic head（加列）/ §12.10.2 守门。",
       "design_decisions": [
-        "us_quality equity_curve 是 pd.DataFrame（异于其它 tuple[EquityPoint]）+无 fills：显式 DataFrame→EquitySample 转换 + 空 fills 诚实口径（不伪造交易记录）。"
+        "explanation 独立列（非并入 report_markdown）便于前端分区显示+降级时只缺解释不缺报告。",
+        "backtest 解释严守 no-预测：只 explain 历史真实数字，不说『下次会更好』不给调参建议。"
       ]
     },
     {
       "id": "F003",
-      "title": "新建 B011 港股中国独立回测引擎（trade/）+ 报告 builder + 分发 + 信号同源核验 + 测试",
+      "title": "Risk 解释（注入 C，架构关键：新表+新 precompute job + risk_panel 读 snapshot）+ 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §7。B011 当前无独立引擎，只在 master 内部跑——用户拍板本批建独立引擎，触 trade/ 包】(1) **新建独立引擎**：trade/backtest/hk_china.py run_hk_china_quarterly_backtest(或 monthly，cadence 对齐该 sleeve 在 master 内实际 cadence，generator 据 master.py sleeve 配置定并注明)，**复用现有 generate_hk_china_signal**(master_portfolio.py:520-537 已用)，**严禁另写发散信号逻辑**——standalone 必须与 master 内 sleeve 同源信号，否则两个 hk_china 回测口径背离。result 同构 risk_parity(equity_curve/rebalance_results/fills)。(2) **新建报告 builder**：trade/reporting/hk_china.py build_hk_china_report_payload+render_hk_china_markdown。(3) **分发表加 B011-satellite-hk-china**+结果适配器。(4) **守门**：新引擎随 trade wheel 打包(§12.10.3 force-include 若涉及 fixtures)；§12.10.2 仍只 worker import。(5) **测试**：hk_china standalone 产非退化结果且**异于**其它策略(同时段)+信号同源核验(与 master 内 sleeve 信号一致性至少结构层)+trade 包单测。(6) Gates：backend pytest(含 trade/ 包)≥ baseline+ / ruff 0 / mypy 0。依赖 F001 分发框架。",
+      "status": "pending",
+      "acceptance": "【见 spec §7。架构关键：risk_panel 是请求路径只读§12.10.2，禁塞 LLM】(1) **新表+migration**：risk_explanation_snapshot(as_of_date/master_dd/state/explanation/created_at)。(2) **新 precompute job**：services/risk_explanation.py——grounding=master_dd/per_sleeve_dd/kill_switch 阈值/state/slippage/valuation_basis/degraded_symbols（risk_panel.py:117-150 算法复用只读后喂 LLM）；输出简洁『当前风险现状+为什么(哪些头寸贡献 DD)』explain 当前态，**不预测恢复/不给卖出建议**；daily job（单独 timer 或并入现有，generator 定）；降级同 F001。(3) **risk_panel 读 snapshot**：services/risk_panel.py get_risk_panel 加读 risk_explanation_snapshot 最新解释（**请求路径只读不调 LLM**）；无解释→graceful 不显解释块；RiskPanelResponse schema 加 explanation 字段。(4) **§12.10.2**：LLM 在新 precompute job（off 请求路径）；risk_panel 请求路径仍只读。(5) **测试**：risk grounding+解释生成+risk_panel 读 snapshot+无解释 graceful+降级+migration。(6) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / alembic head / api.ts drift（risk schema 加字段同步）/ §12.10.2 守门。",
       "design_decisions": [
-        "hk_china standalone 强制复用 generate_hk_china_signal（与 master 内 sleeve 同源），不另写发散信号逻辑——否则两个 hk_china 回测口径背离误导用户。",
-        "result 对象同构 risk_parity（模仿其结构）以复用 adapter 模式；cadence 对齐 master sleeve 实际配置 generator 据 master.py 定。"
+        "risk 解释必须走新 precompute job+新表（risk_panel 请求路径只读，禁塞 LLM 重调用——§12.10.2 + 避免 LLM 超时拖累请求延迟）。",
+        "risk 解释 explain 当前态：不预测恢复日期/不给卖出建议（no-AI 边界 b/c）。"
       ]
     },
     {
       "id": "F004",
-      "title": "前端——inactive_strategy 双语友好提示 + 结果标注所跑策略 + 选择器含 master + vitest/Playwright",
+      "title": "前端——3 页面 surface 解释（Recommendations/Backtest/Risk）+ 空态/降级态 + i18n + 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §8。依赖 F001 error_kind + master 注册项】(1) **inactive_strategy 双语友好提示**：接 F001 error_kind=inactive_strategy→i18n 双语「研究态策略暂不支持独立回测」(en+zh-CN)不漏原始串(复用 B047-OPS2 error_kind→i18n 机制)。(2) **结果标注所跑策略**：回测结果区显示「策略：{所选策略名}」让用户确认跑的是所选策略(消除『都一样』歧义)。(3) **选择器含 master**：确认 /api/strategies 含 F001 新增 master_portfolio 条目，选择器正确呈现+默认值合理。(4) **测试**：vitest(inactive_strategy→双语/结果标注策略名/选择器含 master)+Playwright(选不同策略走通至少 mock 层)+i18n parity。(5) Gates：frontend vitest ≥ baseline+ / lint 0 / tsc 0 / api.ts drift 0(若后端 schema 变同步)/i18n parity/no-execution 守门。",
+      "status": "pending",
+      "acceptance": "【见 spec §8。依赖 F001-F003 后端字段】(1) **Recommendations**：per-position 显 rationale（rich『为什么』复用 B041 Robinhood UI rationale 槽）；空/降级态显确定性占位或留白不破。(2) **Backtest**：结果区显 explanation（与报告分区）；无 explanation 只显报告。(3) **Risk**：风险面板显 explanation；无则不显解释块。(4) **i18n**：解释文本按当前 locale 生成（generator 定：grounding 传 locale 让 LLM 出对应语言 vs 先英文）；UI 框架文案（『为什么』『AI 解释』标签）双语 parity。(5) **测试**：vitest（3 页面渲染解释/空态/降级态）+i18n parity+api.ts drift 0。(6) Gates：frontend vitest ≥ baseline+ / lint 0 / tsc 0 / api.ts drift 0 / no-execution 守门。",
       "design_decisions": [
-        "结果区标注所跑策略名（planner 决）：直接消除用户『选任何策略都一样』的歧义，UI 层确认 strategy 已生效。"
+        "解释 surface 为增强（空/降级时优雅留白），不破现有页面；复用 B041 rationale 槽。"
       ]
     },
     {
       "id": "F005",
-      "title": "交易指令保真度修复——防守模式 SGOV 股数(CRITICAL，美元当股数~100倍) + as_of_date 真实信号日 + 陈旧 docstring + 数值保真测试",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "【2026-06-09 交易/推荐保真度审查产出，用户批并入 B050，见 docs/product/trade-recommendation-fidelity-audit-2026-06.md】(1) ★**CRITICAL 防守 SGOV 股数**：services/tickets.py:240-257 _defensive_diff_rows 的 SGOV 买入行去掉 target_shares/delta_shares=total_equity（把美元金额当股数，SGOV~$100/股时~100倍超买）；改取**真实 SGOV 市价**（SGOV 在价格 universe，复用 PriceProvider marks_for）→ delta_shares=total_equity/sgov_mark（对齐正常路径 execution.py:201 target_dollar/reference_price 模式），reference_price 填真实 SGOV 市价；**无市价时诚实**只显 delta_dollar、股数留 None + 标注『执行时按市价折算』，绝不美元当股数。卖出行(sell to zero)不变。(2) **数值保真单测**：防守 SGOV 行断言 delta_shares × sgov_mark ≈ total_equity（金额一致），**非** delta_shares==total_equity；扩 test_risk_panel.py 防守 ticket 测试加数值核（现仅断言含 SGOV 文本）。(3) **Medium as_of_date**：services/recommendations.py:263 get_current_recommendations 去 date.today() 硬编码，返回 snapshot 真实 as_of_date（信号日）；无快照回退合理（空态）；可加 computed_at 暴露 precompute 时点。测试断言 as_of_date 来自 snapshot 非恒 today。(4) **Low 陈旧 docstring**：recommendations.py:1-16 模块 docstring 去『equal-weight across 4 sleeves until F011』陈旧（B044 已真实权重）；schemas/execution.py:85-87 reference_price docstring avg_cost→latest_close（B046 改）。(5) **边界**：不改 master 评分/diff 正常路径/gate 逻辑；§12.10.2 不破（tickets/recommendations 请求路径不 import trade）。(6) Gates：backend pytest ≥ baseline+（含防守数值保真+as_of_date 新测）/ ruff 0 / mypy 0 / api.ts drift（若 schema 加 computed_at 则同步）。",
-      "design_decisions": [
-        "防守 SGOV 取真实 SGOV 市价折算股数（对齐正常路径 target_dollar/reference_price 模式）；无市价诚实留空+标注不伪造，绝不把美元当股数。",
-        "as_of_date 暴露 snapshot 真实信号日（+可选 computed_at）使陈旧度可见；权重本就真实，仅修新鲜度披露。",
-        "与 B050 同批：均属『交易/推荐保真度』，审查同源（CRITICAL 安全交易指令优先修）。"
-      ]
-    },
-    {
-      "id": "F006",
-      "title": "Codex L1+L2 真 VM——★每策略产不同非退化结果 + ★防守 SGOV 股数保真 + as_of_date 真实信号日 + regime 友好 + 回归 + signoff",
+      "title": "Codex L1+L2 真 VM——3 页面 grounded 解释 + ★no-AI 边界 adversarial 验证 + 降级 + 回归 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "【见 spec §9。core acceptance=证明『不同策略→不同数据』+ 交易指令保真】L1：F001-F005 全门禁——backend pytest(分发/各适配器/hk_china 引擎/regime inactive/防守 SGOV 数值保真/as_of_date)+frontend vitest/tsc/lint+ruff/mypy+§12.10.2 守门+i18n parity+api.ts drift 0+artifact grep secret=0。L2(真 VM)：(1) ★**核心反例**：同一时段依次跑 B006 momentum/B016 risk_parity/B025 us_quality/B011 hk_china/master_portfolio——每个产**非退化**结果(equity 点数>>2/有交易/metrics 非占位)且**彼此不相等**(metrics 或 equity 曲线明显不同)。证明『不同策略→不同数据』。(2) ★**防守 SGOV 股数保真(CRITICAL 验证)**：风险红态生成防守 ticket→SGOV 买入**股数 × SGOV 市价 ≈ 账户权益**(非美元当股数~100倍)；Markdown/导出股数正确。(3) **as_of_date**：推荐 as_of_date 显真实信号日(非恒 today)。(4) **regime**：选 B013/B014/B015→中文友好『研究态暂不支持独立回测』非原始异常串非静默跑 master。**evaluator.md §25 适用**：每策略互异+防守 SGOV 数值正确均须正面证据(实跑数字)，不得因『代码写了』放行。(5) **回归**：B047-OPS2 默认范围 Run 仍 OK；正常模式 diff/ticket 不破；recent-errors={count:0}；HEAD≡main；B026 absent；B023 闭环不破。(6) **Signoff**：docs/test-reports/B050-backtest-per-strategy-dispatch-signoff-2026-MM-DD.md 用模板(§Production/HEAD 等价+§Post-signoff Deploy+**§每策略结果差异性证据表**+**§防守 SGOV 股数保真证据**(股数×市价≈权益))。更新 progress.json status→done/docs.signoff/evaluator_feedback。"
+      "status": "pending",
+      "acceptance": "【见 spec §9。core acceptance=grounded 解释+守 no-AI 边界】L1：F001-F004 全门禁+§12.10.2 守门（解释生成不在请求路径）+cost_guard 不被绕过+i18n parity+api.ts drift 0+alembic head+artifact secret=0。L2(真 VM)：(1) **3 页面 grounded 解释**：Recommendations per-position rationale/Backtest explanation/Risk explanation 真机显**真实 LLM 解释**且**引用真实值**（sleeve/weight/signal_date / 真实 metrics / 真实 DD），非占位串。(2) ★**no-AI 边界 adversarial 验证**（evaluator.md §25+复用 B032 llm/judge.py safety_judge）：抽样生成的解释核**无收益预测数字/无自动执行指示/无替代 quant/引用都在输入集内**；judge 跑样本或人工核 N 条；**任一条违边界→blocker**。(3) **降级**：模拟 LLM 不可用/budget 超→3 页面 graceful 回退确定性占位/空态不报错不漏原始异常。(4) **回归**：B050 回测分发不破/推荐 diff 不破/recent-errors=0/HEAD≡main/B023 闭环不破。(5) **Signoff**：docs/test-reports/B043-ai-explanation-layer-signoff-2026-MM-DD.md 用模板（§Production/HEAD+§Post-signoff Deploy+§3 页面 grounded 解释样例+§no-AI 边界 adversarial 结果）。更新 progress.json status→done/docs.signoff/evaluator_feedback。"
     }
   ]
 }
