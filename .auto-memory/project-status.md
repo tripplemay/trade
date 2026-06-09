@@ -25,7 +25,8 @@ type: project
 - B001-B045 全部签收。
 
 ## 生产状态
-- **B047-OPS1 done：** prod `7bb8000`，alembic head(0013，含 backtest_run/investment_report)。**workbench-backtest-worker.service auto-active**（daemon sudoers 已应用，未来 deploy 自动 restart 上新代码）+ **workbench-canonical-backtest.timer enabled+active**（每日 04:00 生成投资报告）。`/api/reports` 返 1 真实投资报告。recent-errors=0。
+- **B043 已部署（2026-06-10，generator 经用户授权触发 Workbench Deploy）：** prod `7ce70d7`，**alembic head 0016**（含 backtest_run.explanation + risk_explanation_snapshot），schema check passed。**workbench-risk-explanation.timer enabled**（新 B043 timer 经 deploy.sh glob 自动安装，每日 03:30）+ 全部既有 timer enabled + backtest-worker active。deploy complete 无 warning/error。**待 L2**：解释文本须 timer 下次 run（recommendations 03:00→LLM rationale 重生成覆盖旧占位[幂等 fix 生效]；risk 03:30）或手动 `systemctl start workbench-{recommendations,risk-explanation}.service` populate；backtest on-demand 即出。需 AIGC_GATEWAY_API_KEY 在 VM（缺则诚实降级占位/None）。
+- **B047-OPS1 基线：** workbench-backtest-worker.service auto-active + workbench-canonical-backtest.timer（04:00 投资报告）。recent-errors=0。
 - VM 运维：timer+worker auto-wiring 全就位；新 daemon/timer 零 admin 动作。
 
 ## 永久硬边界
