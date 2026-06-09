@@ -25,6 +25,7 @@ from workbench_api.db.models.order_ticket import OrderTicket
 from workbench_api.db.models.price_history import PriceHistory
 from workbench_api.db.models.price_snapshot import PriceSnapshot
 from workbench_api.db.models.recommendation_snapshot import RecommendationSnapshot
+from workbench_api.db.models.risk_explanation_snapshot import RiskExplanationSnapshot
 from workbench_api.db.models.snapshot_meta import SnapshotMeta
 from workbench_api.db.models.tiingo_budget_log import TiingoBudgetLog
 
@@ -46,6 +47,7 @@ __all__ = [
     "PriceHistory",
     "PriceSnapshot",
     "RecommendationSnapshot",
+    "RiskExplanationSnapshot",
     "SnapshotMeta",
     "TiingoBudgetLog",
 ]

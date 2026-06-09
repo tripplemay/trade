@@ -47,14 +47,14 @@ from workbench_api.backtests.mapping import (
     map_trades,
 )
 from workbench_api.db.engine import get_engine
-from workbench_api.services.explanation import (
-    ExplanationService,
-    build_default_explainer,
-)
 from workbench_api.db.repositories.backtest_run import BacktestRunRepository
 from workbench_api.db.require_production_db import (
     ScratchDatabaseError,
     require_production_db,
+)
+from workbench_api.services.explanation import (
+    ExplanationService,
+    build_default_explainer,
 )
 
 logger = logging.getLogger(__name__)

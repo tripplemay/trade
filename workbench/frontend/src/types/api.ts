@@ -1782,6 +1782,11 @@ export interface components {
             degraded_symbols?: string[];
             /** @description Populated only when state == 'red'. The defensive target portfolio the user can choose instead of the normal ticket. */
             alternative_defensive_ticket?: components["schemas"]["AlternativeDefensiveTicket"] | null;
+            /**
+             * Explanation
+             * @description B043 — grounded LLM 'why this risk state' precomputed off the request path (risk_explanation_snapshot); null when no explanation has been generated yet / the LLM was unavailable (the panel then shows no explanation block). The request path only reads it.
+             */
+            explanation?: string | null;
         };
         /** SleeveBreakdown */
         SleeveBreakdown: {

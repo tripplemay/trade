@@ -73,3 +73,12 @@ class RiskPanelResponse(BaseModel):
             "portfolio the user can choose instead of the normal ticket."
         ),
     )
+    explanation: str | None = Field(
+        default=None,
+        description=(
+            "B043 — grounded LLM 'why this risk state' precomputed off the "
+            "request path (risk_explanation_snapshot); null when no explanation "
+            "has been generated yet / the LLM was unavailable (the panel then "
+            "shows no explanation block). The request path only reads it."
+        ),
+    )

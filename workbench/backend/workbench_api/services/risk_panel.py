@@ -25,6 +25,9 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
+from workbench_api.db.repositories.risk_explanation_snapshot import (
+    RiskExplanationSnapshotRepository,
+)
 from workbench_api.schemas.risk_panel import (
     AlternativeDefensiveTicket,
     DefensivePosition,
@@ -134,6 +137,10 @@ def get_risk_panel(
     # Slippage trend reuses the F005 analytics service so the same
     # window calc is exercised from a second route — no duplication.
     analytics = get_slippage_analytics(session, window="3m")
+    # B043 F003: surface the precomputed grounded explanation (read-only — the
+    # request path NEVER calls the LLM; a daily job writes the snapshot). Absent
+    # → None, the frontend renders no explanation block.
+    risk_explanation = RiskExplanationSnapshotRepository(session).latest()
     return RiskPanelResponse(
         state=state,  # type: ignore[arg-type]
         master_dd=master_dd,
@@ -147,6 +154,7 @@ def get_risk_panel(
         alternative_defensive_ticket=(
             _alternative_defensive_ticket(master_dd) if kill_switch_triggered else None
         ),
+        explanation=risk_explanation.explanation if risk_explanation else None,
     )
 
 

@@ -24,13 +24,13 @@ from typing import Protocol
 
 from workbench_api.llm.gateway import ChatRequest, ChatResult
 from workbench_api.llm.routing import route_task
-
-logger = logging.getLogger(__name__)
 from workbench_api.services.explanation.schema import (
     INSUFFICIENT_GROUNDING_SIGNAL,
     parse_explanation_output,
     references_grounded,
 )
+
+logger = logging.getLogger(__name__)
 
 STATUS_OK = "ok"
 STATUS_INSUFFICIENT_GROUNDING = "insufficient_grounding"

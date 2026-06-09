@@ -31,7 +31,7 @@
       "title": "Risk 解释（注入 C，架构关键：新表+新 precompute job + risk_panel 读 snapshot）+ 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §7。架构关键：risk_panel 是请求路径只读§12.10.2，禁塞 LLM】(1) **新表+migration**：risk_explanation_snapshot(as_of_date/master_dd/state/explanation/created_at)。(2) **新 precompute job**：services/risk_explanation.py——grounding=master_dd/per_sleeve_dd/kill_switch 阈值/state/slippage/valuation_basis/degraded_symbols（risk_panel.py:117-150 算法复用只读后喂 LLM）；输出简洁『当前风险现状+为什么(哪些头寸贡献 DD)』explain 当前态，**不预测恢复/不给卖出建议**；daily job（单独 timer 或并入现有，generator 定）；降级同 F001。(3) **risk_panel 读 snapshot**：services/risk_panel.py get_risk_panel 加读 risk_explanation_snapshot 最新解释（**请求路径只读不调 LLM**）；无解释→graceful 不显解释块；RiskPanelResponse schema 加 explanation 字段。(4) **§12.10.2**：LLM 在新 precompute job（off 请求路径）；risk_panel 请求路径仍只读。(5) **测试**：risk grounding+解释生成+risk_panel 读 snapshot+无解释 graceful+降级+migration。(6) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / alembic head / api.ts drift（risk schema 加字段同步）/ §12.10.2 守门。",
       "design_decisions": [
         "risk 解释必须走新 precompute job+新表（risk_panel 请求路径只读，禁塞 LLM 重调用——§12.10.2 + 避免 LLM 超时拖累请求延迟）。",
