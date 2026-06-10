@@ -52,6 +52,21 @@ from workbench_api.schemas.reconcile import (
 
 _logger = logging.getLogger("workbench.reconcile")
 
+# B053 F001: tolerances for "impossible state" detection. A sell that lands
+# within ``_SHARE_EPSILON`` of zero held shares (e.g. selling 50.0 of 50.0
+# where float math leaves a sub-micro-share residual) is benign float noise
+# and floored to 0; anything beyond it is a real oversell → reject. Cash uses
+# the same idea at dollar precision.
+_SHARE_EPSILON: float = 1e-6
+_CASH_EPSILON: float = 1e-6
+
+
+def _fmt_shares(value: float) -> str:
+    """Trim trailing zeros so ``10.0`` renders as ``10`` and ``109.27`` stays
+    exact — used only for human-facing rejection detail."""
+
+    return f"{value:.4f}".rstrip("0").rstrip(".")
+
 
 # ---------------------------------------------------------------------------
 # Reconcile
@@ -100,11 +115,19 @@ def _reference_prices_from_snapshot(
 def _apply_fills_to_positions(
     positions: list[dict[str, Any]],
     fills: list[Any],
-) -> tuple[list[dict[str, Any]], float]:
-    """Return (new_positions, cash_delta).
+) -> tuple[list[dict[str, Any]], float, list[dict[str, Any]]]:
+    """Return (new_positions, cash_delta, oversell_violations).
 
     ``cash_delta`` is the net cash change to apply on top of the prior
     snapshot's cash: buys + commissions/fees subtract cash, sells add.
+
+    ``oversell_violations`` (B053 F001) lists every sell whose share count
+    exceeds the running held shares — an impossible state under the MVP (no
+    short positions). Each entry is ``{symbol, sell_shares, held_shares,
+    line}``. The caller turns a non-empty list into a 409 rather than
+    silently flooring the position to 0 (the old behaviour hid user input
+    errors: a mistyped fill quantity would just zero the holding with no
+    trace). Selling *exactly* down to 0 is legal and produces no violation.
     """
 
     # B048 F002: remember each prior holding's sleeve tag so the rebuilt
@@ -128,7 +151,8 @@ def _apply_fills_to_positions(
         }
 
     cash_delta = 0.0
-    for fill in fills:
+    oversell_violations: list[dict[str, Any]] = []
+    for index, fill in enumerate(fills):
         symbol = fill.symbol.upper()
         shares = float(fill.shares)
         price = float(fill.fill_price)
@@ -154,8 +178,24 @@ def _apply_fills_to_positions(
             cash_delta -= shares * price + commission + fees
         else:
             new_shares = prev["shares"] - shares
-            if new_shares < 0:
-                new_shares = 0.0  # short positions out of scope for the MVP
+            if new_shares < -_SHARE_EPSILON:
+                # Sold more than held — impossible state (no short positions
+                # in the MVP). Record it so the caller can reject the whole
+                # reconcile with a 409 instead of silently flooring to 0.
+                seq = getattr(fill, "order_seq", None)
+                oversell_violations.append(
+                    {
+                        "symbol": symbol,
+                        "sell_shares": shares,
+                        "held_shares": prev["shares"],
+                        "line": seq if seq is not None else index + 1,
+                    }
+                )
+                new_shares = 0.0
+            elif new_shares < 0:
+                # Within epsilon: benign float noise from selling exactly to
+                # zero (e.g. 109.27 of 109.27). Floor without flagging.
+                new_shares = 0.0
             # Selling does not change cost basis; we just deplete shares.
             pos_by_symbol[symbol] = {
                 "symbol": symbol,
@@ -173,7 +213,7 @@ def _apply_fills_to_positions(
         if sleeve:
             entry["sleeve"] = sleeve
         out.append(entry)
-    return out, cash_delta
+    return out, cash_delta, oversell_violations
 
 
 def _ticket_diff_symbols(ticket: OrderTicket, session: Session) -> set[str]:
@@ -295,8 +335,38 @@ def reconcile_ticket(
     base_currency = (
         prior_snapshot.base_currency if prior_snapshot is not None else "USD"
     )
-    new_positions, cash_delta = _apply_fills_to_positions(prior_positions, fills)
-    new_cash = max(0.0, prior_cash + cash_delta)
+    new_positions, cash_delta, oversell_violations = _apply_fills_to_positions(
+        prior_positions, fills
+    )
+
+    # B053 F001: impossible-state guards — reject (409) instead of silently
+    # "correcting" the books. No snapshot is inserted and the ticket is NOT
+    # flipped to executed, so the user can fix the fill and re-run.
+    if oversell_violations:
+        first = oversell_violations[0]
+        raise HTTPException(
+            status_code=409,
+            detail=t(
+                "reconcile.oversell",
+                line=first["line"],
+                symbol=first["symbol"],
+                sell_shares=_fmt_shares(float(first["sell_shares"])),
+                held_shares=_fmt_shares(float(first["held_shares"])),
+            ),
+        )
+
+    projected_cash = prior_cash + cash_delta
+    if projected_cash < -_CASH_EPSILON:
+        raise HTTPException(
+            status_code=409,
+            detail=t(
+                "reconcile.cash_would_go_negative",
+                shortfall=f"{abs(projected_cash):.2f}",
+                prior_cash=f"{prior_cash:.2f}",
+                cash_delta=f"{cash_delta:.2f}",
+            ),
+        )
+    new_cash = max(0.0, projected_cash)
 
     snapshot_id = f"snap-{uuid.uuid4().hex[:12]}"
     new_snapshot = AccountSnapshot(

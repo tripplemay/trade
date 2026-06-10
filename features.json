@@ -6,7 +6,7 @@
       "title": "reconcile 对账完整性——超卖/负现金拒绝或警告（不静默修正）+ 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【🔴 中-高，第四轮审计 #1，见 spec §2。原则=不可能状态 fail-fast，不静默修正】(1) **超卖拒绝**：reconcile.py:156-158 检测 sell shares > held shares → 不再静默归零；整个 reconcile 拒绝（409，detail 指明行号/symbol/卖出 vs 持有数），或按行进入需用户确认的 warning 列表（generator 按现有 fills allow_unmatched 交互范式二选一注明）。注意区分『不支持做空』(MVP 边界)与『输入错误』(必须可见)。(2) **负现金拒绝/警告**：reconcile.py:299 检测 prior_cash+cash_delta<0 → 409（detail 给差额+可能原因『fill 价格/股数/费用录入错误』）或 ReconcileResponse 显式 warning 字段；**绝不静默 max(0,...)**。(3) **幂等不破**：already_reconciled 路径不变。(4) **测试**：超卖 fill→409+行级信息；负现金→409/warning；正常路径回归；边界（恰好卖到 0 股合法/cash 恰好 0 合法通过）。(5) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy(workbench_api+tests) 0。",
       "design_decisions": [
         "用户手抄 fill 是常规操作、输错是常态风险——输错时静默『修正』账目是最坏行为（对账对不上无线索）；对齐系统诚实降级一贯原则。",

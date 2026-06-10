@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "B053 加固扫尾批（四轮审计产出汇总，用户批『B052 done 后即启』）。把四轮系统审计挖出的全部边角防御缺口一批扫清，修复原则=**不可能状态 fail-fast/警告，不静默修正**（对齐系统诚实降级一贯原则）。4 features 3g+1c：**F001 reconcile 对账完整性（🔴 中-高）**——reconcile.py:156-158 超卖静默归零 + :299 负现金 max(0,...) 静默夹零均无警告，用户手抄 fill 输错时系统静默『修正』账目对账无线索；修=检测不可能状态→409 行级提示或 warning 标注（对齐 fills allow_unmatched 交互先例）。**F002 状态与并发（🟠）**——①worker 孤儿 running 回收（claim 后崩溃/deploy restart→run 永久卡 running，claim_next_queued 只领 queued 无启动回收；每次 deploy 都是触发窗口）：启动回收置 error_kind=interrupted+前端轮询超时提示；②snapshot_at 同秒 tie-breaker（latest() 排序补 created_at/id）；③advisor 幂等 skip 加 status==STATUS_OK（拒答行卡全天，B043 幂等占位同模式第二例）+risk_explanation.py:84 条件显式化。**F003 语义与防御（🟡）**——①has_mark 标注（『持有但无标价』与『未持有』在 recommendations 展示层同为 0%，diff 层 Unmatched 防护已有）；②backlog status 二选一（建列 vs 移除，BL-B050-S1）；③date.today()→datetime.now(UTC).date() 全局统一+守门（去『服务器 TZ=UTC』隐含假设）；④权重和断言 abs(sum-1)<1e-6。**F004 codex**——★实际提交超卖/负现金 fill 看到拒绝非静默（§25 正面证据）+★worker 重启无孤儿+latest 稳定+回归+**演练自清（B052 规约首执行：本批 L2 演练数据收尾用 drill_cleanup 自清）**+signoff。来源：threat-model-audit-2026-06.md（第四轮正向威胁建模）+post-b052-hidden-bug-audit（BL-AUDIT-S1）+b050 审计（BL-B050-S1），三条 backlog 条目已并入移除。spec docs/specs/B053-hardening-sweep-spec.md(6 章)。**背景**：B052 已 done（用户假 59.60% 回撤闭合，生产清理完成）；B052 soft-watch S1（/risk yellow unclassified 残留，low 用户知情）未入本批可选后续。",
   "total_features": 4,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-06-10",
   "reference_docs": [
     "docs/specs/B053-hardening-sweep-spec.md",
@@ -29,7 +29,7 @@
   "generator_handoff": null,
   "session_notes": {
     "planner": "2026-06-10 B052 done 收尾完成 + B053 转正启动（status→building 交 Generator F001）。**B052 收尾**：F002 Codex 生产复验 PASS（假 59.60%→真实 1.97%/Ticket 正常 3 行 BUY/journal 清空/真实快照保留）；framework 三候选（A 演练自清规约/B CI flake 二例/C 幂等占位二例）**用户裁定都不沉淀**，已记账 proposed-learnings（注：A 的操作面由 drill_cleanup CLI 工具承载，B 的 spec 修复与 C 的代码修复已排入 B053）；B052 framework_reviewed 视为完成（记账即闭环）；soft-watch S1（/risk yellow unclassified 残留，low）用户知情未入批。**B053 来源**：第四轮审计（正向威胁建模，threat-model-audit-2026-06.md）2 真隐患+2 低中+脆弱性，与池内 BL-AUDIT-S1/BL-B050-S1 凑批，三条 backlog 条目并入移除。**关键设计**：F001 reconcile 拒绝超卖/负现金（fail-fast 不静默，对齐 fills allow_unmatched 先例）；F002 worker 孤儿回收倾向 error_kind=interrupted 诚实告知；F004 演练自清=B052 规约首执行+实际提交错误 fill 看到拒绝（§25 正面证据）。 ▌**【下次 planner 续接】** status=building（Generator F001→F002→F003，再 Codex F004）。planner 下次介入：(a) B053 到 done→done 收尾（framework 队列已 6 候选：③async worker/④satellite 权重/sudoers wrapper/CI flake 二例/幂等占位二例/演练自清——届时按用户口味批量提）+下一步方向（B053 后四轮审计全清零，回用户上手主线或 product-retrospective 决策菜单 B Phase4 alpha/C 产品化/D 体验）；(b) Generator 抛疑点（F001 409 vs warning 交互/F002 interrupted vs requeue/F003 backlog status 建列 vs 移除）。**用户上手期**：四次报障全闭合（B050/B051/B052+audit），建仓流程已畅通（假红灯已灭）；用户走到 Reconcile 步骤时需带跑（API 触发）。prod=0173ec4 系（B052 已上）。",
-    "generator": null,
+    "generator": "2026-06-10 B053 F001 done（reconcile 对账完整性，0 fix-round 内）。**设计裁定**：超卖 + 负现金均走 **409 拒绝整笔对账（fail-fast）**，不采用 fills allow_unmatched 的逐行 warning+override——因为超卖/负现金是 MVP 下的『不可能状态』（无做空/无保证金），不存在『确认照做』的合理语义（照做＝恢复我们正要消除的静默 clamp）；409 Conflict 语义正确且与 reconcile 现有错误词汇（voided→409/no_fills→409）一致。**实现**：`reconcile.py` `_apply_fills_to_positions` 现返回 3 元组 `(new_positions, cash_delta, oversell_violations)`，卖出>持有（超出 _SHARE_EPSILON 1e-6）记入 violations 不再静默归零；`reconcile_ticket` 在任何 DB 写入前先查 violations→409(reconcile.oversell 含行号/symbol/卖出 vs 持有) 再查 `prior_cash+cash_delta < -_CASH_EPSILON`→409(reconcile.cash_would_go_negative 含缺口+可能原因)，去掉 `max(0.0,...)` 静默夹零。边界：恰好卖到 0 股 / cash 恰好 0 合法通过（epsilon 容忍 0.1+0.2 类浮点噪声）。i18n 双语 2 key。回归测试 7 个加入 test_reconcile.py（含直调 violation 检测 + API 级 409 + 两个边界 + 浮点 epsilon），同 commit。**门禁全绿**：ruff 0 / mypy 0（CI-exact，pip install ../.. 装 trade 后 328 files Success）/ tests/unit 909 passed(+7) / tests/safety 137 passed。幂等路径未动（executed early-return 在新 guard 之前）。**下一步 F002**（worker 孤儿回收+轮询超时+snapshot tie-breaker+advisor 幂等）。注：本机 workbench venv 原无 trade，mypy 须 `pip install ../..` 后才与 CI 等价（已装）。",
     "evaluator": null
   },
   "features": [

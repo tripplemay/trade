@@ -53,6 +53,16 @@ MESSAGES: Final[dict[str, dict[str, str]]] = {
         # Reconcile / analytics
         "reconcile.invalid_since": "无效的 'since' 日期:{since}",
         "reconcile.invalid_window": "window 必须为 3m/6m/1y 其一;实际收到 {window}",
+        "reconcile.oversell": (
+            "对账被拒绝:第 {line} 行卖出 {symbol} {sell_shares} 股,"
+            "但账户仅持有 {held_shares} 股(本系统不支持卖空/做空)。"
+            "请核对该笔成交录入的股数是否有误。"
+        ),
+        "reconcile.cash_would_go_negative": (
+            "对账被拒绝:这些成交执行后现金将变为负数"
+            "(缺口 ${shortfall};对账前现金 ${prior_cash},净现金变动 ${cash_delta})。"
+            "常见原因:成交价格、股数或费用录入有误。"
+        ),
         # Health
         "health.db_unreachable": "db_unreachable",
         # Generic
@@ -97,6 +107,17 @@ MESSAGES: Final[dict[str, dict[str, str]]] = {
         "reconcile.invalid_since": "invalid 'since' date: {since}",
         "reconcile.invalid_window": (
             "window must be one of 3m/6m/1y; got {window!r}"
+        ),
+        "reconcile.oversell": (
+            "Reconcile rejected: line {line} sells {sell_shares} shares of "
+            "{symbol} but the account only holds {held_shares} (short selling "
+            "is out of scope). Check the fill's share count for a typo."
+        ),
+        "reconcile.cash_would_go_negative": (
+            "Reconcile rejected: cash would go negative after these fills "
+            "(shortfall ${shortfall}; prior cash ${prior_cash}, net cash "
+            "change ${cash_delta}). Common cause: a wrong fill price, share "
+            "count, or fee."
         ),
         "health.db_unreachable": "db_unreachable",
         "validation.detail_passthrough": "{detail}",

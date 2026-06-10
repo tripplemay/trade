@@ -484,7 +484,8 @@ def test_apply_fills_preserves_prior_sleeve_tag() -> None:
         _fill("SPY", "buy", 10.0, 510.0),   # accumulate a tagged holding
         _fill("EEM", "buy", 5.0, 40.0),     # brand-new symbol, no prior tag
     ]
-    new_positions, _cash = _apply_fills_to_positions(prior, fills)
+    new_positions, _cash, violations = _apply_fills_to_positions(prior, fills)
+    assert violations == []
     by_symbol = {p["symbol"]: p for p in new_positions}
     assert by_symbol["SPY"]["sleeve"] == "momentum"
     assert by_symbol["SPY"]["shares"] == 110.0
@@ -499,5 +500,172 @@ def test_apply_fills_tagless_prior_stays_tagless() -> None:
 
     prior = [{"symbol": "IEF", "shares": 50.0, "avg_cost": 94.0}]
     fills = [_fill("IEF", "sell", 10.0, 95.0)]
-    new_positions, _cash = _apply_fills_to_positions(prior, fills)
+    new_positions, _cash, violations = _apply_fills_to_positions(prior, fills)
+    assert violations == []
     assert new_positions == [{"symbol": "IEF", "shares": 40.0, "avg_cost": 94.0}]
+
+
+# ---------------------------------------------------------------------------
+# B053 F001 — impossible-state guards: oversell / negative cash are rejected
+# (409) instead of silently "corrected". Fail-fast, not silent clamp.
+# ---------------------------------------------------------------------------
+
+
+def test_apply_fills_detects_oversell_violation() -> None:
+    """Selling more than held records a violation (not a silent floor-to-0)
+    and reports the held vs sold counts + the line number."""
+
+    prior = [{"symbol": "SPY", "shares": 10.0, "avg_cost": 500.0}]
+    fills = [_fill("SPY", "sell", 25.0, 505.0)]
+    new_positions, _cash, violations = _apply_fills_to_positions(prior, fills)
+    assert violations == [
+        {"symbol": "SPY", "sell_shares": 25.0, "held_shares": 10.0, "line": 1}
+    ]
+    # Position is still floored so the caller can compute, but it will reject.
+    by_symbol = {p["symbol"]: p for p in new_positions}
+    assert by_symbol["SPY"]["shares"] == 0.0
+
+
+def test_apply_fills_sell_exactly_to_zero_is_not_a_violation() -> None:
+    """Selling the full held quantity is legal — no violation."""
+
+    prior = [{"symbol": "SPY", "shares": 50.0, "avg_cost": 500.0}]
+    fills = [_fill("SPY", "sell", 50.0, 510.0)]
+    new_positions, _cash, violations = _apply_fills_to_positions(prior, fills)
+    assert violations == []
+    by_symbol = {p["symbol"]: p for p in new_positions}
+    assert by_symbol["SPY"]["shares"] == 0.0
+
+
+def test_apply_fills_sell_within_float_epsilon_is_not_a_violation() -> None:
+    """A sub-micro-share float residual (0.3 held vs 0.1+0.2 sold) is benign
+    noise, floored to 0 without flagging an oversell."""
+
+    prior = [{"symbol": "SPY", "shares": 0.3, "avg_cost": 500.0}]
+    fills = [_fill("SPY", "sell", 0.1 + 0.2, 510.0)]  # 0.30000000000000004
+    _new_positions, _cash, violations = _apply_fills_to_positions(prior, fills)
+    assert violations == []
+
+
+def test_reconcile_oversell_returns_409_with_line_info(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """End-to-end: a sell exceeding held shares is rejected 409 with the
+    offending symbol + sold/held counts, and nothing is persisted."""
+
+    _seed_snapshot(
+        snap_id="snap-prior",
+        cash=100_000.0,
+        positions=[{"symbol": "SPY", "shares": 10, "avg_cost": 500.0}],
+    )
+    _seed_ticket(ticket_id="tkt-os")
+    _seed_fills(
+        ticket_id="tkt-os",
+        rows=[{"order_seq": 1, "symbol": "SPY", "side": "sell", "shares": 20, "fill_price": 510.0}],
+    )
+    client = _authed_client(_settings(tmp_path))
+    response = client.post("/api/execution/reconcile/tkt-os")
+    assert response.status_code == 409, response.text
+    detail = response.json()["detail"]
+    assert "SPY" in detail
+    assert "20" in detail and "10" in detail
+
+    # Nothing persisted: no fill_reconcile snapshot, ticket still generated.
+    from sqlalchemy import func
+    from sqlalchemy import select as sa_select
+
+    with Session(get_engine()) as session:
+        count = session.execute(
+            sa_select(func.count())
+            .select_from(AccountSnapshot)
+            .where(AccountSnapshot.source == "fill_reconcile")
+        ).scalar_one()
+        assert count == 0
+        ticket = session.get(OrderTicket, "tkt-os")
+        assert ticket is not None
+        assert ticket.status == "generated"
+        assert ticket.executed_at is None
+
+
+def test_reconcile_negative_cash_returns_409(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """A buy that would overdraw cash is rejected 409 (no silent max(0,...))
+    with the shortfall surfaced; nothing is persisted."""
+
+    _seed_snapshot(snap_id="snap-prior", cash=100.0, positions=[])
+    _seed_ticket(ticket_id="tkt-nc")
+    _seed_fills(
+        ticket_id="tkt-nc",
+        rows=[{"order_seq": 1, "symbol": "SPY", "side": "buy", "shares": 10, "fill_price": 500.0}],
+    )
+    client = _authed_client(_settings(tmp_path))
+    response = client.post("/api/execution/reconcile/tkt-nc")
+    assert response.status_code == 409, response.text
+    detail = response.json()["detail"]
+    # Shortfall = 10*500 - 100 = 4900.
+    assert "4900" in detail
+
+    from sqlalchemy import func
+    from sqlalchemy import select as sa_select
+
+    with Session(get_engine()) as session:
+        count = session.execute(
+            sa_select(func.count())
+            .select_from(AccountSnapshot)
+            .where(AccountSnapshot.source == "fill_reconcile")
+        ).scalar_one()
+        assert count == 0
+        ticket = session.get(OrderTicket, "tkt-nc")
+        assert ticket is not None
+        assert ticket.status == "generated"
+
+
+def test_reconcile_sell_exactly_to_zero_succeeds(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """Boundary: selling the entire held quantity reconciles normally."""
+
+    _seed_snapshot(
+        snap_id="snap-prior",
+        cash=100_000.0,
+        positions=[{"symbol": "SPY", "shares": 10, "avg_cost": 500.0}],
+    )
+    _seed_ticket(ticket_id="tkt-z")
+    _seed_fills(
+        ticket_id="tkt-z",
+        rows=[{"order_seq": 1, "symbol": "SPY", "side": "sell", "shares": 10, "fill_price": 510.0}],
+    )
+    client = _authed_client(_settings(tmp_path))
+    response = client.post("/api/execution/reconcile/tkt-z")
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["already_reconciled"] is False
+    with Session(get_engine()) as session:
+        new_snap = session.get(AccountSnapshot, payload["snapshot_id"])
+        assert new_snap is not None
+        by_symbol = {p["symbol"]: p for p in new_snap.positions}
+        assert by_symbol["SPY"]["shares"] == 0.0
+        # Cash credited by the sale: 100_000 + 10*510 = 105_100.
+        assert float(new_snap.cash) == pytest.approx(105_100.0)
+
+
+def test_reconcile_cash_exactly_zero_succeeds(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """Boundary: spending cash down to exactly 0 is legal (not negative)."""
+
+    _seed_snapshot(snap_id="snap-prior", cash=5_000.0, positions=[])
+    _seed_ticket(ticket_id="tkt-c0")
+    _seed_fills(
+        ticket_id="tkt-c0",
+        rows=[{"order_seq": 1, "symbol": "SPY", "side": "buy", "shares": 10, "fill_price": 500.0}],
+    )
+    client = _authed_client(_settings(tmp_path))
+    response = client.post("/api/execution/reconcile/tkt-c0")
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    with Session(get_engine()) as session:
+        new_snap = session.get(AccountSnapshot, payload["snapshot_id"])
+        assert new_snap is not None
+        assert float(new_snap.cash) == pytest.approx(0.0)
