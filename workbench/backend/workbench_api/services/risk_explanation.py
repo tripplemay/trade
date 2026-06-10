@@ -46,13 +46,13 @@ class RiskExplanationSummary:
     reused: bool
 
 
-def _build_grounding(panel: RiskPanelResponse) -> tuple[str, set[str]]:
-    """Render the risk grounding + citable token set from the panel values."""
+def _build_grounding(panel: RiskPanelResponse) -> str:
+    """Render the risk grounding block from the panel values."""
 
     sleeve_lines = "\n".join(
         f"- {s.sleeve}: {s.drawdown}" for s in panel.per_sleeve_dd
     ) or "- (none)"
-    grounding = (
+    return (
         f"STATE: {panel.state}\n"
         f"MASTER_DRAWDOWN: {panel.master_dd}\n"
         f"KILL_SWITCH_THRESHOLD: {panel.kill_switch_threshold}\n"
@@ -62,18 +62,6 @@ def _build_grounding(panel: RiskPanelResponse) -> tuple[str, set[str]]:
         f"VALUATION_BASIS: {panel.valuation_basis}\n"
         f"DEGRADED_SYMBOLS: {panel.degraded_symbols or '(none)'}\n"
     )
-    citable: set[str] = {
-        panel.state,
-        str(panel.master_dd),
-        str(panel.kill_switch_threshold),
-        str(panel.per_sleeve_threshold),
-        panel.valuation_basis,
-    }
-    for sleeve in panel.per_sleeve_dd:
-        citable.add(sleeve.sleeve)
-        citable.add(str(sleeve.drawdown))
-    citable.update(panel.degraded_symbols)
-    return grounding, citable
 
 
 def run_risk_explanation_precompute(
@@ -101,12 +89,11 @@ def run_risk_explanation_precompute(
     panel = get_risk_panel(session)
     explanation: str | None = None
     if explainer is not None:
-        grounding, citable = _build_grounding(panel)
+        grounding = _build_grounding(panel)
         try:
             result = explainer.explain(
                 task=RISK_TASK,
                 grounding_text=grounding,
-                citable=citable,
                 request_line=_REQUEST_LINE,
             )
             explanation = result.explanation if result.status == STATUS_OK else None

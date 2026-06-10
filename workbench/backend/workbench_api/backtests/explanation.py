@@ -37,9 +37,9 @@ def _build_grounding(
     equity_points: int,
     start_date: Any,
     end_date: Any,
-) -> tuple[str, set[str]]:
-    """Render the grounding block + the citable token set (the real values the
-    model may restate — already-computed historical numbers, not predictions)."""
+) -> str:
+    """Render the grounding block — the real values the model may restate
+    (already-computed historical numbers, not predictions)."""
 
     fields = {
         "STRATEGY": strategy_id,
@@ -52,9 +52,7 @@ def _build_grounding(
         "TRADES_COUNT": trades_count,
         "EQUITY_POINTS": equity_points,
     }
-    grounding = "\n".join(f"{key}: {value}" for key, value in fields.items()) + "\n"
-    citable = {str(value) for value in fields.values() if value is not None}
-    return grounding, citable
+    return "\n".join(f"{key}: {value}" for key, value in fields.items()) + "\n"
 
 
 def generate_backtest_explanation(
@@ -73,7 +71,7 @@ def generate_backtest_explanation(
 
     metrics = mapped.get("metrics") or {}
     params = run.params or {}
-    grounding, citable = _build_grounding(
+    grounding = _build_grounding(
         strategy_id=getattr(run, "strategy_id", None) or "master_portfolio",
         metrics=metrics,
         trades_count=len(mapped.get("trades") or []),
@@ -85,7 +83,6 @@ def generate_backtest_explanation(
         result = explainer.explain(
             task=EXPLANATION_TASK,
             grounding_text=grounding,
-            citable=citable,
             request_line=_REQUEST_LINE,
         )
     except Exception as exc:  # noqa: BLE001 — degrade on budget/HTTP/anything

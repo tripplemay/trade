@@ -18,7 +18,6 @@ becomes INSUFFICIENT_GROUNDING.
 from __future__ import annotations
 
 import logging
-from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -94,7 +93,6 @@ class ExplanationService:
         *,
         task: str,
         grounding_text: str,
-        citable: Iterable[str],
         request_line: str,
         max_tokens: int = 320,
     ) -> ExplanationResult:
@@ -125,7 +123,7 @@ class ExplanationService:
             output = parse_explanation_output(raw)
         except ValueError:
             return self._refused("explanation output unparseable", actual_model)
-        if not references_grounded(output, citable):
+        if not references_grounded(output, grounding_text):
             return self._refused("references outside input set", actual_model)
         if not output.explanation:
             return self._refused("empty explanation", actual_model)

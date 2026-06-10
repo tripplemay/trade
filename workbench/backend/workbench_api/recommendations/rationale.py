@@ -47,11 +47,10 @@ def _build_grounding(
     sleeve_status: str | None,
     data_source: Any,
     signal_date: Any,
-) -> tuple[str, set[str]]:
-    """Render the grounding block + the set of citable tokens (the real values
-    the model is allowed to reference)."""
+) -> str:
+    """Render the grounding block (the real values the model may reference)."""
 
-    grounding = (
+    return (
         f"SYMBOL: {symbol}\n"
         f"SLEEVE: {sleeve}\n"
         f"TARGET_WEIGHT: {target_weight}\n"
@@ -60,12 +59,6 @@ def _build_grounding(
         f"DATA_SOURCE: {data_source}\n"
         f"SIGNAL_DATE: {signal_date}\n"
     )
-    citable = {
-        str(token)
-        for token in (symbol, sleeve, sleeve_status, data_source, signal_date)
-        if token is not None
-    }
-    return grounding, citable
 
 
 def generate_rationale(
@@ -89,7 +82,7 @@ def generate_rationale(
     if explainer is None:
         return fallback
 
-    grounding, citable = _build_grounding(
+    grounding = _build_grounding(
         symbol=symbol,
         sleeve=sleeve,
         target_weight=target_weight,
@@ -102,7 +95,6 @@ def generate_rationale(
         result = explainer.explain(
             task=RATIONALE_TASK,
             grounding_text=grounding,
-            citable=citable,
             request_line=_REQUEST_LINE,
         )
     except Exception as exc:  # noqa: BLE001 — degrade on budget/HTTP/anything

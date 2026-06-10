@@ -23,7 +23,6 @@ legitimate real values the explanation is allowed to restate.
 from __future__ import annotations
 
 import json
-from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Any
 
@@ -36,6 +35,11 @@ __all__ = [
     "parse_explanation_output",
     "references_grounded",
 ]
+
+# A reference shorter than this is too trivial to prove grounding (a stray ":"
+# or digit would substring-match anything); the model's real citations are all
+# longer (symbol / sleeve / date / labelled value line).
+_MIN_REFERENCE_LEN = 3
 
 
 @dataclass(frozen=True, slots=True)
@@ -73,15 +77,22 @@ def parse_explanation_output(raw: str) -> ExplanationOutput:
     )
 
 
-def references_grounded(output: ExplanationOutput, citable: Iterable[str]) -> bool:
-    """Return ``True`` iff every cited reference is in the ``citable`` set
-    (boundary (d)) and there is at least one reference.
+def references_grounded(output: ExplanationOutput, grounding: str) -> bool:
+    """Return ``True`` iff every cited reference appears verbatim in the
+    ``grounding`` block (boundary (d)) and there is at least one reference.
 
-    An explanation with no citation is the β "no real citation" failure class;
-    a reference outside the input set is the β/γ "fabricated / off-universe"
-    class. Either fails the check and the service downgrades the output."""
+    A real model cites grounding tokens in varied forms — the bare value
+    (``2026-03-31``), the labelled line (``SIGNAL_DATE: 2026-03-31``), or a
+    formatted value (``0.0123``) — all of which are substrings of the grounding
+    we provided. A FABRICATED citation (a value/date not in the input — the β/γ
+    "no real / off-universe" class) is not a substring and fails the check. An
+    explanation with no citation is the β "no citation" class and also fails.
+    Case-insensitive; trivially short references don't count as proof."""
 
     if not output.references:
         return False
-    citable_set = {c for c in citable}
-    return all(ref in citable_set for ref in output.references)
+    haystack = grounding.lower()
+    meaningful = [r.strip() for r in output.references if len(r.strip()) >= _MIN_REFERENCE_LEN]
+    if not meaningful:
+        return False
+    return all(ref.lower() in haystack for ref in meaningful)

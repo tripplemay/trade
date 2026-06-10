@@ -59,8 +59,8 @@ def _ok(
     return ExplanationResult(status=STATUS_OK, explanation=explanation, raw_output="{}", model="m")
 
 
-def test_grounding_contains_real_metrics_as_citable() -> None:
-    text, citable = _build_grounding(
+def test_grounding_contains_real_metrics() -> None:
+    text = _build_grounding(
         strategy_id="B016-risk-parity-hrp",
         metrics=_METRICS,
         trades_count=1,
@@ -69,8 +69,8 @@ def test_grounding_contains_real_metrics_as_citable() -> None:
         end_date="2024-06-30",
     )
     assert "SHARPE: 1.42" in text
-    assert "B016-risk-parity-hrp" in citable
-    assert "1.42" in citable  # the real metric is restate-able / citable
+    assert "B016-risk-parity-hrp" in text
+    assert "CAGR: 0.085" in text  # the real metrics are in the grounding block
 
 
 def test_generate_explanation_none_without_explainer() -> None:

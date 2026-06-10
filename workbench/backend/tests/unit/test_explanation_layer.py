@@ -60,7 +60,10 @@ _OK_JSON = (
     'its quarter-end signal on 2026-03-31.", "references": '
     '["satellite_us_quality", "2026-03-31"]}'
 )
-_CITABLE = {"AAPL", "satellite_us_quality", "2026-03-31", "real", "scored"}
+_GROUNDING = (
+    "SYMBOL: AAPL\nSLEEVE: satellite_us_quality\nTARGET_WEIGHT: 0.0123\n"
+    "SLEEVE_STATUS: scored\nDATA_SOURCE: real\nSIGNAL_DATE: 2026-03-31\n"
+)
 
 
 # --- routing -------------------------------------------------------------------
@@ -85,12 +88,21 @@ def test_parse_explanation_tolerates_code_fence() -> None:
     assert out.references == ["satellite_us_quality", "2026-03-31"]
 
 
-def test_references_grounded_rejects_out_of_set_and_empty() -> None:
+def test_references_grounded_accepts_substrings_rejects_fabricated_and_empty() -> None:
+    # Real models cite grounding tokens in varied forms (bare value or labelled
+    # line) — both are substrings of the grounding we provided.
     out = parse_explanation_output(_OK_JSON)
-    assert references_grounded(out, _CITABLE) is True
-    assert references_grounded(out, {"AAPL"}) is False  # 2026-03-31 not citable
-    bad = parse_explanation_output('{"explanation": "x", "references": []}')
-    assert references_grounded(bad, _CITABLE) is False  # no citation
+    assert references_grounded(out, _GROUNDING) is True
+    labelled = parse_explanation_output(
+        '{"explanation": "x", "references": ["SIGNAL_DATE: 2026-03-31", "SLEEVE_STATUS: scored"]}'
+    )
+    assert references_grounded(labelled, _GROUNDING) is True  # labelled lines OK
+    fabricated = parse_explanation_output(
+        '{"explanation": "x", "references": ["expected 18% return next year"]}'
+    )
+    assert references_grounded(fabricated, _GROUNDING) is False  # not in grounding
+    empty = parse_explanation_output('{"explanation": "x", "references": []}')
+    assert references_grounded(empty, _GROUNDING) is False  # no citation
 
 
 # --- ExplanationService --------------------------------------------------------
@@ -100,8 +112,7 @@ def _explain(content: str) -> ExplanationResult:
     service = ExplanationService(_StubGateway(content))
     return service.explain(
         task="recommendation_rationale",
-        grounding_text="SYMBOL: AAPL\nSLEEVE: satellite_us_quality\n",
-        citable=_CITABLE,
+        grounding_text=_GROUNDING,
         request_line="why",
     )
 

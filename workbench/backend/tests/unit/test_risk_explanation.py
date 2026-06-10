@@ -60,9 +60,9 @@ def _ok() -> ExplanationResult:
 
 def test_grounding_includes_real_risk_values(session: Session) -> None:
     panel = get_risk_panel(session)
-    text, citable = _build_grounding(panel)
+    text = _build_grounding(panel)
     assert "MASTER_DRAWDOWN" in text and "STATE" in text
-    assert panel.state in citable  # the real state is citable
+    assert panel.state in text  # the real state is in the grounding block
 
 
 def test_job_writes_explanation_and_panel_reads_it(session: Session) -> None:
