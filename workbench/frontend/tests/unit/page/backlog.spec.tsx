@@ -80,7 +80,6 @@ const LIST_INITIAL: components["schemas"]["BacklogListResponse"] = {
       title: "Investigate vol-target smoothing",
       description: "Track research notes.",
       priority: "high",
-      status: "open",
       created_at: "2026-05-15T00:00:00",
       updated_at: "2026-05-15T00:00:00",
     },
@@ -95,7 +94,6 @@ const LIST_AFTER: components["schemas"]["BacklogListResponse"] = {
       title: "Pilot research",
       description: "",
       priority: "medium",
-      status: "open",
       created_at: "2026-05-17T00:00:00",
       updated_at: "2026-05-17T00:00:00",
     },
@@ -133,19 +131,17 @@ describe("BacklogPage (B022 F012)", () => {
 
   it("Add → form → submit → POST → toast.success → refetch", async () => {
     let listGetCount = 0;
-    const fetchMock = vi.fn(
-      async (input: RequestInfo | URL, init?: RequestInit) => {
-        const url = typeof input === "string" ? input : (input as Request).url ?? input.toString();
-        if (url === "/api/backlog" && (!init || init.method === undefined)) {
-          listGetCount += 1;
-          return jsonResponse(listGetCount === 1 ? LIST_INITIAL : LIST_AFTER);
-        }
-        if (url === "/api/backlog" && init?.method === "POST") {
-          return jsonResponse(CREATED, 201);
-        }
-        return jsonResponse({}, 404);
-      },
-    );
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : ((input as Request).url ?? input.toString());
+      if (url === "/api/backlog" && (!init || init.method === undefined)) {
+        listGetCount += 1;
+        return jsonResponse(listGetCount === 1 ? LIST_INITIAL : LIST_AFTER);
+      }
+      if (url === "/api/backlog" && init?.method === "POST") {
+        return jsonResponse(CREATED, 201);
+      }
+      return jsonResponse({}, 404);
+    });
     vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
 
     const { getByTestId } = renderWithIntl(<BacklogPage />);

@@ -21,7 +21,7 @@ frontend's empty state.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import UTC, datetime
 from pathlib import Path
 
 from sqlalchemy.orm import Session
@@ -183,8 +183,19 @@ def _build_target_positions(
 
     out: list[TargetPosition] = []
     for row in rows:
+        symbol_u = str(row.symbol).upper()
         target = float(row.target_weight)
-        current = mtm.current_weight(str(row.symbol))
+        current = mtm.current_weight(symbol_u)
+        # B053 F003 — has_mark is False ONLY when the account holds this symbol
+        # (shares != 0) but no market price is available (market_value is None):
+        # current_weight then reads 0.0, indistinguishable from "not held". The
+        # frontend surfaces "held, no price" instead of a misleading 0%. A
+        # symbol the account does not hold is absent from ``by_symbol`` →
+        # has_mark stays True (its 0% is genuinely correct).
+        marked = mtm.by_symbol.get(symbol_u)
+        held_without_mark = (
+            marked is not None and marked.shares != 0 and marked.market_value is None
+        )
         out.append(
             TargetPosition(
                 symbol=row.symbol,
@@ -192,6 +203,7 @@ def _build_target_positions(
                 current_weight=round(current, 6),
                 diff=round(target - current, 6),
                 rationale=row.rationale,
+                has_mark=not held_without_mark,
             )
         )
     return out
@@ -231,7 +243,7 @@ def get_current_recommendations(session: Session) -> RecommendationsResponse:
 
     B050 F005: ``as_of_date`` is the **real signal date** of the latest precompute
     snapshot (was ``date.today()``, which hid how stale the recommendation was —
-    it could lag the live date by weeks). Falls back to today only when no
+    it could lag the live date by weeks). Falls back to today (UTC) only when no
     precompute snapshot exists yet (empty state)."""
 
     account_present, total_equity = _aggregate_account_state(session)
@@ -239,7 +251,7 @@ def get_current_recommendations(session: Session) -> RecommendationsResponse:
     as_of = (
         snapshot_rows[0].as_of_date.isoformat()
         if snapshot_rows
-        else date.today().isoformat()
+        else datetime.now(UTC).date().isoformat()
     )
     return RecommendationsResponse(
         as_of_date=as_of,

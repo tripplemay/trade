@@ -28,7 +28,7 @@ silently becomes the split/dividend-adjusted close and the raw
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import UTC, date, datetime, timedelta
 from typing import Any, Protocol
 
 import yfinance  # type: ignore[import-untyped]
@@ -64,7 +64,7 @@ class YFinanceSnapshotLoader(SnapshotLoader):
         from_date: date,
         to_date: date,
     ) -> list[PriceBar]:
-        clamped_to = min(to_date, date.today())
+        clamped_to = min(to_date, datetime.now(UTC).date())
         ticker_obj = self._ticker_factory(ticker)
         # yfinance.history end is exclusive — add 1 day so the
         # caller's inclusive [from_date, to_date] semantics survive.

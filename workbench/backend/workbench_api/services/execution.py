@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import logging
 import uuid
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -164,7 +164,7 @@ def get_position_diff(
 
     provider = provider or DbPriceProvider(session)
     snapshot = get_latest_account(session)
-    as_of_date = as_of or date.today().isoformat()
+    as_of_date = as_of or datetime.now(UTC).date().isoformat()
     recommendations = get_current_recommendations(session)
 
     current_by_symbol: dict[str, PositionEntry] = {}

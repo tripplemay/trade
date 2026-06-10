@@ -38,6 +38,7 @@ const RECS: components["schemas"]["RecommendationsResponse"] = {
       current_weight: 0,
       diff: 0.25,
       rationale: "Sleeve regime",
+      has_mark: true,
     },
     {
       symbol: "B016",
@@ -45,6 +46,7 @@ const RECS: components["schemas"]["RecommendationsResponse"] = {
       current_weight: 0,
       diff: 0.25,
       rationale: "Sleeve risk_parity",
+      has_mark: true,
     },
   ],
   gate_checks: [

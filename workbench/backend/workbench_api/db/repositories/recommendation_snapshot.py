@@ -51,6 +51,22 @@ class RecommendationSnapshotRepository(Repository[RecommendationSnapshot, UUID])
         ``computed_at`` defaults to now(UTC) and is overridable for tests.
         """
 
+        # B053 F003 — guard against a future engine producing a portfolio that
+        # does not sum to 100%. A non-empty target set's weights must sum to 1.0;
+        # a gross miss (a dropped sleeve, a double-count, a missing normalise)
+        # is a real bug we refuse to persist. Tolerance is 1e-3 — well above the
+        # per-symbol 6-digit rounding the real precompute accumulates across the
+        # ~20-40 symbol basket (≈1e-5 worst case), well below any structural
+        # drift (≥1%). Empty batches (a valid "no targets" state) are skipped.
+        if rows:
+            weight_sum = sum(float(row["target_weight"]) for row in rows)
+            if abs(weight_sum - 1.0) > 1e-3:
+                raise ValueError(
+                    f"recommendation target weights for {as_of_date} sum to "
+                    f"{weight_sum:.6f}, not 1.0 (±1e-3) — refusing to persist a "
+                    "portfolio that is not fully allocated (engine drift?)."
+                )
+
         stamp = computed_at or datetime.now(UTC)
         self._session.execute(
             delete(RecommendationSnapshot).where(

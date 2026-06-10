@@ -228,7 +228,7 @@ def _load_scoring_records() -> tuple[tuple[PriceBar, ...], str]:
     # would have ``load_prices`` silently fall back to the bundled B025 fixture
     # (loader's 2nd tier) and we'd mislabel that fixture data as ``real``.
     if data_root_override() is not None and unified_prices_path(UNIFIED_PRICES_PATH).exists():
-        by_ticker = load_prices(list(price_universe()), date.today())
+        by_ticker = load_prices(list(price_universe()), datetime.now(UTC).date())
         records = tuple(bar for bars in by_ticker.values() for bar in bars)
         if records:
             return records, _PRICES_SOURCE_REAL

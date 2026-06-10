@@ -114,6 +114,9 @@ def test_create_round_trips_to_table_json_and_git(
     payload = response.json()
     assert payload["title"] == "Pilot research"
     assert payload["priority"] == "high"
+    # B053 F003 — the phantom `status` field was removed (never stored; was
+    # hard-coded "open" and silently dropped on PATCH).
+    assert "status" not in payload
     entry_id = payload["id"]
 
     # JSON file mirrors the new row.

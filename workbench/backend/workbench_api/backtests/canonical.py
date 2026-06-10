@@ -16,7 +16,7 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
-from datetime import date
+from datetime import UTC, date, datetime
 from types import SimpleNamespace
 
 from sqlalchemy.orm import Session, sessionmaker
@@ -40,7 +40,7 @@ def generate_canonical_reports(session: Session, *, as_of: date | None = None) -
     number of reports written. Raises (so the CLI exits non-zero) when the real
     engine cannot run — e.g. no unified data on the host."""
 
-    report_date = as_of or date.today()
+    report_date = as_of or datetime.now(UTC).date()
     # B050 F001: the worker now dispatches by ``strategy_id`` — set it explicitly
     # on the stand-in so the canonical job keeps running the Master backtest (the
     # worker also defaults a missing strategy_id to master, but be explicit).

@@ -6,13 +6,7 @@ import { toast } from "sonner";
 
 import { DataTable, dateColumn } from "@/components/table";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -150,7 +144,6 @@ export default function BacklogPage() {
       { field: "id", headerName: tTable("columnId"), width: 180 },
       { field: "title", headerName: tTable("columnTitle"), flex: 2 },
       { field: "priority", headerName: tTable("columnPriority"), width: 110 },
-      { field: "status", headerName: tTable("columnStatus"), width: 110 },
       dateColumn<BacklogEntry>({
         field: "updated_at",
         headerName: tTable("columnUpdated"),
@@ -241,11 +234,7 @@ export default function BacklogPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <DataTable<BacklogEntry>
-            rowData={filtered}
-            columnDefs={columns}
-            height={420}
-          />
+          <DataTable<BacklogEntry> rowData={filtered} columnDefs={columns} height={420} />
         </CardContent>
       </Card>
 
@@ -276,9 +265,7 @@ export default function BacklogPage() {
                 data-testid="backlog-form-description"
                 value={editing?.description ?? ""}
                 onChange={(e) =>
-                  setEditing((prev) =>
-                    prev ? { ...prev, description: e.target.value } : prev,
-                  )
+                  setEditing((prev) => (prev ? { ...prev, description: e.target.value } : prev))
                 }
                 className={cn(
                   "min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm",
@@ -291,9 +278,7 @@ export default function BacklogPage() {
               <Select
                 value={editing?.priority ?? "medium"}
                 onValueChange={(value) =>
-                  setEditing((prev) =>
-                    prev ? { ...prev, priority: value as Priority } : prev,
-                  )
+                  setEditing((prev) => (prev ? { ...prev, priority: value as Priority } : prev))
                 }
               >
                 <SelectTrigger data-testid="backlog-form-priority">
@@ -310,11 +295,7 @@ export default function BacklogPage() {
             </label>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setEditing(null)}
-              disabled={submitting}
-            >
+            <Button variant="outline" onClick={() => setEditing(null)} disabled={submitting}>
               {t("cancel")}
             </Button>
             <Button

@@ -18,12 +18,7 @@
 import { useTranslations } from "next-intl";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { colorForDelta } from "@/lib/metric-color";
 import { cn } from "@/lib/utils";
 import type { components } from "@/types/api";
@@ -100,7 +95,14 @@ export function PositionCards({ positions }: { positions: TargetPosition[] }) {
             <CardContent className="space-y-2">
               <div className="grid grid-cols-3 gap-2">
                 <Stat field="target" value={pct(p.target_weight)} />
-                <Stat field="current" value={pct(p.current_weight)} />
+                {/* B053 F003 — a held-but-unpriced position reads current_weight=0;
+                    show a distinct "held, no price" label instead of a misleading 0%. */}
+                <Stat
+                  field="current"
+                  value={p.has_mark ? pct(p.current_weight) : t("noMark")}
+                  colorClass={p.has_mark ? undefined : "text-amber-500"}
+                  valueTestId={`position-current-${p.symbol}`}
+                />
                 <Stat
                   field="delta"
                   value={signedPct(p.diff)}

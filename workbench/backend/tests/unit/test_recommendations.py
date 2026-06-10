@@ -246,6 +246,45 @@ def test_target_positions_current_weight_degrades_when_unmarked(
     assert by_symbol["SGOV"].current_weight == 0.0
 
 
+def test_target_positions_has_mark_flags_held_unpriced(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """B053 F003 — a held-but-unpriced target has ``has_mark=False`` (its
+    current_weight=0 is an unpriced placeholder, not 'not held'). Unheld targets
+    keep ``has_mark=True`` because their 0% is genuinely correct."""
+
+    _seed_snapshot()  # targets EEM/SPY/SGOV
+    _seed_account_snapshot([{"symbol": "SGOV", "shares": 100, "avg_cost": 90.0}], cash=0.0)
+    provider = _FakeProvider({})  # SGOV is held but has NO mark
+
+    from sqlalchemy.orm import Session
+
+    with Session(get_engine()) as session:
+        positions = _build_target_positions(session, provider=provider)
+
+    by_symbol = {p.symbol: p for p in positions}
+    assert by_symbol["SGOV"].has_mark is False  # held + unpriced → flagged
+    assert by_symbol["EEM"].has_mark is True  # not held → 0% is real
+    assert by_symbol["SPY"].has_mark is True
+
+
+def test_target_positions_has_mark_true_when_priced(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """A held + priced position has ``has_mark=True`` (current_weight is real)."""
+
+    _seed_snapshot()
+    _seed_account_snapshot([{"symbol": "SGOV", "shares": 100, "avg_cost": 90.0}], cash=0.0)
+    provider = _FakeProvider({"SGOV": PriceMark(latest_close=100.0, prior_close=99.0)})
+
+    from sqlalchemy.orm import Session
+
+    with Session(get_engine()) as session:
+        positions = _build_target_positions(session, provider=provider)
+
+    assert {p.symbol: p for p in positions}["SGOV"].has_mark is True
+
+
 def test_export_ticket_writes_markdown_with_disclaimer_literal(
     initialised_db: str, tmp_path: Path
 ) -> None:

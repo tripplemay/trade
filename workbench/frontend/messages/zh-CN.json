@@ -291,6 +291,7 @@
       "targetLabel": "目标",
       "currentLabel": "当前",
       "deltaLabel": "偏离",
+      "noMark": "持有 · 无标价",
       "tooltips": {
         "target": "该标的在推荐组合中的目标配置权重——是配置权重，不是收益预测。",
         "current": "你账户当前对该标的的持仓权重（来自最新快照）。",
@@ -383,7 +384,6 @@
       "columnId": "ID",
       "columnTitle": "标题",
       "columnPriority": "优先级",
-      "columnStatus": "状态",
       "columnUpdated": "更新时间",
       "columnActions": "操作"
     },

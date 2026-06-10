@@ -30,7 +30,7 @@
       "title": "语义与防御加固——has_mark 标注 + backlog status 二选一 + date.today() 全局统一 UTC + 权重和断言 + 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【🟡 低-中 + 加固项，第四轮审计 #4/§5 + BL-B050-S1，见 spec §4】(1) **has_mark 标注**：TargetPosition 加 has_mark: bool（或等价），recommendations 前端对『持有但无标价』显示区分文案（非 current_weight=0% 误导『未持有』）；i18n 双语；api.ts 同步。（execution position-diff 已有 Unmatched 防护不动。）(2) **backlog status**：二选一（建 status 列+migration+真实存读 vs schema 显式移除字段）——按产品意图 generator 裁定注明（内部工具页，倾向移除以最小化）。(3) **date.today() 统一**：全局替换为 datetime.now(UTC).date()（grep 全部出现点：execution/tickets/canonical/risk_explanation 等），去『服务器 TZ=UTC』隐含假设；加守门测试（AST/grep 禁新增 date.today()）。(4) **权重和断言**：recommendation_snapshot save_batch 或读取侧加 abs(sum(weights)-1.0)<1e-6 断言（防未来引擎漂移）。(5) **测试**：has_mark 渲染+backlog status 行为+date 统一守门+权重断言。(6) Gates：backend pytest ≥ baseline+ / frontend vitest/tsc/lint / i18n parity / api.ts drift 0 / alembic head（若 backlog 建列）/ ruff/mypy 0。",
       "design_decisions": [
         "has_mark 只动展示层标注（diff 层 Unmatched 防护已确认存在）。",

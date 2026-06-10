@@ -22,6 +22,7 @@ const POSITIONS: TargetPosition[] = [
     current_weight: 0.1,
     diff: 0.15, // buy → green
     rationale: "Equal-weight placeholder allocation.",
+    has_mark: true,
   },
   {
     symbol: "MSFT",
@@ -29,6 +30,7 @@ const POSITIONS: TargetPosition[] = [
     current_weight: 0.3,
     diff: -0.2, // trim → red
     rationale: null,
+    has_mark: true,
   },
 ];
 
@@ -52,9 +54,7 @@ describe("PositionCards (B041 F001)", () => {
   });
 
   it("surfaces the rationale text when present, omits it when null", () => {
-    const { getByTestId, getAllByTestId } = renderWithIntl(
-      <PositionCards positions={POSITIONS} />,
-    );
+    const { getByTestId, getAllByTestId } = renderWithIntl(<PositionCards positions={POSITIONS} />);
     expect(getByTestId("position-card-AAPL")).toHaveTextContent("Equal-weight placeholder");
     // Only AAPL has a rationale → exactly one rationale node.
     expect(getAllByTestId("position-rationale")).toHaveLength(1);
@@ -68,6 +68,25 @@ describe("PositionCards (B041 F001)", () => {
   it("renders an empty state when there are no positions", () => {
     const { getByTestId } = renderWithIntl(<PositionCards positions={[]} />);
     expect(getByTestId("position-cards-empty")).toBeInTheDocument();
+  });
+
+  it("shows a 'held, no price' label instead of 0% when has_mark is false (B053 F003)", () => {
+    const unpriced: TargetPosition[] = [
+      {
+        symbol: "SGOV",
+        target_weight: 0.6,
+        current_weight: 0, // unpriced holding reads 0 — must NOT show as a real 0%
+        diff: 0.6,
+        rationale: null,
+        has_mark: false,
+      },
+    ];
+    const en = renderWithIntl(<PositionCards positions={unpriced} />, { locale: "en" });
+    expect(en.getByTestId("position-current-SGOV")).toHaveTextContent("Held");
+    expect(en.getByTestId("position-current-SGOV")).not.toHaveTextContent("0.00%");
+    cleanup();
+    const zh = renderWithIntl(<PositionCards positions={unpriced} />, { locale: "zh-CN" });
+    expect(zh.getByTestId("position-current-SGOV")).toHaveTextContent("持有");
   });
 
   it("renders bilingual field labels (en + zh-CN)", () => {

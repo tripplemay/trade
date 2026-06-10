@@ -109,7 +109,6 @@ def _row_to_schema(row: BacklogEntryModel) -> BacklogEntry:
         title=row.title,
         description=row.description,
         priority=row.priority,
-        status="open",
         created_at=timestamp,
         updated_at=timestamp,
     )
@@ -245,7 +244,6 @@ def update_backlog(
         existing.description = request.description
     if request.priority is not None:
         existing.priority = request.priority
-    # request.status is not stored in the model (synthesised at read time).
     existing.confirmed_at = _now_iso()
     try:
         session.flush()

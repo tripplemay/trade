@@ -78,7 +78,7 @@ def run_risk_explanation_precompute(
     row is written with ``explanation=None`` (the panel shows no explanation
     block). A refusal / cost-guard trip / exception degrades the same way."""
 
-    today = as_of or date.today()
+    today = as_of or datetime.now(UTC).date()
     repo = RiskExplanationSnapshotRepository(session)
     existing = repo.latest()
     # B053 F002 — reuse only a *real* explanation for today. A degraded row

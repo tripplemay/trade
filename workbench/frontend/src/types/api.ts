@@ -776,6 +776,13 @@ export interface components {
         /**
          * BacklogEntry
          * @description One entry in the backlog list.
+         *
+         *     B053 F003 — the ``status`` field was removed: it was never stored (the model
+         *     has no status column), the read path hard-coded it to ``"open"``, and the
+         *     PATCH ``status`` was silently dropped. Rather than wire a column for an
+         *     internal tool page, the phantom field is removed (plumbed-but-ignored
+         *     anti-pattern, framework §17). Re-add a real column + migration if status
+         *     tracking is ever actually needed.
          */
         BacklogEntry: {
             /** Id */
@@ -789,11 +796,6 @@ export interface components {
              * @description 'high' / 'medium' / 'low'.
              */
             priority: string;
-            /**
-             * Status
-             * @description 'open' / 'in_progress' / 'done' / 'parked'.
-             */
-            status: string;
             /**
              * Created At
              * @description ISO-8601 timestamp.
@@ -821,8 +823,6 @@ export interface components {
             description?: string | null;
             /** Priority */
             priority?: string | null;
-            /** Status */
-            status?: string | null;
         };
         /**
          * BacktestDataRangeResponse
@@ -2088,6 +2088,12 @@ export interface components {
             diff: number;
             /** Rationale */
             rationale?: string | null;
+            /**
+             * Has Mark
+             * @description B053 F003 — False only when the symbol is HELD but has no market price, so current_weight=0 is an unpriced placeholder, not a real 'not held'. The frontend shows a distinct '持有但无标价 / held, no price' label instead of a misleading 0%. True for priced holdings and for symbols the account does not hold (0% is then correct).
+             * @default true
+             */
+            has_mark: boolean;
         };
         /**
          * TicketDetail

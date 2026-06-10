@@ -24,7 +24,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import UTC, date, datetime, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -93,7 +93,7 @@ def detect_wash_sales(
     """Return one wash-sale flag per symbol with a loss sale + 30-day
     repurchase. Sorted by symbol for a deterministic response."""
 
-    as_of = today or date.today()
+    as_of = today or datetime.now(UTC).date()
     fills = FillJournalEntryRepository(session).list_all_chronological()
     if not fills:
         return []

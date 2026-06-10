@@ -28,7 +28,7 @@ import os
 import sys
 import time
 from collections.abc import Callable
-from datetime import date
+from datetime import UTC, date, datetime
 from typing import Any, Protocol
 
 from sqlalchemy.orm import Session, sessionmaker
@@ -196,7 +196,6 @@ def _load_backtest_snapshot() -> Any:
     honest "backtest data unavailable" error rather than a fabricated result."""
 
     import hashlib
-    from datetime import date
 
     from trade.data.data_root import (  # type: ignore[import-untyped]
         data_root_override,
@@ -216,7 +215,7 @@ def _load_backtest_snapshot() -> Any:
             "data-refresh job first — the monthly fixture cannot drive the "
             "Master backtest"
         )
-    by_ticker = load_prices(list(price_universe()), date.today())
+    by_ticker = load_prices(list(price_universe()), datetime.now(UTC).date())
     records = tuple(bar for bars in by_ticker.values() for bar in bars)
     if not records:
         raise BacktestWorkerError("unified price data yielded no rows")

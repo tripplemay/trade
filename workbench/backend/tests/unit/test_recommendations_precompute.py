@@ -68,6 +68,43 @@ def test_save_batch_writes_rows(session: Session) -> None:
     assert all(r.master_meta["data_source"] == DATA_SOURCE_FIXTURE for r in saved)
 
 
+def test_save_batch_rejects_weights_not_summing_to_one(session: Session) -> None:
+    """B053 F003 — refuse to persist a target set whose weights don't sum to
+    1.0 (a dropped sleeve / missing normalise = engine drift)."""
+
+    repo = RecommendationSnapshotRepository(session)
+    bad_rows = [
+        {"symbol": "SPY", "sleeve": "momentum", "target_weight": 0.2},
+        {"symbol": "SGOV", "sleeve": "risk_parity", "target_weight": 0.5},  # sums to 0.7
+    ]
+    with pytest.raises(ValueError, match="not 1.0"):
+        repo.save_batch(as_of_date=_AS_OF, rows=bad_rows, master_meta=_META)
+    # Nothing was persisted.
+    assert repo.latest_snapshot() == []
+
+
+def test_save_batch_tolerates_rounding_drift(session: Session) -> None:
+    """Per-symbol rounding leaves the sum a hair off 1.0; that is NOT drift and
+    must still persist (the guard tolerance is 1e-3, well above rounding)."""
+
+    repo = RecommendationSnapshotRepository(session)
+    rows = [
+        {"symbol": "A", "sleeve": "momentum", "target_weight": 0.333333},
+        {"symbol": "B", "sleeve": "momentum", "target_weight": 0.333333},
+        {"symbol": "C", "sleeve": "risk_parity", "target_weight": 0.333334},
+    ]  # sums to 1.000000 here, but exercises a non-trivial multi-symbol basket
+    saved = repo.save_batch(as_of_date=_AS_OF, rows=rows, master_meta=_META)
+    assert len(saved) == 3
+
+
+def test_save_batch_empty_rows_allowed(session: Session) -> None:
+    """An empty target set (valid 'no targets' state) is not weight-checked."""
+
+    repo = RecommendationSnapshotRepository(session)
+    saved = repo.save_batch(as_of_date=_AS_OF, rows=[], master_meta=_META)
+    assert saved == []
+
+
 def test_save_batch_idempotent_overwrite(session: Session) -> None:
     repo = RecommendationSnapshotRepository(session)
     repo.save_batch(as_of_date=_AS_OF, rows=_rows(), master_meta=_META)

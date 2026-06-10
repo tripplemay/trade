@@ -13,6 +13,16 @@ class TargetPosition(BaseModel):
     current_weight: float = Field(ge=0.0, le=1.0)
     diff: float = Field(description="target_weight - current_weight (can be negative).")
     rationale: str | None = None
+    has_mark: bool = Field(
+        default=True,
+        description=(
+            "B053 F003 — False only when the symbol is HELD but has no market "
+            "price, so current_weight=0 is an unpriced placeholder, not a real "
+            "'not held'. The frontend shows a distinct '持有但无标价 / held, no "
+            "price' label instead of a misleading 0%. True for priced holdings "
+            "and for symbols the account does not hold (0% is then correct)."
+        ),
+    )
 
 
 class GateCheck(BaseModel):

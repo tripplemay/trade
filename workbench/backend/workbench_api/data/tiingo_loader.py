@@ -38,7 +38,7 @@ from __future__ import annotations
 import logging
 import os
 import time
-from datetime import date
+from datetime import UTC, date, datetime
 from typing import Any, Protocol
 
 import httpx
@@ -149,7 +149,7 @@ class TiingoSnapshotLoader(SnapshotLoader):
         # HTTP call entirely — the cap is meant to halt ingest before
         # network spend, not after.
         self._guard.check_and_increment()
-        clamped_to = min(to_date, date.today())
+        clamped_to = min(to_date, datetime.now(UTC).date())
         if clamped_to < to_date:
             logger.info(
                 "tiingo_to_date_clamped",
@@ -184,7 +184,7 @@ class TiingoSnapshotLoader(SnapshotLoader):
         try:
             self._get_with_retry(
                 f"{TIINGO_BASE_URL}/daily/spy/prices",
-                params={"startDate": date.today().isoformat(), "format": "json"},
+                params={"startDate": datetime.now(UTC).date().isoformat(), "format": "json"},
             )
         except _AuthFailure:
             return False
