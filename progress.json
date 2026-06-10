@@ -1,42 +1,42 @@
 {
-  "status": "done",
-  "user_goal": "B053 加固扫尾批（四轮审计产出汇总，用户批『B052 done 后即启』）。把四轮系统审计挖出的全部边角防御缺口一批扫清，修复原则=**不可能状态 fail-fast/警告，不静默修正**（对齐系统诚实降级一贯原则）。4 features 3g+1c：**F001 reconcile 对账完整性（🔴 中-高）**——reconcile.py:156-158 超卖静默归零 + :299 负现金 max(0,...) 静默夹零均无警告，用户手抄 fill 输错时系统静默『修正』账目对账无线索；修=检测不可能状态→409 行级提示或 warning 标注（对齐 fills allow_unmatched 交互先例）。**F002 状态与并发（🟠）**——①worker 孤儿 running 回收（claim 后崩溃/deploy restart→run 永久卡 running，claim_next_queued 只领 queued 无启动回收；每次 deploy 都是触发窗口）：启动回收置 error_kind=interrupted+前端轮询超时提示；②snapshot_at 同秒 tie-breaker（latest() 排序补 created_at/id）；③advisor 幂等 skip 加 status==STATUS_OK（拒答行卡全天，B043 幂等占位同模式第二例）+risk_explanation.py:84 条件显式化。**F003 语义与防御（🟡）**——①has_mark 标注（『持有但无标价』与『未持有』在 recommendations 展示层同为 0%，diff 层 Unmatched 防护已有）；②backlog status 二选一（建列 vs 移除，BL-B050-S1）；③date.today()→datetime.now(UTC).date() 全局统一+守门（去『服务器 TZ=UTC』隐含假设）；④权重和断言 abs(sum-1)<1e-6。**F004 codex**——★实际提交超卖/负现金 fill 看到拒绝非静默（§25 正面证据）+★worker 重启无孤儿+latest 稳定+回归+**演练自清（B052 规约首执行：本批 L2 演练数据收尾用 drill_cleanup 自清）**+signoff。来源：threat-model-audit-2026-06.md（第四轮正向威胁建模）+post-b052-hidden-bug-audit（BL-AUDIT-S1）+b050 审计（BL-B050-S1），三条 backlog 条目已并入移除。spec docs/specs/B053-hardening-sweep-spec.md(6 章)。**背景**：B052 已 done（用户假 59.60% 回撤闭合，生产清理完成）；B052 soft-watch S1（/risk yellow unclassified 残留，low 用户知情）已转 F005 闭合。",
+  "status": "building",
+  "user_goal": "B054 AI/动态文字完整中文化（界面所有英文→中文，**交易前 trading_gate**——用户硬约束 B054 生产部署完成前不开始真实交易）。根因：B024 只 i18n 了界面固定文字，动态/AI/后端生成文字大量绕过 i18n 显示英文。**三家族（全面审计 docs/product/ai-text-localization-audit-2026-06.md 有完整 file:line）**：①LLM 生成文字（推荐 rationale=用户主诉『标的下面的介绍』/回测/风险解释/advisor，prompt 无中文指令默认英文）②后端硬编码英文串 30+（策略说明×8/门控/ticket markdown×10/执行 reason/风险防御/首页汇总）③前端漏译+报告正文（fills buy/sell/zh-CN.json:149/投资+回测报告整段 markdown）。**用户决策**：LLM 文字只生成中文（单语）；范围全部纳入（含报告正文，一次做完）。5 features 4g+1c：F001 g LLM 文字中文化（prompt 加中文指令+占位改中文+重生成现存解释）；F002 g 后端硬编码串 i18n 双语 key（策略说明/门控/ticket/reason/risk/home）；F003 g 前端快修（fills/zh-CN.json/parity 全扫）；F004 g 报告正文模板级中文（trade/reporting，触 trade 包须 mypy trade 自检）；F005 c L1+L2 真 VM 逐页中文核验无残留英文+no-AI 中文 adversarial+回归+演练自清+signoff。原则：LLM①单语中文；后端静态串②③双语 i18n-key（保 B024 parity）；报告④模板中文（数值中性）。永久硬边界：§12.10.2/no-AI 5 规则中文版同禁/cost_guard cap/i18n parity。不做：改策略评分/回测/风控算法/数值/news 源文本。spec docs/specs/B054-ai-text-localization-spec.md(10 章)。**背景**：B053 done（加固扫尾全闭合）；用户上手 5 批报障全闭合，B054 是交易前最后一块。",
   "total_features": 5,
-  "completed_features": 5,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F004",
-  "last_updated": "2026-06-10",
+  "current_sprint": "F001",
+  "last_updated": "2026-06-11",
   "reference_docs": [
-    "docs/specs/B053-hardening-sweep-spec.md",
-    "docs/product/threat-model-audit-2026-06.md",
-    "docs/product/post-b052-hidden-bug-audit-2026-06.md",
-    "workbench/backend/workbench_api/services/reconcile.py",
-    "workbench/backend/workbench_api/backtests/worker.py",
-    "workbench/backend/workbench_api/db/repositories/backtest_run.py",
-    "workbench/backend/workbench_api/db/repositories/account_snapshot.py",
-    "workbench/backend/workbench_api/advisor/precompute.py",
-    "workbench/backend/workbench_api/services/risk_explanation.py",
-    "workbench/backend/workbench_api/services/mark_to_market.py"
+    "docs/specs/B054-ai-text-localization-spec.md",
+    "docs/product/ai-text-localization-audit-2026-06.md",
+    "workbench/backend/workbench_api/services/explanation/service.py",
+    "workbench/backend/workbench_api/recommendations/rationale.py",
+    "workbench/backend/workbench_api/advisor/service.py",
+    "workbench/backend/workbench_api/services/strategies.py",
+    "workbench/backend/workbench_api/services/tickets.py",
+    "workbench/backend/workbench_api/services/risk_panel.py",
+    "trade/reporting",
+    "workbench/frontend/messages/zh-CN.json"
   ],
   "docs": {
-    "spec": "docs/specs/B053-hardening-sweep-spec.md",
+    "spec": "docs/specs/B054-ai-text-localization-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B053-hardening-sweep-signoff-2026-06-10.md",
-    "framework_reviewed": true
+    "signoff": null,
+    "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": "2026-06-10 Codex F004 PASS（signoff docs/test-reports/B053-hardening-sweep-signoff-2026-06-10.md）。L1：backend 90 passed/15 skipped、frontend tsc/eslint clean。L2 真 VM 正面证据：★超卖拒绝——SELL SPY 20 on tkt-20260610-7c686b93 返 409『不支持卖空/做空』（非静默归零）；★负现金拒绝——大额买入 reconcile 返 409 含明确缺口；★worker/latest 稳定——账户重复保存 latest() tie-breaker 稳定；/risk 主组合回撤 0.00%/kill-switch 15%；journal 仅当前 ticket 0 fills；演练自清=测试 fills 验证后已删除。无遗留 blocker。【planner 注：Codex 留 evaluator_feedback 空 + 未提交未推送 + 未标 features F004 completed，planner 收尾时从 signoff 转录补全并推送，remediate 未推送测试产物违规。】",
-  "generator_handoff": "B053 全 4 generator features done（F001/F002/F003/F005），status→verifying 交 Codex F004。**L1 全门禁本地已绿**（backend ruff/mypy 0 CI-exact 329 files / unit 919 / safety 138；frontend vitest 277 / tsc / lint / i18n parity / api.ts no-drift）。**L2 真 VM 重点**：(1)★对账完整性 §25 正面证据——实际提交超卖 fill(卖出>持有)看到 409 行级提示非静默归零，负现金同验(F001)；(2)★worker 孤儿——回测进行中 `systemctl restart workbench-backtest-worker` → 该 run 转 error/error_kind=interrupted 非永久 running，前端超时(~10min)+interrupted 友好文案(F002)；(3)latest 稳定——快速连存账户两次页面显示最新(F002 tie-breaker)；(4)has_mark——构造持有但无标价(held 有 shares 但 price_snapshot 无该 symbol 近两日 close)→Recommendations 卡片显示『持有·无标价/Held·no price』非 0%(F003)；(5)advisor 降级重试——种 insufficient_grounding 行同日重跑应重新生成(F002)；(6)F005 /risk 清除核验——/risk per-sleeve 全 0 + master_dd≈0(已 closed，复核)；(7)回归 B050/B051/B052/B043 全链 + recent-errors=0 + HEAD≡main；(8)演练自清(B052 规约)——本批 L2 写的 fill/ticket/snapshot 用 drill_cleanup CLI 自清，signoff §Ops 记。**signoff §Ops 须记 F005 删除清单**（drill_cleanup --keep-from snap-d79eaefd0786 删 6 快照 + 重生成 risk，生产 HEAD 数据已变非代码）。**generator 裁定记录**：F001=409 拒绝(非 allow_unmatched override)；F002 孤儿=error+interrupted(非 requeue)、全删 running(单实例无时间阈值)；F003 backlog status=移除(phantom 字段)、权重和断言容差=1e-3(非 spec 字面 1e-6——6 位小数 ×~20 symbol 舍入漂移可达 ~2e-5 会误报，1e-3 仍抓结构性漂移≥1%)。",
+  "evaluator_feedback": null,
+  "generator_handoff": null,
   "session_notes": {
-    "planner": "2026-06-10 B053 done——Codex F004 签收 PASS（超卖/负现金 409 拒绝§25 正面证据、worker 孤儿回收、latest tie-breaker、F005 /risk green）。**evaluator 交接不完整**：Codex 写了 signoff(PASS)+设 status=done 但漏填 evaluator_feedback/未标 features F004 completed/**未提交未推送**——planner 收尾已补全并推送(remediate 铁律 未推送测试产物)。**done 收尾待办**：(a) framework 审查——本批多候选待提用户：①幂等占位区分(B043+advisor F002 二例已 ship，达门槛)②CI flake risk-banner(B047-OPS2+B052+? 多例，proposed-learnings 已记建议沉淀)③演练自清规约(B052 提案+B053 F004 首次执行)④reconcile fail-fast 不静默(对齐诚实降级)⑤date.today→UTC 去隐含假设——前几批用户多选『都不沉淀』；(b) project-status 已由 evaluator 更新(F004✅/B001-B053 签收)，加 framework 状态行；(c) role_assignments 已 null。 ▌**【下一批=B054 AI/动态文字完整中文化】**——用户硬约束 trading_gate（一定中文化完成+生产部署后才真实交易）；backlog B054 已备(audit doc docs/product/ai-text-localization-audit-2026-06.md 完整 file:line 清单，三家族：LLM 文字/后端硬编码 30+/报告正文)。B053 done 收尾后立即 planning B054。**用户上手期 6 次报障/需求全闭合**（B050/B051/B052/B053 加固/B054 中文化）。prod=B053 已上(F001/F005 已部署，F002/F003 待确认部署态)。",
-    "generator": "2026-06-10 B053 全 4 generator features done（F001+F005+F002+F003，均 0 fix-round 内，全门禁绿）→status=verifying 交 Codex F004。**F001 reconcile 对账完整性**（已上生产 CI+deploy 全绿，commit 3a686b5）：超卖+负现金→409 拒绝整笔对账(fail-fast 不静默 clamp，detail 含行号/缺口)，不用 fills allow_unmatched 逐行 override（不可能状态无『确认照做』语义）；_apply_fills_to_positions 返 3 元组加 oversell_violations，去掉 max(0.0,...)；i18n 2 key+7 回归测试。**F005 B052 S1 收尾**（用户上手急需，零代码生产实施）：经用户授权 SSH(~/.ssh/kolmatrix_deploy→tripplezhou@34.180.93.185)，dry-run 出 9 快照交用户确认→用户选 Option A cutoff→`drill_cleanup --keep-from snap-d79eaefd0786 --apply` 删 6 account_snapshot(4 重复纯现金+2 测试 SGOV snap-47ef76c66212/snap-8863ba12ef28)+1 stale risk_explanation，保留 3 纯现金($50k)+ticket tkt-20260610-7c686b93；`systemctl start workbench-risk-explanation.service`(success) 重生成→**state=green/master_dd=0.0000**(原 yellow/0.0197)，**B052 S1 closed**。**Codex F004 signoff §Ops 需记 F005 删除清单+VM 命令**(生产 HEAD 数据已变非代码)。**F002 状态与并发加固**：①worker 孤儿回收=`BacktestRunRepository.recover_orphaned_running()`(bulk UPDATE running→error+error_kind=interrupted+finished_at)，worker main() 启动 loop 前调用；裁定=error+interrupted 诚实告知(非静默 requeue)，全删 running(单实例 systemd 启动时任何 running 即孤儿，无需时间阈值/新列)；error_kinds 加 INTERRUPTED。②前端轮询超时=backtest-poll DEFAULT_MAX_ATTEMPTS 40→400(~10min，原 60s 会误判仍在跑的真回测 timeout)，保留 BacktestTimeoutError 双语。③snapshot_at tie-breaker=latest()/nav_history/wash_sale/reconcile 幂等查询全补 (created_at, id) 次级排序。④advisor 幂等=precompute skip 加 `and latest.status==STATUS_OK`(拒答行同日重试)；risk_explanation `explanation is not None` 显式化。前端 interrupted error_kind i18n 双语+page.tsx ERROR_KINDS。回归+5 后端+前端 poll budget/interrupted。门禁：ruff/mypy 0(CI-exact 328)/unit 914(+5)/safety 137/前端 vitest 276/tsc/lint/i18n parity/api.ts no-drift。**F003 语义与防御加固 done**：①has_mark——TargetPosition 加 has_mark(False 仅当持有但无 mark→current_weight=0 是无标价占位非『未持有』)，PositionCards 显示『持有·无标价』+amber；②backlog status——**移除**(phantom 字段：从不存储/读时硬编码 open/PATCH 静默丢弃=plumbed-but-ignored §17)，schema+service+前端列+i18n key 全清；③date.today()→datetime.now(UTC).date() 全局 10 处替换(worker/canonical/precompute/tiingo×2/yfinance/wash_sale/execution/risk_explanation/recommendations)+AST 守门 test_no_date_today.py；④权重和断言 save_batch abs(sum-1)<**1e-3**(非 1e-6——见 handoff 裁定)。api.ts 已重生成(has_mark+backlog status)。**全 4 generator features done→status=verifying 交 Codex F004**(详见 generator_handoff)。注：本机 workbench venv mypy 须 `pip install ../..` 装 trade 后与 CI 等价(已装)；VM：~/.ssh/kolmatrix_deploy→tripplezhou@34.180.93.185，venv /opt/workbench/.venv/bin/python，workdir /srv/workbench/current/backend，env /etc/workbench/workbench.env。",
+    "planner": "2026-06-11 B054 planning，status→building 交 Generator F001。**trading_gate 批**（用户硬约束：B054 部署完成前不真实交易）。**全面审计已做**（docs/product/ai-text-localization-audit-2026-06.md，3 路 agent 完整 file:line 清单），planning 直接用。**三家族**：①LLM 文字（prompt 无中文指令默认英文，单列单语；用户主诉推荐 rationale='标的下面的介绍'）②后端硬编码 30+（前端原样渲染）③前端漏译+报告正文（最重）。**用户两决策**：LLM 只生成中文（单语）+ 全部纳入（含报告正文）。**feature 设计**：F001 LLM 中文化(prompt+重生成，no-AI 中文版同禁)；F002 后端串双语 i18n-key(保 B024 parity，参数化数值模板/分段 ticket markdown)；F003 前端快修;F004 报告模板中文(触 trade/ 须 mypy trade)；F005 codex 逐页中文核验+no-AI 中文 adversarial+演练自清。 ▌**【下次 planner 续接】** status=building(Generator F001→F002→F003→F004，再 Codex F005，F001/F003 可并行)。planner 下次介入：(a) B054 done→done 收尾+**告知用户『界面全中文了可来读一遍确认』→满足 trading_gate→引导建仓**；(b) Generator 抛疑点(F002 后端 t() vs 前端 key 组装 / F004 报告 trade/reporting 中文机制 / 重生成范围)。**用户上手期**：5 批报障全闭合(B050-B053)；B054 后即可交易；Reconcile 步骤需 planner 带跑。framework 队列：③演练自清/④reconcile fail-fast/⑤date UTC + async worker/satellite 权重/sudoers 待沉淀。prod=B053 系(ef4a6f5)。",
+    "generator": null,
     "evaluator": null
   },
   "features": [
     "F001",
     "F002",
     "F003",
-    "F005",
-    "F004"
+    "F004",
+    "F005"
   ]
 }

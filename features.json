@@ -1,62 +1,60 @@
 {
-  "sprint": "B053-hardening-sweep",
+  "sprint": "B054-ai-text-localization",
   "features": [
     {
       "id": "F001",
-      "title": "reconcile 对账完整性——超卖/负现金拒绝或警告（不静默修正）+ 测试",
+      "title": "LLM 文字中文化（prompt 加中文指令 + 占位改中文 + 重生成现存解释）+ 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【🔴 中-高，第四轮审计 #1，见 spec §2。原则=不可能状态 fail-fast，不静默修正】(1) **超卖拒绝**：reconcile.py:156-158 检测 sell shares > held shares → 不再静默归零；整个 reconcile 拒绝（409，detail 指明行号/symbol/卖出 vs 持有数），或按行进入需用户确认的 warning 列表（generator 按现有 fills allow_unmatched 交互范式二选一注明）。注意区分『不支持做空』(MVP 边界)与『输入错误』(必须可见)。(2) **负现金拒绝/警告**：reconcile.py:299 检测 prior_cash+cash_delta<0 → 409（detail 给差额+可能原因『fill 价格/股数/费用录入错误』）或 ReconcileResponse 显式 warning 字段；**绝不静默 max(0,...)**。(3) **幂等不破**：already_reconciled 路径不变。(4) **测试**：超卖 fill→409+行级信息；负现金→409/warning；正常路径回归；边界（恰好卖到 0 股合法/cash 恰好 0 合法通过）。(5) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy(workbench_api+tests) 0。",
+      "status": "pending",
+      "acceptance": "【家族①，见 spec §4 + 审计 doc。用户主诉『推荐页每只标的下面的介绍是英文』=rationale】(1) **prompt 加中文指令**：services/explanation/service.py SYSTEM_PROMPT + 三 REQUEST_LINE（recommendations/rationale.py rationale / backtests/explanation.py / services/risk_explanation.py）+ advisor/service.py SYSTEM_PROMPT+REQUEST(:154) 加『用简体中文(zh-CN)回复』指令；**no-AI 5 规则中文版同样禁收益预测/执行/替代 quant**。(2) **降级占位改中文**：recommendations/rationale.py:35-37 deterministic placeholder 改中文。(3) **重生成现存解释**：部署后重跑 recommendations/advisor/risk precompute + 触发 risk timer(+可选重 enqueue backtest)使生产现存解释立即中文（不等季度/日常刷新）。(4) **§12.10.2 不破**：生成仍 off 请求路径；references_grounded/sentinel 护栏中文版仍生效（中文拒答 sentinel 不破）。(5) **测试**：mock gateway 验 prompt 含中文指令+占位中文+护栏不破。(6) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / §12.10.2 守门 / cost_guard 不绕过。",
       "design_decisions": [
-        "用户手抄 fill 是常规操作、输错是常态风险——输错时静默『修正』账目是最坏行为（对账对不上无线索）；对齐系统诚实降级一贯原则。",
-        "对比先例：fills 上传对 unmatched 行是 400+提示——reconcile 应同等待遇。"
+        "用户选只生成中文（单列单语，不追双语）；加中文指令仍是 summarize/translate，no-AI 边界内。",
+        "重生成现存解释使生产立即中文（B043 经验：信号日季度才变，不重生成会一直显旧英文）。"
       ]
     },
     {
       "id": "F002",
-      "title": "状态与并发加固——worker 孤儿回收 + 前端轮询超时 + snapshot_at tie-breaker + advisor/risk_explanation 幂等降级区分 + 测试",
+      "title": "后端硬编码英文串 i18n 化（策略说明/门控/ticket markdown/reason/risk/home，双语 key）+ 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【🟠 中 ×2 + 🟡，第四轮审计 #2#3 + BL-AUDIT-S1，见 spec §3】(1) **worker 孤儿回收**：backtests worker main() 启动时回收 stale running 行（置 error+error_kind=interrupted，前端 i18n 友好『回测被中断请重新运行』；或重置 queued 重跑——generator 二选一注明，倾向 error+interrupted 诚实告知）；stale 判定用现有时间列或按需加 claim 时间戳。每次 deploy restart worker 都是触发窗口（部署恰逢回测进行中→孤儿）。(2) **前端轮询超时**：backtest-poll 加最大轮询时长（如 10 分钟）→超时友好提示非永久转圈（i18n 双语）。(3) **snapshot_at tie-breaker**：repositories/account_snapshot.py latest()/排序补 created_at（或 id）次级排序（双击保存同秒两行 latest() 不稳定）；nav_history 重建排序同步核查。(4) **advisor 幂等**：advisor/precompute.py:66 skip 条件加 and latest.status==STATUS_OK（拒答行不算已生成，重跑重试）+回归测试（种 INSUFFICIENT_GROUNDING 行→同日重跑应重新生成）；risk_explanation.py:84 幂等条件显式化（is not None+区分降级）。(5) **测试**：孤儿 running 启动回收+轮询超时（vitest）+同秒两行 latest() 确定性+advisor 降级重试。(6) Gates：backend pytest ≥ baseline+ / frontend vitest/tsc/lint / ruff/mypy 0 / §12.10.2 不破。",
+      "status": "pending",
+      "acceptance": "【家族② 30+ 处，见 spec §5 + 审计 doc】(1) **挪 message bundle+参数化（双语 en+zh-CN，保 B024 parity）**：策略说明 note×8(services/strategies.py:101/133/159/192/223/256/278/296)/门控 detail(recommendations.py:229-236 参数化 dd/threshold/equity)/订单清单 markdown×10(tickets.py:99-211 含 disclaimer/列头/'at market')/执行 reason(execution.py:253+tickets.py:271/289/308 defensive rotation)/风险防御 rationale(risk_panel.py:84-94/173)/首页持仓汇总(home.py:171-172 '1 position'/'{n} positions')。(2) **机制**：后端返回 i18n key+params(前端 t() 组装) 或 后端按请求 locale 出文案(复用 B024 detect_locale/t)——generator 按各串性质二选一注明(数值模板串倾向后端 t()，整段 markdown 倾向分段 key)。(3) **不动**：error_kind 已前端 i18n(B047-OPS2)；ticket disclaimer 已双语。(4) **测试**：各串中英 parity+参数化正确+i18n parity 守门。(5) Gates：backend pytest ≥ baseline+ / frontend vitest/tsc/lint / i18n parity / api.ts drift 0(若 schema 变) / ruff/mypy 0。",
       "design_decisions": [
-        "孤儿回收倾向 error_kind=interrupted（诚实告知被中断）而非静默重跑（重跑可能重复消耗且用户不知情）。",
-        "advisor 幂等=B043 rationale 同模式第二例（幂等复用必须区分真实产物 vs 降级值）。"
+        "后端硬编码串走双语 i18n-key（不破 B024 parity 架构，cheap 且正确）——与 F001 LLM 文字单语中文不同，因这些是静态文案可双语。",
+        "数值模板串（门控/reason）参数化后端 t()；整段 ticket markdown 分段 key 化。"
       ]
     },
     {
       "id": "F003",
-      "title": "语义与防御加固——has_mark 标注 + backlog status 二选一 + date.today() 全局统一 UTC + 权重和断言 + 测试",
+      "title": "前端快修（fills buy/sell + placeholder + zh-CN.json 残留英文 + i18n parity 全扫）+ 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【🟡 低-中 + 加固项，第四轮审计 #4/§5 + BL-B050-S1，见 spec §4】(1) **has_mark 标注**：TargetPosition 加 has_mark: bool（或等价），recommendations 前端对『持有但无标价』显示区分文案（非 current_weight=0% 误导『未持有』）；i18n 双语；api.ts 同步。（execution position-diff 已有 Unmatched 防护不动。）(2) **backlog status**：二选一（建 status 列+migration+真实存读 vs schema 显式移除字段）——按产品意图 generator 裁定注明（内部工具页，倾向移除以最小化）。(3) **date.today() 统一**：全局替换为 datetime.now(UTC).date()（grep 全部出现点：execution/tickets/canonical/risk_explanation 等），去『服务器 TZ=UTC』隐含假设；加守门测试（AST/grep 禁新增 date.today()）。(4) **权重和断言**：recommendation_snapshot save_batch 或读取侧加 abs(sum(weights)-1.0)<1e-6 断言（防未来引擎漂移）。(5) **测试**：has_mark 渲染+backlog status 行为+date 统一守门+权重断言。(6) Gates：backend pytest ≥ baseline+ / frontend vitest/tsc/lint / i18n parity / api.ts drift 0 / alembic head（若 backlog 建列）/ ruff/mypy 0。",
+      "status": "pending",
+      "acceptance": "【家族③前半，见 spec §6 + 审计 doc】(1) fills page.tsx:401-402 buy/sell option + :425 timestamp placeholder → t() key。(2) messages/zh-CN.json:149 残留英文『synthetic data, not actual filings』→中文译文。(3) **i18n parity 全扫**：en.json vs zh-CN.json 缺 key / zh-CN 值仍英文的条目补齐。(4) 测试：vitest + i18n parity 守门。(5) Gates：frontend vitest/tsc/lint / i18n parity 0 缺。",
       "design_decisions": [
-        "has_mark 只动展示层标注（diff 层 Unmatched 防护已确认存在）。",
-        "date.today() 统一=去隐含假设的防御性加固；现行行为不变（服务器 TZ=UTC），环境变化不再咬人。"
-      ]
-    },
-    {
-      "id": "F005",
-      "title": "【用户上手急需，generator 优先做】B052 S1 收尾——手术式清除残留测试 SGOV 快照，/risk 转全绿",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "【用户 2026-06-10 报：重存纯现金账户后 /risk 仍黄、unclassified 100% + 主组合回撤 1.97%——B052 soft-watch S1。根因（planner 核实）：B051 验收留下的测试 SGOV 快照（SGOV 10 @ ~100，如 snap-47ef76c66212/snap-8863ba12ef28）在 nav_history 历史里造成 unclassified sleeve peak-to-latest 100% DD + master 1.97% phantom DD（NAV 从带 SGOV 的 $51,004.50 回到纯现金 $50,000）；均测试残留非真实亏损，重存清不掉（history append-only）】(1) **清理（用现成 workbench_api.cli.drill_cleanup，优先零代码）**：cutoff 设为保留用户当前最新纯现金快照（删尽更早的测试 SGOV 快照 + 关联测试 ticket/fill）；若同日快照 cutoff 无法精确隔离，最小扩展 CLI 加 --delete-ids（+测试+§12.10.2 守门）。**流程（同 B052 生产实施，安全第一）**：① VM 上 cd /srv/workbench/current/backend 跑 **dry-run**，将删快照清单（id/时间/cash/positions）**交用户确认边界**；② 用户确认后 --apply（§12.11.1 env 守门已在 CLI 入口）；③ systemctl start workbench-risk-explanation.service 重生成解释。(2) **核验**：清理后 reconstruct_nav_history 单/少点纯现金序列 → master_drawdown≈0 + per_sleeve 全 0（unclassified 消失）；用户 /risk 转绿（或纯现金应有态）。(3) Gates：纯数据操作（零代码）或最小 --delete-ids 扩展（pytest+ruff+mypy 0+§12.10.2 守门）。实施记录入 signoff §Ops 副作用。(4) 不动：执行流/评分/recommendation_snapshot。",
-      "design_decisions": [
-        "planner 不直接操作生产 VM（角色边界+SSH 授权）；由 Generator 执行，dry-run 交用户确认后 --apply（同 B052 安全流程，保护财务数据）。",
-        "优先用现成 drill_cleanup（cutoff 保留最新快照，零代码）；仅当同日快照需精确隔离才加 --delete-ids 最小扩展。",
-        "用户上手急需（/risk 红噪音反复困扰），generator 优先于 F002/F003 做（独立任务）。"
+        "纯前端快修，独立于 F001/F002 后端改动，可并行。"
       ]
     },
     {
       "id": "F004",
-      "title": "Codex L1+L2 真 VM——错误 fill 明确拒绝非静默 + worker 重启无孤儿 + latest 稳定 + /risk 残留清除核验 + 回归 + 演练自清 + signoff",
+      "title": "报告正文中文化（投资/回测报告 markdown 模板级中文，trade/reporting）+ 测试",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "【家族③后半，最重一块，触 trade/ 包，用户拍板全纳入，见 spec §7】(1) **报告模板中文**：trade/reporting/ 生成的投资报告+回测报告 markdown 的段标题/标签/说明文字出中文（数值/日期/symbol 语言中性保留）；若报告含 LLM 生成 prose 走 F001 中文生成。(2) **机制**：模板级 i18n（reporting builder 出中文文案）——generator 定(trade/reporting 直接中文 vs 参数化)；**CI mypy trade 严格，改 trade/ 须本地 `mypy trade` 自检(environment.md)**。(3) **前端**：Reports [slug]/page.tsx:95 + Backtest MarkdownRenderer 渲染中文 markdown 无需前端改。(4) **测试**：报告 markdown 含中文段标题+数值正确+trade 包单测。(5) Gates：backend+trade pytest ≥ baseline+ / ruff / mypy(workbench+trade) 0。",
+      "design_decisions": [
+        "报告正文模板级中文（段标题/标签出中文，数值中性）——非 LLM 重生成，避免动 LLM 成本+保数值精确。",
+        "触 trade/ 包：本地必跑 mypy trade（CI 独立 Python CI 比 backend 严，B050 教训）。"
+      ]
+    },
+    {
+      "id": "F005",
+      "title": "Codex L1+L2 真 VM——全页面逐页中文核验(无残留英文) + no-AI 边界 + 回归 + 演练自清 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "【见 spec §5。core acceptance=错误录入被明确拒绝而非静默修正】L1：F001-F003 全门禁（backend pytest/frontend vitest/tsc/lint/ruff/mypy/i18n parity/api.ts drift/alembic head 若涉及/§12.10.2 守门/artifact secret=0）。L2(真 VM)：(1) ★**对账完整性（evaluator §25 正面证据）**：实际提交一笔超卖 fill（卖出>持有）→看到 409/warning 行级提示非静默归零；负现金场景同验。(2) ★**worker 孤儿**：跑回测中 systemctl restart workbench-backtest-worker → 该 run 转 interrupted（或重置语义）非永久 running；前端超时提示生效。(3) **latest 稳定**：快速连续两次保存账户→页面显示最新版本。(4) **has_mark**：构造持有但无标价场景→显示区分文案。(5) **advisor 降级重试**：（若可模拟）拒答行同日重跑重新生成。(6) **F005 /risk 残留清除核验**：清理后 /risk per-sleeve 全 0（unclassified 消失）+ master_drawdown≈0（B052 S1 closed，用户 /risk 转绿）。(7) **回归**：B050 回测分发/B051 账户流/B052 清理后状态/B043 解释 全不破+recent-errors=0+HEAD≡main。(8) ★**演练自清（B052 规约执行）**：本批 L2 写入的执行域演练数据（fill/ticket/snapshot）收尾必须用 drill_cleanup CLI 自清，signoff §Ops 记录。(9) Signoff：docs/test-reports/B053-hardening-sweep-signoff-2026-MM-DD.md 用模板（§Production/HEAD+§Post-signoff Deploy+§对账拒绝证据+§孤儿回收证据+§F005 /risk 清除证据+§Ops 自清记录）。更新 progress.json status→done/docs.signoff/evaluator_feedback。"
+      "status": "pending",
+      "acceptance": "【见 spec §8。core acceptance=用户主诉推荐 rationale 中文 + 全页面无残留英文】L1 全门禁（backend/frontend + i18n parity + api.ts drift + mypy trade + §12.10.2 守门 + cost_guard + artifact secret=0）。L2 真 VM **逐页中文核验**：Home/Recommendations(★rationale 中文，§25 须正面真机证据)/Risk(解释中文+防御文案中文)/Strategies(说明中文)/Backtest(解释+报告中文)/Reports(报告正文中文)/Execution(diff reason+ticket 清单中文)/门控面板中文——**无残留英文**(逐页文本/截图核)；LLM 中文解释仍守 **no-AI 边界**(safety_judge 中文版 adversarial 抽验无收益预测/执行/替代 quant)；**回归** B050-B053 不破+recent-errors=0+HEAD≡main；**演练自清**(本批 L2 写入执行域数据 drill_cleanup 收尾)。Signoff docs/test-reports/B054-ai-text-localization-signoff-2026-MM-DD.md 用模板(§Production/HEAD+§Post-signoff Deploy+§逐页中文核验证据+§no-AI 中文 adversarial)。更新 progress.json status→done/docs.signoff/evaluator_feedback。**trading_gate：本批 done+部署=用户可开始真实交易。**"
     }
   ]
 }

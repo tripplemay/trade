@@ -206,21 +206,5 @@
     "confirmed_at": "2026-05-13",
     "priority": "obsolete",
     "source": "B010 signoff soft-watch S1"
-  },
-  {
-    "id": "B054",
-    "title": "AI/动态文字完整本地化——界面所有 LLM 生成文字 + 后端硬编码英文串 + 报告正文中文化",
-    "description": "【2026-06-10 用户上手报障 #6：界面大量 AI 文字仍英文，影响准确读懂交易建议；用户要求 B053 之后、正式交易前做】根因：B024 只 i18n 了界面固定文字（next-intl key），但动态/AI/后端生成文字大量绕过 i18n 显示英文。**三家族（全面审计见 docs/product/ai-text-localization-audit-2026-06.md）**：①**LLM 生成文字**——推荐 rationale（用户主诉『每只标的下面的介绍』）/回测解释/风险解释/advisor 建议，prompt 无任何中文指令（services/explanation/service.py:37/advisor/service.py:54）→默认英文，单列单语存储；②**后端硬编码英文串 30+ 处**——策略说明 note×8(strategies.py)/门控详情(recommendations.py:229)/订单清单 markdown×10(tickets.py:99-211)/执行 reason(execution.py:253)/风险防御说明(risk_panel.py:84)/首页持仓汇总(home.py:171)，前端原样渲染；③**前端漏译+报告正文**——fills buy/sell(fills/page.tsx:401)/zh-CN.json:149 残留英文/报告整段 markdown(reports/[slug] 由 trade/reporting 生成全英文，最大块)。**用户决策：LLM 文字只生成中文**（单语，不追双语 parity，最简）。**修复**：①prompt 加中文指令+占位改中文+重生成现存解释（重跑 precompute/timer）使生产立即中文；②后端硬编码串 i18n-key 化(双语)或改中文(planning 决，建议参数化+key)；③前端快修 3 处+zh-CN.json。**建议分 feature**：F001 LLM 文字中文化(①高频用户主诉)/F002 后端硬编码串(②)/F003 前端快修(③)/F004 报告正文中文(最大块，可拆子批)/F005 codex 真 VM 全页面中文核验+signoff。报告正文(trade/reporting 出中文)是独立最大块，建议本批先做①②③、报告正文留子批或 F004 评估。重生成成本在 LLM 月 cap $200 内。",
-    "decisions": [
-      "2026-06-10 用户硬约束：**一定等 B054 界面中文化完成并生产部署后，才开始真实交易**——B054 是『正式交易前』的硬 gate，任何 agent 不得降级或跳过；B053 done 后立即 planning。",
-      "2026-06-10 用户批：B053 之后下一批、正式交易前做；LLM 文字只生成中文（单语，不双语）",
-      "高频优先：推荐 rationale/解释/策略说明/门控/ticket 先做（用户主诉+决策关键）；报告正文整段 markdown 作最大块可拆子批",
-      "后端硬编码串 i18n-key 化 vs 改中文 planning 拍（建议参数化+key 不破 B024 双语架构）",
-      "全面审计 file:line 清单见 docs/product/ai-text-localization-audit-2026-06.md"
-    ],
-    "confirmed_at": "2026-06-10",
-    "priority": "high",
-    "source": "用户上手报障 #6 + AI 文字本地化全面审计（docs/product/ai-text-localization-audit-2026-06.md）",
-    "trading_gate": true
   }
 ]
