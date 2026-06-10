@@ -1,37 +1,41 @@
 {
-  "status": "done",
-  "user_goal": "B052 生产演练数据清理 + 防再发（hotfix）。用户 2026-06-10 报：纯现金新账户，推荐页却显示『主组合回撤 59.60% + kill-switch 已触发』。**Planner 根因裁定（铁律 9，已实地确证）**：历届批次 L2 真机验收在生产 account_snapshot 留下演练快照（B046 浮盈演练/BL-B023-S1 冒烟 NAV $35,246+fills+journal/**BL-B023-S2 红态演练人为制造 DD 0.70 的假峰 ~$126k 量级**/B050 防守测试/B051 验收快照）；nav_history.reconstruct_nav_history(nav_history.py:93) 无过滤读全部历史重建 NAV 序列、master_drawdown=peak-to-latest→用户真实 $50k 接在演练假峰后被算成 −59.6%。**不会自愈**（假峰=历史 max，除非用户 NAV 真超 ~$126k）且**误导交易**（kill-switch 触发→Ticket 默认勾防守→新用户建仓会被引导 100% 买 SGOV 而非目标组合，已口头警告用户先选回正常模式）。source 字段无法区分演练/真实（演练走同一 UI/API 写入路径）。**修复=清理而非改算法**（机制正确，错在数据）：2 features 1g+1c。F001 g 清理 CLI（--keep-from cutoff 删执行域三表 account_snapshot/order_ticket/fill_journal_entry 之前行+默认 dry-run 完整预览+--apply 才删+§12.11.1 env 守门+顺带删 risk_explanation_snapshot 旧行并触发重生成）+测试+生产实施（dry-run 输出交用户确认边界——用户 2026-06-10 自填现金那条起=真实数据——确认后 --apply，记录入 signoff §Ops）。F002 c L2 真 VM：清理后 master_drawdown≈0+kill_switch PASS+Ticket 不默认防守+Risk 解释不再引用 59.60%+用户真实快照保留+journal 演练 ticket 清空+回归+signoff；本批演练若写入须用本 CLI 自清（首个执行新规约）。**防再发（done 阶段沉淀候选）**：evaluator 规约『L2 真机演练写入执行域数据后收尾必须自清——PUT 回原状态≠无痕，append-only 历史表永久记住演练』。不做：改 nav_history/risk 算法/碰无关表/基线重置 UI/演练 source 标记。spec docs/specs/B052-drill-data-cleanup-spec.md(6 章)。",
-  "total_features": 2,
-  "completed_features": 2,
+  "status": "building",
+  "user_goal": "B053 加固扫尾批（四轮审计产出汇总，用户批『B052 done 后即启』）。把四轮系统审计挖出的全部边角防御缺口一批扫清，修复原则=**不可能状态 fail-fast/警告，不静默修正**（对齐系统诚实降级一贯原则）。4 features 3g+1c：**F001 reconcile 对账完整性（🔴 中-高）**——reconcile.py:156-158 超卖静默归零 + :299 负现金 max(0,...) 静默夹零均无警告，用户手抄 fill 输错时系统静默『修正』账目对账无线索；修=检测不可能状态→409 行级提示或 warning 标注（对齐 fills allow_unmatched 交互先例）。**F002 状态与并发（🟠）**——①worker 孤儿 running 回收（claim 后崩溃/deploy restart→run 永久卡 running，claim_next_queued 只领 queued 无启动回收；每次 deploy 都是触发窗口）：启动回收置 error_kind=interrupted+前端轮询超时提示；②snapshot_at 同秒 tie-breaker（latest() 排序补 created_at/id）；③advisor 幂等 skip 加 status==STATUS_OK（拒答行卡全天，B043 幂等占位同模式第二例）+risk_explanation.py:84 条件显式化。**F003 语义与防御（🟡）**——①has_mark 标注（『持有但无标价』与『未持有』在 recommendations 展示层同为 0%，diff 层 Unmatched 防护已有）；②backlog status 二选一（建列 vs 移除，BL-B050-S1）；③date.today()→datetime.now(UTC).date() 全局统一+守门（去『服务器 TZ=UTC』隐含假设）；④权重和断言 abs(sum-1)<1e-6。**F004 codex**——★实际提交超卖/负现金 fill 看到拒绝非静默（§25 正面证据）+★worker 重启无孤儿+latest 稳定+回归+**演练自清（B052 规约首执行：本批 L2 演练数据收尾用 drill_cleanup 自清）**+signoff。来源：threat-model-audit-2026-06.md（第四轮正向威胁建模）+post-b052-hidden-bug-audit（BL-AUDIT-S1）+b050 审计（BL-B050-S1），三条 backlog 条目已并入移除。spec docs/specs/B053-hardening-sweep-spec.md(6 章)。**背景**：B052 已 done（用户假 59.60% 回撤闭合，生产清理完成）；B052 soft-watch S1（/risk yellow unclassified 残留，low 用户知情）未入本批可选后续。",
+  "total_features": 4,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F002",
+  "current_sprint": "F001",
   "last_updated": "2026-06-10",
   "reference_docs": [
-    "docs/specs/B052-drill-data-cleanup-spec.md",
-    "workbench/backend/workbench_api/services/nav_history.py",
-    "workbench/backend/workbench_api/db/models/account_snapshot.py",
-    "workbench/backend/workbench_api/db/models/order_ticket.py",
-    "workbench/backend/workbench_api/db/models/fill_journal_entry.py",
-    "workbench/backend/workbench_api/db/models/risk_explanation_snapshot.py",
-    "workbench/backend/workbench_api/db/require_production_db.py",
-    "workbench/backend/workbench_api/cli/bootstrap.py"
+    "docs/specs/B053-hardening-sweep-spec.md",
+    "docs/product/threat-model-audit-2026-06.md",
+    "docs/product/post-b052-hidden-bug-audit-2026-06.md",
+    "workbench/backend/workbench_api/services/reconcile.py",
+    "workbench/backend/workbench_api/backtests/worker.py",
+    "workbench/backend/workbench_api/db/repositories/backtest_run.py",
+    "workbench/backend/workbench_api/db/repositories/account_snapshot.py",
+    "workbench/backend/workbench_api/advisor/precompute.py",
+    "workbench/backend/workbench_api/services/risk_explanation.py",
+    "workbench/backend/workbench_api/services/mark_to_market.py"
   ],
   "docs": {
-    "spec": "docs/specs/B052-drill-data-cleanup-spec.md",
+    "spec": "docs/specs/B053-hardening-sweep-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B052-drill-data-cleanup-signoff-2026-06-10.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": "2026-06-10 verifier round: PASS. Reran B052 targeted L1 gates locally (backend 36 passed; frontend tsc/eslint clean), then independently verified production with authenticated browser evidence. After drill cleanup, /risk dropped from the old 59.60% false peak to 1.97% and `yellow`, with the explanation now pointing at the remaining unclassified sleeve instead of the historical drill peak. /execution/ticket generated a normal 3-line BUY ticket (SGOV/SPY/AAPL) rather than a 100% defensive-only order. /execution/journal-history shows only the current generated ticket and 0 fills. Real user snapshots remain preserved: home NAV stays $51,004.50 and /recommendations still shows account ready. Signoff: docs/test-reports/B052-drill-data-cleanup-signoff-2026-06-10.md.",
-  "generator_handoff": "F001 done（代码 d58f1e9+0173ec4，生产实施已完成）。【CLI】python -m workbench_api.cli.drill_cleanup --keep-from <snapshot_id|ISO> [--apply]；三表 cutoff 轴向：account_snapshot 按 snapshot_at（nav_history 排序轴），order_ticket/fill_journal_entry 按 created_at（写入时刻——真实用户日后补录回溯 filled_at 的成交不误删，测试有 pin）；risk_explanation_snapshot 清全部现存行；默认 dry-run 纯只读，--apply 单事务删；§12.11.1 require_production_db 入口守门（测试 pin get_engine 不被调）；§12.10.2 不 import trade（AST 测试 pin）。测试 8 项全过，backend pytest 1039 passed/ruff 0/mypy(workbench_api+tests) 0。【生产实施记录（signoff §Ops 素材）】2026-06-10 ~04:25 UTC，VM prod DB，用户确认边界 cutoff=2026-06-10 00:00 后 --apply：deleted account_snapshot=18, order_ticket=4, fill_journal_entry=8, risk_explanation_snapshot=1；删除行含 BL-B023-S2 红态演练假峰（snap-5f722c299058 等 06-08 12:13-12:15 系，cash 50000+SPY×100≈$123.8k）、BL-B023-S1 冒烟链（snap-381cf4ad97b9 reconcile + tkt-20260608-c0ae32d7 + 3 fills）、B023/B046 等历届演练；保留 7 条 2026-06-10 快照（用户 02:13 自填现金 3 条 + B051 验收 4 条，全部 cash=50000 量级）。随后 systemctl start workbench-risk-explanation.service 重生成成功（state=yellow explained=True，不再引用 59.60%）。【清理后只读核数】reconstruct_nav_history points=7，master series 全 $50k 量级，master_drawdown=0.0197（≈0，kill_switch 0.15 PASS 预期）。【已知非阻塞残留，F002 裁定】per_sleeve_drawdowns={unclassified:1.0}+解释 state=yellow——保留的 B051 验收快照 SGOV×10（snap-47ef76c66212/snap-8863ba12ef28，03:20 出现 03:28 归零）造成该 sleeve 序列 1004.5→0 的 100% DD 视觉残留；master 不受影响；用户已被告知，可选手术式删这两条（CLI 不支持按 id 删，需一次性确认操作）；若 F002 判阻塞请回 fixing。【运维注意】VM 上跑 CLI 必须 cd /srv/workbench/current/backend 后 python -m（systemd 同款，CWD 解析最新代码；venv site-packages 里是旧拷贝 import 不到新模块）。【flake】risk-banner.spec.tsx F006 red-banner 第二例（0173ec4 仅改 backend 测试仍触发，re-run 绿），已记 framework 队列待 done 沉淀。",
+  "evaluator_feedback": null,
+  "generator_handoff": null,
   "session_notes": {
-    "planner": "2026-06-10 B052 planning，status→building 交 Generator F001。**用户上手报障 #3：纯现金新账户显示假 59.60% 回撤+kill-switch 误触发**。Planner 铁律 9 根因（实地核查 nav_history.py:93 + 数字反推 51004/(1-0.596)≈$126k 吻合 BL-B023-S2 红态演练假峰）：历届 L2 验收演练快照污染 append-only 的 account_snapshot 历史，reconstruct_nav_history 无过滤全量重建→peak-to-latest 把『演练假峰→用户真实 $50k』算成 −59.6%。**不自愈+误导建仓**（Ticket 默认勾防守，已口头警告用户）。**修复哲学=清数据不改算法**（机制正确）；source 无法区分演练（同一写入路径）；不做演练标记（演练须走真实路径）。**F001 关键设计**：三表统一 cutoff（snapshot/ticket/fill——演练同时污染回撤/journal/wash_sale）+默认 dry-run 完整预览+用户确认边界才 --apply（删除前看目标铁律）+§12.11.1 env 守门（写生产 DB 的新 CLI 入口）+顺带清 risk_explanation_snapshot 旧解释并触发重生成。**F002**：清理后 DD≈0/kill_switch PASS/Ticket 不默认防守/用户真实快照保留/journal 清空；本批演练自清=首个执行新规约。 ▌**【下次 planner 续接】** status=building（Generator F001→Codex F002）。planner 下次介入：(a) B052 到 done→done 收尾+**防再发沉淀候选**（evaluator 规约『L2 真机演练写入执行域后收尾必须自清——PUT 回原状态≠无痕』+与 B043 幂等占位候选可能同族『残留状态污染后续读取』）；(b) Generator 抛疑点（cutoff 边界=用户自填现金那条快照，生产实施时 dry-run 输出须交用户确认）。**用户上手期持续**：三次报障（B050 回测/B051 账户源/B052 演练污染）全是真缺陷，上手反馈极高价值；用户建仓流程暂被本 bug 卡住（或手动选正常模式绕过）。**framework 队列**：③async worker ④satellite 权重+sudoers wrapper+CI flake+B043 幂等占位 待二例。prod=0dd515b 系（B051 已上）。",
-    "generator": "2026-06-10 B052 F001 完成（含生产实施），status→verifying 交 Codex F002。要点：① CI mypy strict 覆盖 tests/，本地自检须 `mypy workbench_api tests` 不是只跑 workbench_api（d58f1e9 首推因测试裸 list 泛型红过一轮，0173ec4 修复）。② Frontend flake 第二例已记队列。③ 生产实施细节与清理后数字全在 generator_handoff；唯一待裁定残留=unclassified sleeve DD 1.0 视觉残留（B051 验收 SGOV 快照所致，用户选择保留方案 A）。④ 下次续接：等 Codex F002；若 fixing 优先看 evaluator_feedback + handoff 残留项；若用户要求手术式删两条 SGOV 快照（snap-47ef76c66212/snap-8863ba12ef28），用一次性 python 确认操作或扩展 CLI --delete-ids。",
-    "evaluator": "2026-06-10 B052 verifying→done: local L1 rerun passed (backend 36 passed; frontend tsc/eslint clean). Production authenticated browser reverified the post-cleanup state. /risk no longer shows the old 59.60% drill peak; it now reports master drawdown 1.97% and yellow, with explanation grounded in the remaining unclassified sleeve. /execution/ticket generated a standard 3-line BUY ticket (SGOV 109.2698, SPY 3.5856, AAPL 2.1691) instead of the historical 100% defensive default. /execution/journal-history shows only the current generated ticket and 0 fills. Real user snapshots remain preserved: home NAV is $51,004.50 and /recommendations stays account-ready. Signoff written: docs/test-reports/B052-drill-data-cleanup-signoff-2026-06-10.md."
+    "planner": "2026-06-10 B052 done 收尾完成 + B053 转正启动（status→building 交 Generator F001）。**B052 收尾**：F002 Codex 生产复验 PASS（假 59.60%→真实 1.97%/Ticket 正常 3 行 BUY/journal 清空/真实快照保留）；framework 三候选（A 演练自清规约/B CI flake 二例/C 幂等占位二例）**用户裁定都不沉淀**，已记账 proposed-learnings（注：A 的操作面由 drill_cleanup CLI 工具承载，B 的 spec 修复与 C 的代码修复已排入 B053）；B052 framework_reviewed 视为完成（记账即闭环）；soft-watch S1（/risk yellow unclassified 残留，low）用户知情未入批。**B053 来源**：第四轮审计（正向威胁建模，threat-model-audit-2026-06.md）2 真隐患+2 低中+脆弱性，与池内 BL-AUDIT-S1/BL-B050-S1 凑批，三条 backlog 条目并入移除。**关键设计**：F001 reconcile 拒绝超卖/负现金（fail-fast 不静默，对齐 fills allow_unmatched 先例）；F002 worker 孤儿回收倾向 error_kind=interrupted 诚实告知；F004 演练自清=B052 规约首执行+实际提交错误 fill 看到拒绝（§25 正面证据）。 ▌**【下次 planner 续接】** status=building（Generator F001→F002→F003，再 Codex F004）。planner 下次介入：(a) B053 到 done→done 收尾（framework 队列已 6 候选：③async worker/④satellite 权重/sudoers wrapper/CI flake 二例/幂等占位二例/演练自清——届时按用户口味批量提）+下一步方向（B053 后四轮审计全清零，回用户上手主线或 product-retrospective 决策菜单 B Phase4 alpha/C 产品化/D 体验）；(b) Generator 抛疑点（F001 409 vs warning 交互/F002 interrupted vs requeue/F003 backlog status 建列 vs 移除）。**用户上手期**：四次报障全闭合（B050/B051/B052+audit），建仓流程已畅通（假红灯已灭）；用户走到 Reconcile 步骤时需带跑（API 触发）。prod=0173ec4 系（B052 已上）。",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",
-    "F002"
+    "F002",
+    "F003",
+    "F004"
   ]
 }

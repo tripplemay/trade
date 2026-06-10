@@ -206,45 +206,5 @@
     "confirmed_at": "2026-05-13",
     "priority": "obsolete",
     "source": "B010 signoff soft-watch S1"
-  },
-  {
-    "id": "BL-B050-S1",
-    "title": "backlog status 字段被忽略（编辑后恢复 open）",
-    "description": "【2026-06-09 B050 类反模式系统审查发现】backlog 条目的 status 字段是 B050 类反模式：BacklogUpdateRequest.status 被 schema 接收，但 services/backlog.py:248 显式不存（注释『request.status is not stored』），读时 services/backlog.py:112 硬编码 status='open'。用户症状：编辑 backlog 把 status 改为 in_progress/done→提交→刷新恢复 'open'，状态管理完全无效。根因：BacklogEntryModel 无 status 列（存它需 migration）。backlog 是内部工具页（非用户投资页，里程碑 C 已排除），影响面小=低优先。修复=建 status 列+migration+update 存+read 返真实值+测试；或若产品上 backlog 不需状态流转则显式从 schema 移除 status 字段消除误导（generator 起时按产品意图二选一）。",
-    "decisions": [
-      "2026-06-09 用户批：加需求池小修，未来批次顺手做（低优先不打断当前 B050）",
-      "二选一：建 status 列真实存读 vs 显式移除 status 字段（按产品是否需要 backlog 状态流转定）",
-      "内部工具页，非里程碑 C 范围；不阻塞任何投资功能"
-    ],
-    "confirmed_at": "2026-06-09",
-    "priority": "low",
-    "source": "B050 类反模式系统审查（docs/product/b050-class-decorative-control-audit-2026-06.md §3.2）"
-  },
-  {
-    "id": "BL-AUDIT-S1",
-    "title": "advisor precompute 幂等不区分降级产物（拒答行卡住全天，一行可修）",
-    "description": "【2026-06-10 全面审计发现，B043 幂等占位同模式第二例】advisor/precompute.py:66-68 幂等检查只看 latest.generated_at.date()==run_date 即 skip，不检查 latest.status——advise_sleeve 在 LLM 不可用/拒答时落库 STATUS_INSUFFICIENT_GROUNDING 行，当日任何重跑（timer 重试/手动）看到『今天已有行』即 skip→整日卡在拒答 advice，无法当日自愈（次日 run_date 变才重试）。用户症状：当日 LLM 抖动一次→advisor 页全天显示拒答/无建议，即使 LLM 早已恢复。修复=skip 条件加 `and latest.status == STATUS_OK`（降级行不算已生成，重跑重试）+回归测试（种 INSUFFICIENT_GROUNDING 行→同日重跑应重新生成）。顺手项：risk_explanation.py:84 幂等条件显式化（existing.explanation 真值检查→`is not None`+status 区分，现状 graceful 但改 update 会变隐患）。审计报告 docs/product/post-b052-hidden-bug-audit-2026-06.md §2。",
-    "decisions": [
-      "2026-06-10 用户批：入需求池下批做（B052 保持纯数据清理不扩面）",
-      "修复模式对齐 B043 F001（recommendations 幂等只复用 genuine 产物）；与 B043 构成『幂等/缓存复用区分真实 vs 降级产物』二例，done 阶段可沉淀 framework",
-      "影响有界：每日 timer 自然重试窗口=次日，非永久卡住（B043 那例是季度卡住）"
-    ],
-    "confirmed_at": "2026-06-10",
-    "priority": "medium",
-    "source": "已上线功能全面审计（docs/product/post-b052-hidden-bug-audit-2026-06.md §2）"
-  },
-  {
-    "id": "B053",
-    "title": "加固扫尾批——reconcile 对账完整性 + worker 孤儿回收 + 并发/语义/时区防御（四轮审计产出汇总）",
-    "description": "【2026-06-10 第四轮审计（正向威胁建模）产出 + 池内两条审计遗留合并，用户批凑批】六项小修一批做：(1) **reconcile 静默吞对账异常（中-高）**：reconcile.py:156-158 超卖 new_shares<0→静默归零 + :299 负现金 max(0.0,...) 静默夹零，均无警告——用户手抄 fill 输错时系统静默『修正』账目，对账对不上无线索；修=检测不可能状态→拒绝 reconcile(409+行级提示)或 ReconcileResponse 警告标注，不静默修正。(2) **worker 孤儿 running 回收（中）**：claim 后崩溃/deploy restart→run 永久卡 running，claim_next_queued 只领 queued 无启动回收；修=worker 启动回收 stale running（置 error_kind=interrupted 或重置 queued）+前端轮询超时提示。(3) **snapshot_at 同秒 tie-breaker（低-中）**：repositories/account_snapshot.py:24 仅 ORDER BY snapshot_at DESC，双击保存同秒两行 latest() 不稳定；修=排序补 created_at/id。(4) **has_mark 标注（低-中）**：『持有但无标价』与『未持有』在 recommendations 展示层同为 current_weight=0.0（diff 层有 Unmatched 防护）；修=TargetPosition 加 has_mark 或文案区分。(5) **BL-AUDIT-S1 并入**：advisor 幂等 skip 条件加 status==STATUS_OK（拒答产物卡全天）+risk_explanation.py:84 条件显式化。(6) **BL-B050-S1 并入**：backlog status 字段建列存读或显式移除（二选一）。**顺手加固**：date.today()→datetime.now(UTC).date() 全局统一（去『服务器永远 UTC』隐含假设）+ 权重和断言（save_batch/读取侧 abs(sum-1)<1e-6）。审计报告 docs/product/threat-model-audit-2026-06.md + post-b052-hidden-bug-audit-2026-06.md。spec 草案已备：docs/specs/B053-hardening-sweep-spec.md。",
-    "decisions": [
-      "2026-06-10 用户批：凑 B053 加固扫尾批，B052 done 后即启",
-      "全部为小修；reconcile 吞错与 worker 孤儿为两个真隐患优先，其余防御性加固",
-      "BL-AUDIT-S1 + BL-B050-S1 并入本批（届时从池移除）",
-      "修复原则：不可能状态→fail-fast/警告，不静默修正（对齐系统诚实降级一贯原则）"
-    ],
-    "confirmed_at": "2026-06-10",
-    "priority": "high",
-    "source": "第四轮审计 threat-model-audit-2026-06.md + 第三轮 post-b052-hidden-bug-audit §2 + B050 审计 §3.2"
   }
 ]

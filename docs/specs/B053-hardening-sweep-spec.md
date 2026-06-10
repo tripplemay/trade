@@ -1,7 +1,7 @@
 # B053 — 加固扫尾批（reconcile 对账完整性 + 孤儿回收 + 并发/语义/时区防御）
 
 > **批次类型：** 混合批次（3 generator + 1 codex）。
-> **状态：** 草案（B052 done 后转 planning→building；本 spec 由 Planner 于 2026-06-10 预备）
+> **状态：** planning → building（2026-06-10 B052 done 签收后转正启动；用户授权「B052 done 后即启」）
 > **来源：** 四轮系统审计产出汇总——第四轮 `threat-model-audit-2026-06.md`（#1-#4 + 脆弱性）+ 第三轮 `post-b052-hidden-bug-audit-2026-06.md`（BL-AUDIT-S1）+ B050 审计（BL-B050-S1）。用户 2026-06-10 批凑批。
 > **性质：** 全部小修；修复原则=**不可能状态 fail-fast/警告，不静默修正**（对齐系统「诚实降级」一贯原则）。
 

@@ -1,27 +1,49 @@
 {
-  "sprint": "B052-drill-data-cleanup",
+  "sprint": "B053-hardening-sweep",
   "features": [
     {
       "id": "F001",
-      "title": "演练数据清理 CLI（执行域三表统一 cutoff + dry-run 预览 + §12.11.1 env 守门）+ 生产实施（用户确认边界后 --apply）+ 测试",
+      "title": "reconcile 对账完整性——超卖/负现金拒绝或警告（不静默修正）+ 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【生产数据卫生 hotfix，见 spec §3。根因=历届 L2 验收演练快照污染 nav_history（含 BL-B023-S2 人为 DD 0.70 假峰 ~$126k）→用户纯现金新账户显示假 59.60% 回撤+kill-switch 误触发+Ticket 默认勾防守误导建仓；不会自愈】(1) **清理 CLI**（python -m workbench_api.cli.drill_cleanup）：--keep-from <snapshot_id|ISO 日期> 删 cutoff 之前的 account_snapshot/order_ticket/fill_journal_entry 三表行（执行域统一边界）；**默认 dry-run** 完整列出将删行（id/时间/source/cash/positions·ticket·fill 摘要）+将保留行，--apply 才真删；**§12.11.1 入口级 env 守门**（本 CLI 写生产 DB，入口必须 require_production_db，缺 env 响亮失败不写 scratch）；删后顺带删 risk_explanation_snapshot 旧行（引用假回撤的陈旧解释）+提示 systemctl start workbench-risk-explanation.service 立即重生成。(2) **测试**：dry-run 不删+apply 按 cutoff 精确删三表+cutoff 之后行完整保留+env 守门+空表 graceful。(3) **生产实施**：CLI 上 VM 后 dry-run 输出交用户确认边界（用户 2026-06-10 自填现金那条快照起=真实数据），确认后 --apply；实施记录入 signoff §Ops 副作用。(4) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / §12.10.2（CLI 不 import trade 纯 DB 操作）。(5) 不做：不改 nav_history/risk 算法（机制正确错在数据）/不碰 recommendation·backtest·news·price 表/不做基线重置 UI/不引入演练 source 标记。",
+      "status": "pending",
+      "acceptance": "【🔴 中-高，第四轮审计 #1，见 spec §2。原则=不可能状态 fail-fast，不静默修正】(1) **超卖拒绝**：reconcile.py:156-158 检测 sell shares > held shares → 不再静默归零；整个 reconcile 拒绝（409，detail 指明行号/symbol/卖出 vs 持有数），或按行进入需用户确认的 warning 列表（generator 按现有 fills allow_unmatched 交互范式二选一注明）。注意区分『不支持做空』(MVP 边界)与『输入错误』(必须可见)。(2) **负现金拒绝/警告**：reconcile.py:299 检测 prior_cash+cash_delta<0 → 409（detail 给差额+可能原因『fill 价格/股数/费用录入错误』）或 ReconcileResponse 显式 warning 字段；**绝不静默 max(0,...)**。(3) **幂等不破**：already_reconciled 路径不变。(4) **测试**：超卖 fill→409+行级信息；负现金→409/warning；正常路径回归；边界（恰好卖到 0 股合法/cash 恰好 0 合法通过）。(5) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy(workbench_api+tests) 0。",
       "design_decisions": [
-        "清理而非改算法：nav_history peak-to-latest 机制本身正确，错在 append-only 历史混入演练行；source 字段无法区分（演练走同一 UI/API 写入路径）。",
-        "三表统一 cutoff（snapshot/ticket/fill）：演练同时污染回撤、journal-history、wash_sale，一并清理才彻底。",
-        "dry-run 默认+用户确认边界：删生产数据必须先预览（删除前看目标铁律）；cutoff 由用户指认真实数据起点。",
-        "不做演练 source 标记（演练须走真实路径否则验收失真，且靠纪律不可靠）；防再发走流程规约（演练收尾自清，done 阶段沉淀）。"
+        "用户手抄 fill 是常规操作、输错是常态风险——输错时静默『修正』账目是最坏行为（对账对不上无线索）；对齐系统诚实降级一贯原则。",
+        "对比先例：fills 上传对 unmatched 行是 400+提示——reconcile 应同等待遇。"
       ]
     },
     {
       "id": "F002",
-      "title": "Codex L2 真 VM——清理后回撤≈0 + kill-switch 不再误触发 + Ticket 不默认防守 + 用户真实快照保留 + 演练自清 + signoff",
+      "title": "状态与并发加固——worker 孤儿回收 + 前端轮询超时 + snapshot_at tie-breaker + advisor/risk_explanation 幂等降级区分 + 测试",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "【🟠 中 ×2 + 🟡，第四轮审计 #2#3 + BL-AUDIT-S1，见 spec §3】(1) **worker 孤儿回收**：backtests worker main() 启动时回收 stale running 行（置 error+error_kind=interrupted，前端 i18n 友好『回测被中断请重新运行』；或重置 queued 重跑——generator 二选一注明，倾向 error+interrupted 诚实告知）；stale 判定用现有时间列或按需加 claim 时间戳。每次 deploy restart worker 都是触发窗口（部署恰逢回测进行中→孤儿）。(2) **前端轮询超时**：backtest-poll 加最大轮询时长（如 10 分钟）→超时友好提示非永久转圈（i18n 双语）。(3) **snapshot_at tie-breaker**：repositories/account_snapshot.py latest()/排序补 created_at（或 id）次级排序（双击保存同秒两行 latest() 不稳定）；nav_history 重建排序同步核查。(4) **advisor 幂等**：advisor/precompute.py:66 skip 条件加 and latest.status==STATUS_OK（拒答行不算已生成，重跑重试）+回归测试（种 INSUFFICIENT_GROUNDING 行→同日重跑应重新生成）；risk_explanation.py:84 幂等条件显式化（is not None+区分降级）。(5) **测试**：孤儿 running 启动回收+轮询超时（vitest）+同秒两行 latest() 确定性+advisor 降级重试。(6) Gates：backend pytest ≥ baseline+ / frontend vitest/tsc/lint / ruff/mypy 0 / §12.10.2 不破。",
+      "design_decisions": [
+        "孤儿回收倾向 error_kind=interrupted（诚实告知被中断）而非静默重跑（重跑可能重复消耗且用户不知情）。",
+        "advisor 幂等=B043 rationale 同模式第二例（幂等复用必须区分真实产物 vs 降级值）。"
+      ]
+    },
+    {
+      "id": "F003",
+      "title": "语义与防御加固——has_mark 标注 + backlog status 二选一 + date.today() 全局统一 UTC + 权重和断言 + 测试",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "【🟡 低-中 + 加固项，第四轮审计 #4/§5 + BL-B050-S1，见 spec §4】(1) **has_mark 标注**：TargetPosition 加 has_mark: bool（或等价），recommendations 前端对『持有但无标价』显示区分文案（非 current_weight=0% 误导『未持有』）；i18n 双语；api.ts 同步。（execution position-diff 已有 Unmatched 防护不动。）(2) **backlog status**：二选一（建 status 列+migration+真实存读 vs schema 显式移除字段）——按产品意图 generator 裁定注明（内部工具页，倾向移除以最小化）。(3) **date.today() 统一**：全局替换为 datetime.now(UTC).date()（grep 全部出现点：execution/tickets/canonical/risk_explanation 等），去『服务器 TZ=UTC』隐含假设；加守门测试（AST/grep 禁新增 date.today()）。(4) **权重和断言**：recommendation_snapshot save_batch 或读取侧加 abs(sum(weights)-1.0)<1e-6 断言（防未来引擎漂移）。(5) **测试**：has_mark 渲染+backlog status 行为+date 统一守门+权重断言。(6) Gates：backend pytest ≥ baseline+ / frontend vitest/tsc/lint / i18n parity / api.ts drift 0 / alembic head（若 backlog 建列）/ ruff/mypy 0。",
+      "design_decisions": [
+        "has_mark 只动展示层标注（diff 层 Unmatched 防护已确认存在）。",
+        "date.today() 统一=去隐含假设的防御性加固；现行行为不变（服务器 TZ=UTC），环境变化不再咬人。"
+      ]
+    },
+    {
+      "id": "F004",
+      "title": "Codex L1+L2 真 VM——错误 fill 明确拒绝非静默 + worker 重启无孤儿 + latest 稳定 + 回归 + 演练自清 + signoff",
       "priority": "high",
       "executor": "codex",
       "status": "pending",
-      "acceptance": "【见 spec §4。core acceptance=用户报障闭合】(1) ★**核心反例**：清理后生产 /api/execution/risk-panel master_drawdown ≈ 0（纯现金单点序列 peak=latest）；Recommendations gate kill_switch PASS（不再误触发）；Ticket 页**不再默认勾防守**；Risk 解释重生成后不再引用 59.60%。(2) **保留核验**：用户真实快照完整保留（Recommendations 仍『账户已就绪』+home nav 真实）；journal-history 演练 ticket 清空。(3) **回归**：B051 账户流不破/B043 解释/B050 回测/recent-errors=0/HEAD≡main。(4) **Signoff**：docs/test-reports/B052-drill-data-cleanup-signoff-2026-MM-DD.md（§Ops 副作用=清理实施记录：删行数/各表/cutoff + §核心反例证据）。evaluator.md §25 正面证据。(5) **演练自清（首个执行新规约的批次）**：本批验收若需写入演练数据，收尾必须用 drill_cleanup CLI 自清。更新 progress.json status→done/docs.signoff/evaluator_feedback。"
+      "acceptance": "【见 spec §5。core acceptance=错误录入被明确拒绝而非静默修正】L1：F001-F003 全门禁（backend pytest/frontend vitest/tsc/lint/ruff/mypy/i18n parity/api.ts drift/alembic head 若涉及/§12.10.2 守门/artifact secret=0）。L2(真 VM)：(1) ★**对账完整性（evaluator §25 正面证据）**：实际提交一笔超卖 fill（卖出>持有）→看到 409/warning 行级提示非静默归零；负现金场景同验。(2) ★**worker 孤儿**：跑回测中 systemctl restart workbench-backtest-worker → 该 run 转 interrupted（或重置语义）非永久 running；前端超时提示生效。(3) **latest 稳定**：快速连续两次保存账户→页面显示最新版本。(4) **has_mark**：构造持有但无标价场景→显示区分文案。(5) **advisor 降级重试**：（若可模拟）拒答行同日重跑重新生成。(6) **回归**：B050 回测分发/B051 账户流/B052 清理后状态/B043 解释 全不破+recent-errors=0+HEAD≡main。(7) ★**演练自清（B052 规约执行）**：本批 L2 写入的执行域演练数据（fill/ticket/snapshot）收尾必须用 drill_cleanup CLI 自清，signoff §Ops 记录。(8) Signoff：docs/test-reports/B053-hardening-sweep-signoff-2026-MM-DD.md 用模板（§Production/HEAD+§Post-signoff Deploy+§对账拒绝证据+§孤儿回收证据+§Ops 自清记录）。更新 progress.json status→done/docs.signoff/evaluator_feedback。"
     }
   ]
 }
