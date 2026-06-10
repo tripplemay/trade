@@ -2,7 +2,9 @@
 
 The daily-engagement Home page needs three things, all read-only:
 
-* **NAV** — reuses :func:`nav.aggregate_nav` (cash + equity).
+* **NAV** — reuses :func:`nav.aggregate_nav` (B051: latest
+  ``account_snapshot`` cash + mark-to-market positions, the same source
+  the execution flow reads — no longer the vestigial ``account`` table).
 * **Day P&L (mark-to-market)** — marks the latest ``AccountSnapshot``
   positions with the prices a :class:`PriceProvider` resolves (today's
   close vs the prior trading day's close) and sums ``shares * (latest -
@@ -105,7 +107,9 @@ def build_home(
     if provider is None:
         provider = DbPriceProvider(session)
 
-    nav = aggregate_nav(session)
+    # B051: pass the resolved provider through so NAV and Day P&L mark the
+    # positions against the same price source.
+    nav = aggregate_nav(session, provider)
 
     snapshot = AccountSnapshotRepository(session).latest()
     positions = _parse_positions(snapshot.positions if snapshot else None)

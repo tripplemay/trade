@@ -85,7 +85,10 @@ def test_home_payload_shape_and_values(initialised_db: str) -> None:
         _seed_marked_holding(session)
     payload = _authed_client().get("/api/home").json()
     assert set(payload.keys()) == {"nav", "day_pnl", "sleeves"}
-    assert payload["nav"] == 6000.0
+    # B051: NAV = snapshot cash 1000 + 10 × 195 (mark-to-market) = 2950.
+    # The seeded Account row (cash 1000 + equity 5000 = 6000) is the
+    # vestigial table — it must contribute NOTHING any more.
+    assert payload["nav"] == 2950.0
     assert payload["day_pnl"]["value"] == 30.0  # 10 * (195 - 192)
     sleeve_keys = {k for s in payload["sleeves"] for k in s}
     assert sleeve_keys == {"sleeve", "nav_share", "day_pnl", "positions_summary"}
@@ -107,10 +110,16 @@ def test_home_request_self_contained() -> None:
     request_path = [
         BACKEND_ROOT / "workbench_api" / "schemas" / "home.py",
         BACKEND_ROOT / "workbench_api" / "services" / "home.py",
+        # B051: NAV now flows through nav.py + mark_to_market.py over the
+        # account_snapshot table — guard those modules too.
+        BACKEND_ROOT / "workbench_api" / "services" / "nav.py",
+        BACKEND_ROOT / "workbench_api" / "services" / "mark_to_market.py",
         BACKEND_ROOT / "workbench_api" / "services" / "prices_provider.py",
         BACKEND_ROOT / "workbench_api" / "routes" / "home.py",
         BACKEND_ROOT / "workbench_api" / "db" / "repositories" / "price_snapshot.py",
         BACKEND_ROOT / "workbench_api" / "db" / "models" / "price_snapshot.py",
+        BACKEND_ROOT / "workbench_api" / "db" / "repositories" / "account_snapshot.py",
+        BACKEND_ROOT / "workbench_api" / "db" / "models" / "account_snapshot.py",
     ]
     forbidden_substrings = ("data/fixtures", ".csv", "open(")
     for path in request_path:

@@ -11,21 +11,21 @@ exported markdown carries a mandatory disclaimer (see
 The target portfolio is the latest precomputed Master Portfolio target
 (B044 — real per-sleeve scoring written to ``recommendation_snapshot``,
 not the old equal-weight placeholder); current_weights come from the
-Account row(s)' mark-to-market value when present, otherwise 0.
-``account_present=False`` lights the frontend's empty state.
+latest ``account_snapshot``'s mark-to-market value when present,
+otherwise 0. ``account_present`` is True iff an ``account_snapshot``
+exists (B051 — the row the UI Account form writes; the vestigial
+``account`` table is no longer consulted, so a UI-saved account is
+recognised immediately). ``account_present=False`` lights the
+frontend's empty state.
 """
 
 from __future__ import annotations
 
-import logging
 from datetime import date
 from pathlib import Path
 
-from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from workbench_api.db.models.account import Account
 from workbench_api.db.repositories.account_snapshot import AccountSnapshotRepository
 from workbench_api.db.repositories.recommendation_snapshot import (
     RecommendationSnapshotRepository,
@@ -44,6 +44,10 @@ from workbench_api.schemas.recommendations import (
     TargetPosition,
 )
 from workbench_api.services.mark_to_market import compute_mark_to_market, marks_for
+from workbench_api.services.nav import (
+    aggregate_account_state,
+    snapshot_positions_and_cash,
+)
 from workbench_api.services.nav_history import (
     KILL_SWITCH_THRESHOLD,
     master_drawdown,
@@ -51,8 +55,6 @@ from workbench_api.services.nav_history import (
 )
 from workbench_api.services.prices_provider import DbPriceProvider, PriceProvider
 from workbench_api.services.wash_sale import detect_wash_sales
-
-_logger = logging.getLogger("workbench.recommendations")
 
 DISCLAIMER_LITERAL: str = (
     "research-only; this is a manual review checklist, not a trading instruction"
@@ -130,60 +132,28 @@ def get_sleeve_news(
 
 
 def _aggregate_account_state(session: Session) -> tuple[bool, float]:
-    """Return (account_present, total_equity).
+    """Return (account_present, total_equity) from the latest ``account_snapshot``.
+
+    B051: delegates to :func:`nav.aggregate_account_state` — the snapshot
+    the UI Account form writes (mark-to-market NAV), not the vestigial
+    ``account`` table the old ``select(Account)`` read (only the me.json
+    bootstrap ever filled it, so a UI-saved account was never recognised).
 
     DB failure → treat as "no account on file" and let the
-    Recommendations page render its empty-state. B022 F014
-    fixing-round 2: prod observed /api/recommendations/current 500
-    with no journal entry; defensive degrade + the new app-level
-    exception logger surface the SQLAlchemy cause without crashing
-    the route.
+    Recommendations page render its empty-state (B022 F014 fixing-round 2
+    degrade contract, unchanged).
     """
 
-    try:
-        accounts = list(session.execute(select(Account)).scalars())
-    except SQLAlchemyError as exc:
-        _logger.warning(
-            "recommendations account aggregation skipped due to DB error",
-            extra={
-                "event": "recommendations_account_db_error",
-                "exception_message": str(exc),
-            },
-            exc_info=True,
-        )
-        session.rollback()
-        return False, 0.0
-    if not accounts:
-        return False, 0.0
-    total = 0.0
-    for account in accounts:
-        total += float(account.cash) + float(account.equity_value)
-    return True, total
+    return aggregate_account_state(session)
 
 
 def _account_positions_and_cash(session: Session) -> tuple[list[tuple[str, float]], float]:
     """Parse the latest AccountSnapshot into ``([(SYMBOL, shares)], cash)``.
 
-    Trust-nothing parse of the positions JSON (mirrors home / reconcile): drop
-    malformed entries. No snapshot → ``([], 0.0)``."""
+    Trust-nothing parse of the positions JSON (shared with nav since B051):
+    drop malformed entries. No snapshot → ``([], 0.0)``."""
 
-    snap = AccountSnapshotRepository(session).latest()
-    if snap is None:
-        return [], 0.0
-    positions: list[tuple[str, float]] = []
-    raw = snap.positions if isinstance(snap.positions, list) else []
-    for entry in raw:
-        if not isinstance(entry, dict):
-            continue
-        symbol = str(entry.get("symbol", "")).strip().upper()
-        if not symbol:
-            continue
-        try:
-            shares = float(entry.get("shares", 0.0))
-        except (TypeError, ValueError):
-            continue
-        positions.append((symbol, shares))
-    return positions, float(snap.cash or 0.0)
+    return snapshot_positions_and_cash(AccountSnapshotRepository(session).latest())
 
 
 def _build_target_positions(

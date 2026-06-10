@@ -67,10 +67,21 @@ def _seed_snapshot(session: Session, positions: list[dict[str, object]]) -> None
 
 
 def test_nav_reuses_aggregate(initialised_db: str) -> None:
+    """B051: NAV comes from the latest account_snapshot (cash + mark-to-market
+    via the SAME provider Day P&L uses) — a row in the vestigial ``account``
+    table contributes nothing."""
+
     with Session(get_engine()) as session:
-        _seed_account(session, cash=1000.0, equity=5000.0)
-        home = build_home(session, _SETTINGS, _FakeProvider({}))
-        assert home.nav == 6000.0
+        _seed_account(session, cash=1000.0, equity=5000.0)  # must be ignored
+        _seed_snapshot(
+            session, [{"symbol": "AAPL", "shares": 10, "avg_cost": 150}]
+        )
+        provider = _FakeProvider(
+            {"AAPL": PriceMark(latest_close=195.0, prior_close=192.0)}
+        )
+        home = build_home(session, _SETTINGS, provider)
+        # snapshot cash 1000 + 10 × 195 = 2950; NOT the account row's 6000.
+        assert home.nav == 2950.0
 
 
 def test_day_pnl_mark_to_market_known_pnl(initialised_db: str) -> None:

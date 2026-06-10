@@ -36,7 +36,7 @@ class _RaisingSession:
     rolled_back: bool = False
 
     def execute(self, *_args: Any, **_kwargs: Any) -> Never:
-        raise OperationalError("SELECT", {}, Exception("no such table: account"))
+        raise OperationalError("SELECT", {}, Exception("no such table: account_snapshot"))
 
     def rollback(self) -> None:
         self.rolled_back = True
@@ -58,7 +58,10 @@ def test_nav_degrades_to_zero_on_db_error(
 def test_recommendations_account_aggregation_degrades_on_db_error(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
-    caplog.set_level(logging.WARNING, logger="workbench.recommendations")
+    # B051: the aggregation delegates to nav.aggregate_account_state (the
+    # account_snapshot single source), so the degrade log lands on the
+    # workbench.nav logger; the (False, 0.0) empty-state contract is unchanged.
+    caplog.set_level(logging.WARNING, logger="workbench.nav")
     session = _RaisingSession()
     present, total = recommendations_service._aggregate_account_state(session)  # type: ignore[arg-type]
     assert present is False

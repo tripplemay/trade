@@ -6,7 +6,7 @@
       "title": "统一账户源到 account_snapshot（aggregate_nav + account_present + gate equity 改读 UI 源）+ me.json bootstrap 一致 + 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【生产 hotfix，见 spec §4。根因=两张账户表读写不一致：UI 写 account_snapshot 但 nav.aggregate_nav+recommendations._aggregate_account_state 读 account 表(me.json 源，空)】(1) **nav.aggregate_nav(nav.py:27)**：去 select(Account)，改从最新 account_snapshot 算 NAV=cash+mark-to-market(positions)（复用 compute_mark_to_market+marks_for，与 _build_target_positions/home day-pnl 同款）；无 snapshot→0.0 graceful 不变；DB 错误降级不变。(2) **recommendations._aggregate_account_state(recommendations.py:132)**：account_present=最新 account_snapshot 存在；total_equity=同一 aggregate(喂 gate min_equity)；无 snapshot→(False,0.0) 不变。(3) **me.json bootstrap 一致**：cli/bootstrap.py 镜像 me.json 时也写 account_snapshot（种子路径与 UI 同源生效）；或裁定 account 表/me.json 仅向后兼容、读路径 snapshot 优先——generator 二选一注明(推荐 bootstrap 写 snapshot 单一源)。(4) **account 表读路径审计**：grep select(Account)/Account model 读，确认改后无其它依赖空表造成不一致；vestigial 注明(本批不强删避免扩面)。(5) **测试**：(a) 写含持仓 snapshot→account_present=true+nav=cash+mtm；(b) **纯现金 snapshot 零持仓→account_present=true+nav=cash**(新用户场景)；(c) 无 snapshot→false+0.0 graceful；(d) gate total_equity 来自 snapshot；(e) me.json bootstrap 后 account_present=true(若保留)。(6) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / §12.10.2 守门(请求路径仍只读不 import trade) / api.ts drift 0(无 schema 变)。(7) 不动：执行流(已读 snapshot)/master 评分/recommendation_snapshot/gate 判定逻辑。",
       "design_decisions": [
         "统一到 account_snapshot(UI 写的、执行流已读的)为单一真相源；aggregate_nav 改 cash+mark-to-market 与 current_weight/home 口径一致。",

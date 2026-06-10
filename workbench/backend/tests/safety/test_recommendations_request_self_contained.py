@@ -28,6 +28,11 @@ PACKAGE_ROOT = BACKEND_ROOT / "workbench_api"
 REQUEST_PATH_MODULES = (
     PACKAGE_ROOT / "routes" / "recommendations.py",
     PACKAGE_ROOT / "services" / "recommendations.py",
+    # B051: account state now flows through nav.py (account_snapshot
+    # mark-to-market) — these joined the request path's import closure.
+    PACKAGE_ROOT / "services" / "nav.py",
+    PACKAGE_ROOT / "services" / "mark_to_market.py",
+    PACKAGE_ROOT / "services" / "prices_provider.py",
 )
 PRECOMPUTE_MODULE = PACKAGE_ROOT / "recommendations" / "precompute.py"
 

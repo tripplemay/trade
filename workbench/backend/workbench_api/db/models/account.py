@@ -1,5 +1,14 @@
 """Account model — mirrors B012's research-account state.
 
+**Vestigial since B051** — no runtime read path consumes this table any
+more. ``nav.aggregate_nav`` and ``recommendations._aggregate_account_state``
+(the last two readers) now read the latest ``account_snapshot`` (the row
+the UI Account form writes), because this table is only ever filled by the
+``accounts/me.json`` bootstrap mirror and stayed empty in production —
+making a UI-saved account invisible. The bootstrap still upserts it as a
+backward-compat mirror of me.json; decommissioning (drop table + repo +
+bootstrap write) is deliberately out of B051's scope.
+
 Single-user workbench keeps a single row most of the time; the primary key
 remains ``account_id`` so a future multi-account research workspace
 (non-MVP) can extend without a schema migration. Cash + equity track the

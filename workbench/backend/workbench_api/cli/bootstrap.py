@@ -4,12 +4,17 @@ Reads two repo-root files (both optional, both missing is OK on a fresh
 clone):
 
 * ``accounts/me.json``  — research-account state, mirrored into ``account``
+  **and** ``account_snapshot`` (B051: ``account_snapshot`` is the single
+  source of truth every read path consumes — NAV, recommendations
+  ``account_present``, execution — so the seed must land there too; the
+  ``account`` row is kept only as a backward-compat mirror). The snapshot
+  id is deterministic (``snap-bootstrap-<account_id>``) and ``snapshot_at``
+  is me.json's ``as_of_date``, so re-runs upsert in place and a later UI
+  edit (``snapshot_at`` = now) always stays the ``latest()`` winner.
 * ``backlog.json``      — research backlog, mirrored into ``backlog_entry``
 
 Each row is upserted via the Repository layer so re-running the command is
-a no-op. Snapshots are not bootstrapped from a JSON file in B021 — that
-table is populated by the snapshot pipeline directly (B009+ adapter work in
-B022).
+a no-op.
 
 Designed to be safe to run before *or* after ``alembic upgrade head`` is
 applied to the live DB; if tables are missing the command fails loudly so
@@ -22,7 +27,7 @@ import argparse
 import contextlib
 import json
 import sys
-from datetime import date
+from datetime import UTC, date, datetime, time
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -32,7 +37,9 @@ from sqlalchemy.orm import Session
 
 from workbench_api.db.engine import get_engine, reset_engine
 from workbench_api.db.models import Account, BacklogEntry
+from workbench_api.db.models.account_snapshot import AccountSnapshot
 from workbench_api.db.repositories import AccountRepository, BacklogRepository
+from workbench_api.db.repositories.account_snapshot import AccountSnapshotRepository
 from workbench_api.db.session import get_session
 from workbench_api.settings import get_settings
 
@@ -45,6 +52,56 @@ def _coerce_account(payload: dict[str, Any]) -> Account:
         cash=Decimal(str(payload.get("cash", "0"))),
         equity_value=Decimal(str(payload.get("equity_value", "0"))),
         as_of_date=date.fromisoformat(str(payload["as_of_date"])),
+    )
+
+
+def _coerce_position(entry: Any) -> dict[str, Any]:
+    """Validate one me.json position entry into the stored JSON shape.
+
+    Fails loudly on a malformed entry (CLI seed posture — a bad seed file
+    should stop the operator, not silently drop a holding)."""
+
+    if not isinstance(entry, dict) or not str(entry.get("symbol", "")).strip():
+        raise ValueError(f"accounts/me.json position must be an object with a symbol: {entry!r}")
+    position: dict[str, Any] = {
+        "symbol": str(entry["symbol"]).strip().upper(),
+        "shares": float(entry.get("shares", 0.0)),
+        "avg_cost": float(entry.get("avg_cost", 0.0)),
+    }
+    if entry.get("sleeve"):
+        position["sleeve"] = str(entry["sleeve"])
+    return position
+
+
+def _coerce_account_snapshot(payload: dict[str, Any]) -> AccountSnapshot:
+    """Build the ``account_snapshot`` seed row for one me.json account (B051).
+
+    Deterministic id + ``snapshot_at`` = ``as_of_date`` midnight keep the
+    command idempotent and let any later UI edit win ``latest()``. A future
+    ``as_of_date`` is clamped to *now* — otherwise the seed row would
+    outrank every subsequent UI edit in ``latest()`` (ordered by
+    ``snapshot_at``), re-introducing the exact "UI-saved account is
+    invisible" bug B051 fixes. Note an me.json ``equity_value`` without a
+    ``positions`` list cannot be represented here (snapshot equity is
+    derived mark-to-market from positions); such a seed contributes cash
+    only to NAV.
+    """
+
+    as_of = date.fromisoformat(str(payload["as_of_date"]))
+    # Naive-UTC like the UI write path (services.execution.update_account).
+    now = datetime.now(UTC).replace(tzinfo=None)
+    snapshot_at = min(datetime.combine(as_of, time.min), now)
+    raw_positions = payload.get("positions", []) or []
+    if not isinstance(raw_positions, list):
+        raise ValueError("accounts/me.json positions must be a list of objects")
+    return AccountSnapshot(
+        id=f"snap-bootstrap-{payload['account_id']}",
+        snapshot_at=snapshot_at,
+        cash=Decimal(str(payload.get("cash", "0"))),
+        base_currency=str(payload.get("base_currency", "USD")),
+        positions=[_coerce_position(entry) for entry in raw_positions],
+        source="bootstrap",
+        created_at=snapshot_at,
     )
 
 
@@ -66,10 +123,14 @@ def _import_accounts(session: Session, accounts_path: Path) -> int:
     raw = json.loads(accounts_path.read_text(encoding="utf-8"))
     rows = raw if isinstance(raw, list) else [raw]
     repo = AccountRepository(session)
+    snapshot_repo = AccountSnapshotRepository(session)
     for row in rows:
         if not isinstance(row, dict):
             raise ValueError(f"accounts/me.json entry must be an object: {row!r}")
         repo.upsert(_coerce_account(row))
+        # B051: the read paths (NAV / recommendations / execution) consume
+        # account_snapshot only, so the seed must write it too.
+        snapshot_repo.upsert(_coerce_account_snapshot(row))
     return len(rows)
 
 
