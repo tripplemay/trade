@@ -38,12 +38,25 @@
       ]
     },
     {
+      "id": "F005",
+      "title": "【用户上手急需，generator 优先做】B052 S1 收尾——手术式清除残留测试 SGOV 快照，/risk 转全绿",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "【用户 2026-06-10 报：重存纯现金账户后 /risk 仍黄、unclassified 100% + 主组合回撤 1.97%——B052 soft-watch S1。根因（planner 核实）：B051 验收留下的测试 SGOV 快照（SGOV 10 @ ~100，如 snap-47ef76c66212/snap-8863ba12ef28）在 nav_history 历史里造成 unclassified sleeve peak-to-latest 100% DD + master 1.97% phantom DD（NAV 从带 SGOV 的 $51,004.50 回到纯现金 $50,000）；均测试残留非真实亏损，重存清不掉（history append-only）】(1) **清理（用现成 workbench_api.cli.drill_cleanup，优先零代码）**：cutoff 设为保留用户当前最新纯现金快照（删尽更早的测试 SGOV 快照 + 关联测试 ticket/fill）；若同日快照 cutoff 无法精确隔离，最小扩展 CLI 加 --delete-ids（+测试+§12.10.2 守门）。**流程（同 B052 生产实施，安全第一）**：① VM 上 cd /srv/workbench/current/backend 跑 **dry-run**，将删快照清单（id/时间/cash/positions）**交用户确认边界**；② 用户确认后 --apply（§12.11.1 env 守门已在 CLI 入口）；③ systemctl start workbench-risk-explanation.service 重生成解释。(2) **核验**：清理后 reconstruct_nav_history 单/少点纯现金序列 → master_drawdown≈0 + per_sleeve 全 0（unclassified 消失）；用户 /risk 转绿（或纯现金应有态）。(3) Gates：纯数据操作（零代码）或最小 --delete-ids 扩展（pytest+ruff+mypy 0+§12.10.2 守门）。实施记录入 signoff §Ops 副作用。(4) 不动：执行流/评分/recommendation_snapshot。",
+      "design_decisions": [
+        "planner 不直接操作生产 VM（角色边界+SSH 授权）；由 Generator 执行，dry-run 交用户确认后 --apply（同 B052 安全流程，保护财务数据）。",
+        "优先用现成 drill_cleanup（cutoff 保留最新快照，零代码）；仅当同日快照需精确隔离才加 --delete-ids 最小扩展。",
+        "用户上手急需（/risk 红噪音反复困扰），generator 优先于 F002/F003 做（独立任务）。"
+      ]
+    },
+    {
       "id": "F004",
-      "title": "Codex L1+L2 真 VM——错误 fill 明确拒绝非静默 + worker 重启无孤儿 + latest 稳定 + 回归 + 演练自清 + signoff",
+      "title": "Codex L1+L2 真 VM——错误 fill 明确拒绝非静默 + worker 重启无孤儿 + latest 稳定 + /risk 残留清除核验 + 回归 + 演练自清 + signoff",
       "priority": "high",
       "executor": "codex",
       "status": "pending",
-      "acceptance": "【见 spec §5。core acceptance=错误录入被明确拒绝而非静默修正】L1：F001-F003 全门禁（backend pytest/frontend vitest/tsc/lint/ruff/mypy/i18n parity/api.ts drift/alembic head 若涉及/§12.10.2 守门/artifact secret=0）。L2(真 VM)：(1) ★**对账完整性（evaluator §25 正面证据）**：实际提交一笔超卖 fill（卖出>持有）→看到 409/warning 行级提示非静默归零；负现金场景同验。(2) ★**worker 孤儿**：跑回测中 systemctl restart workbench-backtest-worker → 该 run 转 interrupted（或重置语义）非永久 running；前端超时提示生效。(3) **latest 稳定**：快速连续两次保存账户→页面显示最新版本。(4) **has_mark**：构造持有但无标价场景→显示区分文案。(5) **advisor 降级重试**：（若可模拟）拒答行同日重跑重新生成。(6) **回归**：B050 回测分发/B051 账户流/B052 清理后状态/B043 解释 全不破+recent-errors=0+HEAD≡main。(7) ★**演练自清（B052 规约执行）**：本批 L2 写入的执行域演练数据（fill/ticket/snapshot）收尾必须用 drill_cleanup CLI 自清，signoff §Ops 记录。(8) Signoff：docs/test-reports/B053-hardening-sweep-signoff-2026-MM-DD.md 用模板（§Production/HEAD+§Post-signoff Deploy+§对账拒绝证据+§孤儿回收证据+§Ops 自清记录）。更新 progress.json status→done/docs.signoff/evaluator_feedback。"
+      "acceptance": "【见 spec §5。core acceptance=错误录入被明确拒绝而非静默修正】L1：F001-F003 全门禁（backend pytest/frontend vitest/tsc/lint/ruff/mypy/i18n parity/api.ts drift/alembic head 若涉及/§12.10.2 守门/artifact secret=0）。L2(真 VM)：(1) ★**对账完整性（evaluator §25 正面证据）**：实际提交一笔超卖 fill（卖出>持有）→看到 409/warning 行级提示非静默归零；负现金场景同验。(2) ★**worker 孤儿**：跑回测中 systemctl restart workbench-backtest-worker → 该 run 转 interrupted（或重置语义）非永久 running；前端超时提示生效。(3) **latest 稳定**：快速连续两次保存账户→页面显示最新版本。(4) **has_mark**：构造持有但无标价场景→显示区分文案。(5) **advisor 降级重试**：（若可模拟）拒答行同日重跑重新生成。(6) **F005 /risk 残留清除核验**：清理后 /risk per-sleeve 全 0（unclassified 消失）+ master_drawdown≈0（B052 S1 closed，用户 /risk 转绿）。(7) **回归**：B050 回测分发/B051 账户流/B052 清理后状态/B043 解释 全不破+recent-errors=0+HEAD≡main。(8) ★**演练自清（B052 规约执行）**：本批 L2 写入的执行域演练数据（fill/ticket/snapshot）收尾必须用 drill_cleanup CLI 自清，signoff §Ops 记录。(9) Signoff：docs/test-reports/B053-hardening-sweep-signoff-2026-MM-DD.md 用模板（§Production/HEAD+§Post-signoff Deploy+§对账拒绝证据+§孤儿回收证据+§F005 /risk 清除证据+§Ops 自清记录）。更新 progress.json status→done/docs.signoff/evaluator_feedback。"
     }
   ]
 }
