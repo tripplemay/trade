@@ -59,3 +59,8 @@ logs/
 # Mirrored into the `account` table via the bootstrap CLI; keep out of git.
 accounts/me.json
 accounts/
+
+# Local uv lockfile — project dependency management is pip + pyproject.toml
+# (CI installs via `pip install -e ".[dev]"`); an untracked uv.lock would be
+# a stale-looking authority no workflow consumes.
+uv.lock

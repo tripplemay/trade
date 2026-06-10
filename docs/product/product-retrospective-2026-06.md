@@ -54,7 +54,7 @@
 | 严重度 | 遗留项 | 现状 | 建议 |
 |---|---|---|---|
 | **Medium** | VM disk 84%↑ | 持续爬升，无扩容/清理记录；满时易丢诊断日志 | 轻量 OPS 批：清日志/缓存或扩容 |
-| Low | home nav=0.0（空账户）| 空账户未设 equity_snapshot；day_pnl 正常 | 补 snapshot 初始化或改空账户处理 |
+| ~~Low~~ | ~~home nav=0.0（空账户）~~ | **✅ 2026-06-10 B051 RESOLVED**：根因=nav.aggregate_nav 读空 `account` 表而非 UI 写的 `account_snapshot`（两表读写分裂）；B051 统一账户源后生产实证 nav=$51,004.50 真实 | B051 signoff |
 | Low | valuation_basis=cost_degraded | price_history 不覆盖最新 snapshot 日；诚实标注已就位 | 监控，data-refresh 自愈 |
 | Low | BL-B050-S1 backlog status | 内部工具页 status 编辑后恢复 open（已入需求池）| 建 status 列或显式移除字段 |
 | 软关注 | risk-banner.spec CI flake | 本地 5/5，CI 偶发，与改动无关 | 加 waitFor 稳态或 quarantine |
