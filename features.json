@@ -6,7 +6,7 @@
       "title": "LLM 文字中文化（prompt 加中文指令 + 占位改中文 + 重生成现存解释）+ 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【家族①，见 spec §4 + 审计 doc。用户主诉『推荐页每只标的下面的介绍是英文』=rationale】(1) **prompt 加中文指令**：services/explanation/service.py SYSTEM_PROMPT + 三 REQUEST_LINE（recommendations/rationale.py rationale / backtests/explanation.py / services/risk_explanation.py）+ advisor/service.py SYSTEM_PROMPT+REQUEST(:154) 加『用简体中文(zh-CN)回复』指令；**no-AI 5 规则中文版同样禁收益预测/执行/替代 quant**。(2) **降级占位改中文**：recommendations/rationale.py:35-37 deterministic placeholder 改中文。(3) **重生成现存解释**：部署后重跑 recommendations/advisor/risk precompute + 触发 risk timer(+可选重 enqueue backtest)使生产现存解释立即中文（不等季度/日常刷新）。(4) **§12.10.2 不破**：生成仍 off 请求路径；references_grounded/sentinel 护栏中文版仍生效（中文拒答 sentinel 不破）。(5) **测试**：mock gateway 验 prompt 含中文指令+占位中文+护栏不破。(6) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / §12.10.2 守门 / cost_guard 不绕过。",
       "design_decisions": [
         "用户选只生成中文（单列单语，不追双语）；加中文指令仍是 summarize/translate，no-AI 边界内。",
