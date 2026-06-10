@@ -125,3 +125,5 @@
 
 <!-- 2026-06-09: v0.9.41 沉淀完成（B050 done 阶段，用户批 A+B）：A 装饰性控件/plumbed-but-ignored 反模式（三例：strategy_id 落库被 worker 忽略 / backtest parameters / backlog status）→ generator.md §17 + evaluator.md §26；B CI mypy trade 分层陷阱（B050 F002/F003）→ environment.md。CHANGELOG v0.9.41。未沉淀留队列：③async worker ④satellite 权重口径 + B037-OPS1 sudoers wrapper + B047-OPS2 CI flake（均单例/软关注待二例）；B050 _execute_period 复用模式复用窗口窄不沉淀。 -->
 <!-- 当前活动候选（v0.9.41 后）：③async worker 范式 + ④satellite 权重口径 + B037-OPS1 sudoers wrapper + B047-OPS2 CI flake，均单例/软关注待二例。 -->
+
+<!-- 2026-06-10: B043 done — 不沉淀（用户裁定，Codex 标「无新增 learnings」）。评估过两候选：(A)『grounded explanation 范式』（B036 advisor + B043 解释层二例：gateway+5 规则 prompt+sentinel+references_valid+cost_guard+off-请求路径生成+优雅降级）达二例门槛但用户选不沉淀；(B)『幂等/缓存复用必须区分真实产物 vs 占位/降级值』（B043 fix-round 1 幂等复用占位→部署后永卡占位）单例待二例。另：B043 risk explanation timer 未接=evaluator.md §24（v0.9.33 read-only timer L2 接线）又一例，规则已覆盖只是 build 时未遵循，无需新沉淀。记账避免未来重议。 -->
