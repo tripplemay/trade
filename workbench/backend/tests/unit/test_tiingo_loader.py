@@ -9,7 +9,7 @@ once at L2 by the evaluator (B027 F003 spec acceptance).
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 import httpx
@@ -210,10 +210,13 @@ def test_fetch_daily_bars_clamps_future_to_date() -> None:
     loader = TiingoSnapshotLoader(
         api_key="k", client=client, sleep=lambda _s: None, guard=_NoopGuard()
     )
-    future = date.today() + timedelta(days=10)
-    loader.fetch_daily_bars("SPY", date.today() - timedelta(days=1), future)
+    # B054: the loader clamps to UTC today (B053 F003), so the test's "today"
+    # must also be UTC — otherwise it diverges when local TZ is ahead of UTC.
+    today = datetime.now(UTC).date()
+    future = today + timedelta(days=10)
+    loader.fetch_daily_bars("SPY", today - timedelta(days=1), future)
     _url, params = client.calls[0]
-    assert params["endDate"] == date.today().isoformat()
+    assert params["endDate"] == today.isoformat()
 
 
 def test_fetch_daily_bars_raises_on_missing_field() -> None:

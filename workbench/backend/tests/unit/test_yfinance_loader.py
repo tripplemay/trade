@@ -8,7 +8,7 @@ requires ``history`` + ``info`` so a small stand-in class is enough.
 from __future__ import annotations
 
 import json
-from datetime import date, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -115,11 +115,14 @@ def test_fetch_daily_bars_clamps_future_to_date() -> None:
 
     stub = _StubTicker()
     loader = YFinanceSnapshotLoader(ticker_factory=_factory_returning(stub))
-    future = date.today() + timedelta(days=30)
-    loader.fetch_daily_bars("SPY", date.today() - timedelta(days=7), future)
+    # B054: the loader clamps to UTC today (B053 F003), so the test's "today"
+    # must also be UTC — otherwise it diverges when local TZ is ahead of UTC.
+    today = datetime.now(UTC).date()
+    future = today + timedelta(days=30)
+    loader.fetch_daily_bars("SPY", today - timedelta(days=7), future)
     call = stub.history_calls[0]
     # end is exclusive (+1 day from clamped to_date).
-    expected_end = (date.today() + timedelta(days=1)).isoformat()
+    expected_end = (today + timedelta(days=1)).isoformat()
     assert call["end"] == expected_end
 
 
