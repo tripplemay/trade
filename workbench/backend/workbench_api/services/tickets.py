@@ -96,8 +96,8 @@ def render_ticket_markdown(
 
     lines: list[str] = []
     lines.append(
-        f"# Order Ticket — {ticket_date.isoformat()} "
-        f"(T+1 execution day: {t_plus_one.isoformat()})"
+        f"# Order Ticket / 订单清单 — {ticket_date.isoformat()} "
+        f"(T+1 execution day / T+1 执行日: {t_plus_one.isoformat()})"
     )
     lines.append("")
     lines.append(
@@ -129,7 +129,7 @@ def render_ticket_markdown(
     lines.append("")
 
     lines.append(
-        f"## Trades to place / 待下达交易 ({len(trades)} lines, T+1)"
+        f"## Trades to place / 待下达交易 ({len(trades)} lines / 行, T+1)"
     )
     lines.append("")
     if trades:
@@ -174,7 +174,9 @@ def render_ticket_markdown(
                 + " |"
             )
     else:
-        lines.append("_No rebalance lines — the diff is flat._")
+        lines.append(
+            "_No rebalance lines — the diff is flat. / 无再平衡交易——目标与当前持仓一致。_"
+        )
     lines.append("")
 
     lines.append("## Tax / wash-sale flags / 税务 / 洗售标记")
@@ -184,9 +186,11 @@ def render_ticket_markdown(
             symbol = str(flag.get("symbol", ""))
             last_buy = str(flag.get("last_buy_date", ""))
             days = flag.get("days_since", 0)
-            lines.append(f"- **{symbol}** — last buy {last_buy} ({days}d ago)")
+            lines.append(
+                f"- **{symbol}** — last buy / 上次买入 {last_buy} ({days}d ago / 天前)"
+            )
     else:
-        lines.append("- None flagged.")
+        lines.append("- None flagged. / 无标记。")
     lines.append("")
 
     lines.append("## After execution checklist / 执行后核对清单")
@@ -202,7 +206,7 @@ def render_ticket_markdown(
     )
     lines.append("")
 
-    lines.append(f"_Ticket id: {ticket_id}._")
+    lines.append(f"_Ticket id / 清单编号: {ticket_id}._")
     lines.append("")
     lines.append(f"_Disclaimer: {DISCLAIMER_LITERAL}._")
     lines.append(f"_免责声明:{DISCLAIMER_LITERAL_ZH}。_")
@@ -268,7 +272,7 @@ def _defensive_diff_rows(
                 "delta_weight": 0.0,
                 "delta_dollar": -shares * avg_cost,
                 "reference_price": avg_cost or None,
-                "reason": "Defensive rotation — sell to zero.",
+                "reason": "Defensive rotation — sell to zero. / 防御轮动——清仓至零。",
             }
         )
     # The defensive symbol buy line — size shares from the real SGOV mark.
@@ -288,7 +292,7 @@ def _defensive_diff_rows(
                     "reference_price": defensive_mark,
                     "reason": (
                         "Defensive rotation — allocate full equity to the "
-                        "defensive sleeve."
+                        "defensive sleeve. / 防御轮动——将全部权益配置至防御子策略。"
                     ),
                 }
             )
@@ -308,7 +312,9 @@ def _defensive_diff_rows(
                     "reason": (
                         "Defensive rotation — allocate full equity "
                         f"({_format_currency(total_equity)}) to the defensive "
-                        "sleeve; shares sized at execution market price."
+                        "sleeve; shares sized at execution market price. / 防御轮动"
+                        f"——将全部权益({_format_currency(total_equity)})配置至防御"
+                        "子策略;股数按执行时市价确定。"
                     ),
                 }
             )

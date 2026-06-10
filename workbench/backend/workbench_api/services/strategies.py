@@ -45,6 +45,7 @@ The registry also:
 
 from __future__ import annotations
 
+from workbench_api.i18n import t
 from workbench_api.schemas.strategies import (
     StrategyDetail,
     StrategyListResponse,
@@ -97,12 +98,7 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
             "composition": (
                 "momentum 0.40 / risk_parity 0.30 / us_quality 0.20 / hk_china 0.10"
             ),
-            "note": (
-                "The full combined portfolio across all four active sleeves "
-                "(quarterly rebalance, kill-switch + drawdown controls). Backtested "
-                "on real daily prices (Tiingo, B045 data-refresh). Research-only "
-                "advisory — not a return forecast."
-            ),
+            "note_key": "strategy.note.master_portfolio",
         },
     ),
     # B046 F002: the Master's core trend engine (momentum sleeve,
@@ -130,11 +126,7 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
             "top_n": 2,
             "momentum_windows": "periods=3(0.4) periods=6(0.3) periods=9(0.3)",
             "master_strategy_id": "global_etf_momentum",
-            "note": (
-                "Master core_trend_engine sleeve (planning_weight=0.40). "
-                "Scored on real daily prices (Tiingo, B045 data-refresh). "
-                "Research-only advisory — not a return forecast."
-            ),
+            "note_key": "strategy.note.momentum",
         },
     ),
     "B016-risk-parity-hrp": (
@@ -156,10 +148,7 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
             # is the B016 HRP upgrade of that sleeve. Recorded so the two
             # ids are traceable to the same sleeve.
             "master_strategy_id": "risk_parity_vol_target",
-            "note": (
-                "Master core_stabilizer sleeve (planning_weight=0.30). "
-                "B016 HRP upgrades the risk_parity_vol_target sleeve."
-            ),
+            "note_key": "strategy.note.risk_parity",
         },
     ),
     # B025 F005: surfaces the US Quality Momentum satellite sleeve on the
@@ -189,11 +178,7 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
             "factor_weights": (
                 "momentum=0.35 quality=0.30 low_vol=0.15 value=0.10 trend=0.10"
             ),
-            "note": (
-                "B025 satellite_us_quality (planning_weight=0.20). "
-                "Scored on real prices (Tiingo) + real SEC EDGAR filings "
-                "(B045 data-refresh). Research-only advisory — not a return forecast."
-            ),
+            "note_key": "strategy.note.us_quality",
         },
     ),
     # BL-B011-S2: the HK-China satellite is now an IMPLEMENTED strategy
@@ -220,13 +205,7 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
             "planning_weight": 0.10,
             "role_label": "satellite_regional",
             "master_strategy_id": "hk_china_momentum",
-            "note": (
-                "Master satellite_hk_china sleeve (planning_weight=0.10), "
-                "implemented in BL-B011-S2. Trend-scored on the US-listed "
-                "HK/China ETF set (MCHI/FXI/KWEB/ASHR) using real daily prices "
-                "(Tiingo, B045 data-refresh). Research-only advisory — not a "
-                "return forecast."
-            ),
+            "note_key": "strategy.note.hk_china",
         },
     ),
     # B046 F002: regime overlay entries kept as research-state. The
@@ -253,11 +232,7 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
             "rebalance": "quarterly",
             "activation_threshold": 0.11,
             "master_planning_weight": 0.0,
-            "note": (
-                "Research-state: Master loads regime_adaptive at weight 0.0 "
-                "(inactive). B019 retune set activation_threshold=0.11 "
-                "(was 0.13). Activation is a future B013 batch."
-            ),
+            "note_key": "strategy.note.regime_quarterly",
         },
     ),
     "B014-regime-stress": (
@@ -275,7 +250,7 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
         {
             "role": "validation harness for B013 under stress windows.",
             "master_planning_weight": 0.0,
-            "note": "Research-state: regime overlay ships inactive (weight 0.0).",
+            "note_key": "strategy.note.regime_inactive",
         },
     ),
     "B015-regime-active": (
@@ -293,7 +268,7 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
         {
             "role": "activation policy attached to B013.",
             "master_planning_weight": 0.0,
-            "note": "Research-state: regime overlay ships inactive (weight 0.0).",
+            "note_key": "strategy.note.regime_inactive",
         },
     ),
 }
@@ -335,13 +310,20 @@ def get_strategy(strategy_id: str) -> StrategyDetail | None:
     if entry is None:
         return None
     summary, provenance, config = entry
+    # B054 F002 — the registry stores a locale-neutral ``note_key``; resolve it
+    # to the request-locale string here (NOT at import time, so each request
+    # gets its own locale). The frontend still reads ``config.note``.
+    resolved_config = dict(config)
+    note_key = resolved_config.pop("note_key", None)
+    if isinstance(note_key, str):
+        resolved_config["note"] = t(note_key)
     return StrategyDetail(
         id=summary.id,
         name=summary.name,
         sleeve=summary.sleeve,
         status=summary.status,
         last_sweep_date=summary.last_sweep_date,
-        config=config,
+        config=resolved_config,
         provenance=provenance,
         # F007 accepts empty performance arrays — F008's backtest runner
         # populates them on demand. The frontend renders the chart

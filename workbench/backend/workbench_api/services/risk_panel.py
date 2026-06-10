@@ -28,6 +28,7 @@ from sqlalchemy.orm import Session
 from workbench_api.db.repositories.risk_explanation_snapshot import (
     RiskExplanationSnapshotRepository,
 )
+from workbench_api.i18n import t
 from workbench_api.schemas.risk_panel import (
     AlternativeDefensiveTicket,
     DefensivePosition,
@@ -81,17 +82,15 @@ def _alternative_defensive_ticket(master_dd: float) -> AlternativeDefensiveTicke
             DefensivePosition(
                 symbol=DEFENSIVE_SYMBOL,
                 target_weight=1.0,
-                rationale=(
-                    "Kill switch tripped — rotate fully into the defensive "
-                    "sleeve until master drawdown recovers below threshold."
-                ),
+                rationale=t("risk.defense_target_rationale"),
             )
         ],
-        rationale=(
-            f"Master drawdown {master_dd * 100:.1f}% ≥ kill-switch threshold "
-            f"({DEFAULT_KILL_SWITCH_THRESHOLD * 100:.1f}%). The defensive "
-            f"ticket allocates 100% to {DEFENSIVE_SYMBOL} as the B011 "
-            f"defensive proxy."
+        # B054 F002 — localized per request locale (numbers pre-formatted).
+        rationale=t(
+            "risk.defense_panel_rationale",
+            dd_pct=f"{master_dd * 100:.1f}",
+            threshold_pct=f"{DEFAULT_KILL_SWITCH_THRESHOLD * 100:.1f}",
+            symbol=DEFENSIVE_SYMBOL,
         ),
     )
 
@@ -170,9 +169,6 @@ def defensive_target_positions() -> list[dict[str, Any]]:
             "target_weight": 1.0,
             "current_weight": 0.0,
             "diff": 1.0,
-            "rationale": (
-                "Defensive ticket mode — rotate fully to the B011 "
-                "defensive proxy."
-            ),
+            "rationale": t("risk.defense_diff_rationale"),
         }
     ]

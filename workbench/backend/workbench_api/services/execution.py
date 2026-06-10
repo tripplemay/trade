@@ -25,6 +25,7 @@ from sqlalchemy.orm import Session
 
 from workbench_api.db.models.account_snapshot import AccountSnapshot
 from workbench_api.db.repositories.account_snapshot import AccountSnapshotRepository
+from workbench_api.i18n import t
 from workbench_api.schemas.execution import (
     AccountSnapshotPayload,
     AccountUpdateRequest,
@@ -250,7 +251,7 @@ def get_position_diff(
             delta_weight=-current_weight,
             delta_dollar=delta_dollar,
             reference_price=reference_price,
-            reason="held but no longer in target — sell to zero",
+            reason=t("diff.reason.sell_to_zero"),
         )
         diff.append(entry)
         if reference_price is None:

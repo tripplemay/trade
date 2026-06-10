@@ -30,6 +30,7 @@ from workbench_api.db.repositories.account_snapshot import AccountSnapshotReposi
 from workbench_api.db.repositories.recommendation_snapshot import (
     RecommendationSnapshotRepository,
 )
+from workbench_api.i18n import t
 from workbench_api.news.association import (
     NewsAssociationService,
     SleeveNewsRelevance,
@@ -225,15 +226,19 @@ def _build_gate_checks(session: Session, total_equity: float) -> list[GateCheck]
         GateCheck(
             name="kill_switch",
             status="fail" if kill_switch_tripped else "pass",
-            detail=(
-                f"Master drawdown {master_dd:.4f} {comparator} threshold "
-                f"{DEFAULT_KILL_SWITCH_THRESHOLD}."
+            # B054 F002 — localized per request locale; numbers pre-formatted so
+            # the template carries no format spec (comparator ≥/≤ is neutral).
+            detail=t(
+                "gate.kill_switch_detail",
+                master_dd=f"{master_dd:.4f}",
+                comparator=comparator,
+                threshold=f"{DEFAULT_KILL_SWITCH_THRESHOLD}",
             ),
         ),
         GateCheck(
             name="min_equity",
             status="pass" if total_equity >= 0 else "fail",
-            detail=f"Account equity = {total_equity:.2f}",
+            detail=t("gate.min_equity_detail", equity=f"{total_equity:.2f}"),
         ),
     ]
 

@@ -28,6 +28,7 @@ from dataclasses import dataclass
 from sqlalchemy.orm import Session
 
 from workbench_api.db.repositories.account_snapshot import AccountSnapshotRepository
+from workbench_api.i18n import t
 from workbench_api.schemas.home import DayPnl, HomeResponse, SleeveBreakdown
 from workbench_api.services.nav import aggregate_nav
 from workbench_api.services.prices_provider import (
@@ -165,8 +166,9 @@ def build_home(
 
 
 def _positions_summary(count: int) -> str:
+    # B054 F002 — localized per request locale (no plural rule in zh).
     if count <= 0:
         return "—"
     if count == 1:
-        return "1 position"
-    return f"{count} positions"
+        return t("home.positions_one")
+    return t("home.positions_many", count=count)

@@ -18,7 +18,7 @@
       "title": "后端硬编码英文串 i18n 化（策略说明/门控/ticket markdown/reason/risk/home，双语 key）+ 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【家族② 30+ 处，见 spec §5 + 审计 doc】(1) **挪 message bundle+参数化（双语 en+zh-CN，保 B024 parity）**：策略说明 note×8(services/strategies.py:101/133/159/192/223/256/278/296)/门控 detail(recommendations.py:229-236 参数化 dd/threshold/equity)/订单清单 markdown×10(tickets.py:99-211 含 disclaimer/列头/'at market')/执行 reason(execution.py:253+tickets.py:271/289/308 defensive rotation)/风险防御 rationale(risk_panel.py:84-94/173)/首页持仓汇总(home.py:171-172 '1 position'/'{n} positions')。(2) **机制**：后端返回 i18n key+params(前端 t() 组装) 或 后端按请求 locale 出文案(复用 B024 detect_locale/t)——generator 按各串性质二选一注明(数值模板串倾向后端 t()，整段 markdown 倾向分段 key)。(3) **不动**：error_kind 已前端 i18n(B047-OPS2)；ticket disclaimer 已双语。(4) **测试**：各串中英 parity+参数化正确+i18n parity 守门。(5) Gates：backend pytest ≥ baseline+ / frontend vitest/tsc/lint / i18n parity / api.ts drift 0(若 schema 变) / ruff/mypy 0。",
       "design_decisions": [
         "后端硬编码串走双语 i18n-key（不破 B024 parity 架构，cheap 且正确）——与 F001 LLM 文字单语中文不同，因这些是静态文案可双语。",

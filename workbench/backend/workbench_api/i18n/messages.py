@@ -63,6 +63,46 @@ MESSAGES: Final[dict[str, dict[str, str]]] = {
             "(缺口 ${shortfall};对账前现金 ${prior_cash},净现金变动 ${cash_delta})。"
             "常见原因:成交价格、股数或费用录入有误。"
         ),
+        # B054 F002 — 后端动态串本地化(策略说明 / 门控 / 执行 reason / 风险防御 / 首页汇总)
+        "strategy.note.master_portfolio": (
+            "覆盖全部四个活跃子策略的完整组合(季度再平衡,含熔断与回撤控制)。"
+            "基于真实日线价格回测(Tiingo,B045 数据刷新)。仅供研究参考——不构成收益预测。"
+        ),
+        "strategy.note.momentum": (
+            "Master 核心趋势引擎子策略(规划权重=0.40)。基于真实日线价格评分"
+            "(Tiingo,B045 数据刷新)。仅供研究参考——不构成收益预测。"
+        ),
+        "strategy.note.risk_parity": (
+            "Master 核心稳定器子策略(规划权重=0.30)。B016 以 HRP 升级了 "
+            "risk_parity_vol_target 子策略。"
+        ),
+        "strategy.note.us_quality": (
+            "B025 卫星-美股质量(规划权重=0.20)。基于真实价格(Tiingo)+真实 SEC EDGAR "
+            "申报(B045 数据刷新)评分。仅供研究参考——不构成收益预测。"
+        ),
+        "strategy.note.hk_china": (
+            "Master 卫星-港股中概子策略(规划权重=0.10),由 BL-B011-S2 实现。基于在美"
+            "上市的港股/中概 ETF 集合(MCHI/FXI/KWEB/ASHR)的真实日线价格做趋势评分"
+            "(Tiingo,B045 数据刷新)。仅供研究参考——不构成收益预测。"
+        ),
+        "strategy.note.regime_quarterly": (
+            "研究态:Master 以 0.0 权重加载 regime_adaptive(未激活)。B019 调参将 "
+            "activation_threshold 设为 0.11(原 0.13)。激活留待未来的 B013 批次。"
+        ),
+        "strategy.note.regime_inactive": "研究态:regime 叠加层以未激活状态发布(权重 0.0)。",
+        "gate.kill_switch_detail": "主组合回撤 {master_dd} {comparator} 阈值 {threshold}。",
+        "gate.min_equity_detail": "账户权益 = {equity}",
+        "diff.reason.sell_to_zero": "已持有但已不在目标内——清仓至零",
+        "risk.defense_target_rationale": (
+            "熔断已触发——全部轮动至防御子策略,直至主组合回撤回落至阈值以下。"
+        ),
+        "risk.defense_panel_rationale": (
+            "主组合回撤 {dd_pct}% ≥ 熔断阈值({threshold_pct}%)。"
+            "防御清单将 100% 配置至 {symbol},作为 B011 防御代理。"
+        ),
+        "risk.defense_diff_rationale": "防御清单模式——全部轮动至 B011 防御代理。",
+        "home.positions_one": "1 个持仓",
+        "home.positions_many": "{count} 个持仓",
         # Health
         "health.db_unreachable": "db_unreachable",
         # Generic
@@ -119,6 +159,60 @@ MESSAGES: Final[dict[str, dict[str, str]]] = {
             "change ${cash_delta}). Common cause: a wrong fill price, share "
             "count, or fee."
         ),
+        # B054 F002 — localized dynamic strings (mirror of the zh-CN copy)
+        "strategy.note.master_portfolio": (
+            "The full combined portfolio across all four active sleeves "
+            "(quarterly rebalance, kill-switch + drawdown controls). Backtested "
+            "on real daily prices (Tiingo, B045 data-refresh). Research-only "
+            "advisory — not a return forecast."
+        ),
+        "strategy.note.momentum": (
+            "Master core_trend_engine sleeve (planning_weight=0.40). Scored on "
+            "real daily prices (Tiingo, B045 data-refresh). Research-only "
+            "advisory — not a return forecast."
+        ),
+        "strategy.note.risk_parity": (
+            "Master core_stabilizer sleeve (planning_weight=0.30). B016 HRP "
+            "upgrades the risk_parity_vol_target sleeve."
+        ),
+        "strategy.note.us_quality": (
+            "B025 satellite_us_quality (planning_weight=0.20). Scored on real "
+            "prices (Tiingo) + real SEC EDGAR filings (B045 data-refresh). "
+            "Research-only advisory — not a return forecast."
+        ),
+        "strategy.note.hk_china": (
+            "Master satellite_hk_china sleeve (planning_weight=0.10), implemented "
+            "in BL-B011-S2. Trend-scored on the US-listed HK/China ETF set "
+            "(MCHI/FXI/KWEB/ASHR) using real daily prices (Tiingo, B045 "
+            "data-refresh). Research-only advisory — not a return forecast."
+        ),
+        "strategy.note.regime_quarterly": (
+            "Research-state: Master loads regime_adaptive at weight 0.0 "
+            "(inactive). B019 retune set activation_threshold=0.11 (was 0.13). "
+            "Activation is a future B013 batch."
+        ),
+        "strategy.note.regime_inactive": (
+            "Research-state: regime overlay ships inactive (weight 0.0)."
+        ),
+        "gate.kill_switch_detail": (
+            "Master drawdown {master_dd} {comparator} threshold {threshold}."
+        ),
+        "gate.min_equity_detail": "Account equity = {equity}",
+        "diff.reason.sell_to_zero": "held but no longer in target — sell to zero",
+        "risk.defense_target_rationale": (
+            "Kill switch tripped — rotate fully into the defensive sleeve until "
+            "master drawdown recovers below threshold."
+        ),
+        "risk.defense_panel_rationale": (
+            "Master drawdown {dd_pct}% ≥ kill-switch threshold ({threshold_pct}%). "
+            "The defensive ticket allocates 100% to {symbol} as the B011 "
+            "defensive proxy."
+        ),
+        "risk.defense_diff_rationale": (
+            "Defensive ticket mode — rotate fully to the B011 defensive proxy."
+        ),
+        "home.positions_one": "1 position",
+        "home.positions_many": "{count} positions",
         "health.db_unreachable": "db_unreachable",
         "validation.detail_passthrough": "{detail}",
         "validation.cash_negative": "cash cannot be negative.",
