@@ -54,3 +54,8 @@ logs/
 .obsidian/
 *.db-shm
 *.db-wal
+
+# Personal research-account financial state (cash + holdings) — never commit.
+# Mirrored into the `account` table via the bootstrap CLI; keep out of git.
+accounts/me.json
+accounts/
