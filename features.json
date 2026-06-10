@@ -6,7 +6,7 @@
       "title": "演练数据清理 CLI（执行域三表统一 cutoff + dry-run 预览 + §12.11.1 env 守门）+ 生产实施（用户确认边界后 --apply）+ 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【生产数据卫生 hotfix，见 spec §3。根因=历届 L2 验收演练快照污染 nav_history（含 BL-B023-S2 人为 DD 0.70 假峰 ~$126k）→用户纯现金新账户显示假 59.60% 回撤+kill-switch 误触发+Ticket 默认勾防守误导建仓；不会自愈】(1) **清理 CLI**（python -m workbench_api.cli.drill_cleanup）：--keep-from <snapshot_id|ISO 日期> 删 cutoff 之前的 account_snapshot/order_ticket/fill_journal_entry 三表行（执行域统一边界）；**默认 dry-run** 完整列出将删行（id/时间/source/cash/positions·ticket·fill 摘要）+将保留行，--apply 才真删；**§12.11.1 入口级 env 守门**（本 CLI 写生产 DB，入口必须 require_production_db，缺 env 响亮失败不写 scratch）；删后顺带删 risk_explanation_snapshot 旧行（引用假回撤的陈旧解释）+提示 systemctl start workbench-risk-explanation.service 立即重生成。(2) **测试**：dry-run 不删+apply 按 cutoff 精确删三表+cutoff 之后行完整保留+env 守门+空表 graceful。(3) **生产实施**：CLI 上 VM 后 dry-run 输出交用户确认边界（用户 2026-06-10 自填现金那条快照起=真实数据），确认后 --apply；实施记录入 signoff §Ops 副作用。(4) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / §12.10.2（CLI 不 import trade 纯 DB 操作）。(5) 不做：不改 nav_history/risk 算法（机制正确错在数据）/不碰 recommendation·backtest·news·price 表/不做基线重置 UI/不引入演练 source 标记。",
       "design_decisions": [
         "清理而非改算法：nav_history peak-to-latest 机制本身正确，错在 append-only 历史混入演练行；source 字段无法区分（演练走同一 UI/API 写入路径）。",
