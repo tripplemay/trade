@@ -101,24 +101,24 @@ def render_hk_china_markdown(report: dict[str, object]) -> str:
     limitations = _section(report, "research_limitations")
     return "\n".join(
         [
-            f"# HK-China Momentum Report {run['run_id']}",
+            f"# HK-China Momentum Report / 港股中概动量回测报告 {run['run_id']}",
             "",
-            "## Summary",
-            f"- Strategy: {strategy['strategy_id']}",
-            f"- Rebalance frequency: {strategy['rebalance_frequency']}",
+            "## Summary / 摘要",
+            f"- Strategy / 策略: {strategy['strategy_id']}",
+            f"- Rebalance frequency / 再平衡频率: {strategy['rebalance_frequency']}",
             f"- CAGR: {metrics['CAGR']}",
-            f"- Annualized volatility: {metrics['annualized_volatility']}",
+            f"- Annualized volatility / 年化波动率: {metrics['annualized_volatility']}",
             f"- Sharpe: {metrics['Sharpe']}",
-            f"- Max drawdown: {metrics['max_drawdown']}",
-            f"- Turnover: {metrics['turnover']}",
+            f"- Max drawdown / 最大回撤: {metrics['max_drawdown']}",
+            f"- Turnover / 换手率: {metrics['turnover']}",
             "",
-            "## Rebalances",
-            f"- Rebalance count: {execution['rebalance_count']}",
-            f"- Transaction costs: {metrics['transaction_costs']}",
+            "## Rebalances / 再平衡",
+            f"- Rebalance count / 再平衡次数: {execution['rebalance_count']}",
+            f"- Transaction costs / 交易成本: {metrics['transaction_costs']}",
             "",
-            "## Research Limitations",
-            f"- Data quality flags: {limitations['data_quality_flags']}",
-            f"- Limitations: {limitations['limitations']}",
+            "## Research Limitations / 研究局限",
+            f"- Data quality flags / 数据质量标记: {limitations['data_quality_flags']}",
+            f"- Limitations / 局限: {limitations['limitations']}",
         ]
     )
 

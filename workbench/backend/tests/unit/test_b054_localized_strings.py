@@ -26,12 +26,12 @@ def test_strategy_note_localizes_and_drops_note_key() -> None:
     detail_zh = get_strategy("master_portfolio")
     assert detail_zh is not None
     assert "note_key" not in detail_zh.config  # resolved away, never leaked
-    assert "完整组合" in detail_zh.config["note"]  # zh-CN default
+    assert "完整组合" in str(detail_zh.config["note"])  # zh-CN default
 
     _LOCALE_VAR.set("en")
     detail_en = get_strategy("master_portfolio")
     assert detail_en is not None
-    assert "combined portfolio" in detail_en.config["note"]
+    assert "combined portfolio" in str(detail_en.config["note"])
 
 
 def test_all_registry_notes_resolve_nonempty() -> None:
@@ -49,7 +49,7 @@ def test_regime_inactive_notes_share_one_key() -> None:
     b = get_strategy("B015-regime-active")
     assert a is not None and b is not None
     assert a.config["note"] == b.config["note"]
-    assert "研究态" in a.config["note"]
+    assert "研究态" in str(a.config["note"])
 
 
 def test_gate_detail_localizes_and_interpolates() -> None:

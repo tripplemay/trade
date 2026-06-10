@@ -41,7 +41,7 @@
       "title": "报告正文中文化（投资/回测报告 markdown 模板级中文，trade/reporting）+ 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【家族③后半，最重一块，触 trade/ 包，用户拍板全纳入，见 spec §7】(1) **报告模板中文**：trade/reporting/ 生成的投资报告+回测报告 markdown 的段标题/标签/说明文字出中文（数值/日期/symbol 语言中性保留）；若报告含 LLM 生成 prose 走 F001 中文生成。(2) **机制**：模板级 i18n（reporting builder 出中文文案）——generator 定(trade/reporting 直接中文 vs 参数化)；**CI mypy trade 严格，改 trade/ 须本地 `mypy trade` 自检(environment.md)**。(3) **前端**：Reports [slug]/page.tsx:95 + Backtest MarkdownRenderer 渲染中文 markdown 无需前端改。(4) **测试**：报告 markdown 含中文段标题+数值正确+trade 包单测。(5) Gates：backend+trade pytest ≥ baseline+ / ruff / mypy(workbench+trade) 0。",
       "design_decisions": [
         "报告正文模板级中文（段标题/标签出中文，数值中性）——非 LLM 重生成，避免动 LLM 成本+保数值精确。",
