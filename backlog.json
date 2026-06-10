@@ -232,5 +232,19 @@
     "confirmed_at": "2026-06-10",
     "priority": "medium",
     "source": "已上线功能全面审计（docs/product/post-b052-hidden-bug-audit-2026-06.md §2）"
+  },
+  {
+    "id": "B053",
+    "title": "加固扫尾批——reconcile 对账完整性 + worker 孤儿回收 + 并发/语义/时区防御（四轮审计产出汇总）",
+    "description": "【2026-06-10 第四轮审计（正向威胁建模）产出 + 池内两条审计遗留合并，用户批凑批】六项小修一批做：(1) **reconcile 静默吞对账异常（中-高）**：reconcile.py:156-158 超卖 new_shares<0→静默归零 + :299 负现金 max(0.0,...) 静默夹零，均无警告——用户手抄 fill 输错时系统静默『修正』账目，对账对不上无线索；修=检测不可能状态→拒绝 reconcile(409+行级提示)或 ReconcileResponse 警告标注，不静默修正。(2) **worker 孤儿 running 回收（中）**：claim 后崩溃/deploy restart→run 永久卡 running，claim_next_queued 只领 queued 无启动回收；修=worker 启动回收 stale running（置 error_kind=interrupted 或重置 queued）+前端轮询超时提示。(3) **snapshot_at 同秒 tie-breaker（低-中）**：repositories/account_snapshot.py:24 仅 ORDER BY snapshot_at DESC，双击保存同秒两行 latest() 不稳定；修=排序补 created_at/id。(4) **has_mark 标注（低-中）**：『持有但无标价』与『未持有』在 recommendations 展示层同为 current_weight=0.0（diff 层有 Unmatched 防护）；修=TargetPosition 加 has_mark 或文案区分。(5) **BL-AUDIT-S1 并入**：advisor 幂等 skip 条件加 status==STATUS_OK（拒答产物卡全天）+risk_explanation.py:84 条件显式化。(6) **BL-B050-S1 并入**：backlog status 字段建列存读或显式移除（二选一）。**顺手加固**：date.today()→datetime.now(UTC).date() 全局统一（去『服务器永远 UTC』隐含假设）+ 权重和断言（save_batch/读取侧 abs(sum-1)<1e-6）。审计报告 docs/product/threat-model-audit-2026-06.md + post-b052-hidden-bug-audit-2026-06.md。spec 草案已备：docs/specs/B053-hardening-sweep-spec.md。",
+    "decisions": [
+      "2026-06-10 用户批：凑 B053 加固扫尾批，B052 done 后即启",
+      "全部为小修；reconcile 吞错与 worker 孤儿为两个真隐患优先，其余防御性加固",
+      "BL-AUDIT-S1 + BL-B050-S1 并入本批（届时从池移除）",
+      "修复原则：不可能状态→fail-fast/警告，不静默修正（对齐系统诚实降级一贯原则）"
+    ],
+    "confirmed_at": "2026-06-10",
+    "priority": "high",
+    "source": "第四轮审计 threat-model-audit-2026-06.md + 第三轮 post-b052-hidden-bug-audit §2 + B050 审计 §3.2"
   }
 ]
