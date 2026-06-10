@@ -42,7 +42,7 @@
       "title": "【用户上手急需，generator 优先做】B052 S1 收尾——手术式清除残留测试 SGOV 快照，/risk 转全绿",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【用户 2026-06-10 报：重存纯现金账户后 /risk 仍黄、unclassified 100% + 主组合回撤 1.97%——B052 soft-watch S1。根因（planner 核实）：B051 验收留下的测试 SGOV 快照（SGOV 10 @ ~100，如 snap-47ef76c66212/snap-8863ba12ef28）在 nav_history 历史里造成 unclassified sleeve peak-to-latest 100% DD + master 1.97% phantom DD（NAV 从带 SGOV 的 $51,004.50 回到纯现金 $50,000）；均测试残留非真实亏损，重存清不掉（history append-only）】(1) **清理（用现成 workbench_api.cli.drill_cleanup，优先零代码）**：cutoff 设为保留用户当前最新纯现金快照（删尽更早的测试 SGOV 快照 + 关联测试 ticket/fill）；若同日快照 cutoff 无法精确隔离，最小扩展 CLI 加 --delete-ids（+测试+§12.10.2 守门）。**流程（同 B052 生产实施，安全第一）**：① VM 上 cd /srv/workbench/current/backend 跑 **dry-run**，将删快照清单（id/时间/cash/positions）**交用户确认边界**；② 用户确认后 --apply（§12.11.1 env 守门已在 CLI 入口）；③ systemctl start workbench-risk-explanation.service 重生成解释。(2) **核验**：清理后 reconstruct_nav_history 单/少点纯现金序列 → master_drawdown≈0 + per_sleeve 全 0（unclassified 消失）；用户 /risk 转绿（或纯现金应有态）。(3) Gates：纯数据操作（零代码）或最小 --delete-ids 扩展（pytest+ruff+mypy 0+§12.10.2 守门）。实施记录入 signoff §Ops 副作用。(4) 不动：执行流/评分/recommendation_snapshot。",
       "design_decisions": [
         "planner 不直接操作生产 VM（角色边界+SSH 授权）；由 Generator 执行，dry-run 交用户确认后 --apply（同 B052 安全流程，保护财务数据）。",
