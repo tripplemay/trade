@@ -25,7 +25,7 @@ type: project
 - B001-B045 全部签收。
 
 ## 生产状态
-- **B043 已部署（2026-06-10，generator 经用户授权触发 Workbench Deploy）：** prod `7ce70d7`，**alembic head 0016**（含 backtest_run.explanation + risk_explanation_snapshot），schema check passed。**workbench-risk-explanation.timer enabled**（新 B043 timer 经 deploy.sh glob 自动安装，每日 03:30）+ 全部既有 timer enabled + backtest-worker active。deploy complete 无 warning/error。**待 L2**：解释文本须 timer 下次 run（recommendations 03:00→LLM rationale 重生成覆盖旧占位[幂等 fix 生效]；risk 03:30）或手动 `systemctl start workbench-{recommendations,risk-explanation}.service` populate；backtest on-demand 即出。需 AIGC_GATEWAY_API_KEY 在 VM（缺则诚实降级占位/None）。
+- **B043 已部署+真机验证（2026-06-10，generator 经用户授权 SSH tripplezhou@VM）：** prod `c866115`，alembic head 0016。**3 解释 surface 真机确认真实 grounded LLM 输出**（generator 跑 reco+risk job、enqueue 一次 backtest 验证）：① Recommendations **20/20 真 LLM rationale**（非占位）② Risk explained=True（red/59.6% DD/kill-switch grounded）③ Backtest explanation（master 9.18% CAGR/0.88 Sharpe/332 trades grounded，explain 历史无预测）。AIGC_GATEWAY_API_KEY 已配。workbench-risk-explanation.timer enabled（每日 03:30）。**真机发现并修复 1 缺陷**（c866115）：references_grounded 原要求引用精确命中裸 token 集→真 Haiku 引 grounding 整行致全降级占位（0/20）；改为子串校验（接受裸值/带标签行，仍拒捏造）。**L2 待 Codex**：no-AI 边界 adversarial（safety_judge 抽验解释无收益预测/无执行/无替代 quant）+ 降级 + signoff。
 - **B047-OPS1 基线：** workbench-backtest-worker.service auto-active + workbench-canonical-backtest.timer（04:00 投资报告）。recent-errors=0。
 - VM 运维：timer+worker auto-wiring 全就位；新 daemon/timer 零 admin 动作。
 
