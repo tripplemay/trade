@@ -219,5 +219,18 @@
     "confirmed_at": "2026-06-09",
     "priority": "low",
     "source": "B050 类反模式系统审查（docs/product/b050-class-decorative-control-audit-2026-06.md §3.2）"
+  },
+  {
+    "id": "BL-AUDIT-S1",
+    "title": "advisor precompute 幂等不区分降级产物（拒答行卡住全天，一行可修）",
+    "description": "【2026-06-10 全面审计发现，B043 幂等占位同模式第二例】advisor/precompute.py:66-68 幂等检查只看 latest.generated_at.date()==run_date 即 skip，不检查 latest.status——advise_sleeve 在 LLM 不可用/拒答时落库 STATUS_INSUFFICIENT_GROUNDING 行，当日任何重跑（timer 重试/手动）看到『今天已有行』即 skip→整日卡在拒答 advice，无法当日自愈（次日 run_date 变才重试）。用户症状：当日 LLM 抖动一次→advisor 页全天显示拒答/无建议，即使 LLM 早已恢复。修复=skip 条件加 `and latest.status == STATUS_OK`（降级行不算已生成，重跑重试）+回归测试（种 INSUFFICIENT_GROUNDING 行→同日重跑应重新生成）。顺手项：risk_explanation.py:84 幂等条件显式化（existing.explanation 真值检查→`is not None`+status 区分，现状 graceful 但改 update 会变隐患）。审计报告 docs/product/post-b052-hidden-bug-audit-2026-06.md §2。",
+    "decisions": [
+      "2026-06-10 用户批：入需求池下批做（B052 保持纯数据清理不扩面）",
+      "修复模式对齐 B043 F001（recommendations 幂等只复用 genuine 产物）；与 B043 构成『幂等/缓存复用区分真实 vs 降级产物』二例，done 阶段可沉淀 framework",
+      "影响有界：每日 timer 自然重试窗口=次日，非永久卡住（B043 那例是季度卡住）"
+    ],
+    "confirmed_at": "2026-06-10",
+    "priority": "medium",
+    "source": "已上线功能全面审计（docs/product/post-b052-hidden-bug-audit-2026-06.md §2）"
   }
 ]
