@@ -43,7 +43,11 @@ CUTOFF = datetime(2026, 6, 10, 9, 0, 0)
 
 
 def _snapshot(
-    id_: str, at: datetime, *, cash: float, positions: list | None = None
+    id_: str,
+    at: datetime,
+    *,
+    cash: float,
+    positions: list[dict[str, object]] | None = None,
 ) -> AccountSnapshot:
     return AccountSnapshot(
         id=id_,
