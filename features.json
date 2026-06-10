@@ -1,26 +1,27 @@
 {
-  "sprint": "B051-account-source-unification",
+  "sprint": "B052-drill-data-cleanup",
   "features": [
     {
       "id": "F001",
-      "title": "统一账户源到 account_snapshot（aggregate_nav + account_present + gate equity 改读 UI 源）+ me.json bootstrap 一致 + 测试",
+      "title": "演练数据清理 CLI（执行域三表统一 cutoff + dry-run 预览 + §12.11.1 env 守门）+ 生产实施（用户确认边界后 --apply）+ 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【生产 hotfix，见 spec §4。根因=两张账户表读写不一致：UI 写 account_snapshot 但 nav.aggregate_nav+recommendations._aggregate_account_state 读 account 表(me.json 源，空)】(1) **nav.aggregate_nav(nav.py:27)**：去 select(Account)，改从最新 account_snapshot 算 NAV=cash+mark-to-market(positions)（复用 compute_mark_to_market+marks_for，与 _build_target_positions/home day-pnl 同款）；无 snapshot→0.0 graceful 不变；DB 错误降级不变。(2) **recommendations._aggregate_account_state(recommendations.py:132)**：account_present=最新 account_snapshot 存在；total_equity=同一 aggregate(喂 gate min_equity)；无 snapshot→(False,0.0) 不变。(3) **me.json bootstrap 一致**：cli/bootstrap.py 镜像 me.json 时也写 account_snapshot（种子路径与 UI 同源生效）；或裁定 account 表/me.json 仅向后兼容、读路径 snapshot 优先——generator 二选一注明(推荐 bootstrap 写 snapshot 单一源)。(4) **account 表读路径审计**：grep select(Account)/Account model 读，确认改后无其它依赖空表造成不一致；vestigial 注明(本批不强删避免扩面)。(5) **测试**：(a) 写含持仓 snapshot→account_present=true+nav=cash+mtm；(b) **纯现金 snapshot 零持仓→account_present=true+nav=cash**(新用户场景)；(c) 无 snapshot→false+0.0 graceful；(d) gate total_equity 来自 snapshot；(e) me.json bootstrap 后 account_present=true(若保留)。(6) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / §12.10.2 守门(请求路径仍只读不 import trade) / api.ts drift 0(无 schema 变)。(7) 不动：执行流(已读 snapshot)/master 评分/recommendation_snapshot/gate 判定逻辑。",
+      "status": "pending",
+      "acceptance": "【生产数据卫生 hotfix，见 spec §3。根因=历届 L2 验收演练快照污染 nav_history（含 BL-B023-S2 人为 DD 0.70 假峰 ~$126k）→用户纯现金新账户显示假 59.60% 回撤+kill-switch 误触发+Ticket 默认勾防守误导建仓；不会自愈】(1) **清理 CLI**（python -m workbench_api.cli.drill_cleanup）：--keep-from <snapshot_id|ISO 日期> 删 cutoff 之前的 account_snapshot/order_ticket/fill_journal_entry 三表行（执行域统一边界）；**默认 dry-run** 完整列出将删行（id/时间/source/cash/positions·ticket·fill 摘要）+将保留行，--apply 才真删；**§12.11.1 入口级 env 守门**（本 CLI 写生产 DB，入口必须 require_production_db，缺 env 响亮失败不写 scratch）；删后顺带删 risk_explanation_snapshot 旧行（引用假回撤的陈旧解释）+提示 systemctl start workbench-risk-explanation.service 立即重生成。(2) **测试**：dry-run 不删+apply 按 cutoff 精确删三表+cutoff 之后行完整保留+env 守门+空表 graceful。(3) **生产实施**：CLI 上 VM 后 dry-run 输出交用户确认边界（用户 2026-06-10 自填现金那条快照起=真实数据），确认后 --apply；实施记录入 signoff §Ops 副作用。(4) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / §12.10.2（CLI 不 import trade 纯 DB 操作）。(5) 不做：不改 nav_history/risk 算法（机制正确错在数据）/不碰 recommendation·backtest·news·price 表/不做基线重置 UI/不引入演练 source 标记。",
       "design_decisions": [
-        "统一到 account_snapshot(UI 写的、执行流已读的)为单一真相源；aggregate_nav 改 cash+mark-to-market 与 current_weight/home 口径一致。",
-        "一个 hotfix 同修两症状：Recommendations 不认账户 + home nav=0.0(B046 soft-watch S1 同根因)。",
-        "me.json bootstrap 也写 snapshot(推荐)使种子路径仍生效；account 表本批不强删(避免扩面，可后续 decommission)。"
+        "清理而非改算法：nav_history peak-to-latest 机制本身正确，错在 append-only 历史混入演练行；source 字段无法区分（演练走同一 UI/API 写入路径）。",
+        "三表统一 cutoff（snapshot/ticket/fill）：演练同时污染回撤、journal-history、wash_sale，一并清理才彻底。",
+        "dry-run 默认+用户确认边界：删生产数据必须先预览（删除前看目标铁律）；cutoff 由用户指认真实数据起点。",
+        "不做演练 source 标记（演练须走真实路径否则验收失真，且靠纪律不可靠）；防再发走流程规约（演练收尾自清，done 阶段沉淀）。"
       ]
     },
     {
       "id": "F002",
-      "title": "Codex L1+L2 真 VM——UI 设账户即被 Recommendations 认 + home nav 真实(B046 S1 闭合) + 回归 + signoff",
+      "title": "Codex L2 真 VM——清理后回撤≈0 + kill-switch 不再误触发 + Ticket 不默认防守 + 用户真实快照保留 + 演练自清 + signoff",
       "priority": "high",
       "executor": "codex",
       "status": "pending",
-      "acceptance": "【见 spec §5。core acceptance=UI 设账户即被认】L1：F001 全门禁+§12.10.2 守门+单测(纯现金/含持仓/空/gate equity/bootstrap 一致)。L2(真 VM)：(1) ★**核心反例(用户报障修复)**：UI Account 页设账户(先**纯现金零持仓**再**含持仓**两种)保存→GET /api/recommendations/current account_present=true+**目标持仓渲染**(不再『尚未配置账户』门控空态)。(2) **home nav 真实(B046 S1 闭合)**：设账户后 GET /api/home nav=真实 cash+equity(非 0.0)，记 B046 soft-watch S1 resolved 证据。(3) **gate equity**：Recommendations gate min_equity 反映真实账户权益。(4) **回归**：position-diff/risk/execution/reconcile 不破(本就读 snapshot)；recent-errors=0；HEAD≡main；B050 回测/B043 解释不破。(5) **Signoff**：docs/test-reports/B051-account-source-unification-signoff-2026-MM-DD.md 用模板(§Production/HEAD+§Post-signoff Deploy+§UI 设账户即被认证据(纯现金+含持仓)+§home nav 真实即 B046 S1 闭合)。**evaluator.md §25 适用**：account_present=true+目标持仓真实渲染须正面证据。更新 progress.json status→done/docs.signoff/evaluator_feedback。"
+      "acceptance": "【见 spec §4。core acceptance=用户报障闭合】(1) ★**核心反例**：清理后生产 /api/execution/risk-panel master_drawdown ≈ 0（纯现金单点序列 peak=latest）；Recommendations gate kill_switch PASS（不再误触发）；Ticket 页**不再默认勾防守**；Risk 解释重生成后不再引用 59.60%。(2) **保留核验**：用户真实快照完整保留（Recommendations 仍『账户已就绪』+home nav 真实）；journal-history 演练 ticket 清空。(3) **回归**：B051 账户流不破/B043 解释/B050 回测/recent-errors=0/HEAD≡main。(4) **Signoff**：docs/test-reports/B052-drill-data-cleanup-signoff-2026-MM-DD.md（§Ops 副作用=清理实施记录：删行数/各表/cutoff + §核心反例证据）。evaluator.md §25 正面证据。(5) **演练自清（首个执行新规约的批次）**：本批验收若需写入演练数据，收尾必须用 drill_cleanup CLI 自清。更新 progress.json status→done/docs.signoff/evaluator_feedback。"
     }
   ]
 }
