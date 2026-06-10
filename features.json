@@ -1,61 +1,26 @@
 {
-  "sprint": "B043-ai-explanation-layer",
+  "sprint": "B051-account-source-unification",
   "features": [
     {
       "id": "F001",
-      "title": "共享解释基建 + Recommendations rationale（注入 A，核心）+ 护栏复用 + 降级 + 测试",
+      "title": "统一账户源到 account_snapshot（aggregate_nav + account_present + gate equity 改读 UI 源）+ me.json bootstrap 一致 + 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §5。B043 核心=填 recommendations/precompute.py:280 的 rationale 占位槽】(1) **共享解释生成器**：新建 services/explanation/（或就近）复用 llm/gateway.py advise(ChatRequest(task=)) + 护栏链（judge.py INSUFFICIENT_GROUNDING_SIGNAL sentinel 拒答 + advisor/schema.py references_valid 适配 + _strip_code_fence + cost_guard 月 cap）；routing.py ROUTING_TABLE 加 recommendation_rationale/backtest_explanation/risk_explanation→claude-haiku-4.5 + PRICE_TABLE 对应。(2) **Recommendation rationale prompt**：复用 advisor/service.py 5 规则系统 prompt（no 自动执行/no 收益预测/no 替代 quant/必须可引用/允许 summarize），user content=grounding（per-symbol sleeve/target_weight/planning_weight/sleeve_status/data_source/signal_date，来自 MasterTargetResult.master_meta precompute.py:67-76/182-191）；输出简洁 per-position『为什么这个权重』1-2 句 grounded 引 sleeve 组成+信号日。(3) **注入 precompute**：recommendations/precompute.py:280 占位改调解释生成器；**幂等**（同 as_of_date 已生成跳过，对齐 advisor precompute）；**降级**：拒答/budget/异常→回退现确定性占位文案不阻断写库。(4) **§12.10.2**：生成在 precompute（已 allowlist import trade），请求路径 services/recommendations.py 只读 rationale 不变。(5) **测试**：grounding 组装+解释生成（mock gateway）+references_valid 适配（引用越界→拒答）+降级回退占位+幂等+routing task 注册。(6) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0（含 mypy trade 若动 trade/，见 environment.md）/ §12.10.2 守门 / cost_guard 不被绕过。",
+      "status": "pending",
+      "acceptance": "【生产 hotfix，见 spec §4。根因=两张账户表读写不一致：UI 写 account_snapshot 但 nav.aggregate_nav+recommendations._aggregate_account_state 读 account 表(me.json 源，空)】(1) **nav.aggregate_nav(nav.py:27)**：去 select(Account)，改从最新 account_snapshot 算 NAV=cash+mark-to-market(positions)（复用 compute_mark_to_market+marks_for，与 _build_target_positions/home day-pnl 同款）；无 snapshot→0.0 graceful 不变；DB 错误降级不变。(2) **recommendations._aggregate_account_state(recommendations.py:132)**：account_present=最新 account_snapshot 存在；total_equity=同一 aggregate(喂 gate min_equity)；无 snapshot→(False,0.0) 不变。(3) **me.json bootstrap 一致**：cli/bootstrap.py 镜像 me.json 时也写 account_snapshot（种子路径与 UI 同源生效）；或裁定 account 表/me.json 仅向后兼容、读路径 snapshot 优先——generator 二选一注明(推荐 bootstrap 写 snapshot 单一源)。(4) **account 表读路径审计**：grep select(Account)/Account model 读，确认改后无其它依赖空表造成不一致；vestigial 注明(本批不强删避免扩面)。(5) **测试**：(a) 写含持仓 snapshot→account_present=true+nav=cash+mtm；(b) **纯现金 snapshot 零持仓→account_present=true+nav=cash**(新用户场景)；(c) 无 snapshot→false+0.0 graceful；(d) gate total_equity 来自 snapshot；(e) me.json bootstrap 后 account_present=true(若保留)。(6) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / §12.10.2 守门(请求路径仍只读不 import trade) / api.ts drift 0(无 schema 变)。(7) 不动：执行流(已读 snapshot)/master 评分/recommendation_snapshot/gate 判定逻辑。",
       "design_decisions": [
-        "复用 B036 advisor 护栏链（sentinel+references_valid+5 规则 prompt）+B031 gateway+cost_guard，不重造；3 新 routing task→haiku-4.5（最廉价层够用，对齐 daily_advisor）+温度 0.2 稳定。",
-        "解释生成在 precompute（off 请求路径§12.10.2）+幂等+降级回退确定性占位（解释是增强非依赖，LLM 失败不阻断核心写库）。",
-        "references_valid 按注入点适配 citation schema（rationale 引 sleeve/weight/signal_date/data_source，非 advisor 的 news_urls）。"
+        "统一到 account_snapshot(UI 写的、执行流已读的)为单一真相源；aggregate_nav 改 cash+mark-to-market 与 current_weight/home 口径一致。",
+        "一个 hotfix 同修两症状：Recommendations 不认账户 + home nav=0.0(B046 soft-watch S1 同根因)。",
+        "me.json bootstrap 也写 snapshot(推荐)使种子路径仍生效；account 表本批不强删(避免扩面，可后续 decommission)。"
       ]
     },
     {
       "id": "F002",
-      "title": "Backtest 结果解释（注入 B，worker 生成时同步）+ no-预测边界 + 降级 + 测试",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §6。依赖 F001 解释基建】(1) **Backtest explanation prompt**：grounding=真实 metrics(cagr/sharpe/max_dd/turnover)+trades 数+equity 点数+策略名+日期范围（worker.py:240-278 各 runner 手上即有）；输出简洁『为什么这个 Sharpe/回撤是这样』explain 真实历史输出，**不预测未来/不给调参建议**。(2) **注入 worker**：backtests/worker.py 各 runner 返回 / process_next save_result 前同步生成 explanation；存 backtest_run.explanation 新列（migration，建议独立列便于前端分区）。**降级**：拒答/budget/异常→explanation=None 不阻断回测结果落库。(3) **§12.10.2**：worker 已 off 请求路径+allowlist；请求路径 services/backtests.py 只读不变。(4) **测试**：explanation 生成（mock gateway，grounded 真实 metrics）+no-预测边界（断言不含未来收益语/不含调参建议）+降级 None+migration。(5) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / alembic head（加列）/ §12.10.2 守门。",
-      "design_decisions": [
-        "explanation 独立列（非并入 report_markdown）便于前端分区显示+降级时只缺解释不缺报告。",
-        "backtest 解释严守 no-预测：只 explain 历史真实数字，不说『下次会更好』不给调参建议。"
-      ]
-    },
-    {
-      "id": "F003",
-      "title": "Risk 解释（注入 C，架构关键：新表+新 precompute job + risk_panel 读 snapshot）+ 测试",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §7。架构关键：risk_panel 是请求路径只读§12.10.2，禁塞 LLM】(1) **新表+migration**：risk_explanation_snapshot(as_of_date/master_dd/state/explanation/created_at)。(2) **新 precompute job**：services/risk_explanation.py——grounding=master_dd/per_sleeve_dd/kill_switch 阈值/state/slippage/valuation_basis/degraded_symbols（risk_panel.py:117-150 算法复用只读后喂 LLM）；输出简洁『当前风险现状+为什么(哪些头寸贡献 DD)』explain 当前态，**不预测恢复/不给卖出建议**；daily job（单独 timer 或并入现有，generator 定）；降级同 F001。(3) **risk_panel 读 snapshot**：services/risk_panel.py get_risk_panel 加读 risk_explanation_snapshot 最新解释（**请求路径只读不调 LLM**）；无解释→graceful 不显解释块；RiskPanelResponse schema 加 explanation 字段。(4) **§12.10.2**：LLM 在新 precompute job（off 请求路径）；risk_panel 请求路径仍只读。(5) **测试**：risk grounding+解释生成+risk_panel 读 snapshot+无解释 graceful+降级+migration。(6) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / alembic head / api.ts drift（risk schema 加字段同步）/ §12.10.2 守门。",
-      "design_decisions": [
-        "risk 解释必须走新 precompute job+新表（risk_panel 请求路径只读，禁塞 LLM 重调用——§12.10.2 + 避免 LLM 超时拖累请求延迟）。",
-        "risk 解释 explain 当前态：不预测恢复日期/不给卖出建议（no-AI 边界 b/c）。"
-      ]
-    },
-    {
-      "id": "F004",
-      "title": "前端——3 页面 surface 解释（Recommendations/Backtest/Risk）+ 空态/降级态 + i18n + 测试",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §8。依赖 F001-F003 后端字段】(1) **Recommendations**：per-position 显 rationale（rich『为什么』复用 B041 Robinhood UI rationale 槽）；空/降级态显确定性占位或留白不破。(2) **Backtest**：结果区显 explanation（与报告分区）；无 explanation 只显报告。(3) **Risk**：风险面板显 explanation；无则不显解释块。(4) **i18n**：解释文本按当前 locale 生成（generator 定：grounding 传 locale 让 LLM 出对应语言 vs 先英文）；UI 框架文案（『为什么』『AI 解释』标签）双语 parity。(5) **测试**：vitest（3 页面渲染解释/空态/降级态）+i18n parity+api.ts drift 0。(6) Gates：frontend vitest ≥ baseline+ / lint 0 / tsc 0 / api.ts drift 0 / no-execution 守门。",
-      "design_decisions": [
-        "解释 surface 为增强（空/降级时优雅留白），不破现有页面；复用 B041 rationale 槽。"
-      ]
-    },
-    {
-      "id": "F005",
-      "title": "Codex L1+L2 真 VM——3 页面 grounded 解释 + ★no-AI 边界 adversarial 验证 + 降级 + 回归 + signoff",
+      "title": "Codex L1+L2 真 VM——UI 设账户即被 Recommendations 认 + home nav 真实(B046 S1 闭合) + 回归 + signoff",
       "priority": "high",
       "executor": "codex",
       "status": "pending",
-      "acceptance": "【见 spec §9。core acceptance=grounded 解释+守 no-AI 边界】L1：F001-F004 全门禁+§12.10.2 守门（解释生成不在请求路径）+cost_guard 不被绕过+i18n parity+api.ts drift 0+alembic head+artifact secret=0。L2(真 VM)：(1) **3 页面 grounded 解释**：Recommendations per-position rationale/Backtest explanation/Risk explanation 真机显**真实 LLM 解释**且**引用真实值**（sleeve/weight/signal_date / 真实 metrics / 真实 DD），非占位串。(2) ★**no-AI 边界 adversarial 验证**（evaluator.md §25+复用 B032 llm/judge.py safety_judge）：抽样生成的解释核**无收益预测数字/无自动执行指示/无替代 quant/引用都在输入集内**；judge 跑样本或人工核 N 条；**任一条违边界→blocker**。(3) **降级**：模拟 LLM 不可用/budget 超→3 页面 graceful 回退确定性占位/空态不报错不漏原始异常。(4) **回归**：B050 回测分发不破/推荐 diff 不破/recent-errors=0/HEAD≡main/B023 闭环不破。(5) **Signoff**：docs/test-reports/B043-ai-explanation-layer-signoff-2026-MM-DD.md 用模板（§Production/HEAD+§Post-signoff Deploy+§3 页面 grounded 解释样例+§no-AI 边界 adversarial 结果）。更新 progress.json status→done/docs.signoff/evaluator_feedback。"
+      "acceptance": "【见 spec §5。core acceptance=UI 设账户即被认】L1：F001 全门禁+§12.10.2 守门+单测(纯现金/含持仓/空/gate equity/bootstrap 一致)。L2(真 VM)：(1) ★**核心反例(用户报障修复)**：UI Account 页设账户(先**纯现金零持仓**再**含持仓**两种)保存→GET /api/recommendations/current account_present=true+**目标持仓渲染**(不再『尚未配置账户』门控空态)。(2) **home nav 真实(B046 S1 闭合)**：设账户后 GET /api/home nav=真实 cash+equity(非 0.0)，记 B046 soft-watch S1 resolved 证据。(3) **gate equity**：Recommendations gate min_equity 反映真实账户权益。(4) **回归**：position-diff/risk/execution/reconcile 不破(本就读 snapshot)；recent-errors=0；HEAD≡main；B050 回测/B043 解释不破。(5) **Signoff**：docs/test-reports/B051-account-source-unification-signoff-2026-MM-DD.md 用模板(§Production/HEAD+§Post-signoff Deploy+§UI 设账户即被认证据(纯现金+含持仓)+§home nav 真实即 B046 S1 闭合)。**evaluator.md §25 适用**：account_present=true+目标持仓真实渲染须正面证据。更新 progress.json status→done/docs.signoff/evaluator_feedback。"
     }
   ]
 }
