@@ -89,12 +89,14 @@ describe("UsQualityMomentumHighlight (zh-CN)", () => {
     expect(getByTestId("us-quality-tagline").textContent ?? "").toContain("satellite_us_quality");
   });
 
-  it("surfaces the synthetic-data disclaimer in zh-CN", () => {
+  it("surfaces the synthetic-data disclaimer in zh-CN (B054 F003: now Chinese)", () => {
     const { getByTestId } = renderWithIntl(<UsQualityMomentumHighlight />, {
       locale: "zh-CN",
     });
+    // B054 F003 — the zh-CN disclaimer was a residual English string; it is now
+    // translated. Assert the Chinese conveys synthetic (not real) filing data.
     expect(getByTestId("us-quality-data-source").textContent ?? "").toContain(
-      "synthetic data, not actual filings",
+      "合成数据，非真实财报申报",
     );
   });
 });

@@ -30,7 +30,7 @@
       "title": "前端快修（fills buy/sell + placeholder + zh-CN.json 残留英文 + i18n parity 全扫）+ 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【家族③前半，见 spec §6 + 审计 doc】(1) fills page.tsx:401-402 buy/sell option + :425 timestamp placeholder → t() key。(2) messages/zh-CN.json:149 残留英文『synthetic data, not actual filings』→中文译文。(3) **i18n parity 全扫**：en.json vs zh-CN.json 缺 key / zh-CN 值仍英文的条目补齐。(4) 测试：vitest + i18n parity 守门。(5) Gates：frontend vitest/tsc/lint / i18n parity 0 缺。",
       "design_decisions": [
         "纯前端快修，独立于 F001/F002 后端改动，可并行。"

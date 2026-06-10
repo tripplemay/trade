@@ -146,7 +146,7 @@
       "topNValue": "Top 15 等权",
       "earningsWindowLabel": "财报规避",
       "earningsWindowValue": "财报日前 5 个交易日不新开仓",
-      "dataSource": "合成 fixture（synthetic data, not actual filings）"
+      "dataSource": "合成 fixture（合成数据，非真实财报申报）"
     }
   },
   "backtest": {
@@ -479,9 +479,9 @@
       "ticketsOnFile": "{count} 份订单清单",
       "modeCardTitle": "选择清单模式",
       "modeCardDescription": "Kill-switch 已触发。Defensive 模式将整组合切换至 B011 防御 sleeve;Normal 模式延续当前目标组合。",
-      "modeNormalLabel": "Normal",
+      "modeNormalLabel": "正常",
       "modeNormalBody": "— 沿用当前 Recommendations 目标组合。",
-      "modeDefensiveLabel": "Defensive",
+      "modeDefensiveLabel": "防御",
       "modeDefensivePrefix": "— 直至主组合回撤恢复前,全部切换至 ",
       "modeDefensiveSuffix": " 。",
       "latestCardTitle": "最新订单清单",
@@ -529,6 +529,9 @@
       "csvCardDescription": "自动识别 Generic / Schwab / IBKR 格式。错误按行返回;未出错的行保留以便再次上传。",
       "csvUpload": "上传 CSV",
       "allowUnmatched": "允许无匹配成交 (order_seq 缺失)",
+      "sideBuy": "买入",
+      "sideSell": "卖出",
+      "filledAtPlaceholder": "2026-05-30T13:31:42",
       "manualCardTitle": "手工录入",
       "manualCardDescription": "每行一笔成交。客户端先校验。",
       "manualSubmit": "保存成交",
@@ -543,7 +546,7 @@
       "historyCardDescription": "已持久化的日志行。请到 journal-history 视图(F005)进行对账。",
       "historyEmpty": "暂无本清单的成交记录。",
       "columns": {
-        "seq": "Seq",
+        "seq": "序号",
         "symbol": "标的",
         "side": "方向",
         "shares": "股数",
@@ -551,8 +554,8 @@
         "filledAt": "成交时间 (ISO)",
         "source": "来源"
       },
-      "matchedLabel": "matched",
-      "unmatchedLabel": "unmatched"
+      "matchedLabel": "已匹配",
+      "unmatchedLabel": "未匹配"
     },
     "journalHistory": {
       "title": "日志历史",

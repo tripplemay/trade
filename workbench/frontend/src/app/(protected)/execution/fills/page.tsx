@@ -5,13 +5,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Toaster } from "@/components/ui/sonner";
 import {
@@ -70,11 +64,9 @@ function manualRowToFill(
   const errors: string[] = [];
   if (!row.symbol.trim()) errors.push(tValidation("fillSymbolRequired"));
   const sharesNum = Number(row.shares);
-  if (!Number.isFinite(sharesNum) || sharesNum <= 0)
-    errors.push(tValidation("fillSharesPositive"));
+  if (!Number.isFinite(sharesNum) || sharesNum <= 0) errors.push(tValidation("fillSharesPositive"));
   const priceNum = Number(row.fill_price);
-  if (!Number.isFinite(priceNum) || priceNum <= 0)
-    errors.push(tValidation("fillPricePositive"));
+  if (!Number.isFinite(priceNum) || priceNum <= 0) errors.push(tValidation("fillPricePositive"));
   if (!row.filled_at.trim()) errors.push(tValidation("fillFilledAtRequired"));
   if (errors.length > 0) {
     return { fill: null, error: { row: index, error: errors.join("; ") } };
@@ -120,8 +112,7 @@ export default function FillsPage() {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const payload = (await response.json()) as TicketListResponse;
       setTickets(payload.items);
-      const firstActive =
-        payload.items.find((t) => t.status === "generated") ?? payload.items[0];
+      const firstActive = payload.items.find((t) => t.status === "generated") ?? payload.items[0];
       if (firstActive && !ticketId) setTicketId(firstActive.id);
       setLoadError(null);
     } catch (reason: unknown) {
@@ -139,9 +130,7 @@ export default function FillsPage() {
       return;
     }
     try {
-      const response = await workbenchFetch(
-        `${FILLS_URL}?ticket_id=${encodeURIComponent(id)}`,
-      );
+      const response = await workbenchFetch(`${FILLS_URL}?ticket_id=${encodeURIComponent(id)}`);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const payload = (await response.json()) as FillsListResponse;
       setFills(payload.items);
@@ -163,12 +152,7 @@ export default function FillsPage() {
     const collected: FillRowIn[] = [];
     const errors: RowError[] = [];
     manualRows.forEach((row, index) => {
-      if (
-        !row.symbol &&
-        !row.shares &&
-        !row.fill_price &&
-        !row.filled_at
-      ) {
+      if (!row.symbol && !row.shares && !row.fill_price && !row.filled_at) {
         return; // blank row, skipped
       }
       const result = manualRowToFill(row, index, tValidation);
@@ -199,9 +183,7 @@ export default function FillsPage() {
         const detail = await response.json();
         if (detail?.detail?.errors) {
           setRowErrors(detail.detail.errors);
-          toast.error(
-            tToast("rowsRejectedByServer", { count: detail.detail.errors.length }),
-          );
+          toast.error(tToast("rowsRejectedByServer", { count: detail.detail.errors.length }));
         } else {
           throw new Error(`HTTP ${response.status}: ${JSON.stringify(detail)}`);
         }
@@ -268,9 +250,7 @@ export default function FillsPage() {
   };
 
   const updateManualRow = (index: number, patch: Partial<ManualRow>) => {
-    setManualRows((prev) =>
-      prev.map((row, i) => (i === index ? { ...row, ...patch } : row)),
-    );
+    setManualRows((prev) => prev.map((row, i) => (i === index ? { ...row, ...patch } : row)));
   };
   const addManualRow = () => setManualRows((prev) => [...prev, { ...EMPTY_MANUAL_ROW }]);
   const removeManualRow = (index: number) =>
@@ -398,8 +378,8 @@ export default function FillsPage() {
                       }
                       className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
                     >
-                      <option value="buy">buy</option>
-                      <option value="sell">sell</option>
+                      <option value="buy">{t("sideBuy")}</option>
+                      <option value="sell">{t("sideSell")}</option>
                     </select>
                   </TableCell>
                   <TableCell>
@@ -422,7 +402,7 @@ export default function FillsPage() {
                     <Input
                       data-testid={`fills-manual-filled-at-${index}`}
                       value={row.filled_at}
-                      placeholder="2026-05-30T13:31:42"
+                      placeholder={t("filledAtPlaceholder")}
                       onChange={(e) => updateManualRow(index, { filled_at: e.target.value })}
                     />
                   </TableCell>
