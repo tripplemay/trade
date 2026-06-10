@@ -5,6 +5,18 @@
 
 ---
 
+## v0.9.43 — 2026-06-11（B053：幂等占位区分 + 单测集成态 CI flake 处理规约）
+
+**来源批次：** B053 hardening-sweep（四轮审计产出加固批，signoff `docs/test-reports/B053-hardening-sweep-signoff-2026-06-10.md`，F004 Codex PASS）。
+
+**沉淀内容（用户批 ①②）：**
+- **① 幂等/缓存复用必须区分真实产物 vs 占位/降级值**（B043 rationale 幂等复用占位 + B053 advisor 幂等不看 status 二例，后者第四轮审计发现并 F002 修复）→ `generator.md §18`（幂等 skip 须断言「真实成功产物」非「记录存在」；降级产物不写或可重试；与 §17 同源=装饰性产物）。
+- **② 单测集成态 CI flake 处理规约**（risk-banner.spec F006 跨 B047-OPS2/B052 多批复现）→ `evaluator.md §27`（本地复跑 ≥5 次定性 → 确认与本批无关 → re-run 不阻塞、不为绿 CI 改无关码、§Soft-watch 记录；真 flake 三条件界线）。
+
+**未沉淀（留队列）：** ③演练自清规约（B052 提案+B053 F004 首次执行，工具已承载操作面）+ ④reconcile fail-fast 不静默（对齐既有诚实降级原则）+ ⑤date.today→UTC 去隐含假设（单例防御）；③async worker/④satellite 权重/sudoers wrapper 仍单例。
+
+---
+
 ## v0.9.42 — 2026-06-10（B051：两表读写分裂二例并入 §17 + harness-rules 部署规则对齐现实）
 
 **来源批次：** B051 account-source-unification（用户报「UI 设账户保存后 Recommendations 仍『尚未配置账户』」→ 根因=UI 写 `account_snapshot` 但 nav/recommendations 读空 `account` 表；统一后生产实证两场景 PASS + B046 S1 closed）。signoff `docs/test-reports/B051-account-source-unification-signoff-2026-06-10.md`。

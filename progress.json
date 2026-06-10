@@ -22,7 +22,7 @@
     "spec": "docs/specs/B053-hardening-sweep-spec.md",
     "test_cases": null,
     "signoff": "docs/test-reports/B053-hardening-sweep-signoff-2026-06-10.md",
-    "framework_reviewed": false
+    "framework_reviewed": true
   },
   "role_assignments": null,
   "evaluator_feedback": "2026-06-10 Codex F004 PASS（signoff docs/test-reports/B053-hardening-sweep-signoff-2026-06-10.md）。L1：backend 90 passed/15 skipped、frontend tsc/eslint clean。L2 真 VM 正面证据：★超卖拒绝——SELL SPY 20 on tkt-20260610-7c686b93 返 409『不支持卖空/做空』（非静默归零）；★负现金拒绝——大额买入 reconcile 返 409 含明确缺口；★worker/latest 稳定——账户重复保存 latest() tie-breaker 稳定；/risk 主组合回撤 0.00%/kill-switch 15%；journal 仅当前 ticket 0 fills；演练自清=测试 fills 验证后已删除。无遗留 blocker。【planner 注：Codex 留 evaluator_feedback 空 + 未提交未推送 + 未标 features F004 completed，planner 收尾时从 signoff 转录补全并推送，remediate 未推送测试产物违规。】",
