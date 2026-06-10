@@ -13,7 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 > 项目根历史曾有 `planner.md / generator.md / evaluator.md` 3 个 stale 副本，v0.9.28（B025 done 阶段）已删除。详见 `framework/STRUCTURE.md`。
 
-**分支规则：** 代码提交推 `main` 分支。部署由用户手动触发。
+**分支规则：** 代码提交推 `main` 分支。CI 全绿后自动链式部署（红 CI/红 safety eval 阻断）；手动 dispatch 仅为 chore-only commit 兜底。详见 `harness-rules.md` §分支规则。
 
 **记忆分层：** `.auto-memory/`（git-tracked）是跨 agent 共享记忆源。本机用户偏好存储在 `~/.claude/projects/.../memory/` 中，不入 git。
 

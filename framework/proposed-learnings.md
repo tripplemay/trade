@@ -128,12 +128,4 @@
 
 <!-- 2026-06-10: B043 done — 不沉淀（用户裁定，Codex 标「无新增 learnings」）。评估过两候选：(A)『grounded explanation 范式』（B036 advisor + B043 解释层二例：gateway+5 规则 prompt+sentinel+references_valid+cost_guard+off-请求路径生成+优雅降级）达二例门槛但用户选不沉淀；(B)『幂等/缓存复用必须区分真实产物 vs 占位/降级值』（B043 fix-round 1 幂等复用占位→部署后永卡占位）单例待二例。另：B043 risk explanation timer 未接=evaluator.md §24（v0.9.33 read-only timer L2 接线）又一例，规则已覆盖只是 build 时未遵循，无需新沉淀。记账避免未来重议。 -->
 
-## [2026-06-10] Claude CLI — 来源：B051 F001 推送后观察到 deploy 自动触发
-
-**类型：** 文档失真（harness-rules.md 与实际 workflow 行为不符）
-
-**内容：** `harness-rules.md` §分支规则表写「手动触发 Deploy workflow | 用户 | Codex 验收通过后…手动点击触发部署」，但 `.github/workflows/workbench-deploy.yml` 实际有两个触发器：①（默认）`workflow_run` 链式——Backend/Frontend CI 或 AI Safety Eval 在 main 绿后**自动部署**（B032 起，红 CI/红 safety eval 阻断）；② `workflow_dispatch` 手动（补 chore-only commit 的 Production≡HEAD gate）。实测 B051 F001 推送 e297548 → CI 绿 → 自动部署 success ×2，无人工动作。生产 HEAD 因此可能先于 Codex 验收前进——与「验收通过后才部署」的字面描述矛盾（实践中多批次已如此运作，如 B043 fix 部署）。
-
-**建议写入：** harness-rules.md §分支规则 改为「绿 CI 自动链式部署 + 手动 dispatch 兜底；部署 gate=CI+safety eval 而非人工点击」；或如果用户意图就是手动 gate，则需改 workflow 移除 trigger #1（二选一，用户裁定）。
-
-**状态：** 待确认（done 阶段一并提出）。
+<!-- 2026-06-10: v0.9.42 沉淀完成（B051 done 阶段，用户批 2 项）：①「harness-rules 分支规则与 deploy workflow 失真」候选闭环——用户裁定改文档对齐现实：harness-rules.md §分支规则改为「绿 CI+safety eval 自动链式部署（B032 起）+ 手动 dispatch 兜底」+CLAUDE.md 同步，注明生产 HEAD 先于验收前进是 L2 真机验收模式（推码→自动部署→真机验收）的前提；②「同一实体两张表读写分裂」（B051 UI 写 account_snapshot 但 nav/recommendations 读空 account 表）与 B050 装饰性控件二例合并→ generator.md §17.1（写入面与消费面同源核验；同实体多源=高危；表级反向自查）。CHANGELOG v0.9.42。 -->

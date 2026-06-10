@@ -5,6 +5,18 @@
 
 ---
 
+## v0.9.42 — 2026-06-10（B051：两表读写分裂二例并入 §17 + harness-rules 部署规则对齐现实）
+
+**来源批次：** B051 account-source-unification（用户报「UI 设账户保存后 Recommendations 仍『尚未配置账户』」→ 根因=UI 写 `account_snapshot` 但 nav/recommendations 读空 `account` 表；统一后生产实证两场景 PASS + B046 S1 closed）。signoff `docs/test-reports/B051-account-source-unification-signoff-2026-06-10.md`。
+
+**沉淀内容（用户批 2026-06-10）：**
+- **§17.1 同一实体两张表读写分裂**（B050 装饰性控件 + B051 两表分裂二例合并，同根=写入面与消费面无同源核验）→ `generator.md §17.1`（新增/改写入面时 grep 该实体所有读路径确认同源；同实体多源=高危信号，统一单一真相源或双写，不允许各读各的；「用户在 A 处写入，B 处显示会变吗」表级反向自查）。
+- **harness-rules.md §分支规则 对齐现实**（文档失真候选闭环，用户裁定改文档）：原写「不自动部署、Codex 验收后用户手动点击」与 `workbench-deploy.yml` 实际行为失真；改为「绿 CI+safety eval 自动链式部署（B032 起）+ 手动 dispatch 兜底（chore-only commit）」，并注明生产 HEAD 先于验收前进是 L2 真机验收模式的前提。CLAUDE.md 同步。
+
+**未沉淀（留队列等二例）：** ③async worker 范式 + ④satellite 权重口径 + B037-OPS1 sudoers wrapper + B047-OPS2 CI flake + B043 幂等占位（均单例/软关注）。
+
+---
+
 ## v0.9.41 — 2026-06-09（B050：装饰性控件反模式三例 + CI mypy trade 分层陷阱）
 
 **来源批次：** B050 backtest-per-strategy-dispatch（用户报「回测页选任何策略结果都一样」→ worker 写死 master 无视 strategy_id）+ 两次系统审查（`docs/product/b050-class-decorative-control-audit-2026-06.md` + `trade-recommendation-fidelity-audit-2026-06.md`）。signoff `docs/test-reports/B050-backtest-per-strategy-dispatch-signoff-2026-06-09.md`（L2 三策略互异 +8.48%/+1.57%/-6.98% + 防守 SGOV 109 股保真）。

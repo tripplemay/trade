@@ -34,6 +34,7 @@ type: project
 - B045 market data refresh (r) 只读 + §12.10.2 AST 守门 + data self-contained。
 
 ## Framework 状态
+- **v0.9.42**（B051）：generator.md §17.1 **同一实体两张表读写分裂**（B050+B051 二例合并：写入面与消费面须同源核验，同实体多源=高危信号）；**harness-rules.md §分支规则对齐现实**（绿 CI+safety eval 自动链式部署+手动 dispatch 兜底，生产 HEAD 先于验收=L2 真机验收模式前提）+CLAUDE.md 同步。队列：③async worker ④satellite 权重+sudoers wrapper+CI flake+B043 幂等占位 待二例。
 - **v0.9.41**（B050 三例 + CI 陷阱）：generator.md §17 **装饰性控件/plumbed-but-ignored 反模式**（输入必须追踪到执行层真正消费；要么接线要么删字段）+ evaluator.md §26 **验收核「换不同输入→输出真不同」**（核心反例式+数值保真，§25 对偶）；environment.md **改 trade/ 须本地 mypy trade 自检**（独立 Python CI 比 backend 严）。③async worker ④satellite 权重 + sudoers wrapper + CI flake 留队列等二例。
 - **v0.9.40**（B047/B047-OPS1 二例 + B048/BL-B023-S1/B047 四例）：generator.md §12.11.1 **入口级 env 守门**（env-硬失败守门是入口级不变量，每个新写生产 DB 的 CLI/job/service 入口都须重新套用，deploy.sh 守门不传递覆盖）；evaluator.md §25 **evaluator 纪律**（core acceptance 项须正面证据才可 done / 0-result 不判 non-blocking / 判代码缺陷前先排除验证操作自身 env-DB-path 错误）。③async worker ④satellite 权重口径 留队列等二例。
 - **v0.9.39**（B034/BL-B011-S2 二例）：generator.md §12.10.3 **wheel `packages=[...]` 只打源码树，运行时非包数据须 force-include**（或 materialise 进包目录）+ 守门 + L2 fresh deploy 验不 stub。

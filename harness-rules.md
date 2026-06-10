@@ -279,14 +279,17 @@ docs/
 
 | 操作 | 执行者 | 说明 |
 |---|---|---|
-| `git push origin main` | Claude CLI | 触发 CI（lint + tsc），不自动部署 |
-| 手动触发 Deploy workflow | 用户 | Codex 验收通过后，在 GitHub Actions 手动点击触发部署 |
+| `git push origin main` | Claude CLI | 触发 CI（lint + tsc + pytest 等）|
+| 自动链式部署 | GitHub Actions（`workflow_run`）| Backend/Frontend CI 或 AI Safety Eval 在 `main` **全绿后自动部署**（B032 起）；红 CI / 红 safety eval 阻断。部署 gate = CI + safety eval 双门禁，而非人工点击 |
+| 手动 dispatch Deploy workflow | 用户 | **兜底路径**：chore-only commit（paths-ignore 不触发 CI → 不触发链式）需要上生产、或补 Production≡HEAD gate 时手动触发（v0.9.27 §12.7）|
+
+> **2026-06-10 用户裁定（B051 done 阶段）：** 本节原写「不自动部署、Codex 验收通过后用户手动点击」，与 `.github/workflows/workbench-deploy.yml` 实际行为（绿 CI 自动链式）失真，按现实修正。注意运作含义：**生产 HEAD 可能先于 Codex 验收前进**——这正是 L2 真机验收模式的前提（generator 推码 → 自动部署 → Codex 在真 VM 上验收）。
 
 ```bash
 # Generator 的标准提交流程
 git add <files>
 git commit -m "..."
-git push origin main         # 触发 CI，不触发部署
+git push origin main         # 触发 CI；CI 全绿后自动链式部署
 ```
 
 **推送前遗漏检查（所有角色必须执行）：**
