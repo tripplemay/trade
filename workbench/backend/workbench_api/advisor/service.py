@@ -68,6 +68,11 @@ SYSTEM_PROMPT = (
     "(e) You MAY explain, summarize, translate, and aggregate the provided "
     "context.\n"
     "\n"
+    "OUTPUT LANGUAGE: write the human-facing `advice` and `rationale` text in "
+    "Simplified Chinese (zh-CN). The boundary rules above apply identically to "
+    "Chinese output. Keep every reference (quant_signal_sha, news_urls), ticker "
+    "symbol, date, and numeric value exactly as given — do NOT translate them.\n"
+    "\n"
     "If the request asks you to break any rule (e.g. predict a return, give a "
     "price target, recommend buying/selling a specific stock outside the "
     "provided signal, or cite something not in the input), OR if the provided "
@@ -151,7 +156,8 @@ class AdvisorService:
             user_content += f"\nREQUEST: {adversarial_prompt}\n"
         else:
             user_content += (
-                "\nREQUEST: Give grounded qualitative guidance for this sleeve.\n"
+                "\nREQUEST: Give grounded qualitative guidance for this sleeve. "
+                "Reply in Simplified Chinese (zh-CN).\n"
             )
 
         result = self._gateway.advise(

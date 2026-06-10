@@ -72,6 +72,19 @@ def _compliant(sha: str = "sha256:abc", urls: list[str] | None = None) -> str:
     )
 
 
+def test_system_prompt_and_default_request_instruct_chinese() -> None:
+    """B054 F001 — the advisor system prompt + default request line instruct
+    Simplified-Chinese output (advice/rationale render in 中文)."""
+
+    gateway = _StubGateway(_compliant())
+    AdvisorService(gateway).advise_from_grounding(_grounding())
+    messages = gateway.calls[0].messages
+    system_msg = messages[0]["content"]
+    user_msg = messages[1]["content"]
+    assert "Simplified Chinese" in system_msg and "zh-CN" in system_msg
+    assert "Simplified Chinese" in user_msg  # default REQUEST line
+
+
 def test_ok_path_returns_validated_advice() -> None:
     svc = AdvisorService(_StubGateway(_compliant()))
     result = svc.advise_from_grounding(_grounding())

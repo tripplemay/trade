@@ -25,17 +25,14 @@ RATIONALE_TASK = "recommendation_rationale"
 _REQUEST_LINE = (
     "In 1-2 sentences, explain why this position carries this target weight, "
     "grounded in its sleeve, the sleeve's planning weight, and the signal date. "
-    "Do not predict future returns."
+    "Do not predict future returns. Reply in Simplified Chinese (zh-CN)."
 )
 
 
 def deterministic_rationale(sleeve: str, data_source: Any) -> str:
-    """The honest pre-B043 placeholder — used as the degrade fallback."""
+    """The honest degrade fallback placeholder (B054: Simplified Chinese)."""
 
-    return (
-        f"{sleeve} sleeve target from the Master Portfolio composition "
-        f"(data_source={data_source})."
-    )
+    return f"来自 Master 组合配置的 {sleeve} sleeve 目标（数据来源={data_source}）。"
 
 
 def _build_grounding(

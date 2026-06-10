@@ -34,7 +34,8 @@ RISK_TASK = "risk_explanation"
 _REQUEST_LINE = (
     "In 1-2 sentences, explain the current risk state and which sleeves "
     "contribute most to the master drawdown, grounded in the real drawdown "
-    "values shown. Do not predict recovery and do not give buy/sell instructions."
+    "values shown. Do not predict recovery and do not give buy/sell instructions. "
+    "Reply in Simplified Chinese (zh-CN)."
 )
 
 

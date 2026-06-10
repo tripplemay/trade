@@ -25,7 +25,7 @@ _REQUEST_LINE = (
     "In 1-2 sentences, explain why this backtest produced these results (the "
     "return, Sharpe and drawdown) for this strategy over this period, grounded in "
     "the real metrics and trade count shown. Do not predict future returns and do "
-    "not suggest parameter changes."
+    "not suggest parameter changes. Reply in Simplified Chinese (zh-CN)."
 )
 
 

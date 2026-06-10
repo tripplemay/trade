@@ -140,6 +140,68 @@ def test_explain_empty_explanation_downgrades() -> None:
     assert _explain('{"explanation": "", "references": ["AAPL"]}').status != STATUS_OK
 
 
+# --- B054 F001: Simplified-Chinese output ---------------------------------------
+
+_OK_JSON_ZH = (
+    '{"explanation": "AAPL 属于 satellite_us_quality sleeve，依据其 2026-03-31 的'
+    '季度末信号确定目标权重。", "references": ["satellite_us_quality", "2026-03-31"]}'
+)
+
+
+def test_system_prompt_instructs_simplified_chinese_output() -> None:
+    """B054 F001 — the shared system prompt instructs Simplified-Chinese output so
+    the user-facing explanation renders in 中文 (references/symbols stay verbatim)."""
+
+    gateway = _StubGateway(_OK_JSON_ZH)
+    ExplanationService(gateway).explain(
+        task="recommendation_rationale", grounding_text=_GROUNDING, request_line="why"
+    )
+    system_msg = gateway.calls[0].messages[0]["content"]
+    assert "Simplified Chinese" in system_msg
+    assert "zh-CN" in system_msg
+
+
+def test_explain_chinese_output_still_passes_guardrails() -> None:
+    """A Chinese explanation citing verbatim input tokens stays grounded → OK; the
+    Chinese directive does not break references_grounded / the no-AI chain."""
+
+    result = _explain(_OK_JSON_ZH)
+    assert result.status == STATUS_OK
+    assert result.explanation is not None
+    assert "属于" in result.explanation  # prose is Chinese
+    assert "satellite_us_quality" in result.explanation  # token kept verbatim
+
+
+def test_chinese_output_fabricated_citation_still_downgrades() -> None:
+    """The Chinese directive must NOT weaken the guardrail: a Chinese explanation
+    with an out-of-set citation still downgrades (no-AI chain intact)."""
+
+    fabricated = (
+        '{"explanation": "预计明年上涨 18%。", "references": ["明年上涨 18%"]}'
+    )
+    assert _explain(fabricated).status != STATUS_OK
+
+
+def test_request_lines_request_simplified_chinese() -> None:
+    """Every explanation request line asks for Simplified-Chinese output."""
+
+    from workbench_api.backtests.explanation import _REQUEST_LINE as BACKTEST_RL
+    from workbench_api.recommendations.rationale import _REQUEST_LINE as RATIONALE_RL
+    from workbench_api.services.risk_explanation import _REQUEST_LINE as RISK_RL
+
+    for request_line in (RATIONALE_RL, BACKTEST_RL, RISK_RL):
+        assert "Simplified Chinese" in request_line
+
+
+def test_deterministic_rationale_placeholder_is_chinese() -> None:
+    """B054 F001 — the degrade placeholder is Simplified Chinese (not English),
+    keeping the sleeve name verbatim."""
+
+    text = deterministic_rationale("momentum", DATA_SOURCE_REAL)
+    assert "目标" in text and "数据来源" in text
+    assert "momentum" in text  # sleeve name is language-neutral, stays verbatim
+
+
 # --- recommendation rationale (degrade) ----------------------------------------
 
 
