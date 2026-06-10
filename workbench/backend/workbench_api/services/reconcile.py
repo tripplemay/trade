@@ -313,7 +313,14 @@ def reconcile_ticket(
         stmt = (
             select(AccountSnapshot)
             .where(AccountSnapshot.source == "fill_reconcile")
-            .order_by(AccountSnapshot.snapshot_at.desc())
+            # B053 F002 — deterministic tie-breaker (created_at, then unique id)
+            # so the idempotent re-run resolves to the same snapshot every time
+            # even when two fill_reconcile rows share ``snapshot_at``.
+            .order_by(
+                AccountSnapshot.snapshot_at.desc(),
+                AccountSnapshot.created_at.desc(),
+                AccountSnapshot.id.desc(),
+            )
             .limit(1)
         )
         existing = session.execute(stmt).scalar_one_or_none()

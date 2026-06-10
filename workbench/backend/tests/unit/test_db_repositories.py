@@ -332,6 +332,42 @@ def test_account_snapshot_repository_round_trip(initialised_db: str) -> None:
         next(gen)
 
 
+def test_account_snapshot_latest_tie_breaker_is_deterministic(
+    initialised_db: str,
+) -> None:
+    """B053 F002 — two snapshots saved in the same instant (same snapshot_at,
+    e.g. a double-click on the account form) must resolve to a STABLE latest().
+    Here snapshot_at AND created_at are identical, so only the unique ``id``
+    can break the tie — ordering must not flip between queries or depend on
+    insertion order."""
+
+    gen = get_session()
+    session = next(gen)
+    repo = AccountSnapshotRepository(session)
+
+    same = datetime(2026, 6, 1, 9, 0, 0)
+    a = AccountSnapshot(
+        id="S-tie-a", snapshot_at=same, cash=Decimal("50000"),
+        base_currency="USD", positions=[], source="ui_edit", created_at=same,
+    )
+    b = AccountSnapshot(
+        id="S-tie-b", snapshot_at=same, cash=Decimal("60000"),
+        base_currency="USD", positions=[], source="ui_edit", created_at=same,
+    )
+    # Insert in "wrong" order to prove ordering is not insertion-dependent.
+    repo.upsert(b)
+    repo.upsert(a)
+
+    first = repo.latest()
+    second = repo.latest()
+    assert first is not None and second is not None
+    assert first.id == "S-tie-b"  # id desc breaks the full tie deterministically
+    assert first.id == second.id  # stable across repeated queries
+
+    with contextlib.suppress(StopIteration):
+        next(gen)
+
+
 def test_alembic_upgrade_creates_tables(tmp_db_url: str) -> None:
     """End-to-end: drive Alembic itself against a fresh DB and confirm
     every workbench table exists via raw SQL. B023 F001 extends the

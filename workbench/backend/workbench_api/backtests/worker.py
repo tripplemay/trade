@@ -38,7 +38,7 @@ from workbench_api.backtests.adapters import (
     adapt_risk_parity,
     adapt_us_quality,
 )
-from workbench_api.backtests.error_kinds import classify_error_kind
+from workbench_api.backtests.error_kinds import INTERRUPTED, classify_error_kind
 from workbench_api.backtests.explanation import generate_backtest_explanation
 from workbench_api.backtests.mapping import (
     map_allocations,
@@ -547,6 +547,28 @@ def main(*, poll_seconds: float = POLL_SECONDS, max_iterations: int | None = Non
         print(str(exc), file=sys.stderr)
         return 1
     factory = sessionmaker(bind=get_engine(), autoflush=False, future=True)
+    # B053 F002 — reclaim orphaned `running` rows before the loop. A
+    # single-instance daemon has no run legitimately in progress at startup, so
+    # any `running` row is an orphan left by the previous process dying
+    # mid-backtest (crash / deploy restart). Mark them error+interrupted (honest
+    # "please re-run") so they stop spinning forever. Recovery failure must
+    # never block the daemon from starting.
+    recovery_session = factory()
+    try:
+        reclaimed = BacktestRunRepository(recovery_session).recover_orphaned_running(
+            error="worker restarted while this run was in progress; please re-run",
+            error_kind=INTERRUPTED,
+        )
+        recovery_session.commit()
+        if reclaimed:
+            logger.warning(
+                "backtest_worker_recovered_orphans", extra={"count": reclaimed}
+            )
+    except Exception:  # noqa: BLE001 — never let recovery block daemon startup
+        logger.exception("backtest_worker_orphan_recovery_failed")
+        recovery_session.rollback()
+    finally:
+        recovery_session.close()
     # B043 F002: build the LLM explainer once (None on a host without the gateway
     # key → backtests run with explanation=None, no LLM call).
     explainer = build_default_explainer()

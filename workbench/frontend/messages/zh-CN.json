@@ -177,7 +177,8 @@
       "no_signal_dates": "所选范围内没有季度末调仓信号日，请扩大范围。",
       "data_unavailable": "回测数据尚未就绪，请先运行数据刷新。",
       "unknown": "该范围无法完成回测，请尝试其他范围。",
-      "inactive_strategy": "研究态策略暂不支持独立回测，请选择已激活的策略。"
+      "inactive_strategy": "研究态策略暂不支持独立回测，请选择已激活的策略。",
+      "interrupted": "该回测被中断（worker 在运行时重启），请重新运行。"
     },
     "metrics": {
       "title": "核心指标",

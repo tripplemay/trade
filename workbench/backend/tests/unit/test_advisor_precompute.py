@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from workbench_api.advisor.precompute import advisor_sleeves, run_daily
 from workbench_api.db.engine import get_engine
 from workbench_api.db.models.advisor_recommendation import (
+    STATUS_INSUFFICIENT_GROUNDING,
     STATUS_OK,
     AdvisorRecommendation,
 )
@@ -93,6 +94,35 @@ def test_run_daily_is_idempotent_same_day(ctx: SimpleNamespace) -> None:
     assert second.saved == 0
     assert second.skipped == len(advisor_sleeves())
     assert advisor2.calls == []  # nothing re-generated → no gateway spend
+
+
+def test_run_daily_retries_degraded_same_day(ctx: SimpleNamespace) -> None:
+    """B053 F002 — a same-day refusal (status=insufficient_grounding) row does
+    NOT count as 'already generated'. A second run regenerates it, so one
+    transient gateway failure cannot pin a sleeve to the refusal all day."""
+
+    today = datetime.now(UTC).date()
+    sleeve = advisor_sleeves()[0]
+    AdvisorRecommendationRepository(ctx.session).save(
+        AdvisorRecommendation(
+            id=uuid4(),
+            sleeve=sleeve,
+            advice_json={},
+            quant_signal_sha="sha256:x",
+            references_json=[],
+            model="claude-haiku-4.5",
+            status=STATUS_INSUFFICIENT_GROUNDING,
+            generated_at=datetime.now(UTC),
+        )
+    )
+    ctx.session.commit()
+
+    advisor = _FakeAdvisor()
+    summary = run_daily(ctx.session, advisor, today=today)  # type: ignore[arg-type]
+    # The degraded sleeve is re-advised (not skipped); every sleeve is saved.
+    assert sleeve in advisor.calls
+    assert summary.saved == len(advisor_sleeves())
+    assert summary.skipped == 0
 
 
 def test_run_daily_counts_errors_and_continues(ctx: SimpleNamespace) -> None:

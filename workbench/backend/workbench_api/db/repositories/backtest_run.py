@@ -149,5 +149,41 @@ class BacktestRunRepository(Repository[BacktestRun, str]):
         self._session.flush()
         return row
 
+    def recover_orphaned_running(
+        self,
+        *,
+        error: str,
+        error_kind: str,
+        finished_at: datetime | None = None,
+    ) -> int:
+        """Reclaim every ``running`` row as ``error`` (B053 F002).
+
+        Called at worker startup. The worker is a single-instance systemd
+        daemon, so when ``main()`` starts no run can legitimately be in
+        progress — any ``running`` row is an orphan left by the previous
+        process dying mid-backtest (a crash or, most often, a deploy
+        ``systemctl restart`` landing on an in-flight run). Without this they
+        stay ``running`` forever and the frontend polls until it times out
+        with no explanation. Marking them ``error`` + a structured
+        ``error_kind`` (the worker passes ``interrupted``) is the honest
+        signal: the user sees "interrupted, please re-run". Returns the number
+        of rows reclaimed (a one-shot bulk UPDATE)."""
+
+        result = cast(
+            "CursorResult[Any]",
+            self._session.execute(
+                update(BacktestRun)
+                .where(BacktestRun.status == STATUS_RUNNING)
+                .values(
+                    status=STATUS_ERROR,
+                    error=error,
+                    error_kind=error_kind,
+                    finished_at=finished_at or _now(),
+                )
+            ),
+        )
+        self._session.flush()
+        return result.rowcount or 0
+
     def get_by_run_id(self, run_id: str) -> BacktestRun | None:
         return self._session.get(BacktestRun, run_id)

@@ -22,7 +22,11 @@ from workbench_api.backtests.mapping import (
     map_trades,
 )
 from workbench_api.db.engine import get_engine
-from workbench_api.db.models.backtest_run import STATUS_DONE, STATUS_ERROR
+from workbench_api.db.models.backtest_run import (
+    STATUS_DONE,
+    STATUS_ERROR,
+    STATUS_RUNNING,
+)
 from workbench_api.db.repositories.backtest_run import BacktestRunRepository
 
 _MAPPED = {
@@ -170,3 +174,27 @@ def test_main_runs_bounded_iterations(initialised_db: str) -> None:
     # Empty queue → each iteration sleeps poll_seconds; 0.0 keeps the bounded
     # loop instant without patching time.sleep.
     assert worker_mod.main(poll_seconds=0.0, max_iterations=2) == 0
+
+
+def test_main_recovers_orphaned_running_at_startup(initialised_db: str) -> None:
+    """B053 F002 — a ``running`` row left by a prior crash / deploy restart is
+    reclaimed to error+interrupted when the worker boots (before the poll
+    loop), so it stops spinning forever and the frontend shows a reason."""
+
+    with Session(get_engine()) as setup:
+        repo = BacktestRunRepository(setup)
+        run = repo.enqueue(strategy_id="momentum", params={})
+        orphan = repo.get_by_run_id(run.run_id)
+        assert orphan is not None
+        orphan.status = STATUS_RUNNING  # simulate a claim that never finished
+        setup.commit()
+        run_id = run.run_id
+
+    assert worker_mod.main(poll_seconds=0.0, max_iterations=1) == 0
+
+    with Session(get_engine()) as session:
+        row = BacktestRunRepository(session).get_by_run_id(run_id)
+        assert row is not None
+        assert row.status == STATUS_ERROR
+        assert row.error_kind == "interrupted"
+        assert row.finished_at is not None

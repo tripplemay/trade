@@ -90,7 +90,15 @@ def reconstruct_nav_history(
     ``account_snapshot`` history (oldest first)."""
 
     repo = repo or PriceHistoryRepository(session)
-    stmt = select(AccountSnapshot).order_by(AccountSnapshot.snapshot_at)
+    # B053 F002 — deterministic tie-breaker (created_at, then unique id) so the
+    # series order is stable when two snapshots share ``snapshot_at`` (the
+    # peak-to-latest drawdown the risk panel reads must not depend on arbitrary
+    # row order). Mirrors ``AccountSnapshotRepository.latest()``.
+    stmt = select(AccountSnapshot).order_by(
+        AccountSnapshot.snapshot_at,
+        AccountSnapshot.created_at,
+        AccountSnapshot.id,
+    )
     snapshots = list(session.execute(stmt).scalars().all())
 
     master_series: list[float] = []

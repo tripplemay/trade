@@ -177,7 +177,8 @@
       "no_signal_dates": "No quarter-end signal dates fall in the selected range. Widen the range.",
       "data_unavailable": "Backtest data isn't ready yet — run a data refresh first.",
       "unknown": "The backtest couldn't run for the selected range. Try a different range.",
-      "inactive_strategy": "Research-state strategies don't support a standalone backtest yet. Pick an active strategy."
+      "inactive_strategy": "Research-state strategies don't support a standalone backtest yet. Pick an active strategy.",
+      "interrupted": "This backtest was interrupted (the worker restarted while it was running). Please run it again."
     },
     "metrics": {
       "title": "Headline metrics",

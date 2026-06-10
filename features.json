@@ -18,7 +18,7 @@
       "title": "状态与并发加固——worker 孤儿回收 + 前端轮询超时 + snapshot_at tie-breaker + advisor/risk_explanation 幂等降级区分 + 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【🟠 中 ×2 + 🟡，第四轮审计 #2#3 + BL-AUDIT-S1，见 spec §3】(1) **worker 孤儿回收**：backtests worker main() 启动时回收 stale running 行（置 error+error_kind=interrupted，前端 i18n 友好『回测被中断请重新运行』；或重置 queued 重跑——generator 二选一注明，倾向 error+interrupted 诚实告知）；stale 判定用现有时间列或按需加 claim 时间戳。每次 deploy restart worker 都是触发窗口（部署恰逢回测进行中→孤儿）。(2) **前端轮询超时**：backtest-poll 加最大轮询时长（如 10 分钟）→超时友好提示非永久转圈（i18n 双语）。(3) **snapshot_at tie-breaker**：repositories/account_snapshot.py latest()/排序补 created_at（或 id）次级排序（双击保存同秒两行 latest() 不稳定）；nav_history 重建排序同步核查。(4) **advisor 幂等**：advisor/precompute.py:66 skip 条件加 and latest.status==STATUS_OK（拒答行不算已生成，重跑重试）+回归测试（种 INSUFFICIENT_GROUNDING 行→同日重跑应重新生成）；risk_explanation.py:84 幂等条件显式化（is not None+区分降级）。(5) **测试**：孤儿 running 启动回收+轮询超时（vitest）+同秒两行 latest() 确定性+advisor 降级重试。(6) Gates：backend pytest ≥ baseline+ / frontend vitest/tsc/lint / ruff/mypy 0 / §12.10.2 不破。",
       "design_decisions": [
         "孤儿回收倾向 error_kind=interrupted（诚实告知被中断）而非静默重跑（重跑可能重复消耗且用户不知情）。",

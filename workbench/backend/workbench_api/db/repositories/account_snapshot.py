@@ -21,5 +21,18 @@ class AccountSnapshotRepository(Repository[AccountSnapshot, str]):
     primary_key_attr = "id"
 
     def latest(self) -> AccountSnapshot | None:
-        stmt = select(AccountSnapshot).order_by(AccountSnapshot.snapshot_at.desc()).limit(1)
+        # B053 F002 — deterministic tie-breaker. Two snapshots saved in the same
+        # instant (e.g. a double-click on the account form) share ``snapshot_at``;
+        # ordering by it alone makes ``latest()`` pick an arbitrary row that can
+        # flip between queries. ``created_at`` then the unique ``id`` break the
+        # tie so the newest write wins consistently (both columns are non-null).
+        stmt = (
+            select(AccountSnapshot)
+            .order_by(
+                AccountSnapshot.snapshot_at.desc(),
+                AccountSnapshot.created_at.desc(),
+                AccountSnapshot.id.desc(),
+            )
+            .limit(1)
+        )
         return self._session.execute(stmt).scalar_one_or_none()

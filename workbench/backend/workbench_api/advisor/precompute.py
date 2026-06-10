@@ -26,6 +26,7 @@ from datetime import UTC, date, datetime
 from sqlalchemy.orm import Session
 
 from workbench_api.advisor.service import AdvisorService
+from workbench_api.db.models.advisor_recommendation import STATUS_OK
 from workbench_api.db.repositories.advisor_recommendation import (
     AdvisorRecommendationRepository,
 )
@@ -63,7 +64,17 @@ def run_daily(
     errors = 0
     for sleeve in advisor_sleeves():
         latest = repo.latest_by_sleeve(sleeve)
-        if latest is not None and latest.generated_at.date() == run_date:
+        # B053 F002 — only a real (``status == ok``) result counts as "already
+        # generated today". A refusal / insufficient-grounding row must NOT
+        # block a same-day retry: otherwise one degraded run pins the sleeve to
+        # the refusal for the rest of the day even after the gateway recovers.
+        # (B043 rationale idempotency, same pattern — reuse must distinguish a
+        # real product from a degraded placeholder.)
+        if (
+            latest is not None
+            and latest.generated_at.date() == run_date
+            and latest.status == STATUS_OK
+        ):
             skipped += 1
             continue
         try:

@@ -6,6 +6,8 @@ import { describe, expect, it, vi } from "vitest";
 import {
   BacktestRunError,
   BacktestTimeoutError,
+  DEFAULT_MAX_ATTEMPTS,
+  DEFAULT_POLL_INTERVAL_MS,
   enqueueBacktest,
   pollBacktest,
   runBacktest,
@@ -135,6 +137,27 @@ describe("pollBacktest", () => {
     await expect(
       pollBacktest("bt-1", { fetchImpl, sleep: noSleep, maxAttempts: 3 }),
     ).rejects.toBeInstanceOf(BacktestTimeoutError);
+  });
+
+  it("surfaces an interrupted run as a structured BacktestRunError (B053 F002)", async () => {
+    const fetchImpl = sequenceFetch([
+      status("error", "worker restarted while this run was in progress", "interrupted"),
+    ]);
+    await expect(pollBacktest("bt-1", { fetchImpl, sleep: noSleep })).rejects.toMatchObject({
+      name: "BacktestRunError",
+      errorKind: "interrupted",
+    });
+  });
+});
+
+describe("default poll budget (B053 F002)", () => {
+  it("defaults tolerate a long-running real backtest (~10 minutes)", () => {
+    // The old ~60s cap declared a still-running backtest 'timed out'. The
+    // budget must now be ≥ ~9 minutes so a slow Master run finishes before
+    // the friendly-timeout fallback fires, while still being bounded.
+    const budgetMs = DEFAULT_MAX_ATTEMPTS * DEFAULT_POLL_INTERVAL_MS;
+    expect(budgetMs).toBeGreaterThanOrEqual(9 * 60 * 1000);
+    expect(Number.isFinite(DEFAULT_MAX_ATTEMPTS)).toBe(true); // still bounded
   });
 });
 

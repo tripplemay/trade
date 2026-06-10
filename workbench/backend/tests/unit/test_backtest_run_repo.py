@@ -113,6 +113,70 @@ def test_save_error_marks_error(initialised_db: str) -> None:
         assert errored.finished_at is not None
 
 
+def _set_status(repo: BacktestRunRepository, run_id: str, status: str) -> None:
+    row = repo.get_by_run_id(run_id)
+    assert row is not None
+    row.status = status
+
+
+def test_recover_orphaned_running_reclaims_all_running(initialised_db: str) -> None:
+    """B053 F002 — at worker startup every ``running`` row is an orphan (a
+    single-instance daemon has none legitimately in flight); recovery flips
+    them to ``error`` + the supplied error_kind and stamps finished_at, while
+    leaving queued / done rows untouched. Returns the reclaimed count."""
+
+    with Session(get_engine()) as session:
+        repo = BacktestRunRepository(session)
+
+        # Capture run_ids as plain strings so they survive after the session
+        # closes (ORM objects would detach).
+        def _enqueue(strategy_id: str) -> str:
+            return repo.enqueue(
+                strategy_id=strategy_id, params=_params(), created_at=_T0
+            ).run_id
+
+        running1_id = _enqueue("momentum")
+        running2_id = _enqueue("risk_parity")
+        queued_id = _enqueue("master_portfolio")
+        done_id = _enqueue("momentum")
+        # Construct the exact pre-state directly (no reliance on claim order).
+        _set_status(repo, running1_id, STATUS_RUNNING)
+        _set_status(repo, running2_id, STATUS_RUNNING)
+        _set_status(repo, done_id, STATUS_DONE)
+        session.commit()
+
+    with Session(get_engine()) as session:
+        repo = BacktestRunRepository(session)
+        reclaimed = repo.recover_orphaned_running(
+            error="worker restarted while this run was in progress; please re-run",
+            error_kind="interrupted",
+            finished_at=datetime(2026, 6, 8, 11, 0, 0, tzinfo=UTC),
+        )
+        session.commit()
+        assert reclaimed == 2  # only the two running rows
+        for rid in (running1_id, running2_id):
+            row = repo.get_by_run_id(rid)
+            assert row is not None
+            assert row.status == STATUS_ERROR
+            assert row.error_kind == "interrupted"
+            assert "please re-run" in (row.error or "")
+            assert row.finished_at is not None
+        assert repo.get_by_run_id(queued_id).status == STATUS_QUEUED  # type: ignore[union-attr]
+        assert repo.get_by_run_id(done_id).status == STATUS_DONE  # type: ignore[union-attr]
+
+
+def test_recover_orphaned_running_no_running_returns_zero(initialised_db: str) -> None:
+    """No ``running`` rows → a clean startup reclaims nothing."""
+
+    with Session(get_engine()) as session:
+        repo = BacktestRunRepository(session)
+        repo.enqueue(strategy_id="momentum", params=_params(), created_at=_T0)
+        session.commit()
+        assert (
+            repo.recover_orphaned_running(error="x", error_kind="interrupted") == 0
+        )
+
+
 def test_save_on_unknown_run_id_returns_none(initialised_db: str) -> None:
     with Session(get_engine()) as session:
         repo = BacktestRunRepository(session)

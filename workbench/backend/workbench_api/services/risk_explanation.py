@@ -81,7 +81,16 @@ def run_risk_explanation_precompute(
     today = as_of or date.today()
     repo = RiskExplanationSnapshotRepository(session)
     existing = repo.latest()
-    if existing is not None and existing.as_of_date == today and existing.explanation:
+    # B053 F002 — reuse only a *real* explanation for today. A degraded row
+    # (``explanation is None`` — LLM down / over budget / refused) must be
+    # retried, not reused. Made explicit (``is not None``) so the
+    # real-vs-degraded distinction is unmistakable, matching the advisor
+    # ``status == ok`` idempotency guard.
+    if (
+        existing is not None
+        and existing.as_of_date == today
+        and existing.explanation is not None
+    ):
         return RiskExplanationSummary(
             as_of_date=today, state=existing.state, explained=True, reused=True
         )

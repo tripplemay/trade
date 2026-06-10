@@ -47,6 +47,7 @@ const ERROR_KINDS = [
   "no_signal_dates",
   "data_unavailable",
   "inactive_strategy",
+  "interrupted",
   "unknown",
 ] as const;
 type ErrorKind = (typeof ERROR_KINDS)[number];

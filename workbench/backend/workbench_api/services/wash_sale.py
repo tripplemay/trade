@@ -48,7 +48,11 @@ class _CostSnapshot:
 def _cost_snapshots(session: Session) -> list[_CostSnapshot]:
     """Per-snapshot avg_cost maps, oldest first (for at-or-before lookup)."""
 
-    stmt = select(AccountSnapshot).order_by(AccountSnapshot.snapshot_at)
+    # B053 F002 — stable tie-breaker so same-instant snapshots order
+    # deterministically for the at-or-before cost lookup.
+    stmt = select(AccountSnapshot).order_by(
+        AccountSnapshot.snapshot_at, AccountSnapshot.created_at, AccountSnapshot.id
+    )
     out: list[_CostSnapshot] = []
     for snap in session.execute(stmt).scalars().all():
         costs: dict[str, float] = {}

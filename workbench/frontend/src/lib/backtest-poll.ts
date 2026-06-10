@@ -16,7 +16,12 @@ export type BacktestRunRequest = components["schemas"]["BacktestRunRequest"];
 const RUN_URL = "/api/backtests/run";
 
 export const DEFAULT_POLL_INTERVAL_MS = 1500;
-export const DEFAULT_MAX_ATTEMPTS = 40; // ~60s before the timeout fallback
+// B053 F002 — ~10 minutes (400 × 1.5s) before the timeout fallback. A real
+// Master backtest over years of daily data can run well past a minute; the old
+// ~60s cap declared a still-running backtest "timed out" while the worker was
+// fine. The bound still prevents an infinite spin if the worker is offline —
+// at the cap the page shows the friendly bilingual `backtest.timeout` message.
+export const DEFAULT_MAX_ATTEMPTS = 400;
 
 export class BacktestTimeoutError extends Error {
   constructor(message = "backtest timed out") {

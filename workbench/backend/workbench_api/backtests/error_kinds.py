@@ -18,10 +18,25 @@ INSUFFICIENT_HISTORY = "insufficient_history"
 NO_SIGNAL_DATES = "no_signal_dates"
 DATA_UNAVAILABLE = "data_unavailable"
 INACTIVE_STRATEGY = "inactive_strategy"
+# B053 F002 — a run left in ``running`` when the worker died mid-backtest (a
+# crash or, most commonly, a deploy ``systemctl restart`` landing on an
+# in-flight run). The worker reclaims these at startup and marks them with this
+# kind so the frontend shows an honest "interrupted, please re-run" instead of
+# the run spinning in ``running`` forever. Not produced by ``classify_error_kind``
+# (it is set directly by the recovery path), but listed here so this set stays
+# the single source the frontend i18n bundle mirrors.
+INTERRUPTED = "interrupted"
 UNKNOWN = "unknown"
 
 ERROR_KINDS = frozenset(
-    {INSUFFICIENT_HISTORY, NO_SIGNAL_DATES, DATA_UNAVAILABLE, INACTIVE_STRATEGY, UNKNOWN}
+    {
+        INSUFFICIENT_HISTORY,
+        NO_SIGNAL_DATES,
+        DATA_UNAVAILABLE,
+        INACTIVE_STRATEGY,
+        INTERRUPTED,
+        UNKNOWN,
+    }
 )
 
 # Substrings the worker uses in its BacktestWorkerError messages, mapped to the
