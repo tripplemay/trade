@@ -123,6 +123,8 @@
 
 **状态：** 待确认（软关注，非阻塞；B047-OPS2 done 阶段一并提出）。
 
+**第二例（2026-06-10，B052 F001）：** commit `0173ec4`（仅改 backend 测试文件）再次触发同一 spec 同一断言失败（`expected { defensive: false } to deeply equal { defensive: true }`），与改动无关性确凿；gh run rerun 后绿。二例已凑齐，建议 done 阶段沉淀：该 spec 加 waitFor 稳态断言或 quarantine。
+
 <!-- 2026-06-09: v0.9.41 沉淀完成（B050 done 阶段，用户批 A+B）：A 装饰性控件/plumbed-but-ignored 反模式（三例：strategy_id 落库被 worker 忽略 / backtest parameters / backlog status）→ generator.md §17 + evaluator.md §26；B CI mypy trade 分层陷阱（B050 F002/F003）→ environment.md。CHANGELOG v0.9.41。未沉淀留队列：③async worker ④satellite 权重口径 + B037-OPS1 sudoers wrapper + B047-OPS2 CI flake（均单例/软关注待二例）；B050 _execute_period 复用模式复用窗口窄不沉淀。 -->
 <!-- 当前活动候选（v0.9.41 后）：③async worker 范式 + ④satellite 权重口径 + B037-OPS1 sudoers wrapper + B047-OPS2 CI flake，均单例/软关注待二例。 -->
 
