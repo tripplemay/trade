@@ -76,10 +76,10 @@ for (const locale of ["zh-CN", "en"] as const) {
       for (const [key, fragment] of Object.entries(expectations[locale])) {
         await expect(page.getByTestId(`us-quality-factor-${key}`)).toContainText(fragment);
       }
-      // Synthetic-data disclaimer must appear in both locales (literal
-      // English fragment is intentional, matches the messages bundle).
+      // B054 — the synthetic-data disclaimer is now localized (zh-CN was a
+      // residual English string translated in F003); assert per locale.
       const disclaimer = page.getByTestId("us-quality-data-source");
-      await expect(disclaimer).toContainText(/synthetic/i);
+      await expect(disclaimer).toContainText(locale === "zh-CN" ? "合成数据" : /synthetic/i);
     });
 
     test(`recommendations page renders target positions + risk banner (${locale})`, async ({
