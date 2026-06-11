@@ -139,6 +139,26 @@ class NewsRepository(Repository[News, UUID]):
         stmt = stmt.order_by(News.published_at.desc()).limit(limit)
         return list(self._session.execute(stmt).scalars().all())
 
+    def list_untranslated(self, *, limit: int = 500) -> list[News]:
+        """B054 F-news — rows whose ``title_zh`` is still NULL, newest-first.
+
+        Backs the ``news_translation`` batch job (off the request path): it
+        fetches the headlines that have not yet been translated to Simplified
+        Chinese, translates them via the LLM gateway, and writes ``title_zh``.
+        Idempotent by construction — a row already carrying a ``title_zh`` is
+        skipped on the next run, so re-running the job only spends budget on
+        genuinely-new headlines (B043 idempotency lesson: a real translated
+        value, never a placeholder, gates the skip).
+        """
+
+        stmt = (
+            select(News)
+            .where(News.title_zh.is_(None))
+            .order_by(News.published_at.desc())
+            .limit(limit)
+        )
+        return list(self._session.execute(stmt).scalars().all())
+
     def list_all_rows(self) -> Sequence[News]:
         """Type-friendly alias around :meth:`list_all` for code that wants
         a ``Sequence[News]`` annotation rather than ``list[News]``.

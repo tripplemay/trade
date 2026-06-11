@@ -51,6 +51,10 @@ def test_news_table_column_set_is_metadata_only() -> None:
         "source_id",
         "url",
         "title",
+        # B054 F-news — Simplified-Chinese headline (LLM translate of `title`,
+        # no-AI boundary rule (e)). A localized headline is metadata like
+        # `title`, **not** raw article body, so boundary (p) is preserved.
+        "title_zh",
         "summary",
         "ticker",
         "form_type",

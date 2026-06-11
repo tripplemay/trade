@@ -156,7 +156,12 @@ class NewsAssociationService:
         results = [
             SleeveNewsRelevance(
                 news_id=news.id,
-                title=news.title,
+                # B054 F-news — prefer the pre-computed Simplified-Chinese
+                # headline; fall back to the English source title when the
+                # translation batch has not run for this row yet. This is a
+                # plain column read, not a generative call, so the news
+                # package stays non-generative (B034 boundary).
+                title=news.title_zh or news.title,
                 source=news.source,
                 url=news.url,
                 published_at=news.published_at,

@@ -69,6 +69,13 @@ class News(Base):
     source_id: Mapped[str] = mapped_column(String(128), nullable=False)
     url: Mapped[str] = mapped_column(String(512), nullable=False)
     title: Mapped[str] = mapped_column(String(512), nullable=False)
+    # B054 F-news — Simplified-Chinese headline, populated off the request
+    # path by the ``news_translation`` batch job (LLM translate, no-AI
+    # boundary rule (e)). NULL until translated; the serving feeds fall back
+    # to the original English ``title``. Kept a short String like ``title``
+    # (not Text) — it is a localized headline, **not** raw article body, so
+    # boundary (p) (test_news_schema_metadata_only) is preserved.
+    title_zh: Mapped[str | None] = mapped_column(String(512), nullable=True)
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)
     ticker: Mapped[str | None] = mapped_column(String(16), nullable=True, index=True)
     form_type: Mapped[str | None] = mapped_column(String(16), nullable=True)

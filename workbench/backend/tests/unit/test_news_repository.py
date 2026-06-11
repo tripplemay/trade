@@ -214,6 +214,7 @@ def test_news_table_columns_match_schema(repo: NewsRepository) -> None:
         "source_id",
         "url",
         "title",
+        "title_zh",  # B054 F-news — Simplified-Chinese headline (migration 0017)
         "summary",
         "ticker",
         "form_type",

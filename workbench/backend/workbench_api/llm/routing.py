@@ -44,6 +44,11 @@ ROUTING_TABLE: Final[dict[str, str]] = {
     "quarterly_review": "claude-sonnet-4.6",
     "quarterly_review_deep": "claude-opus-4.7",
     "news_summarize": "gemini-3-flash",
+    # B054 F-news — translate English news headlines to Simplified Chinese
+    # (off the request path, no-AI boundary rule (e): translate only). Short
+    # outputs with strict instruction-following — Haiku 4.5 is the cheap,
+    # reliable tier (same as the other short grounded tasks).
+    "news_translate": "claude-haiku-4.5",
     "topic_tagging": "claude-haiku-4.5",
     "sharpe_tooltip": "claude-haiku-4.5",
     "robinhood_simplify": "claude-haiku-4.5",
