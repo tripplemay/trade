@@ -18,6 +18,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { newsSourceLabel } from "@/lib/sleeve-label";
 import type { components } from "@/types/api";
 
 type LatestNewsItem = components["schemas"]["LatestNewsItem"];
@@ -90,7 +91,7 @@ export function HomeNewsPanel() {
                     {item.title}
                   </a>
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                    <span>{item.source}</span>
+                    <span>{newsSourceLabel(item.source)}</span>
                     <span>·</span>
                     <span>{item.published_at}</span>
                     {topics.length > 0 ? (

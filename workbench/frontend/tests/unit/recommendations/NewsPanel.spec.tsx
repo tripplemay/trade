@@ -43,7 +43,7 @@ const ITEMS: SleeveNewsItem[] = [
 
 function buildFetch(handler: (url: string) => unknown): typeof fetch {
   return vi.fn(async (input: RequestInfo | URL) => {
-    const url = typeof input === "string" ? input : (input as Request).url ?? input.toString();
+    const url = typeof input === "string" ? input : ((input as Request).url ?? input.toString());
     return new Response(JSON.stringify(handler(url)), {
       status: 200,
       headers: { "content-type": "application/json" },
@@ -58,7 +58,10 @@ afterEach(() => {
 
 describe("NewsPanel (B034 F003)", () => {
   it("renders structured items: link, score, tickers, topic chips", async () => {
-    vi.stubGlobal("fetch", buildFetch(() => ({ items: ITEMS })));
+    vi.stubGlobal(
+      "fetch",
+      buildFetch(() => ({ items: ITEMS })),
+    );
     const { getByTestId, getAllByTestId } = renderWithIntl(<NewsPanel />);
 
     await waitFor(() => {
@@ -75,10 +78,36 @@ describe("NewsPanel (B034 F003)", () => {
     expect(chips).toContain("财报");
     expect(getAllByTestId("news-score")[0]).toHaveTextContent("1.94");
     expect(getAllByTestId("news-tickers")[0]).toHaveTextContent("AAPL");
+    // B054 F-news — the per-item source code is Sinicized (no raw code).
+    expect(getAllByTestId("news-item")[0]!.textContent).toContain("SEC 公告");
+    expect(getAllByTestId("news-item")[0]!.textContent).not.toContain("sec_edgar");
+  });
+
+  it("localizes the sleeve + source filter option labels (keeps raw values)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      buildFetch(() => ({ items: ITEMS })),
+    );
+    const { getByTestId } = renderWithIntl(<NewsPanel />);
+    await waitFor(() => expect(getByTestId("news-list")).toBeInTheDocument());
+
+    const sourceSelect = getByTestId("news-filter-source") as HTMLSelectElement;
+    const sourceOptions = Array.from(sourceSelect.options);
+    // Display text is Sinicized; the option VALUE (backend filter key) stays raw.
+    const secOption = sourceOptions.find((o) => o.value === "sec_edgar");
+    expect(secOption?.textContent).toBe("SEC 公告");
+
+    const sleeveSelect = getByTestId("news-filter-sleeve") as HTMLSelectElement;
+    const sleeveOptions = Array.from(sleeveSelect.options);
+    const satellite = sleeveOptions.find((o) => o.value === "satellite_us_quality");
+    expect(satellite?.textContent).toBe("美股质量卫星");
   });
 
   it("renders empty state when no items", async () => {
-    vi.stubGlobal("fetch", buildFetch(() => ({ items: [] })));
+    vi.stubGlobal(
+      "fetch",
+      buildFetch(() => ({ items: [] })),
+    );
     const { getByTestId } = renderWithIntl(<NewsPanel />);
     await waitFor(() => {
       expect(getByTestId("news-empty")).toBeInTheDocument();
@@ -100,7 +129,9 @@ describe("NewsPanel (B034 F003)", () => {
     fireEvent.change(getByTestId("news-filter-topic"), { target: { value: "财报" } });
     await waitFor(() => expect(getAllByTestId("news-item")).toHaveLength(1));
 
-    expect(calls.some((url) => url.includes("topic=%E8%B4%A2%E6%8A%A5") || url.includes("topic=财报"))).toBe(true);
+    expect(
+      calls.some((url) => url.includes("topic=%E8%B4%A2%E6%8A%A5") || url.includes("topic=财报")),
+    ).toBe(true);
     expect(calls[0]).toContain("sleeve=satellite_us_quality");
   });
 

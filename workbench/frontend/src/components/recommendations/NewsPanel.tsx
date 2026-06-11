@@ -18,6 +18,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { newsSourceLabel, sleeveLabel } from "@/lib/sleeve-label";
 import type { components } from "@/types/api";
 
 type SleeveNewsItem = components["schemas"]["SleeveNewsItem"];
@@ -50,6 +51,7 @@ function Filter({
   options,
   allLabel,
   onChange,
+  optionLabel,
 }: {
   testId: string;
   label: string;
@@ -57,6 +59,10 @@ function Filter({
   options: readonly string[];
   allLabel: string;
   onChange: (next: string) => void;
+  // Maps a raw option VALUE to its display label (the value sent to the
+  // backend filter is unchanged — only the visible text is localized).
+  // Defaults to identity so callers with already-localized options opt out.
+  optionLabel?: (value: string) => string;
 }) {
   return (
     <label className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -69,7 +75,7 @@ function Filter({
       >
         {options.map((option) => (
           <option key={option || "all"} value={option}>
-            {option === "" ? allLabel : option}
+            {option === "" ? allLabel : (optionLabel?.(option) ?? option)}
           </option>
         ))}
       </select>
@@ -130,6 +136,7 @@ export function NewsPanel() {
             options={SLEEVES}
             allLabel={t("all")}
             onChange={setSleeve}
+            optionLabel={sleeveLabel}
           />
           <Filter
             testId="news-filter-source"
@@ -138,6 +145,7 @@ export function NewsPanel() {
             options={SOURCES}
             allLabel={t("all")}
             onChange={setSource}
+            optionLabel={newsSourceLabel}
           />
           <Filter
             testId="news-filter-form-type"
@@ -196,7 +204,7 @@ export function NewsPanel() {
                     </span>
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                    <span>{item.source}</span>
+                    <span>{newsSourceLabel(item.source)}</span>
                     <span>·</span>
                     <span>{item.published_at}</span>
                     {tickers.length > 0 ? (

@@ -65,6 +65,12 @@ describe("HomeNewsPanel (B038 F002)", () => {
     // External links must open safely in a new tab.
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    // B054 F-news — the source code is Sinicized, never a raw English code.
+    const items = getAllByTestId("home-news-item");
+    expect(items[0]!.textContent).toContain("SEC 公告");
+    expect(items[0]!.textContent).not.toContain("sec_edgar");
+    expect(items[1]!.textContent).toContain("雅虎财经");
+    expect(items[1]!.textContent).not.toContain("yahoo_rss");
   });
 
   it("renders deterministic topic chips", async () => {

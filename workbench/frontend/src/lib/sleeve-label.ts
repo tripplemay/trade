@@ -30,3 +30,17 @@ const REPORT_KIND_LABELS: Record<string, string> = {
 export function reportKindLabel(kind: string): string {
   return REPORT_KIND_LABELS[kind] ?? kind;
 }
+
+// B054 F-news — Simplified-Chinese display labels for the news source codes.
+// The backend keeps the raw ``source`` ("sec_edgar" / "yahoo_rss") as a stable
+// data key (and the filter still queries by it); these labels Sinicize the
+// user-facing news source tag so no raw English code leaks onto the Home /
+// Recommendations news panels. SEC stays as a recognized acronym proper noun.
+const NEWS_SOURCE_LABELS: Record<string, string> = {
+  sec_edgar: "SEC 公告",
+  yahoo_rss: "雅虎财经",
+};
+
+export function newsSourceLabel(source: string): string {
+  return NEWS_SOURCE_LABELS[source] ?? source;
+}
