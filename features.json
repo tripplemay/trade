@@ -18,7 +18,7 @@
       "title": "每日 MTM job + nav history（timer，复用价格管线+mark_to_market）+ 每资产盈亏 + 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §5。依赖 F001】(1) **每日 MTM job**(timer，~每日收盘后)：对每个 paper 账户用最新收盘价 mark-to-market(复用 services/mark_to_market.py)→记 paper_nav_history 点(date/nav/per-position 市值)；检查是否到调仓日→触发 F001 调仓。(2) **每资产盈亏**：记录每持仓 成本→当前价→浮盈浮亏(绝对$+%)。(3) **timer 接线**：新 systemd workbench-paper-mtm.timer(evaluator §24 read-only timer L2 必查接线；§12.11 deploy post-step assert；MTM timer 时刻对齐 prices timer 后)。(4) **测试**：MTM 算 nav 正确+nav history 累积+per-asset 盈亏+timer 幂等。(5) Gates：同 F001 + timer 接线。",
       "design_decisions": [
         "复用 mark_to_market + 每日价格管线(price_snapshot)；MTM timer 排在 prices timer 之后(拿到当日收盘)。"

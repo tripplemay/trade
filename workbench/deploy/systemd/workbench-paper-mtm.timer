@@ -1,0 +1,17 @@
+[Unit]
+Description=Daily timer for workbench paper-trading mark-to-market (boundary (r): read-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B056-paper-trading-spec.md
+
+[Timer]
+# 03:45 UTC — after prices (00:30, the day's closes land) AND recommendations
+# (03:00, the latest strategy target), so the daily MTM marks the book against
+# fresh closes and rebalances against the freshest published allocation; before
+# canonical-backtest (04:00). Persistent=true catches up a missed run after a
+# VM reboot; the MTM point is idempotent on (account, date) and the rebalance is
+# idempotent on the target fingerprint.
+OnCalendar=*-*-* 03:45:00
+Persistent=true
+Unit=workbench-paper-mtm.service
+
+[Install]
+WantedBy=timers.target

@@ -10,6 +10,7 @@ and price marks pre-resolved, keeping the read path self-contained (§12.10).
 from __future__ import annotations
 
 from datetime import date, datetime
+from typing import Any
 
 from sqlalchemy import delete, select
 
@@ -18,6 +19,7 @@ from workbench_api.db.models.paper_account import (
     PaperPosition,
     PaperRebalance,
 )
+from workbench_api.db.models.paper_nav_history import PaperNavHistory
 from workbench_api.db.repositories.base import Repository
 
 
@@ -99,5 +101,65 @@ class PaperRebalanceRepository(Repository[PaperRebalance, str]):
             select(PaperRebalance)
             .where(PaperRebalance.account_id == account_id)
             .order_by(PaperRebalance.rebalance_date.desc())
+        )
+        return list(self._session.execute(stmt).scalars().all())
+
+
+class PaperNavHistoryRepository(Repository[PaperNavHistory, str]):
+    model = PaperNavHistory
+    primary_key_attr = "id"
+
+    def record_point(
+        self,
+        *,
+        point_id: str,
+        account_id: str,
+        as_of_date: date,
+        nav: float,
+        cash: float,
+        positions: list[dict[str, Any]],
+        benchmark_close: float | None,
+        created_at: datetime,
+    ) -> PaperNavHistory:
+        """Idempotent upsert of one daily MTM point.
+
+        A same-day re-run overwrites the existing ``(account_id, as_of_date)``
+        point rather than duplicating — the daily job is safe to re-run."""
+
+        existing = self._session.execute(
+            select(PaperNavHistory).where(
+                PaperNavHistory.account_id == account_id,
+                PaperNavHistory.as_of_date == as_of_date,
+            )
+        ).scalar_one_or_none()
+        if existing is not None:
+            existing.nav = nav
+            existing.cash = cash
+            existing.positions = positions
+            existing.benchmark_close = benchmark_close
+            existing.created_at = created_at
+            self._session.flush()
+            return existing
+        row = PaperNavHistory(
+            id=point_id,
+            account_id=account_id,
+            as_of_date=as_of_date,
+            nav=nav,
+            cash=cash,
+            positions=positions,
+            benchmark_close=benchmark_close,
+            created_at=created_at,
+        )
+        self._session.add(row)
+        self._session.flush()
+        return row
+
+    def list_by_account(self, account_id: str) -> list[PaperNavHistory]:
+        """All MTM points oldest-first (the forward NAV curve)."""
+
+        stmt = (
+            select(PaperNavHistory)
+            .where(PaperNavHistory.account_id == account_id)
+            .order_by(PaperNavHistory.as_of_date)
         )
         return list(self._session.execute(stmt).scalars().all())

@@ -27,6 +27,7 @@ from workbench_api.db.models.paper_account import (
     PaperPosition,
     PaperRebalance,
 )
+from workbench_api.db.models.paper_nav_history import PaperNavHistory
 from workbench_api.db.models.price_history import PriceHistory
 from workbench_api.db.models.price_snapshot import PriceSnapshot
 from workbench_api.db.models.recommendation_snapshot import RecommendationSnapshot
@@ -50,6 +51,7 @@ __all__ = [
     "NewsEmbedding",
     "OrderTicket",
     "PaperAccount",
+    "PaperNavHistory",
     "PaperPosition",
     "PaperRebalance",
     "PriceHistory",

@@ -30,6 +30,7 @@ RECOMMENDATIONS_PKG = BACKEND_ROOT / "workbench_api" / "recommendations"
 DATA_REFRESH_PKG = BACKEND_ROOT / "workbench_api" / "data_refresh"
 PRICE_HISTORY_PKG = BACKEND_ROOT / "workbench_api" / "price_history"
 NEWS_TRANSLATE_PKG = BACKEND_ROOT / "workbench_api" / "news_translation"
+PAPER_PKG = BACKEND_ROOT / "workbench_api" / "paper"
 # Seven scheduler packages are scanned: the market-context fetch (B035), the
 # AI advisor precompute (B036), the price-snapshot fetch (B037), the news
 # ingest (B038, boundary (q)→(r)), the recommendations precompute (B044,
@@ -49,6 +50,7 @@ SCHEDULER_PKGS = (
     DATA_REFRESH_PKG,
     PRICE_HISTORY_PKG,
     NEWS_TRANSLATE_PKG,
+    PAPER_PKG,
 )
 REPO_ROOT = Path(__file__).resolve().parents[4]
 SYSTEMD_DIR = REPO_ROOT / "workbench" / "deploy" / "systemd"
@@ -68,6 +70,8 @@ RISK_EXPL_SERVICE_UNIT = SYSTEMD_DIR / "workbench-risk-explanation.service"
 RISK_EXPL_TIMER_UNIT = SYSTEMD_DIR / "workbench-risk-explanation.timer"
 NEWS_TRANSLATE_SERVICE_UNIT = SYSTEMD_DIR / "workbench-news-translate.service"
 NEWS_TRANSLATE_TIMER_UNIT = SYSTEMD_DIR / "workbench-news-translate.timer"
+PAPER_MTM_SERVICE_UNIT = SYSTEMD_DIR / "workbench-paper-mtm.service"
+PAPER_MTM_TIMER_UNIT = SYSTEMD_DIR / "workbench-paper-mtm.timer"
 RISK_EXPL_MODULE = (
     BACKEND_ROOT / "workbench_api" / "services" / "risk_explanation.py"
 )
@@ -565,3 +569,59 @@ def test_news_translate_scheduler_may_import_llm_gateway() -> None:
 
     service_src = (NEWS_TRANSLATE_PKG / "service.py").read_text(encoding="utf-8")
     assert "workbench_api.llm.gateway" in service_src
+
+
+# --- B056 F002 paper-trading MTM timer (boundary (r): read-only prices +
+# stored targets; the engine is VIRTUAL — no real orders) ---
+
+
+def test_paper_mtm_service_execstart_runs_paper_mtm() -> None:
+    assert PAPER_MTM_SERVICE_UNIT.is_file(), f"missing {PAPER_MTM_SERVICE_UNIT}"
+    text = PAPER_MTM_SERVICE_UNIT.read_text(encoding="utf-8")
+    execstart = [ln for ln in text.splitlines() if ln.strip().startswith("ExecStart=")]
+    assert len(execstart) == 1
+    assert "workbench_api.paper.mtm" in execstart[0]
+    assert "EnvironmentFile=/etc/workbench/workbench.env" in text
+
+
+def test_paper_mtm_service_references_no_trade_execution() -> None:
+    directives = "\n".join(
+        ln
+        for ln in PAPER_MTM_SERVICE_UNIT.read_text(encoding="utf-8").splitlines()
+        if not ln.strip().startswith("#")
+    ).lower()
+    for frag in ("broker", "order_ticket", "fills", "reconcile", "ticket"):
+        assert frag not in directives, (
+            f"paper-mtm .service directive references trade-execution {frag!r} "
+            "(boundary (r))"
+        )
+
+
+def test_paper_mtm_timer_runs_daily_and_pulls_service() -> None:
+    assert PAPER_MTM_TIMER_UNIT.is_file(), f"missing {PAPER_MTM_TIMER_UNIT}"
+    text = PAPER_MTM_TIMER_UNIT.read_text(encoding="utf-8")
+    assert "OnCalendar=" in text
+    assert "Unit=workbench-paper-mtm.service" in text
+    assert "WantedBy=timers.target" in text
+
+
+def test_paper_mtm_timer_wired_by_dry_loop() -> None:
+    """B056 timer installs via the B037-OPS1 workbench-*.timer loop — zero
+    deploy.sh change, no hardcoded enable literal."""
+    text = DEPLOY_SH.read_text(encoding="utf-8")
+    assert "enable --now workbench-paper-mtm.timer" not in text
+    assert PAPER_MTM_TIMER_UNIT.is_file()
+
+
+def test_paper_package_may_import_recommendation_target_not_trade() -> None:
+    """The paper engine follows the strategy's STORED target — it reads
+    recommendation_snapshot, never imports ``trade`` (the request/job stays
+    self-contained). Pin both halves."""
+
+    targets_src = (PAPER_PKG / "targets.py").read_text(encoding="utf-8")
+    assert "recommendation_snapshot" in targets_src
+    for path in PAPER_PKG.rglob("*.py"):
+        imported = _imported_modules(path)
+        assert not any(
+            m == "trade" or m.startswith("trade.") for m in imported
+        ), f"{path.name} imports the trade package on the paper (job) path"
