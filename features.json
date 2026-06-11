@@ -53,7 +53,7 @@
       "title": "Codex L1+L2 真 VM——全页面逐页中文核验(无残留英文) + no-AI 边界 + 回归 + 演练自清 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "【见 spec §8。core acceptance=用户主诉推荐 rationale 中文 + 全页面无残留英文】L1 全门禁（backend/frontend + i18n parity + api.ts drift + mypy trade + §12.10.2 守门 + cost_guard + artifact secret=0）。L2 真 VM **逐页中文核验**：Home/Recommendations(★rationale 中文，§25 须正面真机证据)/Risk(解释中文+防御文案中文)/Strategies(说明中文)/Backtest(解释+报告中文)/Reports(报告正文中文)/Execution(diff reason+ticket 清单中文)/门控面板中文——**无残留英文**(逐页文本/截图核)；LLM 中文解释仍守 **no-AI 边界**(safety_judge 中文版 adversarial 抽验无收益预测/执行/替代 quant)；**回归** B050-B053 不破+recent-errors=0+HEAD≡main；**演练自清**(本批 L2 写入执行域数据 drill_cleanup 收尾)。Signoff docs/test-reports/B054-ai-text-localization-signoff-2026-MM-DD.md 用模板(§Production/HEAD+§Post-signoff Deploy+§逐页中文核验证据+§no-AI 中文 adversarial)。更新 progress.json status→done/docs.signoff/evaluator_feedback。**trading_gate：本批 done+部署=用户可开始真实交易。**"
     }
   ]
