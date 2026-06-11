@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import MarkdownRenderer from "@/components/markdown/MarkdownRenderer";
 import { MetricsDisplay, type MetricStat } from "@/components/metrics/MetricsDisplay";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { reportKindLabel } from "@/lib/sleeve-label";
 import type { components } from "@/types/api";
 
 type ReportDetail = components["schemas"]["ReportDetail"];
@@ -58,7 +59,7 @@ export default function ReportDetailPage() {
   const stateLabel = error
     ? tCommon("unreachableWithError", { error })
     : detail
-      ? `${detail.batch} · ${detail.kind} · ${detail.date}`
+      ? `${detail.batch} · ${reportKindLabel(detail.kind)} · ${detail.date}`
       : tCommon("loading");
 
   return (

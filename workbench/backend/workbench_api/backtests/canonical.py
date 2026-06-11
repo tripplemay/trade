@@ -32,7 +32,7 @@ from workbench_api.db.require_production_db import (
 logger = logging.getLogger(__name__)
 
 MASTER_STRATEGY_ID = "master_portfolio"
-MASTER_TITLE = "Master Portfolio — Quarterly Backtest"
+MASTER_TITLE = "旗舰组合 — 季度回测"
 
 
 def generate_canonical_reports(session: Session, *, as_of: date | None = None) -> int:

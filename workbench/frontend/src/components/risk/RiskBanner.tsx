@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { colorForDrawdown, colorForRiskState } from "@/lib/metric-color";
+import { sleeveLabel } from "@/lib/sleeve-label";
 import { cn } from "@/lib/utils";
 import type { components } from "@/types/api";
 
@@ -187,7 +188,7 @@ export function RiskBanner({ data, noFetch, className }: RiskBannerProps) {
                     data-testid={`risk-sleeve-${sleeve.sleeve}`}
                     className="font-mono"
                   >
-                    <span className="text-muted-foreground">{sleeve.sleeve}</span>
+                    <span className="text-muted-foreground">{sleeveLabel(sleeve.sleeve)}</span>
                     {": "}
                     <span
                       className={colorForDrawdown(sleeve.drawdown, payload.per_sleeve_threshold)}

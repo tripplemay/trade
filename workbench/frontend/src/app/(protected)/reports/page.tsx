@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { reportKindLabel } from "@/lib/sleeve-label";
 import type { components } from "@/types/api";
 
 type ReportSummary = components["schemas"]["ReportSummary"];
@@ -76,7 +77,7 @@ export default function ReportsPage() {
                     {report.title}
                   </Link>
                   <span className="shrink-0 text-xs text-muted-foreground">
-                    {report.batch} · {report.kind} · {report.date}
+                    {report.batch} · {reportKindLabel(report.kind)} · {report.date}
                   </span>
                 </li>
               ))}

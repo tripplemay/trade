@@ -8,6 +8,7 @@ import { HomeNewsPanel } from "@/components/home/HomeNewsPanel";
 import { MarketContextCard } from "@/components/market/MarketContextCard";
 import { formatCurrency, formatPercent } from "@/components/table/columns";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { sleeveLabel } from "@/lib/sleeve-label";
 import { cn } from "@/lib/utils";
 import type { components } from "@/types/api";
 
@@ -35,12 +36,6 @@ function DayPnlText({ pnl, emptyLabel }: { pnl: DayPnl | null | undefined; empty
       {formatPercent(pnl.pct)})
     </span>
   );
-}
-
-/** Display label for a sleeve key — translate the synthetic
- * "unclassified" bucket, pass real sleeve ids through untouched. */
-function sleeveLabel(sleeve: string, unclassified: string): string {
-  return sleeve === "unclassified" ? unclassified : sleeve;
 }
 
 export default function HomePage() {
@@ -135,9 +130,7 @@ export default function HomePage() {
                 data-testid={`home-sleeve-${sleeve.sleeve}`}
                 className="flex items-center justify-between gap-3 border-b border-border/50 pb-2 text-sm last:border-0"
               >
-                <span className="font-medium text-foreground">
-                  {sleeveLabel(sleeve.sleeve, t("sleeves.unclassified"))}
-                </span>
+                <span className="font-medium text-foreground">{sleeveLabel(sleeve.sleeve)}</span>
                 <span className="flex items-center gap-4 text-xs">
                   <span className="text-muted-foreground">{sleeve.positions_summary}</span>
                   <span className="numeric w-16 text-right text-muted-foreground">
