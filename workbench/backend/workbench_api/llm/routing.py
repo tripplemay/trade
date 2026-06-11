@@ -45,10 +45,17 @@ ROUTING_TABLE: Final[dict[str, str]] = {
     "quarterly_review_deep": "claude-opus-4.7",
     "news_summarize": "gemini-3-flash",
     # B054 F-news — translate English news headlines to Simplified Chinese
-    # (off the request path, no-AI boundary rule (e): translate only). Short
-    # outputs with strict instruction-following — Haiku 4.5 is the cheap,
-    # reliable tier (same as the other short grounded tasks).
-    "news_translate": "claude-haiku-4.5",
+    # (off the request path, no-AI boundary rule (e): translate only).
+    # Routed to ByteDance Doubao-pro: a non-reasoning, Chinese-native model —
+    # the cheapest IN PRACTICE for this task. The per-token-cheaper "flash"
+    # models (qwen3.5-flash etc.) are reasoning models that burn thousands of
+    # hidden thinking tokens on a one-line translation, so their billed output
+    # ends up dearer than a non-reasoning model; doubao-pro returns just the
+    # ~20-token translation (verified 2026-06-11: ~$0.000004/headline vs
+    # ~$0.0003 on Haiku 4.5, ≈80× cheaper). The existing 1704 production
+    # headlines were already backfilled on Haiku; this only changes FUTURE
+    # daily-timer translations.
+    "news_translate": "doubao-pro",
     "topic_tagging": "claude-haiku-4.5",
     "sharpe_tooltip": "claude-haiku-4.5",
     "robinhood_simplify": "claude-haiku-4.5",
@@ -92,6 +99,10 @@ PRICE_TABLE: Final[dict[str, tuple[float, float]]] = {
     "claude-sonnet-4.6": (3.00, 15.00),
     "claude-opus-4.7": (15.00, 75.00),
     "gemini-3-flash": (0.50, 3.00),
+    # B054 F-news — ByteDance Doubao-pro (news_translate). Non-reasoning, so
+    # the billed output is just the short translation. Live gateway price
+    # 2026-06-11: $0.082192 in / $0.328767 out per 1M.
+    "doubao-pro": (0.082192, 0.328767),
     "bge-m3": (0.084, 0.0),  # output_per_1m is 0 for embeddings
     "mock-provider": (0.00, 0.00),  # CI mock
 }

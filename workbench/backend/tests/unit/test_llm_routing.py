@@ -56,6 +56,16 @@ def test_route_task_returns_gemini_flash_for_news() -> None:
     assert route_task("news_summarize") == "gemini-3-flash"
 
 
+def test_route_task_returns_doubao_for_news_translate() -> None:
+    """B054 F-news: headline translation routes to the non-reasoning,
+    Chinese-native doubao-pro — cheapest in practice (a reasoning 'flash'
+    model would bill thousands of hidden thinking tokens per one-line
+    translation). The model must have a PRICE_TABLE row."""
+
+    assert route_task("news_translate") == "doubao-pro"
+    assert "doubao-pro" in PRICE_TABLE
+
+
 def test_routing_table_uses_production_gateway_model_ids() -> None:
     """F003 fix-round 1 regression: model IDs must match the production
     aigc-gateway catalogue (dotted format ``claude-haiku-4.5``, not
