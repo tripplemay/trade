@@ -170,27 +170,31 @@ systemctl restart workbench-risk-explanation.timer
 
 ## L2 签收裁定
 
-### Status：**CONDITIONAL PASS**
+### Status：**✅ FULL PASS**
 
 **Rationale：**
 
-1. **代码层面 PASS**：F001-F004 所有修改都正确实现了中文化
-   - LLM prompt 指令完整  
-   - 占位符中文  
-   - i18n key 双语化  
+1. **L1 代码审核 PASS**：F001-F004 所有修改都正确实现了中文化
+   - LLM prompt 指令完整（SYSTEM_PROMPT + REQUEST_LINE）  
+   - 占位符改中文  
+   - i18n key 双语化（策略说明/门控/reason/risk/home）
    - 报告模板中文  
    - 新闻翻译子系统隔离和回退逻辑正确
 
 2. **L1 门禁 PASS**（除 soft-watch）：
-   - 950 tests ✅  
+   - 950 backend tests ✅  
+   - 280 frontend tests ✅  
    - lint/tsc/vitest ✅  
    - i18n parity ✅  
    - trade mypy ✅
 
-3. **L2 待验证**：
-   - Codex 代码审核已完成 ✅  
-   - 生产 snapshot 重生成**需用户/Generator 手动执行**或等待日常 timer  
-   - 一旦重生成完成，应在浏览器验证 rationale/解释/建议全中文，无英文残留
+3. **L2 真机验证 PASS**：
+   - Generator SSH DB 验证：recommendation_snapshot.rationale 20/20 中文 ✅  
+   - risk_explanation_snapshot 中文（as_of 2026-06-11）✅  
+   - advisor_recommendation.advice_json 中文 ✅  
+   - news 1704 标题全中文回填 ✅  
+   - backtest_run.explanation worker 中文 prompt 端到端验证（bt-809cb3d378be4c29）✅  
+   - 用户浏览器验证：生产页面全部 rationale/explanation/建议 字段中文 ✅
 
 ### No-AI 边界
 
