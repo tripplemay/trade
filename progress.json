@@ -1,49 +1,38 @@
 {
-  "status": "done",
-  "user_goal": "B054 AI/动态文字完整中文化（界面所有英文→中文，**交易前 trading_gate**——用户硬约束 B054 生产部署完成前不开始真实交易）。根因：B024 只 i18n 了界面固定文字，动态/AI/后端生成文字大量绕过 i18n 显示英文。**三家族（全面审计 docs/product/ai-text-localization-audit-2026-06.md 有完整 file:line）**：①LLM 生成文字（推荐 rationale=用户主诉『标的下面的介绍』/回测/风险解释/advisor，prompt 无中文指令默认英文）②后端硬编码英文串 30+（策略说明×8/门控/ticket markdown×10/执行 reason/风险防御/首页汇总）③前端漏译+报告正文（fills buy/sell/zh-CN.json:149/投资+回测报告整段 markdown）。**用户决策**：LLM 文字只生成中文（单语）；范围全部纳入（含报告正文，一次做完）。5 features 4g+1c：F001 g LLM 文字中文化（prompt 加中文指令+占位改中文+重生成现存解释）；F002 g 后端硬编码串 i18n 双语 key（策略说明/门控/ticket/reason/risk/home）；F003 g 前端快修（fills/zh-CN.json/parity 全扫）；F004 g 报告正文模板级中文（trade/reporting，触 trade 包须 mypy trade 自检）；F005 c L1+L2 真 VM 逐页中文核验无残留英文+no-AI 中文 adversarial+回归+演练自清+signoff。原则：LLM①单语中文；后端静态串②③双语 i18n-key（保 B024 parity）；报告④模板中文（数值中性）。永久硬边界：§12.10.2/no-AI 5 规则中文版同禁/cost_guard cap/i18n parity。不做：改策略评分/回测/风控算法/数值/news 源文本。spec docs/specs/B054-ai-text-localization-spec.md(10 章)。**背景**：B053 done（加固扫尾全闭合）；用户上手 5 批报障全闭合，B054 是交易前最后一块。",
-  "total_features": 5,
-  "completed_features": 5,
-  "fix_rounds": 2,
-  "current_sprint": "F005",
+  "status": "building",
+  "user_goal": "B056 模拟盘（Paper Trading / 前向模拟）基建——每策略一个虚拟账户，Master 先行。回测(过去)与实盘(真金)之间的『前向桥』：给虚拟本金，忠实跟策略目标配置，调仓日自动虚拟调仓(收盘价成交+真实成本)，每日用真实价格 mark-to-market，显示账户盈亏曲线+每资产盈亏。让用户下真单前/中看策略前向表现(backtest 过拟合的解药=真·样本外)。**用户决策**：与实盘并行(非 gate)；排 B054 后 B055 前；真·基建(一套引擎参数化策略，Master 先，B055/B057/未来各插一个)；成本真实计；前向(激活日起累积，不 seed)。**架构复用**：策略目标(recommendation_snapshot)+每日价格管线+mark_to_market+account_snapshot 范式。新建：paper 账户表+paper_nav_history+虚拟调仓引擎+每日 MTM job(timer)+模拟盘页。**UI 用户 2026-06-11 确认 6 区块**：摘要(含 vs SPY)/净值曲线+SPY/每资产盈亏/配置漂移/调仓记录简版/设置。4 features 3g+1c：F001 paper 账户+虚拟调仓引擎(参数化)/F002 每日 MTM job+nav history(timer)/F003 模拟盘页 6 区块中文/F004 codex 真 VM 忠实跟 Master+MTM 盈亏+前向累积+signoff。永久硬边界：§12.10.2/timer 接线 §24。不做：改策略/执行流；测策略非测执行(模拟=收盘价+成本，实盘 journal=执行，两账户分开)。spec docs/specs/B056-paper-trading-spec.md(含 UI 6 区块)。**背景**：B054 done(界面中文化 trading_gate 解除，用户可实盘小仓起步)；本批与用户实盘并行。",
+  "total_features": 4,
+  "completed_features": 0,
+  "fix_rounds": 0,
+  "current_sprint": "F001",
   "last_updated": "2026-06-12",
   "reference_docs": [
-    "docs/specs/B054-ai-text-localization-spec.md",
-    "docs/product/ai-text-localization-audit-2026-06.md",
-    "workbench/backend/workbench_api/services/explanation/service.py",
-    "workbench/backend/workbench_api/recommendations/rationale.py",
-    "workbench/backend/workbench_api/advisor/service.py",
-    "workbench/backend/workbench_api/services/strategies.py",
-    "workbench/backend/workbench_api/services/tickets.py",
-    "workbench/backend/workbench_api/services/risk_panel.py",
-    "trade/reporting",
-    "workbench/frontend/messages/zh-CN.json"
+    "docs/specs/B056-paper-trading-spec.md",
+    "workbench/backend/workbench_api/services/mark_to_market.py",
+    "workbench/backend/workbench_api/db/models/account_snapshot.py",
+    "workbench/backend/workbench_api/recommendations/precompute.py",
+    "workbench/backend/workbench_api/services/nav_history.py",
+    "workbench/backend/workbench_api/db/models/price_snapshot.py",
+    "workbench/deploy/systemd"
   ],
   "docs": {
-    "spec": "docs/specs/B054-ai-text-localization-spec.md",
+    "spec": "docs/specs/B056-paper-trading-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B054-ai-text-localization-signoff-2026-06-12.md",
-    "framework_reviewed": true
+    "signoff": null,
+    "framework_reviewed": false
   },
   "role_assignments": null,
-  "completed_date": "2026-06-12",
-  "evaluator_feedback": {
-    "summary": "✅ F005 FULL PASS（L1 代码审核 + L2 真机验证）。F001-F004 所有修改正确实现中文化，生产 5 解释面（推荐/风险/建议/新闻/回测）已全中文，无英文残留。交 Planner done 阶段。",
-    "pass_count": 1,
-    "partial_count": 0,
-    "fail_count": 0,
-    "issues": []
-  },
-  "generator_handoff": "B054 round-2 fixing 完成→reverifying。Codex round-1 reverify 判 **L1 PASS + L2 CONDITIONAL**(evaluator 无 SSH，担心生产 snapshots 仍英文)。**generator SSH 实测生产真实状态(Codex 看不到的证据)**：①recommendation_snapshot.rationale as_of=2026-03-31 **20/20 中文**(GLD/JNJ/AGG 数值 verbatim)；②risk_explanation_snapshot as_of=2026-06-11 **中文**；③advisor_recommendation.advice_json **中文**(JSON \\u 转义实为中文)；④news 1704 标题 **全中文**(本会话回填)。⑤backtest_run.explanation 最新行 2026-06-10 是旧 English prompt stale 行——但**回测页 result.explanation 仅在用户点 Run 后由 worker 现生成(已部署中文 prompt)，页面挂载时不加载旧 run，故 stale 英文行从不显示**。**round-2 Ops(用户授权)**：enqueue 一次 master 回测(bt-809cb3d378be4c29)→worker 用中文 prompt 现生成→**done + 中文解释**『master_portfolio 策略在回测期间实现了 5.10% 的年化收益率和 0.48 的夏普比率，同时经历了 -14.81% 的最大回撤…346 笔交易…』(数值 verbatim/no-AI 守)，**端到端验证中文 backtest explanation 路径在真 VM 生效**。**结论：生产全部 5 个解释面(reco/risk/advisor/news/backtest)均已中文，L2 CONDITIONAL 闭合**。**Codex reverify**：若可访问生产 URL→逐页浏览器核(/recommendations rationale★/risk/backtest 点 Run/Reports/Home 新闻/Execution)中文；若无 SSH+无浏览器→采信本 handoff 的 SSH DB 证据 signoff。L1 已 PASS(backend 950+frontend 280 测试/i18n parity/mypy trade)。**全 PASS→done→planner 告知用户『界面全中文可来读一遍』→trading_gate 开放→引导建仓**。**注：doubao-pro 翻译模型切换(reverifying 期间用户请求 commit 7ab6328)已部署，仅影响未来翻译，product code 等价**。SSH ~/.ssh/kolmatrix_deploy→tripplezhou@34.180.93.185。",
+  "evaluator_feedback": null,
+  "generator_handoff": null,
   "session_notes": {
-    "planner": "2026-06-12 B054 done 收尾 — Codex F005 FULL PASS（2 fix-round）。**🎉 用户交易 gate 解除**：生产 5 解释面全中文(推荐 rationale 20/20/风险/建议/新闻 1704 标题/回测)无英文残留，用户浏览器验证过；no-AI 边界仍守(中文 prompt 禁收益预测)。fixing 大头=新建新闻标题翻译子系统(news_translation 非 generative 避 B034 守门+title_zh 列 migration 0017+每日 timer+haiku→doubao-pro)。framework：signoff 标『无新 learnings』，队列不变(③演练自清/④reconcile fail-fast/⑤date UTC+async worker/satellite/sudoers)，framework_reviewed→true 无 v0.9.44。soft-watch：S1 29 个 mypy unused type:ignore(low，下轮清)；S2 snapshot 重生成(已完成，final 裁定 FULL PASS)。 ▌**【下次 planner 续接】** status=done。**下一批=B056 模拟盘**(用户拍板 B054 后 B055 前；spec+UI 已定案 docs/specs/B056-paper-trading-spec.md)。planner 续接立即可 planning B056。**同时引导用户开始实盘小仓**(中文版 Master，5 步：Recommendations→Position diff→Ticket→券商限价单→Fills→Reconcile[我带跑])。**用户上手 6 批全闭合**(B050-B054)。**已规划方向**(需求池)：B056 模拟盘/B055 进攻选股/B057 regime 独立模式/外部 TradingAgents 借鉴(多视角分析+A 股领域知识，已评估存档)。prod=7ab6328 系(B054 已上)。",
-    "generator": "2026-06-12 **round-2 fixing→reverifying**。Codex round-1 判 L1 PASS+L2 CONDITIONAL(无 SSH 担心生产 snapshots 英文)。**SSH 实测生产**：reco(20/20)/risk/advisor/news 解释**已全中文**(Codex 看不到)；仅 backtest_run.explanation 最新行(2026-06-10)是旧 prompt stale 英文——但回测页 result.explanation 仅 Run 后由 worker 现生成(中文 prompt)，挂载不加载旧 run→不显示。**Ops(用户授权)**：enqueue master 回测 bt-809cb3d378be4c29→worker 中文 prompt 现生成→done+中文解释(5.10% CAGR/0.48 Sharpe verbatim/no-AI 守)，端到端验中文 backtest 路径。**生产 5 解释面全中文，CONDITIONAL 闭合**。**下次**：Codex/planner 采信 SSH DB 证据 signoff F005→done→trading_gate。**3 坑**：①advisor advice_json 是 \\u 转义中文(CJK 检测须解 JSON)②prod DB 是 SQLite(无 similar to/正则 SQL)③backtest explanation 只 on-demand worker 生成，canonical timer 不生成(只投资报告)。doubao-pro 切换(7ab6328)已部署仅影响未来翻译。",
-    "evaluator": "2026-06-12 **✅ F005 FULL PASS → done 交 Planner**。L1 代码审核：F001-F004 所有改动正确实现中文化（SYSTEM_PROMPT+占位符+i18n key+报告模板+news 隔离）✓；950 backend + 280 frontend tests ✓；i18n parity + trade mypy ✓；soft-watch：29 mypy unused type:ignore 待清理。**L2 真机验证：** 采信 Generator SSH DB 证据（recommendation.rationale 20/20 中文/risk 中文/advisor 中文/news 1704 中文/backtest worker 端到端中文验证 bt-809cb3d378be4c29） + 用户浏览器验证（5 解释面全中文）→ L2 FULL PASS。**结论**：生产 5 解释面（推荐 rationale/风险 explanation/建议/新闻/回测）已全中文，无英文残留。no-AI 5 规则中文版守护✓；数值 verbatim✓；B050-B053 回归不破✓。signoff：docs/test-reports/B054-ai-text-localization-signoff-2026-06-12.md。**done 移交 Planner**：告知用户『界面全中文可读』→ trading_gate 开放→引导建仓。"
+    "planner": "2026-06-12 B056 planning，status→building 交 Generator F001。**模拟盘基建**(用户拍板 B054 后 B055 前、与实盘并行、非 gate)。spec+UI 已定案(docs/specs/B056-paper-trading-spec.md，UI 6 区块 2026-06-11 确认：SPY 基准/保留漂移块/调仓简版)。**核心=前向桥**(回测过去 vs 实盘真金之间)：虚拟账户忠实跟策略、每日真实价格 MTM、前向累积。**大量复用**：策略目标(recommendation_snapshot)+mark_to_market+每日价格管线+account_snapshot 范式；新建 paper 账户表+nav_history+虚拟调仓引擎+MTM timer+模拟盘页。**关键架构=参数化策略接口**(strategy_id)：Master 先，B055 进攻/B057 regime/未来零成本插入(对齐 B057 通用策略模式框架)。**测策略非测执行**：模拟=收盘价+成本，实盘 journal=执行，两账户分开。 ▌**【下次 planner 续接】** status=building(Generator F001→F002→F003，再 Codex F004)。planner 续接：(a) B056 done→done 收尾+告知用户可激活 Master 模拟盘前向验证；(b) Generator 抛疑点(成本 bps 默认/MTM timer 时刻/调仓日跨期处理)。**用户上手并行**：B054 done 后用户实盘小仓(中文版 Master)，Reconcile 步骤需 planner 带跑；模拟盘做好后并行验证。**需求池后续**：B055 进攻选股/B057 regime 独立模式/TradingAgents 多视角分析借鉴。prod=7ab6328 系(B054 已上)。",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",
     "F002",
     "F003",
-    "F004",
-    "F005"
+    "F004"
   ]
 }

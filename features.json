@@ -1,60 +1,47 @@
 {
-  "sprint": "B054-ai-text-localization",
+  "sprint": "B056-paper-trading",
   "features": [
     {
       "id": "F001",
-      "title": "LLM 文字中文化（prompt 加中文指令 + 占位改中文 + 重生成现存解释）+ 测试",
+      "title": "paper 账户模型 + 虚拟调仓引擎（参数化策略，跟目标配置，收盘价成交+真实成本）+ 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【家族①，见 spec §4 + 审计 doc。用户主诉『推荐页每只标的下面的介绍是英文』=rationale】(1) **prompt 加中文指令**：services/explanation/service.py SYSTEM_PROMPT + 三 REQUEST_LINE（recommendations/rationale.py rationale / backtests/explanation.py / services/risk_explanation.py）+ advisor/service.py SYSTEM_PROMPT+REQUEST(:154) 加『用简体中文(zh-CN)回复』指令；**no-AI 5 规则中文版同样禁收益预测/执行/替代 quant**。(2) **降级占位改中文**：recommendations/rationale.py:35-37 deterministic placeholder 改中文。(3) **重生成现存解释**：部署后重跑 recommendations/advisor/risk precompute + 触发 risk timer(+可选重 enqueue backtest)使生产现存解释立即中文（不等季度/日常刷新）。(4) **§12.10.2 不破**：生成仍 off 请求路径；references_grounded/sentinel 护栏中文版仍生效（中文拒答 sentinel 不破）。(5) **测试**：mock gateway 验 prompt 含中文指令+占位中文+护栏不破。(6) Gates：backend pytest ≥ baseline+ / ruff 0 / mypy 0 / §12.10.2 守门 / cost_guard 不绕过。",
+      "status": "pending",
+      "acceptance": "【见 spec §4。模拟盘=前向桥，忠实跟策略配置；参数化为『哪个策略』，Master 先，B055/未来各插一个】(1) **数据模型+migration**：paper_account(strategy_id/虚拟现金/base_currency/激活日/成本参数)+paper 持仓(symbol/shares/avg_cost)。**参数化策略**：一个引擎按 strategy_id 接不同策略目标(Master 先=读 recommendation_snapshot；B055 未来同接口)。(2) **虚拟调仓**：在策略调仓日(Master quarter-end；未来 B055 month-end)按策略目标权重×当前 paper NAV 算目标股数→**虚拟成交于当日收盘价**→**应用真实成本**(手续费/滑点 bps，默认值 generator 定如 ~5bps 费+滑点)→更新 paper 持仓；激活日按当前目标首次建仓。(3) **前向语义**：从激活日起；纯前向不 seed 历史。(4) **§12.10.2 边界**：读策略目标(已落库)+价格(只读)，off 请求路径(job 侧)；虚拟不接券商。(5) **测试**：激活建仓+调仓日再平衡+成本应用+边角(无目标/无价格 graceful)。(6) Gates：backend pytest ≥ baseline+ / ruff / mypy 0 / alembic head。",
       "design_decisions": [
-        "用户选只生成中文（单列单语，不追双语）；加中文指令仍是 summarize/translate，no-AI 边界内。",
-        "重生成现存解释使生产立即中文（B043 经验：信号日季度才变，不重生成会一直显旧英文）。"
+        "参数化策略接口(strategy_id)：Master 先行，B055/B057/未来策略零成本插入(对齐 B057 通用策略模式框架方向)。",
+        "成本真实计(用户决策)；前向纯累积不 seed(用户决策)；虚拟成交收盘价=测策略本身非测执行。"
       ]
     },
     {
       "id": "F002",
-      "title": "后端硬编码英文串 i18n 化（策略说明/门控/ticket markdown/reason/risk/home，双语 key）+ 测试",
+      "title": "每日 MTM job + nav history（timer，复用价格管线+mark_to_market）+ 每资产盈亏 + 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【家族② 30+ 处，见 spec §5 + 审计 doc】(1) **挪 message bundle+参数化（双语 en+zh-CN，保 B024 parity）**：策略说明 note×8(services/strategies.py:101/133/159/192/223/256/278/296)/门控 detail(recommendations.py:229-236 参数化 dd/threshold/equity)/订单清单 markdown×10(tickets.py:99-211 含 disclaimer/列头/'at market')/执行 reason(execution.py:253+tickets.py:271/289/308 defensive rotation)/风险防御 rationale(risk_panel.py:84-94/173)/首页持仓汇总(home.py:171-172 '1 position'/'{n} positions')。(2) **机制**：后端返回 i18n key+params(前端 t() 组装) 或 后端按请求 locale 出文案(复用 B024 detect_locale/t)——generator 按各串性质二选一注明(数值模板串倾向后端 t()，整段 markdown 倾向分段 key)。(3) **不动**：error_kind 已前端 i18n(B047-OPS2)；ticket disclaimer 已双语。(4) **测试**：各串中英 parity+参数化正确+i18n parity 守门。(5) Gates：backend pytest ≥ baseline+ / frontend vitest/tsc/lint / i18n parity / api.ts drift 0(若 schema 变) / ruff/mypy 0。",
+      "status": "pending",
+      "acceptance": "【见 spec §5。依赖 F001】(1) **每日 MTM job**(timer，~每日收盘后)：对每个 paper 账户用最新收盘价 mark-to-market(复用 services/mark_to_market.py)→记 paper_nav_history 点(date/nav/per-position 市值)；检查是否到调仓日→触发 F001 调仓。(2) **每资产盈亏**：记录每持仓 成本→当前价→浮盈浮亏(绝对$+%)。(3) **timer 接线**：新 systemd workbench-paper-mtm.timer(evaluator §24 read-only timer L2 必查接线；§12.11 deploy post-step assert；MTM timer 时刻对齐 prices timer 后)。(4) **测试**：MTM 算 nav 正确+nav history 累积+per-asset 盈亏+timer 幂等。(5) Gates：同 F001 + timer 接线。",
       "design_decisions": [
-        "后端硬编码串走双语 i18n-key（不破 B024 parity 架构，cheap 且正确）——与 F001 LLM 文字单语中文不同，因这些是静态文案可双语。",
-        "数值模板串（门控/reason）参数化后端 t()；整段 ticket markdown 分段 key 化。"
+        "复用 mark_to_market + 每日价格管线(price_snapshot)；MTM timer 排在 prices timer 之后(拿到当日收盘)。"
       ]
     },
     {
       "id": "F003",
-      "title": "前端快修（fills buy/sell + placeholder + zh-CN.json 残留英文 + i18n parity 全扫）+ 测试",
+      "title": "模拟盘前端页（6 区块：摘要+净值曲线+SPY/每资产盈亏/配置漂移/调仓记录简版/设置，中文）+ 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【家族③前半，见 spec §6 + 审计 doc】(1) fills page.tsx:401-402 buy/sell option + :425 timestamp placeholder → t() key。(2) messages/zh-CN.json:149 残留英文『synthetic data, not actual filings』→中文译文。(3) **i18n parity 全扫**：en.json vs zh-CN.json 缺 key / zh-CN 值仍英文的条目补齐。(4) 测试：vitest + i18n parity 守门。(5) Gates：frontend vitest/tsc/lint / i18n parity 0 缺。",
+      "status": "pending",
+      "acceptance": "【见 spec §6。UI 用户 2026-06-11 确认 6 区块；依赖 F001/F002 字段】**6 区块**(复用现有组件保持一致)：①**顶部摘要**(策略选择器多策略切换 Master 先+虚拟本金+激活日+运行天数+当前净值+总收益$+%+今日盈亏+**vs SPY 跑赢/跑输**，仿首页 NAV 卡)；②**净值曲线**(前向 NAV 自激活日+**SPY 基准叠加线**，仿回测页 equity 图)；③**每资产盈亏表**(持仓/成本/现价/市值/浮盈亏$+%红绿/权重+现金行)；④**配置 vs 目标漂移**(当前权重 vs 策略最新目标，仿推荐页 AllocationBar)；⑤**调仓记录简版**(仅日期+当次成本+累计成本+下次调仓日，**不要每笔明细**)；⑥**设置**(激活/设虚拟本金/选策略)。**用户确认**：SPY 基准/保留漂移块/调仓简版。中文(B054 后全中文 i18n parity)；明确标『模拟非实盘』；空/前向态友好『运行 X 天累积中』。测试：vitest(摘要/曲线+SPY/盈亏表/漂移/简版调仓/空态)+i18n parity+api.ts。Gates：frontend vitest/tsc/lint / i18n parity / api.ts drift 0。",
       "design_decisions": [
-        "纯前端快修，独立于 F001/F002 后端改动，可并行。"
+        "6 区块 + SPY 基准 + 保留漂移块 + 调仓简版(用户 2026-06-11 拍板)；复用首页净值卡/回测曲线/推荐配置条组件。"
       ]
     },
     {
       "id": "F004",
-      "title": "报告正文中文化（投资/回测报告 markdown 模板级中文，trade/reporting）+ 测试",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "【家族③后半，最重一块，触 trade/ 包，用户拍板全纳入，见 spec §7】(1) **报告模板中文**：trade/reporting/ 生成的投资报告+回测报告 markdown 的段标题/标签/说明文字出中文（数值/日期/symbol 语言中性保留）；若报告含 LLM 生成 prose 走 F001 中文生成。(2) **机制**：模板级 i18n（reporting builder 出中文文案）——generator 定(trade/reporting 直接中文 vs 参数化)；**CI mypy trade 严格，改 trade/ 须本地 `mypy trade` 自检(environment.md)**。(3) **前端**：Reports [slug]/page.tsx:95 + Backtest MarkdownRenderer 渲染中文 markdown 无需前端改。(4) **测试**：报告 markdown 含中文段标题+数值正确+trade 包单测。(5) Gates：backend+trade pytest ≥ baseline+ / ruff / mypy(workbench+trade) 0。",
-      "design_decisions": [
-        "报告正文模板级中文（段标题/标签出中文，数值中性）——非 LLM 重生成，避免动 LLM 成本+保数值精确。",
-        "触 trade/ 包：本地必跑 mypy trade（CI 独立 Python CI 比 backend 严，B050 教训）。"
-      ]
-    },
-    {
-      "id": "F005",
-      "title": "Codex L1+L2 真 VM——全页面逐页中文核验(无残留英文) + no-AI 边界 + 回归 + 演练自清 + signoff",
+      "title": "Codex L1+L2 真 VM——模拟盘忠实跟 Master + 每日 MTM/盈亏正确 + 前向累积 + timer 接线 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "completed",
-      "acceptance": "【见 spec §8。core acceptance=用户主诉推荐 rationale 中文 + 全页面无残留英文】L1 全门禁（backend/frontend + i18n parity + api.ts drift + mypy trade + §12.10.2 守门 + cost_guard + artifact secret=0）。L2 真 VM **逐页中文核验**：Home/Recommendations(★rationale 中文，§25 须正面真机证据)/Risk(解释中文+防御文案中文)/Strategies(说明中文)/Backtest(解释+报告中文)/Reports(报告正文中文)/Execution(diff reason+ticket 清单中文)/门控面板中文——**无残留英文**(逐页文本/截图核)；LLM 中文解释仍守 **no-AI 边界**(safety_judge 中文版 adversarial 抽验无收益预测/执行/替代 quant)；**回归** B050-B053 不破+recent-errors=0+HEAD≡main；**演练自清**(本批 L2 写入执行域数据 drill_cleanup 收尾)。Signoff docs/test-reports/B054-ai-text-localization-signoff-2026-MM-DD.md 用模板(§Production/HEAD+§Post-signoff Deploy+§逐页中文核验证据+§no-AI 中文 adversarial)。更新 progress.json status→done/docs.signoff/evaluator_feedback。**trading_gate：本批 done+部署=用户可开始真实交易。**"
+      "status": "pending",
+      "acceptance": "【见 spec §7。core acceptance=模拟盘忠实跟策略+前向 MTM 正确】L1 全门禁。L2 真 VM：激活 Master 模拟盘(设虚拟本金如 $100k)→**首次建仓忠实跟 Master 目标**(持仓=目标权重)；触发每日 MTM→nav/per-asset 盈亏随真实价格变动正确；**前向累积**(多日 nav history 点)；调仓日再平衡(若 L2 期跨调仓日否则验逻辑)；模拟盘页中文显账户盈亏+每资产盈亏+SPY 对比+漂移+调仓简版；**timer 接线**(§24 systemd is-enabled/active)；回归 B050-B055 不破+recent-errors=0+HEAD≡main；演练自清(drill_cleanup)。Signoff docs/test-reports/B056-paper-trading-signoff-2026-MM-DD.md 用模板(§Production/HEAD+§Post-signoff Deploy+§模拟盘忠实跟策略证据+§MTM 盈亏正确+§前向累积+§Ops)。§25 须正面真机证据。"
     }
   ]
 }
