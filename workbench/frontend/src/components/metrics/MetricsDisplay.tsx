@@ -19,16 +19,17 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { colorForMetric, type MetricKey } from "@/lib/metric-color";
 import { cn } from "@/lib/utils";
 
-/** English term labels — intentionally identical in both locales (the
- * jargon stays English; the tooltip carries the localised explanation). */
+/** B054 fix-round 1 — metric labels in Simplified Chinese (the user-facing
+ * Backtest/Risk pages must read fully in Chinese; the tooltip still carries the
+ * fuller localised explanation). */
 const METRIC_LABELS: Record<MetricKey, string> = {
-  sharpe: "Sharpe",
-  sortino: "Sortino",
-  calmar: "Calmar",
-  cagr: "CAGR",
-  maxDrawdown: "Max Drawdown",
-  volatility: "Volatility",
-  turnover: "Turnover",
+  sharpe: "夏普比率",
+  sortino: "索提诺比率",
+  calmar: "卡玛比率",
+  cagr: "年化收益率",
+  maxDrawdown: "最大回撤",
+  volatility: "波动率",
+  turnover: "换手率",
 };
 
 export interface MetricStat {

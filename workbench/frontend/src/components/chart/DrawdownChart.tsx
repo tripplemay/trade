@@ -9,10 +9,7 @@ import {
   createChart,
 } from "lightweight-charts";
 
-import {
-  type ChartHandle,
-  canvasToPngBlob,
-} from "@/components/chart/util";
+import { type ChartHandle, canvasToPngBlob } from "@/components/chart/util";
 import { cn } from "@/lib/utils";
 
 export interface DrawdownPoint {
@@ -45,14 +42,7 @@ export interface DrawdownChartProps {
  * `onVisibleRangeChange` prop pair.
  */
 const DrawdownChart = forwardRef<ChartHandle, DrawdownChartProps>(function DrawdownChart(
-  {
-    data,
-    color = "#ff3b30",
-    height = 160,
-    onVisibleRangeChange,
-    visibleRange,
-    className,
-  },
+  { data, color = "#ff3b30", height = 160, onVisibleRangeChange, visibleRange, className },
   ref,
 ) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -78,6 +68,8 @@ const DrawdownChart = forwardRef<ChartHandle, DrawdownChartProps>(function Drawd
       layout: {
         background: { color: "transparent" },
         textColor: "rgba(255,255,255,0.65)",
+        // B054 fix-round 1 — hide the "Charting by TradingView" attribution logo.
+        attributionLogo: false,
       },
       grid: {
         vertLines: { color: "rgba(255,255,255,0.05)" },

@@ -85,7 +85,7 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
     "master_portfolio": (
         _summary(
             id="master_portfolio",
-            name="Master Portfolio / 旗舰组合",
+            name="旗舰组合",
             sleeve="master",
         ),
         StrategyProvenance(
@@ -110,7 +110,7 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
     "B006-global-etf-momentum": (
         _summary(
             id="B006-global-etf-momentum",
-            name="Global ETF Momentum / 全球 ETF 动量",
+            name="全球 ETF 动量",
             sleeve="momentum",
             last_sweep_date="2026-05-12",
         ),
@@ -132,7 +132,7 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
     "B016-risk-parity-hrp": (
         _summary(
             id="B016-risk-parity-hrp",
-            name="Risk Parity HRP",
+            name="分层风险平价",
             sleeve="risk_parity",
         ),
         StrategyProvenance(
@@ -159,7 +159,7 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
     "B025-us-quality-momentum": (
         _summary(
             id="B025-us-quality-momentum",
-            name="US Quality Momentum / 美股质量动量",
+            name="美股质量动量",
             sleeve="satellite_us_quality",
         ),
         StrategyProvenance(
@@ -190,7 +190,7 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
     "B011-satellite-hk-china": (
         _summary(
             id="B011-satellite-hk-china",
-            name="HK / China Satellite Momentum / 港股中概卫星动量",
+            name="港股中概卫星动量",
             sleeve="satellite_hk_china",
         ),
         StrategyProvenance(
@@ -216,7 +216,7 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
     "B013-regime-quarterly": (
         _summary(
             id="B013-regime-quarterly",
-            name="Regime-Adaptive Multi-Asset (quarterly)",
+            name="市场态势自适应多资产（季度）",
             sleeve="regime",
             status="research",
             last_sweep_date="2026-05-13",
@@ -238,7 +238,7 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
     "B014-regime-stress": (
         _summary(
             id="B014-regime-stress",
-            name="Regime-Adaptive Stress Validation",
+            name="市场态势自适应压力验证",
             sleeve="regime",
             status="research",
         ),
@@ -256,7 +256,7 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
     "B015-regime-active": (
         _summary(
             id="B015-regime-active",
-            name="Regime-Adaptive Activation Policy",
+            name="市场态势自适应激活策略",
             sleeve="regime",
             status="research",
         ),

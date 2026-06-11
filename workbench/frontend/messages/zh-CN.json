@@ -412,19 +412,19 @@
     "unreachablePrefix": "风险面板无法连接:",
     "headlines": {
       "green": "风险:正常",
-      "yellow": "风险:单 sleeve 回撤超出预警阈值",
-      "red": "风险:kill-switch 已触发"
+      "yellow": "风险:单分块回撤超出预警阈值",
+      "red": "风险:熔断已触发"
     },
     "masterDd": "主组合回撤 {value}%",
-    "killSwitchThreshold": "Kill-switch 阈值 {value}%",
-    "perSleeveThreshold": "单 sleeve 预警 {value}%",
+    "killSwitchThreshold": "熔断阈值 {value}%",
+    "perSleeveThreshold": "单分块预警 {value}%",
     "slippageTrend": "近 3 个月滑点 {value} bps",
     "defensiveLabel": "防御票据",
-    "perSleeveLabel": "单 sleeve 回撤",
+    "perSleeveLabel": "单分块回撤",
     "tooltips": {
-      "masterDrawdown": "当前权益相对历史高点的回撤，按市价（mark-to-market）计算。超过阈值即触发 kill-switch。这是历史风险事实，非收益预测。",
+      "masterDrawdown": "当前权益相对历史高点的回撤，按市价计算。超过阈值即触发熔断。这是历史风险事实，非收益预测。",
       "killSwitch": "对主组合回撤的硬阈值。触发后面板只会建议防御性（降风险）的调仓，绝不阻断票据生成（仅研究用途）。",
-      "perSleeveDrawdown": "每个 sleeve 自身相对其峰值的回撤。任一 sleeve 达到或超过单 sleeve 预警阈值，面板即转为黄色。",
+      "perSleeveDrawdown": "每个分块自身相对其峰值的回撤。任一分块达到或超过单分块预警阈值，面板即转为黄色。",
       "defensiveTicket": "一个全部轮动到防御资产（SGOV）的备选目标。仅供对比参考，不会自动执行。"
     },
     "valuationBasis": {
@@ -432,13 +432,13 @@
     },
     "page": {
       "title": "风险面板",
-      "subtitle": "实时显示主组合回撤、kill-switch 阈值、单 sleeve 预警",
+      "subtitle": "实时显示主组合回撤、熔断阈值、单分块预警",
       "contextTitle": "面板字段说明",
-      "contextDescription": "B025 satellite_us_quality sleeve 也在 per-sleeve 列表中显示。",
-      "explainMaster": "= 当前权益相对历史峰值的回撤；超阈值会触发 kill-switch。",
+      "contextDescription": "B025 美股质量卫星分块也在各分块列表中显示。",
+      "explainMaster": "= 当前权益相对历史峰值的回撤；超阈值会触发熔断。",
       "explainKillSwitch": "= 主组合回撤的硬阈值，触发后只接受防御性持仓变动。",
-      "explainPerSleeve": "= 单 sleeve 回撤预警阈值；任一 sleeve 越线即转 yellow。",
-      "sleeveNote": "satellite_us_quality 的 per-sleeve 回撤当前以 master_dd 代理显示，待 F011 接入真实 per-sleeve nav。"
+      "explainPerSleeve": "= 单分块回撤预警阈值；任一 sleeve 越线即转 yellow。",
+      "sleeveNote": "美股质量卫星分块的单分块回撤当前以主组合回撤代理显示，待后续接入真实分块净值。"
     },
     "explanationLabel": "AI 解释："
   },
@@ -478,7 +478,7 @@
       "description": "生成一份再平衡的 Markdown 核对清单。工作台仅供研究 — 请在你的券商应用中人工复核并自行处理。",
       "ticketsOnFile": "{count} 份订单清单",
       "modeCardTitle": "选择清单模式",
-      "modeCardDescription": "Kill-switch 已触发。Defensive 模式将整组合切换至 B011 防御 sleeve;Normal 模式延续当前目标组合。",
+      "modeCardDescription": "熔断已触发。防御模式将整组合切换至 B011 防御分块;正常模式延续当前目标组合。",
       "modeNormalLabel": "正常",
       "modeNormalBody": "— 沿用当前 Recommendations 目标组合。",
       "modeDefensiveLabel": "防御",

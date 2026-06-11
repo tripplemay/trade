@@ -104,10 +104,9 @@ def test_us_quality_report_payload_metrics_are_readable() -> None:
     assert isinstance(metrics["sharpe"], float)
     assert isinstance(metrics["max_drawdown"], float)
     assert metrics["turnover"] == 0.5  # the single period's turnover
-    # Markdown renders without raising and names the strategy. B054 F004: the
-    # report title is now bilingual ("... Report / 美股质量动量回测报告 run-1").
+    # Markdown renders without raising and names the strategy. B054 fix-round 1:
+    # report headings/labels are now pure Chinese (no English residual).
     md = render_us_quality_markdown(payload)
-    assert "US Quality Momentum Report" in md
     assert "美股质量动量回测报告" in md
     assert "run-1" in md
 

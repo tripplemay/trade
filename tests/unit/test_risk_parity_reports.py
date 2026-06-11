@@ -56,10 +56,11 @@ def test_risk_parity_markdown_report_exposes_research_sections(tmp_path: Path) -
     markdown = artifacts.markdown_path.read_text(encoding="utf-8").lower()
     json_report = json.loads(artifacts.json_path.read_text(encoding="utf-8"))
 
-    assert "risk parity report" in markdown
-    assert "weight history" in markdown
-    assert "baseline comparison" in markdown
-    assert "research limitations" in markdown
+    # B054 fix-round 1 — report headings/labels are now pure Chinese.
+    assert "风险平价回测报告" in markdown
+    assert "权重历史" in markdown
+    assert "基准对比" in markdown
+    assert "研究局限" in markdown
     assert "paper execution" not in markdown
     assert json_report["strategy"]["no_leverage"] is True
 

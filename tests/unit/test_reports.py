@@ -79,9 +79,10 @@ def test_markdown_report_does_not_claim_paper_or_live_execution(tmp_path: Path) 
 
     markdown = artifacts.markdown_path.read_text(encoding="utf-8").lower()
 
-    assert "data snapshot" in markdown
-    assert "parameter hash" in markdown
-    assert "research limitations" in markdown
+    # B054 fix-round 1 — report headings/labels are now pure Chinese.
+    assert "数据快照" in markdown
+    assert "参数哈希" in markdown
+    assert "研究局限" in markdown
     assert "paper execution" not in markdown
     assert "live execution" not in markdown
 

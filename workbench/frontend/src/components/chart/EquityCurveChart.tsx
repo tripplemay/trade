@@ -17,10 +17,7 @@ import {
   createChart,
 } from "lightweight-charts";
 
-import {
-  type ChartHandle,
-  canvasToPngBlob,
-} from "@/components/chart/util";
+import { type ChartHandle, canvasToPngBlob } from "@/components/chart/util";
 import { cn } from "@/lib/utils";
 
 export interface EquityCurvePoint {
@@ -100,6 +97,9 @@ const EquityCurveChart = forwardRef<ChartHandle, EquityCurveChartProps>(function
       layout: {
         background: { color: "transparent" },
         textColor: "rgba(255,255,255,0.65)",
+        // B054 fix-round 1 — hide the "Charting by TradingView" attribution
+        // logo (English residual on the user-facing Backtest page).
+        attributionLogo: false,
       },
       grid: {
         vertLines: { color: "rgba(255,255,255,0.05)" },
@@ -198,10 +198,7 @@ const EquityCurveChart = forwardRef<ChartHandle, EquityCurveChartProps>(function
   }, []);
 
   return (
-    <div
-      data-testid="equity-curve-chart"
-      className={cn("flex flex-col gap-2", className)}
-    >
+    <div data-testid="equity-curve-chart" className={cn("flex flex-col gap-2", className)}>
       <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
         {legendItems.map((item) => (
           <button

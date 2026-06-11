@@ -22,9 +22,10 @@ const STATS: MetricStat[] = [
 afterEach(cleanup);
 
 describe("MetricsDisplay (B040 F002)", () => {
-  it("renders English term labels + formatted values (null → em dash)", () => {
+  it("renders Chinese term labels + formatted values (null → em dash)", () => {
     const { getByTestId } = renderWithIntl(<MetricsDisplay stats={STATS} />);
-    expect(getByTestId("metric-sharpe")).toHaveTextContent("Sharpe");
+    // B054 fix-round 1 — metric labels are now Simplified Chinese.
+    expect(getByTestId("metric-sharpe")).toHaveTextContent("夏普比率");
     expect(getByTestId("metric-value-sharpe")).toHaveTextContent("2.50");
     expect(getByTestId("metric-value-cagr")).toHaveTextContent("19.66%");
     expect(getByTestId("metric-value-maxDrawdown")).toHaveTextContent("-25.00%");

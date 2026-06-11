@@ -24,6 +24,13 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 // quartz theme without re-styling individual cells.
 const WORKBENCH_THEME = themeQuartz.withPart(colorSchemeDark);
 
+// B054 fix-round 1 — Simplified-Chinese copy for ag-grid's built-in chrome so
+// no English (e.g. "No Rows To Show") leaks onto user-facing tables.
+const GRID_LOCALE_ZH: Record<string, string> = {
+  noRowsToShow: "暂无数据",
+  loadingOoo: "加载中…",
+};
+
 export interface DataTableHandle {
   /**
    * Trigger a CSV download via AG Grid's built-in exporter. Returns
@@ -103,6 +110,9 @@ const DataTable = forwardRef(function DataTable<T>(
         animateRows
         rowSelection={{ mode: "singleRow", enableClickSelection: true }}
         suppressCellFocus
+        // B054 fix-round 1 — localise ag-grid's built-in chrome (the default
+        // "No Rows To Show" / "Loading..." overlays were English residual).
+        localeText={GRID_LOCALE_ZH}
         onGridReady={(event) => {
           gridApiRef.current = event.api;
         }}
@@ -110,8 +120,6 @@ const DataTable = forwardRef(function DataTable<T>(
       />
     </div>
   );
-}) as <T>(
-  props: DataTableProps<T> & { ref?: React.Ref<DataTableHandle> },
-) => React.ReactElement;
+}) as <T>(props: DataTableProps<T> & { ref?: React.Ref<DataTableHandle> }) => React.ReactElement;
 
 export default DataTable;
