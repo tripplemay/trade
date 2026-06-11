@@ -29,6 +29,7 @@ NEWS_PKG = BACKEND_ROOT / "workbench_api" / "news"
 RECOMMENDATIONS_PKG = BACKEND_ROOT / "workbench_api" / "recommendations"
 DATA_REFRESH_PKG = BACKEND_ROOT / "workbench_api" / "data_refresh"
 PRICE_HISTORY_PKG = BACKEND_ROOT / "workbench_api" / "price_history"
+NEWS_TRANSLATE_PKG = BACKEND_ROOT / "workbench_api" / "news_translation"
 # Seven scheduler packages are scanned: the market-context fetch (B035), the
 # AI advisor precompute (B036), the price-snapshot fetch (B037), the news
 # ingest (B038, boundary (q)→(r)), the recommendations precompute (B044,
@@ -36,8 +37,9 @@ PRICE_HISTORY_PKG = BACKEND_ROOT / "workbench_api" / "price_history"
 # and the price-history backfill (B048, reads the B045 unified CSV → DB).
 # Boundary (r) was revised in B036 — a scheduler may run CI-safety-gated
 # advisor precompute (which imports the LLM gateway); B044 adds quant scoring
-# that imports the ``trade`` package — but NONE may ever reach a
-# trade-EXECUTION surface (broker/order/fills/...).
+# that imports the ``trade`` package; B054 adds news-headline translation
+# (generative, no-AI rule (e): translate only, off the request path) — but
+# NONE may ever reach a trade-EXECUTION surface (broker/order/fills/...).
 SCHEDULER_PKGS = (
     MARKET_PKG,
     ADVISOR_PKG,
@@ -46,6 +48,7 @@ SCHEDULER_PKGS = (
     RECOMMENDATIONS_PKG,
     DATA_REFRESH_PKG,
     PRICE_HISTORY_PKG,
+    NEWS_TRANSLATE_PKG,
 )
 REPO_ROOT = Path(__file__).resolve().parents[4]
 SYSTEMD_DIR = REPO_ROOT / "workbench" / "deploy" / "systemd"
@@ -63,6 +66,8 @@ REFRESH_SERVICE_UNIT = SYSTEMD_DIR / "workbench-data-refresh.service"
 REFRESH_TIMER_UNIT = SYSTEMD_DIR / "workbench-data-refresh.timer"
 RISK_EXPL_SERVICE_UNIT = SYSTEMD_DIR / "workbench-risk-explanation.service"
 RISK_EXPL_TIMER_UNIT = SYSTEMD_DIR / "workbench-risk-explanation.timer"
+NEWS_TRANSLATE_SERVICE_UNIT = SYSTEMD_DIR / "workbench-news-translate.service"
+NEWS_TRANSLATE_TIMER_UNIT = SYSTEMD_DIR / "workbench-news-translate.timer"
 RISK_EXPL_MODULE = (
     BACKEND_ROOT / "workbench_api" / "services" / "risk_explanation.py"
 )
@@ -508,3 +513,55 @@ def test_risk_explanation_module_imports_no_trade_execution_surface() -> None:
         f"risk_explanation scheduler entry imports a trade-execution surface {hits} "
         "(boundary (r))"
     )
+
+
+# --- B054 F-news translation timer (boundary (r) + no-AI rule (e):
+# generative translate, off request path; never execution) ---
+
+
+def test_news_translate_service_execstart_runs_translate_cli() -> None:
+    assert NEWS_TRANSLATE_SERVICE_UNIT.is_file(), f"missing {NEWS_TRANSLATE_SERVICE_UNIT}"
+    text = NEWS_TRANSLATE_SERVICE_UNIT.read_text(encoding="utf-8")
+    execstart = [ln for ln in text.splitlines() if ln.strip().startswith("ExecStart=")]
+    assert len(execstart) == 1
+    assert "workbench_api.news_translation.cli" in execstart[0]
+    assert "EnvironmentFile=/etc/workbench/workbench.env" in text
+
+
+def test_news_translate_service_references_no_trade_execution() -> None:
+    directives = "\n".join(
+        ln
+        for ln in NEWS_TRANSLATE_SERVICE_UNIT.read_text(encoding="utf-8").splitlines()
+        if not ln.strip().startswith("#")
+    ).lower()
+    for frag in ("broker", "order_ticket", "fills", "reconcile", "ticket"):
+        assert frag not in directives, (
+            f"news-translate .service directive references trade-execution "
+            f"{frag!r} (boundary (r))"
+        )
+
+
+def test_news_translate_timer_runs_daily_and_pulls_service() -> None:
+    assert NEWS_TRANSLATE_TIMER_UNIT.is_file(), f"missing {NEWS_TRANSLATE_TIMER_UNIT}"
+    text = NEWS_TRANSLATE_TIMER_UNIT.read_text(encoding="utf-8")
+    assert "OnCalendar=" in text
+    assert "Unit=workbench-news-translate.service" in text
+    assert "WantedBy=timers.target" in text
+
+
+def test_news_translate_timer_wired_by_dry_loop() -> None:
+    """B054 timer installs via the B037-OPS1 workbench-*.timer loop — zero
+    deploy.sh change, no hardcoded enable literal."""
+    text = DEPLOY_SH.read_text(encoding="utf-8")
+    assert "enable --now workbench-news-translate.timer" not in text
+    assert NEWS_TRANSLATE_TIMER_UNIT.is_file()
+
+
+def test_news_translate_scheduler_may_import_llm_gateway() -> None:
+    """Boundary (r) + no-AI rule (e): the news-translate scheduler is ALLOWED
+    to import the LLM gateway (it runs the generative translate precompute,
+    off the request path). Pin that it does, so a regression that severs the
+    gateway import is caught."""
+
+    service_src = (NEWS_TRANSLATE_PKG / "service.py").read_text(encoding="utf-8")
+    assert "workbench_api.llm.gateway" in service_src

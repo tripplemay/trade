@@ -12,12 +12,14 @@ from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
+import httpx
 import pytest
 from sqlalchemy.orm import Session, sessionmaker
 
 from workbench_api.db.engine import get_engine
 from workbench_api.db.models.news import News
 from workbench_api.db.repositories.news import NewsRepository
+from workbench_api.llm.cost_guard import BudgetExceeded
 from workbench_api.llm.gateway import ChatRequest, ChatResult
 from workbench_api.news.association import NewsAssociationService
 from workbench_api.news_translation.cli import run_translation
@@ -65,6 +67,29 @@ class _MapGateway:
         self.calls += 1
         source = request.messages[-1]["content"]
         return _chat_result(self._mapping.get(source, ""))
+
+
+class _FlakyGateway:
+    """Raises a transient HTTP error for titles in ``fail_on``; else maps."""
+
+    def __init__(self, mapping: dict[str, str], *, fail_on: set[str]) -> None:
+        self._mapping = mapping
+        self._fail_on = fail_on
+        self.calls = 0
+
+    def advise(self, request: ChatRequest) -> ChatResult:
+        self.calls += 1
+        source = request.messages[-1]["content"]
+        if source in self._fail_on:
+            raise httpx.ConnectError("simulated gateway 429 / network blip")
+        return _chat_result(self._mapping.get(source, ""))
+
+
+class _BudgetTrippedGateway:
+    """Always trips the monthly cost cap (must abort the batch)."""
+
+    def advise(self, request: ChatRequest) -> ChatResult:  # noqa: ARG002
+        raise BudgetExceeded("Monthly LLM budget cap reached")
 
 
 # --- service: prompt shape + guard ----------------------------------------
@@ -170,10 +195,13 @@ def test_run_translation_only_untranslated_rows(session: Session) -> None:
     session.commit()
 
     gw = _MapGateway({"Translate me": "翻译我"})
-    summary = run_translation(session, NewsTranslationService(gw), limit=50)
+    summary = run_translation(
+        session, NewsTranslationService(gw), limit=50, sleep_seconds=0
+    )
 
     assert summary.translated == 1
     assert summary.skipped == 0
+    assert summary.failed == 0
     assert gw.calls == 1  # the already-translated row is never re-sent
     repo = NewsRepository(session)
     rows = {r.source_id: r.title_zh for r in repo.list_all_rows()}
@@ -185,10 +213,13 @@ def test_run_translation_skips_on_none_output(session: Session) -> None:
     session.commit()
 
     gw = _MapGateway({})  # returns "" → None → skip
-    summary = run_translation(session, NewsTranslationService(gw), limit=50)
+    summary = run_translation(
+        session, NewsTranslationService(gw), limit=50, sleep_seconds=0
+    )
 
     assert summary.translated == 0
     assert summary.skipped == 1
+    assert summary.failed == 0
     row = NewsRepository(session).get_by_source_and_source_id("yahoo_rss", "bad")
     assert row is not None
     assert row.title_zh is None  # left NULL to retry next run
@@ -200,12 +231,113 @@ def test_run_translation_is_idempotent(session: Session) -> None:
     gw = _MapGateway({"Hello world": "你好世界"})
     svc = NewsTranslationService(gw)
 
-    first = run_translation(session, svc, limit=50)
-    second = run_translation(session, svc, limit=50)
+    first = run_translation(session, svc, limit=50, sleep_seconds=0)
+    second = run_translation(session, svc, limit=50, sleep_seconds=0)
 
     assert first.translated == 1
     assert second.translated == 0  # nothing left untranslated
     assert gw.calls == 1
+
+
+def test_run_translation_survives_transient_gateway_error(session: Session) -> None:
+    # One row's gateway call fails transiently (429 / network); the batch must
+    # not abort — the other rows still translate, the failed row stays NULL.
+    _seed(session, source_id="ok1", title="First headline", published_at=_BASE)
+    _seed(
+        session,
+        source_id="boom",
+        title="Boom headline",
+        published_at=_BASE + timedelta(days=1),
+    )
+    _seed(
+        session,
+        source_id="ok2",
+        title="Third headline",
+        published_at=_BASE + timedelta(days=2),
+    )
+    session.commit()
+
+    gw = _FlakyGateway(
+        {"First headline": "第一条", "Third headline": "第三条"},
+        fail_on={"Boom headline"},
+    )
+    summary = run_translation(
+        session, NewsTranslationService(gw), limit=50, sleep_seconds=0
+    )
+
+    assert summary.translated == 2
+    assert summary.failed == 1
+    repo = NewsRepository(session)
+    rows = {r.source_id: r.title_zh for r in repo.list_all_rows()}
+    assert rows == {"ok1": "第一条", "boom": None, "ok2": "第三条"}
+
+
+def test_run_translation_commits_progress_before_failure(session: Session) -> None:
+    # Even if a later row raises a non-HTTP error and the batch unwinds, the
+    # rows committed by an earlier incremental flush survive the rollback.
+    # list_untranslated is newest-first, so "first" (later published_at) is
+    # processed before "second".
+    _seed(
+        session, source_id="first", title="A", published_at=_BASE + timedelta(days=1)
+    )
+    _seed(session, source_id="second", title="B", published_at=_BASE)
+    session.commit()
+
+    class _OneThenBudget:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def advise(self, request: ChatRequest) -> ChatResult:  # noqa: ARG002
+            self.calls += 1
+            if self.calls == 1:
+                return _chat_result("甲")
+            raise BudgetExceeded("cap")
+
+    with pytest.raises(BudgetExceeded):
+        run_translation(
+            session,
+            NewsTranslationService(_OneThenBudget()),
+            limit=50,
+            sleep_seconds=0,
+            commit_every=1,  # flush after the first successful row
+        )
+    session.rollback()
+    repo = NewsRepository(session)
+    first = repo.get_by_source_and_source_id("yahoo_rss", "first")
+    second = repo.get_by_source_and_source_id("yahoo_rss", "second")
+    assert first is not None and first.title_zh == "甲"  # early commit persisted
+    assert second is not None and second.title_zh is None  # tripped before write
+
+
+def test_run_translation_budget_cap_propagates(session: Session) -> None:
+    _seed(session, source_id="x", title="Anything", published_at=_BASE)
+    session.commit()
+    with pytest.raises(BudgetExceeded):
+        run_translation(
+            session,
+            NewsTranslationService(_BudgetTrippedGateway()),
+            limit=50,
+            sleep_seconds=0,
+        )
+
+
+def test_run_translation_throttles_between_rows(session: Session) -> None:
+    _seed(session, source_id="a", title="A", published_at=_BASE)
+    _seed(session, source_id="b", title="B", published_at=_BASE + timedelta(days=1))
+    _seed(session, source_id="c", title="C", published_at=_BASE + timedelta(days=2))
+    session.commit()
+
+    delays: list[float] = []
+    gw = _MapGateway({"A": "甲", "B": "乙", "C": "丙"})
+    run_translation(
+        session,
+        NewsTranslationService(gw),
+        limit=50,
+        sleep_seconds=0.6,
+        sleep=delays.append,
+    )
+    # One pause between each adjacent pair, never after the last row.
+    assert delays == [0.6, 0.6]
 
 
 # --- serving fallback: title_zh or title ----------------------------------

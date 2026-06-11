@@ -1,0 +1,16 @@
+[Unit]
+Description=Daily timer for workbench news headline translation (boundary (r) + no-AI rule (e): translate only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B054-ai-text-localization-spec.md
+
+[Timer]
+# 02:30 UTC — after the news ingest timer (02:00) so the day's freshly-fetched
+# headlines get their Simplified-Chinese title_zh, and before recommendations
+# (03:00). Persistent=true catches up a missed run after a VM reboot; the
+# translation is idempotent (only rows with title_zh IS NULL are translated,
+# so a re-run spends LLM budget on genuinely-new headlines only).
+OnCalendar=*-*-* 02:30:00
+Persistent=true
+Unit=workbench-news-translate.service
+
+[Install]
+WantedBy=timers.target
