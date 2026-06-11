@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "B056 模拟盘（Paper Trading / 前向模拟）基建——每策略一个虚拟账户，Master 先行。回测(过去)与实盘(真金)之间的『前向桥』：给虚拟本金，忠实跟策略目标配置，调仓日自动虚拟调仓(收盘价成交+真实成本)，每日用真实价格 mark-to-market，显示账户盈亏曲线+每资产盈亏。让用户下真单前/中看策略前向表现(backtest 过拟合的解药=真·样本外)。**用户决策**：与实盘并行(非 gate)；排 B054 后 B055 前；真·基建(一套引擎参数化策略，Master 先，B055/B057/未来各插一个)；成本真实计；前向(激活日起累积，不 seed)。**架构复用**：策略目标(recommendation_snapshot)+每日价格管线+mark_to_market+account_snapshot 范式。新建：paper 账户表+paper_nav_history+虚拟调仓引擎+每日 MTM job(timer)+模拟盘页。**UI 用户 2026-06-11 确认 6 区块**：摘要(含 vs SPY)/净值曲线+SPY/每资产盈亏/配置漂移/调仓记录简版/设置。4 features 3g+1c：F001 paper 账户+虚拟调仓引擎(参数化)/F002 每日 MTM job+nav history(timer)/F003 模拟盘页 6 区块中文/F004 codex 真 VM 忠实跟 Master+MTM 盈亏+前向累积+signoff。永久硬边界：§12.10.2/timer 接线 §24。不做：改策略/执行流；测策略非测执行(模拟=收盘价+成本，实盘 journal=执行，两账户分开)。spec docs/specs/B056-paper-trading-spec.md(含 UI 6 区块)。**背景**：B054 done(界面中文化 trading_gate 解除，用户可实盘小仓起步)；本批与用户实盘并行。",
   "total_features": 4,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-06-12",
   "reference_docs": [
     "docs/specs/B056-paper-trading-spec.md",
@@ -26,7 +26,7 @@
   "generator_handoff": null,
   "session_notes": {
     "planner": "2026-06-12 B056 planning，status→building 交 Generator F001。**模拟盘基建**(用户拍板 B054 后 B055 前、与实盘并行、非 gate)。spec+UI 已定案(docs/specs/B056-paper-trading-spec.md，UI 6 区块 2026-06-11 确认：SPY 基准/保留漂移块/调仓简版)。**核心=前向桥**(回测过去 vs 实盘真金之间)：虚拟账户忠实跟策略、每日真实价格 MTM、前向累积。**大量复用**：策略目标(recommendation_snapshot)+mark_to_market+每日价格管线+account_snapshot 范式；新建 paper 账户表+nav_history+虚拟调仓引擎+MTM timer+模拟盘页。**关键架构=参数化策略接口**(strategy_id)：Master 先，B055 进攻/B057 regime/未来零成本插入(对齐 B057 通用策略模式框架)。**测策略非测执行**：模拟=收盘价+成本，实盘 journal=执行，两账户分开。 ▌**【下次 planner 续接】** status=building(Generator F001→F002→F003，再 Codex F004)。planner 续接：(a) B056 done→done 收尾+告知用户可激活 Master 模拟盘前向验证；(b) Generator 抛疑点(成本 bps 默认/MTM timer 时刻/调仓日跨期处理)。**用户上手并行**：B054 done 后用户实盘小仓(中文版 Master)，Reconcile 步骤需 planner 带跑；模拟盘做好后并行验证。**需求池后续**：B055 进攻选股/B057 regime 独立模式/TradingAgents 多视角分析借鉴。prod=7ab6328 系(B054 已上)。",
-    "generator": null,
+    "generator": "2026-06-12 B056 building（模拟盘）。**F001 ✅ done**：paper_account/paper_position/paper_rebalance 模型+migration 0018(可逆验证)；纯引擎 engine.compute_rebalance(收盘价成交+真实成本 fee+slip bps，investable=equity×(1-cost_rate) 留够成本→cash≥0 不负，avg_cost 买入混合/卖出保留，sell-to-zero 丢仓，无目标/无价/零权益 graceful no-op)；targets.load_strategy_targets(参数化 strategy_id，Master 读 recommendation_snapshot.latest_snapshot；target_key=权重指纹 sha256→变才调仓，避免季内日抖动 churn)；service.activate_paper_account/rebalance_if_due(编排 repos+marks+engine)；cli activate。默认$100k/5+5bps。测试 11(引擎精确算术+服务 DB：建仓/无目标全现金/重复激活报错/同 key 不动/变 key 调仓)。门禁 ruff/mypy 0/unit+safety 1104/单 head 0018。**下一步 F002**：每日 MTM job+nav history+timer(复用 mark_to_market+price provider，调 rebalance_if_due)。",
     "evaluator": null
   },
   "features": [

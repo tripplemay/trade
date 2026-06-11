@@ -22,6 +22,11 @@ from workbench_api.db.models.market_context import MarketContextObservation
 from workbench_api.db.models.news import News
 from workbench_api.db.models.news_embedding import NewsEmbedding
 from workbench_api.db.models.order_ticket import OrderTicket
+from workbench_api.db.models.paper_account import (
+    PaperAccount,
+    PaperPosition,
+    PaperRebalance,
+)
 from workbench_api.db.models.price_history import PriceHistory
 from workbench_api.db.models.price_snapshot import PriceSnapshot
 from workbench_api.db.models.recommendation_snapshot import RecommendationSnapshot
@@ -44,6 +49,9 @@ __all__ = [
     "News",
     "NewsEmbedding",
     "OrderTicket",
+    "PaperAccount",
+    "PaperPosition",
+    "PaperRebalance",
     "PriceHistory",
     "PriceSnapshot",
     "RecommendationSnapshot",

@@ -6,7 +6,7 @@
       "title": "paper 账户模型 + 虚拟调仓引擎（参数化策略，跟目标配置，收盘价成交+真实成本）+ 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4。模拟盘=前向桥，忠实跟策略配置；参数化为『哪个策略』，Master 先，B055/未来各插一个】(1) **数据模型+migration**：paper_account(strategy_id/虚拟现金/base_currency/激活日/成本参数)+paper 持仓(symbol/shares/avg_cost)。**参数化策略**：一个引擎按 strategy_id 接不同策略目标(Master 先=读 recommendation_snapshot；B055 未来同接口)。(2) **虚拟调仓**：在策略调仓日(Master quarter-end；未来 B055 month-end)按策略目标权重×当前 paper NAV 算目标股数→**虚拟成交于当日收盘价**→**应用真实成本**(手续费/滑点 bps，默认值 generator 定如 ~5bps 费+滑点)→更新 paper 持仓；激活日按当前目标首次建仓。(3) **前向语义**：从激活日起；纯前向不 seed 历史。(4) **§12.10.2 边界**：读策略目标(已落库)+价格(只读)，off 请求路径(job 侧)；虚拟不接券商。(5) **测试**：激活建仓+调仓日再平衡+成本应用+边角(无目标/无价格 graceful)。(6) Gates：backend pytest ≥ baseline+ / ruff / mypy 0 / alembic head。",
       "design_decisions": [
         "参数化策略接口(strategy_id)：Master 先行，B055/B057/未来策略零成本插入(对齐 B057 通用策略模式框架方向)。",
