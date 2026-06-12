@@ -40,7 +40,7 @@
       "title": "Codex L1+L2 真 VM——模拟盘忠实跟 Master + 每日 MTM/盈亏正确 + 前向累积 + timer 接线 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "【见 spec §7。core acceptance=模拟盘忠实跟策略+前向 MTM 正确】L1 全门禁。L2 真 VM：激活 Master 模拟盘(设虚拟本金如 $100k)→**首次建仓忠实跟 Master 目标**(持仓=目标权重)；触发每日 MTM→nav/per-asset 盈亏随真实价格变动正确；**前向累积**(多日 nav history 点)；调仓日再平衡(若 L2 期跨调仓日否则验逻辑)；模拟盘页中文显账户盈亏+每资产盈亏+SPY 对比+漂移+调仓简版；**timer 接线**(§24 systemd is-enabled/active)；回归 B050-B055 不破+recent-errors=0+HEAD≡main；演练自清(drill_cleanup)。Signoff docs/test-reports/B056-paper-trading-signoff-2026-MM-DD.md 用模板(§Production/HEAD+§Post-signoff Deploy+§模拟盘忠实跟策略证据+§MTM 盈亏正确+§前向累积+§Ops)。§25 须正面真机证据。"
     }
   ]
