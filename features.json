@@ -6,7 +6,7 @@
       "title": "通用策略目标层（每模式一份目标，参数化 strategy_id，Master+regime 统一接口）+ regime 目标 precompute",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4。框架核心=策略目标从 Master-only 推广成每模式一份】(1) **目标层推广**：通用接口 get_target(strategy_id)→{symbol:weight,as_of,meta}(recommendation_snapshot 加 strategy_id/mode 维度 vs 新表，generator 定迁移保 Master 兼容)。(2) **模式注册**：mode registry(id/display_name/strategy_id/target_producer/backtest_key/cadence；Master quarter-end/regime monthly)。(3) **regime 目标 precompute**：job 调 trade.strategies.regime_adaptive.weighting.derive_regime_adaptive_weights(+detect_regime)产 regime 当前目标→写通用目标层；月度；§12.10.2(job 侧 import trade)。(4) **测试**：通用目标接口(Master/regime 同源读)+regime precompute 产真实目标+Master 现有读路径不破。(5) Gates：backend pytest ≥ baseline+ / ruff / mypy 0 / alembic head(若加列表) / §12.10.2 守门。",
       "design_decisions": [
         "目标层参数化 strategy_id=框架核心；Master 兼容(不破现有推荐/模拟盘/实盘读路径)。",

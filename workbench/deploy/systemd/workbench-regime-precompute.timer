@@ -1,0 +1,18 @@
+[Unit]
+Description=Monthly timer for workbench regime-adaptive target precompute (B057, research-state, read-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B057-strategy-mode-framework-spec.md
+
+[Timer]
+# Monthly (1st of the month, 04:15 UTC) — after the daily data-refresh (00:30)
+# and recommendations (03:00) timers, so the regime target is recomputed once
+# the month's read-only prices have landed. The regime mode re-evaluates monthly
+# (B057): its target is stable within a month and only flips when the monthly
+# signal advances. Persistent=true catches up a missed run after a VM reboot;
+# the precompute is idempotent (RecommendationSnapshotRepository.save_batch
+# overwrites the (regime_adaptive, as_of_date) set).
+OnCalendar=*-*-01 04:15:00
+Persistent=true
+Unit=workbench-regime-precompute.service
+
+[Install]
+WantedBy=timers.target

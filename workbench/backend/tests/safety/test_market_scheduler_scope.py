@@ -31,6 +31,7 @@ DATA_REFRESH_PKG = BACKEND_ROOT / "workbench_api" / "data_refresh"
 PRICE_HISTORY_PKG = BACKEND_ROOT / "workbench_api" / "price_history"
 NEWS_TRANSLATE_PKG = BACKEND_ROOT / "workbench_api" / "news_translation"
 PAPER_PKG = BACKEND_ROOT / "workbench_api" / "paper"
+STRATEGY_MODES_PKG = BACKEND_ROOT / "workbench_api" / "strategy_modes"
 # Seven scheduler packages are scanned: the market-context fetch (B035), the
 # AI advisor precompute (B036), the price-snapshot fetch (B037), the news
 # ingest (B038, boundary (q)→(r)), the recommendations precompute (B044,
@@ -51,6 +52,11 @@ SCHEDULER_PKGS = (
     PRICE_HISTORY_PKG,
     NEWS_TRANSLATE_PKG,
     PAPER_PKG,
+    # B057 F001 — the strategy-mode platform layer: the regime precompute job
+    # imports trade (deterministic quant scoring, boundary (r-c)), the generic
+    # target layer + registry are read models. None may reach a trade-EXECUTION
+    # surface (broker/order/fills/...).
+    STRATEGY_MODES_PKG,
 )
 REPO_ROOT = Path(__file__).resolve().parents[4]
 SYSTEMD_DIR = REPO_ROOT / "workbench" / "deploy" / "systemd"
@@ -72,6 +78,8 @@ NEWS_TRANSLATE_SERVICE_UNIT = SYSTEMD_DIR / "workbench-news-translate.service"
 NEWS_TRANSLATE_TIMER_UNIT = SYSTEMD_DIR / "workbench-news-translate.timer"
 PAPER_MTM_SERVICE_UNIT = SYSTEMD_DIR / "workbench-paper-mtm.service"
 PAPER_MTM_TIMER_UNIT = SYSTEMD_DIR / "workbench-paper-mtm.timer"
+REGIME_SERVICE_UNIT = SYSTEMD_DIR / "workbench-regime-precompute.service"
+REGIME_TIMER_UNIT = SYSTEMD_DIR / "workbench-regime-precompute.timer"
 RISK_EXPL_MODULE = (
     BACKEND_ROOT / "workbench_api" / "services" / "risk_explanation.py"
 )
@@ -614,14 +622,75 @@ def test_paper_mtm_timer_wired_by_dry_loop() -> None:
 
 
 def test_paper_package_may_import_recommendation_target_not_trade() -> None:
-    """The paper engine follows the strategy's STORED target — it reads
-    recommendation_snapshot, never imports ``trade`` (the request/job stays
-    self-contained). Pin both halves."""
+    """The paper engine follows the strategy's STORED target — it resolves the
+    target through the generic target layer (which reads recommendation_snapshot),
+    never imports ``trade`` (the request/job stays self-contained). Pin both
+    halves.
+
+    B057 F001: the read was delegated to ``strategy_modes.targets`` (single
+    source), so the paper targets module now references the generic layer and the
+    generic layer reads the snapshot table."""
 
     targets_src = (PAPER_PKG / "targets.py").read_text(encoding="utf-8")
-    assert "recommendation_snapshot" in targets_src
+    assert "strategy_modes.targets" in targets_src
+    generic_src = (STRATEGY_MODES_PKG / "targets.py").read_text(encoding="utf-8")
+    assert "recommendation_snapshot" in generic_src
     for path in PAPER_PKG.rglob("*.py"):
         imported = _imported_modules(path)
         assert not any(
             m == "trade" or m.startswith("trade.") for m in imported
         ), f"{path.name} imports the trade package on the paper (job) path"
+
+
+# --- B057 F001 regime-adaptive precompute (boundary (r-c): read-only quant
+# scoring of the regime mode's target; research-state, no prediction) ---
+
+
+def test_regime_service_execstart_runs_regime_cli() -> None:
+    assert REGIME_SERVICE_UNIT.is_file(), f"missing {REGIME_SERVICE_UNIT}"
+    text = REGIME_SERVICE_UNIT.read_text(encoding="utf-8")
+    execstart = [ln for ln in text.splitlines() if ln.strip().startswith("ExecStart=")]
+    assert len(execstart) == 1
+    assert "workbench_api.strategy_modes.cli" in execstart[0]
+    assert "EnvironmentFile=/etc/workbench/workbench.env" in text
+
+
+def test_regime_service_references_no_trade_execution() -> None:
+    directives = "\n".join(
+        ln
+        for ln in REGIME_SERVICE_UNIT.read_text(encoding="utf-8").splitlines()
+        if not ln.strip().startswith("#")
+    ).lower()
+    for frag in ("broker", "order_ticket", "fills", "reconcile", "ticket"):
+        assert frag not in directives, (
+            f"regime .service directive references trade-execution {frag!r} "
+            "(boundary (r-c))"
+        )
+
+
+def test_regime_timer_runs_and_pulls_service() -> None:
+    assert REGIME_TIMER_UNIT.is_file(), f"missing {REGIME_TIMER_UNIT}"
+    text = REGIME_TIMER_UNIT.read_text(encoding="utf-8")
+    assert "OnCalendar=" in text
+    assert "Unit=workbench-regime-precompute.service" in text
+    assert "WantedBy=timers.target" in text
+
+
+def test_regime_timer_wired_by_dry_loop() -> None:
+    """B057 timer installs via the B037-OPS1 workbench-*.timer loop — zero
+    deploy.sh change, no hardcoded enable literal."""
+    text = DEPLOY_SH.read_text(encoding="utf-8")
+    assert "enable --now workbench-regime-precompute.timer" not in text
+    assert REGIME_TIMER_UNIT.is_file()
+
+
+def test_regime_precompute_may_import_trade() -> None:
+    """Boundary (r-c, B057): the regime precompute is explicitly ALLOWED to
+    import the ``trade`` package (real regime-adaptive scoring) — pin that it
+    does, so a regression that severs the scoring import is caught. The generic
+    target layer + registry must NOT import trade (separate §12.10 AST guard)."""
+
+    precompute_src = (STRATEGY_MODES_PKG / "regime_precompute.py").read_text(
+        encoding="utf-8"
+    )
+    assert "trade.strategies.regime_adaptive" in precompute_src

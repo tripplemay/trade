@@ -26,7 +26,10 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import delete, select
 
-from workbench_api.db.models.recommendation_snapshot import RecommendationSnapshot
+from workbench_api.db.models.recommendation_snapshot import (
+    DEFAULT_STRATEGY_ID,
+    RecommendationSnapshot,
+)
 from workbench_api.db.repositories.base import Repository
 
 
@@ -41,14 +44,18 @@ class RecommendationSnapshotRepository(Repository[RecommendationSnapshot, UUID])
         rows: Sequence[dict[str, Any]],
         master_meta: dict[str, Any],
         computed_at: datetime | None = None,
+        strategy_id: str = DEFAULT_STRATEGY_ID,
     ) -> list[RecommendationSnapshot]:
-        """Replace the target set for ``as_of_date`` with ``rows``.
+        """Replace the target set for ``(strategy_id, as_of_date)`` with ``rows``.
 
         Each row dict carries ``symbol`` / ``sleeve`` / ``target_weight`` and an
         optional ``rationale``. ``master_meta`` (planning_weights + data_source)
         is denormalised onto every row of the batch. Idempotent: an existing
-        ``as_of_date`` is deleted first, so a daily re-run overwrites cleanly.
-        ``computed_at`` defaults to now(UTC) and is overridable for tests.
+        ``(strategy_id, as_of_date)`` set is deleted first, so a daily re-run
+        overwrites cleanly. ``strategy_id`` defaults to Master (B057 backward
+        compatibility); the delete is **scoped by strategy_id** so a regime
+        run never tramples Master's rows for the same date. ``computed_at``
+        defaults to now(UTC) and is overridable for tests.
         """
 
         # B053 F003 — guard against a future engine producing a portfolio that
@@ -70,7 +77,8 @@ class RecommendationSnapshotRepository(Repository[RecommendationSnapshot, UUID])
         stamp = computed_at or datetime.now(UTC)
         self._session.execute(
             delete(RecommendationSnapshot).where(
-                RecommendationSnapshot.as_of_date == as_of_date
+                RecommendationSnapshot.as_of_date == as_of_date,
+                RecommendationSnapshot.strategy_id == strategy_id,
             )
         )
         saved: list[RecommendationSnapshot] = []
@@ -78,6 +86,7 @@ class RecommendationSnapshotRepository(Repository[RecommendationSnapshot, UUID])
             entry = RecommendationSnapshot(
                 id=uuid4(),
                 as_of_date=as_of_date,
+                strategy_id=strategy_id,
                 symbol=row["symbol"],
                 sleeve=row["sleeve"],
                 target_weight=float(row["target_weight"]),
@@ -90,11 +99,20 @@ class RecommendationSnapshotRepository(Repository[RecommendationSnapshot, UUID])
         self._session.flush()
         return saved
 
-    def latest_snapshot(self) -> list[RecommendationSnapshot]:
-        """Return all rows of the most recent ``as_of_date`` (empty if none)."""
+    def latest_snapshot(
+        self, strategy_id: str = DEFAULT_STRATEGY_ID
+    ) -> list[RecommendationSnapshot]:
+        """Return all rows of ``strategy_id``'s most recent ``as_of_date``.
+
+        Scoped by ``strategy_id`` (default Master, B057 backward compatibility)
+        so each mode resolves its own latest target independently — the max
+        ``as_of_date`` is computed *within* the strategy, never across modes
+        with different cadences. Empty list if the strategy has no rows.
+        """
 
         latest_date = self._session.execute(
             select(RecommendationSnapshot.as_of_date)
+            .where(RecommendationSnapshot.strategy_id == strategy_id)
             .order_by(RecommendationSnapshot.as_of_date.desc())
             .limit(1)
         ).scalar_one_or_none()
@@ -102,7 +120,10 @@ class RecommendationSnapshotRepository(Repository[RecommendationSnapshot, UUID])
             return []
         stmt = (
             select(RecommendationSnapshot)
-            .where(RecommendationSnapshot.as_of_date == latest_date)
+            .where(
+                RecommendationSnapshot.as_of_date == latest_date,
+                RecommendationSnapshot.strategy_id == strategy_id,
+            )
             .order_by(RecommendationSnapshot.target_weight.desc())
         )
         return list(self._session.execute(stmt).scalars().all())

@@ -1,41 +1,45 @@
 """B056 F001 — strategy target loader (parameterized by strategy_id).
 
 The paper engine follows a strategy's *published* target allocation. This module
-resolves "what is strategy X's current target?" — parameterized by ``strategy_id``
-so Master is wired today and B055 / future strategies plug in by adding a branch,
-never by forking the engine.
+resolves "what is strategy X's current target?" — parameterized by ``strategy_id``.
 
-* **Master Portfolio** reads ``recommendation_snapshot.latest_snapshot()`` — the
-  same daily-precomputed target weights the Recommendations page shows. The
-  weights are based on the quarterly signal date, so they are stable within a
-  quarter; the engine rebalances only when the ``target_key`` fingerprint changes
-  (a new quarter's allocation), never on daily price jitter.
+**B057 F001 — delegates to the generic target layer.** The canonical resolver is
+now ``strategy_modes.targets.get_target`` (reads ``recommendation_snapshot``
+keyed by ``strategy_id``). This module keeps the paper-shaped
+:class:`StrategyTargets` DTO + the paper selector list, but the actual read goes
+through the single generic source so the paper engine, recommendations read path
+and (B057 F004) execution chain never drift apart (framework v0.9.42 §17.1).
+Because the resolver is generic, *any* mode with precomputed targets resolves
+here — Master is wired today; the regime mode lights up automatically once its
+precompute writes targets (B057 F003 adds it to :data:`PAPER_STRATEGIES`).
 
 The ``target_key`` is a deterministic fingerprint of the sorted (symbol, weight)
 set: identical allocation → identical key → no rebalance; a changed allocation →
-new key → rebalance day. This is the parameterized "is today a rebalance day?"
-signal — it works for any cadence (Master quarterly, B055 monthly) without a
-hard-coded calendar.
+new key → rebalance day. The cadence-agnostic "is today a rebalance day?" signal.
 """
 
 from __future__ import annotations
 
-import hashlib
 from dataclasses import dataclass
 
 from sqlalchemy.orm import Session
 
-from workbench_api.db.repositories.recommendation_snapshot import (
-    RecommendationSnapshotRepository,
-)
+from workbench_api.strategy_modes.registry import MASTER_STRATEGY_ID
+from workbench_api.strategy_modes.targets import compute_target_key, get_target
 
-MASTER_STRATEGY_ID = "master_portfolio"
+__all__ = [
+    "MASTER_STRATEGY_ID",
+    "PAPER_STRATEGIES",
+    "StrategyTargets",
+    "compute_target_key",
+    "load_strategy_targets",
+    "paper_strategy_name",
+]
 
-# Strategies wired into the paper engine, in selector order (Master first).
-# B055 / future strategies append here AND add a branch in
-# ``load_strategy_targets`` — the engine, job, and page are otherwise unchanged.
-# The Chinese display name is kept here (self-contained) so the read path does
-# not couple to the strategies-registry internals.
+# Strategies surfaced in the paper engine selector, in selector order (Master
+# first). B057 F003 appends regime here; future strategies append too. The
+# Chinese display name is kept here (self-contained) so the read path does not
+# couple to the strategies-registry internals.
 PAPER_STRATEGIES: tuple[tuple[str, str], ...] = (
     (MASTER_STRATEGY_ID, "旗舰组合"),
 )
@@ -59,35 +63,21 @@ class StrategyTargets:
     target_key: str
 
 
-def compute_target_key(weights: dict[str, float]) -> str:
-    """Deterministic fingerprint of a target allocation.
-
-    Weights are rounded to 6 dp and sorted by symbol so the key is stable across
-    dict ordering and the per-symbol rounding the real precompute carries; a
-    genuine allocation change (new quarter) flips the key."""
-
-    items = sorted((sym.upper(), round(float(w), 6)) for sym, w in weights.items())
-    raw = ";".join(f"{sym}:{w:.6f}" for sym, w in items)
-    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:32]
-
-
 def load_strategy_targets(
     session: Session, strategy_id: str
 ) -> StrategyTargets | None:
     """Resolve ``strategy_id``'s current target weights, or ``None`` if absent.
 
-    Master reads the latest recommendation snapshot. B055 / future strategies add
-    a branch here (same return shape) — the engine and the daily job are unchanged.
+    Delegates to the generic target layer (``strategy_modes.targets.get_target``),
+    which reads the latest ``recommendation_snapshot`` rows for the strategy.
+    Returns the paper-shaped :class:`StrategyTargets` so the engine is unchanged.
     """
 
-    if strategy_id == MASTER_STRATEGY_ID:
-        rows = RecommendationSnapshotRepository(session).latest_snapshot()
-        if not rows:
-            return None
-        weights = {row.symbol.upper(): float(row.target_weight) for row in rows}
-        return StrategyTargets(
-            strategy_id=strategy_id,
-            weights=weights,
-            target_key=compute_target_key(weights),
-        )
-    return None
+    target = get_target(session, strategy_id)
+    if target is None:
+        return None
+    return StrategyTargets(
+        strategy_id=target.strategy_id,
+        weights=target.weights,
+        target_key=target.target_key,
+    )

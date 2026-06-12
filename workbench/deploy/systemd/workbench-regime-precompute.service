@@ -1,0 +1,43 @@
+[Unit]
+Description=Workbench regime-adaptive target precompute (B057, research-state, read-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B057-strategy-mode-framework-spec.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=deploy
+Group=deploy
+WorkingDirectory=/srv/workbench/current/backend
+
+# Secrets (WORKBENCH_DB_URL, ...) live in /etc/workbench/workbench.env
+# (chmod 600 root:deploy). Never committed.
+EnvironmentFile=/etc/workbench/workbench.env
+
+# B045 F002 / B057 F001 — point the trade loaders at the VM data root the B045
+# data-refresh job writes (same path workbench-recommendations.service sets).
+# The regime precompute reads the real refreshed daily prices for the regime
+# universe (B057 F001 added the 5 missing regime ETFs to the refresh universe)
+# instead of the wheel-bundled fixture. Not a secret — a fixed path. Local / CI
+# leave it unset and keep the repo-root behaviour unchanged.
+Environment=WORKBENCH_DATA_ROOT=/var/lib/workbench/data
+
+# Permanent product boundary (r-c) (B057 spec §4): this timer runs the
+# DETERMINISTIC QUANT regime target precompute ONLY — it imports the trade
+# package (regime-adaptive engine) and writes the recommendation_snapshot table
+# under strategy_id=regime_adaptive. ExecStart invokes the regime precompute CLI
+# and nothing else — it never runs broker / order-ticket / execution / fills /
+# reconcile code. tests/safety/test_market_scheduler_scope.py greps this
+# ExecStart line and scans the precompute package to enforce that. Scoring is
+# read-only research-state: it never places an order and never predicts returns.
+ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.strategy_modes.cli
+
+# Standard hardening (mirrors workbench-recommendations.service).
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/workbench /var/log/workbench /tmp
+
+# No [Install] section — this oneshot is pulled by
+# workbench-regime-precompute.timer, never enabled / started directly.

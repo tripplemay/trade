@@ -47,14 +47,19 @@ logger = logging.getLogger(__name__)
 ETF_UNIVERSE: tuple[str, ...] = (
     "AGG",
     "ASHR",
+    "DBC",  # B057 F001 — regime-adaptive universe (broad commodities)
     "EEM",
     "FXI",
     "GLD",
+    "IEF",  # B057 F001 — regime-adaptive universe (US treasury 7-10y)
     "KWEB",
     "MCHI",
+    "QQQ",  # B057 F001 — regime-adaptive universe (US growth)
     "SGOV",
     "SPY",
+    "TLT",  # B057 F001 — regime-adaptive universe (US treasury 20y+)
     "VEA",
+    "VWO",  # B057 F001 — regime-adaptive universe (emerging markets)
 )
 
 PRICES_RELPATH = ("snapshots", "prices", "unified", "prices_daily.csv")

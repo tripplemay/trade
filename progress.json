@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "B057 通用「策略模式」平台（多模式：目标+回测+模拟盘+真实执行）+ regime 第一个落地消费者（用户 2026-06-12 调序 B057 先于 B055 + 拍板本批含真实多账户执行）。把策略目标/账户/执行链从 Master-only 推广成参数化一等公民，让任何策略最小成本插入并**可独立真实交易**；regime 作第一个真实消费者校准框架。**范围(用户 2026-06-12 两次确认)**：通用框架 + regime 落地(目标+回测+模拟盘+surface) + **真实多账户执行链**(每模式独立真金账户+参数化 diff/ticket/fills/reconcile/journal)。**两条诚实约束**：①能力≠配资(建多账户执行=有能力，funding 仍归用户，建议 regime 先 paper 验证再配真钱，前端标研究态)；②**不动摇 Master 执行链**(用户正真实交易 Master)——执行链多账户化必须向后兼容(Master 默认 mode 路径不变)，F006 硬回归 Master 不破(B051 账户源+B053 对账完整性 per-mode 保留)。框架每模式自带=目标 precompute+回测(B050)+模拟盘(B056)+真实账户+执行链+surface。**规划过最大批次**。6 features 5g+1c：F001 通用策略目标层+regime 目标 precompute(调现成 derive_regime_adaptive_weights)；F002 regime 接 B050 回测；F003 regime 接 B056 模拟盘+多模式；**F004 多账户模型+参数化执行链(最重，Master 向后兼容，B053 对账 per-mode)**；F005 前端多模式 surface(推荐+执行页模式选择器，中文)；F006 codex 多模式全平台+★Master 执行硬回归+regime 落地+对账 per-mode+signoff。永久硬边界：§12.10.2/no-AI/regime 不预测/B051 账户源 per-mode/B053 对账 fail-fast per-mode。不做：改 regime 算法/Master 评分。spec docs/specs/B057-strategy-mode-framework-spec.md(11 章)。**背景**：B056 done(模拟盘参数化基建)；regime 引擎+回测+压测现成。用户调序+扩范围原因：建完整多模式平台一劳永逸，regime 引擎现成省力。",
   "total_features": 6,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-06-12",
   "reference_docs": [
     "docs/specs/B057-strategy-mode-framework-spec.md",
@@ -27,7 +27,7 @@
   "generator_handoff": null,
   "session_notes": {
     "planner": "2026-06-12 B057 planning，status→building 交 Generator F001。**用户调序 B057 先于 B055**(regime 引擎+回测+危机压测现成+B056 刚做完，比 B055 新建引擎省)。**用户选『通用框架+regime 第一消费者』+ 2026-06-12 再拍板『本批含真实多账户执行』**(planner 提两约束用户接受：①能力≠配资 funding 仍归用户建议 regime 先 paper 验证；②不动摇 Master 执行链=向后兼容+F006 硬回归)。**范围扩大=规划过最大批次 6 features**：F001 通用目标层+regime precompute/F002 regime 回测/F003 regime 模拟盘/**F004 多账户模型+参数化执行链(最重，Master 默认 mode 向后兼容，B053 对账 per-mode)**/F005 前端推荐+执行页模式选择器/F006 codex 全平台+★Master 执行硬回归。**复用**：B050 per-strategy dispatch+B056 参数化 paper 引擎+recommendation_snapshot 范式；regime 引擎/回测/压测现成。 ▌**【下次 planner 续接】** status=building(Generator F001→F002→F003→F004→F005，再 Codex F006)。planner 续接：(a) B057 done→done 收尾+告知用户可回测+模拟盘前向验证 regime；(b) Generator 抛疑点(目标层迁移 recommendation_snapshot 加 mode 维度 vs 新表/regime cadence 月度 vs Master 季度/B050 regime adapter 字段)。**F004 是最重最安全攸关项**(动真金对账链)：必须 Master 向后兼容、B053 对账 per-mode、F006 硬回归 Master 不破(用户正真实交易 Master)。**纪律**：能力建好但 funding 仍建议先 paper 验证 regime。**需求池**：B055 进攻选股(调序到 B057 后)。**用户上手并行**：实盘小仓(中文 Master)+可激活 Master 模拟盘前向验证。prod=B056 系。",
-    "generator": null,
+    "generator": "2026-06-12 B057 generator 推进中（auto-advance）。**F001 done**（通用策略目标层+regime precompute）：(1) recommendation_snapshot 加 strategy_id 列(默认 master_portfolio，migration 0020 batch 模式 SQLite+PG 兼容，唯一约束改 (date,symbol,strategy_id)，repo save_batch/latest_snapshot 按 strategy_id scoped——master 读写路径完全向后兼容)。(2) 新 strategy_modes 包：registry.py(StrategyMode 注册 master[live/quarterly]+regime[research/monthly]，funding_state 诚实区分能力≠配资)+targets.py(get_target 通用读，compute_target_key 单一来源，paper/targets 委托避免§17.1 双读)。(3) regime_precompute.py 调现成 run_regime_adaptive_monthly_backtest 取末期 effective_weights 作当前目标(不改 regime 算法)，data_source real/mixed/fixture 诚实；cli.py+systemd 月度 timer(deploy DRY 自动 wire)。(4) ETF_UNIVERSE 加 QQQ/VWO/IEF/TLT/DBC(regime 9 资产真数据覆盖)。(5) 守门：§12.10.2 strategy_modes 请求层不 import trade+precompute 允许；scheduler-scope 加 strategy_modes。L1 全绿：backend pytest 1144 passed/ruff/mypy 0/alembic head 0020。**3 设计决策(spec-grounded 默认，非阻塞)**：①目标层用加列非新表(spec sanction+向后兼容)②regime cadence=monthly(spec+函数名+择时响应性；B019 quarterly 是旧 0-weight overlay 的 sweep 基线，不约束新 mode)③strategy_id=regime_adaptive(非 config 的 regime_adaptive_multi_asset，非 B013/14/15 overlay)。下一步 F002 regime 接 B050 回测(触 trade/，需本地 mypy trade)。",
     "evaluator": null
   },
   "features": [
