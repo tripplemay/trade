@@ -44,6 +44,10 @@ const REQUIRED_PREFIXES = [
   "home",
   // B038 F001: the Home "Today's market news" feed (GET /api/news/latest).
   "news",
+  // B056 F003: the paper-trading (forward-simulation) surface.
+  "paper",
+  // B057 F005: the strategy-mode selector data source (GET /api/strategy-modes).
+  "strategy-modes",
 ];
 
 describe("next.config dev rewrites cover all B022 backend prefixes", () => {

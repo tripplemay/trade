@@ -63,6 +63,8 @@ const nextConfig = {
       "home",
       "news",
       "paper",
+      // B057 F005: the strategy-mode selector data source (GET /api/strategy-modes).
+      "strategy-modes",
     ];
     return PROXIED_PREFIXES.flatMap((prefix) => [
       { source: `/api/${prefix}`, destination: `${target}/api/${prefix}` },
