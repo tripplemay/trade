@@ -313,6 +313,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/paper/strategies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Paper Strategies Route */
+        get: operations["get_paper_strategies_route_api_paper_strategies_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/paper/{strategy_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Paper View Route */
+        get: operations["get_paper_view_route_api_paper__strategy_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/paper/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Activate Paper Route */
+        post: operations["activate_paper_route_api_paper_activate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/advisor": {
         parameters: {
             query?: never;
@@ -682,6 +733,38 @@ export interface components {
             base_currency: string;
             /** Positions */
             positions?: components["schemas"]["PositionEntry"][];
+        };
+        /** ActivatePaperRequest */
+        ActivatePaperRequest: {
+            /** Strategy Id */
+            strategy_id: string;
+            /**
+             * Initial Capital
+             * @default 100000
+             */
+            initial_capital: number;
+            /**
+             * Fee Bps
+             * @default 5
+             */
+            fee_bps: number;
+            /**
+             * Slippage Bps
+             * @default 5
+             */
+            slippage_bps: number;
+        };
+        /** ActivatePaperResponse */
+        ActivatePaperResponse: {
+            /** Strategy Id */
+            strategy_id: string;
+            /** Activated */
+            activated: boolean;
+            /**
+             * Positions
+             * @default 0
+             */
+            positions: number;
         };
         /** AdvisorReference */
         AdvisorReference: {
@@ -1468,6 +1551,146 @@ export interface components {
              * @description ISO-8601 date of the latest observation, or null.
              */
             latest_date?: string | null;
+        };
+        /** PaperDriftEntry */
+        PaperDriftEntry: {
+            /** Symbol */
+            symbol: string;
+            /** Current Weight */
+            current_weight: number;
+            /** Target Weight */
+            target_weight: number;
+            /**
+             * Drift
+             * @description current_weight - target_weight.
+             */
+            drift: number;
+        };
+        /** PaperNavPoint */
+        PaperNavPoint: {
+            /** Date */
+            date: string;
+            /** Nav */
+            nav: number;
+            /**
+             * Benchmark Nav
+             * @description SPY normalised to the account's initial capital.
+             */
+            benchmark_nav?: number | null;
+        };
+        /** PaperPositionPnl */
+        PaperPositionPnl: {
+            /** Symbol */
+            symbol: string;
+            /** Shares */
+            shares: number;
+            /** Avg Cost */
+            avg_cost: number;
+            /** Close */
+            close?: number | null;
+            /** Market Value */
+            market_value?: number | null;
+            /** Weight */
+            weight: number;
+            /** Unrealized Pnl */
+            unrealized_pnl?: number | null;
+            /** Unrealized Pnl Pct */
+            unrealized_pnl_pct?: number | null;
+        };
+        /** PaperRebalanceEntry */
+        PaperRebalanceEntry: {
+            /** Date */
+            date: string;
+            /** Cost */
+            cost: number;
+            /** Cumulative Cost */
+            cumulative_cost: number;
+        };
+        /** PaperStrategiesResponse */
+        PaperStrategiesResponse: {
+            /** Strategies */
+            strategies?: components["schemas"]["PaperStrategy"][];
+        };
+        /** PaperStrategy */
+        PaperStrategy: {
+            /** Strategy Id */
+            strategy_id: string;
+            /** Name */
+            name: string;
+            /** Has Account */
+            has_account: boolean;
+        };
+        /** PaperSummary */
+        PaperSummary: {
+            /** Strategy Id */
+            strategy_id: string;
+            /** Base Currency */
+            base_currency: string;
+            /** Initial Capital */
+            initial_capital: number;
+            /**
+             * Activated On
+             * @description ISO activation date.
+             */
+            activated_on: string;
+            /** Days Running */
+            days_running: number;
+            /** Current Nav */
+            current_nav: number;
+            /** Total Pnl */
+            total_pnl: number;
+            /** Total Pnl Pct */
+            total_pnl_pct: number;
+            /** Today Pnl */
+            today_pnl?: number | null;
+            /**
+             * Benchmark Pnl Pct
+             * @description SPY return over the simulation period.
+             */
+            benchmark_pnl_pct?: number | null;
+            /**
+             * Vs Benchmark Pct
+             * @description Account return minus SPY return (out/under-perf).
+             */
+            vs_benchmark_pct?: number | null;
+            /**
+             * Next Rebalance
+             * @description ISO date hint of the strategy's next rebalance.
+             */
+            next_rebalance?: string | null;
+            /** Fee Bps */
+            fee_bps: number;
+            /** Slippage Bps */
+            slippage_bps: number;
+        };
+        /**
+         * PaperView
+         * @description The full paper-trading page payload for one strategy.
+         */
+        PaperView: {
+            /**
+             * Active
+             * @description False when this strategy has no paper account yet.
+             */
+            active: boolean;
+            /** Strategy Id */
+            strategy_id: string;
+            /** Strategy Name */
+            strategy_name: string;
+            summary?: components["schemas"]["PaperSummary"] | null;
+            /**
+             * Cash
+             * @default 0
+             */
+            cash: number;
+            /** Nav Curve */
+            nav_curve?: components["schemas"]["PaperNavPoint"][];
+            /** Positions */
+            positions?: components["schemas"]["PaperPositionPnl"][];
+            /** Drift */
+            drift?: components["schemas"]["PaperDriftEntry"][];
+            /** Rebalances */
+            rebalances?: components["schemas"]["PaperRebalanceEntry"][];
         };
         /**
          * PerformancePoint
@@ -2658,6 +2881,90 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LatestNewsResponse"];
+                };
+            };
+        };
+    };
+    get_paper_strategies_route_api_paper_strategies_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaperStrategiesResponse"];
+                };
+            };
+        };
+    };
+    get_paper_view_route_api_paper__strategy_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                strategy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaperView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    activate_paper_route_api_paper_activate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivatePaperRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivatePaperResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

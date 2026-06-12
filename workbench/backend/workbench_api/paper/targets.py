@@ -31,6 +31,24 @@ from workbench_api.db.repositories.recommendation_snapshot import (
 
 MASTER_STRATEGY_ID = "master_portfolio"
 
+# Strategies wired into the paper engine, in selector order (Master first).
+# B055 / future strategies append here AND add a branch in
+# ``load_strategy_targets`` — the engine, job, and page are otherwise unchanged.
+# The Chinese display name is kept here (self-contained) so the read path does
+# not couple to the strategies-registry internals.
+PAPER_STRATEGIES: tuple[tuple[str, str], ...] = (
+    (MASTER_STRATEGY_ID, "旗舰组合"),
+)
+
+
+def paper_strategy_name(strategy_id: str) -> str:
+    """Chinese display name for a paper strategy (falls back to the id)."""
+
+    for sid, name in PAPER_STRATEGIES:
+        if sid == strategy_id:
+            return name
+    return strategy_id
+
 
 @dataclass(frozen=True, slots=True)
 class StrategyTargets:

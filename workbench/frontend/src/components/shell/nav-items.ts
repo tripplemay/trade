@@ -4,6 +4,7 @@ import {
   Compass,
   DatabaseBackup,
   FileText,
+  FlaskConical,
   History,
   LayoutDashboard,
   LineChart,
@@ -27,6 +28,7 @@ export type NavKey =
   | "reports"
   | "recommendations"
   | "risk"
+  | "paper"
   | "positionDiff"
   | "ticket"
   | "fills"
@@ -61,6 +63,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     testId: "nav-recommendations",
   },
   { href: "/risk", labelKey: "risk", icon: ShieldAlert, testId: "nav-risk" },
+  { href: "/paper", labelKey: "paper", icon: FlaskConical, testId: "nav-paper" },
   {
     href: "/execution/position-diff",
     labelKey: "positionDiff",
