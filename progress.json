@@ -1,45 +1,40 @@
 {
-  "status": "done",
-  "user_goal": "B056 模拟盘（Paper Trading / 前向模拟）基建——每策略一个虚拟账户，Master 先行。回测(过去)与实盘(真金)之间的『前向桥』：给虚拟本金，忠实跟策略目标配置，调仓日自动虚拟调仓(收盘价成交+真实成本)，每日用真实价格 mark-to-market，显示账户盈亏曲线+每资产盈亏。让用户下真单前/中看策略前向表现(backtest 过拟合的解药=真·样本外)。**用户决策**：与实盘并行(非 gate)；排 B054 后 B055 前；真·基建(一套引擎参数化策略，Master 先，B055/B057/未来各插一个)；成本真实计；前向(激活日起累积，不 seed)。**架构复用**：策略目标(recommendation_snapshot)+每日价格管线+mark_to_market+account_snapshot 范式。新建：paper 账户表+paper_nav_history+虚拟调仓引擎+每日 MTM job(timer)+模拟盘页。**UI 用户 2026-06-11 确认 6 区块**：摘要(含 vs SPY)/净值曲线+SPY/每资产盈亏/配置漂移/调仓记录简版/设置。4 features 3g+1c：F001 paper 账户+虚拟调仓引擎(参数化)/F002 每日 MTM job+nav history(timer)/F003 模拟盘页 6 区块中文/F004 codex 真 VM 忠实跟 Master+MTM 盈亏+前向累积+signoff。永久硬边界：§12.10.2/timer 接线 §24。不做：改策略/执行流；测策略非测执行(模拟=收盘价+成本，实盘 journal=执行，两账户分开)。spec docs/specs/B056-paper-trading-spec.md(含 UI 6 区块)。**背景**：B054 done(界面中文化 trading_gate 解除，用户可实盘小仓起步)；本批与用户实盘并行。",
-  "total_features": 4,
-  "completed_features": 4,
+  "status": "building",
+  "user_goal": "B057 通用「策略模式」框架 + regime 第一个落地消费者（用户 2026-06-12 调序：B057 先于 B055）。把『策略目标/模式』从 Master-only 推广成参数化一等公民，让任何策略最小成本插入；regime 作第一个真实消费者校准框架(不建空中楼阁)。**用户选『通用框架+regime 第一消费者』**(非 P1 regime-only)。**范围裁定(用户确认+planner 建议)**：通用框架 + regime 落地(目标+回测+模拟盘+surface)；**真实多账户执行链刻意延后 follow-on**(等 paper 验证后再配资，本批真金仍只走 Master)。框架每模式自带=策略目标(precompute)+回测(B050)+模拟盘账户(B056)+surface。5 features 4g+1c：F001 通用策略目标层(每模式一份，参数化 strategy_id，Master+regime 统一接口)+regime 目标 precompute(调现成 derive_regime_adaptive_weights)；F002 regime 接 B050 回测分发(adapter+report)；F003 regime 接 B056 模拟盘(参数化目标源)+多模式模拟盘；F004 前端多模式 surface(模式选择器+regime 视图，中文)；F005 codex 双模式可回测+可模拟盘+regime 前向验证+Master 不破+signoff。永久硬边界：§12.10.2(目标 precompute job 侧 import trade，请求路径只读)/no-AI/regime 研究态不预测。不做：改 regime 算法/Master 评分/执行流/真实多账户执行(延后)。spec docs/specs/B057-strategy-mode-framework-spec.md(11 章)。**背景**：B056 done(模拟盘参数化基建就绪)；regime 引擎+回测+危机压测已现成→主要接线。用户调序原因：regime 引擎现成+B056 刚做完，比 B055(新建引擎)更省更顺。",
+  "total_features": 5,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F004",
+  "current_sprint": "F001",
   "last_updated": "2026-06-12",
   "reference_docs": [
-    "docs/specs/B056-paper-trading-spec.md",
-    "workbench/backend/workbench_api/services/mark_to_market.py",
-    "workbench/backend/workbench_api/db/models/account_snapshot.py",
+    "docs/specs/B057-strategy-mode-framework-spec.md",
+    "trade/strategies/regime_adaptive/weighting.py",
+    "trade/strategies/regime_adaptive/backtest.py",
+    "trade/strategies/regime_adaptive/regime.py",
     "workbench/backend/workbench_api/recommendations/precompute.py",
-    "workbench/backend/workbench_api/services/nav_history.py",
-    "workbench/backend/workbench_api/db/models/price_snapshot.py",
-    "workbench/deploy/systemd"
+    "workbench/backend/workbench_api/backtests/worker.py",
+    "workbench/backend/workbench_api/paper",
+    "docs/product/strategy-provenance-assessment-2026-06.md"
   ],
   "docs": {
-    "spec": "docs/specs/B056-paper-trading-spec.md",
+    "spec": "docs/specs/B057-strategy-mode-framework-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B056-paper-trading-signoff-2026-06-12.md",
-    "framework_reviewed": true
+    "signoff": null,
+    "framework_reviewed": false
   },
-  "completed_date": "2026-06-12",
   "role_assignments": null,
-  "evaluator_feedback": {
-    "summary": "✅ F004 FULL PASS（L1 代码审核 + L2 真机验证）。模拟盘激活成功（accounts=1），MTM job 正常运行（points=1，nav_history 累积），timer 接线验证完成，回归不破。",
-    "pass_count": 1,
-    "partial_count": 0,
-    "fail_count": 0,
-    "issues": []
-  },
-  "generator_handoff": "B056 全 3 generator features done（模拟盘前向模拟基建），status→verifying 交 Codex F004。**F001** paper 账户+纯虚拟调仓引擎(migration 0018)：收盘价成交+真实成本(fee+slip bps，investable=equity×(1-cost_rate)→cash≥0)，avg_cost 买入混合/卖出保留，sell-to-zero；targets 参数化 strategy_id(Master 读 recommendation_snapshot.latest_snapshot，target_key 权重指纹→变才调仓)；service.activate/rebalance_if_due；cli activate(off-path 激活)。**F002** 每日 MTM job+nav history(migration 0019)：paper/mtm.py rebalance_if_due→mark_to_market 复用→记 nav 点(per-asset pnl+SPY benchmark_close)，幂等(account+date)；paper/pnl.py 纯每资产盈亏；workbench-paper-mtm.{service,timer} 03:45 UTC 经 DRY glob+sudoers 通配自动装载零改；paper 入 SCHEDULER_PKGS。**F003** 模拟盘页 6 区块中文(摘要/净值曲线+SPY 叠加/每资产盈亏表+现金行/配置漂移/调仓简版/设置)+读 API(GET /paper/strategies,/paper/{id}; POST /paper/activate)+schemas+nav 入口+i18n 双语 54 key+api.ts 已 regen。默认 $100k/fee5+slip5bps。门禁全绿：backend ruff/mypy 0/unit+safety 1119；frontend tsc/lint/vitest 282/i18n parity 9/api.ts 幂等；单 alembic head 0019；可逆 migration。**Codex F004 L2 真 VM**：①激活 Master 模拟盘($100k)——`python -m workbench_api.paper.cli activate --strategy master_portfolio --capital 100000`(或 POST /api/paper/activate)→**首次建仓忠实跟 Master 目标**(持仓权重≈recommendation_snapshot 目标权重，§25 正面证据)；②触发每日 MTM(`python -m workbench_api.paper.mtm` 或等 03:45 timer)→nav/per-asset 盈亏随真实价格正确，**前向累积**多日 nav 点；③模拟盘页中文显账户盈亏+每资产盈亏+SPY 对比+漂移+调仓简版，明确『模拟非实盘』；④**timer 接线**(systemctl is-enabled/is-active workbench-paper-mtm.timer，§24)；⑤回归 B050-B055 不破+recent-errors=0+HEAD≡main；⑥演练自清(drill_cleanup 删测试 paper 账户/nav 点)；signoff §模拟盘忠实跟策略+§MTM 盈亏+§前向累积+§timer+§Ops。SSH ~/.ssh/kolmatrix_deploy→tripplezhou@34.180.93.185。**注：模拟盘与实盘并行非 gate；价格读 price_snapshot(prices timer 填)，若 VM 无足够 price_snapshot 历史则建仓 skip 无价 symbol(graceful)。**",
+  "evaluator_feedback": null,
+  "generator_handoff": null,
   "session_notes": {
-    "planner": "2026-06-12 B056 done 收尾 — Codex F004 FULL PASS(0 fix-round)。**模拟盘前向模拟基建上线**：paper 账户引擎(参数化 strategy_id，Master 先)+每日 MTM job+workbench-paper-mtm.timer(03:45 UTC enabled+active)+6 区块中文页。Codex 真机：激活 Master 模拟盘($100k)忠实跟目标、MTM job 运行 nav_history 累积(points=1 前向)、timer 接线、回归不破。无 soft-watch/无 framework learnings(队列不变：③演练自清/④reconcile fail-fast/⑤date UTC+async worker/satellite/sudoers)，framework_reviewed→true 无 bump。prod alembic 0019/4 paper 表/timer enabled。**激活方式**：python -m workbench_api.paper.cli activate --strategy master_portfolio --capital 100000(或 POST /api/paper/activate)→等每日 03:45 MTM 或手动 python -m workbench_api.paper.mtm。 ▌**【下次 planner 续接】** status=done。**下一批=B055 进攻选股引擎**(用户拍板序 B054→B056→B055→B057；P1 spec 已备 docs/specs/B055-attack-stock-selection-spec.md，先回测验证)。planner 续接立即可 planning B055。**告知用户**：①模拟盘已就绪可激活 Master 前向验证(过拟合解药)；②实盘 gate 已解除(B054)可小仓起步，Reconcile 需 planner 带跑。**架构铺垫**：B056 paper 引擎参数化 strategy_id=B057 regime 独立模式可零成本插；B055-P2 模式 surface 应通用化。**需求池**：B055/B057/TradingAgents 多视角借鉴。prod=B056 系。",
-    "generator": "2026-06-12 **B056 全 3 generator features done→verifying 交 Codex F004**。模拟盘=回测↔实盘前向桥。**F001** paper 账户+纯虚拟调仓引擎(收盘价成交+真实成本，target_key 指纹触发调仓，参数化 strategy_id Master 先)+0018。**F002** 每日 MTM job+nav history(复用 mark_to_market/price provider，per-asset pnl+SPY 基准，幂等)+workbench-paper-mtm timer 03:45+0019+入 SCHEDULER_PKGS。**F003** 6 区块中文页+读/激活 API+i18n 54key+api.ts regen。**坑/裁定**：①成本模型 investable=equity×(1-cost_rate) 留够成本使 cash≥0 不为负(activation cost 致 NAV<初始=诚实成本拖累，测试断言 99900.1 非 100000)；②paper 引擎纯函数(无 ORM)便于精确算术测试；③调仓触发用 target_key 权重指纹(非日历)→季内稳定不 churn，B055 同接口零成本插；④prod DB SQLite(无正则 SQL)；⑤EquityCurveChart 复用作 NAV+SPY 叠加(测试用空 curve 避 canvas)；⑥默认 fee5+slip5bps/$100k(spec 留 generator 定)。门禁全绿 backend 1119/frontend 282/单 head 0019。**下次**：Codex F004 L2 真 VM 激活+MTM+前向累积+timer+signoff；done→planner 收尾(B055 进攻引擎下批)。 **部署确认(generator)**：CI 首推 2 红已修(mypy CI-exact 含 tests 缺注解 + next.config PROXIED_PREFIXES 缺 paper 致 E2E /api/paper 404)，重推全绿+自动部署成功；**prod 已 alembic 0019(head)/4 paper 表就位/workbench-paper-mtm.timer enabled**(DRY glob 零改自动装载)。Codex F004 可直接 L2 激活验收。",
-    "evaluator": "2026-06-12 **✅ F004 FULL PASS → done 交 Planner**。L1 代码审核：F001-F004 实现完整，971 backend + 282 frontend tests 全绿 ✓；L2 真机验证（SSH）：①timer 接线验证（workbench-paper-mtm.timer enabled+active+03:45 UTC）✓；②MTM job 成功运行（accounts=1 points=1，nav_history 累积）✓；③激活逻辑验证（代码读 target_weights，MTM 执行说明激活成功）✓；④后端进程健康（uvicorn+worker 正常）✓；⑤回归不破（recent-errors=0）✓。**结论**：参数化模拟盘引擎实现完整，Master 模拟盘（$100k）成功激活，前向模拟正常运行。交 Planner done 阶段（告知用户可激活模拟盘验证策略前向表现）。"
+    "planner": "2026-06-12 B057 planning，status→building 交 Generator F001。**用户调序 B057 先于 B055**(regime 引擎+回测+危机压测现成+B056 刚做完，比 B055 新建引擎省)。**用户选『通用模式框架+regime 第一消费者』**(非 P1 regime-only，也非纯抽象框架——planner 建议 regime 作真实消费者校准抽象不悬空，用户采纳)。**范围**：通用策略目标层参数化 strategy_id(Master+regime+未来同源)+regime 落地(目标 precompute 调 derive_regime_adaptive_weights/接 B050 回测/接 B056 模拟盘/前端模式选择器)。**真实多账户执行链刻意延后**(planner 建议+用户未反对：先 paper 验证 regime 再配真金，本批真金仍只走 Master)；F005 验框架被 regime 跑通校准。**复用**：B050 per-strategy dispatch+B056 参数化 paper 引擎+recommendation_snapshot 范式；regime 引擎/回测/压测现成。 ▌**【下次 planner 续接】** status=building(Generator F001→F002→F003→F004，再 Codex F005)。planner 续接：(a) B057 done→done 收尾+告知用户可回测+模拟盘前向验证 regime；(b) Generator 抛疑点(目标层迁移 recommendation_snapshot 加 mode 维度 vs 新表/regime cadence 月度 vs Master 季度/B050 regime adapter 字段)。**延后 follow-on**：真实多模式执行(每模式真金账户+参数化执行链)——用户 paper 验证某模式值得配资后再立项。**需求池**：B055 进攻选股(调序到 B057 后)。**用户上手并行**：实盘小仓(中文 Master)+可激活 Master 模拟盘前向验证。prod=B056 系。",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",
     "F002",
     "F003",
-    "F004"
+    "F004",
+    "F005"
   ]
 }
