@@ -90,6 +90,11 @@ MESSAGES: Final[dict[str, dict[str, str]]] = {
             "activation_threshold 设为 0.11(原 0.13)。激活留待未来的 B013 批次。"
         ),
         "strategy.note.regime_inactive": "研究态:regime 叠加层以未激活状态发布(权重 0.0)。",
+        "strategy.note.regime_adaptive": (
+            "智能择时组合(B057):基于市场状态(正常/熊市/危机)自适应的多资产研究策略,"
+            "月度调仓。基于真实日线价格回测(Tiingo,B045 数据刷新)。研究态、前向验证中"
+            "——不构成收益预测,亦非交易指令。"
+        ),
         "gate.kill_switch_detail": "主组合回撤 {master_dd} {comparator} 阈值 {threshold}。",
         "gate.min_equity_detail": "账户权益 = {equity}",
         "diff.reason.sell_to_zero": "已持有但已不在目标内——清仓至零",
@@ -193,6 +198,13 @@ MESSAGES: Final[dict[str, dict[str, str]]] = {
         ),
         "strategy.note.regime_inactive": (
             "Research-state: regime overlay ships inactive (weight 0.0)."
+        ),
+        "strategy.note.regime_adaptive": (
+            "Regime-Adaptive mode (B057): a multi-asset research strategy that "
+            "adapts to the market regime (normal / bear / crisis), monthly "
+            "rebalance. Backtested on real daily prices (Tiingo, B045 "
+            "data-refresh). Research-state, forward-validation only — not a "
+            "return forecast, not a trading instruction."
         ),
         "gate.kill_switch_detail": (
             "Master drawdown {master_dd} {comparator} threshold {threshold}."

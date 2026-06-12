@@ -18,7 +18,7 @@
       "title": "regime 接入 B050 回测分发（adapter + report，回测页可跑）+ 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §5。触 trade/】B050 _DISPATCH 加 regime_adaptive(run_regime_adaptive_monthly_backtest)+结果 adapter(regime result→BacktestRunResponse)+report builder(双语沿用 B054 中文)；回测页选 regime→月度回测→真实多资产数据(regime 自带 9 资产 universe)→非退化结果；**本地 mypy trade**(B050 教训)；测试 regime 回测产非退化且异于 Master/其它+adapter 字段+月度 cadence。Gates：backend+trade pytest ≥ baseline+ / ruff / mypy(workbench+trade) 0。依赖 F001。",
       "design_decisions": [
         "复用 B050 per-strategy dispatch 模式+双语 report。"

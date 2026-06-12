@@ -271,6 +271,36 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
             "note_key": "strategy.note.regime_inactive",
         },
     ),
+    # B057 F002 — the Regime-Adaptive strategy as a first-class, backtestable
+    # MODE (distinct from the B013/B014/B015 zero-weight overlays). It is the
+    # B057 platform's first independent mode: its own monthly backtest engine
+    # (worker _DISPATCH["regime_adaptive"] → run_regime_adaptive_monthly_backtest),
+    # its own target producer (strategy_modes.regime_precompute) and — F003/F004 —
+    # its own paper + real account. status="research" keeps the funding honesty
+    # (capability ≠ funding, B057 §1; the mode-registry funding_state carries the
+    # research/forward-validation marker) and shares the "regime" sleeve so no new
+    # phantom sleeve is materialised in the home/advisor/risk consumers.
+    "regime_adaptive": (
+        _summary(
+            id="regime_adaptive",
+            name="智能择时组合",
+            sleeve="regime",
+            status="research",
+        ),
+        StrategyProvenance(
+            spec_path="docs/specs/B057-strategy-mode-framework-spec.md",
+            code_path="trade/strategies/regime_adaptive",
+            last_sweep_path=(
+                "docs/test-reports/B019-retune-recommendations-signoff-2026-05-15.md"
+            ),
+        ),
+        {
+            "rebalance": "monthly",
+            "mode": "regime",
+            "funding_state": "research",
+            "note_key": "strategy.note.regime_adaptive",
+        },
+    ),
 }
 
 

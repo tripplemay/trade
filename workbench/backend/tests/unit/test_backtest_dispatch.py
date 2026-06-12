@@ -18,8 +18,9 @@ job (real VM, real engines) — here we pin routing + field mapping.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 from types import SimpleNamespace
+from typing import Any
 
 import pytest
 
@@ -197,3 +198,137 @@ def test_adapt_skips_fills_without_executable_price() -> None:
     )
     result = SimpleNamespace(equity_curve=(), rebalance_results=(sub,))
     assert adapt_momentum(result)["trades"] == []
+
+
+# --- B057 F002: regime-adaptive dispatch + adapter + end-to-end runner ----------
+
+
+def test_run_backtest_job_dispatches_regime_adaptive(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """regime_adaptive routes to its own runner (not master, not inactive)."""
+
+    monkeypatch.setattr(worker_mod, "_load_backtest_snapshot", lambda: SimpleNamespace())
+    _patch_runner(monkeypatch, "regime_adaptive", "ran:regime")
+    run = SimpleNamespace(run_id="r1", strategy_id="regime_adaptive", params={})
+    assert worker_mod.run_backtest_job(run)["report_markdown"] == "ran:regime"
+
+
+def test_regime_adaptive_is_not_inactive() -> None:
+    """The B057 regime MODE is active/backtestable — distinct from the
+    B013/B014/B015 zero-weight overlays which stay inactive."""
+
+    assert "regime_adaptive" not in worker_mod.INACTIVE_STRATEGY_IDS
+    assert "regime_adaptive" in worker_mod._DISPATCH
+
+
+def _regime_period(
+    signal_date: date,
+    effective_weights: dict[str, float],
+    fills: tuple[SimpleNamespace, ...],
+    ending_value: float,
+) -> SimpleNamespace:
+    return SimpleNamespace(
+        signal_date=signal_date,
+        effective_weights=effective_weights,
+        fills=fills,
+        ending_value=ending_value,
+    )
+
+
+def test_adapt_regime_uses_effective_weights_and_ending_value() -> None:
+    from workbench_api.backtests.adapters import adapt_regime
+
+    period = _regime_period(
+        date(2024, 2, 29),
+        {"SPY": 0.5, "SGOV": 0.5, "QQQ": 0.0},  # zero entry dropped from surface
+        (_fill("SPY", 0.5, 100.0),),
+        20_000.0,
+    )
+    result = SimpleNamespace(
+        equity_curve=(_equity_point(date(2024, 2, 29), 20_000.0),),
+        rebalance_results=(period,),
+    )
+    mapped = adapt_regime(result)
+    assert mapped["allocations"] == [
+        {"date": "2024-02-29", "weights": {"SPY": 0.5, "SGOV": 0.5}}  # QQQ 0.0 dropped
+    ]
+    spy = mapped["trades"][0]
+    assert spy["notional"] == round(0.5 * 20_000.0, 2)  # ending_value base
+    assert mapped["equity"] == [{"date": "2024-02-29", "nav": 20_000.0}]
+
+
+def _build_regime_snapshot(length: int = 250) -> Any:
+    """A DataSnapshot of the 9-asset regime universe with enough daily history
+    for the default config (200-day trend, 120-day vol) to produce real
+    allocations in the later monthly periods."""
+
+    import hashlib
+    import math
+
+    from trade.data.loader import DataSnapshot, PriceBar  # type: ignore[import-untyped]
+    from trade.strategies.regime_adaptive.config import (  # type: ignore[import-untyped]
+        ASSET_CATEGORY_DEFENSIVE,
+        default_regime_adaptive_config,
+    )
+
+    start = date(2023, 1, 1)
+    config = default_regime_adaptive_config()
+    records: list[PriceBar] = []
+    for index, entry in enumerate(config.universe):
+        if entry.category == ASSET_CATEGORY_DEFENSIVE:
+            series = [100.0 for _ in range(length)]
+        else:
+            step = 0.25 + 0.03 * index
+            amp = 1.0 + 0.4 * index
+            series = [
+                100.0 + step * day + amp * math.sin(0.4 * day + index)
+                for day in range(length)
+            ]
+        records.extend(
+            PriceBar(
+                date=start + timedelta(days=day),
+                symbol=entry.symbol,
+                open=price * 0.999,
+                close=price,
+                adjusted_close=price,
+                volume=1_000,
+            )
+            for day, price in enumerate(series)
+        )
+    rec = tuple(records)
+    dates = sorted({r.date for r in rec})
+    checksum = hashlib.sha256(b"regime-test").hexdigest()
+    return DataSnapshot(
+        records=rec,
+        source="test_fixture",
+        adjusted_price_policy="adjusted_close",
+        data_snapshot_id=f"test:{checksum[:16]}",
+        checksum=checksum,
+        start_date=dates[0],
+        end_date=dates[-1],
+        symbols=tuple(sorted({r.symbol for r in rec})),
+        trading_calendar_gaps=(),
+    )
+
+
+def test_run_regime_end_to_end_real_engine_chinese_report() -> None:
+    """Exercise the FULL regime runner with the real engine: monthly cadence,
+    non-degenerate allocations, mapped metrics, and the Chinese report markdown.
+    (The '★ different-from-Master real result' counter-example is the L2 job.)"""
+
+    snapshot = _build_regime_snapshot(length=250)
+    run = SimpleNamespace(run_id="regime-e2e", strategy_id="regime_adaptive", params={})
+    out = worker_mod._run_regime(snapshot, run)
+
+    # Mapped metrics block present (map_metrics shape).
+    assert set(out["metrics"]) >= {"cagr", "sharpe", "max_drawdown", "turnover"}
+    # Monthly cadence: allocations land on month-end signal dates.
+    assert out["allocations"], "regime backtest produced no allocations"
+    # At least one later period holds risk assets beyond the defensive SGOV
+    # (non-degenerate — not 100% defensive every period).
+    held_symbols = {sym for a in out["allocations"] for sym in a["weights"]}
+    assert held_symbols - {"SGOV"}, "regime never held a risk asset (degenerate)"
+    # Chinese workbench report (B054).
+    assert "智能择时组合回测报告" in out["report_markdown"]
+    assert "研究态" in out["report_markdown"]

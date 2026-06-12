@@ -101,6 +101,37 @@ def adapt_risk_parity(result: Any) -> dict[str, list[dict[str, Any]]]:
     return {"equity": map_equity(result), "allocations": allocations, "trades": trades}
 
 
+def adapt_regime(result: Any) -> dict[str, list[dict[str, Any]]]:
+    """Adapt ``RegimeAdaptiveBacktestResult`` (B057) → equity/allocations/trades.
+
+    Each ``RegimeAdaptivePeriodResult`` carries ``signal_date`` +
+    ``effective_weights`` (the post-tolerance allocation actually held) +
+    ``fills`` directly (not nested under a ``signal`` like risk_parity). The
+    period exposes ``ending_value`` (post-rebalance) — the notional base for the
+    executed legs. Zero-weight universe entries are dropped from the surfaced
+    allocation (regime spans the full 9-asset universe with most at 0.0)."""
+
+    allocations = [
+        {
+            "date": period.signal_date.isoformat(),
+            "weights": {
+                symbol: float(weight)
+                for symbol, weight in period.effective_weights.items()
+                if float(weight) > 0
+            },
+        }
+        for period in result.rebalance_results
+    ]
+    trades: list[dict[str, Any]] = []
+    for period in result.rebalance_results:
+        base = float(period.ending_value)
+        for fill in period.fills:
+            row = _fill_to_trade(fill, base)
+            if row is not None:
+                trades.append(row)
+    return {"equity": map_equity(result), "allocations": allocations, "trades": trades}
+
+
 def adapt_us_quality(result: Any) -> dict[str, list[dict[str, Any]]]:
     """Adapt ``UsQualityBacktestResult`` → equity/allocations/trades.
 

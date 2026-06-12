@@ -35,6 +35,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from workbench_api.backtests.adapters import (
     adapt_momentum,
+    adapt_regime,
     adapt_risk_parity,
     adapt_us_quality,
 )
@@ -444,14 +445,55 @@ def _run_hk_china(snapshot: Any, run: BacktestRunLike) -> dict[str, Any]:
     }
 
 
+def _run_regime(snapshot: Any, run: BacktestRunLike) -> dict[str, Any]:
+    """Regime-Adaptive Multi-Asset (monthly) — the B057 F002 standalone engine.
+
+    Runs ``run_regime_adaptive_monthly_backtest`` with the engine's locked
+    defaults (the regime mode does not change the research algorithm). Monthly
+    cadence (the regime mode re-evaluates monthly, B057). Each monthly signal
+    date needs a trading date AFTER it (T+1 open execution), so the latest
+    month-end (the current incomplete month's last observed day, which has no
+    T+1) is dropped — the backtest covers complete monthly rebalances only."""
+
+    from trade.reporting.regime_adaptive import (  # type: ignore[import-untyped]
+        build_regime_adaptive_report_payload,
+        render_regime_adaptive_markdown,
+    )
+    from trade.strategies.regime_adaptive.backtest import (  # type: ignore[import-untyped]
+        run_regime_adaptive_monthly_backtest,
+    )
+
+    records = snapshot.records
+    all_dates = tuple(sorted({record.date for record in records}))
+    month_ends = _monthly_signal_dates(all_dates, run.params or {})
+    # Each signal date needs a T+1 trading date; exclude any month-end that is
+    # the latest observed date (the current incomplete month).
+    last_date = all_dates[-1] if all_dates else None
+    signal_dates = tuple(d for d in month_ends if last_date is None or d < last_date)
+    if not signal_dates:
+        raise BacktestWorkerError(
+            "no monthly signal dates with a following trading day in the requested "
+            "date range"
+        )
+    result = run_regime_adaptive_monthly_backtest(records, signal_dates)
+    payload = build_regime_adaptive_report_payload(result, snapshot, run.run_id)
+    return {
+        "metrics": map_metrics(payload),
+        **adapt_regime(result),
+        "report_markdown": render_regime_adaptive_markdown(payload),
+    }
+
+
 # B050 — strategy_id → engine runner. F001 Tier-1 (master / momentum /
 # risk_parity); F002 us_quality; F003 hk_china (standalone engine).
+# B057 F002 — regime_adaptive (the regime mode's standalone monthly backtest).
 _DISPATCH: dict[str, Callable[[Any, BacktestRunLike], dict[str, Any]]] = {
     MASTER_STRATEGY_ID: _run_master,
     "B006-global-etf-momentum": _run_momentum,
     "B016-risk-parity-hrp": _run_risk_parity,
     "B025-us-quality-momentum": _run_us_quality,
     "B011-satellite-hk-china": _run_hk_china,
+    "regime_adaptive": _run_regime,
 }
 
 

@@ -78,6 +78,9 @@ def test_strategies_list_reflects_master_sleeves(initialised_db: str) -> None:
         "B013-regime-quarterly",
         "B014-regime-stress",
         "B015-regime-active",
+        # B057 F002: the Regime-Adaptive strategy as a first-class backtestable
+        # mode (distinct from the B013/B014/B015 overlays), research-state.
+        "regime_adaptive",
     ]
 
 
