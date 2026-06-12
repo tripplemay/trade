@@ -14,6 +14,7 @@ import pytest
 from sqlalchemy.orm import Session, sessionmaker
 
 from workbench_api.db.engine import get_engine
+from workbench_api.db.models.paper_account import PaperAccount
 from workbench_api.db.repositories.paper_account import PaperNavHistoryRepository
 from workbench_api.db.repositories.recommendation_snapshot import (
     RecommendationSnapshotRepository,
@@ -55,7 +56,7 @@ def _seed_targets(session: Session, rows: list[dict[str, object]], *, as_of: dat
     session.commit()
 
 
-def _activate(session: Session, provider: _FakeProvider):
+def _activate(session: Session, provider: _FakeProvider) -> PaperAccount:
     _seed_targets(
         session,
         [
