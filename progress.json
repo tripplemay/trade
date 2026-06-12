@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "B057 通用「策略模式」平台（多模式：目标+回测+模拟盘+真实执行）+ regime 第一个落地消费者（用户 2026-06-12 调序 B057 先于 B055 + 拍板本批含真实多账户执行）。把策略目标/账户/执行链从 Master-only 推广成参数化一等公民，让任何策略最小成本插入并**可独立真实交易**；regime 作第一个真实消费者校准框架。**范围(用户 2026-06-12 两次确认)**：通用框架 + regime 落地(目标+回测+模拟盘+surface) + **真实多账户执行链**(每模式独立真金账户+参数化 diff/ticket/fills/reconcile/journal)。**两条诚实约束**：①能力≠配资(建多账户执行=有能力，funding 仍归用户，建议 regime 先 paper 验证再配真钱，前端标研究态)；②**不动摇 Master 执行链**(用户正真实交易 Master)——执行链多账户化必须向后兼容(Master 默认 mode 路径不变)，F006 硬回归 Master 不破(B051 账户源+B053 对账完整性 per-mode 保留)。框架每模式自带=目标 precompute+回测(B050)+模拟盘(B056)+真实账户+执行链+surface。**规划过最大批次**。6 features 5g+1c：F001 通用策略目标层+regime 目标 precompute(调现成 derive_regime_adaptive_weights)；F002 regime 接 B050 回测；F003 regime 接 B056 模拟盘+多模式；**F004 多账户模型+参数化执行链(最重，Master 向后兼容，B053 对账 per-mode)**；F005 前端多模式 surface(推荐+执行页模式选择器，中文)；F006 codex 多模式全平台+★Master 执行硬回归+regime 落地+对账 per-mode+signoff。永久硬边界：§12.10.2/no-AI/regime 不预测/B051 账户源 per-mode/B053 对账 fail-fast per-mode。不做：改 regime 算法/Master 评分。spec docs/specs/B057-strategy-mode-framework-spec.md(11 章)。**背景**：B056 done(模拟盘参数化基建)；regime 引擎+回测+压测现成。用户调序+扩范围原因：建完整多模式平台一劳永逸，regime 引擎现成省力。",
   "total_features": 6,
-  "completed_features": 2,
+  "completed_features": 3,
   "fix_rounds": 0,
-  "current_sprint": "F003",
+  "current_sprint": "F004",
   "last_updated": "2026-06-12",
   "reference_docs": [
     "docs/specs/B057-strategy-mode-framework-spec.md",

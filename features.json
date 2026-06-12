@@ -29,7 +29,7 @@
       "title": "regime 接入 B056 模拟盘（参数化目标源）+ 多模式模拟盘 + 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §6。依赖 F001/F002】B056 paper 引擎已按 strategy_id 参数化；F001 通用目标层让 paper 对 regime get_target(regime_adaptive)→月度虚拟调仓；regime 模拟盘=独立虚拟账户与 Master 并存；每日 MTM job 覆盖所有模式账户。测试 regime 模拟盘激活+忠实跟 regime 目标+月度调仓+MTM。Gates：同 F001。",
       "design_decisions": [
         "复用 B056 参数化 paper 引擎；regime 月度 vs Master 季度按 mode registry cadence。"

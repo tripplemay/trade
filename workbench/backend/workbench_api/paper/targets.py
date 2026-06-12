@@ -24,7 +24,7 @@ from dataclasses import dataclass
 
 from sqlalchemy.orm import Session
 
-from workbench_api.strategy_modes.registry import MASTER_STRATEGY_ID
+from workbench_api.strategy_modes.registry import MASTER_STRATEGY_ID, list_modes
 from workbench_api.strategy_modes.targets import compute_target_key, get_target
 
 __all__ = [
@@ -36,12 +36,14 @@ __all__ = [
     "paper_strategy_name",
 ]
 
-# Strategies surfaced in the paper engine selector, in selector order (Master
-# first). B057 F003 appends regime here; future strategies append too. The
-# Chinese display name is kept here (self-contained) so the read path does not
-# couple to the strategies-registry internals.
-PAPER_STRATEGIES: tuple[tuple[str, str], ...] = (
-    (MASTER_STRATEGY_ID, "旗舰组合"),
+# Strategies surfaced in the paper engine selector, derived from the B057 mode
+# registry (selector order, Master flagship first). Every mode is paper-enabled
+# (the platform vision: each mode self-contained with its own forward-simulation
+# account), so deriving from the registry means a future mode auto-appears in
+# the paper selector with zero changes here — and the Chinese display name lives
+# in one place (the registry), not duplicated. B057 F003 lights up regime.
+PAPER_STRATEGIES: tuple[tuple[str, str], ...] = tuple(
+    (mode.strategy_id, mode.display_name) for mode in list_modes()
 )
 
 

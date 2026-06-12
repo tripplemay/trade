@@ -11,7 +11,7 @@ All forward NAV / P&L values are REAL already-computed mark-to-market numbers
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from sqlalchemy.orm import Session
 
@@ -50,6 +50,7 @@ from workbench_api.services.prices_provider import (
     PriceMark,
     PriceProvider,
 )
+from workbench_api.strategy_modes.registry import CADENCE_MONTHLY, mode_for_strategy
 
 BENCHMARK_SYMBOL = "SPY"
 
@@ -78,6 +79,30 @@ def _next_quarter_end(d: date) -> date:
         if end > d:
             return end
     return date(d.year + 1, 3, 31)
+
+
+def _next_month_end(d: date) -> date:
+    """Last calendar day of the month strictly after ``d`` (monthly hint)."""
+
+    year = d.year + (1 if d.month == 12 else 0)
+    month = 1 if d.month == 12 else d.month + 1
+    next_month_first = date(year, month, 1)
+    # First day of the month after that, minus a day = the month-end.
+    after_year = next_month_first.year + (1 if next_month_first.month == 12 else 0)
+    after_month = 1 if next_month_first.month == 12 else next_month_first.month + 1
+    return date(after_year, after_month, 1) - timedelta(days=1)
+
+
+def _next_rebalance_hint(d: date, strategy_id: str) -> date:
+    """Cadence-aware next-rebalance hint: monthly modes (regime) → next
+    month-end, quarterly (Master) → next quarter-end. The paper engine still
+    rebalances on a target-key change, not a calendar — this is a UI hint keyed
+    to the mode's cadence (B057 F003)."""
+
+    mode = mode_for_strategy(strategy_id)
+    if mode is not None and mode.cadence == CADENCE_MONTHLY:
+        return _next_month_end(d)
+    return _next_quarter_end(d)
 
 
 def build_paper_view(
@@ -174,7 +199,7 @@ def _build_summary(
         today_pnl=today_pnl,
         benchmark_pnl_pct=benchmark_pct,
         vs_benchmark_pct=vs_benchmark,
-        next_rebalance=_next_quarter_end(ref_date).isoformat(),
+        next_rebalance=_next_rebalance_hint(ref_date, account.strategy_id).isoformat(),
         fee_bps=float(account.fee_bps),
         slippage_bps=float(account.slippage_bps),
     )
