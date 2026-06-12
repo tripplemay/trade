@@ -245,5 +245,24 @@
     "source": "2026-06-12 用户工程基建讨论(Codex 测试能否 CI 全自动化)",
     "phase_plan": "P0 门禁确权 / P1 golden 真数据+验收即代码(地基) / P2 CI 全栈+时钟+VCR / P3 prod synthetic+canary / P4 LLM-judge 语义 / P5 瘦身独立评审+signoff 起草",
     "sequence_note": "2026-06-12 用户调序：排在 B055 进攻选股之后(B057→B055→本批)；属工程基建非交易 gate，可在策略批次间隙插入。Phase 1 golden 数据集为最高 ROI 单项，可独立优先立项。"
+  },
+  {
+    "id": "B0XX-symbol-price-lookup",
+    "title": "标的信息查询/展示——任意 ticker 按需拉取 + 丰富标的详情页(价格+基本面+新闻)，类专业交易软件(EOD)。平台原语",
+    "description": "【2026-06-12 用户在 B058 building 期间确认的新基建方向】用户要『可在系统内方便查询任意标的价格信息，类似专业交易软件』。**用户两次 scope 选择**：①标的范围=**直接支持任意 ticker**(非仅 universe)；②信息广度=**丰富标的详情页**(价格+基本面+新闻)。**地基已有**：price_history 表/PriceProvider/mark_to_market/B045 data-refresh 真实价格——大头是新建查询+展示 surface + on-demand 拉取。**必须诚实校准**：我们价格是 **Tiingo 日线收盘价(EOD)非实时行情**；能做 标的搜索→最新收盘价+历史曲线图+52周高低+区间收益，**做不了/不假装实时报价/盘中分时**(界面须标『收盘价+as-of 日期』，不误导成 live)。**任意 ticker 的工程点**：(1) **按需多源拉取**——输入 ticker→后端按需 Tiingo(价格)+SEC EDGAR(基本面)拉→缓存→展示；(2) **缓存+限流**(任意 ticker 打外部 API，必须 cache+throttle 防额度/变慢)+无效 ticker 清晰报错；(3) **§12.10.2 边界**——按需拉取 import trade 数据层而请求路径禁 import trade→拉取走**异步 job**(复用 B058 refresh-target/B047 worker 范式)或边界安全数据服务，有延迟代价换守边界；(4) **基本面仅美股**——SEC EDGAR 只有美股，非美 ticker 只有价格无基本面，诚实降级标注；(5) **新闻复用 B034/B035**——已有子系统按 sleeve universe 取，扩任意 ticker 要加按 symbol 查新闻。**红线不变**：research-only(只展示，**绝不加买卖按钮**，no-execution-buttons 守门)/no-AI(只显数据，**不预测涨跌**)/数据源+as-of 诚实标注。**协同**：和 B058 价格源对齐天然协同(B058 理顺价格数据，本功能展示之)。",
+    "decisions": [
+      "2026-06-12 用户选 scope：任意 ticker(非仅 universe) + 丰富详情页(价格+基本面+新闻)",
+      "EOD 诚实校准：Tiingo 日线收盘价非实时；界面标『收盘价+as-of』，不做/不假装实时报价/盘中分时",
+      "红线：research-only 绝不加买卖按钮(no-execution-buttons 守门)/no-AI 不预测涨跌/数据源+as-of 诚实",
+      "任意 ticker 按需拉取走异步 job(§12.10.2 请求路径禁 import trade)+缓存+限流+无效 ticker 报错",
+      "基本面仅美股(SEC EDGAR)，非美 ticker 只价格无基本面，诚实降级；新闻复用 B034/B035 扩 symbol 查询",
+      "平台原语：price 查询服务 + 可复用标的展示组件，推荐/执行/模拟盘/回测均可嵌"
+    ],
+    "confirmed_at": "2026-06-12",
+    "priority": "medium",
+    "milestone": "平台原语 — 标的信息查询/展示",
+    "source": "2026-06-12 用户 B058 building 期间提出新基建(标的价格信息查询，类专业交易软件)",
+    "phase_plan": "P1 任意 ticker 价格详情(on-demand 拉价+缓存+限流+历史图+52周高低+区间收益) / P2 基本面富化(SEC 美股，非美降级) / P3 新闻富化(复用 B034/35 扩 symbol)",
+    "sequence_note": "2026-06-12 排在 B058 之后(B058 先理顺价格源，本功能展示干净数据)。与 B055 进攻选股/测试自动化基建的相对序由用户 planning 时定；本功能高个人实用性(随时查标的)，可考虑紧跟 B058。"
   }
 ]
