@@ -4,25 +4,13 @@ import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ColDef } from "ag-grid-community";
 
-import {
-  AllocationBar,
-  type AllocationBarItem,
-} from "@/components/chart";
-import {
-  DataTable,
-  type DataTableHandle,
-  currencyColumn,
-  percentColumn,
-} from "@/components/table";
+import { AllocationBar, type AllocationBarItem } from "@/components/chart";
+import { ModeSelector } from "@/components/strategy/ModeSelector";
+import { DataTable, type DataTableHandle, currencyColumn, percentColumn } from "@/components/table";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { workbenchFetch } from "@/lib/api-fetch";
+import { useStrategyMode } from "@/lib/strategy-mode";
 import { cn } from "@/lib/utils";
 import type { components } from "@/types/api";
 
@@ -108,6 +96,10 @@ export default function PositionDiffPage() {
   const tCols = useTranslations("execution.positionDiff.columns");
   const tCommon = useTranslations("common");
 
+  // B057 F005 — the diff is computed against the SELECTED mode's account +
+  // target (the backend defaults to Master when the param is absent).
+  const { strategyId } = useStrategyMode();
+
   const [data, setData] = useState<PositionDiffResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const tableRef = useRef<DataTableHandle>(null);
@@ -116,7 +108,9 @@ export default function PositionDiffPage() {
 
   useEffect(() => {
     let cancelled = false;
-    workbenchFetch(DIFF_URL)
+    setData(null);
+    setError(null);
+    workbenchFetch(`${DIFF_URL}?strategy_id=${encodeURIComponent(strategyId)}`)
       .then(async (response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const payload = (await response.json()) as PositionDiffResponse;
@@ -128,7 +122,7 @@ export default function PositionDiffPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [strategyId]);
 
   const currentBarItems: AllocationBarItem[] = useMemo(
     () =>
@@ -175,6 +169,8 @@ export default function PositionDiffPage() {
           {stateLabel}
         </span>
       </header>
+
+      <ModeSelector />
 
       {data && !hasSnapshot ? (
         <Card data-testid="position-diff-empty">
@@ -260,7 +256,10 @@ export default function PositionDiffPage() {
               ))}
             </ul>
           ) : (
-            <p data-testid="position-diff-unmatched-empty" className="text-sm text-muted-foreground">
+            <p
+              data-testid="position-diff-unmatched-empty"
+              className="text-sm text-muted-foreground"
+            >
               {t("unmatchedEmpty")}
             </p>
           )}

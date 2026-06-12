@@ -29,6 +29,7 @@ from workbench_api.db.models.account_snapshot import AccountSnapshot
 from workbench_api.db.repositories.account_snapshot import AccountSnapshotRepository
 from workbench_api.services.mark_to_market import compute_mark_to_market, marks_for
 from workbench_api.services.prices_provider import DbPriceProvider, PriceProvider
+from workbench_api.strategy_modes.registry import MASTER_STRATEGY_ID
 
 _logger = logging.getLogger("workbench.nav")
 
@@ -62,13 +63,18 @@ def snapshot_positions_and_cash(
 
 
 def aggregate_account_state(
-    session: Session, provider: PriceProvider | None = None
+    session: Session,
+    provider: PriceProvider | None = None,
+    *,
+    strategy_id: str = MASTER_STRATEGY_ID,
 ) -> tuple[bool, float]:
     """Return ``(account_present, nav)`` from the latest ``account_snapshot``.
 
-    ``account_present`` is True iff a snapshot row exists — a pure-cash
-    snapshot with zero positions (the new-user path: UI Account form saved
-    with just a cash balance) still counts as a configured account.
+    B057 F004/F005 — scoped by ``strategy_id`` (default Master, backward
+    compatible: the home NAV card stays Master) so each mode reports its own
+    account state. ``account_present`` is True iff a snapshot row exists — a
+    pure-cash snapshot with zero positions (the new-user path: UI Account form
+    saved with just a cash balance) still counts as a configured account.
 
     ``nav = cash + mark-to-market(positions)``; with zero positions it is
     exactly ``cash``. No snapshot → ``(False, 0.0)``; DB error → logged,
@@ -76,7 +82,7 @@ def aggregate_account_state(
     """
 
     try:
-        snapshot = AccountSnapshotRepository(session).latest()
+        snapshot = AccountSnapshotRepository(session).latest(strategy_id)
         if snapshot is None:
             return False, 0.0
         positions, cash = snapshot_positions_and_cash(snapshot)

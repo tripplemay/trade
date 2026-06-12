@@ -115,6 +115,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/strategy-modes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Strategy Modes Route
+         * @description Enumerate the platform's strategy modes (Master + regime + future).
+         *
+         *     The frontend mode selector reads this; research-state modes are marked so
+         *     the surface can show 研究态 / 前向验证中 honestly (B057 §1 capability ≠ funding).
+         */
+        get: operations["list_strategy_modes_route_api_strategy_modes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/backtests/run": {
         parameters: {
             query?: never;
@@ -2245,6 +2268,55 @@ export interface components {
             strategies: components["schemas"]["StrategySummary"][];
         };
         /**
+         * StrategyModeInfo
+         * @description One platform strategy mode (selector row).
+         */
+        StrategyModeInfo: {
+            /**
+             * Id
+             * @description Stable mode id, e.g. 'master' / 'regime'.
+             */
+            id: string;
+            /**
+             * Strategy Id
+             * @description Canonical strategy id (the API query param value), e.g. 'master_portfolio' / 'regime_adaptive'.
+             */
+            strategy_id: string;
+            /**
+             * Display Name
+             * @description Chinese display name.
+             */
+            display_name: string;
+            /**
+             * Funding State
+             * @description 'live' (funded, real trading) or 'research' (forward-validation only).
+             */
+            funding_state: string;
+            /**
+             * Is Research State
+             * @description True when the mode is not funded — the surface marks it 研究态.
+             */
+            is_research_state: boolean;
+            /**
+             * Cadence
+             * @description Rebalance cadence, e.g. 'quarterly' / 'monthly'.
+             */
+            cadence: string;
+            /**
+             * Description
+             * @description One-line Chinese description.
+             */
+            description: string;
+        };
+        /**
+         * StrategyModesResponse
+         * @description The full mode registry, in selector order (flagship first).
+         */
+        StrategyModesResponse: {
+            /** Modes */
+            modes: components["schemas"]["StrategyModeInfo"][];
+        };
+        /**
          * StrategyProvenance
          * @description Where the strategy's definition lives in the repo.
          */
@@ -2586,6 +2658,26 @@ export interface operations {
             };
         };
     };
+    list_strategy_modes_route_api_strategy_modes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StrategyModesResponse"];
+                };
+            };
+        };
+    };
     run_backtest_route_api_backtests_run_post: {
         parameters: {
             query?: never;
@@ -2754,7 +2846,10 @@ export interface operations {
     };
     get_current_recommendations_route_api_recommendations_current_get: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Strategy mode (default master_portfolio). Returns the mode's own target + account state. */
+                strategy_id?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -2768,6 +2863,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RecommendationsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -53,6 +53,7 @@ from workbench_api.routes import recommendations as recommendations_routes
 from workbench_api.routes import reports as reports_routes
 from workbench_api.routes import snapshots as snapshots_routes
 from workbench_api.routes import strategies as strategies_routes
+from workbench_api.routes import strategy_modes as strategy_modes_routes
 from workbench_api.settings import Settings, get_settings
 
 AuthenticatedUserDep = Annotated[AuthenticatedUser, Depends(require_authenticated_user)]
@@ -267,6 +268,7 @@ def create_app() -> FastAPI:
     # frontend runtime consumers — Home reuses services.nav.aggregate_nav).
     api.include_router(home_routes.router)
     api.include_router(strategies_routes.router)
+    api.include_router(strategy_modes_routes.router)
     api.include_router(backtests_routes.router)
     api.include_router(reports_routes.router)
     api.include_router(recommendations_routes.router)

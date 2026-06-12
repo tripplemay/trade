@@ -23,6 +23,7 @@ from workbench_api.services.recommendations import (
     get_sleeve_news,
 )
 from workbench_api.settings import Settings, get_settings
+from workbench_api.strategy_modes.registry import MASTER_STRATEGY_ID
 
 router = APIRouter(prefix="/recommendations", tags=["recommendations"])
 
@@ -38,8 +39,17 @@ def _runs_root(settings: Settings) -> Path:
 def get_current_recommendations_route(
     _user: AuthenticatedUserDep,
     session: SessionDep,
+    strategy_id: Annotated[
+        str,
+        Query(
+            min_length=1,
+            max_length=64,
+            description="Strategy mode (default master_portfolio). Returns the "
+            "mode's own target + account state.",
+        ),
+    ] = MASTER_STRATEGY_ID,
 ) -> RecommendationsResponse:
-    return get_current_recommendations(session)
+    return get_current_recommendations(session, strategy_id=strategy_id)
 
 
 @router.get("/news", response_model=SleeveNewsResponse)

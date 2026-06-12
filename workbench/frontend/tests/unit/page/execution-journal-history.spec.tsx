@@ -54,9 +54,7 @@ const HISTORY: JournalHistoryResponse = {
 const ANALYTICS_3M: SlippageAnalyticsResponse = {
   window: "3m",
   rolling_avg_bps: 15.0,
-  outliers: [
-    { ticket_id: "tkt-99", ticket_date: "2026-04-15", avg_bps: 100.5 },
-  ],
+  outliers: [{ ticket_id: "tkt-99", ticket_date: "2026-04-15", avg_bps: 100.5 }],
   trend: [
     { month: "2026-03", avg_bps: 12.0, fill_count: 5 },
     { month: "2026-04", avg_bps: 14.0, fill_count: 6 },
@@ -79,9 +77,10 @@ interface MockState {
 
 function buildFetch(state: MockState): typeof fetch {
   return vi.fn(async (input: RequestInfo | URL) => {
-    const url =
-      typeof input === "string" ? input : (input as Request).url ?? input.toString();
-    if (url === "/api/execution/journal-history") {
+    const url = typeof input === "string" ? input : ((input as Request).url ?? input.toString());
+    // B057 F005 — the journal endpoint now carries a ?strategy_id= query (the
+    // analytics matchers below already use startsWith, so they are unaffected).
+    if ((url.split("?")[0] ?? url) === "/api/execution/journal-history") {
       return new Response(JSON.stringify(state.history), {
         status: 200,
         headers: { "content-type": "application/json" },

@@ -1,4 +1,9 @@
 {
+  "modeSelector": {
+    "label": "Strategy mode",
+    "researchBadge": "Research",
+    "researchNotice": "Research-state / forward-validation only — not funded; validate with paper trading before allocating real money."
+  },
   "common": {
     "appName": "Workbench",
     "researchOnly": "research-only",

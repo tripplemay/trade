@@ -12,10 +12,13 @@ import {
 import { NewsPanel } from "@/components/recommendations/NewsPanel";
 import { PositionCards } from "@/components/recommendations/PositionCards";
 import { RiskBanner } from "@/components/risk/RiskBanner";
+import { ModeSelector } from "@/components/strategy/ModeSelector";
 import { DataTable, percentColumn, weightColumn } from "@/components/table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { workbenchFetch } from "@/lib/api-fetch";
+import { useStrategyMode } from "@/lib/strategy-mode";
 import { cn } from "@/lib/utils";
 import type { ColDef } from "ag-grid-community";
 import type { components } from "@/types/api";
@@ -66,6 +69,10 @@ export default function RecommendationsPage() {
   const tExport = useTranslations("recommendations.exportCard");
   const tCommon = useTranslations("common");
 
+  // B057 F005 — the recommendations page shows the SELECTED mode's target +
+  // account (the backend defaults to Master when the param is absent).
+  const { strategyId } = useStrategyMode();
+
   const [data, setData] = useState<RecommendationsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
@@ -76,7 +83,9 @@ export default function RecommendationsPage() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(CURRENT_URL)
+    setData(null);
+    setError(null);
+    workbenchFetch(`${CURRENT_URL}?strategy_id=${encodeURIComponent(strategyId)}`)
       .then(async (response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const payload = (await response.json()) as RecommendationsResponse;
@@ -88,7 +97,7 @@ export default function RecommendationsPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [strategyId]);
 
   const pieSlices: AllocationSlice[] = useMemo(
     () =>
@@ -146,6 +155,8 @@ export default function RecommendationsPage() {
           {stateLabel}
         </span>
       </header>
+
+      <ModeSelector />
 
       <RiskBanner />
 

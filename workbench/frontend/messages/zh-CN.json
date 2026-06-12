@@ -1,4 +1,9 @@
 {
+  "modeSelector": {
+    "label": "策略模式",
+    "researchBadge": "研究态",
+    "researchNotice": "该模式为研究态、前向验证中——尚未配资；建议先用模拟盘验证后再投入真实资金。"
+  },
   "common": {
     "appName": "Workbench",
     "researchOnly": "仅供研究",

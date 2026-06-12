@@ -5,13 +5,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Toaster } from "@/components/ui/sonner";
 import {
@@ -22,7 +16,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ModeSelector } from "@/components/strategy/ModeSelector";
 import { workbenchFetch } from "@/lib/api-fetch";
+import { useStrategyMode } from "@/lib/strategy-mode";
 import type { components } from "@/types/api";
 
 type AccountSnapshotPayload = components["schemas"]["AccountSnapshotPayload"];
@@ -147,15 +143,22 @@ export default function AccountEditPage() {
   const tToast = useTranslations("toast");
   const tValidation = useTranslations("form.validation");
 
+  // B057 F005 — the Account form seeds/edits the SELECTED mode's own real
+  // account (the backend defaults to Master when the param is absent), so a
+  // regime account is created independently of Master.
+  const { strategyId } = useStrategyMode();
+
   const [form, setForm] = useState<FormState>(() => toFormState(null));
   const [latest, setLatest] = useState<AccountSnapshotPayload | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
+  const modeQuery = `strategy_id=${encodeURIComponent(strategyId)}`;
+
   const reload = useCallback(async () => {
     try {
-      const response = await workbenchFetch(LATEST_URL);
+      const response = await workbenchFetch(`${LATEST_URL}?${modeQuery}`);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = (await response.json()) as AccountSnapshotPayload | null;
       setLatest(data);
@@ -164,7 +167,7 @@ export default function AccountEditPage() {
     } catch (reason: unknown) {
       setLoadError(reason instanceof Error ? reason.message : String(reason));
     }
-  }, []);
+  }, [modeQuery]);
 
   useEffect(() => {
     void reload();
@@ -197,7 +200,7 @@ export default function AccountEditPage() {
     }
     setSubmitting(true);
     try {
-      const response = await workbenchFetch(PUT_URL, {
+      const response = await workbenchFetch(`${PUT_URL}?${modeQuery}`, {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(validation.payload),
@@ -234,6 +237,8 @@ export default function AccountEditPage() {
           {stateLabel}
         </span>
       </header>
+
+      <ModeSelector />
 
       <form onSubmit={handleSubmit} className="space-y-6" data-testid="account-edit-form">
         <Card>
@@ -282,7 +287,12 @@ export default function AccountEditPage() {
               <CardTitle>{t("positionsCardTitle")}</CardTitle>
               <CardDescription>{t("positionsCardDescription")}</CardDescription>
             </div>
-            <Button type="button" variant="secondary" onClick={addRow} data-testid="account-add-row">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={addRow}
+              data-testid="account-add-row"
+            >
               {tCommon("addRow")}
             </Button>
           </CardHeader>

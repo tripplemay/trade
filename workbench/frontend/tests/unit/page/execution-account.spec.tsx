@@ -43,15 +43,17 @@ interface MockState {
 
 function buildFetch(state: MockState): typeof fetch {
   return vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-    const url =
-      typeof input === "string" ? input : (input as Request).url ?? input.toString();
-    if (url === "/api/execution/account/latest") {
+    const url = typeof input === "string" ? input : ((input as Request).url ?? input.toString());
+    // B057 F005 — match on the path, ignoring the ?strategy_id= query the mode
+    // selector adds (the page now passes the selected strategy mode through).
+    const path = url.split("?")[0] ?? url;
+    if (path === "/api/execution/account/latest") {
       return new Response(JSON.stringify(state.latest), {
         status: 200,
         headers: { "content-type": "application/json" },
       });
     }
-    if (url === "/api/execution/account" && init?.method === "PUT") {
+    if (path === "/api/execution/account" && init?.method === "PUT") {
       state.putBody = init.body ? JSON.parse(init.body as string) : null;
       return new Response(JSON.stringify(state.putResponse), {
         status: state.putStatus,

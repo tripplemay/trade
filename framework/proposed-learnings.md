@@ -135,3 +135,13 @@
 <!-- 2026-06-10: B052 done — 不沉淀（用户裁定）。评估过三候选：(A)『演练自清规约』（B052 整批直接教训，spec §5 预告：L2 真机演练写入执行域后收尾必须用 drill_cleanup 自清，PUT 回原状态≠无痕）；(B)『CI flake 处理规约』（risk-banner.spec F006 二例达标 B047-OPS2+B052：本地复跑定性→re-run 不阻塞 + spec 加 waitFor/quarantine，可随 B053 顺手修 spec 本身）；(C)『幂等占位区分』（B043 rationale + advisor 拒答二例达标，修复在 B053 BL-AUDIT-S1）。用户选都不沉淀，三候选留队列。注意：A 的操作面已由 B052 交付的 drill_cleanup CLI 工具承载（未来演练可用），仅规约文字未入 evaluator.md；B 的 spec 修复与 C 的代码修复均已排入 B053。 -->
 
 <!-- 2026-06-11: v0.9.43 沉淀完成（B053 done 阶段，用户批 ①②）：①幂等占位区分（B043 rationale + B053 advisor F002 二例）→ generator.md §18；②单测集成态 CI flake 处理（risk-banner.spec F006 跨 B047-OPS2/B052 多批）→ evaluator.md §27（CI flake 候选闭环，原 B047-OPS2 条目 + B052 二例注记结案）。CHANGELOG v0.9.43。未沉淀留队列：③演练自清/④reconcile fail-fast/⑤date.today→UTC + ③async worker/④satellite 权重/sudoers wrapper。 -->
+
+## [2026-06-12] Claude CLI — 来源：B057 F004 多账户模型（account_snapshot/order_ticket 加 strategy_id）
+
+**类型：** 新坑
+
+**内容：** deterministic-id upsert（merge）模型新增 NOT NULL + server_default 列时，**column default 仅在 INSERT 生效，幂等 re-run 的 merge→UPDATE 不应用 default**，会把列写成 NULL 触发约束失败。修复=构造 ORM 对象时**显式设该列值**（不能依赖 column default）。本批 bootstrap `_coerce_account_snapshot` 二次 run 触发（B057 F004 加 strategy_id 后），症状是 idempotent bootstrap 第二次 SystemExit/rollback。配套坑：CI mypy 严格扫 `workbench_api + tests`（不止 workbench_api），本地须跑 `mypy workbench_api tests`；改 trade/ 后本机 workbench venv 的 trade 是 copy 装，须 `python -m pip install --force-reinstall --no-deps <repo>` 刷新才能本地测。
+
+**建议写入：** `framework/harness/generator.md`（§编码坑：merge-UPDATE 不应用 column default + CI mypy 含 tests + workbench venv trade copy 刷新）
+
+**状态：** 待确认

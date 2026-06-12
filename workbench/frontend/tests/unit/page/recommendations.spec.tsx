@@ -65,7 +65,10 @@ const EXPORT: components["schemas"]["ExportTicketResponse"] = {
 function buildFetch(map: Record<string, unknown>): typeof fetch {
   return vi.fn(async (input: RequestInfo | URL) => {
     const url = typeof input === "string" ? input : ((input as Request).url ?? input.toString());
-    const body = map[url];
+    // B057 F005 — match on the path, ignoring the ?strategy_id= query the mode
+    // selector adds (the page now passes the selected strategy mode through).
+    const path = url.split("?")[0] ?? url;
+    const body = map[path] ?? map[url];
     if (body === undefined) return new Response("not-found", { status: 404 });
     return new Response(JSON.stringify(body), {
       status: 200,

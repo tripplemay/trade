@@ -5,10 +5,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import type { ColDef } from "ag-grid-community";
 
-import {
-  AllocationBar,
-  type AllocationBarItem,
-} from "@/components/chart";
+import { AllocationBar, type AllocationBarItem } from "@/components/chart";
 import {
   DataTable,
   type DataTableHandle,
@@ -16,15 +13,11 @@ import {
   currencyColumn,
   dateColumn,
 } from "@/components/table";
+import { ModeSelector } from "@/components/strategy/ModeSelector";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { workbenchFetch } from "@/lib/api-fetch";
+import { useStrategyMode } from "@/lib/strategy-mode";
 import type { components } from "@/types/api";
 
 type JournalHistoryResponse = components["schemas"]["JournalHistoryResponse"];
@@ -85,17 +78,23 @@ export default function JournalHistoryPage() {
   const tWindow = useTranslations("execution.journalHistory.windowOptions");
   const tCommon = useTranslations("common");
 
+  // B057 F005 — the journal + slippage analytics are the SELECTED mode's own
+  // (the backend defaults to Master when the param is absent).
+  const { strategyId } = useStrategyMode();
+
   const [history, setHistory] = useState<JournalHistoryResponse | null>(null);
   const [analytics, setAnalytics] = useState<SlippageAnalyticsResponse | null>(null);
   const [windowSel, setWindowSel] = useState<WindowOption>("3m");
   const [error, setError] = useState<string | null>(null);
   const tableRef = useRef<DataTableHandle>(null);
 
+  const modeQuery = `strategy_id=${encodeURIComponent(strategyId)}`;
   const historyColumns = useMemo(() => buildHistoryColumns(tCols), [tCols]);
 
   useEffect(() => {
     let cancelled = false;
-    workbenchFetch(HISTORY_URL)
+    setHistory(null);
+    workbenchFetch(`${HISTORY_URL}?${modeQuery}`)
       .then(async (response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const payload = (await response.json()) as JournalHistoryResponse;
@@ -107,11 +106,11 @@ export default function JournalHistoryPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [modeQuery]);
 
   useEffect(() => {
     let cancelled = false;
-    workbenchFetch(`${ANALYTICS_URL}?window=${windowSel}`)
+    workbenchFetch(`${ANALYTICS_URL}?window=${windowSel}&${modeQuery}`)
       .then(async (response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const payload = (await response.json()) as SlippageAnalyticsResponse;
@@ -123,7 +122,7 @@ export default function JournalHistoryPage() {
     return () => {
       cancelled = true;
     };
-  }, [windowSel]);
+  }, [windowSel, modeQuery]);
 
   const trendBarItems: AllocationBarItem[] = useMemo(
     () =>
@@ -164,6 +163,8 @@ export default function JournalHistoryPage() {
         </span>
       </header>
 
+      <ModeSelector />
+
       <div className="grid gap-4 md:grid-cols-3">
         <Card data-testid="journal-card-count">
           <CardHeader>
@@ -191,9 +192,7 @@ export default function JournalHistoryPage() {
             <CardDescription>{tCards("totalDollarDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-semibold tabular-nums">
-              ${totalDollar.toFixed(2)}
-            </p>
+            <p className="text-3xl font-semibold tabular-nums">${totalDollar.toFixed(2)}</p>
           </CardContent>
         </Card>
       </div>

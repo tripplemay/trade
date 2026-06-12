@@ -6,6 +6,7 @@ import Footer from "@/components/shell/Footer";
 import SideNav from "@/components/shell/SideNav";
 import TopBar from "@/components/shell/TopBar";
 import { auth } from "@/lib/auth";
+import { StrategyModeProvider } from "@/lib/strategy-mode";
 
 // B030 F003 / F004 fix-round 1 (2026-05-27): The B026 SyntheticDataBanner
 // is decommissioned with milestone A Layer 0→1. The component file at
@@ -46,19 +47,22 @@ export default async function ProtectedLayout({ children }: { children: React.Re
   return (
     <SessionProvider session={session}>
       <ThemeProvider>
-        <div className="flex min-h-screen flex-col">
-          <TopBar />
-          <div className="flex flex-1">
-            <SideNav />
-            <main
-              data-testid="workbench-main"
-              className="flex-1 overflow-x-hidden px-4 py-6 md:px-6"
-            >
-              {children}
-            </main>
+        {/* B057 F005 — the selected strategy mode is shared across surfaces. */}
+        <StrategyModeProvider>
+          <div className="flex min-h-screen flex-col">
+            <TopBar />
+            <div className="flex flex-1">
+              <SideNav />
+              <main
+                data-testid="workbench-main"
+                className="flex-1 overflow-x-hidden px-4 py-6 md:px-6"
+              >
+                {children}
+              </main>
+            </div>
+            <Footer />
           </div>
-          <Footer />
-        </div>
+        </StrategyModeProvider>
       </ThemeProvider>
     </SessionProvider>
   );

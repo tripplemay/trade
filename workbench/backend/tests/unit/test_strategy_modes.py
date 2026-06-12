@@ -115,6 +115,22 @@ def test_registry_lookup_by_strategy_id() -> None:
     assert get_mode("does-not-exist") is None
 
 
+def test_list_strategy_modes_service_marks_research_state() -> None:
+    # B057 F005 — the /api/strategy-modes data source for the frontend selector.
+    from workbench_api.strategy_modes.service import list_strategy_modes
+
+    resp = list_strategy_modes()
+    by_strategy = {m.strategy_id: m for m in resp.modes}
+    assert {MASTER_STRATEGY_ID, REGIME_STRATEGY_ID} <= set(by_strategy)
+    assert by_strategy[MASTER_STRATEGY_ID].is_research_state is False
+    assert by_strategy[MASTER_STRATEGY_ID].funding_state == "live"
+    assert by_strategy[REGIME_STRATEGY_ID].is_research_state is True
+    assert by_strategy[REGIME_STRATEGY_ID].funding_state == "research"
+    assert by_strategy[REGIME_STRATEGY_ID].display_name == "智能择时组合"
+    # Flagship first (selector order).
+    assert resp.modes[0].strategy_id == MASTER_STRATEGY_ID
+
+
 # --- generic target layer -----------------------------------------------------
 
 

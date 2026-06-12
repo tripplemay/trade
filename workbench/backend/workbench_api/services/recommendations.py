@@ -56,6 +56,7 @@ from workbench_api.services.nav_history import (
 )
 from workbench_api.services.prices_provider import DbPriceProvider, PriceProvider
 from workbench_api.services.wash_sale import detect_wash_sales
+from workbench_api.strategy_modes.registry import MASTER_STRATEGY_ID
 
 DISCLAIMER_LITERAL: str = (
     "research-only; this is a manual review checklist, not a trading instruction"
@@ -132,7 +133,9 @@ def get_sleeve_news(
     return SleeveNewsResponse(items=[_to_news_item(r) for r in relevances])
 
 
-def _aggregate_account_state(session: Session) -> tuple[bool, float]:
+def _aggregate_account_state(
+    session: Session, strategy_id: str = MASTER_STRATEGY_ID
+) -> tuple[bool, float]:
     """Return (account_present, total_equity) from the latest ``account_snapshot``.
 
     B051: delegates to :func:`nav.aggregate_account_state` — the snapshot
@@ -145,39 +148,48 @@ def _aggregate_account_state(session: Session) -> tuple[bool, float]:
     degrade contract, unchanged).
     """
 
-    return aggregate_account_state(session)
+    return aggregate_account_state(session, strategy_id=strategy_id)
 
 
-def _account_positions_and_cash(session: Session) -> tuple[list[tuple[str, float]], float]:
-    """Parse the latest AccountSnapshot into ``([(SYMBOL, shares)], cash)``.
+def _account_positions_and_cash(
+    session: Session, strategy_id: str = MASTER_STRATEGY_ID
+) -> tuple[list[tuple[str, float]], float]:
+    """Parse the mode's latest AccountSnapshot into ``([(SYMBOL, shares)], cash)``.
 
-    Trust-nothing parse of the positions JSON (shared with nav since B051):
-    drop malformed entries. No snapshot → ``([], 0.0)``."""
+    B057 F005 — scoped by ``strategy_id`` (default Master). Trust-nothing parse of
+    the positions JSON (shared with nav since B051): drop malformed entries. No
+    snapshot → ``([], 0.0)``."""
 
-    return snapshot_positions_and_cash(AccountSnapshotRepository(session).latest())
+    return snapshot_positions_and_cash(
+        AccountSnapshotRepository(session).latest(strategy_id)
+    )
 
 
 def _build_target_positions(
-    session: Session, provider: PriceProvider | None = None
+    session: Session,
+    provider: PriceProvider | None = None,
+    *,
+    strategy_id: str = MASTER_STRATEGY_ID,
 ) -> list[TargetPosition]:
-    """Map the latest precomputed Master Portfolio target (B044 F002) to
-    TargetPosition rows.
+    """Map the mode's latest precomputed target (B044 F002) to TargetPosition rows.
 
-    Reads ``recommendation_snapshot`` (written by the recommendations
-    precompute timer, which imports ``trade`` for the real scoring) — this
-    request path NEVER imports ``trade`` (§12.10 AST guard). ``target_weight``
-    is the real Master composition; ``current_weight`` (B046 F001) is the
-    account's **mark-to-market** weight — held ``shares × latest_close`` over the
-    market-value NAV — on the SAME basis the execution position-diff uses, so the
-    two views agree. When no snapshot exists yet (precompute hasn't run), returns
-    ``[]`` — graceful "scoring pending", never an error."""
+    B057 F005 — scoped by ``strategy_id`` (default Master): reads the mode's own
+    ``recommendation_snapshot`` target + the mode's own account for current_weight.
+    Reads ``recommendation_snapshot`` (written by a precompute timer that imports
+    ``trade`` for the real scoring) — this request path NEVER imports ``trade``
+    (§12.10 AST guard). ``target_weight`` is the real composition;
+    ``current_weight`` (B046 F001) is the account's **mark-to-market** weight —
+    held ``shares × latest_close`` over the market-value NAV — on the SAME basis
+    the execution position-diff uses, so the two views agree. When no snapshot
+    exists yet (precompute hasn't run), returns ``[]`` — graceful "scoring
+    pending", never an error."""
 
     repo = RecommendationSnapshotRepository(session)
-    rows = repo.latest_snapshot()
+    rows = repo.latest_snapshot(strategy_id)
     if not rows:
         return []
     provider = provider or DbPriceProvider(session)
-    held, cash = _account_positions_and_cash(session)
+    held, cash = _account_positions_and_cash(session, strategy_id)
     target_symbols = {str(row.symbol).upper() for row in rows}
     marks = marks_for(provider, target_symbols | {sym for sym, _ in held})
     mtm = compute_mark_to_market(held, cash, marks)
@@ -243,16 +255,24 @@ def _build_gate_checks(session: Session, total_equity: float) -> list[GateCheck]
     ]
 
 
-def get_current_recommendations(session: Session) -> RecommendationsResponse:
+def get_current_recommendations(
+    session: Session, strategy_id: str = MASTER_STRATEGY_ID
+) -> RecommendationsResponse:
     """Build the RecommendationsResponse for ``GET /api/recommendations/current``.
+
+    B057 F005 — parameterised by ``strategy_id`` (default Master, byte-identical
+    for the existing path): the target_positions + account state are the mode's
+    own. The kill-switch gate stays the **master portfolio** platform risk gate
+    (B023 — informational, not blocking); ``min_equity`` is on the mode's equity;
+    wash-sale is account-wide.
 
     B050 F005: ``as_of_date`` is the **real signal date** of the latest precompute
     snapshot (was ``date.today()``, which hid how stale the recommendation was —
     it could lag the live date by weeks). Falls back to today (UTC) only when no
     precompute snapshot exists yet (empty state)."""
 
-    account_present, total_equity = _aggregate_account_state(session)
-    snapshot_rows = RecommendationSnapshotRepository(session).latest_snapshot()
+    account_present, total_equity = _aggregate_account_state(session, strategy_id)
+    snapshot_rows = RecommendationSnapshotRepository(session).latest_snapshot(strategy_id)
     as_of = (
         snapshot_rows[0].as_of_date.isoformat()
         if snapshot_rows
@@ -260,7 +280,7 @@ def get_current_recommendations(session: Session) -> RecommendationsResponse:
     )
     return RecommendationsResponse(
         as_of_date=as_of,
-        target_positions=_build_target_positions(session),
+        target_positions=_build_target_positions(session, strategy_id=strategy_id),
         gate_checks=_build_gate_checks(session, total_equity),
         # B048 F004: real wash-sale flags from the fills journal (loss sale +
         # same-symbol repurchase within 30 days). Empty when no fills / no

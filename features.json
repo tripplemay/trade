@@ -53,7 +53,7 @@
       "title": "前端多模式 surface（推荐+执行页模式选择器 + 每模式全套视图，中文）+ 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §8。依赖 F001-F004】(1) **模式选择器**：推荐页+**执行页全套**(account/position-diff/ticket/fills/journal)加模式切换(Master/regime；未来自动出现)——每模式显自己的 推荐/目标/账户/diff/ticket/journal+模拟盘+回测入口。(2) **诚实标注**：未配资/未验证模式标『研究态/前向验证中』；模拟盘 vs 真实账户清晰区分。(3) 中文+i18n parity+api.ts 同步。(4) 测试：vitest(模式切换/regime 全套视图/Master 不破)+i18n parity。(5) Gates：frontend vitest/tsc/lint / i18n parity / api.ts drift 0。",
       "design_decisions": [
         "执行页全套加模式选择器；未验证模式诚实标注研究态(防过早配资误导)；模拟 vs 真实清晰分。"
