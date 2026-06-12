@@ -1,71 +1,72 @@
 {
-  "sprint": "B057-strategy-mode-framework",
+  "sprint": "B058-mode-data-and-manual-control",
   "features": [
     {
       "id": "F001",
-      "title": "通用策略目标层（每模式一份目标，参数化 strategy_id，Master+regime 统一接口）+ regime 目标 precompute",
+      "title": "修模拟盘卡死 bug：降级/跳过的 rebalance 不提交 target_key（市价补上后每日 job 自动重试）+ 回归",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §4。框架核心=策略目标从 Master-only 推广成每模式一份】(1) **目标层推广**：通用接口 get_target(strategy_id)→{symbol:weight,as_of,meta}(recommendation_snapshot 加 strategy_id/mode 维度 vs 新表，generator 定迁移保 Master 兼容)。(2) **模式注册**：mode registry(id/display_name/strategy_id/target_producer/backtest_key/cadence；Master quarter-end/regime monthly)。(3) **regime 目标 precompute**：job 调 trade.strategies.regime_adaptive.weighting.derive_regime_adaptive_weights(+detect_regime)产 regime 当前目标→写通用目标层；月度；§12.10.2(job 侧 import trade)。(4) **测试**：通用目标接口(Master/regime 同源读)+regime precompute 产真实目标+Master 现有读路径不破。(5) Gates：backend pytest ≥ baseline+ / ruff / mypy 0 / alembic head(若加列表) / §12.10.2 守门。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F1。最关键——S2 卡死根因】根因：_apply_rebalance(service.py:97)无条件设 account.target_key=targets.target_key，即使本次是『全跳过/没建仓』空操作(compute_rebalance traded=False 或有 skipped_symbols)；此后每日 rebalance_if_due(service.py:177)只在 target_key 变化才重跑→市价补上也永不重试→卡死现金里。修复：(1) 当 rebalance 是降级空操作(traded=False，或目标因缺市价被 skip 导致未真正达成)时**不提交 target_key**(或提交标记未达成的哨兵)，使每日 job 在市价补齐后**自动重试**直到真建上仓；(2) 诚实 surface skipped_symbols(记 rebalance log/账户状态，前端可见『X 个目标缺市价未建仓』)。测试：复现『激活时缺市价→全现金→target_key 未提交→次日市价补上→每日 job 自动重试建仓』+ Master 正常路径(有市价)一次建满不回退。Gates：backend pytest ≥ baseline+ / ruff / mypy 0。",
       "design_decisions": [
-        "目标层参数化 strategy_id=框架核心；Master 兼容(不破现有推荐/模拟盘/实盘读路径)。",
-        "regime 目标=调现成 derive_regime_adaptive_weights，不改 regime 算法(研究态不预测)。"
+        "降级 rebalance 不能静默提交 target_key(B053『不可能状态 fail-fast 不静默』家族)——否则卡死永不自愈。",
+        "只动 paper 域(engine/service)，不碰 execution/评分。"
       ]
     },
     {
       "id": "F002",
-      "title": "regime 接入 B050 回测分发（adapter + report，回测页可跑）+ 测试",
+      "title": "修 S2 上游：模拟盘 mark 源覆盖各模式目标 universe（对齐价格源）+ 无市价 fail-fast/log",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §5。触 trade/】B050 _DISPATCH 加 regime_adaptive(run_regime_adaptive_monthly_backtest)+结果 adapter(regime result→BacktestRunResponse)+report builder(双语沿用 B054 中文)；回测页选 regime→月度回测→真实多资产数据(regime 自带 9 资产 universe)→非退化结果；**本地 mypy trade**(B050 教训)；测试 regime 回测产非退化且异于 Master/其它+adapter 字段+月度 cadence。Gates：backend+trade pytest ≥ baseline+ / ruff / mypy(workbench+trade) 0。依赖 F001。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F2。S2 上游根因=两价格源分裂(B051 同款)】推荐目标由 precompute 读 trade 统一价格文件(故推荐有)；模拟盘建仓市价走 DbPriceProvider 读 workbench price_history(可能未覆盖目标 symbol)→推荐有、模拟盘建不上仓。修复：(1) 诊断+对齐：模拟盘 mark 源必须覆盖各模式目标 universe 当前 mark；若 data-refresh 未覆盖目标 symbol(含 B057 5 个 regime ETF QQQ/VWO/IEF/TLT/DBC)，补进 refresh universe 或确保 mark 可得；(2) 无市价时**响亮**(log+skipped_symbols)，不静默全现金。测试：目标 universe 的 mark 覆盖断言+缺失时 skipped 正确上报。Gates：backend pytest/ruff/mypy 0(含 alembic head 若触 schema)。",
       "design_decisions": [
-        "复用 B050 per-strategy dispatch 模式+双语 report。"
+        "对齐两个价格源(推荐用的 trade 统一价格 vs 模拟盘 mark 的 price_history)，避免『有推荐建不上仓』。",
+        "缺市价响亮 surface 而非静默全现金。"
       ]
     },
     {
       "id": "F003",
-      "title": "regime 接入 B056 模拟盘（参数化目标源）+ 多模式模拟盘 + 测试",
+      "title": "通用「手动刷新目标」原语（async job 派发注册表 target_producer）+ regime 目标引导",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §6。依赖 F001/F002】B056 paper 引擎已按 strategy_id 参数化；F001 通用目标层让 paper 对 regime get_target(regime_adaptive)→月度虚拟调仓；regime 模拟盘=独立虚拟账户与 Master 并存；每日 MTM job 覆盖所有模式账户。测试 regime 模拟盘激活+忠实跟 regime 目标+月度调仓+MTM。Gates：同 F001。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F3。修 S1 + 平台原语】POST /api/strategy-modes/{strategy_id}/refresh-target →**入队异步 job**(§12.10.2，不在路由内 import trade)→查注册表 target_producer→跑该模式生产者→新 recommendation_snapshot；轮询状态(复用 B047 async 范式)。regime 借此**立即生成目标**(不等月度 timer 7-01)；Master/未来 B055 零成本复用。测试：refresh 端点入队+job 跑 regime producer 产**非空**目标+Master 仍可 refresh+§12.10.2 守门(路由不 import trade)。Gates：backend pytest/ruff/mypy 0 / api.ts drift。",
       "design_decisions": [
-        "复用 B056 参数化 paper 引擎；regime 月度 vs Master 季度按 mode registry cadence。"
+        "复用 B057 注册表 target_producer hook 派发；§12.10.2 强制异步 job(import trade 在 job 侧)。",
+        "刷新只跑现有 cadence-respecting 生产者(月中跑 regime 仍发布当月目标，不造 off-cadence 调仓)。"
       ]
     },
     {
       "id": "F004",
-      "title": "多账户模型 + 参数化执行链（每模式真金账户 + diff/ticket/fills/reconcile/journal 按 mode；Master 向后兼容；B053 对账 per-mode）+ 测试",
+      "title": "通用「模拟盘对齐当前目标」原语（强制 rebalance once）+ 激活 regime 模拟盘",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §7。最重、最安全攸关——用户正真实交易 Master】(1) **多账户模型**：account_snapshot 加 mode/strategy_id 维度(Master 默认=master_portfolio 向后兼容，现有单账户行为不变)；每模式独立真金账户(现金+持仓)；B051 账户源单一性 per-mode 保持(latest() per mode)。(2) **执行链参数化**：position-diff/ticket/fills/reconcile/journal 全部参数化按(mode→该模式真金账户+该模式目标)——读对应账户/对应目标/写对应账户。(3) **B053 对账完整性 per-mode 保留**：超卖/负现金 409 拒绝在每个模式账户仍生效(不静默修正)。(4) **★Master 向后兼容(关键)**：默认 mode=master_portfolio，无 mode 参数走 Master(现有 API/前端不破)；新模式显式带 mode。(5) **测试**：多账户隔离(regime 账户≠Master 账户)+每模式 diff/ticket/reconcile 正确+**★Master 现有路径行为不变(向后兼容回归)**+B053 对账 per-mode(超卖/负现金 409)。(6) Gates：backend pytest ≥ baseline+ / ruff / mypy 0 / alembic head / api.ts drift(schema 加 mode 同步)。依赖 F001。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F4。修 S2 用户侧 + 激活 regime paper。依赖 F001/F003】POST /api/paper/{strategy_id}/rebalance-now(或等价)→强制对当前目标 rebalance 一次(_apply_rebalance)，开局/按需建满仓。**诚实**：标注『手动调仓一次，日常仍按 cadence+漂移』(不做日常自动持续对齐——否则毁前向验证)。+ 激活 regime 模拟盘账户(依赖 F003 先有 regime 目标)。测试：align 端点强制建仓到当前目标+regime 模拟盘激活后忠实跟目标+非日常自动(只手动触发)。Gates：backend pytest/ruff/mypy 0 / api.ts drift。",
       "design_decisions": [
-        "★Master 向后兼容默认 mode=master_portfolio，现有执行链行为不变(用户正真实交易，不可动摇)；新模式显式带 mode。",
-        "B053 对账完整性(超卖/负现金 409 fail-fast)per-mode 保留；B051 账户源单一性 per-mode。",
-        "能力≠配资：建多账户执行=有能力，funding 仍归用户(建议 regime 先 paper 验证再配资)。"
+        "『对齐』仅开局/按需手动，日常按 cadence+漂移(前向验证忠实性)。",
+        "regime 模拟盘激活依赖 F003 先产 regime 目标。"
       ]
     },
     {
       "id": "F005",
-      "title": "前端多模式 surface（推荐+执行页模式选择器 + 每模式全套视图，中文）+ 测试",
+      "title": "前端两原语按钮 + 诚实标注（推荐/模拟盘页，per-mode，中文）+ 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §8。依赖 F001-F004】(1) **模式选择器**：推荐页+**执行页全套**(account/position-diff/ticket/fills/journal)加模式切换(Master/regime；未来自动出现)——每模式显自己的 推荐/目标/账户/diff/ticket/journal+模拟盘+回测入口。(2) **诚实标注**：未配资/未验证模式标『研究态/前向验证中』；模拟盘 vs 真实账户清晰区分。(3) 中文+i18n parity+api.ts 同步。(4) 测试：vitest(模式切换/regime 全套视图/Master 不破)+i18n parity。(5) Gates：frontend vitest/tsc/lint / i18n parity / api.ts drift 0。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F5。依赖 F003/F004】推荐页+『立即刷新目标』按钮(per-mode)；模拟盘页+『对齐当前目标』按钮(per-mode)+诚实 notice(手动调仓 vs 日常 cadence)；skipped_symbols 缺市价提示。中文+i18n parity+api.ts 同步。测试：vitest(按钮触发/状态轮询/标注)+i18n parity。Gates：frontend vitest/tsc/lint / i18n parity / api.ts drift 0。",
       "design_decisions": [
-        "执行页全套加模式选择器；未验证模式诚实标注研究态(防过早配资误导)；模拟 vs 真实清晰分。"
+        "两按钮诚实标注(手动一次 vs 日常自动)；缺市价 skipped 提示让用户懂为何没建满。"
       ]
     },
     {
       "id": "F006",
-      "title": "Codex L1+L2 真 VM——多模式全平台 + ★Master 执行硬回归不破 + regime 落地 + 对账 per-mode + signoff",
+      "title": "Codex L1+L2 真机：prod 只读坐实根因 + 验修复 + Master/B057 不破 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "【见 spec §9。core acceptance=多模式全平台 + Master 执行不破】L1 全门禁。L2 真 VM：①**通用平台**：Master+regime 各有 目标/回测/模拟盘/真实账户+执行链/surface 可切换；②**regime 落地**：回测非退化+模拟盘前向+(可选)regime 真实账户走一遍 diff/ticket；③★**Master 执行硬回归**——Master 现有 推荐/diff/ticket/reconcile/journal/账户 行为完全不变(B051 账户源+B053 对账 per-mode 不破，用户正用 Master 真实交易，§25 须正面证据)；④**B053 对账 per-mode**：regime 账户超卖/负现金仍 409；⑤回归 B050-B056+recent-errors=0+HEAD≡main；⑥演练自清。Signoff docs/test-reports/B057-strategy-mode-framework-signoff-2026-MM-DD.md(§多模式全平台+§regime 落地+§★Master 执行不破+§对账 per-mode+§Ops)。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F6。core acceptance=多模式真正产出可用数据 + 不破】L1 全门禁。L2 真 VM：① **prod 只读坐实根因**(Master paper 的 cash/持仓/target_key + recommendation_snapshot Master 目标 + price_history 对目标 symbol 覆盖 + MTM timer 是否跑过)；② **验 S2 修复**：refresh+align 后 Master 模拟盘**真建上仓**(非全现金)，缺市价 skipped 诚实上报，卡死不复现(市价补上自动重试)；③ **验 S1 修复**：手动刷新后 regime **有推荐**+regime 模拟盘可激活跟目标；④ ★**Master 执行+B057 多模式不破**(B051 账户源/B053 对账 per-mode，§25 正面证据)；⑤ 回归 B050-B057+recent-errors=0+HEAD≡main；⑥ 演练自清。Signoff docs/test-reports/B058-mode-data-and-manual-control-signoff-2026-MM-DD.md(§S1 修复+§S2 修复含 prod 实况+§Master/B057 不破+§Ops)。",
       "design_decisions": []
     }
   ]
