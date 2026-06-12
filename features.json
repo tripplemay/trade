@@ -18,7 +18,7 @@
       "title": "修 S2 上游：模拟盘 mark 源覆盖各模式目标 universe（对齐价格源）+ 无市价 fail-fast/log",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F2。S2 上游根因=两价格源分裂(B051 同款)】推荐目标由 precompute 读 trade 统一价格文件(故推荐有)；模拟盘建仓市价走 DbPriceProvider 读 workbench price_history(可能未覆盖目标 symbol)→推荐有、模拟盘建不上仓。修复：(1) 诊断+对齐：模拟盘 mark 源必须覆盖各模式目标 universe 当前 mark；若 data-refresh 未覆盖目标 symbol(含 B057 5 个 regime ETF QQQ/VWO/IEF/TLT/DBC)，补进 refresh universe 或确保 mark 可得；(2) 无市价时**响亮**(log+skipped_symbols)，不静默全现金。测试：目标 universe 的 mark 覆盖断言+缺失时 skipped 正确上报。Gates：backend pytest/ruff/mypy 0(含 alembic head 若触 schema)。",
       "design_decisions": [
         "对齐两个价格源(推荐用的 trade 统一价格 vs 模拟盘 mark 的 price_history)，避免『有推荐建不上仓』。",
