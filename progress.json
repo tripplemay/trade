@@ -1,7 +1,7 @@
 {
   "status": "building",
-  "user_goal": "B057 通用「策略模式」框架 + regime 第一个落地消费者（用户 2026-06-12 调序：B057 先于 B055）。把『策略目标/模式』从 Master-only 推广成参数化一等公民，让任何策略最小成本插入；regime 作第一个真实消费者校准框架(不建空中楼阁)。**用户选『通用框架+regime 第一消费者』**(非 P1 regime-only)。**范围裁定(用户确认+planner 建议)**：通用框架 + regime 落地(目标+回测+模拟盘+surface)；**真实多账户执行链刻意延后 follow-on**(等 paper 验证后再配资，本批真金仍只走 Master)。框架每模式自带=策略目标(precompute)+回测(B050)+模拟盘账户(B056)+surface。5 features 4g+1c：F001 通用策略目标层(每模式一份，参数化 strategy_id，Master+regime 统一接口)+regime 目标 precompute(调现成 derive_regime_adaptive_weights)；F002 regime 接 B050 回测分发(adapter+report)；F003 regime 接 B056 模拟盘(参数化目标源)+多模式模拟盘；F004 前端多模式 surface(模式选择器+regime 视图，中文)；F005 codex 双模式可回测+可模拟盘+regime 前向验证+Master 不破+signoff。永久硬边界：§12.10.2(目标 precompute job 侧 import trade，请求路径只读)/no-AI/regime 研究态不预测。不做：改 regime 算法/Master 评分/执行流/真实多账户执行(延后)。spec docs/specs/B057-strategy-mode-framework-spec.md(11 章)。**背景**：B056 done(模拟盘参数化基建就绪)；regime 引擎+回测+危机压测已现成→主要接线。用户调序原因：regime 引擎现成+B056 刚做完，比 B055(新建引擎)更省更顺。",
-  "total_features": 5,
+  "user_goal": "B057 通用「策略模式」平台（多模式：目标+回测+模拟盘+真实执行）+ regime 第一个落地消费者（用户 2026-06-12 调序 B057 先于 B055 + 拍板本批含真实多账户执行）。把策略目标/账户/执行链从 Master-only 推广成参数化一等公民，让任何策略最小成本插入并**可独立真实交易**；regime 作第一个真实消费者校准框架。**范围(用户 2026-06-12 两次确认)**：通用框架 + regime 落地(目标+回测+模拟盘+surface) + **真实多账户执行链**(每模式独立真金账户+参数化 diff/ticket/fills/reconcile/journal)。**两条诚实约束**：①能力≠配资(建多账户执行=有能力，funding 仍归用户，建议 regime 先 paper 验证再配真钱，前端标研究态)；②**不动摇 Master 执行链**(用户正真实交易 Master)——执行链多账户化必须向后兼容(Master 默认 mode 路径不变)，F006 硬回归 Master 不破(B051 账户源+B053 对账完整性 per-mode 保留)。框架每模式自带=目标 precompute+回测(B050)+模拟盘(B056)+真实账户+执行链+surface。**规划过最大批次**。6 features 5g+1c：F001 通用策略目标层+regime 目标 precompute(调现成 derive_regime_adaptive_weights)；F002 regime 接 B050 回测；F003 regime 接 B056 模拟盘+多模式；**F004 多账户模型+参数化执行链(最重，Master 向后兼容，B053 对账 per-mode)**；F005 前端多模式 surface(推荐+执行页模式选择器，中文)；F006 codex 多模式全平台+★Master 执行硬回归+regime 落地+对账 per-mode+signoff。永久硬边界：§12.10.2/no-AI/regime 不预测/B051 账户源 per-mode/B053 对账 fail-fast per-mode。不做：改 regime 算法/Master 评分。spec docs/specs/B057-strategy-mode-framework-spec.md(11 章)。**背景**：B056 done(模拟盘参数化基建)；regime 引擎+回测+压测现成。用户调序+扩范围原因：建完整多模式平台一劳永逸，regime 引擎现成省力。",
+  "total_features": 6,
   "completed_features": 0,
   "fix_rounds": 0,
   "current_sprint": "F001",
@@ -26,7 +26,7 @@
   "evaluator_feedback": null,
   "generator_handoff": null,
   "session_notes": {
-    "planner": "2026-06-12 B057 planning，status→building 交 Generator F001。**用户调序 B057 先于 B055**(regime 引擎+回测+危机压测现成+B056 刚做完，比 B055 新建引擎省)。**用户选『通用模式框架+regime 第一消费者』**(非 P1 regime-only，也非纯抽象框架——planner 建议 regime 作真实消费者校准抽象不悬空，用户采纳)。**范围**：通用策略目标层参数化 strategy_id(Master+regime+未来同源)+regime 落地(目标 precompute 调 derive_regime_adaptive_weights/接 B050 回测/接 B056 模拟盘/前端模式选择器)。**真实多账户执行链刻意延后**(planner 建议+用户未反对：先 paper 验证 regime 再配真金，本批真金仍只走 Master)；F005 验框架被 regime 跑通校准。**复用**：B050 per-strategy dispatch+B056 参数化 paper 引擎+recommendation_snapshot 范式；regime 引擎/回测/压测现成。 ▌**【下次 planner 续接】** status=building(Generator F001→F002→F003→F004，再 Codex F005)。planner 续接：(a) B057 done→done 收尾+告知用户可回测+模拟盘前向验证 regime；(b) Generator 抛疑点(目标层迁移 recommendation_snapshot 加 mode 维度 vs 新表/regime cadence 月度 vs Master 季度/B050 regime adapter 字段)。**延后 follow-on**：真实多模式执行(每模式真金账户+参数化执行链)——用户 paper 验证某模式值得配资后再立项。**需求池**：B055 进攻选股(调序到 B057 后)。**用户上手并行**：实盘小仓(中文 Master)+可激活 Master 模拟盘前向验证。prod=B056 系。",
+    "planner": "2026-06-12 B057 planning，status→building 交 Generator F001。**用户调序 B057 先于 B055**(regime 引擎+回测+危机压测现成+B056 刚做完，比 B055 新建引擎省)。**用户选『通用框架+regime 第一消费者』+ 2026-06-12 再拍板『本批含真实多账户执行』**(planner 提两约束用户接受：①能力≠配资 funding 仍归用户建议 regime 先 paper 验证；②不动摇 Master 执行链=向后兼容+F006 硬回归)。**范围扩大=规划过最大批次 6 features**：F001 通用目标层+regime precompute/F002 regime 回测/F003 regime 模拟盘/**F004 多账户模型+参数化执行链(最重，Master 默认 mode 向后兼容，B053 对账 per-mode)**/F005 前端推荐+执行页模式选择器/F006 codex 全平台+★Master 执行硬回归。**复用**：B050 per-strategy dispatch+B056 参数化 paper 引擎+recommendation_snapshot 范式；regime 引擎/回测/压测现成。 ▌**【下次 planner 续接】** status=building(Generator F001→F002→F003→F004→F005，再 Codex F006)。planner 续接：(a) B057 done→done 收尾+告知用户可回测+模拟盘前向验证 regime；(b) Generator 抛疑点(目标层迁移 recommendation_snapshot 加 mode 维度 vs 新表/regime cadence 月度 vs Master 季度/B050 regime adapter 字段)。**F004 是最重最安全攸关项**(动真金对账链)：必须 Master 向后兼容、B053 对账 per-mode、F006 硬回归 Master 不破(用户正真实交易 Master)。**纪律**：能力建好但 funding 仍建议先 paper 验证 regime。**需求池**：B055 进攻选股(调序到 B057 后)。**用户上手并行**：实盘小仓(中文 Master)+可激活 Master 模拟盘前向验证。prod=B056 系。",
     "generator": null,
     "evaluator": null
   },
@@ -35,6 +35,7 @@
     "F002",
     "F003",
     "F004",
-    "F005"
+    "F005",
+    "F006"
   ]
 }

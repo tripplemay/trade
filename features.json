@@ -7,7 +7,7 @@
       "priority": "high",
       "executor": "generator",
       "status": "pending",
-      "acceptance": "【见 spec §4。框架核心=策略目标从 Master-only 推广成每模式一份】(1) **目标层推广**：当前策略目标从 Master-only(recommendation_snapshot) 推广成每模式一份——通用 strategy_target(或 recommendation_snapshot 加 strategy_id/mode 维度，generator 定迁移保 Master 兼容)；统一接口 get_target(strategy_id)→{symbol:weight,as_of,meta}，Master/regime/未来同源。(2) **模式注册**：轻量 mode registry(id/display_name/strategy_id/target_producer/backtest_key/cadence)；Master(quarter-end)+regime(monthly)。(3) **regime 目标 precompute**：新 job 调 trade.strategies.regime_adaptive.weighting.derive_regime_adaptive_weights(+detect_regime)在最新真实数据产 regime 当前目标→写通用目标层；月度 cadence；§12.10.2(job 侧 import trade allowlist)。(4) **测试**：通用目标接口(Master/regime 同源读)+regime precompute 产真实目标+Master 现有读路径不破。(5) Gates：backend pytest ≥ baseline+ / ruff / mypy 0 / alembic head(若加列表) / §12.10.2 守门。",
+      "acceptance": "【见 spec §4。框架核心=策略目标从 Master-only 推广成每模式一份】(1) **目标层推广**：通用接口 get_target(strategy_id)→{symbol:weight,as_of,meta}(recommendation_snapshot 加 strategy_id/mode 维度 vs 新表，generator 定迁移保 Master 兼容)。(2) **模式注册**：mode registry(id/display_name/strategy_id/target_producer/backtest_key/cadence；Master quarter-end/regime monthly)。(3) **regime 目标 precompute**：job 调 trade.strategies.regime_adaptive.weighting.derive_regime_adaptive_weights(+detect_regime)产 regime 当前目标→写通用目标层；月度；§12.10.2(job 侧 import trade)。(4) **测试**：通用目标接口(Master/regime 同源读)+regime precompute 产真实目标+Master 现有读路径不破。(5) Gates：backend pytest ≥ baseline+ / ruff / mypy 0 / alembic head(若加列表) / §12.10.2 守门。",
       "design_decisions": [
         "目标层参数化 strategy_id=框架核心；Master 兼容(不破现有推荐/模拟盘/实盘读路径)。",
         "regime 目标=调现成 derive_regime_adaptive_weights，不改 regime 算法(研究态不预测)。"
@@ -19,9 +19,9 @@
       "priority": "high",
       "executor": "generator",
       "status": "pending",
-      "acceptance": "【见 spec §5。触 trade/】(1) **分发注册**：B050 _DISPATCH 加 regime_adaptive(run_regime_adaptive_monthly_backtest)+结果 adapter(regime result→BacktestRunResponse)+report builder(双语沿用 B054 中文)。(2) **回测页可跑**：选 regime→月度回测→真实多资产数据(regime 自带 9 资产 universe)→非退化结果。(3) **mypy trade 自检**(B050 教训，本地 mypy trade)。(4) **测试**：regime 回测产非退化且异于 Master/其它+adapter 字段+月度 cadence。(5) Gates：backend+trade pytest ≥ baseline+ / ruff / mypy(workbench+trade) 0。依赖 F001。",
+      "acceptance": "【见 spec §5。触 trade/】B050 _DISPATCH 加 regime_adaptive(run_regime_adaptive_monthly_backtest)+结果 adapter(regime result→BacktestRunResponse)+report builder(双语沿用 B054 中文)；回测页选 regime→月度回测→真实多资产数据(regime 自带 9 资产 universe)→非退化结果；**本地 mypy trade**(B050 教训)；测试 regime 回测产非退化且异于 Master/其它+adapter 字段+月度 cadence。Gates：backend+trade pytest ≥ baseline+ / ruff / mypy(workbench+trade) 0。依赖 F001。",
       "design_decisions": [
-        "复用 B050 per-strategy dispatch 模式(momentum/risk_parity/us_quality/hk_china/master 先例)+双语 report。"
+        "复用 B050 per-strategy dispatch 模式+双语 report。"
       ]
     },
     {
@@ -30,29 +30,42 @@
       "priority": "high",
       "executor": "generator",
       "status": "pending",
-      "acceptance": "【见 spec §6。依赖 F001/F002】(1) **参数化目标源**：B056 paper 引擎已按 strategy_id 参数化；F001 通用目标层让 paper 引擎对 regime get_target(regime_adaptive)→虚拟调仓(月度 cadence)；regime 模拟盘=独立虚拟账户。(2) **多模式模拟盘**：用户可激活 regime 模拟盘(独立虚拟本金)与 Master 模拟盘并存；每日 MTM job 覆盖所有模式账户。(3) **测试**：regime 模拟盘激活+忠实跟 regime 目标+月度调仓+MTM。(4) Gates：同 F001。",
+      "acceptance": "【见 spec §6。依赖 F001/F002】B056 paper 引擎已按 strategy_id 参数化；F001 通用目标层让 paper 对 regime get_target(regime_adaptive)→月度虚拟调仓；regime 模拟盘=独立虚拟账户与 Master 并存；每日 MTM job 覆盖所有模式账户。测试 regime 模拟盘激活+忠实跟 regime 目标+月度调仓+MTM。Gates：同 F001。",
       "design_decisions": [
-        "复用 B056 参数化 paper 引擎(strategy_id)；regime 月度 cadence vs Master 季度，引擎按 mode registry cadence 处理。"
+        "复用 B056 参数化 paper 引擎；regime 月度 vs Master 季度按 mode registry cadence。"
       ]
     },
     {
       "id": "F004",
-      "title": "前端多模式 surface（模式选择器 + 每模式推荐/模拟盘视图，中文）+ 测试",
+      "title": "多账户模型 + 参数化执行链（每模式真金账户 + diff/ticket/fills/reconcile/journal 按 mode；Master 向后兼容；B053 对账 per-mode）+ 测试",
       "priority": "high",
       "executor": "generator",
       "status": "pending",
-      "acceptance": "【见 spec §7。依赖 F001-F003】(1) **模式选择器**：推荐页+模拟盘页加模式切换(Master/regime；未来进攻自动出现)——每模式显自己的目标推荐+自己的模拟盘。(2) **regime 模式视图**：regime 当前目标(9 资产+防御状态)+regime 模拟盘(复用 B056 6 区块)+regime 回测入口；明确标 regime=research/前向验证中。(3) **中文**+i18n parity+api.ts 同步。(4) **测试**：vitest(模式切换/regime 推荐/regime 模拟盘)+i18n parity。(5) Gates：frontend vitest/tsc/lint / i18n parity / api.ts drift 0。",
+      "acceptance": "【见 spec §7。最重、最安全攸关——用户正真实交易 Master】(1) **多账户模型**：account_snapshot 加 mode/strategy_id 维度(Master 默认=master_portfolio 向后兼容，现有单账户行为不变)；每模式独立真金账户(现金+持仓)；B051 账户源单一性 per-mode 保持(latest() per mode)。(2) **执行链参数化**：position-diff/ticket/fills/reconcile/journal 全部参数化按(mode→该模式真金账户+该模式目标)——读对应账户/对应目标/写对应账户。(3) **B053 对账完整性 per-mode 保留**：超卖/负现金 409 拒绝在每个模式账户仍生效(不静默修正)。(4) **★Master 向后兼容(关键)**：默认 mode=master_portfolio，无 mode 参数走 Master(现有 API/前端不破)；新模式显式带 mode。(5) **测试**：多账户隔离(regime 账户≠Master 账户)+每模式 diff/ticket/reconcile 正确+**★Master 现有路径行为不变(向后兼容回归)**+B053 对账 per-mode(超卖/负现金 409)。(6) Gates：backend pytest ≥ baseline+ / ruff / mypy 0 / alembic head / api.ts drift(schema 加 mode 同步)。依赖 F001。",
       "design_decisions": [
-        "模式选择器在推荐/模拟盘页；regime 标注 research 前向验证中(诚实，未配真金)。"
+        "★Master 向后兼容默认 mode=master_portfolio，现有执行链行为不变(用户正真实交易，不可动摇)；新模式显式带 mode。",
+        "B053 对账完整性(超卖/负现金 409 fail-fast)per-mode 保留；B051 账户源单一性 per-mode。",
+        "能力≠配资：建多账户执行=有能力，funding 仍归用户(建议 regime 先 paper 验证再配资)。"
       ]
     },
     {
       "id": "F005",
-      "title": "Codex L1+L2 真 VM——Master+regime 双模式可回测+可模拟盘+可选 + regime 前向验证 + Master 不破 + signoff",
+      "title": "前端多模式 surface（推荐+执行页模式选择器 + 每模式全套视图，中文）+ 测试",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "【见 spec §8。依赖 F001-F004】(1) **模式选择器**：推荐页+**执行页全套**(account/position-diff/ticket/fills/journal)加模式切换(Master/regime；未来自动出现)——每模式显自己的 推荐/目标/账户/diff/ticket/journal+模拟盘+回测入口。(2) **诚实标注**：未配资/未验证模式标『研究态/前向验证中』；模拟盘 vs 真实账户清晰区分。(3) 中文+i18n parity+api.ts 同步。(4) 测试：vitest(模式切换/regime 全套视图/Master 不破)+i18n parity。(5) Gates：frontend vitest/tsc/lint / i18n parity / api.ts drift 0。",
+      "design_decisions": [
+        "执行页全套加模式选择器；未验证模式诚实标注研究态(防过早配资误导)；模拟 vs 真实清晰分。"
+      ]
+    },
+    {
+      "id": "F006",
+      "title": "Codex L1+L2 真 VM——多模式全平台 + ★Master 执行硬回归不破 + regime 落地 + 对账 per-mode + signoff",
       "priority": "high",
       "executor": "codex",
       "status": "pending",
-      "acceptance": "【见 spec §8。core acceptance=通用框架被 regime 真实校准】L1 全门禁。L2 真 VM：①**通用框架**：Master+regime 双模式各有目标/各可回测/各可模拟盘/surface 可切换；②**regime 落地**：regime 回测页跑非退化结果+regime 模拟盘激活忠实跟 regime 目标+前向 MTM 累积；③**框架被真实校准**(regime 作真实消费者跑通=不悬空)；④**回归** B050-B056+Master 模拟盘/推荐/实盘不破+recent-errors=0+HEAD≡main；⑤演练自清(drill_cleanup 删测试 regime 账户/目标)。Signoff docs/test-reports/B057-strategy-mode-framework-signoff-2026-MM-DD.md(§通用框架双模式证据+§regime 回测+模拟盘前向+§Master 不破+§Ops)。§25 须正面真机证据。",
+      "acceptance": "【见 spec §9。core acceptance=多模式全平台 + Master 执行不破】L1 全门禁。L2 真 VM：①**通用平台**：Master+regime 各有 目标/回测/模拟盘/真实账户+执行链/surface 可切换；②**regime 落地**：回测非退化+模拟盘前向+(可选)regime 真实账户走一遍 diff/ticket；③★**Master 执行硬回归**——Master 现有 推荐/diff/ticket/reconcile/journal/账户 行为完全不变(B051 账户源+B053 对账 per-mode 不破，用户正用 Master 真实交易，§25 须正面证据)；④**B053 对账 per-mode**：regime 账户超卖/负现金仍 409；⑤回归 B050-B056+recent-errors=0+HEAD≡main；⑥演练自清。Signoff docs/test-reports/B057-strategy-mode-framework-signoff-2026-MM-DD.md(§多模式全平台+§regime 落地+§★Master 执行不破+§对账 per-mode+§Ops)。",
       "design_decisions": []
     }
   ]
