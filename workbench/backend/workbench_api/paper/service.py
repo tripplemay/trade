@@ -8,8 +8,11 @@ strategy targets (``targets.load_strategy_targets``), and the price marks
   capital and immediately build the first book from the strategy's current
   target (activation = the first rebalance from all cash).
 * :func:`rebalance_if_due` — the daily MTM job (F002) calls this; it rebalances
-  only when the strategy publishes a *new* allocation (``target_key`` changed),
-  so a stable within-quarter target never churns the book.
+  when the strategy publishes a *new* allocation (``target_key`` changed), so a
+  stable within-quarter target never churns the book — and additionally retries
+  a still-pending (degraded) build whose missing price marks have since arrived
+  (B058 F001: a build that skipped symbols for want of marks stays
+  ``build_complete=False`` and is rebuilt rather than stranded in cash).
 
 Off the request path (job / CLI side): reads the already-stored strategy target
 + price marks, never imports ``trade`` or hits a broker (spec §4.3).
@@ -17,6 +20,7 @@ Off the request path (job / CLI side): reads the already-stored strategy target
 
 from __future__ import annotations
 
+import logging
 import uuid
 from datetime import date, datetime
 
@@ -33,11 +37,16 @@ from workbench_api.paper.targets import StrategyTargets, load_strategy_targets
 from workbench_api.services.mark_to_market import marks_for
 from workbench_api.services.prices_provider import DbPriceProvider, PriceProvider
 
+logger = logging.getLogger(__name__)
+
 # Generator-chosen defaults (spec §4.2 / §8 left the values to the generator).
 DEFAULT_INITIAL_CAPITAL = 100_000.0
 DEFAULT_BASE_CURRENCY = "USD"
 DEFAULT_FEE_BPS = 5.0
 DEFAULT_SLIPPAGE_BPS = 5.0
+
+# Equity at/below this is "nothing to invest" (matches engine._EPSILON).
+_EPSILON = 1e-9
 
 
 class PaperAccountExistsError(RuntimeError):
@@ -93,9 +102,22 @@ def _apply_rebalance(
     ]
     pos_repo.replace_positions(account.id, new_rows)
 
+    # The target is FULLY built only when a trade actually happened AND no target
+    # symbol was skipped for want of a usable price mark. A degraded build (a
+    # no-op that built nothing, or a partial build that skipped symbols) leaves
+    # ``build_complete`` False so the daily MTM job retries once the marks arrive
+    # / equity is available — instead of the old bug, which committed
+    # ``target_key`` unconditionally and stranded the account in cash forever
+    # (B053 "impossible state never silent" family). Requiring ``traded`` means a
+    # no-op (no marks / no equity) is never silently flagged complete while a
+    # target weight sits unbuilt; the daily pending-guard then just no-ops it (no
+    # churn) until it can genuinely be built.
+    fully_built = plan.traded and not plan.skipped_symbols
     account.cash = plan.cash
     account.target_key = targets.target_key
-    account.last_rebalanced_on = on_date
+    account.build_complete = fully_built
+    if plan.traded:
+        account.last_rebalanced_on = on_date
     account.updated_at = now
     PaperAccountRepository(session).upsert(account)
 
@@ -107,6 +129,17 @@ def _apply_rebalance(
             cost=plan.cost,
             target_key=targets.target_key,
             created_at=now,
+        )
+    if plan.skipped_symbols:
+        logger.warning(
+            "paper rebalance for strategy=%s reached target_key=%s only "
+            "partially: %d target symbol(s) lacked a usable price mark and were "
+            "not built (%s); build_complete=False, the daily job will retry once "
+            "marks are available.",
+            account.strategy_id,
+            targets.target_key,
+            len(plan.skipped_symbols),
+            ",".join(plan.skipped_symbols),
         )
     return plan
 
@@ -145,6 +178,9 @@ def activate_paper_account(
         activated_on=on_date,
         last_rebalanced_on=None,
         target_key=None,
+        # Set explicitly (not relying on the column default) so the field-by-field
+        # upsert always copies a concrete value — never writes NULL (B057 trap).
+        build_complete=True,
         created_at=now,
         updated_at=now,
     )
@@ -160,6 +196,54 @@ def activate_paper_account(
     return account, plan
 
 
+def _build_progress_available(
+    session: Session,
+    account: PaperAccount,
+    targets: StrategyTargets,
+    provider: PriceProvider,
+) -> bool:
+    """Whether retrying a *pending* (degraded) build can make progress now.
+
+    A pending account (``build_complete`` False) skipped target symbols last time
+    for want of a usable price mark. Retrying only helps once the WHOLE allocation
+    is buildable — every target symbol has a usable mark AND there is equity to
+    deploy. We deliberately do not chase partial coverage: a target symbol that
+    is markable yet never lands as a held position (dust weight, or rounds to 0
+    shares) would otherwise read as perpetual "progress" and force a rebalance
+    every single day, churning the book and bleeding cost (spec §3: daily
+    behaviour is cadence + drift, never a daily forced re-alignment). So the
+    partial book is left to drift until it can be finished in one shot."""
+
+    target_syms = {s.upper() for s, w in targets.weights.items() if w > 0}
+    if not target_syms:
+        return False  # nothing to build
+
+    positions = PaperPositionRepository(session).list_by_account(account.id)
+    symbols = {p.symbol.upper() for p in positions} | target_syms
+    # Keep only *usable* marks (strictly positive close) — the SAME definition the
+    # engine's ``_usable`` applies, so the guard's notion of "markable" cannot
+    # diverge from what the engine will actually build. A zero/negative close is
+    # a bad snapshot, not a buildable mark; treating it as covered would re-enter
+    # the daily-churn bug this fix exists to kill (B058 F001 review).
+    marks = {
+        sym: close
+        for sym, close in _resolve_close_marks(provider, symbols).items()
+        if close > 0
+    }
+
+    # Equity actually investable now: cash + value of markable holdings. A
+    # pending build that cannot be funded (e.g. a held name lost its mark and
+    # cash is ~0) makes no progress — leave it alone, do not spin daily.
+    equity = float(account.cash) + sum(
+        float(p.shares) * marks[sym]
+        for p in positions
+        if (sym := p.symbol.upper()) in marks
+    )
+    if equity <= _EPSILON:
+        return False
+    return all(sym in marks for sym in target_syms)
+
+
 def rebalance_if_due(
     session: Session,
     account: PaperAccount,
@@ -168,15 +252,31 @@ def rebalance_if_due(
     now: datetime,
     provider: PriceProvider | None = None,
 ) -> RebalancePlan | None:
-    """Rebalance ``account`` iff the strategy published a new allocation.
+    """Rebalance ``account`` when the strategy published a new allocation, or
+    finish a still-pending (degraded) build whose marks have since arrived.
 
-    Returns the plan when a rebalance ran, ``None`` when the target is unchanged
-    / absent (the common daily case — only MTM happens, no churn)."""
+    Returns the plan only when a real trade happened; ``None`` when the target is
+    absent / unchanged and fully built / a pending build with no progress to make
+    / a degraded no-op that traded nothing (the common daily case — MTM only, no
+    churn, and the caller's ``rebalanced`` count means "the book actually
+    traded")."""
 
     targets = load_strategy_targets(session, account.strategy_id)
-    if targets is None or targets.target_key == account.target_key:
+    if targets is None:
         return None
+    target_changed = targets.target_key != account.target_key
+    if not target_changed and account.build_complete:
+        return None  # stable, fully-built allocation → MTM only, no churn
     provider = provider or DbPriceProvider(session)
-    return _apply_rebalance(
+    # Same allocation but not fully built (pending retry): only rebalance when
+    # the build can be finished now, else leave the partial book untouched.
+    if not target_changed and not _build_progress_available(
+        session, account, targets, provider
+    ):
+        return None
+    plan = _apply_rebalance(
         session, account, targets, on_date=on_date, now=now, provider=provider
     )
+    # A degraded no-op (nothing markable / no equity) updated the account state
+    # but traded nothing — it is not a rebalance event.
+    return plan if plan.traded else None

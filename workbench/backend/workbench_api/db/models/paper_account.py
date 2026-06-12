@@ -28,7 +28,16 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, Float, ForeignKey, String, UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    String,
+    UniqueConstraint,
+    text,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from workbench_api.db.models.base import Base
@@ -59,6 +68,18 @@ class PaperAccount(Base):
     # stable within-quarter allocation does NOT churn the paper book.
     last_rebalanced_on: Mapped[date | None] = mapped_column(Date, nullable=True)
     target_key: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    # B058 F001 — whether ``target_key``'s allocation is FULLY built (every
+    # markable target symbol bought, no skips). A degraded build (a target
+    # symbol lacked a price mark) sets this False so the daily MTM job retries
+    # building it once the mark arrives, instead of locking the account in cash
+    # (the S2 stuck bug: ``target_key`` was committed even on an all-cash no-op,
+    # so the daily job — keyed only on a target_key change — never retried).
+    # B053 "impossible state fails loud, never silently" family. NOT NULL with a
+    # server_default so existing rows read as built (backfill-safe); always set
+    # explicitly in code (the upsert copies the attribute field-by-field).
+    build_complete: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default=text("1")
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 

@@ -6,7 +6,7 @@
       "title": "修模拟盘卡死 bug：降级/跳过的 rebalance 不提交 target_key（市价补上后每日 job 自动重试）+ 回归",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F1。最关键——S2 卡死根因】根因：_apply_rebalance(service.py:97)无条件设 account.target_key=targets.target_key，即使本次是『全跳过/没建仓』空操作(compute_rebalance traded=False 或有 skipped_symbols)；此后每日 rebalance_if_due(service.py:177)只在 target_key 变化才重跑→市价补上也永不重试→卡死现金里。修复：(1) 当 rebalance 是降级空操作(traded=False，或目标因缺市价被 skip 导致未真正达成)时**不提交 target_key**(或提交标记未达成的哨兵)，使每日 job 在市价补齐后**自动重试**直到真建上仓；(2) 诚实 surface skipped_symbols(记 rebalance log/账户状态，前端可见『X 个目标缺市价未建仓』)。测试：复现『激活时缺市价→全现金→target_key 未提交→次日市价补上→每日 job 自动重试建仓』+ Master 正常路径(有市价)一次建满不回退。Gates：backend pytest ≥ baseline+ / ruff / mypy 0。",
       "design_decisions": [
         "降级 rebalance 不能静默提交 target_key(B053『不可能状态 fail-fast 不静默』家族)——否则卡死永不自愈。",

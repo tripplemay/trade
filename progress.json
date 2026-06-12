@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "B058 多模式数据修复(模拟盘全现金 + regime 无目标) + 手动控制基建。Hotfix+基建，**优先于 B055**(修正阻挡用户前向验证的真 bug，非新功能)。来源：2026-06-12 用户报障——新上线策略『有些没给推荐(regime)、有些给了推荐但模拟盘没按方案配资产、基本躺现金(Master)』。**两症状两层**：S1 regime 无推荐(推荐层，目标未生成)；S2 Master 模拟盘全现金(模拟盘层，持仓没对齐目标，用户确认是(b)基本现金非漂移)。**Planner 代码级根因**：S1=regime 目标唯一生产者 run_regime_precompute 只由月度 timer 触发(下次 7-01)+无部署期/启动期一次性引导→零目标行→get_target 返 None。S2=①compute_rebalance 只给『有市价』目标建仓(engine.py:84-92)，无市价目标跳过→落现金；②_apply_rebalance(service.py:97)**无条件提交 target_key 即使空操作**→每日 rebalance_if_due 只在 key 变才重跑→市价补上也永不重试→**卡死现金**(B053 降级不静默家族)；③最可能上游=两价格源分裂(推荐读 trade 统一价格文件有数据，模拟盘 mark 读 workbench price_history 可能未覆盖目标 symbol)。6 features 5g+1c：F001 修卡死 bug(降级 rebalance 不提交 target_key→市价补上自动重试)；F002 修上游(mark 源覆盖各模式目标 universe+无市价 fail-fast)；F003 通用手动刷新目标原语(async job 派发注册表 target_producer，§12.10.2)+regime 目标引导；F004 通用模拟盘对齐当前目标原语(强制 rebalance once)+激活 regime 模拟盘；F005 前端两按钮+诚实标注(中文)；F006 codex prod 只读坐实根因+验修复+Master/B057 不破+signoff。硬边界：§12.10.2(刷新异步 job 不在路由 import trade)/no-AI/regime 不预测/★B057 Master 向后兼容不破/B053 对账 per-mode/research-only。不做：改 regime/Master 评分；**持续每日强制对齐**(毁前向验证——对齐仅开局/按需，日常按 cadence+漂移)。spec docs/specs/B058-mode-data-and-manual-control-spec.md(6 章)。复用：B057 注册表 target_producer hook+B047 async worker 范式+B056 paper 引擎。",
   "total_features": 6,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-06-12",
   "reference_docs": [
     "docs/specs/B058-mode-data-and-manual-control-spec.md",
@@ -27,7 +27,7 @@
   "generator_handoff": null,
   "session_notes": {
     "planner": "2026-06-12 B058 planning，status→building 交 Generator F001。**来源**：用户报障 regime 无推荐(S1) + Master 模拟盘全现金(S2，用户确认(b)基本现金非漂移)。Planner 代码级根因调查已坐实(spec §2)：S1=regime 目标只月度 timer 产(下次 7-01)无引导→零行；S2=模拟盘 engine 跳过无市价目标→现金 + _apply_rebalance 无条件提交 target_key 即使空操作→每日 job 永不重试→**卡死**(service.py:97/177)，上游疑两价格源分裂(B051 同款)。**优先于 B055**(真 bug 阻挡前向验证)。6 features：F001 修卡死(降级不提交 target_key)/F002 修价格源覆盖/F003 手动刷新目标原语(async §12.10.2)+regime 引导/F004 对齐模拟盘原语+激活 regime paper/F005 前端两按钮/F006 codex prod 坐实+验修复。**诚实约束**：『对齐』仅开局/按需，日常按 cadence+漂移(否则毁前向验证)。 ▌**【下次 planner 续接】** status=building(Generator F001→...→F005，再 Codex F006)。planner 续接：(a) B058 done→done 收尾+告知用户 Master 模拟盘建上仓/regime 有推荐可前向验证；(b) Generator 抛疑点(target_key 哨兵设计/价格源对齐方式/refresh async job 用 B047 worker vs 子进程)。**F001 最关键**(卡死根因)；F006 须 prod 只读先坐实根因(代码推断未必=prod 实况，不符→fixing 调整)。**需求池**：B055 进攻选股(现调到 B058 后)+测试自动化基建。**B057 done 遗留**：2 框架提案待沉淀(F004 merge/column-default 坑 + next.config PROXIED_PREFIXES 新路由须同步守门)，下次 done 阶段处理。prod=B057 系。",
-    "generator": null,
+    "generator": "2026-06-12 F001 done(模拟盘卡死 bug 修复)。根因坐实=_apply_rebalance 无条件提交 target_key 即使降级空操作→rebalance_if_due(只看 target_key 变化)永不重试→卡死现金。修复(paper 域 only，不碰 execution)：(1) 新列 paper_account.build_complete(migration 0022，Boolean NOT NULL server_default '1')=本次 target_key 是否全建满(traded 且无 skipped)；(2) _apply_rebalance 只在 fully_built=plan.traded and not skipped 时算完成，target_key 每次都设但 build_complete 区分降级；(3) rebalance_if_due 改：target 变 OR (build_complete False 且 _build_progress_available)→重试，且只在 plan.traded 才返回 plan(no-op 返 None，mtm rebalanced 计数才准)；(4) _build_progress_available=finish-only 守门(全 target 有可用市价 AND equity>0 才重试，不追增量覆盖→避免每日 churn 违反 spec §3)；(5) 引擎 engine._usable=close>0 才算可用市价(零/负 close→skipped，不静默建 0 股 strand)。**经 2 轮对抗 review(各 5/3 lens+独立 verify)**：R1 修 4 finding(零 close strand/零 equity spin/no-op 误计 rebalanced/dust churn)；R2 又抓 1 HIGH(守门 _resolve_close_marks 未滤零 close→零 close 仍 churn)→已修(守门滤 close>0 与引擎 _usable 对齐)+防御性把 build_complete 收紧为 traded and not skipped。10 回归测试(stuck→heal/partial→complete/no-churn/零 close 持久 no-churn/零 equity/run_daily_mtm 生产路径/cadence 变更)。Gates 全绿：ruff/mypy(227)/backend 1175 passed/alembic 单 head 0022。**下一条 F002**(修 S2 上游=价格源覆盖：模拟盘 mark 源须覆盖各模式目标 universe 含 regime 5 ETF QQQ/VWO/IEF/TLT/DBC+无市价 fail-fast)。**F001 已为 F002 留接口**：skipped_symbols 已诚实 surface(log warning)，F002 接 data-refresh universe 覆盖。",
     "evaluator": null
   },
   "features": [

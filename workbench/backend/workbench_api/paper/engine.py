@@ -45,8 +45,9 @@ class RebalancePlan:
     positions: tuple[PlannedPosition, ...]
     cost: float
     traded_notional: float
-    # Target symbols dropped because no price mark was available (their weight
-    # falls to cash; surfaced so the caller can log the gap honestly).
+    # Target symbols dropped because no usable (strictly-positive) price mark was
+    # available (their weight falls to cash; surfaced so the caller logs the gap
+    # honestly and the paper account stays build_complete=False to retry).
     skipped_symbols: tuple[str, ...]
     # True when any trade actually happened (equity>0 and at least one markable
     # target); False is a graceful no-op (no targets / no prices / no equity).
@@ -71,24 +72,35 @@ def compute_rebalance(
 
     cost_rate = (fee_bps + slippage_bps) / 10_000.0
 
+    # A *usable* mark is a strictly positive close. A zero/negative close is a
+    # bad price snapshot — treating it as a mark would build the target to 0
+    # shares and silently strand its weight in cash (the S2 failure mode through
+    # a different door), so it is treated exactly like a missing mark (B058 F001,
+    # B053 "impossible state never silent" family).
+    def _usable(symbol: str) -> float | None:
+        close = marks.get(symbol)
+        return close if close is not None and close > 0 else None
+
     # Equity = cash + market value of currently-held, markable positions. A held
-    # symbol with no mark is kept untouched (cannot price → cannot trade), and
-    # does not count toward equity (mirrors mark_to_market's degrade semantics).
+    # symbol with no usable mark is kept untouched (cannot price → cannot trade),
+    # and does not count toward equity (mirrors mark_to_market's degrade semantics).
     held_marked_value = 0.0
     for symbol, (shares, _avg) in current_positions.items():
-        close = marks.get(symbol)
+        close = _usable(symbol)
         if close is not None:
             held_marked_value += shares * close
     equity = cash + held_marked_value
 
-    # Markable targets only; an unmarkable target is skipped (weight → cash).
+    # Markable targets only; a target with no usable mark is skipped (weight → cash).
     markable_targets = {
         symbol: weight
         for symbol, weight in target_weights.items()
-        if symbol in marks and weight > 0
+        if weight > 0 and _usable(symbol) is not None
     }
     skipped = tuple(
-        sorted(s for s, w in target_weights.items() if w > 0 and s not in marks)
+        sorted(
+            s for s, w in target_weights.items() if w > 0 and _usable(s) is None
+        )
     )
 
     if equity <= _EPSILON or not markable_targets:
@@ -117,7 +129,7 @@ def compute_rebalance(
 
     # Symbols touched = held (markable) ∪ target. Held-but-unmarkable stay put.
     touched = set(desired) | {
-        s for s in current_positions if s in marks
+        s for s in current_positions if _usable(s) is not None
     }
 
     gross_traded = 0.0
@@ -145,7 +157,7 @@ def compute_rebalance(
 
     # Held-but-unmarkable positions are carried over untouched.
     for symbol, (shares, avg) in sorted(current_positions.items()):
-        if symbol not in marks and abs(shares) > _EPSILON:
+        if _usable(symbol) is None and abs(shares) > _EPSILON:
             new_positions.append(PlannedPosition(symbol, shares, avg))
 
     cost = gross_traded * cost_rate
