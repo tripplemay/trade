@@ -9,7 +9,7 @@ never import ``trade`` or the refresh worker).
 from __future__ import annotations
 
 import ast
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from datetime import date
 from pathlib import Path
 
@@ -86,7 +86,7 @@ def test_get_target_refresh_job_unknown_is_none(session: Session) -> None:
 
 def _seed_target_dispatch(
     saved: int = 2, *, error: str | None = None
-) -> dict[str, object]:
+) -> dict[str, Callable[[Session], ProducerResult]]:
     """A fake dispatch whose producer writes a recommendation_snapshot (or fails),
     so the worker flow is tested without importing ``trade``."""
 
