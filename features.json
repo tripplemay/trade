@@ -42,7 +42,7 @@
       "title": "通用「模拟盘对齐当前目标」原语（强制 rebalance once）+ 激活 regime 模拟盘",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F4。修 S2 用户侧 + 激活 regime paper。依赖 F001/F003】POST /api/paper/{strategy_id}/rebalance-now(或等价)→强制对当前目标 rebalance 一次(_apply_rebalance)，开局/按需建满仓。**诚实**：标注『手动调仓一次，日常仍按 cadence+漂移』(不做日常自动持续对齐——否则毁前向验证)。+ 激活 regime 模拟盘账户(依赖 F003 先有 regime 目标)。测试：align 端点强制建仓到当前目标+regime 模拟盘激活后忠实跟目标+非日常自动(只手动触发)。Gates：backend pytest/ruff/mypy 0 / api.ts drift。",
       "design_decisions": [
         "『对齐』仅开局/按需手动，日常按 cadence+漂移(前向验证忠实性)。",

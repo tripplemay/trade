@@ -27,6 +27,7 @@ from workbench_api.paper.mtm import run_daily_mtm
 from workbench_api.paper.service import (
     PaperAccountExistsError,
     activate_paper_account,
+    align_to_current_target,
     rebalance_if_due,
 )
 from workbench_api.services.prices_provider import PriceMark
@@ -351,6 +352,91 @@ def test_full_build_marks_complete_and_does_not_churn(session: Session) -> None:
     )
     assert plan2 is None
     assert len(rebal_repo.list_by_account(account.id)) == 1
+
+
+# --- B058 F004: manual "align to current target" primitive ------------------
+
+
+def test_align_forces_rebalance_even_when_already_built(session: Session) -> None:
+    """Align is UNCONDITIONAL: it re-pins a fully-built book to target on demand,
+    where ``rebalance_if_due`` would be a no-op (the daily/manual distinction)."""
+
+    _seed_targets(
+        session,
+        [
+            {"symbol": "AAA", "sleeve": "m", "target_weight": 0.6},
+            {"symbol": "BBB", "sleeve": "m", "target_weight": 0.4},
+        ],
+        as_of=date(2026, 3, 31),
+    )
+    provider = _FakeProvider({"AAA": 100.0, "BBB": 50.0})
+    account, _ = activate_paper_account(
+        session, strategy_id="master_portfolio", on_date=ON_DATE, now=NOW,
+        initial_capital=100_000.0, provider=provider,
+    )
+    session.commit()
+    rebal_repo = PaperRebalanceRepository(session)
+    assert len(rebal_repo.list_by_account(account.id)) == 1
+    assert account.build_complete is True
+
+    # The daily job would no-op here; align FORCES a rebalance.
+    acc, plan = align_to_current_target(
+        session, "master_portfolio", on_date=date(2026, 6, 13), now=NOW, provider=provider
+    )
+    session.commit()
+    assert acc is not None and plan is not None and plan.traded is True
+    assert len(rebal_repo.list_by_account(account.id)) == 2  # forced a 2nd event
+
+
+def test_align_builds_all_cash_book_to_target(session: Session) -> None:
+    """Align builds an all-cash (degraded-activation) book to target on demand."""
+
+    _seed_targets(
+        session,
+        [
+            {"symbol": "AAA", "sleeve": "m", "target_weight": 0.6},
+            {"symbol": "BBB", "sleeve": "m", "target_weight": 0.4},
+        ],
+        as_of=date(2026, 3, 31),
+    )
+    # Activate with no marks → all cash, nothing built.
+    account, _ = activate_paper_account(
+        session, strategy_id="master_portfolio", on_date=ON_DATE, now=NOW,
+        initial_capital=100_000.0, provider=_FakeProvider({}),
+    )
+    session.commit()
+    assert PaperPositionRepository(session).list_by_account(account.id) == []
+
+    acc, plan = align_to_current_target(
+        session, "master_portfolio", on_date=date(2026, 6, 13), now=NOW,
+        provider=_FakeProvider({"AAA": 100.0, "BBB": 50.0}),
+    )
+    session.commit()
+    assert acc is not None and plan is not None and plan.traded is True
+    assert acc.build_complete is True
+    held = {p.symbol for p in PaperPositionRepository(session).list_by_account(account.id)}
+    assert held == {"AAA", "BBB"}
+
+
+def test_align_no_account_returns_none(session: Session) -> None:
+    acc, plan = align_to_current_target(
+        session, "master_portfolio", on_date=ON_DATE, now=NOW, provider=_FakeProvider({})
+    )
+    assert acc is None and plan is None
+
+
+def test_align_no_target_returns_account_without_plan(session: Session) -> None:
+    # Activate with no target at all → account exists, all cash.
+    account, _ = activate_paper_account(
+        session, strategy_id="master_portfolio", on_date=ON_DATE, now=NOW,
+        initial_capital=50_000.0, provider=_FakeProvider({}),
+    )
+    session.commit()
+    acc, plan = align_to_current_target(
+        session, "master_portfolio", on_date=ON_DATE, now=NOW, provider=_FakeProvider({})
+    )
+    assert acc is not None and acc.id == account.id
+    assert plan is None  # no target to align to
 
 
 # --- B058 F001 adversarial-audit regression tests (review findings F1–F4) ---

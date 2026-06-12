@@ -280,3 +280,39 @@ def rebalance_if_due(
     # A degraded no-op (nothing markable / no equity) updated the account state
     # but traded nothing — it is not a rebalance event.
     return plan if plan.traded else None
+
+
+def align_to_current_target(
+    session: Session,
+    strategy_id: str,
+    *,
+    on_date: date,
+    now: datetime,
+    provider: PriceProvider | None = None,
+) -> tuple[PaperAccount | None, RebalancePlan | None]:
+    """Force one rebalance of ``strategy_id``'s paper book to its CURRENT target —
+    the manual "align to current target" primitive (B058 F004).
+
+    Unlike :func:`rebalance_if_due` this is UNCONDITIONAL: it rebalances even when
+    the target_key is unchanged / already built, so the user can build an all-cash
+    or drifted book to the published target on demand (open / on-demand alignment).
+    Honest: a degraded build (missing marks) still leaves ``build_complete=False``
+    with ``skipped_symbols`` surfaced. This is the ONLY path that snaps the book to
+    target on demand — the daily job stays cadence + drift (spec §3: no daily
+    forced re-alignment), preserving forward-validation fidelity.
+
+    Returns ``(account, plan)``: ``account`` is ``None`` when the strategy has no
+    paper account (activate first); ``plan`` is ``None`` when the strategy has no
+    target to align to yet (refresh the target first, B058 F003)."""
+
+    account = PaperAccountRepository(session).get_by_strategy(strategy_id)
+    if account is None:
+        return None, None
+    targets = load_strategy_targets(session, strategy_id)
+    if targets is None:
+        return account, None
+    provider = provider or DbPriceProvider(session)
+    plan = _apply_rebalance(
+        session, account, targets, on_date=on_date, now=now, provider=provider
+    )
+    return account, plan

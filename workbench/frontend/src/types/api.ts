@@ -434,6 +434,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/paper/{strategy_id}/rebalance-now": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rebalance Now Route
+         * @description Align a paper book to its current target on demand (B058 F004).
+         *
+         *     A one-time manual rebalance (open / on-demand) — the daily job stays cadence
+         *     + drift, so this never becomes a daily forced re-alignment (spec §3). Honest:
+         *     a degraded build leaves ``skipped_symbols`` + ``build_complete=False`` so the
+         *     user sees which targets lacked a price mark and were not built.
+         */
+        post: operations["rebalance_now_route_api_paper__strategy_id__rebalance_now_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/advisor": {
         parameters: {
             query?: never;
@@ -1865,6 +1890,44 @@ export interface components {
             email: string;
         };
         /**
+         * RebalanceNowResponse
+         * @description B058 F004 — result of a manual "align to current target" rebalance.
+         *
+         *     The frontend pairs this with the honest notice that this is a one-time manual
+         *     alignment (daily behaviour stays cadence + drift). ``skipped_symbols`` lets it
+         *     show "X 个目标缺市价未建仓" when a degraded build left part of the book in cash.
+         */
+        RebalanceNowResponse: {
+            /** Strategy Id */
+            strategy_id: string;
+            /**
+             * Has Target
+             * @description False when the strategy has no target yet (refresh it first).
+             */
+            has_target: boolean;
+            /**
+             * Rebalanced
+             * @description True when a trade actually happened.
+             */
+            rebalanced: boolean;
+            /**
+             * Positions
+             * @description Holdings after the rebalance.
+             * @default 0
+             */
+            positions: number;
+            /**
+             * Build Complete
+             * @description True when every target symbol was built (no skips).
+             */
+            build_complete: boolean;
+            /**
+             * Skipped Symbols
+             * @description Target symbols not built for want of a usable price mark.
+             */
+            skipped_symbols?: string[];
+        };
+        /**
          * RecentErrorsResponse
          * @description Response schema for ``GET /api/debug/recent-errors``.
          *
@@ -3233,6 +3296,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ActivatePaperResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rebalance_now_route_api_paper__strategy_id__rebalance_now_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                strategy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RebalanceNowResponse"];
                 };
             };
             /** @description Validation Error */

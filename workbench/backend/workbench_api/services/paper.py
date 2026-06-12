@@ -39,6 +39,7 @@ from workbench_api.schemas.paper import (
     PaperStrategy,
     PaperSummary,
     PaperView,
+    RebalanceNowResponse,
 )
 from workbench_api.services.mark_to_market import (
     MarkToMarket,
@@ -315,3 +316,39 @@ def activate_view_account(
         provider=provider,
     )
     return account, (len(plan.positions) if plan else 0)
+
+
+def rebalance_now_account(
+    session: Session,
+    *,
+    strategy_id: str,
+    on_date: date,
+    now: datetime,
+    provider: PriceProvider | None = None,
+) -> RebalanceNowResponse | None:
+    """Align ``strategy_id``'s paper book to its current target (B058 F004).
+
+    Returns ``None`` when no paper account exists (the route maps that to 404 —
+    activate first); otherwise a :class:`RebalanceNowResponse` whose ``has_target``
+    is False when there is no target to align to yet (refresh the target first)."""
+
+    from workbench_api.paper.service import align_to_current_target
+
+    account, plan = align_to_current_target(
+        session, strategy_id, on_date=on_date, now=now, provider=provider
+    )
+    if account is None:
+        return None
+    positions = (
+        len(plan.positions)
+        if plan is not None
+        else len(PaperPositionRepository(session).list_by_account(account.id))
+    )
+    return RebalanceNowResponse(
+        strategy_id=strategy_id,
+        has_target=plan is not None,
+        rebalanced=bool(plan and plan.traded),
+        positions=positions,
+        build_complete=bool(account.build_complete),
+        skipped_symbols=list(plan.skipped_symbols) if plan is not None else [],
+    )

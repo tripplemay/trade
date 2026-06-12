@@ -27,7 +27,7 @@ from workbench_api.db.repositories.recommendation_snapshot import (
     RecommendationSnapshotRepository,
 )
 from workbench_api.paper.mtm import run_daily_mtm
-from workbench_api.paper.service import activate_paper_account
+from workbench_api.paper.service import activate_paper_account, align_to_current_target
 from workbench_api.services.paper import build_paper_view, list_paper_strategies
 from workbench_api.services.prices_provider import PriceMark
 from workbench_api.strategy_modes.registry import MASTER_STRATEGY_ID, REGIME_STRATEGY_ID
@@ -173,6 +173,31 @@ def test_daily_mtm_covers_both_regime_and_master(session: Session) -> None:
     nav_repo = PaperNavHistoryRepository(session)
     assert nav_repo.list_by_account(master_acc.id), "master account got no nav point"
     assert nav_repo.list_by_account(regime_acc.id), "regime account got no nav point"
+
+
+def test_regime_paper_aligns_to_regime_target(session: Session) -> None:
+    """B058 F004 — a regime paper account activated all-cash builds the regime
+    target on demand via align (the regime forward-validation bootstrap, once
+    F003 has produced the regime target)."""
+
+    _seed(session, REGIME_STRATEGY_ID, _REGIME_ROWS, as_of=date(2026, 5, 31))
+    # Activate regime paper with no marks yet → all cash.
+    account, _ = activate_paper_account(
+        session, strategy_id=REGIME_STRATEGY_ID, on_date=ON_DATE, now=NOW,
+        initial_capital=100_000.0, provider=_FakeProvider({}),
+    )
+    session.commit()
+    assert PaperPositionRepository(session).list_by_account(account.id) == []
+
+    # Marks arrive → align builds the regime allocation faithfully on demand.
+    acc, plan = align_to_current_target(
+        session, REGIME_STRATEGY_ID, on_date=date(2026, 6, 13), now=NOW,
+        provider=_FakeProvider(_MARKS),
+    )
+    session.commit()
+    assert acc is not None and plan is not None and plan.traded is True
+    held = {p.symbol for p in PaperPositionRepository(session).list_by_account(account.id)}
+    assert held == {"SPY", "SGOV"}
 
 
 def test_list_paper_strategies_includes_regime(session: Session) -> None:

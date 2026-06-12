@@ -103,3 +103,25 @@ class ActivatePaperResponse(BaseModel):
     strategy_id: str
     activated: bool
     positions: int = 0
+
+
+class RebalanceNowResponse(BaseModel):
+    """B058 F004 — result of a manual "align to current target" rebalance.
+
+    The frontend pairs this with the honest notice that this is a one-time manual
+    alignment (daily behaviour stays cadence + drift). ``skipped_symbols`` lets it
+    show "X 个目标缺市价未建仓" when a degraded build left part of the book in cash."""
+
+    strategy_id: str
+    has_target: bool = Field(
+        description="False when the strategy has no target yet (refresh it first)."
+    )
+    rebalanced: bool = Field(description="True when a trade actually happened.")
+    positions: int = Field(default=0, description="Holdings after the rebalance.")
+    build_complete: bool = Field(
+        description="True when every target symbol was built (no skips)."
+    )
+    skipped_symbols: list[str] = Field(
+        default_factory=list,
+        description="Target symbols not built for want of a usable price mark.",
+    )

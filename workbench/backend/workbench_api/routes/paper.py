@@ -29,11 +29,13 @@ from workbench_api.schemas.paper import (
     ActivatePaperResponse,
     PaperStrategiesResponse,
     PaperView,
+    RebalanceNowResponse,
 )
 from workbench_api.services.paper import (
     activate_view_account,
     build_paper_view,
     list_paper_strategies,
+    rebalance_now_account,
 )
 
 router = APIRouter(tags=["paper"])
@@ -92,3 +94,34 @@ def activate_paper_route(
     return ActivatePaperResponse(
         strategy_id=request.strategy_id, activated=True, positions=positions
     )
+
+
+@router.post("/paper/{strategy_id}/rebalance-now", response_model=RebalanceNowResponse)
+def rebalance_now_route(
+    strategy_id: str,
+    _user: AuthenticatedUserDep,
+    session: SessionDep,
+) -> RebalanceNowResponse:
+    """Align a paper book to its current target on demand (B058 F004).
+
+    A one-time manual rebalance (open / on-demand) — the daily job stays cadence
+    + drift, so this never becomes a daily forced re-alignment (spec §3). Honest:
+    a degraded build leaves ``skipped_symbols`` + ``build_complete=False`` so the
+    user sees which targets lacked a price mark and were not built."""
+
+    if strategy_id not in _KNOWN_STRATEGY_IDS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"unknown paper strategy '{strategy_id}'",
+        )
+    now = datetime.now(UTC)
+    result = rebalance_now_account(
+        session, strategy_id=strategy_id, on_date=now.date(), now=now
+    )
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"no paper account for '{strategy_id}'; activate it first",
+        )
+    session.commit()
+    return result
