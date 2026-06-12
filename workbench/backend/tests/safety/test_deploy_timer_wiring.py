@@ -96,6 +96,26 @@ def test_deploy_uses_dry_timer_loop() -> None:
     )
 
 
+def test_deploy_primes_price_snapshot_best_effort() -> None:
+    """B058 F002 — deploy.sh primes price_snapshot with the current target
+    universe (so the paper mark source is fresh immediately, not after the next
+    daily prices timer). Must be best-effort + non-fatal: guarded on
+    WORKBENCH_DB_URL and never `set -e`-aborts the deploy on a Tiingo failure."""
+
+    text = DEPLOY_SH.read_text(encoding="utf-8")
+    assert "workbench_api.prices.cli fetch" in text, (
+        "deploy.sh must prime price_snapshot via the prices.cli fetch step"
+    )
+    # Non-fatal: the fetch runs inside an `if ...; then ... else ::warning:: fi`
+    # so a failure warns instead of aborting the (set -euo pipefail) deploy.
+    assert '"${VENV_PYTHON}" -m workbench_api.prices.cli fetch; then' in text, (
+        "the prices prime must run inside an `if` so its failure is non-fatal"
+    )
+    assert "price_snapshot prime failed" in text, (
+        "deploy.sh must warn (not hard-fail) when the price_snapshot prime fails"
+    )
+
+
 def test_deploy_installs_via_root_owned_wrapper_not_raw_install() -> None:
     """Security tightening (B037-OPS1 §5.1): the loop must call the root-owned
     wrapper, never `sudo /usr/bin/install` directly (a raw install wildcard in

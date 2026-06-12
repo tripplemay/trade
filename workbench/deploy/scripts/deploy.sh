@@ -330,6 +330,28 @@ print(f"  ✓ schema check passed: {sorted(required)} present in {url}")
 PY
 fi
 
+# B058 F002 — prime price_snapshot with the current strategy target universe
+# right after deploy, so the paper mark source is fresh IMMEDIATELY instead of
+# waiting for the next daily workbench-prices timer fire. Without this, the
+# window between a deploy (especially one that changes the priced universe, like
+# B058 adding the regime ETFs + equities) and the next timer run leaves the
+# manual "align to current target" + regime forward-validation flows skipping
+# every not-yet-priced target (the user sees "X 个目标缺市价未建仓"). The env
+# file sourced above provides WORKBENCH_DB_URL + TIINGO_API_KEY. Best-effort and
+# NON-FATAL: a Tiingo blip / missing key / dev rehearsal must NEVER fail the
+# deploy — the daily timer still backfills, and the paper engine self-heals
+# (build_complete stays False → the daily MTM job retries once priced).
+if [[ -n "${WORKBENCH_DB_URL:-}" ]]; then
+  echo "→ priming price_snapshot (prices.cli fetch — held ∪ target universe; best-effort)"
+  if "${VENV_PYTHON}" -m workbench_api.prices.cli fetch; then
+    echo "  ✓ price_snapshot primed"
+  else
+    echo "::warning::price_snapshot prime failed (Tiingo / key / network). The daily workbench-prices timer will populate it on its next run; paper align skips unpriced targets and the MTM job retries once priced." >&2
+  fi
+else
+  echo "→ skip price_snapshot prime (WORKBENCH_DB_URL unset — dev rehearsal)"
+fi
+
 # B033 F004 — provision the news snapshot directory (永久边界 (p) + (q)).
 # News raw filing / article bodies land here (boundary (p): the `news`
 # table stores only metadata + snapshot_path + content_sha256; the bodies

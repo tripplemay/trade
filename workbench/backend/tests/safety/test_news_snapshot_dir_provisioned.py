@@ -56,7 +56,11 @@ def test_deploy_does_not_run_news_ingest() -> None:
         "deploy.sh must not invoke the news CLI — boundary (q) keeps ingest "
         "manual-trigger only; the deploy provisions an empty dir, nothing more."
     )
-    assert "cli fetch" not in lowered
+    # Boundary (q) forbids the NEWS ingest specifically — not every data fetch.
+    # B058 F002 legitimately runs a read-only `prices.cli fetch` at deploy
+    # (boundary (r): priming price_snapshot), so assert no NEWS fetch is wired
+    # rather than the over-broad "no `cli fetch` at all".
+    assert "news.cli fetch" not in lowered
     # No news-ingest scheduler library wired into the deploy path. (The
     # script legitimately uses systemctl to restart the workbench services;
     # we only forbid scheduler libs that would imply automated news fetch.)
