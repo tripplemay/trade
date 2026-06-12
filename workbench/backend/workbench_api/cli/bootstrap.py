@@ -37,7 +37,10 @@ from sqlalchemy.orm import Session
 
 from workbench_api.db.engine import get_engine, reset_engine
 from workbench_api.db.models import Account, BacklogEntry
-from workbench_api.db.models.account_snapshot import AccountSnapshot
+from workbench_api.db.models.account_snapshot import (
+    DEFAULT_STRATEGY_ID,
+    AccountSnapshot,
+)
 from workbench_api.db.repositories import AccountRepository, BacklogRepository
 from workbench_api.db.repositories.account_snapshot import AccountSnapshotRepository
 from workbench_api.db.session import get_session
@@ -97,6 +100,11 @@ def _coerce_account_snapshot(payload: dict[str, Any]) -> AccountSnapshot:
     return AccountSnapshot(
         id=f"snap-bootstrap-{payload['account_id']}",
         snapshot_at=snapshot_at,
+        # B057 F004 — the bootstrap seeds the Master account. Set strategy_id
+        # explicitly (not via the column default) so the deterministic-id re-run
+        # merges as an UPDATE without nulling the column (column defaults apply on
+        # INSERT only, never on the merge-driven UPDATE that idempotency relies on).
+        strategy_id=DEFAULT_STRATEGY_ID,
         cash=Decimal(str(payload.get("cash", "0"))),
         base_currency=str(payload.get("base_currency", "USD")),
         positions=[_coerce_position(entry) for entry in raw_positions],

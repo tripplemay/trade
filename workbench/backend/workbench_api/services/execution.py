@@ -25,6 +25,9 @@ from sqlalchemy.orm import Session
 
 from workbench_api.db.models.account_snapshot import AccountSnapshot
 from workbench_api.db.repositories.account_snapshot import AccountSnapshotRepository
+from workbench_api.db.repositories.recommendation_snapshot import (
+    RecommendationSnapshotRepository,
+)
 from workbench_api.i18n import t
 from workbench_api.schemas.execution import (
     AccountSnapshotPayload,
@@ -39,7 +42,7 @@ from workbench_api.services.mark_to_market import (
     marks_for,
 )
 from workbench_api.services.prices_provider import DbPriceProvider, PriceProvider
-from workbench_api.services.recommendations import get_current_recommendations
+from workbench_api.strategy_modes.registry import MASTER_STRATEGY_ID
 
 _logger = logging.getLogger("workbench.execution")
 
@@ -85,15 +88,19 @@ def _snapshot_to_payload(row: AccountSnapshot) -> AccountSnapshotPayload:
     )
 
 
-def get_latest_account(session: Session) -> AccountSnapshotPayload | None:
-    """Return the most recent snapshot, or None if the table is empty.
+def get_latest_account(
+    session: Session, strategy_id: str = MASTER_STRATEGY_ID
+) -> AccountSnapshotPayload | None:
+    """Return the most recent snapshot for ``strategy_id``, or None if none.
 
-    DB failure → log + None (matches the recommendations service's
-    defensive-degrade contract added during B022 F014 round 2)."""
+    B057 F004 — scoped by strategy_id (default Master, backward compatible) so
+    each mode reads its OWN real account. DB failure → log + None (matches the
+    recommendations service's defensive-degrade contract added during B022 F014
+    round 2)."""
 
     try:
         repo = AccountSnapshotRepository(session)
-        row = repo.latest()
+        row = repo.latest(strategy_id)
     except SQLAlchemyError as exc:
         _logger.warning(
             "account_snapshot latest read failed; surfacing empty state",
@@ -114,12 +121,15 @@ def update_account(
     session: Session,
     body: AccountUpdateRequest,
     *,
+    strategy_id: str = MASTER_STRATEGY_ID,
     now: datetime | None = None,
 ) -> AccountSnapshotPayload:
     """Insert a new ``account_snapshot`` row with ``source=ui_edit``.
 
-    Returns the persisted payload (with assigned ``id`` + ``snapshot_at``)
-    so the frontend can update its cached state without a follow-up GET.
+    B057 F004 — the snapshot is tagged with ``strategy_id`` (default Master) so a
+    regime account is seeded independently of Master. Returns the persisted
+    payload (with assigned ``id`` + ``snapshot_at``) so the frontend can update
+    its cached state without a follow-up GET.
     """
 
     snapshot_at = now or datetime.now(UTC).replace(tzinfo=None)
@@ -127,6 +137,7 @@ def update_account(
     row = AccountSnapshot(
         id=snapshot_id,
         snapshot_at=snapshot_at,
+        strategy_id=strategy_id,
         cash=Decimal(str(body.cash)),
         base_currency=body.base_currency.upper(),
         positions=[_position_to_json(p) for p in body.positions],
@@ -143,9 +154,16 @@ def get_position_diff(
     session: Session,
     as_of: str | None = None,
     *,
+    strategy_id: str = MASTER_STRATEGY_ID,
     provider: PriceProvider | None = None,
 ) -> PositionDiffResponse:
     """Build the position-diff response by joining snapshot + targets.
+
+    B057 F004 — parameterised by ``strategy_id`` (default Master, byte-identical
+    for the existing path): reads the mode's own account (``get_latest_account``)
+    and the mode's own target (``recommendation_snapshot`` for that strategy),
+    so each mode's diff is computed against its own holdings + allocation. The
+    request path never imports ``trade`` — it reads the precomputed snapshot.
 
     B046 F001 — the share-count + weight math is **mark-to-market**: the price
     reference per symbol is the latest close a :class:`PriceProvider` resolves
@@ -164,9 +182,12 @@ def get_position_diff(
     """
 
     provider = provider or DbPriceProvider(session)
-    snapshot = get_latest_account(session)
+    snapshot = get_latest_account(session, strategy_id)
     as_of_date = as_of or datetime.now(UTC).date().isoformat()
-    recommendations = get_current_recommendations(session)
+    # B057 F004 — read the mode's own target rows directly (symbol / weight /
+    # rationale), not via get_current_recommendations (which carries Master-only
+    # gate + wash-sale baggage). For Master this yields the identical target set.
+    target_rows = RecommendationSnapshotRepository(session).latest_snapshot(strategy_id)
 
     current_by_symbol: dict[str, PositionEntry] = {}
     if snapshot is not None:
@@ -175,7 +196,7 @@ def get_position_diff(
 
     # One marks fetch over held ∪ target symbols feeds both the market-value NAV
     # and the per-target reference price (target-only symbols are priced too).
-    target_symbols = {t.symbol.upper() for t in recommendations.target_positions}
+    target_symbols = {str(row.symbol).upper() for row in target_rows}
     marks = marks_for(provider, set(current_by_symbol) | target_symbols)
     cash = snapshot.cash if snapshot is not None else 0.0
     mtm = compute_mark_to_market(
@@ -190,14 +211,15 @@ def get_position_diff(
     unmatched: list[PositionDiffEntry] = []
     seen_symbols: set[str] = set()
 
-    for target in recommendations.target_positions:
-        symbol = target.symbol.upper()
+    for row in target_rows:
+        symbol = str(row.symbol).upper()
+        target_weight = float(row.target_weight)
         seen_symbols.add(symbol)
         current = current_by_symbol.get(symbol)
         current_shares = current.shares if current else 0.0
         reference_price = latest_close(marks, symbol)  # market price, not avg_cost
 
-        target_dollar = target.target_weight * total_equity
+        target_dollar = target_weight * total_equity
         if reference_price is not None and reference_price > 0:
             target_shares = target_dollar / reference_price
         else:
@@ -205,7 +227,7 @@ def get_position_diff(
 
         delta_shares = target_shares - current_shares
         current_weight = mtm.current_weight(symbol)
-        delta_weight = target.target_weight - current_weight
+        delta_weight = target_weight - current_weight
         delta_dollar = delta_shares * (reference_price or 0.0)
 
         entry = PositionDiffEntry(
@@ -214,11 +236,11 @@ def get_position_diff(
             target_shares=target_shares,
             delta_shares=delta_shares,
             current_weight=current_weight,
-            target_weight=target.target_weight,
+            target_weight=target_weight,
             delta_weight=delta_weight,
             delta_dollar=delta_dollar,
             reference_price=reference_price,
-            reason=target.rationale,
+            reason=row.rationale,
         )
         diff.append(entry)
         if reference_price is None:

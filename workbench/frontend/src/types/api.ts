@@ -3153,6 +3153,8 @@ export interface operations {
             query?: {
                 /** @description ISO-8601 date the diff is reported for; defaults to today. */
                 as_of?: string | null;
+                /** @description Strategy mode (default master_portfolio). The mode's own account / target / tickets / journal are read & written. */
+                strategy_id?: string;
             };
             header?: never;
             path?: never;
@@ -3182,7 +3184,10 @@ export interface operations {
     };
     get_latest_account_route_api_execution_account_latest_get: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Strategy mode (default master_portfolio). The mode's own account / target / tickets / journal are read & written. */
+                strategy_id?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -3198,11 +3203,23 @@ export interface operations {
                     "application/json": components["schemas"]["AccountSnapshotPayload"] | null;
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     put_account_route_api_execution_account_put: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Strategy mode (default master_portfolio). The mode's own account / target / tickets / journal are read & written. */
+                strategy_id?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -3238,6 +3255,8 @@ export interface operations {
             query?: {
                 limit?: number;
                 offset?: number;
+                /** @description Strategy mode (default master_portfolio). The mode's own account / target / tickets / journal are read & written. */
+                strategy_id?: string;
             };
             header?: never;
             path?: never;
@@ -3267,7 +3286,10 @@ export interface operations {
     };
     post_ticket_route_api_execution_tickets_post: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Strategy mode (default master_portfolio). The mode's own account / target / tickets / journal are read & written. */
+                strategy_id?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -3493,6 +3515,8 @@ export interface operations {
             query?: {
                 /** @description ISO date. Only tickets with ticket_date >= since are returned. */
                 since?: string | null;
+                /** @description Strategy mode (default master_portfolio). The mode's own account / target / tickets / journal are read & written. */
+                strategy_id?: string;
             };
             header?: never;
             path?: never;
@@ -3524,6 +3548,8 @@ export interface operations {
         parameters: {
             query?: {
                 window?: string;
+                /** @description Strategy mode (default master_portfolio). The mode's own account / target / tickets / journal are read & written. */
+                strategy_id?: string;
             };
             header?: never;
             path?: never;

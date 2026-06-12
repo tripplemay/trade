@@ -60,11 +60,27 @@ from workbench_api.services.tickets import (
     void_ticket,
 )
 from workbench_api.settings import Settings, get_settings
+from workbench_api.strategy_modes.registry import MASTER_STRATEGY_ID
 
 router = APIRouter(prefix="/execution", tags=["execution"])
 
 AuthenticatedUserDep = Annotated[AuthenticatedUser, Depends(require_authenticated_user)]
 SettingsDep = Annotated[Settings, Depends(get_settings)]
+
+# B057 F004 — the optional strategy-mode selector. An ABSENT param resolves to
+# Master (``master_portfolio``), so every existing request is byte-identical;
+# a new mode (e.g. ``regime_adaptive``) is opted into explicitly. Adding an
+# optional query param does not change any response component schema → zero
+# api.ts component drift (only the operation's params gain ``strategy_id?``).
+StrategyIdQuery = Annotated[
+    str,
+    Query(
+        min_length=1,
+        max_length=64,
+        description="Strategy mode (default master_portfolio). The mode's own "
+        "account / target / tickets / journal are read & written.",
+    ),
+]
 
 
 def _runs_root(settings: Settings) -> Path:
@@ -79,16 +95,18 @@ def get_position_diff_route(
         default=None,
         description="ISO-8601 date the diff is reported for; defaults to today.",
     ),
+    strategy_id: StrategyIdQuery = MASTER_STRATEGY_ID,
 ) -> PositionDiffResponse:
-    return get_position_diff(session, as_of=as_of)
+    return get_position_diff(session, as_of=as_of, strategy_id=strategy_id)
 
 
 @router.get("/account/latest", response_model=AccountSnapshotPayload | None)
 def get_latest_account_route(
     _user: AuthenticatedUserDep,
     session: SessionDep,
+    strategy_id: StrategyIdQuery = MASTER_STRATEGY_ID,
 ) -> AccountSnapshotPayload | None:
-    return get_latest_account(session)
+    return get_latest_account(session, strategy_id)
 
 
 @router.put("/account", response_model=AccountSnapshotPayload)
@@ -96,12 +114,13 @@ def put_account_route(
     body: AccountUpdateRequest,
     _user: AuthenticatedUserDep,
     session: SessionDep,
+    strategy_id: StrategyIdQuery = MASTER_STRATEGY_ID,
 ) -> AccountSnapshotPayload:
     if body.cash < 0:
         raise HTTPException(
             status_code=422, detail=t("validation.cash_negative")
         )
-    return update_account(session, body)
+    return update_account(session, body, strategy_id=strategy_id)
 
 
 @router.post("/tickets", response_model=GenerateTicketResponse)
@@ -110,8 +129,11 @@ def post_ticket_route(
     _user: AuthenticatedUserDep,
     session: SessionDep,
     settings: SettingsDep,
+    strategy_id: StrategyIdQuery = MASTER_STRATEGY_ID,
 ) -> GenerateTicketResponse:
-    return generate_ticket(session, body, runs_dir=_runs_root(settings))
+    return generate_ticket(
+        session, body, runs_dir=_runs_root(settings), strategy_id=strategy_id
+    )
 
 
 @router.get("/tickets", response_model=TicketListResponse)
@@ -120,8 +142,9 @@ def list_tickets_route(
     session: SessionDep,
     limit: int = Query(default=20, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
+    strategy_id: StrategyIdQuery = MASTER_STRATEGY_ID,
 ) -> TicketListResponse:
-    return list_tickets(session, limit=limit, offset=offset)
+    return list_tickets(session, strategy_id=strategy_id, limit=limit, offset=offset)
 
 
 @router.get("/tickets/{ticket_id}", response_model=TicketDetail)
@@ -212,8 +235,9 @@ def journal_history_route(
         default=None,
         description="ISO date. Only tickets with ticket_date >= since are returned.",
     ),
+    strategy_id: StrategyIdQuery = MASTER_STRATEGY_ID,
 ) -> JournalHistoryResponse:
-    return get_journal_history(session, since=since)
+    return get_journal_history(session, since=since, strategy_id=strategy_id)
 
 
 @router.get("/slippage-analytics", response_model=SlippageAnalyticsResponse)
@@ -221,8 +245,9 @@ def slippage_analytics_route(
     _user: AuthenticatedUserDep,
     session: SessionDep,
     window: str = Query(default="3m", pattern="^(3m|6m|1y)$"),
+    strategy_id: StrategyIdQuery = MASTER_STRATEGY_ID,
 ) -> SlippageAnalyticsResponse:
-    return get_slippage_analytics(session, window=window)
+    return get_slippage_analytics(session, window=window, strategy_id=strategy_id)
 
 
 @router.get("/risk-panel", response_model=RiskPanelResponse)

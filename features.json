@@ -40,7 +40,7 @@
       "title": "多账户模型 + 参数化执行链（每模式真金账户 + diff/ticket/fills/reconcile/journal 按 mode；Master 向后兼容；B053 对账 per-mode）+ 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §7。最重、最安全攸关——用户正真实交易 Master】(1) **多账户模型**：account_snapshot 加 mode/strategy_id 维度(Master 默认=master_portfolio 向后兼容，现有单账户行为不变)；每模式独立真金账户(现金+持仓)；B051 账户源单一性 per-mode 保持(latest() per mode)。(2) **执行链参数化**：position-diff/ticket/fills/reconcile/journal 全部参数化按(mode→该模式真金账户+该模式目标)——读对应账户/对应目标/写对应账户。(3) **B053 对账完整性 per-mode 保留**：超卖/负现金 409 拒绝在每个模式账户仍生效(不静默修正)。(4) **★Master 向后兼容(关键)**：默认 mode=master_portfolio，无 mode 参数走 Master(现有 API/前端不破)；新模式显式带 mode。(5) **测试**：多账户隔离(regime 账户≠Master 账户)+每模式 diff/ticket/reconcile 正确+**★Master 现有路径行为不变(向后兼容回归)**+B053 对账 per-mode(超卖/负现金 409)。(6) Gates：backend pytest ≥ baseline+ / ruff / mypy 0 / alembic head / api.ts drift(schema 加 mode 同步)。依赖 F001。",
       "design_decisions": [
         "★Master 向后兼容默认 mode=master_portfolio，现有执行链行为不变(用户正真实交易，不可动摇)；新模式显式带 mode。",

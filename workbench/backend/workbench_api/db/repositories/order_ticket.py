@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from workbench_api.db.models.order_ticket import OrderTicket
 from workbench_api.db.repositories.base import Repository
@@ -30,6 +30,15 @@ class OrderTicketRepository(Repository[OrderTicket, str]):
     def latest(self) -> OrderTicket | None:
         stmt = select(OrderTicket).order_by(OrderTicket.created_at.desc()).limit(1)
         return self._session.execute(stmt).scalar_one_or_none()
+
+    def count_by_strategy(self, strategy_id: str) -> int:
+        """B057 F004 — count of tickets for one strategy mode (paginated list
+        total). Scoped so each mode's ticket list reports its own total."""
+
+        stmt = select(func.count()).select_from(OrderTicket).where(
+            OrderTicket.strategy_id == strategy_id
+        )
+        return int(self._session.execute(stmt).scalar_one())
 
     def reconcile(self, ticket_id: str, executed_at: datetime) -> OrderTicket | None:
         ticket = self.get_by_id(ticket_id)

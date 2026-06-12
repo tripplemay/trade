@@ -49,6 +49,7 @@ from workbench_api.schemas.reconcile import (
     SlippageSummary,
     SlippageTrendPoint,
 )
+from workbench_api.strategy_modes.registry import MASTER_STRATEGY_ID
 
 _logger = logging.getLogger("workbench.reconcile")
 
@@ -312,7 +313,13 @@ def reconcile_ticket(
     if ticket.status == "executed":
         stmt = (
             select(AccountSnapshot)
-            .where(AccountSnapshot.source == "fill_reconcile")
+            .where(
+                AccountSnapshot.source == "fill_reconcile",
+                # B057 F004 — scope by the ticket's mode so an already-executed
+                # ticket resolves to ITS OWN mode's post-reconcile snapshot, never
+                # another mode's (which would corrupt the idempotent re-run).
+                AccountSnapshot.strategy_id == ticket.strategy_id,
+            )
             # B053 F002 — deterministic tie-breaker (created_at, then unique id)
             # so the idempotent re-run resolves to the same snapshot every time
             # even when two fill_reconcile rows share ``snapshot_at``.
@@ -379,6 +386,9 @@ def reconcile_ticket(
     new_snapshot = AccountSnapshot(
         id=snapshot_id,
         snapshot_at=now,
+        # B057 F004 — the reconciled snapshot belongs to the ticket's mode, so it
+        # becomes that mode's new latest() account (Master stays Master).
+        strategy_id=ticket.strategy_id,
         cash=Decimal(str(new_cash)),
         base_currency=base_currency,
         positions=new_positions,
@@ -407,11 +417,21 @@ def reconcile_ticket(
 
 
 def get_journal_history(
-    session: Session, *, since: str | None = None
+    session: Session,
+    *,
+    since: str | None = None,
+    strategy_id: str = MASTER_STRATEGY_ID,
 ) -> JournalHistoryResponse:
-    """Past tickets + per-ticket fill counts + slippage summary."""
+    """Past tickets + per-ticket fill counts + slippage summary.
 
-    stmt = select(OrderTicket).order_by(OrderTicket.created_at.desc())
+    B057 F004 — filtered by ``strategy_id`` (default Master, backward compatible)
+    so each mode's journal shows only its own reconciled tickets."""
+
+    stmt = (
+        select(OrderTicket)
+        .where(OrderTicket.strategy_id == strategy_id)
+        .order_by(OrderTicket.created_at.desc())
+    )
     if since:
         try:
             since_date = date.fromisoformat(since)
@@ -472,6 +492,7 @@ def get_slippage_analytics(
     session: Session,
     *,
     window: str = "3m",
+    strategy_id: str = MASTER_STRATEGY_ID,
     now: datetime | None = None,
 ) -> SlippageAnalyticsResponse:
     if window not in _WINDOW_DAYS:
@@ -483,7 +504,7 @@ def get_slippage_analytics(
         days=_WINDOW_DAYS[window]
     )
 
-    history = get_journal_history(session)
+    history = get_journal_history(session, strategy_id=strategy_id)
     in_window = [
         item
         for item in history.items

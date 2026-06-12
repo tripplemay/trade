@@ -38,8 +38,9 @@ from workbench_api.services.execution import get_position_diff
 from workbench_api.services.recommendations import (
     DISCLAIMER_LITERAL,
     DISCLAIMER_LITERAL_ZH,
-    get_current_recommendations,
 )
+from workbench_api.services.wash_sale import detect_wash_sales
+from workbench_api.strategy_modes.registry import MASTER_STRATEGY_ID
 
 _logger = logging.getLogger("workbench.tickets")
 
@@ -350,17 +351,22 @@ def generate_ticket(
     body: GenerateTicketRequest,
     *,
     runs_dir: Path,
+    strategy_id: str = MASTER_STRATEGY_ID,
     now: datetime | None = None,
 ) -> GenerateTicketResponse:
     """Compose the Markdown ticket + insert the order_ticket row.
 
-    Fails with HTTP 409 when no AccountSnapshot is on file (the
-    Recommendations page tells the user to seed via /execution/account
-    first; the F002 acceptance reflects this).
+    B057 F004 — parameterised by ``strategy_id`` (default Master, byte-identical
+    for the existing path): the ticket is generated from the mode's own
+    position-diff and tagged with the mode, so reconcile writes back to the SAME
+    mode's account. Fails with HTTP 409 when the mode has no AccountSnapshot on
+    file (seed via /execution/account first; the F002 acceptance reflects this).
     """
 
     now = now or datetime.now(UTC).replace(tzinfo=None)
-    diff_response = get_position_diff(session, as_of=body.as_of_date)
+    diff_response = get_position_diff(
+        session, as_of=body.as_of_date, strategy_id=strategy_id
+    )
     snapshot = diff_response.current
     if snapshot is None:
         raise HTTPException(
@@ -368,7 +374,10 @@ def generate_ticket(
             detail=t("ticket.no_snapshot"),
         )
 
-    recommendations = get_current_recommendations(session)
+    # B057 F004 — wash-sale is account-wide (a taxpayer's wash-sale rule spans
+    # accounts), read directly from the fills journal rather than via the
+    # Master-only recommendations response.
+    wash_sale_flags = detect_wash_sales(session)
     snapshot_date = (
         snapshot.snapshot_at.date()
         if snapshot.snapshot_at is not None
@@ -396,7 +405,7 @@ def generate_ticket(
         )
     else:
         diff_rows = [entry.model_dump() for entry in diff_response.diff]
-    flags = [flag.model_dump() for flag in recommendations.wash_sale_flags]
+    flags = [flag.model_dump() for flag in wash_sale_flags]
     cash_before = float(snapshot.cash)
     body_md = render_ticket_markdown(
         ticket_id=ticket_id,
@@ -414,6 +423,7 @@ def generate_ticket(
     ticket_row = OrderTicket(
         id=ticket_id,
         ticket_date=ticket_date,
+        strategy_id=strategy_id,
         snapshot_id=snapshot.id or "",
         target_positions_id=f"tp-{ticket_date.isoformat()}",
         markdown_path=rel_path,
@@ -450,23 +460,31 @@ def _ticket_to_summary(row: OrderTicket) -> TicketSummary:
     )
 
 
-def list_tickets(session: Session, *, limit: int = 20, offset: int = 0) -> TicketListResponse:
-    """Paginated newest-first list of tickets.
+def list_tickets(
+    session: Session,
+    *,
+    strategy_id: str = MASTER_STRATEGY_ID,
+    limit: int = 20,
+    offset: int = 0,
+) -> TicketListResponse:
+    """Paginated newest-first list of the mode's tickets.
 
-    ``limit`` is clamped to [1, 100] so a malicious query string cannot
-    drain the DB; ``offset`` is clamped to [0, ∞).
+    B057 F004 — filtered by ``strategy_id`` (default Master, backward compatible)
+    so each mode lists its own tickets. ``limit`` is clamped to [1, 100] so a
+    malicious query string cannot drain the DB; ``offset`` is clamped to [0, ∞).
     """
 
     limit = max(1, min(100, limit))
     offset = max(0, offset)
     stmt = (
         select(OrderTicket)
+        .where(OrderTicket.strategy_id == strategy_id)
         .order_by(OrderTicket.created_at.desc(), OrderTicket.id.desc())
         .limit(limit)
         .offset(offset)
     )
     rows = list(session.execute(stmt).scalars().all())
-    total = OrderTicketRepository(session).count()
+    total = OrderTicketRepository(session).count_by_strategy(strategy_id)
     return TicketListResponse(
         items=[_ticket_to_summary(row) for row in rows],
         total=total,
