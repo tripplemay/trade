@@ -106,11 +106,13 @@ def test_deploy_primes_price_snapshot_best_effort() -> None:
     assert "workbench_api.prices.cli fetch" in text, (
         "deploy.sh must prime price_snapshot via the prices.cli fetch step"
     )
-    # Non-fatal: the fetch runs inside an `if ...; then ... else ::warning:: fi`
-    # so a failure warns instead of aborting the (set -euo pipefail) deploy.
-    assert '"${VENV_PYTHON}" -m workbench_api.prices.cli fetch; then' in text, (
-        "the prices prime must run inside an `if` so its failure is non-fatal"
-    )
+    # Must resolve workbench_api from the release source (cd into the backend dir,
+    # like the alembic step) AND run inside an `if (...)` so a failure warns
+    # instead of aborting the `set -euo pipefail` deploy (best-effort, non-fatal).
+    assert (
+        'if ( cd "${RELEASE_DIR}/backend" && "${VENV_PYTHON}" '
+        "-m workbench_api.prices.cli fetch ); then" in text
+    ), "the prices prime must cd to the release backend dir and be non-fatal"
     assert "price_snapshot prime failed" in text, (
         "deploy.sh must warn (not hard-fail) when the price_snapshot prime fails"
     )

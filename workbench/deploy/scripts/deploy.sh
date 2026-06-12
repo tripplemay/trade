@@ -343,7 +343,12 @@ fi
 # (build_complete stays False → the daily MTM job retries once priced).
 if [[ -n "${WORKBENCH_DB_URL:-}" ]]; then
   echo "→ priming price_snapshot (prices.cli fetch — held ∪ target universe; best-effort)"
-  if "${VENV_PYTHON}" -m workbench_api.prices.cli fetch; then
+  # Run from the new release's backend dir so workbench_api resolves from the
+  # release SOURCE tree — the SAME context the alembic step above uses (the venv
+  # provides dependencies, not the app package). Without the cd, `python -m
+  # workbench_api.prices.cli` fails with ModuleNotFoundError before the symlink
+  # flip. The subshell keeps the main shell's cwd unchanged.
+  if ( cd "${RELEASE_DIR}/backend" && "${VENV_PYTHON}" -m workbench_api.prices.cli fetch ); then
     echo "  ✓ price_snapshot primed"
   else
     echo "::warning::price_snapshot prime failed (Tiingo / key / network). The daily workbench-prices timer will populate it on its next run; paper align skips unpriced targets and the MTM job retries once priced." >&2
