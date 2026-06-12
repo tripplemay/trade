@@ -64,7 +64,7 @@
       "title": "Codex L1+L2 真 VM——多模式全平台 + ★Master 执行硬回归不破 + regime 落地 + 对账 per-mode + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §9。core acceptance=多模式全平台 + Master 执行不破】L1 全门禁。L2 真 VM：①**通用平台**：Master+regime 各有 目标/回测/模拟盘/真实账户+执行链/surface 可切换；②**regime 落地**：回测非退化+模拟盘前向+(可选)regime 真实账户走一遍 diff/ticket；③★**Master 执行硬回归**——Master 现有 推荐/diff/ticket/reconcile/journal/账户 行为完全不变(B051 账户源+B053 对账 per-mode 不破，用户正用 Master 真实交易，§25 须正面证据)；④**B053 对账 per-mode**：regime 账户超卖/负现金仍 409；⑤回归 B050-B056+recent-errors=0+HEAD≡main；⑥演练自清。Signoff docs/test-reports/B057-strategy-mode-framework-signoff-2026-MM-DD.md(§多模式全平台+§regime 落地+§★Master 执行不破+§对账 per-mode+§Ops)。",
       "design_decisions": []
     }
