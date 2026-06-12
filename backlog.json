@@ -226,5 +226,24 @@
     "source": "2026-06-11 用户讨论确认新方向（增加新交易策略）",
     "phase_plan": "P1 美股引擎+独立回测(验证) / P2 推荐+执行 surface(独立账户) / P3 多市场扩展",
     "sequence_note": "2026-06-12 用户调序：B057 regime 模式先做(引擎现成更省)，B055 进攻选股顺延到 B057 后；B055 届时复用 B057 通用模式框架零成本插入"
+  },
+  {
+    "id": "B0XX-test-automation-infra",
+    "title": "测试自动化基建——把 Codex L2 真机验收下沉进 CI（golden 真数据 + 验收即代码 + prod synthetic + LLM-judge），守铁律 4 独立性",
+    "description": "【2026-06-12 用户讨论确认：工程基建方向，排 B055 后】核实发现 L1 全门禁+safety 守门+AI 红队+部署后 healthcheck 已是全自动 CI；Codex 真残留=L2 真实数据/真机行为验收+裁定+signoff。把 Codex 残留拆 4 桶：A 真环境行为验收(超卖 409/N 策略结果不同/SGOV 股数保真/Master 向后兼容/权重和=1/无负现金)→可自动化(需真数据可复现环境)；B 生产冒烟(recent-errors=0/端点合理/HEAD≡prod/演练自清)→可(synthetic+canary)；C 语义(中文无残留/解释 grounded/no-AI 边界)→半可(正则吃 80%+LLM-judge)；D 裁定+signoff+沉淀+独立性→不该全自动(治理判断核，守铁律 4)。**~70-80% 可且应自动化，剩 ~20-30% 留面积缩小的独立 agent**。**最高 ROI=golden 真数据集**(冻结 Tiingo 价格面板+SEC 基本面快照含 2020/2022 危机窗为 committed fixture/seed DB，回测/推荐变确定性可断言，桶 A 全下沉)——把'correctness 高度依赖每日变动市场数据'这个最难特性一次变可复现。分 6 阶段：P0 门禁确权(确认 required/blocking，S)→P1 golden 数据+验收即代码(地基，L，★最高 ROI)→P2 CI 全栈环境+可注入时钟+VCR 录放(L-XL)→P3 prod synthetic+canary+自动回滚(M)→P4 LLM-as-judge 语义层(扩 ai-safety-eval，M，advisory 非硬 block)→P5 瘦身独立评审+signoff 自动起草(S)。设计文档 docs/dev/test-automation-roadmap.md(含每阶段 feature 拆解+投入产出估算)。",
+    "decisions": [
+      "2026-06-12 用户确认：写文档(docs/dev/test-automation-roadmap.md 已落)+登 backlog，排 B055 后",
+      "诚实边界：铁律 4 独立性≠测试执行——验收断言若 Generator 自写又在 CI 跑会放回'测试与 bug 同方向错'盲点，故必须保留独立对抗评审(面积缩到新颖/模糊部分)；diff-coverage+mutation testing 对冲此盲点",
+      "新颖验收的'设计'无法自动化(CI 跑检查非发明检查)；真金生产判断是主动安全选择非能力缺口(不让 CI bot 改真实生产账户/用户数据)；LLM-judge 作 advisory 非硬 block",
+      "落地次序：先 Phase 0+1 立一批(确权+golden 地基)跑顺，再 P2/3，最后 P4/5；或整体大批分 P0-P5 feature",
+      "与 B057 协同：P1-F3 'Master 向后兼容/对账 per-mode' 断言复用 B057 留下的多模式参数化接口",
+      "不破 research-only/no-broker/§12.10.2/no-AI 边界——新测试同受 safety 守门约束"
+    ],
+    "confirmed_at": "2026-06-12",
+    "priority": "medium",
+    "milestone": "工程基建 — 测试自动化(CI 下沉 Codex L2)",
+    "source": "2026-06-12 用户工程基建讨论(Codex 测试能否 CI 全自动化)",
+    "phase_plan": "P0 门禁确权 / P1 golden 真数据+验收即代码(地基) / P2 CI 全栈+时钟+VCR / P3 prod synthetic+canary / P4 LLM-judge 语义 / P5 瘦身独立评审+signoff 起草",
+    "sequence_note": "2026-06-12 用户调序：排在 B055 进攻选股之后(B057→B055→本批)；属工程基建非交易 gate，可在策略批次间隙插入。Phase 1 golden 数据集为最高 ROI 单项，可独立优先立项。"
   }
 ]
