@@ -117,23 +117,7 @@ def score_regime_target() -> RegimeTargetResult:
     config = default_regime_adaptive_config()
     universe = tuple(entry.symbol for entry in config.universe)
     records, prices_source = _load_regime_records(universe)
-    # B058 F003-PROD-1 — when the engine cannot build a target, name the regime
-    # symbols the price data does NOT cover, so the failure is actionable ("run
-    # data-refresh") instead of a vague "scoring error". The unified prices file
-    # missing the regime ETFs (DBC/IEF/QQQ/TLT/VWO) is the prod root cause.
-    covered = {record.symbol.upper() for record in records}
-    missing = [sym for sym in universe if sym.upper() not in covered]
-    try:
-        return compute_regime_target(records, prices_source=prices_source, config=config)
-    except RegimePrecomputeError as exc:
-        if missing:
-            raise RegimePrecomputeError(
-                f"{exc}; regime price coverage incomplete — "
-                f"{len(covered)}/{len(universe)} universe symbols present, "
-                f"missing {missing}. Run the data-refresh job to populate the "
-                f"unified prices file (source={prices_source})."
-            ) from exc
-        raise
+    return compute_regime_target(records, prices_source=prices_source, config=config)
 
 
 def compute_regime_target(
@@ -161,8 +145,26 @@ def compute_regime_target(
         config = default_regime_adaptive_config()
     category_by_symbol = {entry.symbol: entry.category for entry in config.universe}
 
+    # B058 F003-PROD-1 — name the regime symbols the price data does NOT cover, so
+    # every "could not build a target" failure is actionable ("run data-refresh")
+    # instead of a vague scoring error. The unified prices file missing the regime
+    # ETFs (DBC/IEF/QQQ/TLT/VWO) — the engine then raises "missing price history
+    # for required asset QQQ" — is the prod root cause.
+    universe = tuple(entry.symbol for entry in config.universe)
+    covered = {record.symbol.upper() for record in records}
+    missing = [sym for sym in universe if sym.upper() not in covered]
+    coverage_hint = (
+        f" — regime price coverage incomplete: {len(covered)}/{len(universe)} "
+        f"universe symbols present, missing {missing}. Run the data-refresh job "
+        f"to populate the unified prices file."
+        if missing
+        else ""
+    )
+
     if not records:
-        raise RegimePrecomputeError("no price records available for the regime universe")
+        raise RegimePrecomputeError(
+            f"no price records available for the regime universe{coverage_hint}"
+        )
 
     all_dates = tuple(sorted({record.date for record in records}))
     last_date = all_dates[-1]
@@ -174,17 +176,34 @@ def compute_regime_target(
     if len(signal_dates) < 2:
         raise RegimePrecomputeError(
             "need >= 2 monthly signal dates for regime detection "
-            f"(got {len(signal_dates)} from {len(all_dates)} trading dates)"
+            f"(got {len(signal_dates)} from {len(all_dates)} trading dates){coverage_hint}"
         )
 
-    result = run_regime_adaptive_monthly_backtest(records, signal_dates, config=config)
+    try:
+        result = run_regime_adaptive_monthly_backtest(records, signal_dates, config=config)
+    except RegimePrecomputeError:
+        raise
+    except Exception as exc:  # noqa: BLE001 — reclassify a coverage-driven engine fault
+        # The engine rejected the (incomplete) universe, e.g. "missing price
+        # history for required asset QQQ". When the data does not cover the
+        # universe this is a data gap (actionable); with full coverage it is a
+        # genuine engine fault, so re-raise unchanged (→ scoring_error).
+        if missing:
+            raise RegimePrecomputeError(
+                f"regime engine could not run ({exc}){coverage_hint}"
+            ) from exc
+        raise
     if not result.rebalance_results:
-        raise RegimePrecomputeError("regime backtest produced no rebalance periods")
+        raise RegimePrecomputeError(
+            f"regime backtest produced no rebalance periods{coverage_hint}"
+        )
 
     final = result.rebalance_results[-1]
     target_weights = _finalize_weights(final.effective_weights, config.defensive_symbol)
     if not target_weights:
-        raise RegimePrecomputeError("regime target is empty after finalisation")
+        raise RegimePrecomputeError(
+            f"regime target is empty after finalisation{coverage_hint}"
+        )
 
     symbol_sleeve = {
         symbol: category_by_symbol.get(symbol, "regime") for symbol in target_weights

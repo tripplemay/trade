@@ -379,6 +379,25 @@ def test_compute_regime_target_produces_real_nondegenerate_target() -> None:
     assert result.meta["cadence"] == "monthly"
 
 
+def test_compute_regime_target_incomplete_coverage_is_actionable() -> None:
+    """B058 F003-PROD-1 (the exact prod failure) — when the price records miss a
+    required regime asset (prod: the unified CSV lacked QQQ → the engine raised
+    'missing price history for required asset QQQ'), reclassify the engine fault
+    as a RegimePrecomputeError that NAMES the gap + says to run data-refresh, so
+    run_regime_precompute maps it to data_not_covered (not a vague scoring error)."""
+
+    full = _build_regime_records(length=160)
+    # Drop QQQ (a required regime asset) → reproduce the prod coverage gap.
+    incomplete = tuple(r for r in full if getattr(r, "symbol", None) != "QQQ")
+    with pytest.raises(RegimePrecomputeError) as exc_info:
+        compute_regime_target(
+            incomplete, prices_source="real", config=_short_regime_config()
+        )
+    message = str(exc_info.value)
+    assert "QQQ" in message
+    assert "data-refresh" in message.lower()
+
+
 def test_compute_regime_target_persists_through_run(session: Session) -> None:
     records = _build_regime_records(length=160)
     config = _short_regime_config()
