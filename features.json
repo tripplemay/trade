@@ -30,7 +30,7 @@
       "title": "通用「手动刷新目标」原语（async job 派发注册表 target_producer）+ regime 目标引导",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F3。修 S1 + 平台原语】POST /api/strategy-modes/{strategy_id}/refresh-target →**入队异步 job**(§12.10.2，不在路由内 import trade)→查注册表 target_producer→跑该模式生产者→新 recommendation_snapshot；轮询状态(复用 B047 async 范式)。regime 借此**立即生成目标**(不等月度 timer 7-01)；Master/未来 B055 零成本复用。测试：refresh 端点入队+job 跑 regime producer 产**非空**目标+Master 仍可 refresh+§12.10.2 守门(路由不 import trade)。Gates：backend pytest/ruff/mypy 0 / api.ts drift。",
       "design_decisions": [
         "复用 B057 注册表 target_producer hook 派发；§12.10.2 强制异步 job(import trade 在 job 侧)。",

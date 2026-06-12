@@ -33,6 +33,7 @@ from workbench_api.db.models.price_snapshot import PriceSnapshot
 from workbench_api.db.models.recommendation_snapshot import RecommendationSnapshot
 from workbench_api.db.models.risk_explanation_snapshot import RiskExplanationSnapshot
 from workbench_api.db.models.snapshot_meta import SnapshotMeta
+from workbench_api.db.models.target_refresh_job import TargetRefreshJob
 from workbench_api.db.models.tiingo_budget_log import TiingoBudgetLog
 
 __all__ = [
@@ -59,5 +60,6 @@ __all__ = [
     "RecommendationSnapshot",
     "RiskExplanationSnapshot",
     "SnapshotMeta",
+    "TargetRefreshJob",
     "TiingoBudgetLog",
 ]

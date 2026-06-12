@@ -34,3 +34,37 @@ class StrategyModesResponse(BaseModel):
     """The full mode registry, in selector order (flagship first)."""
 
     modes: list[StrategyModeInfo]
+
+
+class TargetRefreshResponse(BaseModel):
+    """B058 F003 — the enqueue ack for a manual target refresh (POST returns 202).
+
+    The frontend polls ``GET .../refresh-target/{job_id}`` until ``status`` is
+    ``done`` / ``error``."""
+
+    job_id: str = Field(description="Poll handle for the queued refresh job.")
+    strategy_id: str = Field(description="The mode whose target is being refreshed.")
+    status: str = Field(description="queued / running / done / error.")
+
+
+class TargetRefreshJobStatus(BaseModel):
+    """B058 F003 — a target-refresh job's status + result (poll payload)."""
+
+    job_id: str
+    strategy_id: str
+    status: str = Field(description="queued / running / done / error.")
+    as_of_date: str | None = Field(
+        default=None, description="Produced target's signal date (status=done)."
+    )
+    saved_count: int | None = Field(
+        default=None, description="Snapshot rows written (status=done)."
+    )
+    data_source: str | None = Field(
+        default=None, description="real / mixed / fixture (honest provenance)."
+    )
+    error: str | None = Field(default=None, description="Failure detail (status=error).")
+    error_kind: str | None = Field(
+        default=None,
+        description="Stable code for the frontend message (producer_error / "
+        "empty_target / interrupted).",
+    )

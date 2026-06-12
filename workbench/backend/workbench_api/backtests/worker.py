@@ -5,6 +5,13 @@ Long-running loop: claim the oldest queued ``backtest_run`` → run the REAL
 result (or error) back to the DB. Polls with a short sleep when the queue is
 empty (low-latency pickup without an async runtime).
 
+B058 F003 — the same always-running daemon also drains the ``target_refresh_job``
+queue (the manual "refresh this mode's target" primitive): each poll, after the
+backtest queue, it runs one queued target producer off the request path. This
+reuses the proven daemon (correct env incl. ``WORKBENCH_DATA_ROOT``, Restart) for
+zero new ops; the refresh processing is fully isolated (its own try/except and
+table) so it can never disturb the backtest / Reports path.
+
 §12.10.2: this worker (off the request path) is the allowed importer of
 ``trade``. Boundary (r): deterministic backtest over read-only price data —
 no broker / order-ticket / execution.
@@ -56,6 +63,10 @@ from workbench_api.db.require_production_db import (
 from workbench_api.services.explanation import (
     ExplanationService,
     build_default_explainer,
+)
+from workbench_api.strategy_modes.refresh_worker import (
+    process_next_refresh,
+    recover_orphaned_refresh,
 )
 
 logger = logging.getLogger(__name__)
@@ -610,6 +621,20 @@ def main(*, poll_seconds: float = POLL_SECONDS, max_iterations: int | None = Non
         recovery_session.rollback()
     finally:
         recovery_session.close()
+    # B058 F003 — same one-shot reclaim for orphaned target-refresh jobs (isolated
+    # so a failure here never blocks the daemon or the backtest path).
+    refresh_recovery_session = factory()
+    try:
+        reclaimed_refresh = recover_orphaned_refresh(refresh_recovery_session)
+        if reclaimed_refresh:
+            logger.warning(
+                "target_refresh_recovered_orphans", extra={"count": reclaimed_refresh}
+            )
+    except Exception:  # noqa: BLE001 — never let recovery block daemon startup
+        logger.exception("target_refresh_orphan_recovery_failed")
+        refresh_recovery_session.rollback()
+    finally:
+        refresh_recovery_session.close()
     # B043 F002: build the LLM explainer once (None on a host without the gateway
     # key → backtests run with explanation=None, no LLM call).
     explainer = build_default_explainer()
@@ -619,7 +644,12 @@ def main(*, poll_seconds: float = POLL_SECONDS, max_iterations: int | None = Non
         iterations += 1
         session = factory()
         try:
-            handled = process_next(session, explainer)
+            handled_backtest = process_next(session, explainer)
+            # B058 F003 — drain one target-refresh job too (isolated: its own
+            # try/except inside process_next_refresh marks a failing job `error`
+            # and never raises, so the backtest path is unaffected).
+            handled_refresh = process_next_refresh(session)
+            handled = handled_backtest or handled_refresh
         except Exception:  # noqa: BLE001 — never let the daemon die on a DB blip
             logger.exception("backtest_worker_loop_error")
             session.rollback()

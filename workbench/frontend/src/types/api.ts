@@ -138,6 +138,53 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/strategy-modes/refresh-target/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Refresh Target Route
+         * @description Poll a manual target-refresh job (read-only; never imports ``trade``).
+         *
+         *     Registered before the literal-prefixed POST so the dynamic ``{job_id}`` does
+         *     not shadow another path.
+         */
+        get: operations["get_refresh_target_route_api_strategy_modes_refresh_target__job_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/strategy-modes/{strategy_id}/refresh-target": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh Target Route
+         * @description Enqueue a manual target refresh for ``strategy_id`` (returns 202 + job_id).
+         *
+         *     Off the request path the worker daemon runs the mode's target producer and
+         *     writes a fresh ``recommendation_snapshot`` — generating the target on demand
+         *     (the regime mode no longer waits for its monthly timer, B058 S1).
+         */
+        post: operations["refresh_target_route_api_strategy_modes__strategy_id__refresh_target_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/backtests/run": {
         parameters: {
             query?: never;
@@ -2391,6 +2438,70 @@ export interface components {
             has_mark: boolean;
         };
         /**
+         * TargetRefreshJobStatus
+         * @description B058 F003 — a target-refresh job's status + result (poll payload).
+         */
+        TargetRefreshJobStatus: {
+            /** Job Id */
+            job_id: string;
+            /** Strategy Id */
+            strategy_id: string;
+            /**
+             * Status
+             * @description queued / running / done / error.
+             */
+            status: string;
+            /**
+             * As Of Date
+             * @description Produced target's signal date (status=done).
+             */
+            as_of_date?: string | null;
+            /**
+             * Saved Count
+             * @description Snapshot rows written (status=done).
+             */
+            saved_count?: number | null;
+            /**
+             * Data Source
+             * @description real / mixed / fixture (honest provenance).
+             */
+            data_source?: string | null;
+            /**
+             * Error
+             * @description Failure detail (status=error).
+             */
+            error?: string | null;
+            /**
+             * Error Kind
+             * @description Stable code for the frontend message (producer_error / empty_target / interrupted).
+             */
+            error_kind?: string | null;
+        };
+        /**
+         * TargetRefreshResponse
+         * @description B058 F003 — the enqueue ack for a manual target refresh (POST returns 202).
+         *
+         *     The frontend polls ``GET .../refresh-target/{job_id}`` until ``status`` is
+         *     ``done`` / ``error``.
+         */
+        TargetRefreshResponse: {
+            /**
+             * Job Id
+             * @description Poll handle for the queued refresh job.
+             */
+            job_id: string;
+            /**
+             * Strategy Id
+             * @description The mode whose target is being refreshed.
+             */
+            strategy_id: string;
+            /**
+             * Status
+             * @description queued / running / done / error.
+             */
+            status: string;
+        };
+        /**
          * TicketDetail
          * @description A ticket summary + its rendered Markdown body.
          */
@@ -2674,6 +2785,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StrategyModesResponse"];
+                };
+            };
+        };
+    };
+    get_refresh_target_route_api_strategy_modes_refresh_target__job_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TargetRefreshJobStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    refresh_target_route_api_strategy_modes__strategy_id__refresh_target_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                strategy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TargetRefreshResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

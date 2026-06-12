@@ -50,6 +50,8 @@ MESSAGES: Final[dict[str, dict[str, str]]] = {
         "backtest.unknown_strategy": "未知策略 id:{id}",
         "backtest.run_not_found": "未找到 run_id={run_id} 的回测结果。",
         "strategy.unknown": "未知策略 id:{strategy_id}",
+        "strategy_modes.unknown_mode": "未知策略模式 id:{id}",
+        "strategy_modes.refresh_job_not_found": "未找到 job_id={job_id} 的刷新任务。",
         # Reconcile / analytics
         "reconcile.invalid_since": "无效的 'since' 日期:{since}",
         "reconcile.invalid_window": "window 必须为 3m/6m/1y 其一;实际收到 {window}",
@@ -149,6 +151,8 @@ MESSAGES: Final[dict[str, dict[str, str]]] = {
         "backtest.unknown_strategy": "Unknown strategy id: {id}",
         "backtest.run_not_found": "No cached backtest with run_id={run_id}",
         "strategy.unknown": "Unknown strategy id: {strategy_id}",
+        "strategy_modes.unknown_mode": "Unknown strategy mode id: {id}",
+        "strategy_modes.refresh_job_not_found": "No target-refresh job with job_id={job_id}",
         "reconcile.invalid_since": "invalid 'since' date: {since}",
         "reconcile.invalid_window": (
             "window must be one of 3m/6m/1y; got {window!r}"
