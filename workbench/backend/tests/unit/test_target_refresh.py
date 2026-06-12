@@ -28,6 +28,7 @@ from workbench_api.db.repositories.recommendation_snapshot import (
 from workbench_api.db.repositories.target_refresh_job import TargetRefreshJobRepository
 from workbench_api.strategy_modes.refresh_worker import (
     _DISPATCH,
+    ERROR_DATA_NOT_COVERED,
     ERROR_EMPTY,
     ERROR_INTERRUPTED,
     ERROR_PRODUCER,
@@ -147,6 +148,28 @@ def test_process_next_refresh_producer_reported_error_is_error(session: Session)
     assert status is not None and status.status == STATUS_ERROR
     assert status.error_kind == ERROR_PRODUCER
     assert status.error == "data unavailable"
+
+
+def test_process_next_refresh_forwards_producer_error_kind(session: Session) -> None:
+    """B058 F003-PROD-1 — a producer's structured error_kind (e.g. data_not_covered
+    from the regime producer when the unified prices file misses its universe) is
+    forwarded to the job so the frontend shows an actionable message."""
+
+    def _data_gap(_session: Session) -> ProducerResult:
+        return ProducerResult(
+            saved=0,
+            as_of_date=None,
+            data_source=None,
+            error="regime price coverage incomplete — missing ['DBC', 'IEF']",
+            error_kind=ERROR_DATA_NOT_COVERED,
+        )
+
+    job = enqueue_target_refresh(session, REGIME_STRATEGY_ID)
+    process_next_refresh(session, dispatch={REGIME_STRATEGY_ID: _data_gap})
+    status = get_target_refresh_job(session, job.job_id)
+    assert status is not None and status.status == STATUS_ERROR
+    assert status.error_kind == ERROR_DATA_NOT_COVERED
+    assert "DBC" in (status.error or "")
 
 
 def test_process_next_refresh_raising_producer_is_error(session: Session) -> None:

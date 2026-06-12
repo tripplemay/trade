@@ -151,6 +151,10 @@ export default function RecommendationsPage() {
 
   const refreshErrorMessage = (kind: string | null): string => {
     switch (kind) {
+      case "data_not_covered":
+        return tRefresh("errorKind.data_not_covered");
+      case "scoring_error":
+        return tRefresh("errorKind.scoring_error");
       case "producer_error":
         return tRefresh("errorKind.producer_error");
       case "empty_target":

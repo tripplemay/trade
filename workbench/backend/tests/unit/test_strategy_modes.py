@@ -41,6 +41,9 @@ from workbench_api.strategy_modes import (
     mode_for_strategy,
 )
 from workbench_api.strategy_modes.regime_precompute import (
+    ERROR_KIND_DATA_NOT_COVERED,
+    ERROR_KIND_SCORING,
+    RegimePrecomputeError,
     RegimeTargetResult,
     _finalize_weights,
     compute_regime_target,
@@ -272,6 +275,26 @@ def test_run_regime_precompute_is_graceful_on_failure(session: Session) -> None:
     summary = run_regime_precompute(session, score_fn=boom)
     assert summary.saved == 0
     assert summary.error == "scoring blew up"
+    # An UNEXPECTED error classifies as scoring_error (a real bug), not a data gap.
+    assert summary.error_kind == ERROR_KIND_SCORING
+    assert get_target(session, REGIME_STRATEGY_ID) is None
+
+
+def test_run_regime_precompute_data_gap_is_actionable(session: Session) -> None:
+    """B058 F003-PROD-1 — a data-coverage failure (RegimePrecomputeError, e.g. the
+    unified prices file missing the regime ETFs) classifies as data_not_covered so
+    the frontend can show "refresh the data" instead of a vague producer error."""
+
+    def no_data() -> RegimeTargetResult:
+        raise RegimePrecomputeError(
+            "no price records available for the regime universe; missing "
+            "['DBC', 'IEF', 'QQQ', 'TLT', 'VWO']"
+        )
+
+    summary = run_regime_precompute(session, score_fn=no_data)
+    assert summary.saved == 0
+    assert summary.error_kind == ERROR_KIND_DATA_NOT_COVERED
+    assert "DBC" in (summary.error or "")
     assert get_target(session, REGIME_STRATEGY_ID) is None
 
 

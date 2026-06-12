@@ -57,8 +57,19 @@ _WEIGHT_ROUND_DIGITS = 6
 _MIN_WEIGHT = 1e-6
 
 
+# Error-kind codes the refresh worker / frontend map to a friendly message.
+# B058 F003-PROD-1: distinguish "the price data does not cover the regime
+# universe" (actionable: refresh the data) from an unexpected scoring bug.
+ERROR_KIND_DATA_NOT_COVERED = "data_not_covered"
+ERROR_KIND_SCORING = "scoring_error"
+
+
 class RegimePrecomputeError(RuntimeError):
-    """Regime scoring could not produce a target (e.g. insufficient history)."""
+    """Regime scoring could not produce a target (e.g. insufficient history).
+
+    Raised when the available price data cannot drive the (unchanged, tested)
+    regime engine to a target — almost always a data-coverage gap rather than an
+    algorithm fault, so the refresh worker maps it to ``data_not_covered``."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -84,6 +95,10 @@ class RegimePrecomputeSummary:
     data_source: str | None
     regime: str | None
     error: str | None
+    # B058 F003-PROD-1 — stable code for the failure class (data_not_covered /
+    # scoring_error), None on success. The refresh worker forwards it so the
+    # frontend shows an actionable message instead of a vague "producer error".
+    error_kind: str | None = None
 
 
 def score_regime_target() -> RegimeTargetResult:
@@ -102,7 +117,23 @@ def score_regime_target() -> RegimeTargetResult:
     config = default_regime_adaptive_config()
     universe = tuple(entry.symbol for entry in config.universe)
     records, prices_source = _load_regime_records(universe)
-    return compute_regime_target(records, prices_source=prices_source, config=config)
+    # B058 F003-PROD-1 — when the engine cannot build a target, name the regime
+    # symbols the price data does NOT cover, so the failure is actionable ("run
+    # data-refresh") instead of a vague "scoring error". The unified prices file
+    # missing the regime ETFs (DBC/IEF/QQQ/TLT/VWO) is the prod root cause.
+    covered = {record.symbol.upper() for record in records}
+    missing = [sym for sym in universe if sym.upper() not in covered]
+    try:
+        return compute_regime_target(records, prices_source=prices_source, config=config)
+    except RegimePrecomputeError as exc:
+        if missing:
+            raise RegimePrecomputeError(
+                f"{exc}; regime price coverage incomplete — "
+                f"{len(covered)}/{len(universe)} universe symbols present, "
+                f"missing {missing}. Run the data-refresh job to populate the "
+                f"unified prices file (source={prices_source})."
+            ) from exc
+        raise
 
 
 def compute_regime_target(
@@ -195,10 +226,19 @@ def run_regime_precompute(
 
     try:
         result = score_fn()
+    except RegimePrecomputeError as exc:
+        # A data-coverage / insufficient-history failure (the engine is unchanged
+        # and tested) — actionable: refresh the price data (B058 F003-PROD-1).
+        logger.warning("regime_precompute_data_not_covered: %s", exc)
+        return RegimePrecomputeSummary(
+            saved=0, as_of_date=None, data_source=None, regime=None,
+            error=str(exc), error_kind=ERROR_KIND_DATA_NOT_COVERED,
+        )
     except Exception as exc:  # noqa: BLE001 — best-effort job; never crash the timer
         logger.exception("regime_precompute_failed")
         return RegimePrecomputeSummary(
-            saved=0, as_of_date=None, data_source=None, regime=None, error=str(exc)
+            saved=0, as_of_date=None, data_source=None, regime=None,
+            error=str(exc), error_kind=ERROR_KIND_SCORING,
         )
 
     data_source = result.meta.get("data_source")

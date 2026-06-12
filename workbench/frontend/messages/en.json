@@ -336,6 +336,8 @@
       "timeout": "Refresh timed out — the background job may still be running; reload the page shortly.",
       "resultDone": "Target refreshed ({date} · {count} positions · data source {source}).",
       "errorKind": {
+        "data_not_covered": "Refresh failed: the price data does not cover this strategy's assets (refresh the market data first — ask an admin to run data-refresh, then retry).",
+        "scoring_error": "Refresh failed: target scoring errored unexpectedly; retry later or contact an admin.",
         "producer_error": "Refresh failed: the target producer errored (data or scoring issue).",
         "empty_target": "Refresh produced no target (no usable data).",
         "interrupted": "The job was interrupted (worker restart); please retry.",

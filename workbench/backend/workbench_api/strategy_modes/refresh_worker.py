@@ -44,6 +44,9 @@ logger = logging.getLogger(__name__)
 ERROR_PRODUCER = "producer_error"
 ERROR_EMPTY = "empty_target"
 ERROR_INTERRUPTED = "interrupted"
+# B058 F003-PROD-1 — the producer reported a data-coverage gap (its price data
+# does not cover the strategy universe); actionable: refresh the data.
+ERROR_DATA_NOT_COVERED = "data_not_covered"
 
 
 class RefreshProducerError(RuntimeError):
@@ -58,6 +61,9 @@ class ProducerResult:
     as_of_date: str | None
     data_source: str | None
     error: str | None
+    # Stable failure code the producer classified (e.g. data_not_covered), or
+    # None — the worker forwards it so the frontend shows an actionable message.
+    error_kind: str | None = None
 
 
 def _iso(value: date | None) -> str | None:
@@ -90,6 +96,7 @@ def _run_regime_producer(session: Session) -> ProducerResult:
         as_of_date=_iso(summary.as_of_date),
         data_source=summary.data_source,
         error=summary.error,
+        error_kind=summary.error_kind,
     )
 
 
@@ -149,7 +156,7 @@ def process_next_refresh(
         return True
 
     if result.error is not None:
-        repo.save_error(job_id, result.error, error_kind=ERROR_PRODUCER)
+        repo.save_error(job_id, result.error, error_kind=result.error_kind or ERROR_PRODUCER)
     elif result.saved <= 0:
         repo.save_error(
             job_id,

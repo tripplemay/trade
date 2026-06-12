@@ -207,4 +207,34 @@ describe("RecommendationsPage (B022 F010)", () => {
       expect(getByTestId("recommendations-refresh-error")).toBeInTheDocument();
     });
   });
+
+  it("refresh-target data_not_covered error shows the actionable refresh-data message", async () => {
+    vi.stubGlobal(
+      "fetch",
+      buildFetch({
+        "/api/recommendations/current": RECS,
+        "/api/strategy-modes/master_portfolio/refresh-target": {
+          job_id: "trf-3",
+          strategy_id: "master_portfolio",
+          status: "queued",
+        },
+        "/api/strategy-modes/refresh-target/trf-3": {
+          job_id: "trf-3",
+          strategy_id: "master_portfolio",
+          status: "error",
+          error: "regime price coverage incomplete — missing ['DBC']",
+          error_kind: "data_not_covered",
+        },
+      }),
+    );
+    const { getByTestId } = renderWithIntl(<RecommendationsPage />);
+    await waitFor(() => expect(getByTestId("recommendations-refresh-target")).not.toBeDisabled());
+    fireEvent.click(getByTestId("recommendations-refresh-target"));
+    await waitFor(() => {
+      // Actionable guidance, not a vague "producer error".
+      expect(getByTestId("recommendations-refresh-error")).toHaveTextContent(
+        /data-refresh|does not cover/i,
+      );
+    });
+  });
 });

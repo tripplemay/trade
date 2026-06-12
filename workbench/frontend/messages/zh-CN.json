@@ -336,6 +336,8 @@
       "timeout": "刷新超时——后台任务可能仍在运行,请稍后刷新页面查看。",
       "resultDone": "目标已刷新({date} · {count} 个持仓 · 数据源 {source})。",
       "errorKind": {
+        "data_not_covered": "刷新失败:价格数据未覆盖该策略的资产(需先刷新行情数据,请联系管理员运行 data-refresh 后重试)。",
+        "scoring_error": "刷新失败:目标评分出现异常,请稍后重试或联系管理员。",
         "producer_error": "刷新失败:目标生产者出错(数据或评分异常)。",
         "empty_target": "刷新未产出任何目标(无可用数据)。",
         "interrupted": "任务被中断(worker 重启),请重试。",
