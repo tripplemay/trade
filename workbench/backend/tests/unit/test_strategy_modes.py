@@ -263,7 +263,9 @@ def test_run_regime_precompute_is_graceful_on_failure(session: Session) -> None:
 
 
 def _short_regime_config() -> object:
-    from trade.strategies.regime_adaptive.config import default_regime_adaptive_config
+    from trade.strategies.regime_adaptive.config import (  # type: ignore[import-untyped]
+        default_regime_adaptive_config,
+    )
 
     # risk_parity requires vol_lookback ∈ {60, 120, 252}; keep trend_window ≥
     # vol_lookback so an asset that passes trend gating always has enough vol
@@ -286,7 +288,7 @@ def _build_regime_records(length: int = 160) -> tuple[object, ...]:
 
     import math
 
-    from trade.data.loader import PriceBar
+    from trade.data.loader import PriceBar  # type: ignore[import-untyped]
     from trade.strategies.regime_adaptive.config import (
         ASSET_CATEGORY_DEFENSIVE,
         default_regime_adaptive_config,
