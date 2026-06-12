@@ -54,7 +54,7 @@
       "title": "前端两原语按钮 + 诚实标注（推荐/模拟盘页，per-mode，中文）+ 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F5。依赖 F003/F004】推荐页+『立即刷新目标』按钮(per-mode)；模拟盘页+『对齐当前目标』按钮(per-mode)+诚实 notice(手动调仓 vs 日常 cadence)；skipped_symbols 缺市价提示。中文+i18n parity+api.ts 同步。测试：vitest(按钮触发/状态轮询/标注)+i18n parity。Gates：frontend vitest/tsc/lint / i18n parity / api.ts drift 0。",
       "design_decisions": [
         "两按钮诚实标注(手动一次 vs 日常自动)；缺市价 skipped 提示让用户懂为何没建满。"

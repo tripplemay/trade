@@ -328,6 +328,20 @@
       "resultSuffix": " — 任何执行前请先人工核对。",
       "errorPrefix": "导出失败:"
     },
+    "refreshTarget": {
+      "title": "刷新目标",
+      "description": "按需重新计算当前策略模式的目标持仓（后台异步任务，使用最新数据）。",
+      "button": "立即刷新目标",
+      "refreshing": "刷新中…",
+      "timeout": "刷新超时——后台任务可能仍在运行,请稍后刷新页面查看。",
+      "resultDone": "目标已刷新({date} · {count} 个持仓 · 数据源 {source})。",
+      "errorKind": {
+        "producer_error": "刷新失败:目标生产者出错(数据或评分异常)。",
+        "empty_target": "刷新未产出任何目标(无可用数据)。",
+        "interrupted": "任务被中断(worker 重启),请重试。",
+        "unknown": "刷新失败:未知错误。"
+      }
+    },
     "news": {
       "title": "Sleeve 相关新闻",
       "description": "影响本 sleeve 的近期备案与头条，按相关度排序。仅结构化元数据 — 无 AI 评论。",
@@ -719,6 +733,14 @@
     "rebalancesEmpty": "尚无调仓记录（激活即首次建仓）。",
     "rebalancesNote": "简版：仅记日期与成本，不含每笔买卖明细。",
     "sectionSettings": "设置",
-    "settingsNote": "激活后忠实跟随策略最新配置；每日 03:45 UTC 自动标价并在到期时虚拟再平衡（收盘价成交 + 真实成本）。"
+    "settingsNote": "激活后忠实跟随策略最新配置；每日 03:45 UTC 自动标价并在到期时虚拟再平衡（收盘价成交 + 真实成本）。",
+    "alignTitle": "对齐当前目标",
+    "alignNotice": "手动调仓一次,把模拟盘建满到当前目标;日常仍按 cadence + 漂移(不做每日强制对齐,保持前向验证忠实性)。",
+    "alignButton": "对齐当前目标",
+    "aligning": "对齐中…",
+    "alignDone": "已对齐到当前目标({positions} 个持仓)。",
+    "alignSkipped": "{count} 个目标缺市价未建仓:{symbols}(补齐行情后每日任务会自动重试)。",
+    "alignNoTarget": "当前模式暂无目标可对齐——请先在推荐页『立即刷新目标』。",
+    "alignError": "对齐失败:{error}"
   }
 }

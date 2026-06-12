@@ -149,4 +149,62 @@ describe("RecommendationsPage (B022 F010)", () => {
       );
     });
   });
+
+  // B058 F005 — manual "refresh target" button (enqueue → poll → done / error).
+  it("refresh-target button enqueues + polls to done and surfaces the result", async () => {
+    vi.stubGlobal(
+      "fetch",
+      buildFetch({
+        "/api/recommendations/current": RECS,
+        "/api/strategy-modes/master_portfolio/refresh-target": {
+          job_id: "trf-1",
+          strategy_id: "master_portfolio",
+          status: "queued",
+        },
+        "/api/strategy-modes/refresh-target/trf-1": {
+          job_id: "trf-1",
+          strategy_id: "master_portfolio",
+          status: "done",
+          as_of_date: "2026-06-12",
+          saved_count: 6,
+          data_source: "real",
+          error: null,
+          error_kind: null,
+        },
+      }),
+    );
+    const { getByTestId } = renderWithIntl(<RecommendationsPage />);
+    await waitFor(() => expect(getByTestId("recommendations-refresh-target")).not.toBeDisabled());
+    fireEvent.click(getByTestId("recommendations-refresh-target"));
+    await waitFor(() => {
+      expect(getByTestId("recommendations-refresh-result")).toHaveTextContent(/2026-06-12/);
+    });
+  });
+
+  it("refresh-target error surfaces the bilingual error_kind message", async () => {
+    vi.stubGlobal(
+      "fetch",
+      buildFetch({
+        "/api/recommendations/current": RECS,
+        "/api/strategy-modes/master_portfolio/refresh-target": {
+          job_id: "trf-2",
+          strategy_id: "master_portfolio",
+          status: "queued",
+        },
+        "/api/strategy-modes/refresh-target/trf-2": {
+          job_id: "trf-2",
+          strategy_id: "master_portfolio",
+          status: "error",
+          error: "no rows",
+          error_kind: "empty_target",
+        },
+      }),
+    );
+    const { getByTestId } = renderWithIntl(<RecommendationsPage />);
+    await waitFor(() => expect(getByTestId("recommendations-refresh-target")).not.toBeDisabled());
+    fireEvent.click(getByTestId("recommendations-refresh-target"));
+    await waitFor(() => {
+      expect(getByTestId("recommendations-refresh-error")).toBeInTheDocument();
+    });
+  });
 });

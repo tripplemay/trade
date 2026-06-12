@@ -328,6 +328,20 @@
       "resultSuffix": " — review manually before any execution.",
       "errorPrefix": "Export failed:"
     },
+    "refreshTarget": {
+      "title": "Refresh target",
+      "description": "Recompute this strategy mode's target positions on demand (async background job, using the latest data).",
+      "button": "Refresh target now",
+      "refreshing": "Refreshing…",
+      "timeout": "Refresh timed out — the background job may still be running; reload the page shortly.",
+      "resultDone": "Target refreshed ({date} · {count} positions · data source {source}).",
+      "errorKind": {
+        "producer_error": "Refresh failed: the target producer errored (data or scoring issue).",
+        "empty_target": "Refresh produced no target (no usable data).",
+        "interrupted": "The job was interrupted (worker restart); please retry.",
+        "unknown": "Refresh failed: unknown error."
+      }
+    },
     "news": {
       "title": "Sleeve news",
       "description": "Recent filings & headlines affecting this sleeve, ranked by relevance. Structured metadata only — no AI commentary.",
@@ -719,6 +733,14 @@
     "rebalancesEmpty": "No rebalances yet (activation is the first build).",
     "rebalancesNote": "Simplified: date + cost only, no per-fill detail.",
     "sectionSettings": "Settings",
-    "settingsNote": "Once active it faithfully follows the strategy's latest allocation; daily 03:45 UTC it marks to market and rebalances when due (close-price fills + real costs)."
+    "settingsNote": "Once active it faithfully follows the strategy's latest allocation; daily 03:45 UTC it marks to market and rebalances when due (close-price fills + real costs).",
+    "alignTitle": "Align to current target",
+    "alignNotice": "A one-time manual rebalance that builds the paper book up to the current target; day-to-day still follows cadence + drift (no daily forced re-alignment, preserving forward-validation fidelity).",
+    "alignButton": "Align to current target",
+    "aligning": "Aligning…",
+    "alignDone": "Aligned to current target ({positions} positions).",
+    "alignSkipped": "{count} target(s) lacked a price mark and were not built: {symbols} (the daily job retries automatically once priced).",
+    "alignNoTarget": "No target to align to yet — refresh the target first on the recommendations page.",
+    "alignError": "Align failed: {error}"
   }
 }

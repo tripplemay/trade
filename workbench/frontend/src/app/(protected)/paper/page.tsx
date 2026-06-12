@@ -21,6 +21,7 @@ import type { components } from "@/types/api";
 
 type PaperView = components["schemas"]["PaperView"];
 type PaperStrategy = components["schemas"]["PaperStrategy"];
+type RebalanceNowResponse = components["schemas"]["RebalanceNowResponse"];
 
 const STRATEGIES_URL = "/api/paper/strategies";
 
@@ -66,6 +67,10 @@ export default function PaperPage() {
   const [capital, setCapital] = useState<string>("100000");
   const [activating, setActivating] = useState(false);
   const [activateError, setActivateError] = useState<string | null>(null);
+  // B058 F005 — manual "align to current target" (synchronous rebalance once).
+  const [rebalancing, setRebalancing] = useState(false);
+  const [rebalanceResult, setRebalanceResult] = useState<RebalanceNowResponse | null>(null);
+  const [rebalanceError, setRebalanceError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -121,6 +126,29 @@ export default function PaperPage() {
       setActivating(false);
     }
   }, [strategyId, capital, loadView]);
+
+  const onRebalanceNow = useCallback(async () => {
+    setRebalancing(true);
+    setRebalanceError(null);
+    setRebalanceResult(null);
+    try {
+      const resp = await fetch(`/api/paper/${encodeURIComponent(strategyId)}/rebalance-now`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+      });
+      if (!resp.ok) {
+        const detail = await resp.json().catch(() => ({}));
+        throw new Error(detail.detail ?? `HTTP ${resp.status}`);
+      }
+      const body = (await resp.json()) as RebalanceNowResponse;
+      setRebalanceResult(body);
+      loadView(strategyId); // refetch the view to show the aligned book
+    } catch (e) {
+      setRebalanceError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setRebalancing(false);
+    }
+  }, [strategyId, loadView]);
 
   const navSeries = useMemo<EquityCurveSeries[]>(() => {
     if (!view?.nav_curve?.length) return [];
@@ -191,7 +219,16 @@ export default function PaperPage() {
           activateError={activateError}
         />
       ) : (
-        <ActiveView view={view} navSeries={navSeries} currency={currency} t={t} />
+        <ActiveView
+          view={view}
+          navSeries={navSeries}
+          currency={currency}
+          t={t}
+          onRebalanceNow={onRebalanceNow}
+          rebalancing={rebalancing}
+          rebalanceResult={rebalanceResult}
+          rebalanceError={rebalanceError}
+        />
       )}
     </div>
   );
@@ -255,11 +292,19 @@ function ActiveView({
   navSeries,
   currency,
   t,
+  onRebalanceNow,
+  rebalancing,
+  rebalanceResult,
+  rebalanceError,
 }: {
   view: PaperView;
   navSeries: EquityCurveSeries[];
   currency: string;
   t: T;
+  onRebalanceNow: () => void;
+  rebalancing: boolean;
+  rebalanceResult: RebalanceNowResponse | null;
+  rebalanceError: string | null;
 }) {
   const s = view.summary!;
   const positions = view.positions ?? [];
@@ -448,7 +493,53 @@ function ActiveView({
         </CardContent>
       </Card>
 
-      {/* ⑥ Settings */}
+      {/* ⑥ Align to current target (manual, on-demand — B058 F005) */}
+      <Card data-testid="paper-align">
+        <CardHeader>
+          <CardTitle>{t("alignTitle")}</CardTitle>
+          <CardDescription>{t("alignNotice")}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <button
+            data-testid="paper-rebalance-now"
+            type="button"
+            disabled={rebalancing}
+            onClick={onRebalanceNow}
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+          >
+            {rebalancing ? t("aligning") : t("alignButton")}
+          </button>
+          {rebalanceResult ? (
+            rebalanceResult.has_target ? (
+              <div
+                data-testid="paper-align-result"
+                className="space-y-1 text-xs text-muted-foreground"
+              >
+                <p>{t("alignDone", { positions: rebalanceResult.positions })}</p>
+                {(rebalanceResult.skipped_symbols ?? []).length ? (
+                  <p data-testid="paper-align-skipped" className="text-amber-600">
+                    {t("alignSkipped", {
+                      count: (rebalanceResult.skipped_symbols ?? []).length,
+                      symbols: (rebalanceResult.skipped_symbols ?? []).join(", "),
+                    })}
+                  </p>
+                ) : null}
+              </div>
+            ) : (
+              <p data-testid="paper-align-no-target" className="text-xs text-amber-600">
+                {t("alignNoTarget")}
+              </p>
+            )
+          ) : null}
+          {rebalanceError ? (
+            <p data-testid="paper-align-error" className="text-xs text-destructive">
+              {t("alignError", { error: rebalanceError })}
+            </p>
+          ) : null}
+        </CardContent>
+      </Card>
+
+      {/* ⑦ Settings */}
       <Card data-testid="paper-settings">
         <CardHeader>
           <CardTitle>{t("sectionSettings")}</CardTitle>

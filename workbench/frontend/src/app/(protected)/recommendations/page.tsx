@@ -18,6 +18,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { workbenchFetch } from "@/lib/api-fetch";
+import {
+  RefreshJobError,
+  RefreshTimeoutError,
+  runRefreshTarget,
+  type TargetRefreshJobStatus,
+} from "@/lib/refresh-target-poll";
 import { useStrategyMode } from "@/lib/strategy-mode";
 import { cn } from "@/lib/utils";
 import type { ColDef } from "ag-grid-community";
@@ -67,6 +73,7 @@ export default function RecommendationsPage() {
   const tWash = useTranslations("recommendations.wash");
   const tEmpty = useTranslations("recommendations.emptyAccount");
   const tExport = useTranslations("recommendations.exportCard");
+  const tRefresh = useTranslations("recommendations.refreshTarget");
   const tCommon = useTranslations("common");
 
   // B057 F005 — the recommendations page shows the SELECTED mode's target +
@@ -78,6 +85,12 @@ export default function RecommendationsPage() {
   const [exporting, setExporting] = useState(false);
   const [exportResult, setExportResult] = useState<ExportTicketResponse | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
+  // B058 F005 — manual "refresh this mode's target" (enqueue + poll).
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshResult, setRefreshResult] = useState<TargetRefreshJobStatus | null>(null);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
+  const [refreshErrorKind, setRefreshErrorKind] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   const positionColumns = useMemo(() => buildPositionColumns(tPos), [tPos]);
 
@@ -97,7 +110,7 @@ export default function RecommendationsPage() {
     return () => {
       cancelled = true;
     };
-  }, [strategyId]);
+  }, [strategyId, reloadKey]);
 
   const pieSlices: AllocationSlice[] = useMemo(
     () =>
@@ -136,6 +149,41 @@ export default function RecommendationsPage() {
     }
   };
 
+  const refreshErrorMessage = (kind: string | null): string => {
+    switch (kind) {
+      case "producer_error":
+        return tRefresh("errorKind.producer_error");
+      case "empty_target":
+        return tRefresh("errorKind.empty_target");
+      case "interrupted":
+        return tRefresh("errorKind.interrupted");
+      default:
+        return tRefresh("errorKind.unknown");
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    setRefreshError(null);
+    setRefreshErrorKind(null);
+    setRefreshResult(null);
+    try {
+      const result = await runRefreshTarget(strategyId);
+      setRefreshResult(result);
+      setReloadKey((k) => k + 1); // re-fetch the (now refreshed) target
+    } catch (reason: unknown) {
+      if (reason instanceof RefreshJobError) {
+        setRefreshErrorKind(reason.errorKind ?? "unknown");
+      } else if (reason instanceof RefreshTimeoutError) {
+        setRefreshError(tRefresh("timeout"));
+      } else {
+        setRefreshError(reason instanceof Error ? reason.message : String(reason));
+      }
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const accountPresent = data?.account_present ?? false;
 
   const stateLabel = error
@@ -159,6 +207,39 @@ export default function RecommendationsPage() {
       <ModeSelector />
 
       <RiskBanner />
+
+      <Card data-testid="recommendations-refresh-card">
+        <CardHeader>
+          <CardTitle>{tRefresh("title")}</CardTitle>
+          <CardDescription>{tRefresh("description")}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <Button
+            data-testid="recommendations-refresh-target"
+            onClick={handleRefresh}
+            disabled={refreshing}
+          >
+            {refreshing ? tRefresh("refreshing") : tRefresh("button")}
+          </Button>
+          {refreshResult ? (
+            <p
+              data-testid="recommendations-refresh-result"
+              className="text-xs text-muted-foreground"
+            >
+              {tRefresh("resultDone", {
+                date: refreshResult.as_of_date ?? "—",
+                count: refreshResult.saved_count ?? 0,
+                source: refreshResult.data_source ?? "—",
+              })}
+            </p>
+          ) : null}
+          {refreshErrorKind || refreshError ? (
+            <p data-testid="recommendations-refresh-error" className="text-xs text-destructive">
+              {refreshErrorKind ? refreshErrorMessage(refreshErrorKind) : refreshError}
+            </p>
+          ) : null}
+        </CardContent>
+      </Card>
 
       <Card
         data-testid="recommendations-disclaimer-card"
