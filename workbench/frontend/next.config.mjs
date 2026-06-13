@@ -65,6 +65,8 @@ const nextConfig = {
       "paper",
       // B057 F005: the strategy-mode selector data source (GET /api/strategy-modes).
       "strategy-modes",
+      // B059 F001: the on-demand symbol price lookup (GET /api/symbols/{symbol}/price).
+      "symbols",
     ];
     return PROXIED_PREFIXES.flatMap((prefix) => [
       { source: `/api/${prefix}`, destination: `${target}/api/${prefix}` },

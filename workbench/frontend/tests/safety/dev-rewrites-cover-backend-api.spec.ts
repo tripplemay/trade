@@ -48,6 +48,8 @@ const REQUIRED_PREFIXES = [
   "paper",
   // B057 F005: the strategy-mode selector data source (GET /api/strategy-modes).
   "strategy-modes",
+  // B059 F001: the on-demand symbol price lookup (GET /api/symbols/{symbol}/price).
+  "symbols",
 ];
 
 describe("next.config dev rewrites cover all B022 backend prefixes", () => {

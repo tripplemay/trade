@@ -52,6 +52,13 @@ MESSAGES: Final[dict[str, dict[str, str]]] = {
         "strategy.unknown": "未知策略 id:{strategy_id}",
         "strategy_modes.unknown_mode": "未知策略模式 id:{id}",
         "strategy_modes.refresh_job_not_found": "未找到 job_id={job_id} 的刷新任务。",
+        # Symbols (B059 — 标的查询，仅 EOD 收盘价，无实时/交易入口)
+        "symbols.invalid_symbol": "标的代码无效:{symbol}。请输入有效代码,例如 AAPL、SPY、BRK.B。",
+        "symbols.not_found": (
+            "无法获取标的 {symbol} 的价格数据。可能是代码有误、已退市,或暂无 EOD 数据。"
+            "请检查代码后重试,例如 AAPL、SPY。"
+        ),
+        "symbols.rate_limited": "标的查询过于频繁,已触发限流。请稍后再试。",
         # Reconcile / analytics
         "reconcile.invalid_since": "无效的 'since' 日期:{since}",
         "reconcile.invalid_window": "window 必须为 3m/6m/1y 其一;实际收到 {window}",
@@ -153,6 +160,15 @@ MESSAGES: Final[dict[str, dict[str, str]]] = {
         "strategy.unknown": "Unknown strategy id: {strategy_id}",
         "strategy_modes.unknown_mode": "Unknown strategy mode id: {id}",
         "strategy_modes.refresh_job_not_found": "No target-refresh job with job_id={job_id}",
+        # Symbols (B059 — symbol lookup; EOD close only, no live / no execution)
+        "symbols.invalid_symbol": (
+            "Invalid ticker: {symbol}. Enter a valid symbol, e.g. AAPL, SPY, BRK.B."
+        ),
+        "symbols.not_found": (
+            "No price data for {symbol}. It may be an invalid or delisted ticker, "
+            "or have no EOD data. Check the symbol and retry, e.g. AAPL, SPY."
+        ),
+        "symbols.rate_limited": "Too many symbol lookups right now; please retry shortly.",
         "reconcile.invalid_since": "invalid 'since' date: {since}",
         "reconcile.invalid_window": (
             "window must be one of 3m/6m/1y; got {window!r}"

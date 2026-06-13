@@ -6,7 +6,7 @@
       "title": "P1 后端：标的数据服务（provider 抽象 + on-demand 拉价 + 缓存 + cost_guard 限流 + 无效 ticker 报错）+ 价格查询",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §5 F001。复用 yfinance_loader/cost_guard】(1) **Provider 抽象**：SymbolDataProvider 接口(get_price_history/get_quote/get_stats)，**yfinance 作首个实现**(任意 ticker 免费)，抽象留后路(未来不稳→换/加 Finnhub/FMP，不提前集成付费)。(2) **on-demand+缓存**：查询先查缓存(DB 表/复用 price_history，按 symbol+as-of EOD 日 TTL)→命中即返、未命中按需拉+写缓存。(3) **限流**：复用 cost_guard 防任意 ticker 打爆外部 API。(4) **无效 ticker**：清晰 actionable 报错(非模糊 500)。(5) **价格查询**：最新收盘+历史序列+52 周高/低+区间收益(1M/3M/6M/1Y/YTD)。(6) **边界**：§12.10.2 AST 守门过(不在请求路径 import trade；yfinance_loader 若不 import trade 则请求路径内 OK 否则异步 job)；no-broker 守门过；新路由进 next.config PROXIED_PREFIXES + dev-rewrites 守门测试(B057 教训)。测试：provider 抽象+缓存命中/未命中+限流+无效 ticker+价格统计+§12.10.2/no-broker 守门。Gates：backend pytest ≥ baseline+ / ruff / mypy 0 / api.ts drift / alembic head(若加缓存表)。",
       "design_decisions": [
         "yfinance 作首个 provider(已是依赖,任意 ticker 免费)，抽象留后路不提前付费集成。",

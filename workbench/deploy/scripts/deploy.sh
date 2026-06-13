@@ -321,6 +321,10 @@ required = {
     # valid default range). A short schema here means the backtest page falls
     # back to the empty state — fail the deploy concretely.
     "backtest_data_window",
+    # B059 F001 — 0024 symbol_price_cache (isolated on-demand symbol-lookup EOD
+    # cache for GET /api/symbols/{symbol}/price). Missing → the symbol lookup
+    # surface errors on every query; fail the deploy concretely.
+    "symbol_price_cache",
 }
 missing = required - present
 if missing:

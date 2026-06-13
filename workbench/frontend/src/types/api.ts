@@ -778,6 +778,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/symbols/{symbol}/price": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Symbol Price Route
+         * @description Return EOD price detail (latest close + 52-week range + window returns
+         *     + OHLCV series) for ``symbol``.
+         *
+         *     Errors are actionable, never a generic 500: invalid ticker → 400,
+         *     unknown / delisted / no-EOD-data → 404, rate-limited → 429.
+         */
+        get: operations["get_symbol_price_route_api_symbols__symbol__price_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1880,6 +1904,60 @@ export interface components {
             sleeve?: string | null;
         };
         /**
+         * PriceBarPoint
+         * @description One EOD OHLCV bar for the chart (line or candlestick).
+         */
+        PriceBarPoint: {
+            /**
+             * Obs Date
+             * Format: date
+             * @description Trading day (EOD).
+             */
+            obs_date: string;
+            /** Open */
+            open: number;
+            /** High */
+            high: number;
+            /** Low */
+            low: number;
+            /** Close */
+            close: number;
+            /** Volume */
+            volume: number;
+        };
+        /**
+         * PriceRangeReturns
+         * @description Total returns over fixed windows. ``None`` when the series doesn't
+         *     reach back far enough (honest degradation, not zero).
+         */
+        PriceRangeReturns: {
+            /**
+             * One Month
+             * @description 1-month total return (close/close − 1).
+             */
+            one_month: number | null;
+            /**
+             * Three Month
+             * @description 3-month total return.
+             */
+            three_month: number | null;
+            /**
+             * Six Month
+             * @description 6-month total return.
+             */
+            six_month: number | null;
+            /**
+             * One Year
+             * @description 1-year total return.
+             */
+            one_year: number | null;
+            /**
+             * Ytd
+             * @description Year-to-date total return (vs last close of prior year).
+             */
+            ytd: number | null;
+        };
+        /**
          * ProtectedTestResponse
          * @description Response schema for ``GET /api/protected-test`` (auth probe).
          */
@@ -2474,6 +2552,54 @@ export interface components {
              * @description ISO-8601.
              */
             last_sweep_date?: string | null;
+        };
+        /**
+         * SymbolPriceDetail
+         * @description EOD price detail for one symbol.
+         */
+        SymbolPriceDetail: {
+            /**
+             * Symbol
+             * @description Normalised ticker, e.g. 'AAPL'.
+             */
+            symbol: string;
+            /**
+             * As Of
+             * Format: date
+             * @description Latest EOD observation date (close-of-day, not live).
+             */
+            as_of: string;
+            /**
+             * Close
+             * @description Latest EOD closing price.
+             */
+            close: number;
+            /**
+             * Source
+             * @description Data source label, e.g. 'yfinance'.
+             */
+            source: string;
+            /**
+             * Is Eod
+             * @description Always true — end-of-day close, never intraday / real-time.
+             */
+            is_eod: boolean;
+            /**
+             * Week52 High
+             * @description Trailing 52-week intraday high, null if unknown.
+             */
+            week52_high: number | null;
+            /**
+             * Week52 Low
+             * @description Trailing 52-week intraday low, null if unknown.
+             */
+            week52_low: number | null;
+            returns: components["schemas"]["PriceRangeReturns"];
+            /**
+             * Bars
+             * @description EOD OHLCV series for the chart, oldest first.
+             */
+            bars: components["schemas"]["PriceBarPoint"][];
         };
         /**
          * TargetPosition
@@ -3964,6 +4090,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RiskPanelResponse"];
+                };
+            };
+        };
+    };
+    get_symbol_price_route_api_symbols__symbol__price_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                symbol: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SymbolPriceDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

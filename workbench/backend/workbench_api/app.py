@@ -54,6 +54,7 @@ from workbench_api.routes import reports as reports_routes
 from workbench_api.routes import snapshots as snapshots_routes
 from workbench_api.routes import strategies as strategies_routes
 from workbench_api.routes import strategy_modes as strategy_modes_routes
+from workbench_api.routes import symbols as symbols_routes
 from workbench_api.settings import Settings, get_settings
 
 AuthenticatedUserDep = Annotated[AuthenticatedUser, Depends(require_authenticated_user)]
@@ -279,6 +280,8 @@ def create_app() -> FastAPI:
     api.include_router(snapshots_routes.router)
     api.include_router(backlog_routes.router)
     api.include_router(execution_routes.router)
+    # B059 F001 — on-demand symbol price lookup (research-only EOD, no execution).
+    api.include_router(symbols_routes.router)
 
     app.include_router(api)
 
