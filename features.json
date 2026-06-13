@@ -34,7 +34,8 @@
       "status": "done",
       "acceptance": "【见 spec §5 F003。复用 fundamentals_loader/xbrl/SEC。依赖 F001】SEC 美股基本面(复用 fundamentals_loader/xbrl_parser)+yfinance 补充(市值/PE/营收/利润率等)；**非美 ticker 诚实降级**(『基本面仅美股』不留空)；详情页基本面区块(中文+as-of+源)。测试：US 有基本面 / 非美降级 / 字段映射。Gates：backend pytest/ruff/mypy 0 / frontend vitest/tsc / api.ts drift / i18n parity。",
       "design_decisions": [
-        "SEC 权威美股基本面优先 + yfinance 补字段；非美诚实降级(只价格无基本面)。"
+        "SEC 权威美股基本面优先 + yfinance 补字段；非美诚实降级(只价格无基本面)。",
+        "【Planner 裁定 2026-06-13：SEC→yfinance 偏离 ✅ 接受】spec 写『复用 SEC』是理想化，未计 SEC 对任意 ticker 的现实：SEC EDGAR universe-bound(27-CIK 仅策略 universe)+错误/高频请求封 IP 30 天。对任意 ticker lookup 用 SEC 会(a)需为每个 ticker 映 CIK(不现实)(b)IP 封禁危及**共享的 SEC 访问=污染真实策略基本面管道**。改用 yfinance .info(任意 ticker，保留 US-only 门禁+诚实标源)是更优解——偏离只限 lookup 展示(便利)，策略评分仍用权威 SEC(未动)。接受。"
       ]
     },
     {
@@ -53,7 +54,7 @@
       "title": "Codex L1+L2 真机：任意 ticker 查询 + EOD/no-execution/no-AI 边界 + US-only 降级 + 缓存/限流 + Master/B058 不破 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §5 F005。core acceptance=任意 ticker 查价格+基本面+新闻，诚实+无交易入口+不破】L1 全门禁。L2 真 VM：① **任意 ticker 查询**：universe 内(如 SPY)+universe 外任意美股(如 NVDA)+无效 ticker(报错 actionable)；② **EOD 诚实**：界面标收盘价/as-of/源，无实时假象；③ ★**边界**：无任何买卖按钮(no-execution)、无 AI 预测(no-AI)、无 broker SDK；④ **US-only 基本面降级**：非美 ticker 只价格无基本面且诚实标注；⑤ **缓存/限流**：重复查命中缓存、不打爆外部 API；⑥ Master/B058 推荐/模拟盘/执行不破+recent-errors=0+HEAD≡main；⑦ 演练自清。Signoff docs/test-reports/B059-symbol-price-lookup-signoff-2026-MM-DD.md(§任意 ticker 证据+§EOD/边界+§US-only 降级+§缓存+§不破+§Ops)。",
       "design_decisions": []
     }

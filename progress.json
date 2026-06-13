@@ -2,7 +2,7 @@
   "status": "done",
   "user_goal": "B059 标的信息查询/展示（任意 ticker + 丰富标的详情页：价格+基本面+新闻，EOD）。平台原语+用户便利功能。来源：2026-06-12 用户『可在系统内方便查询任意标的价格信息，类似专业交易软件』，两次 scope 选择=任意 ticker(非仅 universe)+丰富详情页(价格+基本面+新闻)。**核心洞察(先复用再自研，2026-06-13 核实)**：数据+图表大部分已是现成依赖——yfinance_loader(任意 ticker 价格+基本面+新闻，免费已依赖)/tiingo/sec_edgar+fundamentals_loader+xbrl(美股基本面)/news B034-035/cost_guard(限流)；前端 lightweight-charts(TradingView)+echarts 已装。本批≈组合已有+搭查询 surface，非集成新平台。**诚实预期(写进 UI)**：EOD 收盘价非实时，标收盘价+as-of+源，不做盘中/实时；基本面仅美股(SEC)，非美 ticker 只价格诚实降级。**红线**：research-only 绝不加买卖按钮(no-execution-buttons 守门)/no-broker SDK(守门，yfinance/Tiingo/SEC 不在禁列 OK)/no-AI 不预测涨跌/§12.10.2(按需拉取若 import trade 走异步 job，否则缓存+限流的请求路径服务)/新路由同步 next.config PROXIED_PREFIXES+守门(B057 教训)/新页 disclaimer(守门)。5 features 4g+1c 分 3 期：F001 P1 后端标的数据服务(provider 抽象+on-demand+缓存+cost_guard 限流+无效 ticker 报错+价格查询)；F002 P1 前端搜索+价格详情页(lightweight-charts+诚实标注+disclaimer)；F003 P2 基本面(SEC 美股+yfinance，非美降级)；F004 P3 新闻(复用 B034/35 扩 symbol)；F005 codex 任意 ticker+边界+US-only 降级+缓存+Master/B058 不破+signoff。不做：实时/盘中行情/交易入口/AI 预测/非美基本面硬造。spec docs/specs/B059-symbol-price-lookup-spec.md(7 章)。",
   "total_features": 5,
-  "completed_features": 4,
+  "completed_features": 5,
   "fix_rounds": 0,
   "current_sprint": "F005",
   "last_updated": "2026-06-13",
@@ -20,7 +20,7 @@
     "spec": "docs/specs/B059-symbol-price-lookup-spec.md",
     "test_cases": null,
     "signoff": "docs/test-reports/B059-symbol-price-lookup-signoff-2026-06-13.md",
-    "framework_reviewed": false
+    "framework_reviewed": true
   },
   "completed_date": "2026-06-13",
   "role_assignments": null,

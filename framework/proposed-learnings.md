@@ -157,3 +157,13 @@
 **状态：** 待确认
 
 <!-- 2026-06-13: B059 F001 — 复发提醒（不新增候选，强化既有队列项）：上面 [2026-06-12 B057 F004] 已记「CI mypy 严格扫 workbench_api + tests，本地须跑 `mypy workbench_api tests`」仍 待确认 未沉淀进 generator.md。本批 B059 F001 再次踩中：本地只跑 `mypy workbench_api`(0 error) 就推码，CI 的 "Mypy (strict — workbench_api + tests)" 步骤红（test helper 缺返回注解 no-untyped-def），一次 fix-push 修复。**第二实例**→建议 done 阶段优先沉淀该条（本地 pre-push 门禁脚本应固化为 CI-exact `mypy workbench_api tests`，而非 `mypy workbench_api`）。 -->
+
+## [2026-06-13] Claude CLI — 来源：B059 F003 基本面源 SEC→yfinance 偏离
+
+**类型：** 新规律（spec 复用条款的现实性校验）
+
+**内容：** **spec 写「复用现有 X」时，必须先核 X 对本批的新输入域是否适用**——X 可能是 universe-bound / fair-access 限流 / 对错误输入有 IP 封禁等约束，对"任意输入"不适用。B059 spec F003 写「复用 SEC fundamentals_loader」，但 SEC EDGAR 是 universe-bound(27-CIK 仅策略 universe)+错误/高频请求封 IP 30 天 → 对**任意 ticker** lookup 不适用，且强行用会**IP 封禁危及共享 SEC 访问=污染真实策略基本面管道**。Generator 偏离改用 yfinance .info(任意 ticker，保留 US-only 门禁+诚实标源)，planner 裁定接受(偏离只限 lookup 展示便利，策略权威 SEC 路径未动)。**规律**：(1) Generator 遇 spec 复用条款与现实冲突→偏离合理但须 planner 裁定 + 诚实标注实际源 + **不污染原权威路径**；(2) Planner 写 spec「复用 X」前应标注 X 的适用域(universe-bound? 限流? 对任意输入安全?)，避免理想化复用。
+
+**建议写入：** `framework/harness/generator.md`（§偏离裁定：spec 复用须核适用域）+ `framework/harness/planner.md`（§spec 复用条款须标 X 适用域）
+
+**状态：** 待确认
