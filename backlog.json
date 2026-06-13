@@ -87,7 +87,8 @@
       "satellite 接入后必须复用 Master Portfolio quarter-end cadence 与账户级 kill-switch",
       "数据走 B045 data-refresh pipeline（加 proxy symbol 入 universe）；保持 research-only / no-broker 边界",
       "数据范围参照 docs/strategy/04-hk-china-etf-small-allocation.md",
-      "建议排在交易闭环冒烟（BL-B023-S1）之后、B043 AI 解释层之前，使 B043 解释一个 4/4 完整真实 Master"
+      "建议排在交易闭环冒烟（BL-B023-S1）之后、B043 AI 解释层之前，使 B043 解释一个 4/4 完整真实 Master",
+      "2026-06-14 用户决定 proxy→真 A股+港股进 live Master(直接全套+A股港股都要)。**planner 真金纪律=分 3 批激活闸控于回测**：Batch 1=B062(数据地基:港股 provider+A股港股进 trade 管道+§8 质量,research-safe 立项 building)；Batch 2=FX+real-data hk_china 策略+回测对比 real vs proxy(决策点);Batch 3=激活 live Master(★真金,闸控于回测favorable+用户确认,Master 硬回归)。诚实前提:现 proxy 已合法真实暴露无 FX/管道复杂度,hk_china 最小最弱 10%,须回测证明值。"
     ],
     "confirmed_at": "2026-05-13",
     "priority": "high",
@@ -131,7 +132,8 @@
       }
     ],
     "source": "B011 signoff soft-watch S2",
-    "milestone": "C — Master 4/4 真实（去 hk_china by-design stub）"
+    "milestone": "C — Master 4/4 真实（去 hk_china by-design stub）",
+    "sequence_note": "2026-06-14 启动=B062(Batch 1 数据地基 building)。后续 Batch 2(FX+策略+回测)/Batch 3(激活 live Master 闸控)待 B062 done 续规划。"
   },
   {
     "id": "BL-B023-S2",
