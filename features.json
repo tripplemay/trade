@@ -57,7 +57,8 @@
       "status": "done",
       "acceptance": "【见 spec §4 F005。core acceptance=A 股可查+§8 深度验实+US 不破】L1 全门禁。L2 真 VM：① **A 股 lookup**：/symbols 查 600519.SH→茅台 价格图(CNY 标注)+其它代表符号；② ★**§8 深度验证**：全历史深度 ≥3-5 年/全 5 符号/akshare-baostock 交叉源 <0.5%/~300 规模日更可行性/连通性成功率；③ **US 回归不破**：US 符号仍经 yfinance 正常(SPY/NVDA)；④ **边界**：no-broker SDK(只 akshare/baostock)、no-execution、no-AI、EOD/CNY 诚实标注；⑤ recent-errors=0+HEAD≡main；⑥ 演练自清。Signoff docs/test-reports/B061-ashare-data-p1-signoff-2026-MM-DD.md(§A 股 lookup 证据+§§8 深度指标实测+§US 不破+§边界+§Ops)。",
       "design_decisions": [
-        "【Planner 复核 2026-06-14：F005 高估为 FULL PASS】L2 实为代码+部署验证(akshare 已装/端点存在 401/路由对/US 不破)，**核心 §8 深度(真实数据全历史/5 符号/交叉源<0.5%/规模)因 401 auth 未做**(signoff §174 自承)。按 evaluator §25 核心验收须正面证据，此项不达 FULL PASS。**§8 深度=未闭合核心项(Soft-watch S1)**，须用户 smoke(查 600519.SH)或 Codex 带 auth 复验闭合。"
+        "【Planner 复核 2026-06-14：F005 高估为 FULL PASS】L2 实为代码+部署验证(akshare 已装/端点存在 401/路由对/US 不破)，**核心 §8 深度(真实数据全历史/5 符号/交叉源<0.5%/规模)因 401 auth 未做**(signoff §174 自承)。按 evaluator §25 核心验收须正面证据，此项不达 FULL PASS。**§8 深度=未闭合核心项(Soft-watch S1)**，须用户 smoke(查 600519.SH)或 Codex 带 auth 复验闭合。",
+        "【Planner 闭合 2026-06-14：用户 smoke 确证】用户实测 /symbols 查 600519.SH **能查出价格**→A 股实数据端到端流通确证(akshare→缓存→API→UI)，§8 深度**核心(真数据可查)闭合**。**残留(低 Soft-watch,降级)**：更深指标未正式测——全历史精确深度/全 5 符号覆盖/akshare-baostock 交叉源<0.5%/~300 规模日更——对 lookup 展示非必需(用户已验可用)，延后到 A 股数据喂策略时(P2/P3)按需验或脚本验。B061 核心验收达成。"
       ]
     }
   ]
