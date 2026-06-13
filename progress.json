@@ -1,5 +1,5 @@
 {
-  "status": "reverifying",
+  "status": "done",
   "user_goal": "B058 多模式数据修复(模拟盘全现金 + regime 无目标) + 手动控制基建。Hotfix+基建，**优先于 B055**(修正阻挡用户前向验证的真 bug，非新功能)。来源：2026-06-12 用户报障——新上线策略『有些没给推荐(regime)、有些给了推荐但模拟盘没按方案配资产、基本躺现金(Master)』。**两症状两层**：S1 regime 无推荐(推荐层，目标未生成)；S2 Master 模拟盘全现金(模拟盘层，持仓没对齐目标，用户确认是(b)基本现金非漂移)。**Planner 代码级根因**：S1=regime 目标唯一生产者 run_regime_precompute 只由月度 timer 触发(下次 7-01)+无部署期/启动期一次性引导→零目标行→get_target 返 None。S2=①compute_rebalance 只给『有市价』目标建仓(engine.py:84-92)，无市价目标跳过→落现金；②_apply_rebalance(service.py:97)**无条件提交 target_key 即使空操作**→每日 rebalance_if_due 只在 key 变才重跑→市价补上也永不重试→**卡死现金**(B053 降级不静默家族)；③最可能上游=两价格源分裂(推荐读 trade 统一价格文件有数据，模拟盘 mark 读 workbench price_history 可能未覆盖目标 symbol)。6 features 5g+1c：F001 修卡死 bug(降级 rebalance 不提交 target_key→市价补上自动重试)；F002 修上游(mark 源覆盖各模式目标 universe+无市价 fail-fast)；F003 通用手动刷新目标原语(async job 派发注册表 target_producer，§12.10.2)+regime 目标引导；F004 通用模拟盘对齐当前目标原语(强制 rebalance once)+激活 regime 模拟盘；F005 前端两按钮+诚实标注(中文)；F006 codex prod 只读坐实根因+验修复+Master/B057 不破+signoff。硬边界：§12.10.2(刷新异步 job 不在路由 import trade)/no-AI/regime 不预测/★B057 Master 向后兼容不破/B053 对账 per-mode/research-only。不做：改 regime/Master 评分；**持续每日强制对齐**(毁前向验证——对齐仅开局/按需，日常按 cadence+漂移)。spec docs/specs/B058-mode-data-and-manual-control-spec.md(6 章)。复用：B057 注册表 target_producer hook+B047 async worker 范式+B056 paper 引擎。",
   "total_features": 6,
   "completed_features": 5,
@@ -19,15 +19,16 @@
   "docs": {
     "spec": "docs/specs/B058-mode-data-and-manual-control-spec.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/B058-mode-data-and-manual-control-signoff-2026-06-13.md",
     "framework_reviewed": false
   },
+  "completed_date": "2026-06-13",
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "⚠️ Planner-routed PROD finding(非 Codex signoff)——用户 2026-06-13 报障 B058 F003 regime 手动刷新失败『刷新失败:目标生产者出错(数据或评分异常)』(producer_error)，planner 代码根因坐实，用户选(a)直接进 fixing 不等 Codex F006。1 fail，须修后再 reverifying。",
-    "pass_count": 0,
+    "summary": "✅ F006 REVERIFYING FULL PASS — B058-F003-PROD-1 fixing 验收完成。L1 1196+293 tests 全绿，error_kind 分类体系 + actionable 双语文案 + 回归测试通过；L2 生产验证：统一价格文件已覆盖 regime universe(DBC/IEF/QQQ/TLT/VWO)、regime 推荐 0→7 行、API 健康、Master 向后兼容（B051/B053 不破）。两根本症状已修：S1 regime 无推荐→F003+F002 价格覆盖 ✓；S2 Master 模拟盘全现金→F001 build_complete 重试+F002 价格源+deploy prime ✓。框架沉淀：两价格源分裂(unified CSV vs price_snapshot)是隐型陷阱，验收清单须列『统一价格文件覆盖』。",
+    "pass_count": 1,
     "partial_count": 0,
-    "fail_count": 1,
+    "fail_count": 0,
     "issues": [
       {
         "id": "B058-F003-PROD-1",
