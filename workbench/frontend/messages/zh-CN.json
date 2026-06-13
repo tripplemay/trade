@@ -95,7 +95,10 @@
     "fundRoe": "净资产收益率",
     "fundDebtToEquity": "负债权益比",
     "fundSector": "板块",
-    "fundIndustry": "行业"
+    "fundIndustry": "行业",
+    "newsTitle": "相关新闻",
+    "newsLoading": "正在加载新闻…",
+    "newsEmpty": "暂无该标的的近期新闻。"
   },
   "home": {
     "title": "首页",

@@ -30,6 +30,7 @@ REQUEST_PATH_MODULES = (
     SYMBOLS / "service.py",
     SYMBOLS / "stats.py",
     SYMBOLS / "fundamentals.py",
+    SYMBOLS / "news.py",
 )
 
 

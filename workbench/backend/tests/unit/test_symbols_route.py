@@ -10,16 +10,20 @@ from __future__ import annotations
 
 import time
 from datetime import UTC, date, datetime, timedelta
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
 from jose import jwt
+from sqlalchemy.orm import Session
 
 import workbench_api.symbols.fundamentals as fundamentals_module
 import workbench_api.symbols.service as service_module
 from workbench_api.app import create_app
 from workbench_api.auth.jwt_validator import JWT_ALGORITHM
 from workbench_api.data.snapshot_loader import PriceBar
+from workbench_api.db.engine import get_engine
+from workbench_api.db.models.news import News
 from workbench_api.settings import Settings, get_settings
 from workbench_api.symbols.provider import (
     ProviderQuote,
@@ -226,4 +230,51 @@ def test_fundamentals_route_invalid_symbol_returns_400(
     monkeypatch.setattr(fundamentals_module, "_default_provider", lambda: _StatsProvider(stats))
     client = _authed_client()
     resp = client.get(f"/api/symbols/{'A' * 40}/fundamentals")
+    assert resp.status_code == 400, resp.text
+
+
+def _seed_news(ticker: str, title: str) -> None:
+    with Session(get_engine()) as session:
+        session.add(
+            News(
+                id=uuid4(),
+                source="yahoo_rss",
+                source_id=f"{ticker}-{title}",
+                url="https://example.com/n",
+                title=title,
+                title_zh=None,
+                summary=None,
+                ticker=ticker,
+                form_type=None,
+                published_at=datetime(2026, 6, 12, tzinfo=UTC),
+                fetched_at=datetime(2026, 6, 12, tzinfo=UTC),
+                snapshot_path="snap/x.htm",
+                content_sha256="sha256:abc",
+                ticker_mentions=None,
+            )
+        )
+        session.commit()
+
+
+def test_news_route_returns_items(initialised_db: str) -> None:
+    _seed_news("AAPL", "Apple headline")
+    client = _authed_client()
+    resp = client.get("/api/symbols/aapl/news")
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert body["symbol"] == "AAPL"
+    assert len(body["items"]) == 1
+    assert body["items"][0]["title"] == "Apple headline"
+
+
+def test_news_route_empty_state(initialised_db: str) -> None:
+    client = _authed_client()
+    resp = client.get("/api/symbols/ZZZZ/news")
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["items"] == []
+
+
+def test_news_route_invalid_symbol_returns_400(initialised_db: str) -> None:
+    client = _authed_client()
+    resp = client.get(f"/api/symbols/{'A' * 40}/news")
     assert resp.status_code == 400, resp.text

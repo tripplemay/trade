@@ -95,7 +95,10 @@
     "fundRoe": "ROE",
     "fundDebtToEquity": "Debt/Equity",
     "fundSector": "Sector",
-    "fundIndustry": "Industry"
+    "fundIndustry": "Industry",
+    "newsTitle": "Recent news",
+    "newsLoading": "Loading news…",
+    "newsEmpty": "No recent news for this symbol."
   },
   "home": {
     "title": "Home",

@@ -87,10 +87,33 @@ const FUND_NON_US: components["schemas"]["SymbolFundamentals"] = {
 
 type RouteSpec = { status: number; body: unknown };
 
-function buildFetch(opts: { price?: RouteSpec; fundamentals?: RouteSpec }): ReturnType<typeof vi.fn> {
+const NEWS_ONE: components["schemas"]["SymbolNewsResponse"] = {
+  symbol: "AAPL",
+  items: [
+    {
+      news_id: "n1",
+      title: "苹果最新头条",
+      source: "yahoo_rss",
+      url: "https://example.com/n1",
+      published_at: "2026-06-12T12:00:00+00:00",
+      topics: ["财报"],
+    },
+  ],
+};
+
+const NEWS_EMPTY: components["schemas"]["SymbolNewsResponse"] = { symbol: "AAPL", items: [] };
+
+function buildFetch(opts: {
+  price?: RouteSpec;
+  fundamentals?: RouteSpec;
+  news?: RouteSpec;
+}): ReturnType<typeof vi.fn> {
   const fn = vi.fn(async (input: RequestInfo | URL) => {
     const url = typeof input === "string" ? input : input.toString();
-    const which = url.includes("/fundamentals") ? opts.fundamentals : opts.price;
+    let which: RouteSpec | undefined;
+    if (url.includes("/fundamentals")) which = opts.fundamentals;
+    else if (url.includes("/news")) which = opts.news;
+    else which = opts.price;
     if (!which) return new Response("not-found", { status: 404 });
     return new Response(JSON.stringify(which.body), {
       status: which.status,
@@ -123,7 +146,10 @@ describe("SymbolsPage", () => {
 
   it("renders EOD price detail (close + source + 52w + returns + chart) for a found symbol", async () => {
     nav.search = "symbol=AAPL";
-    buildFetch({ price: { status: 200, body: DETAIL }, fundamentals: { status: 200, body: FUND_US } });
+    buildFetch({
+      price: { status: 200, body: DETAIL },
+      fundamentals: { status: 200, body: FUND_US },
+    });
     const { getByTestId } = renderWithIntl(<SymbolsPage />);
 
     await waitFor(() => expect(getByTestId("symbols-detail")).toBeInTheDocument());
@@ -140,11 +166,12 @@ describe("SymbolsPage", () => {
 
   it("renders fundamentals (market cap etc.) for a US equity", async () => {
     nav.search = "symbol=AAPL";
-    buildFetch({ price: { status: 200, body: DETAIL }, fundamentals: { status: 200, body: FUND_US } });
+    buildFetch({
+      price: { status: 200, body: DETAIL },
+      fundamentals: { status: 200, body: FUND_US },
+    });
     const { getByTestId } = renderWithIntl(<SymbolsPage />);
-    await waitFor(() =>
-      expect(getByTestId("symbols-fundamentals")).toHaveTextContent("3T"),
-    );
+    await waitFor(() => expect(getByTestId("symbols-fundamentals")).toHaveTextContent("3T"));
   });
 
   it("degrades fundamentals honestly for a non-US ticker (US-only)", async () => {
@@ -159,10 +186,27 @@ describe("SymbolsPage", () => {
     );
   });
 
+  it("renders recent news headlines for a symbol", async () => {
+    nav.search = "symbol=AAPL";
+    buildFetch({ price: { status: 200, body: DETAIL }, news: { status: 200, body: NEWS_ONE } });
+    const { getByTestId } = renderWithIntl(<SymbolsPage />);
+    await waitFor(() => expect(getByTestId("symbols-news")).toHaveTextContent("苹果最新头条"));
+  });
+
+  it("shows an honest empty state when a symbol has no news", async () => {
+    nav.search = "symbol=AAPL";
+    buildFetch({ price: { status: 200, body: DETAIL }, news: { status: 200, body: NEWS_EMPTY } });
+    const { getByTestId } = renderWithIntl(<SymbolsPage />);
+    await waitFor(() => expect(getByTestId("symbols-news-empty")).toBeInTheDocument());
+  });
+
   it("shows the backend's actionable error message for an unknown ticker", async () => {
     nav.search = "symbol=ZZZZ";
     buildFetch({
-      price: { status: 404, body: { detail: "No price data for ZZZZ. Check the symbol, e.g. AAPL, SPY." } },
+      price: {
+        status: 404,
+        body: { detail: "No price data for ZZZZ. Check the symbol, e.g. AAPL, SPY." },
+      },
     });
     const { getByTestId } = renderWithIntl(<SymbolsPage />);
 
@@ -172,7 +216,10 @@ describe("SymbolsPage", () => {
 
   it("exposes no buy/sell/execute button (research-only surface)", async () => {
     nav.search = "symbol=AAPL";
-    buildFetch({ price: { status: 200, body: DETAIL }, fundamentals: { status: 200, body: FUND_US } });
+    buildFetch({
+      price: { status: 200, body: DETAIL },
+      fundamentals: { status: 200, body: FUND_US },
+    });
     const { getByTestId, container } = renderWithIntl(<SymbolsPage />);
     await waitFor(() => expect(getByTestId("symbols-detail")).toBeInTheDocument());
     // The honest disclaimer prose legitimately says "no buy/sell"; the real
@@ -187,7 +234,10 @@ describe("SymbolsPage", () => {
 
   it("submitting the search box triggers a lookup and updates the URL", async () => {
     nav.search = "";
-    buildFetch({ price: { status: 200, body: DETAIL }, fundamentals: { status: 200, body: FUND_US } });
+    buildFetch({
+      price: { status: 200, body: DETAIL },
+      fundamentals: { status: 200, body: FUND_US },
+    });
     const { getByTestId } = renderWithIntl(<SymbolsPage />);
 
     fireEvent.change(getByTestId("symbols-search-input"), { target: { value: "aapl" } });

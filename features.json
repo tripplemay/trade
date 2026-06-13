@@ -42,7 +42,7 @@
       "title": "P3 新闻富化（复用 B034/B035 扩 symbol 查询）后端 + 详情页区块",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §5 F004。复用 B034/B035 新闻子系统。依赖 F001】复用 news/ 子系统扩『按任意 symbol 查』(现按 sleeve universe)；详情页新闻区块(标题+源+时间，中文，复用 title_zh 翻译)；无新闻诚实空态。测试：symbol 新闻查询 + 空态。Gates：backend pytest/ruff/mypy 0 / frontend vitest/tsc / api.ts drift / i18n parity。",
       "design_decisions": [
         "复用 B034/B035 新闻 + title_zh 中文翻译；按 symbol 查；无新闻诚实空态。"

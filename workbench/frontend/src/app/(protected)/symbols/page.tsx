@@ -14,10 +14,12 @@ import type { components } from "@/types/api";
 
 type SymbolPriceDetail = components["schemas"]["SymbolPriceDetail"];
 type SymbolFundamentals = components["schemas"]["SymbolFundamentals"];
+type SymbolNewsResponse = components["schemas"]["SymbolNewsResponse"];
 
 const PRICE_URL = (symbol: string) => `/api/symbols/${encodeURIComponent(symbol)}/price`;
 const FUNDAMENTALS_URL = (symbol: string) =>
   `/api/symbols/${encodeURIComponent(symbol)}/fundamentals`;
+const NEWS_URL = (symbol: string) => `/api/symbols/${encodeURIComponent(symbol)}/news`;
 
 type ChartMode = "candle" | "line";
 
@@ -273,6 +275,7 @@ function SymbolDetail({
       </div>
 
       <FundamentalsSection symbol={data.symbol} t={t} />
+      <NewsSection symbol={data.symbol} t={t} />
     </div>
   );
 }
@@ -369,6 +372,81 @@ function FundamentalsSection({
         ) : (
           <p className="text-muted-foreground" data-testid="symbols-fundamentals-unavailable">
             {unavailableMsg(data?.reason ?? null)}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function NewsSection({ symbol, t }: { symbol: string; t: ReturnType<typeof useTranslations> }) {
+  const [items, setItems] = useState<SymbolNewsResponse["items"] | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setItems(null);
+    workbenchFetch(NEWS_URL(symbol))
+      .then(async (response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return (await response.json()) as SymbolNewsResponse;
+      })
+      .then((payload) => {
+        if (!cancelled) setItems(payload.items);
+      })
+      .catch(() => {
+        // News is a secondary surface — on failure show the empty state
+        // rather than break the page.
+        if (!cancelled) setItems([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [symbol]);
+
+  return (
+    <Card data-testid="symbols-news">
+      <CardHeader>
+        <CardTitle>{t("newsTitle")}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3 text-sm">
+        {loading ? (
+          <p className="text-muted-foreground" data-testid="symbols-news-loading">
+            {t("newsLoading")}
+          </p>
+        ) : items && items.length > 0 ? (
+          items.map((item) => (
+            <div key={item.news_id} className="space-y-1 border-b border-border pb-2 last:border-0">
+              <a
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground hover:underline"
+              >
+                {item.title}
+              </a>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <span>{item.source}</span>
+                <span>·</span>
+                <span>{item.published_at.slice(0, 10)}</span>
+                {(item.topics ?? []).map((topic) => (
+                  <span
+                    key={topic}
+                    className="rounded bg-neutral-800 px-1.5 py-0.5 text-neutral-300"
+                  >
+                    {topic}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-muted-foreground" data-testid="symbols-news-empty">
+            {t("newsEmpty")}
           </p>
         )}
       </CardContent>

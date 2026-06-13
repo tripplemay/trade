@@ -18,8 +18,13 @@ from workbench_api.auth.dependency import require_authenticated_user
 from workbench_api.auth.jwt_validator import AuthenticatedUser
 from workbench_api.db.session import SessionDep
 from workbench_api.i18n import t
-from workbench_api.schemas.symbols import SymbolFundamentals, SymbolPriceDetail
+from workbench_api.schemas.symbols import (
+    SymbolFundamentals,
+    SymbolNewsResponse,
+    SymbolPriceDetail,
+)
 from workbench_api.symbols.fundamentals import get_symbol_fundamentals
+from workbench_api.symbols.news import get_symbol_news
 from workbench_api.symbols.provider import (
     InvalidSymbolError,
     SymbolNotFoundError,
@@ -78,6 +83,27 @@ def get_symbol_fundamentals_route(
 
     try:
         return get_symbol_fundamentals(symbol)
+    except InvalidSymbolError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=t("symbols.invalid_symbol", symbol=symbol),
+        ) from exc
+
+
+@router.get("/{symbol}/news", response_model=SymbolNewsResponse)
+def get_symbol_news_route(
+    symbol: str,
+    session: SessionDep,
+    _user: AuthenticatedUserDep,
+) -> SymbolNewsResponse:
+    """Return recent news for ``symbol`` (newest-first; empty list = no news).
+
+    Reuses the B034/B035 news feed (Chinese ``title_zh`` + deterministic
+    topics). A malformed ticker → 400; an unknown but valid ticker → 200 with
+    an empty list (honest empty state)."""
+
+    try:
+        return get_symbol_news(session, symbol)
     except InvalidSymbolError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

@@ -826,6 +826,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/symbols/{symbol}/news": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Symbol News Route
+         * @description Return recent news for ``symbol`` (newest-first; empty list = no news).
+         *
+         *     Reuses the B034/B035 news feed (Chinese ``title_zh`` + deterministic
+         *     topics). A malformed ticker → 400; an unknown but valid ticker → 200 with
+         *     an empty list (honest empty state).
+         */
+        get: operations["get_symbol_news_route_api_symbols__symbol__news_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2646,6 +2670,27 @@ export interface components {
             debt_to_equity: number | null;
         };
         /**
+         * SymbolNewsResponse
+         * @description B059 F004 — recent news for one symbol (reuses the B034/B035 feed).
+         *
+         *     Items reuse the global-feed :class:`LatestNewsItem` shape (Chinese
+         *     ``title_zh`` preferred, deterministic topic tags, never LLM-generated). An
+         *     empty ``items`` list is the honest empty state — "no recent news for this
+         *     symbol" — not an error.
+         */
+        SymbolNewsResponse: {
+            /**
+             * Symbol
+             * @description Normalised ticker the news is filtered to.
+             */
+            symbol: string;
+            /**
+             * Items
+             * @description Newest-first headlines for the symbol.
+             */
+            items?: components["schemas"]["LatestNewsItem"][];
+        };
+        /**
          * SymbolPriceDetail
          * @description EOD price detail for one symbol.
          */
@@ -4235,6 +4280,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SymbolFundamentals"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_symbol_news_route_api_symbols__symbol__news_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                symbol: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SymbolNewsResponse"];
                 };
             };
             /** @description Validation Error */

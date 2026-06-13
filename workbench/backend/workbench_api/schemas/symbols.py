@@ -12,6 +12,8 @@ from datetime import date
 
 from pydantic import BaseModel, Field
 
+from workbench_api.schemas.news import LatestNewsItem
+
 
 class PriceRangeReturns(BaseModel):
     """Total returns over fixed windows. ``None`` when the series doesn't
@@ -100,3 +102,18 @@ class SymbolFundamentals(BaseModel):
     shares_outstanding: float | None
     return_on_equity: float | None
     debt_to_equity: float | None
+
+
+class SymbolNewsResponse(BaseModel):
+    """B059 F004 — recent news for one symbol (reuses the B034/B035 feed).
+
+    Items reuse the global-feed :class:`LatestNewsItem` shape (Chinese
+    ``title_zh`` preferred, deterministic topic tags, never LLM-generated). An
+    empty ``items`` list is the honest empty state — "no recent news for this
+    symbol" — not an error.
+    """
+
+    symbol: str = Field(description="Normalised ticker the news is filtered to.")
+    items: list[LatestNewsItem] = Field(
+        default_factory=list, description="Newest-first headlines for the symbol."
+    )
