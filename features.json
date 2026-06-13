@@ -31,7 +31,7 @@
       "title": "CN 交易日历 + gap 检查按市场（§9.6）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "【见 spec §4 F003 + §9.6。依赖 F001】CN 交易日历(中国节假日)；TradingCalendar(market)；quality.py gap 检查按市场选日历(CN 符号用 CN 日历，避免误判一堆缺口)。测试：CN 日历正确+gap 检查市场感知(CN 符号不被误判 US 日历缺口)。Gates：backend pytest/ruff/mypy CI-exact 0。",
       "design_decisions": [
         "交易日历按市场(CN 日历 vs US 日历)；gap 检查市场感知避免误判。"

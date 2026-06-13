@@ -24,6 +24,7 @@ from typing import Any
 import pandas as pd
 
 from trade.data.data_root import unified_fundamentals_path, unified_prices_path
+from trade.data.trading_calendar import trading_calendar_gaps
 
 FIXTURE_FILE_NAME = "market_prices.json"
 REQUIRED_PRICE_FIELDS = ("date", "symbol", "open", "close", "adjusted_close", "volume")
@@ -560,7 +561,7 @@ def _snapshot_from_payload(payload: dict[str, Any]) -> DataSnapshot:
         start_date=trading_dates[0],
         end_date=trading_dates[-1],
         symbols=symbols,
-        trading_calendar_gaps=_calendar_gaps(trading_dates),
+        trading_calendar_gaps=trading_calendar_gaps(trading_dates),
     )
 
 
@@ -658,15 +659,3 @@ def _checksum(source: str, adjusted_price_policy: str, records: tuple[PriceBar, 
         separators=(",", ":"),
     ).encode("utf-8")
     return hashlib.sha256(canonical).hexdigest()
-
-
-def _calendar_gaps(trading_dates: tuple[date, ...]) -> tuple[str, ...]:
-    gaps: list[str] = []
-    for earlier, later in zip(trading_dates, trading_dates[1:], strict=False):
-        if _month_index(later) - _month_index(earlier) > 1:
-            gaps.append(f"{earlier.isoformat()}..{later.isoformat()}")
-    return tuple(gaps)
-
-
-def _month_index(value: date) -> int:
-    return value.year * 12 + value.month
