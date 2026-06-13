@@ -6,24 +6,38 @@ import { useEffect, useState, type FormEvent } from "react";
 
 import PriceChart from "@/components/chart/PriceChart";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { workbenchFetch } from "@/lib/api-fetch";
 import { cn } from "@/lib/utils";
 import type { components } from "@/types/api";
 
 type SymbolPriceDetail = components["schemas"]["SymbolPriceDetail"];
+type SymbolFundamentals = components["schemas"]["SymbolFundamentals"];
 
-const PRICE_URL = (symbol: string) =>
-  `/api/symbols/${encodeURIComponent(symbol)}/price`;
+const PRICE_URL = (symbol: string) => `/api/symbols/${encodeURIComponent(symbol)}/price`;
+const FUNDAMENTALS_URL = (symbol: string) =>
+  `/api/symbols/${encodeURIComponent(symbol)}/fundamentals`;
 
 type ChartMode = "candle" | "line";
+
+function formatCompact(value: number | null): string {
+  if (value === null) return "—";
+  return new Intl.NumberFormat("en-US", {
+    notation: "compact",
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+function formatRatio(value: number | null): string {
+  if (value === null) return "—";
+  return value.toFixed(2);
+}
+
+function formatPctRaw(value: number | null): string {
+  if (value === null) return "—";
+  return `${(value * 100).toFixed(2)}%`;
+}
 
 function formatPrice(value: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -117,13 +131,8 @@ export default function SymbolsPage() {
         <p className="text-sm text-muted-foreground">{t("description")}</p>
       </header>
 
-      <Card
-        data-testid="symbols-disclaimer-card"
-        className="border-amber-700/40 bg-amber-950/20"
-      >
-        <CardContent className="p-4 text-sm text-amber-100">
-          {t("disclaimer")}
-        </CardContent>
+      <Card data-testid="symbols-disclaimer-card" className="border-amber-700/40 bg-amber-950/20">
+        <CardContent className="p-4 text-sm text-amber-100">{t("disclaimer")}</CardContent>
       </Card>
 
       <form onSubmit={handleSubmit} className="flex flex-wrap items-center gap-2">
@@ -262,6 +271,107 @@ function SymbolDetail({
           </CardContent>
         </Card>
       </div>
+
+      <FundamentalsSection symbol={data.symbol} t={t} />
     </div>
+  );
+}
+
+function FundamentalsSection({
+  symbol,
+  t,
+}: {
+  symbol: string;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  const [data, setData] = useState<SymbolFundamentals | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setData(null);
+    setError(null);
+    workbenchFetch(FUNDAMENTALS_URL(symbol))
+      .then(async (response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return (await response.json()) as SymbolFundamentals;
+      })
+      .then((payload) => {
+        if (!cancelled) setData(payload);
+      })
+      .catch((reason: unknown) => {
+        if (!cancelled) {
+          setError(reason instanceof Error ? reason.message : String(reason));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [symbol]);
+
+  function unavailableMsg(reason: string | null): string {
+    if (reason === "non_us") return t("fundUnavailableNonUs");
+    if (reason === "not_equity") return t("fundUnavailableNotEquity");
+    return t("fundUnavailableNoData");
+  }
+
+  const rows: Array<[string, string]> =
+    data && data.available
+      ? [
+          [t("fundMarketCap"), formatCompact(data.market_cap)],
+          [t("fundTrailingPe"), formatRatio(data.trailing_pe)],
+          [t("fundForwardPe"), formatRatio(data.forward_pe)],
+          [t("fundPriceToBook"), formatRatio(data.price_to_book)],
+          [t("fundDividendYield"), formatPctRaw(data.dividend_yield)],
+          [t("fundProfitMargin"), formatPctRaw(data.profit_margins)],
+          [t("fundGrossMargin"), formatPctRaw(data.gross_margins)],
+          [t("fundRevenue"), formatCompact(data.revenue)],
+          [t("fundRoe"), formatPctRaw(data.return_on_equity)],
+          [t("fundDebtToEquity"), formatRatio(data.debt_to_equity)],
+        ]
+      : [];
+
+  return (
+    <Card data-testid="symbols-fundamentals">
+      <CardHeader>
+        <CardTitle>{t("fundTitle")}</CardTitle>
+        {data && data.available ? (
+          <CardDescription>{t("fundSource", { source: data.source })}</CardDescription>
+        ) : null}
+      </CardHeader>
+      <CardContent className="space-y-1 text-sm">
+        {loading ? (
+          <p className="text-muted-foreground" data-testid="symbols-fundamentals-loading">
+            {t("fundLoading")}
+          </p>
+        ) : error ? (
+          <p className="text-destructive">{error}</p>
+        ) : data && data.available ? (
+          <>
+            {data.sector ? (
+              <div className="mb-2 text-xs text-muted-foreground">
+                {t("fundSector")}: {data.sector}
+                {data.industry ? ` · ${t("fundIndustry")}: ${data.industry}` : ""}
+              </div>
+            ) : null}
+            {rows.map(([label, value]) => (
+              <div key={label} className="flex justify-between">
+                <span className="text-muted-foreground">{label}</span>
+                <span>{value}</span>
+              </div>
+            ))}
+          </>
+        ) : (
+          <p className="text-muted-foreground" data-testid="symbols-fundamentals-unavailable">
+            {unavailableMsg(data?.reason ?? null)}
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
 }

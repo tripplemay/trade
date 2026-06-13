@@ -55,3 +55,48 @@ class SymbolPriceDetail(BaseModel):
     )
     returns: PriceRangeReturns
     bars: list[PriceBarPoint] = Field(description="EOD OHLCV series for the chart, oldest first.")
+
+
+class SymbolFundamentals(BaseModel):
+    """B059 F003 — best-effort fundamentals for one symbol.
+
+    Authoritative fundamentals are a US-equity feature (SEC's domain). For
+    non-US tickers / ETFs the financial ratios are withheld and ``available``
+    is false with a ``reason`` so the UI degrades honestly (not a blank). The
+    identity fields (name / sector / industry / currency) are shown regardless.
+    Source is yfinance ``.info`` (the only feed that covers arbitrary tickers).
+    """
+
+    symbol: str
+    source: str = Field(description="Fundamentals source label, e.g. 'yfinance'.")
+    available: bool = Field(
+        description="True when financial ratios are shown (US equities only)."
+    )
+    reason: str | None = Field(
+        description=(
+            "Why ratios are withheld: 'non_us' / 'not_equity' / 'no_data'. "
+            "Null when available."
+        )
+    )
+    is_us_equity: bool = Field(
+        description="True when quote type is EQUITY and country is the US."
+    )
+    # Identity (shown regardless of availability)
+    name: str | None
+    sector: str | None
+    industry: str | None
+    currency: str | None
+    quote_type: str | None
+    country: str | None
+    # Financial ratios (null when not available / US-only degradation)
+    market_cap: float | None
+    trailing_pe: float | None
+    forward_pe: float | None
+    price_to_book: float | None
+    dividend_yield: float | None
+    profit_margins: float | None
+    gross_margins: float | None
+    revenue: float | None
+    shares_outstanding: float | None
+    return_on_equity: float | None
+    debt_to_equity: float | None

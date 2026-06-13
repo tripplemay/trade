@@ -66,19 +66,38 @@ class ProviderQuote:
 
 @dataclass(frozen=True, slots=True)
 class ProviderStats:
-    """Instrument identity metadata the source knows about a symbol.
+    """Instrument identity + fundamentals metadata the source knows about a symbol.
 
-    All fields beyond ``symbol`` / ``source`` are optional — yfinance's
-    ``.info`` is best-effort and may be partial or unavailable; consumers
-    degrade honestly rather than fabricate.
+    Identity (name / currency / exchange / quote_type / country / sector /
+    industry) plus best-effort fundamental ratios. All fields beyond
+    ``symbol`` / ``source`` are optional — yfinance's ``.info`` is best-effort
+    and may be partial or unavailable; consumers degrade honestly rather than
+    fabricate. Consumed by B059 F003 (fundamentals surface) + the detail page
+    header.
     """
 
     symbol: str
     source: str
+    # Identity
     long_name: str | None = None
     currency: str | None = None
     exchange: str | None = None
     quote_type: str | None = None
+    country: str | None = None
+    sector: str | None = None
+    industry: str | None = None
+    # Fundamentals (best-effort; see B059 F003 US-equity gating in the service)
+    market_cap: float | None = None
+    trailing_pe: float | None = None
+    forward_pe: float | None = None
+    price_to_book: float | None = None
+    dividend_yield: float | None = None
+    profit_margins: float | None = None
+    gross_margins: float | None = None
+    revenue: float | None = None
+    shares_outstanding: float | None = None
+    return_on_equity: float | None = None
+    debt_to_equity: float | None = None
 
 
 class SymbolDataProvider(ABC):

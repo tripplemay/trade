@@ -18,7 +18,8 @@ from workbench_api.auth.dependency import require_authenticated_user
 from workbench_api.auth.jwt_validator import AuthenticatedUser
 from workbench_api.db.session import SessionDep
 from workbench_api.i18n import t
-from workbench_api.schemas.symbols import SymbolPriceDetail
+from workbench_api.schemas.symbols import SymbolFundamentals, SymbolPriceDetail
+from workbench_api.symbols.fundamentals import get_symbol_fundamentals
 from workbench_api.symbols.provider import (
     InvalidSymbolError,
     SymbolNotFoundError,
@@ -60,4 +61,25 @@ def get_symbol_price_route(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=t("symbols.not_found", symbol=symbol),
+        ) from exc
+
+
+@router.get("/{symbol}/fundamentals", response_model=SymbolFundamentals)
+def get_symbol_fundamentals_route(
+    symbol: str,
+    _user: AuthenticatedUserDep,
+) -> SymbolFundamentals:
+    """Return best-effort fundamentals for ``symbol`` (US-equity gated).
+
+    Always 200 for a valid ticker: ``available`` + ``reason`` carry the honest
+    US-only degradation (non-US / ETF / no-data) rather than a blank or a 500.
+    A malformed ticker → 400.
+    """
+
+    try:
+        return get_symbol_fundamentals(symbol)
+    except InvalidSymbolError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=t("symbols.invalid_symbol", symbol=symbol),
         ) from exc

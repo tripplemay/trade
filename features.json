@@ -31,7 +31,7 @@
       "title": "P2 基本面富化（SEC 美股 + yfinance 字段；非美降级）后端 + 详情页区块",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §5 F003。复用 fundamentals_loader/xbrl/SEC。依赖 F001】SEC 美股基本面(复用 fundamentals_loader/xbrl_parser)+yfinance 补充(市值/PE/营收/利润率等)；**非美 ticker 诚实降级**(『基本面仅美股』不留空)；详情页基本面区块(中文+as-of+源)。测试：US 有基本面 / 非美降级 / 字段映射。Gates：backend pytest/ruff/mypy 0 / frontend vitest/tsc / api.ts drift / i18n parity。",
       "design_decisions": [
         "SEC 权威美股基本面优先 + yfinance 补字段；非美诚实降级(只价格无基本面)。"

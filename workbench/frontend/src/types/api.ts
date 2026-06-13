@@ -802,6 +802,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/symbols/{symbol}/fundamentals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Symbol Fundamentals Route
+         * @description Return best-effort fundamentals for ``symbol`` (US-equity gated).
+         *
+         *     Always 200 for a valid ticker: ``available`` + ``reason`` carry the honest
+         *     US-only degradation (non-US / ETF / no-data) rather than a blank or a 500.
+         *     A malformed ticker → 400.
+         */
+        get: operations["get_symbol_fundamentals_route_api_symbols__symbol__fundamentals_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2554,6 +2578,74 @@ export interface components {
             last_sweep_date?: string | null;
         };
         /**
+         * SymbolFundamentals
+         * @description B059 F003 — best-effort fundamentals for one symbol.
+         *
+         *     Authoritative fundamentals are a US-equity feature (SEC's domain). For
+         *     non-US tickers / ETFs the financial ratios are withheld and ``available``
+         *     is false with a ``reason`` so the UI degrades honestly (not a blank). The
+         *     identity fields (name / sector / industry / currency) are shown regardless.
+         *     Source is yfinance ``.info`` (the only feed that covers arbitrary tickers).
+         */
+        SymbolFundamentals: {
+            /** Symbol */
+            symbol: string;
+            /**
+             * Source
+             * @description Fundamentals source label, e.g. 'yfinance'.
+             */
+            source: string;
+            /**
+             * Available
+             * @description True when financial ratios are shown (US equities only).
+             */
+            available: boolean;
+            /**
+             * Reason
+             * @description Why ratios are withheld: 'non_us' / 'not_equity' / 'no_data'. Null when available.
+             */
+            reason: string | null;
+            /**
+             * Is Us Equity
+             * @description True when quote type is EQUITY and country is the US.
+             */
+            is_us_equity: boolean;
+            /** Name */
+            name: string | null;
+            /** Sector */
+            sector: string | null;
+            /** Industry */
+            industry: string | null;
+            /** Currency */
+            currency: string | null;
+            /** Quote Type */
+            quote_type: string | null;
+            /** Country */
+            country: string | null;
+            /** Market Cap */
+            market_cap: number | null;
+            /** Trailing Pe */
+            trailing_pe: number | null;
+            /** Forward Pe */
+            forward_pe: number | null;
+            /** Price To Book */
+            price_to_book: number | null;
+            /** Dividend Yield */
+            dividend_yield: number | null;
+            /** Profit Margins */
+            profit_margins: number | null;
+            /** Gross Margins */
+            gross_margins: number | null;
+            /** Revenue */
+            revenue: number | null;
+            /** Shares Outstanding */
+            shares_outstanding: number | null;
+            /** Return On Equity */
+            return_on_equity: number | null;
+            /** Debt To Equity */
+            debt_to_equity: number | null;
+        };
+        /**
          * SymbolPriceDetail
          * @description EOD price detail for one symbol.
          */
@@ -4112,6 +4204,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SymbolPriceDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_symbol_fundamentals_route_api_symbols__symbol__fundamentals_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                symbol: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SymbolFundamentals"];
                 };
             };
             /** @description Validation Error */

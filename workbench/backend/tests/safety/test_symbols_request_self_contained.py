@@ -29,6 +29,7 @@ REQUEST_PATH_MODULES = (
     SYMBOLS / "yfinance_provider.py",
     SYMBOLS / "service.py",
     SYMBOLS / "stats.py",
+    SYMBOLS / "fundamentals.py",
 )
 
 

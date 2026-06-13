@@ -32,6 +32,23 @@ from workbench_api.symbols.provider import (
 _QUOTE_WINDOW_DAYS = 7
 
 
+def _as_float(value: Any) -> float | None:
+    """Coerce a yfinance ``.info`` value to float, or None if absent/garbage.
+
+    ``.info`` values are loosely typed (int / float / str / None); never let a
+    bad value raise — fundamentals degrade honestly to None."""
+
+    if value is None:
+        return None
+    try:
+        result = float(value)
+    except (TypeError, ValueError):
+        return None
+    if result != result:  # NaN
+        return None
+    return result
+
+
 class YFinanceSymbolProvider(SymbolDataProvider):
     """SymbolDataProvider backed by yfinance (free, arbitrary ticker)."""
 
@@ -87,4 +104,18 @@ class YFinanceSymbolProvider(SymbolDataProvider):
             currency=info.get("currency"),
             exchange=info.get("exchange") or info.get("fullExchangeName"),
             quote_type=info.get("quoteType"),
+            country=info.get("country"),
+            sector=info.get("sector"),
+            industry=info.get("industry"),
+            market_cap=_as_float(info.get("marketCap")),
+            trailing_pe=_as_float(info.get("trailingPE")),
+            forward_pe=_as_float(info.get("forwardPE")),
+            price_to_book=_as_float(info.get("priceToBook")),
+            dividend_yield=_as_float(info.get("dividendYield")),
+            profit_margins=_as_float(info.get("profitMargins")),
+            gross_margins=_as_float(info.get("grossMargins")),
+            revenue=_as_float(info.get("totalRevenue")),
+            shares_outstanding=_as_float(info.get("sharesOutstanding")),
+            return_on_equity=_as_float(info.get("returnOnEquity")),
+            debt_to_equity=_as_float(info.get("debtToEquity")),
         )

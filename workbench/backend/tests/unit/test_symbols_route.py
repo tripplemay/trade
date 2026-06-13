@@ -15,6 +15,7 @@ import pytest
 from fastapi.testclient import TestClient
 from jose import jwt
 
+import workbench_api.symbols.fundamentals as fundamentals_module
 import workbench_api.symbols.service as service_module
 from workbench_api.app import create_app
 from workbench_api.auth.jwt_validator import JWT_ALGORITHM
@@ -156,3 +157,73 @@ def test_price_route_requires_auth(initialised_db: str) -> None:
     client = TestClient(app)
     resp = client.get("/api/symbols/AAPL/price")
     assert resp.status_code in (401, 403)
+
+
+class _StatsProvider(SymbolDataProvider):
+    name = "fake"
+
+    def __init__(self, stats: ProviderStats) -> None:
+        self._stats = stats
+
+    def get_price_history(
+        self, symbol: str, from_date: date, to_date: date
+    ) -> list[PriceBar]:  # pragma: no cover
+        raise NotImplementedError
+
+    def get_quote(self, symbol: str) -> ProviderQuote:  # pragma: no cover
+        raise NotImplementedError
+
+    def get_stats(self, symbol: str) -> ProviderStats:
+        return self._stats
+
+
+def test_fundamentals_route_us_equity_available(
+    initialised_db: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    stats = ProviderStats(
+        symbol="AAPL",
+        source="yfinance",
+        quote_type="EQUITY",
+        country="United States",
+        market_cap=3.0e12,
+        trailing_pe=30.5,
+    )
+    monkeypatch.setattr(fundamentals_module, "_default_provider", lambda: _StatsProvider(stats))
+    client = _authed_client()
+    resp = client.get("/api/symbols/aapl/fundamentals")
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert body["symbol"] == "AAPL"
+    assert body["available"] is True
+    assert body["reason"] is None
+    assert body["market_cap"] == 3.0e12
+
+
+def test_fundamentals_route_non_us_degrades(
+    initialised_db: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    stats = ProviderStats(
+        symbol="0700.HK",
+        source="yfinance",
+        quote_type="EQUITY",
+        country="China",
+        market_cap=4.0e12,
+    )
+    monkeypatch.setattr(fundamentals_module, "_default_provider", lambda: _StatsProvider(stats))
+    client = _authed_client()
+    resp = client.get("/api/symbols/0700.HK/fundamentals")
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert body["available"] is False
+    assert body["reason"] == "non_us"
+    assert body["market_cap"] is None  # withheld for non-US
+
+
+def test_fundamentals_route_invalid_symbol_returns_400(
+    initialised_db: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    stats = ProviderStats(symbol="X", source="yfinance")
+    monkeypatch.setattr(fundamentals_module, "_default_provider", lambda: _StatsProvider(stats))
+    client = _authed_client()
+    resp = client.get(f"/api/symbols/{'A' * 40}/fundamentals")
+    assert resp.status_code == 400, resp.text

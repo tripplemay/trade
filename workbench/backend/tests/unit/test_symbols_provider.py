@@ -117,3 +117,46 @@ def test_get_stats_degrades_when_info_raises() -> None:
     assert stats.source == "yfinance"
     assert stats.long_name is None
     assert stats.currency is None
+
+
+def test_get_stats_parses_fundamentals_fields() -> None:
+    # B059 F003 — get_stats also lifts the fundamental fields from .info.
+    stub = _StubTicker(
+        info_dict={
+            "quoteType": "EQUITY",
+            "country": "United States",
+            "sector": "Technology",
+            "industry": "Consumer Electronics",
+            "marketCap": 3.0e12,
+            "trailingPE": 30.5,
+            "forwardPE": 28.0,
+            "priceToBook": 45.0,
+            "dividendYield": 0.005,
+            "profitMargins": 0.25,
+            "grossMargins": 0.44,
+            "totalRevenue": 4.0e11,
+            "sharesOutstanding": 1.5e10,
+            "returnOnEquity": 1.5,
+            "debtToEquity": 150.0,
+        }
+    )
+    stats = _provider_with(stub).get_stats("AAPL")
+    assert stats.quote_type == "EQUITY"
+    assert stats.country == "United States"
+    assert stats.sector == "Technology"
+    assert stats.market_cap == 3.0e12
+    assert stats.trailing_pe == 30.5
+    assert stats.forward_pe == 28.0
+    assert stats.price_to_book == 45.0
+    assert stats.revenue == 4.0e11
+    assert stats.debt_to_equity == 150.0
+
+
+def test_get_stats_coerces_bad_fundamental_values_to_none() -> None:
+    stub = _StubTicker(
+        info_dict={"marketCap": "not-a-number", "trailingPE": None, "priceToBook": "N/A"}
+    )
+    stats = _provider_with(stub).get_stats("AAPL")
+    assert stats.market_cap is None
+    assert stats.trailing_pe is None
+    assert stats.price_to_book is None

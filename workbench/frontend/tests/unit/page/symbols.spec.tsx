@@ -30,27 +30,73 @@ const DETAIL: components["schemas"]["SymbolPriceDetail"] = {
   is_eod: true,
   week52_high: 200.0,
   week52_low: 90.0,
-  returns: {
-    one_month: 0.05,
-    three_month: -0.02,
-    six_month: 0.1,
-    one_year: 0.2,
-    ytd: 0.15,
-  },
+  returns: { one_month: 0.05, three_month: -0.02, six_month: 0.1, one_year: 0.2, ytd: 0.15 },
   bars: [
     { obs_date: "2026-06-10", open: 148, high: 151, low: 147, close: 149.5, volume: 100 },
     { obs_date: "2026-06-12", open: 149.5, high: 152, low: 149, close: 150.25, volume: 200 },
   ],
 };
 
-function stubFetch(status: number, body: unknown): ReturnType<typeof vi.fn> {
-  const fn = vi.fn(
-    async () =>
-      new Response(JSON.stringify(body), {
-        status,
-        headers: { "content-type": "application/json" },
-      }),
-  );
+const FUND_US: components["schemas"]["SymbolFundamentals"] = {
+  symbol: "AAPL",
+  source: "yfinance",
+  available: true,
+  reason: null,
+  is_us_equity: true,
+  name: "Apple Inc.",
+  sector: "Technology",
+  industry: "Consumer Electronics",
+  currency: "USD",
+  quote_type: "EQUITY",
+  country: "United States",
+  market_cap: 3.0e12,
+  trailing_pe: 30.5,
+  forward_pe: 28.0,
+  price_to_book: 45.0,
+  dividend_yield: 0.005,
+  profit_margins: 0.25,
+  gross_margins: 0.44,
+  revenue: 4.0e11,
+  shares_outstanding: 1.5e10,
+  return_on_equity: 1.5,
+  debt_to_equity: 150.0,
+};
+
+const FUND_NON_US: components["schemas"]["SymbolFundamentals"] = {
+  ...FUND_US,
+  available: false,
+  reason: "non_us",
+  is_us_equity: false,
+  name: null,
+  sector: null,
+  industry: null,
+  currency: "HKD",
+  country: "China",
+  market_cap: null,
+  trailing_pe: null,
+  forward_pe: null,
+  price_to_book: null,
+  dividend_yield: null,
+  profit_margins: null,
+  gross_margins: null,
+  revenue: null,
+  shares_outstanding: null,
+  return_on_equity: null,
+  debt_to_equity: null,
+};
+
+type RouteSpec = { status: number; body: unknown };
+
+function buildFetch(opts: { price?: RouteSpec; fundamentals?: RouteSpec }): ReturnType<typeof vi.fn> {
+  const fn = vi.fn(async (input: RequestInfo | URL) => {
+    const url = typeof input === "string" ? input : input.toString();
+    const which = url.includes("/fundamentals") ? opts.fundamentals : opts.price;
+    if (!which) return new Response("not-found", { status: 404 });
+    return new Response(JSON.stringify(which.body), {
+      status: which.status,
+      headers: { "content-type": "application/json" },
+    });
+  });
   vi.stubGlobal("fetch", fn);
   return fn;
 }
@@ -65,7 +111,7 @@ afterEach(() => {
 describe("SymbolsPage", () => {
   it("shows the search box + research disclaimer + empty prompt before any lookup", () => {
     nav.search = "";
-    const fetchSpy = stubFetch(200, DETAIL);
+    const fetchSpy = buildFetch({ price: { status: 200, body: DETAIL } });
     const { getByTestId } = renderWithIntl(<SymbolsPage />);
     expect(getByTestId("symbols-search-input")).toBeInTheDocument();
     expect(getByTestId("symbols-search-button")).toBeInTheDocument();
@@ -77,7 +123,7 @@ describe("SymbolsPage", () => {
 
   it("renders EOD price detail (close + source + 52w + returns + chart) for a found symbol", async () => {
     nav.search = "symbol=AAPL";
-    stubFetch(200, DETAIL);
+    buildFetch({ price: { status: 200, body: DETAIL }, fundamentals: { status: 200, body: FUND_US } });
     const { getByTestId } = renderWithIntl(<SymbolsPage />);
 
     await waitFor(() => expect(getByTestId("symbols-detail")).toBeInTheDocument());
@@ -92,9 +138,32 @@ describe("SymbolsPage", () => {
     expect(getByTestId("price-chart-mock")).toBeInTheDocument();
   });
 
+  it("renders fundamentals (market cap etc.) for a US equity", async () => {
+    nav.search = "symbol=AAPL";
+    buildFetch({ price: { status: 200, body: DETAIL }, fundamentals: { status: 200, body: FUND_US } });
+    const { getByTestId } = renderWithIntl(<SymbolsPage />);
+    await waitFor(() =>
+      expect(getByTestId("symbols-fundamentals")).toHaveTextContent("3T"),
+    );
+  });
+
+  it("degrades fundamentals honestly for a non-US ticker (US-only)", async () => {
+    nav.search = "symbol=AAPL";
+    buildFetch({
+      price: { status: 200, body: DETAIL },
+      fundamentals: { status: 200, body: FUND_NON_US },
+    });
+    const { getByTestId } = renderWithIntl(<SymbolsPage />);
+    await waitFor(() =>
+      expect(getByTestId("symbols-fundamentals-unavailable")).toBeInTheDocument(),
+    );
+  });
+
   it("shows the backend's actionable error message for an unknown ticker", async () => {
     nav.search = "symbol=ZZZZ";
-    stubFetch(404, { detail: "No price data for ZZZZ. Check the symbol, e.g. AAPL, SPY." });
+    buildFetch({
+      price: { status: 404, body: { detail: "No price data for ZZZZ. Check the symbol, e.g. AAPL, SPY." } },
+    });
     const { getByTestId } = renderWithIntl(<SymbolsPage />);
 
     await waitFor(() => expect(getByTestId("symbols-error")).toBeInTheDocument());
@@ -103,7 +172,7 @@ describe("SymbolsPage", () => {
 
   it("exposes no buy/sell/execute button (research-only surface)", async () => {
     nav.search = "symbol=AAPL";
-    stubFetch(200, DETAIL);
+    buildFetch({ price: { status: 200, body: DETAIL }, fundamentals: { status: 200, body: FUND_US } });
     const { getByTestId, container } = renderWithIntl(<SymbolsPage />);
     await waitFor(() => expect(getByTestId("symbols-detail")).toBeInTheDocument());
     // The honest disclaimer prose legitimately says "no buy/sell"; the real
@@ -118,7 +187,7 @@ describe("SymbolsPage", () => {
 
   it("submitting the search box triggers a lookup and updates the URL", async () => {
     nav.search = "";
-    stubFetch(200, DETAIL);
+    buildFetch({ price: { status: 200, body: DETAIL }, fundamentals: { status: 200, body: FUND_US } });
     const { getByTestId } = renderWithIntl(<SymbolsPage />);
 
     fireEvent.change(getByTestId("symbols-search-input"), { target: { value: "aapl" } });
