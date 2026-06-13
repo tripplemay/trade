@@ -19,7 +19,7 @@
       "title": "P1 前端：标的搜索 + 价格详情页（lightweight-charts 图 + 统计 + EOD/as-of/源 诚实标注，中文，新页 disclaimer）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §5 F002。复用已装 lightweight-charts。依赖 F001】(1) 标的搜索框 + 价格详情页：lightweight-charts 历史价格图(line/candle)+最新收盘+52 周高低+区间收益。(2) **诚实标注**：收盘价+as-of 日期+数据源 badge；**无任何买卖按钮**；新页渲染 canonical disclaimer。(3) 中文+i18n parity+api.ts 同步。(4) 测试：vitest(搜索/图渲染/诚实标注/无 execution 入口)+i18n parity+disclaimer-present 守门。(5) Gates：frontend vitest/tsc/lint / i18n parity / api.ts drift 0 / safety(disclaimer+no-broker-frontend)。",
       "design_decisions": [
         "lightweight-charts(TradingView，已装)搭专业价格图；EOD/as-of/源诚实标注不误导成实时。",

@@ -40,6 +40,7 @@
     "strategies": "策略",
     "backtest": "回测",
     "reports": "报告",
+    "symbols": "标的查询",
     "recommendations": "推荐",
     "risk": "风险",
     "positionDiff": "持仓差异",
@@ -54,6 +55,29 @@
   "topbar": {
     "snapshotIndicator": "快照：—",
     "primaryNavAria": "工作台主导航"
+  },
+  "symbols": {
+    "title": "标的查询",
+    "description": "查询任意标的的 EOD 收盘价、历史走势与统计（仅供研究，非实时行情）。",
+    "disclaimer": "仅供研究：展示 EOD 收盘价、历史走势与统计，非实时行情。本页无任何买卖或交易入口。",
+    "searchPlaceholder": "输入标的代码，如 AAPL、SPY、BRK.B",
+    "searchButton": "查询",
+    "emptyPrompt": "输入标的代码后查询其价格信息。",
+    "loading": "正在查询 {symbol} …",
+    "sourceBadge": "数据源：{source} · EOD",
+    "eodNote": "EOD 收盘价（非实时），截至 {asOf}",
+    "chartCandle": "K 线",
+    "chartLine": "折线",
+    "noChartData": "暂无历史价格数据。",
+    "rangeTitle": "52 周区间",
+    "week52High": "52 周最高",
+    "week52Low": "52 周最低",
+    "returnsTitle": "区间收益",
+    "return1M": "1 个月",
+    "return3M": "3 个月",
+    "return6M": "6 个月",
+    "return1Y": "1 年",
+    "returnYTD": "年初至今"
   },
   "home": {
     "title": "首页",

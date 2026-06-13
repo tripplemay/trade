@@ -10,6 +10,7 @@ import {
   LineChart,
   ListTodo,
   Receipt,
+  Search,
   ShieldAlert,
   Upload,
   Wallet,
@@ -26,6 +27,7 @@ export type NavKey =
   | "strategies"
   | "backtest"
   | "reports"
+  | "symbols"
   | "recommendations"
   | "risk"
   | "paper"
@@ -56,6 +58,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/strategies", labelKey: "strategies", icon: BookOpen, testId: "nav-strategies" },
   { href: "/backtest", labelKey: "backtest", icon: LineChart, testId: "nav-backtest" },
   { href: "/reports", labelKey: "reports", icon: FileText, testId: "nav-reports" },
+  { href: "/symbols", labelKey: "symbols", icon: Search, testId: "nav-symbols" },
   {
     href: "/recommendations",
     labelKey: "recommendations",

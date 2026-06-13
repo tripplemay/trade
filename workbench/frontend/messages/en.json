@@ -40,6 +40,7 @@
     "strategies": "Strategies",
     "backtest": "Backtest",
     "reports": "Reports",
+    "symbols": "Symbol lookup",
     "recommendations": "Recommendations",
     "risk": "Risk",
     "positionDiff": "Position diff",
@@ -54,6 +55,29 @@
   "topbar": {
     "snapshotIndicator": "Snapshot: —",
     "primaryNavAria": "Workbench primary navigation"
+  },
+  "symbols": {
+    "title": "Symbol lookup",
+    "description": "Look up any ticker's EOD close, history and statistics (research-only, not live quotes).",
+    "disclaimer": "Research only: end-of-day close, history and statistics — not live quotes. This page has no buy/sell or trading entry of any kind.",
+    "searchPlaceholder": "Enter a ticker, e.g. AAPL, SPY, BRK.B",
+    "searchButton": "Look up",
+    "emptyPrompt": "Enter a ticker to look up its price information.",
+    "loading": "Looking up {symbol} …",
+    "sourceBadge": "Source: {source} · EOD",
+    "eodNote": "EOD close (not live), as of {asOf}",
+    "chartCandle": "Candle",
+    "chartLine": "Line",
+    "noChartData": "No historical price data available.",
+    "rangeTitle": "52-week range",
+    "week52High": "52-week high",
+    "week52Low": "52-week low",
+    "returnsTitle": "Returns",
+    "return1M": "1M",
+    "return3M": "3M",
+    "return6M": "6M",
+    "return1Y": "1Y",
+    "returnYTD": "YTD"
   },
   "home": {
     "title": "Home",

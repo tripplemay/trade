@@ -58,6 +58,11 @@ const POSITION_CARDS = join(
   "recommendations",
   "PositionCards.tsx",
 );
+// B059 F002 — the symbol-lookup page + its price chart are a research-only
+// read-only surface (EOD price/stats; no order affordance). Scan them so a
+// future edit can't add a buy/sell/execute button in either language.
+const SYMBOLS_PAGE = join(FRONTEND_ROOT, "src", "app", "(protected)", "symbols", "page.tsx");
+const PRICE_CHART = join(FRONTEND_ROOT, "src", "components", "chart", "PriceChart.tsx");
 const MESSAGES_DIR = join(FRONTEND_ROOT, "messages");
 
 const EN_BANNED = ["execute", "place order", "send to broker"] as const;
@@ -111,10 +116,17 @@ describe("no execution buttons under (protected)/execution/** + Home", () => {
     ADVISOR_SECTION,
     METRICS_DISPLAY,
     POSITION_CARDS,
+    SYMBOLS_PAGE,
+    PRICE_CHART,
   ];
 
   it(`covers the Home page`, () => {
     expect(files).toContain(HOME_PAGE);
+  });
+
+  it(`covers the symbol-lookup page + price chart`, () => {
+    expect(files).toContain(SYMBOLS_PAGE);
+    expect(files).toContain(PRICE_CHART);
   });
 
   it(`covers the recommendations position cards`, () => {
