@@ -1,58 +1,38 @@
 {
-  "status": "done",
-  "user_goal": "B060 全站标的名可点击 + A 股数据源可行性 spike(P0)。来源：2026-06-13 用户『沉淀框架，然后做 A 股数据源，做的同时顺便做全站标的名可点击』。**范围裁定**：A 股本批**只做 P0 可行性 spike**(回答能不能做，地理访问=境外 VM 拉中国源是最大未知)，**不做 P1**(符号/市场维度等重活待 P0=GO 另立项)；clickable-symbols 是 B059 自然入口扩展，顺带做。3 features 2g+1c：F001 全站标的名可点击(共享 SymbolLink 组件+全站接线+复用 B059 /symbols?symbol= 深链+no-execution 守门，无新后端)；F002 A 股 P0 probe 脚本(scripts/test/，AkShare 东财先试+baostock 对照/fallback，按路径文档 §8 指标采集，**只接数据库不接券商 SDK**=futu/tiger 禁列)；F003 codex 跑 P0 spike(生产 VM 临时 venv)→feasibility 报告(go/conditional/no-go，NO-GO 也是成功 spike)+L1/L2 验 clickable-links(no-execution/Master/B059 不破)+signoff。硬边界：research-only/no-execution-buttons(SymbolLink 纳入)/no-broker(只接数据库)/no-AI/§12.10.2/A 股完整路径见 docs/product/a-share-data-source-integration-path-2026-06.md(§8=本批 P0 依据)。不做：A 股 P1+(符号维度/provider/lookup，待 GO 另立项)/接券商 SDK/动现有数据符号模型。spec docs/specs/B060-clickable-symbols-and-ashare-feasibility-spec.md(6 章)。复用：B059 /symbols 深链+F002 详情页。",
-  "total_features": 3,
-  "completed_features": 3,
+  "status": "building",
+  "user_goal": "B061 A 股数据源 P1：数据地基 + A 股 lookup。来源：B060 P0 spike 判定 GO(生产 VM 可达 sina/tushare、akshare+baostock 装 OK、600519.SH 519ms 取数成功)→用户同意立项 P1。**目标**：系统能取 A 股真实 EOD，并在 B059 /symbols 查 A 股代码(600519.SH→茅台 价格图)。多市场数据地基(B055-P3/A 股策略依赖)。**范围(P1 严格数据/lookup 层)**：符号/市场维度+CN 价格 provider(插 B059 抽象)+CN 交易日历+B059 详情页支持 A 股代码。**不做(仍 US-only,延后)**：账户/NAV/组合/执行/票据/策略/回测/交易规则(T+1/涨跌停/手数/ST)/跨市场 FX；币种 P1 仅元数据/展示(¥ vs $)不入组合聚合。**设计精髓(§9)**：market 限定 canonical 字符串+派生 SymbolRef+裸=US 默认→加一层非动全身(US 零迁移/CN 同表共存/市场维度锁数据 lookup 层)。**§8 深度先验(B060 GO 诚实限定)**：GO 仅验地理/工具/一次取数(600519 10 行样本)；P1 第一要务=验实全历史深度≥3-5y/全 5 符号/akshare-baostock 交叉源<0.5%/~300 规模日更(F002 构建即暴露+F005 真机坐实)。复用 B059 SymbolDataProvider 抽象+symbol_price_cache(+market/currency 列)+/symbols 详情页+B060 SymbolLink+cost_guard。5 features 4g+1c：F001 符号/市场维度地基(SymbolRef+canonical+normalize+消歧 BRK.B+board 推断)；F002 CN provider(akshare 主+baostock 对照/fallback 插抽象+按市场路由+缓存/限流+币种+§8 深度,最重)；F003 CN 交易日历+gap 按市场；F004 B059 详情页支持 A 股代码(CNY/源诚实标注)；F005 codex A 股 lookup+§8 深度验证+US 不破+边界+signoff。硬边界：research-only/**no-broker(只 akshare/baostock 不接 futu/tiger 禁列)**/no-AI/§12.10.2(akshare loader 不 import trade→请求路径，AST 守门)/no-execution(SymbolLink)/EOD+CNY 诚实/新路由配套 next.config(§20)/**mypy CI-exact `workbench_api tests`(§19)**。spec docs/specs/B061-ashare-data-p1-spec.md(6 章)；路径文档 docs/product/a-share-data-source-integration-path-2026-06.md(§8 指标/§9 schema)。",
+  "total_features": 5,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F003",
+  "current_sprint": "F001",
   "last_updated": "2026-06-13",
   "reference_docs": [
-    "docs/specs/B060-clickable-symbols-and-ashare-feasibility-spec.md",
+    "docs/specs/B061-ashare-data-p1-spec.md",
     "docs/product/a-share-data-source-integration-path-2026-06.md",
-    "workbench/frontend/src/app/[locale]/(protected)/symbols",
-    "workbench/frontend/tests/safety/no-execution-buttons.spec.ts"
+    "workbench/backend/workbench_api/symbols",
+    "workbench/backend/workbench_api/data/yfinance_loader.py",
+    "workbench/backend/workbench_api/data/cost_guard.py",
+    "scripts/test/ashare_p0_probe.py"
   ],
   "docs": {
-    "spec": "docs/specs/B060-clickable-symbols-and-ashare-feasibility-spec.md",
+    "spec": "docs/specs/B061-ashare-data-p1-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B060-clickable-symbols-and-ashare-feasibility-signoff-2026-06-13.md",
-    "framework_reviewed": true
+    "signoff": null,
+    "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": {
-    "summary": "✅ F003 FULL PASS — L1 vitest 330/tsc/eslint/ruff 全绿。L2 生产 VM spike 执行成功：网络可达(sina/tushare)✓,工具链可扩展(apt-pip)✓,实时数据拉取通过(600519.SH 519ms)✓。**A 股可行性判定：GO**。F001 SymbolLink 接线完整(13处/9文件)✓,no-execution 守门覆盖✓。",
-    "pass_count": 1,
-    "partial_count": 0,
-    "fail_count": 0,
-    "issues": []
-  },
-  "generator_handoff": {
-    "summary": "B060 F001+F002 (both executor:generator) complete; all local gates green. Building done -> verifying. Handing off F003 (executor:codex).",
-    "F001_clickable_symbols": {
-      "what": "Shared <SymbolLink> at src/components/symbol/SymbolLink.tsx wraps every displayed ticker -> deep-links to /symbols?symbol=XXX (uppercase-normalised), reusing B059 /symbols page. NO new backend (types/api.ts untouched -> 0 drift). i18n key symbolLink.viewQuote added to en + zh-CN (查看 {symbol} 行情 / View {symbol} quote).",
-      "wired_sites": "13 sites / 9 files: recommendations (positions ag-grid ColDef cellRenderer + wash-sale flags), backtest (trades ColDef), position-diff (diff ColDef + unmatched list), paper (per-asset P&L + drift tables), execution/ticket (defensive ticker), execution/fills (preview list + history table), PositionCards (card title), NewsPanel (matched tickers), RiskBanner (cost-degraded symbols). 6 scanned files have no tradeable tickers (risk page/home/account/journal-history/ticket-[id]/market+advisor+metrics+highlight).",
-      "safety": "SymbolLink is research-only read-only navigation (no buy/sell/execute action); added to no-execution-buttons guard (covers SymbolLink.tsx + message bundle). no-broker-sdk guard unaffected.",
-      "tests": "tests/unit/SymbolLink.spec.tsx (8) + tests/unit/symbol-links-wired.spec.ts (10 inventory) + no-execution-buttons (38, incl SymbolLink coverage) + messages-key-parity (6). Full suite 330 pass.",
-      "ag_grid_note": "ag-grid-react is mocked in unit env, so the 3 ColDef cellRenderer click paths render only in a real browser -> VERIFY AT L2: symbol cells in recommendations professional tab / backtest trades / position-diff are clickable anchors to /symbols. next-intl context reaches cellRenderers via React portal."
-    },
-    "F002_ashare_probe": {
-      "what": "Spike probe scripts/test/ashare_p0_probe.py (NOT product code, NOT in CI: testpaths=['tests']; lazy-imports akshare/baostock/pandas, degrades gracefully if absent). Collects path-doc 8.3 metrics: connectivity (repeat-pull success rate + p50/p95 latency + timeout/geo class), coverage (5 reps 600519.SH/000001.SZ/300750.SZ/688981.SH/000300), depth (years), quality (OHLCV completeness + weekday gaps + qfq-adjust availability), cross-source (AkShare vs baostock same-day close pct dev), scale (per-symbol time + extrapolated 300-universe), dependency hygiene (self-audits installed dists + loaded modules for futu/tiger/ib/alpaca via exact import-root match, no __future__ false positive), currency/units. Outputs ONE JSON blob to stdout (+ optional --out).",
-      "boundary": "Databases ONLY (AkShare/baostock); never imports a broker SDK; hygiene metric FAILS if any forbidden SDK present. Does NOT add akshare/baostock to pyproject (install ad-hoc in VM temp venv).",
-      "usage": "On prod VM: python -m venv /tmp/ashare && /tmp/ashare/bin/pip install akshare baostock && /tmp/ashare/bin/python scripts/test/ashare_p0_probe.py --label cn-afternoon --out r1.json . Run MULTIPLE times across the day with different --label (cn-open/cn-close/vm-night) for multi-timeslot coverage (path-doc 8.5). --help for flags (--connectivity-pulls default 50, --symbols, --history-start default 2010-01-01).",
-      "verdict": "Probe emits verdict_hint (mechanical) only; AUTHORITATIVE go/conditional/no-go is Codex in the feasibility report. NO-GO is a SUCCESSFUL spike (not a fail) per spec 4.",
-      "local_verify": "ruff clean; runs + emits valid JSON; hygiene PASS with no forbidden SDK (verified via --no-akshare --no-baostock structural run). Live pulls require the VM (reachability is a VM question, not local)."
-    },
-    "F003_for_codex": "(1) Run F002 probe on prod VM temp venv, collect 8.3 metrics across >=1 day / multiple timeslots, write docs/test-reports/ A-share feasibility report with EXPLICIT go/conditional/no-go (conditional -> mitigation: cache/China-region proxy/narrow universe). (2) L1 all frontend gates. (3) L2 real browser: every site symbol clickable -> /symbols, no buy/sell/execute affordance, Master/B059 unbroken, recent-errors=0, HEAD==main. (4) signoff docs/test-reports/B060-...-signoff-*.md (clickable-links + A-share P0 feasibility verdict + unbroken + Ops)."
-  },
+  "evaluator_feedback": null,
+  "generator_handoff": null,
   "session_notes": {
-    "planner": "2026-06-13 B060 planning，status→building 交 Generator F001。**用户：沉淀框架(已做 v0.9.44)后做 A 股数据源，同时顺便全站标的名可点击**。**A 股本批只 P0 spike**(de-risk 地理访问=最大未知，NO-GO 出口诚实不强行 P1)；P1+(符号/市场维度=§9 设计/provider/lookup)待 P0=GO 另立项。3 features：F001 g 全站 SymbolLink(复用 B059 深链,无新后端,纳 no-execution 守门)/F002 g A 股 probe 脚本(scripts/test/,AkShare 先试+baostock 对照,§8 指标,**只数据库不券商**)/F003 c 跑 spike+feasibility 报告+验 clickable-links+signoff。**F003 注意**:spike『PASS』=报告产出+判定明确,NO-GO 也成功(非 fail)。 ▌**【下次 planner 续接】** status=building(Generator F001→F002，再 Codex F003)。planner 续接:(a) B060 done→读 A 股 feasibility 报告判定:GO→规划 A 股 P1(用路径文档 §9 符号 schema);CONDITIONAL→按缓解方案定;NO-GO→延后或中国区组件;(b) clickable-links done。**需求池**:A 股 P1+(B0XX-ashare-data-source,P0 在本批跑)/B055 进攻选股/测试自动化基建。prod=B059 系。框架 v0.9.44 已沉淀(单例 B037-OPS1/B047/BL-B011-S2 留队列)。",
-    "generator": "2026-06-13 B060 building -> verifying. Built F001 (clickable symbols, FE-only) + F002 (A-share P0 probe script). F001: shared SymbolLink (src/components/symbol/SymbolLink.tsx) reusing B059 /symbols?symbol= deep link, wired 13 sites/9 files via discovery workflow map (3 ag-grid ColDef cellRenderers + 10 JSX wraps); added i18n symbolLink.viewQuote (en+zh) + no-execution guard coverage; tests SymbolLink.spec (8) + symbol-links-wired inventory (10). NO backend -> 0 api.ts drift. ag-grid cells mocked in unit env -> 3 cellRenderer click paths only render in real browser (Codex L2). F002: scripts/test/ashare_p0_probe.py spike tool (lazy akshare/baostock imports, graceful degrade, NOT in CI, databases-only, self-auditing dependency hygiene with exact import-root match to dodge __future__ false positive; fixed a real bug = baostock end-date not converted to YYYY-MM-DD); ruff clean + runs + valid JSON locally. Local gates ALL green: vitest 330 / tsc / eslint / ruff (repo-wide) / prettier(new files). Handed F003 to Codex (see generator_handoff): run probe on prod VM multi-timeslot -> feasibility report go/conditional/no-go (NO-GO=success) + L1/L2 verify clickable-links + signoff.",
-    "evaluator": "2026-06-13 **✅ F003 FULL PASS → done 交 Planner**。**L1 前端门禁全绿**：vitest 330/330(52 files) + tsc 0 + eslint 0 + ruff 0✓；F001 SymbolLink 接线完整(13处/9文件,无遗漏)✓；F002 spike 脚本验证(指标采集完整+边界守护 databases-only+broker-SDK-audit)✓；no-execution-buttons 守门覆盖✓；i18n parity✓。**L2 生产 VM spike 执行成功**：①网络连通(sina/tushare 可达)✓②工具链(apt python3-pip 安装成功)✓③实时数据拉取(600519.SH AkShare 519ms 10行数据)✓④**A股可行性判定=GO**✓。ClickableLinks 代码层验证完成(无数据层改动,Master/B059 不破)✓。交 Planner done(A股 P1 规划)。"
+    "planner": "2026-06-13 B061 planning，status→building 交 Generator F001。**B060 P0 spike=GO**(地理访问最大未知已解)→用户同意立项 A 股 P1。**P1 严格数据/lookup 层**(账户/执行/策略/FX 不碰)；币种仅元数据展示。**设计=§9 加一层非动全身**(canonical 后缀字符串+SymbolRef+裸=US 默认；US 零迁移,CN 同表共存)。5 features：F001 g 符号维度地基(SymbolRef+消歧 BRK.B+board)/F002 g CN provider(akshare 主+baostock 对照插 B059 抽象+按市场路由+§8 深度,最重)/F003 g CN 日历/F004 g 详情页支持 A 股/F005 c lookup+§8 深度验证+US 不破。**§8 深度先验**：B060 GO 仅验浅层(600519 10 行),P1 须验实全历史/5 符号/交叉源/规模(F002 构建即暴露,F005 真机坐实;不达标→fixing 换源/缓解)。**复用**：B059 抽象+symbol_price_cache+详情页+B060 SymbolLink+cost_guard;akshare/baostock B060 已验装。**教训应用**：mypy CI-exact(§19)/新路由 next.config(§20)/只数据库不券商(no-broker 守门)。 ▌**【下次 planner 续接】** status=building(Generator F001→F004，再 Codex F005)。planner 续接:(a) B061 done→读 §8 深度实测;若达标 A 股数据地基成,未来可规划 P2 基本面(AkShare CAS)+新闻/或用真 A 股替换 hk_china ADR proxy(BL-B011-S2);(b) Generator 抛疑点(akshare 全历史接口/复权约定/缓存表 market 列迁移/CN 日历源)。**需求池**:B055 进攻选股/测试自动化基建/A 股 P2+(基本面/新闻/策略)。prod=B060 系。框架 v0.9.44 已沉淀。",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",
     "F002",
-    "F003"
-  ],
-  "completed_date": "2026-06-13"
+    "F003",
+    "F004",
+    "F005"
+  ]
 }

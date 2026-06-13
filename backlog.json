@@ -266,6 +266,6 @@
     "milestone": "平台原语/多市场地基 — A 股数据源",
     "source": "2026-06-13 用户要求规划 A 股数据源接入路径(基于 TradingAgents-astock 研究结论)",
     "phase_plan": "P0 可行性 spike(VM 拉 A 股 EOD,地理访问 de-risk) / P1 数据地基+A 股 lookup(符号市场维度+CN 日历+provider 插 B059+B059 详情页支持 A 股) / P2 基本面(AkShare CAS)+新闻 / P3 策略+回测+交易规则+领域因子(远期 B055-P3) / 币种 FX 延后",
-    "sequence_note": "2026-06-13 **P0 可行性 spike 在 B060 执行**(全站可点击同批)；本条 backlog 转为 P1+(符号/市场维度 §9/provider/lookup/基本面/新闻/策略)，待 B060 P0 spike=GO 后立项；CONDITIONAL→按缓解;NO-GO→延后或中国区组件。复用 B059 provider 抽象;是未来多市场地基,B055-P3 依赖它。"
+    "sequence_note": "2026-06-13 P0 spike(B060)=GO；**P1 数据地基+lookup 已立项=B061**(符号维度 §9/CN provider akshare+baostock/CN 日历/详情页支持 A 股/§8 深度验证)。本 backlog 项转为 **P2+残余**(基本面 AkShare CAS/新闻/P3 策略+回测+交易规则+领域因子/币种 FX)，待 B061 done 后按需立项；附带=A 股地基成后可用真 A 股替换 hk_china ADR proxy(BL-B011-S2)。是多市场地基,B055-P3 依赖。"
   }
 ]
