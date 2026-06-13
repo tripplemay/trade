@@ -2,7 +2,7 @@
   "status": "done",
   "user_goal": "B060 全站标的名可点击 + A 股数据源可行性 spike(P0)。来源：2026-06-13 用户『沉淀框架，然后做 A 股数据源，做的同时顺便做全站标的名可点击』。**范围裁定**：A 股本批**只做 P0 可行性 spike**(回答能不能做，地理访问=境外 VM 拉中国源是最大未知)，**不做 P1**(符号/市场维度等重活待 P0=GO 另立项)；clickable-symbols 是 B059 自然入口扩展，顺带做。3 features 2g+1c：F001 全站标的名可点击(共享 SymbolLink 组件+全站接线+复用 B059 /symbols?symbol= 深链+no-execution 守门，无新后端)；F002 A 股 P0 probe 脚本(scripts/test/，AkShare 东财先试+baostock 对照/fallback，按路径文档 §8 指标采集，**只接数据库不接券商 SDK**=futu/tiger 禁列)；F003 codex 跑 P0 spike(生产 VM 临时 venv)→feasibility 报告(go/conditional/no-go，NO-GO 也是成功 spike)+L1/L2 验 clickable-links(no-execution/Master/B059 不破)+signoff。硬边界：research-only/no-execution-buttons(SymbolLink 纳入)/no-broker(只接数据库)/no-AI/§12.10.2/A 股完整路径见 docs/product/a-share-data-source-integration-path-2026-06.md(§8=本批 P0 依据)。不做：A 股 P1+(符号维度/provider/lookup，待 GO 另立项)/接券商 SDK/动现有数据符号模型。spec docs/specs/B060-clickable-symbols-and-ashare-feasibility-spec.md(6 章)。复用：B059 /symbols 深链+F002 详情页。",
   "total_features": 3,
-  "completed_features": 2,
+  "completed_features": 3,
   "fix_rounds": 0,
   "current_sprint": "F003",
   "last_updated": "2026-06-13",
@@ -16,7 +16,7 @@
     "spec": "docs/specs/B060-clickable-symbols-and-ashare-feasibility-spec.md",
     "test_cases": null,
     "signoff": "docs/test-reports/B060-clickable-symbols-and-ashare-feasibility-signoff-2026-06-13.md",
-    "framework_reviewed": false
+    "framework_reviewed": true
   },
   "role_assignments": null,
   "evaluator_feedback": {
@@ -53,5 +53,6 @@
     "F001",
     "F002",
     "F003"
-  ]
+  ],
+  "completed_date": "2026-06-13"
 }
