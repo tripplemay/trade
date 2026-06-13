@@ -41,11 +41,25 @@ function formatPctRaw(value: number | null): string {
   return `${(value * 100).toFixed(2)}%`;
 }
 
-function formatPrice(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
+function formatMoney(value: number, currency: string): string {
+  // B061 F004 — currency-aware price formatting: ¥ for A-share (CNY), $ for US
+  // (USD) via the narrow symbol. The explicit ISO code is also surfaced in a
+  // badge so CNY is honestly labelled (¥ alone is ambiguous with JPY).
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      currencyDisplay: "narrowSymbol",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  } catch {
+    // Defensive: an unexpected currency code must never break the page.
+    return new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  }
 }
 
 function formatPct(value: number | null): string {
@@ -196,13 +210,19 @@ function SymbolDetail({
           <CardTitle className="flex flex-wrap items-baseline gap-3">
             <span className="text-lg">{data.symbol}</span>
             <span className="text-2xl font-semibold" data-testid="symbols-close">
-              {formatPrice(data.close)}
+              {formatMoney(data.close, data.currency)}
             </span>
             <span
               className="rounded bg-neutral-800 px-2 py-0.5 text-xs text-neutral-300"
               data-testid="symbols-source-badge"
             >
               {t("sourceBadge", { source: data.source })}
+            </span>
+            <span
+              className="rounded bg-neutral-800 px-2 py-0.5 text-xs text-neutral-300"
+              data-testid="symbols-currency-badge"
+            >
+              {data.currency}
             </span>
           </CardTitle>
           <CardDescription data-testid="symbols-eod-note">
@@ -247,13 +267,13 @@ function SymbolDetail({
             <div className="flex justify-between">
               <span className="text-muted-foreground">{t("week52High")}</span>
               <span data-testid="symbols-week52-high">
-                {data.week52_high === null ? "—" : formatPrice(data.week52_high)}
+                {data.week52_high === null ? "—" : formatMoney(data.week52_high, data.currency)}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">{t("week52Low")}</span>
               <span data-testid="symbols-week52-low">
-                {data.week52_low === null ? "—" : formatPrice(data.week52_low)}
+                {data.week52_low === null ? "—" : formatMoney(data.week52_low, data.currency)}
               </span>
             </div>
           </CardContent>

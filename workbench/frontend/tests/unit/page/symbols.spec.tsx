@@ -38,6 +38,22 @@ const DETAIL: components["schemas"]["SymbolPriceDetail"] = {
   ],
 };
 
+const DETAIL_CN: components["schemas"]["SymbolPriceDetail"] = {
+  symbol: "600519.SH",
+  as_of: "2026-06-12",
+  close: 1630.0,
+  source: "akshare",
+  currency: "CNY",
+  is_eod: true,
+  week52_high: 1800.0,
+  week52_low: 1500.0,
+  returns: { one_month: 0.03, three_month: 0.01, six_month: -0.05, one_year: 0.1, ytd: 0.08 },
+  bars: [
+    { obs_date: "2026-06-11", open: 1620, high: 1635, low: 1615, close: 1625, volume: 100 },
+    { obs_date: "2026-06-12", open: 1625, high: 1640, low: 1620, close: 1630, volume: 200 },
+  ],
+};
+
 const FUND_US: components["schemas"]["SymbolFundamentals"] = {
   symbol: "AAPL",
   source: "yfinance",
@@ -155,6 +171,9 @@ describe("SymbolsPage", () => {
 
     await waitFor(() => expect(getByTestId("symbols-detail")).toBeInTheDocument());
     expect(getByTestId("symbols-close")).toHaveTextContent("150.25");
+    // B061 F004 — US price is currency-formatted ($) + explicit USD badge.
+    expect(getByTestId("symbols-close")).toHaveTextContent("$");
+    expect(getByTestId("symbols-currency-badge")).toHaveTextContent("USD");
     // Honest EOD/source labelling present.
     expect(getByTestId("symbols-source-badge")).toHaveTextContent(/yfinance/);
     expect(getByTestId("symbols-eod-note")).toHaveTextContent("2026-06-12");
@@ -163,6 +182,23 @@ describe("SymbolsPage", () => {
     expect(getByTestId("symbols-returns")).toHaveTextContent("+5.00%");
     expect(getByTestId("symbols-returns")).toHaveTextContent("-2.00%");
     expect(getByTestId("price-chart-mock")).toBeInTheDocument();
+  });
+
+  it("renders an A-share (CN) lookup with CNY currency + honest akshare source", async () => {
+    nav.search = "symbol=600519.SH";
+    buildFetch({
+      price: { status: 200, body: DETAIL_CN },
+      fundamentals: { status: 200, body: FUND_NON_US },
+    });
+    const { getByTestId } = renderWithIntl(<SymbolsPage />);
+
+    await waitFor(() => expect(getByTestId("symbols-detail")).toBeInTheDocument());
+    // Currency-aware: ¥ on the price, explicit CNY badge, honest akshare source.
+    expect(getByTestId("symbols-close")).toHaveTextContent("¥");
+    expect(getByTestId("symbols-close")).toHaveTextContent("1,630.00");
+    expect(getByTestId("symbols-currency-badge")).toHaveTextContent("CNY");
+    expect(getByTestId("symbols-source-badge")).toHaveTextContent(/akshare/);
+    expect(getByTestId("symbols-week52-high")).toHaveTextContent("¥");
   });
 
   it("renders fundamentals (market cap etc.) for a US equity", async () => {

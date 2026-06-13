@@ -42,7 +42,7 @@
       "title": "B059 详情页支持 A 股代码（CNY/as-of/源 诚实标注，复用 SymbolLink）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "【见 spec §4 F004。依赖 F002】/symbols 详情页接受 A 股代码(600519.SH)→价格/图/统计，**诚实标注 CNY+as-of+源(akshare)**；币种展示(¥ for CN/$ for US，F002 加 currency 后 US 也补 $)；B060 SymbolLink 对 A 股代码现在解析。i18n+api.ts。测试：A 股 lookup 渲染+CNY 标注+源标注+US 仍 $。Gates：frontend vitest/tsc/lint/i18n parity/api.ts drift 0。",
       "design_decisions": [
         "复用 B059 详情页+B060 SymbolLink；CNY/as-of/源诚实标注；US 补 $(币种现可得)。"
