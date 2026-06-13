@@ -1,72 +1,60 @@
 {
-  "sprint": "B058-mode-data-and-manual-control",
+  "sprint": "B059-symbol-price-lookup",
   "features": [
     {
       "id": "F001",
-      "title": "修模拟盘卡死 bug：降级/跳过的 rebalance 不提交 target_key（市价补上后每日 job 自动重试）+ 回归",
+      "title": "P1 后端：标的数据服务（provider 抽象 + on-demand 拉价 + 缓存 + cost_guard 限流 + 无效 ticker 报错）+ 价格查询",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §4 F1。最关键——S2 卡死根因】根因：_apply_rebalance(service.py:97)无条件设 account.target_key=targets.target_key，即使本次是『全跳过/没建仓』空操作(compute_rebalance traded=False 或有 skipped_symbols)；此后每日 rebalance_if_due(service.py:177)只在 target_key 变化才重跑→市价补上也永不重试→卡死现金里。修复：(1) 当 rebalance 是降级空操作(traded=False，或目标因缺市价被 skip 导致未真正达成)时**不提交 target_key**(或提交标记未达成的哨兵)，使每日 job 在市价补齐后**自动重试**直到真建上仓；(2) 诚实 surface skipped_symbols(记 rebalance log/账户状态，前端可见『X 个目标缺市价未建仓』)。测试：复现『激活时缺市价→全现金→target_key 未提交→次日市价补上→每日 job 自动重试建仓』+ Master 正常路径(有市价)一次建满不回退。Gates：backend pytest ≥ baseline+ / ruff / mypy 0。",
+      "status": "pending",
+      "acceptance": "【见 spec §5 F001。复用 yfinance_loader/cost_guard】(1) **Provider 抽象**：SymbolDataProvider 接口(get_price_history/get_quote/get_stats)，**yfinance 作首个实现**(任意 ticker 免费)，抽象留后路(未来不稳→换/加 Finnhub/FMP，不提前集成付费)。(2) **on-demand+缓存**：查询先查缓存(DB 表/复用 price_history，按 symbol+as-of EOD 日 TTL)→命中即返、未命中按需拉+写缓存。(3) **限流**：复用 cost_guard 防任意 ticker 打爆外部 API。(4) **无效 ticker**：清晰 actionable 报错(非模糊 500)。(5) **价格查询**：最新收盘+历史序列+52 周高/低+区间收益(1M/3M/6M/1Y/YTD)。(6) **边界**：§12.10.2 AST 守门过(不在请求路径 import trade；yfinance_loader 若不 import trade 则请求路径内 OK 否则异步 job)；no-broker 守门过；新路由进 next.config PROXIED_PREFIXES + dev-rewrites 守门测试(B057 教训)。测试：provider 抽象+缓存命中/未命中+限流+无效 ticker+价格统计+§12.10.2/no-broker 守门。Gates：backend pytest ≥ baseline+ / ruff / mypy 0 / api.ts drift / alembic head(若加缓存表)。",
       "design_decisions": [
-        "降级 rebalance 不能静默提交 target_key(B053『不可能状态 fail-fast 不静默』家族)——否则卡死永不自愈。",
-        "只动 paper 域(engine/service)，不碰 execution/评分。"
+        "yfinance 作首个 provider(已是依赖,任意 ticker 免费)，抽象留后路不提前付费集成。",
+        "EOD 日 TTL 缓存+cost_guard 限流防任意 ticker 打爆外部 API。",
+        "§12.10.2：yfinance_loader 不 import trade 则请求路径内可；否则异步 job。守门必过。"
       ]
     },
     {
       "id": "F002",
-      "title": "修 S2 上游：模拟盘 mark 源覆盖各模式目标 universe（对齐价格源）+ 无市价 fail-fast/log",
+      "title": "P1 前端：标的搜索 + 价格详情页（lightweight-charts 图 + 统计 + EOD/as-of/源 诚实标注，中文，新页 disclaimer）",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §4 F2。S2 上游根因=两价格源分裂(B051 同款)】推荐目标由 precompute 读 trade 统一价格文件(故推荐有)；模拟盘建仓市价走 DbPriceProvider 读 workbench price_history(可能未覆盖目标 symbol)→推荐有、模拟盘建不上仓。修复：(1) 诊断+对齐：模拟盘 mark 源必须覆盖各模式目标 universe 当前 mark；若 data-refresh 未覆盖目标 symbol(含 B057 5 个 regime ETF QQQ/VWO/IEF/TLT/DBC)，补进 refresh universe 或确保 mark 可得；(2) 无市价时**响亮**(log+skipped_symbols)，不静默全现金。测试：目标 universe 的 mark 覆盖断言+缺失时 skipped 正确上报。Gates：backend pytest/ruff/mypy 0(含 alembic head 若触 schema)。",
+      "status": "pending",
+      "acceptance": "【见 spec §5 F002。复用已装 lightweight-charts。依赖 F001】(1) 标的搜索框 + 价格详情页：lightweight-charts 历史价格图(line/candle)+最新收盘+52 周高低+区间收益。(2) **诚实标注**：收盘价+as-of 日期+数据源 badge；**无任何买卖按钮**；新页渲染 canonical disclaimer。(3) 中文+i18n parity+api.ts 同步。(4) 测试：vitest(搜索/图渲染/诚实标注/无 execution 入口)+i18n parity+disclaimer-present 守门。(5) Gates：frontend vitest/tsc/lint / i18n parity / api.ts drift 0 / safety(disclaimer+no-broker-frontend)。",
       "design_decisions": [
-        "对齐两个价格源(推荐用的 trade 统一价格 vs 模拟盘 mark 的 price_history)，避免『有推荐建不上仓』。",
-        "缺市价响亮 surface 而非静默全现金。"
+        "lightweight-charts(TradingView，已装)搭专业价格图；EOD/as-of/源诚实标注不误导成实时。",
+        "无任何买卖按钮(no-execution-buttons 守门)；新页须渲染 disclaimer(safety 守门)。"
       ]
     },
     {
       "id": "F003",
-      "title": "通用「手动刷新目标」原语（async job 派发注册表 target_producer）+ regime 目标引导",
+      "title": "P2 基本面富化（SEC 美股 + yfinance 字段；非美降级）后端 + 详情页区块",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §4 F3。修 S1 + 平台原语】POST /api/strategy-modes/{strategy_id}/refresh-target →**入队异步 job**(§12.10.2，不在路由内 import trade)→查注册表 target_producer→跑该模式生产者→新 recommendation_snapshot；轮询状态(复用 B047 async 范式)。regime 借此**立即生成目标**(不等月度 timer 7-01)；Master/未来 B055 零成本复用。测试：refresh 端点入队+job 跑 regime producer 产**非空**目标+Master 仍可 refresh+§12.10.2 守门(路由不 import trade)。Gates：backend pytest/ruff/mypy 0 / api.ts drift。",
+      "status": "pending",
+      "acceptance": "【见 spec §5 F003。复用 fundamentals_loader/xbrl/SEC。依赖 F001】SEC 美股基本面(复用 fundamentals_loader/xbrl_parser)+yfinance 补充(市值/PE/营收/利润率等)；**非美 ticker 诚实降级**(『基本面仅美股』不留空)；详情页基本面区块(中文+as-of+源)。测试：US 有基本面 / 非美降级 / 字段映射。Gates：backend pytest/ruff/mypy 0 / frontend vitest/tsc / api.ts drift / i18n parity。",
       "design_decisions": [
-        "复用 B057 注册表 target_producer hook 派发；§12.10.2 强制异步 job(import trade 在 job 侧)。",
-        "刷新只跑现有 cadence-respecting 生产者(月中跑 regime 仍发布当月目标，不造 off-cadence 调仓)。"
+        "SEC 权威美股基本面优先 + yfinance 补字段；非美诚实降级(只价格无基本面)。"
       ]
     },
     {
       "id": "F004",
-      "title": "通用「模拟盘对齐当前目标」原语（强制 rebalance once）+ 激活 regime 模拟盘",
+      "title": "P3 新闻富化（复用 B034/B035 扩 symbol 查询）后端 + 详情页区块",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §4 F4。修 S2 用户侧 + 激活 regime paper。依赖 F001/F003】POST /api/paper/{strategy_id}/rebalance-now(或等价)→强制对当前目标 rebalance 一次(_apply_rebalance)，开局/按需建满仓。**诚实**：标注『手动调仓一次，日常仍按 cadence+漂移』(不做日常自动持续对齐——否则毁前向验证)。+ 激活 regime 模拟盘账户(依赖 F003 先有 regime 目标)。测试：align 端点强制建仓到当前目标+regime 模拟盘激活后忠实跟目标+非日常自动(只手动触发)。Gates：backend pytest/ruff/mypy 0 / api.ts drift。",
+      "status": "pending",
+      "acceptance": "【见 spec §5 F004。复用 B034/B035 新闻子系统。依赖 F001】复用 news/ 子系统扩『按任意 symbol 查』(现按 sleeve universe)；详情页新闻区块(标题+源+时间，中文，复用 title_zh 翻译)；无新闻诚实空态。测试：symbol 新闻查询 + 空态。Gates：backend pytest/ruff/mypy 0 / frontend vitest/tsc / api.ts drift / i18n parity。",
       "design_decisions": [
-        "『对齐』仅开局/按需手动，日常按 cadence+漂移(前向验证忠实性)。",
-        "regime 模拟盘激活依赖 F003 先产 regime 目标。"
+        "复用 B034/B035 新闻 + title_zh 中文翻译；按 symbol 查；无新闻诚实空态。"
       ]
     },
     {
       "id": "F005",
-      "title": "前端两原语按钮 + 诚实标注（推荐/模拟盘页，per-mode，中文）+ 测试",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §4 F5。依赖 F003/F004】推荐页+『立即刷新目标』按钮(per-mode)；模拟盘页+『对齐当前目标』按钮(per-mode)+诚实 notice(手动调仓 vs 日常 cadence)；skipped_symbols 缺市价提示。中文+i18n parity+api.ts 同步。测试：vitest(按钮触发/状态轮询/标注)+i18n parity。Gates：frontend vitest/tsc/lint / i18n parity / api.ts drift 0。",
-      "design_decisions": [
-        "两按钮诚实标注(手动一次 vs 日常自动)；缺市价 skipped 提示让用户懂为何没建满。"
-      ]
-    },
-    {
-      "id": "F006",
-      "title": "Codex L1+L2 真机：prod 只读坐实根因 + 验修复 + Master/B057 不破 + signoff",
+      "title": "Codex L1+L2 真机：任意 ticker 查询 + EOD/no-execution/no-AI 边界 + US-only 降级 + 缓存/限流 + Master/B058 不破 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "【见 spec §4 F6。core acceptance=多模式真正产出可用数据 + 不破】L1 全门禁。L2 真 VM：① **prod 只读坐实根因**(Master paper 的 cash/持仓/target_key + recommendation_snapshot Master 目标 + price_history 对目标 symbol 覆盖 + MTM timer 是否跑过)；② **验 S2 修复**：refresh+align 后 Master 模拟盘**真建上仓**(非全现金)，缺市价 skipped 诚实上报，卡死不复现(市价补上自动重试)；③ **验 S1 修复**：手动刷新后 regime **有推荐**+regime 模拟盘可激活跟目标；④ ★**Master 执行+B057 多模式不破**(B051 账户源/B053 对账 per-mode，§25 正面证据)；⑤ 回归 B050-B057+recent-errors=0+HEAD≡main；⑥ 演练自清。Signoff docs/test-reports/B058-mode-data-and-manual-control-signoff-2026-MM-DD.md(§S1 修复+§S2 修复含 prod 实况+§Master/B057 不破+§Ops)。",
+      "status": "pending",
+      "acceptance": "【见 spec §5 F005。core acceptance=任意 ticker 查价格+基本面+新闻，诚实+无交易入口+不破】L1 全门禁。L2 真 VM：① **任意 ticker 查询**：universe 内(如 SPY)+universe 外任意美股(如 NVDA)+无效 ticker(报错 actionable)；② **EOD 诚实**：界面标收盘价/as-of/源，无实时假象；③ ★**边界**：无任何买卖按钮(no-execution)、无 AI 预测(no-AI)、无 broker SDK；④ **US-only 基本面降级**：非美 ticker 只价格无基本面且诚实标注；⑤ **缓存/限流**：重复查命中缓存、不打爆外部 API；⑥ Master/B058 推荐/模拟盘/执行不破+recent-errors=0+HEAD≡main；⑦ 演练自清。Signoff docs/test-reports/B059-symbol-price-lookup-signoff-2026-MM-DD.md(§任意 ticker 证据+§EOD/边界+§US-only 降级+§缓存+§不破+§Ops)。",
       "design_decisions": []
     }
   ]
