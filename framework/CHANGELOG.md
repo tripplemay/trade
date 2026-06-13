@@ -5,6 +5,21 @@
 
 ---
 
+## v0.9.44 — 2026-06-13（B057+B058+B059：两价格存储分裂三例 + 本地门禁 CI-exact + 新路由配套 + merge-default + spec 复用适用域）
+
+**来源批次：** B057 / B058 / B059（done 阶段累积 5 条，用户 2026-06-13 确认一并沉淀）。
+
+**沉淀内容（用户确认）：**
+- **① 两表读写分裂第三实例 + 「修一个≠修另一个」**（B046→B051→B058 三例）→ `generator.md §17.1`（修复/扩覆盖某数据源前列出「同一数据还有哪些物理存储+各自谁读」，对每个生产实际读取的源分别确认；新增/扩 universe 部署有「代码更新但数据未重跑」时序窗口，错误须 actionable）+ `evaluator.md §28`（验收清单须指名「生产实际读取的源」非任一同名存储）。
+- **② 本地门禁必须 CI-exact**（B057 F004 + B059 F001 二例）→ `generator.md §19`（mypy 须本地跑 `workbench_api tests` 非只 `workbench_api`；泛化=本地门禁命令逐字对齐 CI 步骤）。
+- **③ 新增后端路由配套清单**（B057 F005 + B059 F001 二例）→ `generator.md §20`（next.config PROXIED_PREFIXES + dev-rewrites guard + 新页 disclaimer + api.ts drift）。
+- **④ merge/upsert 不应用 column default**（B057 F004）→ `generator.md §21`（deterministic-id merge 新增 NOT NULL+server_default 列须 ORM 显式设值）。
+- **⑤ spec「复用 X」须核适用域 + 偏离裁定**（B059 F003 SEC→yfinance）→ `generator.md §22`（Generator 偏离须报 planner+诚实标源+不污染原权威路径）+ `planner.md 铁律 8`（spec 写「复用 X」前标注 X 适用域）。
+
+**仍留队列（单例/低值）：** B037-OPS1 sudoers wrapper / B047 async worker 范式 / BL-B011-S2 satellite 权重——单例，等二例再沉淀。
+
+---
+
 ## v0.9.43 — 2026-06-11（B053：幂等占位区分 + 单测集成态 CI flake 处理规约）
 
 **来源批次：** B053 hardening-sweep（四轮审计产出加固批，signoff `docs/test-reports/B053-hardening-sweep-signoff-2026-06-10.md`，F004 Codex PASS）。

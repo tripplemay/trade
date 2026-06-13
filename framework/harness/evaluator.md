@@ -572,3 +572,13 @@ nvm use                          # 不一致时切换；无 nvm 装 Node 20 LTS
 **配套修复方向（非 evaluator 职责，记 backlog/spec）：** 该 spec 加显式 `await waitFor` 稳态断言，或 quarantine 隔离。
 
 **来源：** `risk-banner.spec.tsx F006` 跨 B047-OPS2 / B052 多批复现（本地连跑稳过、CI re-run 绿、与各批改动无关）。与 §18（E2E suite 稳定性诊断）互补：§18 是 suite 级隔离，§27 是单测集成态环境 flake 的放行纪律。
+
+## 28. 验收清单须指名「生产实际读取的源」，非任一同名存储（v0.9.44 — B058 沉淀）
+
+当同一逻辑数据有多个物理存储、读写方分属不同子系统时（generator.md §17.1 两表读写分裂），验收清单必须**指名被验证的是「生产实际读取的那个源」**，而非任一同名存储——否则验了 A 库覆盖、而功能读的是 B 库，会漏过缺陷。
+
+**规约：** ①写 acceptance/验收清单时，对「数据覆盖/数据源」类检查，明确写出**功能在生产实际读哪个文件/表**，并验证那一个；②core acceptance 涉及「某数据已就绪」时，正面证据须取自生产读取路径本身（如直接跑生产者验 saved>0），不能用旁证（验了另一个同名库）替代。
+
+**案例（B058）：** F006 验收清单只写「验 `price_snapshot` 覆盖」，但 regime 生产者读的是「统一价格文件」`prices_daily.csv`（另一个库）→ 差点漏过 regime 刷新失败。补「验统一价格文件对 regime universe 覆盖」后才坐实。
+
+**来源：** 用户报 B058-F003 prod regime 刷新失败 → 根因 = 两价格存储分裂（signoff `docs/test-reports/B058-mode-data-and-manual-control-signoff-2026-06-13.md`）。配套 generator.md §17.1 三例。

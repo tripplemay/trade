@@ -393,6 +393,14 @@ find . -name 'generator.md' -not -path '*/node_modules/*' -not -path '*/.git/*'
 
 **来源：** BL-032 角色冲突 + 历史角色文件演进不同步多次（v0.9.6 时已有 evaluator.md 三份不同步事故）。
 
+### 铁律 8：spec 写「复用现有 X」前必须标注 X 的适用域（v0.9.44 — B059 F003 沉淀）
+
+spec 写「复用现有组件/数据源 X」时，**X 可能对本批的新输入域不适用**——universe-bound（只为某 universe 建）/ fair-access 限流 / 对错误输入有 IP 封禁等。Planner 写「复用 X」前应核并标注 **X 的适用域**（universe-bound? 限流? 对任意输入安全?），避免理想化复用。
+
+**案例（B059 F003）：** spec 写「复用 SEC fundamentals_loader」做任意 ticker 基本面，但 SEC EDGAR universe-bound(27-CIK)+错误请求封 IP 30 天 → 对任意 ticker 不适用，且强行用会污染共享 SEC 访问。Generator 偏离改 yfinance .info（保留 US-only 门禁+诚实标源），planner 裁定接受。**配套：** generator.md §22（Generator 遇此冲突的偏离裁定纪律：报 planner + 诚实标源 + 不污染原权威路径）。
+
+**来源：** B059 F003（signoff `docs/test-reports/B059-symbol-price-lookup-signoff-2026-06-13.md`）。
+
 ---
 
 ## status = "done" 时的收尾流程
