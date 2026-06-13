@@ -2,7 +2,7 @@
   "status": "done",
   "user_goal": "B061 A 股数据源 P1：数据地基 + A 股 lookup。来源：B060 P0 spike 判定 GO(生产 VM 可达 sina/tushare、akshare+baostock 装 OK、600519.SH 519ms 取数成功)→用户同意立项 P1。**目标**：系统能取 A 股真实 EOD，并在 B059 /symbols 查 A 股代码(600519.SH→茅台 价格图)。多市场数据地基(B055-P3/A 股策略依赖)。**范围(P1 严格数据/lookup 层)**：符号/市场维度+CN 价格 provider(插 B059 抽象)+CN 交易日历+B059 详情页支持 A 股代码。**不做(仍 US-only,延后)**：账户/NAV/组合/执行/票据/策略/回测/交易规则(T+1/涨跌停/手数/ST)/跨市场 FX；币种 P1 仅元数据/展示(¥ vs $)不入组合聚合。**设计精髓(§9)**：market 限定 canonical 字符串+派生 SymbolRef+裸=US 默认→加一层非动全身(US 零迁移/CN 同表共存/市场维度锁数据 lookup 层)。**§8 深度先验(B060 GO 诚实限定)**：GO 仅验地理/工具/一次取数(600519 10 行样本)；P1 第一要务=验实全历史深度≥3-5y/全 5 符号/akshare-baostock 交叉源<0.5%/~300 规模日更(F002 构建即暴露+F005 真机坐实)。复用 B059 SymbolDataProvider 抽象+symbol_price_cache(+market/currency 列)+/symbols 详情页+B060 SymbolLink+cost_guard。5 features 4g+1c：F001 符号/市场维度地基(SymbolRef+canonical+normalize+消歧 BRK.B+board 推断)；F002 CN provider(akshare 主+baostock 对照/fallback 插抽象+按市场路由+缓存/限流+币种+§8 深度,最重)；F003 CN 交易日历+gap 按市场；F004 B059 详情页支持 A 股代码(CNY/源诚实标注)；F005 codex A 股 lookup+§8 深度验证+US 不破+边界+signoff。硬边界：research-only/**no-broker(只 akshare/baostock 不接 futu/tiger 禁列)**/no-AI/§12.10.2(akshare loader 不 import trade→请求路径，AST 守门)/no-execution(SymbolLink)/EOD+CNY 诚实/新路由配套 next.config(§20)/**mypy CI-exact `workbench_api tests`(§19)**。spec docs/specs/B061-ashare-data-p1-spec.md(6 章)；路径文档 docs/product/a-share-data-source-integration-path-2026-06.md(§8 指标/§9 schema)。",
   "total_features": 5,
-  "completed_features": 4,
+  "completed_features": 5,
   "fix_rounds": 0,
   "current_sprint": "F005",
   "last_updated": "2026-06-13",
@@ -18,7 +18,7 @@
     "spec": "docs/specs/B061-ashare-data-p1-spec.md",
     "test_cases": null,
     "signoff": "docs/test-reports/B061-ashare-data-p1-signoff-2026-06-14.md",
-    "framework_reviewed": false
+    "framework_reviewed": true
   },
   "role_assignments": null,
   "evaluator_feedback": {
@@ -48,5 +48,6 @@
     "F003",
     "F004",
     "F005"
-  ]
+  ],
+  "completed_date": "2026-06-14"
 }

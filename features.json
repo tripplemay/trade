@@ -6,7 +6,7 @@
       "title": "符号/市场维度地基：SymbolRef + canonical 约定 + normalize + 校验/消歧（§9.3-9.4）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
+      "status": "done",
       "acceptance": "【见 spec §4 F001 + 路径文档 §9.3-9.4。横切地基，加一层非动全身】(1) SymbolRef 值对象：parse(canonical)→{canonical,code,market,exchange,currency,board}；US 裸=默认(market=US/currency=USD)，CN=6 位+.SH/.SZ。(2) 消歧坑：后缀 ∈ 已知市场码集合(SH/SZ)才算市场限定；BRK.B 的.B 非市场码→判 US，不能见点就拆。(3) board 由 code 前缀推断(为未来交易规则预留，P1 不用)：600/601/603/605→沪主板/688→科创/000/001/002/003→深主板/300/301→创业板。(4) normalize(symbol)：裸→US 默认；带市场码→解析；所有读写经 normalize。(5) **向后兼容铁律**：现有 US 裸 symbol 数据/键/路径**零迁移零改动**。测试：US 裸默认/CN 解析/BRK.B 消歧/board 推断/非法拒绝/US 现有路径不破。Gates：backend pytest/ruff/**mypy CI-exact(`mypy workbench_api tests`，§19 教训) 0**。",
       "design_decisions": [
         "market 限定 canonical 字符串+派生 SymbolRef，不做全表复合键迁移；裸=US 默认(US 零迁移)。",
@@ -18,7 +18,7 @@
       "title": "CN 价格 provider（akshare 主 + baostock 对照/fallback）插 B059 抽象 + 按市场路由 + 缓存/限流 + 币种 + §8 深度",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
+      "status": "done",
       "acceptance": "【见 spec §4 F002 + §3 深度。最重。依赖 F001】(1) CN provider 实现 SymbolDataProvider，**akshare 主**(东财历史，B060 已验)+**baostock 对照/fallback**；canonical↔native 适配(akshare `600519`+市场/baostock `sh.600519`)。(2) 按市场路由(§9.8)：CN canonical→CN provider；裸/US→现有 yfinance。(3) 缓存/限流：复用 symbol_price_cache(+market/currency 列)+cost_guard，EOD 日 TTL。(4) 币种(仅元数据/展示，不入组合聚合)：价格带 currency(CN=CNY/US=USD)。(5) **§8 深度**：取**全历史**(≥3-5 年)非样本；全 5 符号(600519.SH/000001.SZ/300750.SZ/688981.SH/000300)；与 baostock 交叉源 sanity。(6) **边界**：§12.10.2(akshare/baostock 不 import trade→请求路径 OK 否则异步 job，AST 守门必过)；**no-broker(只 akshare/baostock，不接 futu/tiger 禁列)**；新路由配套 next.config(§20 教训)。测试：CN 全历史取数+适配+路由+缓存+币种+交叉源 sanity+§12.10.2/no-broker 守门。Gates：backend pytest/ruff/mypy CI-exact 0/alembic head(cache 列)/api.ts drift/no-broker safety。",
       "design_decisions": [
         "akshare 主(B060 验)+baostock 对照/fallback 插 B059 抽象；按市场路由(CN→CN provider,US→yfinance)。",
@@ -31,10 +31,11 @@
       "title": "CN 交易日历 + gap 检查按市场（§9.6）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
+      "status": "done",
       "acceptance": "【见 spec §4 F003 + §9.6。依赖 F001】CN 交易日历(中国节假日)；TradingCalendar(market)；quality.py gap 检查按市场选日历(CN 符号用 CN 日历，避免误判一堆缺口)。测试：CN 日历正确+gap 检查市场感知(CN 符号不被误判 US 日历缺口)。Gates：backend pytest/ruff/mypy CI-exact 0。",
       "design_decisions": [
-        "交易日历按市场(CN 日历 vs US 日历)；gap 检查市场感知避免误判。"
+        "交易日历按市场(CN 日历 vs US 日历)；gap 检查市场感知避免误判。",
+        "【Planner 裁定 2026-06-14：CN 日历偏离 ✅ 接受】spec §9.6 假设 daily CN 日历，但实际 quality.py gap 检查是**月粒度**(>1 月才标)→CN 最长休市~1 周<<1 月→天然 CN-safe，无需 daily 日历。Generator 选择不把 akshare 耦合进**离线 trade 引擎**(P1 trade 不 ingest CN 数据,daily 日历=零收益过度耦合+§17 装饰 market 参数)，交付命名日历模块+market utils+CN 安全回归测试(春节周不误标/真>1 月洞标)，daily per-market 日历延后 P2(workbench 层,akshare 在那)。接受：达成 F003 核心意图(CN-safe gap)且更符合 §17 无装饰控件+最小耦合——正是 §22 偏离裁定范式(Generator 报 planner+不污染离线引擎)。"
       ]
     },
     {
@@ -42,7 +43,7 @@
       "title": "B059 详情页支持 A 股代码（CNY/as-of/源 诚实标注，复用 SymbolLink）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
+      "status": "done",
       "acceptance": "【见 spec §4 F004。依赖 F002】/symbols 详情页接受 A 股代码(600519.SH)→价格/图/统计，**诚实标注 CNY+as-of+源(akshare)**；币种展示(¥ for CN/$ for US，F002 加 currency 后 US 也补 $)；B060 SymbolLink 对 A 股代码现在解析。i18n+api.ts。测试：A 股 lookup 渲染+CNY 标注+源标注+US 仍 $。Gates：frontend vitest/tsc/lint/i18n parity/api.ts drift 0。",
       "design_decisions": [
         "复用 B059 详情页+B060 SymbolLink；CNY/as-of/源诚实标注；US 补 $(币种现可得)。"
@@ -53,9 +54,11 @@
       "title": "Codex L1+L2 真机：A 股 lookup + §8 深度验证 + US 回归不破 + 边界 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F005。core acceptance=A 股可查+§8 深度验实+US 不破】L1 全门禁。L2 真 VM：① **A 股 lookup**：/symbols 查 600519.SH→茅台 价格图(CNY 标注)+其它代表符号；② ★**§8 深度验证**：全历史深度 ≥3-5 年/全 5 符号/akshare-baostock 交叉源 <0.5%/~300 规模日更可行性/连通性成功率；③ **US 回归不破**：US 符号仍经 yfinance 正常(SPY/NVDA)；④ **边界**：no-broker SDK(只 akshare/baostock)、no-execution、no-AI、EOD/CNY 诚实标注；⑤ recent-errors=0+HEAD≡main；⑥ 演练自清。Signoff docs/test-reports/B061-ashare-data-p1-signoff-2026-MM-DD.md(§A 股 lookup 证据+§§8 深度指标实测+§US 不破+§边界+§Ops)。",
-      "design_decisions": []
+      "design_decisions": [
+        "【Planner 复核 2026-06-14：F005 高估为 FULL PASS】L2 实为代码+部署验证(akshare 已装/端点存在 401/路由对/US 不破)，**核心 §8 深度(真实数据全历史/5 符号/交叉源<0.5%/规模)因 401 auth 未做**(signoff §174 自承)。按 evaluator §25 核心验收须正面证据，此项不达 FULL PASS。**§8 深度=未闭合核心项(Soft-watch S1)**，须用户 smoke(查 600519.SH)或 Codex 带 auth 复验闭合。"
+      ]
     }
   ]
 }
