@@ -245,5 +245,25 @@
     "source": "2026-06-12 用户工程基建讨论(Codex 测试能否 CI 全自动化)",
     "phase_plan": "P0 门禁确权 / P1 golden 真数据+验收即代码(地基) / P2 CI 全栈+时钟+VCR / P3 prod synthetic+canary / P4 LLM-judge 语义 / P5 瘦身独立评审+signoff 起草",
     "sequence_note": "2026-06-12 用户调序：排在 B055 进攻选股之后(B057→B055→本批)；属工程基建非交易 gate，可在策略批次间隙插入。Phase 1 golden 数据集为最高 ROI 单项，可独立优先立项。"
+  },
+  {
+    "id": "B0XX-ashare-data-source",
+    "title": "A 股数据源接入（数据先行，复用 B059 provider 抽象；P0 可行性 spike→P1 数据地基+A 股 lookup）",
+    "description": "【2026-06-13 用户基于 TradingAgents-astock 研究结论要求规划 A 股数据源接入路径】planning 文档 docs/product/a-share-data-source-integration-path-2026-06.md(7 章)。**核心思路**：数据先行、分层、**复用 B059 SymbolDataProvider 抽象**(A 股=该抽象的又一个 provider)→接在 B059 之后(先插座后插头)；**借 TradingAgents 的数据源，不借 LLM 决策**(领域信号未来量化因子化非 LLM 辩论)。**选型**：价格地基 baostock(最稳免费历史)或 AkShare(覆盖最广,聚合东财/新浪/THS/TDX)二选一/互 fallback；**futu/tiger 是券商 SDK 在 safety 禁列——只接数据库不接券商**。**工程现实**：符号体系不同(6 位+交易所后缀 .SH/.SZ，现 US-implicit 无市场维度→须加 market/exchange 横切地基)+CN 交易日历+币种 CNY≠USD(FX 延后)+基本面 CAS schema 独立 SEC+复权约定+非官方源(同 yfinance 风险)+**地理访问(境外 VM 拉中国源可能不稳=首要 de-risk)**。**分期**：P0 可行性 spike(验证 baostock/AkShare 从生产 VM 真能拉 A 股 EOD+稳定性/延迟/额度，地理访问是最大未知，去/不去依据)→P1 数据地基(符号市场维度+CN 日历+A 股价格 provider 插 B059+入 data_refresh/缓存+B059 详情页支持 A 股代码,EOD/CNY 诚实标注)→P2 基本面(AkShare CAS)+新闻(扩 B034/35)→P3 A 股策略/回测/执行(交易规则 T+1/涨跌停/手数/ST+领域因子量化化,远期 B055-P3/未来,需 B057 框架+本地基)；币种/跨市场 FX 延后。**附带**：数据地基建好后未来可用真 A 股/港股替换 hk_china_universe 的 ADR/ETF proxy(BL-B011-S2 更真)。",
+    "decisions": [
+      "2026-06-13 用户要求规划(基于 TradingAgents-astock 借鉴结论)；planning 文档已落",
+      "数据先行非策略承诺：接数据≠建 A 股策略≠交易 A 股；策略是 P3 远期",
+      "复用 B059 SymbolDataProvider 抽象(A 股=又一 provider)→接在 B059 之后",
+      "借数据源不借 LLM 决策；领域信号(龙虎榜/北向/解禁)未来量化因子化非 LLM 辩论",
+      "只接数据库(AkShare/baostock)不接券商 SDK(futu/tiger 在 safety 禁列)；provider 抽象多源 fallback",
+      "P0 可行性 spike 先行=地理访问(境外 VM 拉中国源)是最大未知,去/不去事实依据",
+      "符号/市场维度+CN 日历=横切地基(market 维度向后兼容 US 默认)；币种 FX/基本面/新闻/交易规则逐期延后"
+    ],
+    "confirmed_at": "2026-06-13",
+    "priority": "medium",
+    "milestone": "平台原语/多市场地基 — A 股数据源",
+    "source": "2026-06-13 用户要求规划 A 股数据源接入路径(基于 TradingAgents-astock 研究结论)",
+    "phase_plan": "P0 可行性 spike(VM 拉 A 股 EOD,地理访问 de-risk) / P1 数据地基+A 股 lookup(符号市场维度+CN 日历+provider 插 B059+B059 详情页支持 A 股) / P2 基本面(AkShare CAS)+新闻 / P3 策略+回测+交易规则+领域因子(远期 B055-P3) / 币种 FX 延后",
+    "sequence_note": "2026-06-13 排在 B059 之后(复用 B059 provider 抽象;先插座后插头)。P0 spike 可独立小项先行(去/不去依据)。是未来多市场地基,B055-P3 多市场依赖它。与需求池其它项相对序由用户定。"
   }
 ]
