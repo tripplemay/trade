@@ -145,3 +145,13 @@
 **建议写入：** `framework/harness/generator.md`（§编码坑：merge-UPDATE 不应用 column default + CI mypy 含 tests + workbench venv trade copy 刷新）
 
 **状态：** 待确认
+
+## [2026-06-13] Claude CLI — 来源：B058-F003 prod regime 刷新失败（两价格存储分裂）
+
+**类型：** 新坑 + 模板修订（验收清单）
+
+**内容：** **同一逻辑数据有两个物理存储、读写方分属不同子系统时，修了一个不等于修了另一个**（§17.1「两表读写分裂」的第三次实例：B046 account vs account_snapshot → B051；现 unified prices CSV（trade 侧，目标生产者读）vs price_snapshot 表（workbench 侧，模拟盘 mark 读））。B058 F002 修了 price_snapshot 覆盖，但 regime **目标生产者**读的是统一价格文件——另一个库，F002 没碰，部署后 data-refresh 未带新 universe 重跑→文件缺 5 regime ETF→生产者报错。**配套验收盲点**：F006 验收清单只写「验 price_snapshot 覆盖」，没写「验**生产实际读的那个源**（统一价格文件）覆盖」，差点漏过。**规律**：(1) 改/修一个数据源时，先列出"同一数据还有哪些物理存储 + 各自谁读"；(2) 验收清单必须指名"被验证的是**生产实际读取的源**"，而非任一同名存储；(3) 新增/扩 universe 的部署有"代码已更新但数据未重跑"的时序窗口，错误须 actionable（B058 已加 error_kind=data_not_covered + coverage_hint）。
+
+**建议写入：** `framework/harness/generator.md` §17.1（两表读写分裂，补"修一个≠修另一个"+第三实例）+ `framework/harness/evaluator.md`（§验收清单须指名"生产实际读的源"）
+
+**状态：** 待确认

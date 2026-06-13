@@ -65,7 +65,7 @@
       "title": "Codex L1+L2 真机：prod 只读坐实根因 + 验修复 + Master/B057 不破 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F6。core acceptance=多模式真正产出可用数据 + 不破】L1 全门禁。L2 真 VM：① **prod 只读坐实根因**(Master paper 的 cash/持仓/target_key + recommendation_snapshot Master 目标 + price_history 对目标 symbol 覆盖 + MTM timer 是否跑过)；② **验 S2 修复**：refresh+align 后 Master 模拟盘**真建上仓**(非全现金)，缺市价 skipped 诚实上报，卡死不复现(市价补上自动重试)；③ **验 S1 修复**：手动刷新后 regime **有推荐**+regime 模拟盘可激活跟目标；④ ★**Master 执行+B057 多模式不破**(B051 账户源/B053 对账 per-mode，§25 正面证据)；⑤ 回归 B050-B057+recent-errors=0+HEAD≡main；⑥ 演练自清。Signoff docs/test-reports/B058-mode-data-and-manual-control-signoff-2026-MM-DD.md(§S1 修复+§S2 修复含 prod 实况+§Master/B057 不破+§Ops)。",
       "design_decisions": []
     }
