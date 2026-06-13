@@ -177,3 +177,13 @@
 **建议写入：** `framework/harness/generator.md`（§安全守门/banlist 扫描：loaded-module 用 exact import-root，dist 名才用子串）
 
 **状态：** 待确认（单例小坑，留队列；done 阶段一并提）
+
+## [2026-06-13] Claude CLI — 来源：B061 F003 CN 交易日历裁定（spec 前提粒度 vs 代码现实）
+
+**类型：** 新规律（§22 的扩展）+ 裁定待批
+
+**内容：** **spec 的检查/校验条款可能假设比代码现实更细的粒度 → 实施前先核实际实现；若现实已隐含满足 spec 意图，不要为字面满足而构建无行为差异的 variant/market-aware 机制（= §17 plumbed-but-ignored 反模式）。** B061 F003 spec §9.6 假设一个 *daily* 交易日 gap 检查会把 CN 节假日误判为缺口，要求按市场选日历。但实际 `trade/data/loader._calendar_gaps` 是**月粒度**启发（连续交易日 >1 自然月才标 gap），对任何最长休市远短于一月的市场（含 CN，春节~1 周）**天然安全** → §9.6 担心的误判**不会发生**。故 Generator 裁定：(1) **不**把 daily CN 日历（需 akshare 网络源）塞进离线确定性的 `trade` 引擎（P1 trade/ 不吃 CN 数据，零收益+过度耦合）；(2) **不**加装饰性 `market` 参数（US/CN 月粒度下无行为差异 → 会触 §17）；(3) 交付=命名日历模块(loader 真消费)+市场检测工具+**CN 安全回归测试**(春节周不误标/真>1月洞仍标)；daily 每市场日历推迟到真需 daily CN gap(P2，属 akshare 所在的 workbench 层)。**规律**：这是 §22「spec 复用须核 X 适用域」从"X 是否适用"到"X 的实现是否已隐含满足新需求"的扩展——避免 over-engineering + §17 装饰代码。
+
+**建议写入：** `framework/harness/generator.md`（§22 扩展：spec 校验条款须核实际实现粒度，现实已满足则不造装饰机制）+ `framework/harness/planner.md`（写"按 X 维度处理"前先核 X 在代码里是否真有行为差异）
+
+**状态：** 待确认（**裁定待 planner 批准**，同 B059 F003 SEC 偏离模式；Codex F005 signoff 应记录此裁定）
