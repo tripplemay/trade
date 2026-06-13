@@ -197,18 +197,15 @@ class TestBaostockFallback:
 
 
 class TestBothUnavailable:
-    def test_raises_symbol_not_found(self) -> None:
+    def test_both_sources_failing_raises_symbol_not_found(self) -> None:
+        # Both sources present but failing (unreachable / empty) → honest
+        # SymbolNotFoundError, never a 500. Injected raising fakes keep this
+        # deterministic + offline (a non-injected real-lazy-import variant
+        # would hit the network in CI where akshare IS installed).
         provider = CnSymbolProvider(
             akshare_module=_FakeAkshare(raises=True),
             baostock_module=_FakeBaostock(raises=True),
         )
-        with pytest.raises(SymbolNotFoundError):
-            provider.get_price_history("600519.SH", _TODAY - timedelta(days=400), _TODAY)
-
-    def test_no_libs_available_raises(self) -> None:
-        # No injected modules + akshare/baostock not installed locally → both
-        # lazy imports fail → honest SymbolNotFoundError (never a 500).
-        provider = CnSymbolProvider()
         with pytest.raises(SymbolNotFoundError):
             provider.get_price_history("600519.SH", _TODAY - timedelta(days=400), _TODAY)
 
