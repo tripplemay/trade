@@ -45,6 +45,7 @@ from workbench_api.schemas.symbols import (
     SymbolPriceDetail,
 )
 from workbench_api.symbols.cn_provider import CnSymbolProvider
+from workbench_api.symbols.hk_provider import HkSymbolProvider
 from workbench_api.symbols.provider import (
     SymbolDataProvider,
     SymbolNotFoundError,
@@ -77,12 +78,16 @@ def _default_provider() -> SymbolDataProvider:
 
 
 def _resolve_provider(symbol: str) -> SymbolDataProvider:
-    """Pick the EOD provider by market (path-doc §9.8): a CN canonical routes
-    to the A-share provider (akshare primary + baostock fallback); US / bare
-    routes to yfinance. ``symbol`` must already be the normalized canonical."""
+    """Pick the EOD provider by market (path-doc §9.8): a CN canonical routes to
+    the A-share provider (akshare primary + baostock fallback), a HK canonical
+    to the Hong Kong provider (akshare HK), US / bare to yfinance. ``symbol``
+    must already be the normalized canonical."""
 
-    if SymbolRef.parse(symbol).market == "CN":
+    market = SymbolRef.parse(symbol).market
+    if market == "CN":
         return CnSymbolProvider()
+    if market == "HK":
+        return HkSymbolProvider()
     return _default_provider()
 
 

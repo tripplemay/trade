@@ -37,6 +37,10 @@ REQUEST_PATH_MODULES = (
     # B061 F002 — CN A-share provider (akshare + baostock, both databases).
     # Lazy-imports the data libs; never imports trade or a broker SDK.
     SYMBOLS / "cn_provider.py",
+    # B062 F001 — HK provider (akshare HK) + shared akshare frame→bar helpers.
+    # Lazy-import the data lib; never import trade or a broker SDK.
+    SYMBOLS / "hk_provider.py",
+    SYMBOLS / "akshare_frames.py",
 )
 
 

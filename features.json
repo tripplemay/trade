@@ -6,7 +6,7 @@
       "title": "港股 .HK 市场 symbology + HK provider（lookup 层，镜像 B061 A股）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "【见 spec §4 F001。镜像 B061 A股到港股】(1) **.HK 市场**：扩 B061 SymbolRef(0700.HK→market=HK/exchange=XHKG/currency=HKD；symbol_ref 注释已预留 HK)；裸=US/.SH/.SZ=CN 不变(向后兼容)。(2) **HK provider**：akshare 港股端点(baostock 仅 A股)插 B059 SymbolDataProvider 抽象；按市场路由(HK→HK provider)。(3) lookup 验证：/symbols 查 0700.HK→腾讯 价格图(HKD 标注)。测试：.HK 解析/路由/lookup+US/CN 不破。Gates：backend pytest/ruff/mypy CI-exact 0/api.ts drift/no-broker safety。",
       "design_decisions": [
         "港股 .HK 扩 B061 SymbolRef(已预留)；akshare 港股端点(baostock 仅 A股)插 B059 抽象按市场路由。",

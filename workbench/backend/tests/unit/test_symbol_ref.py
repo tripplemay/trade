@@ -101,6 +101,34 @@ class TestCnParse:
         assert ref.board == "cn_other"
 
 
+class TestHkParse:
+    def test_hong_kong_symbol(self) -> None:
+        ref = SymbolRef.parse("0700.HK")
+        assert ref.canonical == "0700.HK"
+        assert ref.code == "0700"
+        assert ref.market == "HK"
+        assert ref.currency == "HKD"
+        assert ref.exchange == "XHKG"
+        assert ref.board == "hk_main"
+
+    @pytest.mark.parametrize("symbol", ["0700.HK", "9988.HK", "3690.HK", "1810.HK", "700.hk"])
+    def test_hk_codes_parse(self, symbol: str) -> None:
+        ref = SymbolRef.parse(symbol)
+        assert ref.market == "HK"
+        assert ref.canonical == symbol.upper()
+
+    def test_hk_code_too_long_rejected(self) -> None:
+        # HK codes are 1-5 digits; a 6-digit .HK is not valid HK.
+        with pytest.raises(InvalidSymbolError):
+            SymbolRef.parse("123456.HK")
+
+    def test_cn_suffix_still_requires_six_digits(self) -> None:
+        # A 4-digit .SH is not a valid CN code (CN is exactly 6 digits) — the
+        # unified parser must keep the per-market length rule.
+        with pytest.raises(InvalidSymbolError):
+            SymbolRef.parse("0700.SH")
+
+
 class TestIllegal:
     @pytest.mark.parametrize(
         "raw",
@@ -121,6 +149,7 @@ class TestNormalizeBackwardCompat:
             ("^GSPC", "^GSPC"),
             ("600519.sh", "600519.SH"),
             ("000001.SZ", "000001.SZ"),
+            ("0700.hk", "0700.HK"),
         ],
     )
     def test_normalize_returns_canonical_string(self, raw: str, expected: str) -> None:
