@@ -130,6 +130,31 @@ def test_us_equity_without_data_degrades_no_data() -> None:
     assert result.is_us_equity is True
 
 
+def test_missing_quote_type_degrades_no_data() -> None:
+    # Regression (F003 review): flaky .info → quote_type None must be 'no_data',
+    # not mislabeled 'non_us'.
+    stats = ProviderStats(symbol="ZZZ", source="yfinance")
+    result = get_symbol_fundamentals("ZZZ", provider=_StatsProvider(stats))
+    assert result.available is False
+    assert result.reason == "no_data"
+    assert result.is_us_equity is False
+
+
+def test_us_equity_with_only_shares_outstanding_is_available() -> None:
+    # Regression (F003 review): shares_outstanding alone is a fundamental field
+    # → must count as data (was omitted from the no-data check).
+    stats = ProviderStats(
+        symbol="ZZZ",
+        source="yfinance",
+        quote_type="EQUITY",
+        country="United States",
+        shares_outstanding=1.0e9,
+    )
+    result = get_symbol_fundamentals("ZZZ", provider=_StatsProvider(stats))
+    assert result.available is True
+    assert result.shares_outstanding == 1.0e9
+
+
 def test_invalid_symbol_raises_before_provider() -> None:
     with pytest.raises(InvalidSymbolError):
         get_symbol_fundamentals("A" * 40, provider=_StatsProvider(_us_equity_stats()))

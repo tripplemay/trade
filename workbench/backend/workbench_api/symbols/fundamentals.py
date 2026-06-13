@@ -51,9 +51,13 @@ def get_symbol_fundamentals(
     stats = provider.get_stats(symbol)
 
     is_us_equity = stats.quote_type == "EQUITY" and _is_us(stats.country)
-    if stats.quote_type is not None and stats.quote_type != "EQUITY":
+    # Order matters: a missing quote_type (flaky .info) is a data gap, not a
+    # region signal — classify it as 'no_data' rather than mislabel 'non_us'.
+    if stats.quote_type is None:
+        available, reason = False, "no_data"
+    elif stats.quote_type != "EQUITY":
         available, reason = False, "not_equity"
-    elif not is_us_equity:
+    elif not _is_us(stats.country):
         available, reason = False, "non_us"
     elif not _has_any_ratio(stats):
         available, reason = False, "no_data"
@@ -101,6 +105,7 @@ def _has_any_ratio(stats: ProviderStats) -> bool:
             stats.profit_margins,
             stats.gross_margins,
             stats.revenue,
+            stats.shares_outstanding,
             stats.return_on_equity,
             stats.debt_to_equity,
         )
