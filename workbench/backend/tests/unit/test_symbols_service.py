@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 from workbench_api.data.snapshot_loader import PriceBar
 from workbench_api.db.engine import get_engine
 from workbench_api.db.repositories.symbol_price_cache import SymbolPriceCacheRepository
+from workbench_api.schemas.symbols import SymbolPriceDetail
 from workbench_api.symbols.provider import (
     InvalidSymbolError,
     ProviderQuote,
@@ -90,7 +91,12 @@ class _CountingGuard:
             raise self._raise_exc
 
 
-def _detail(session: Session, provider: _FakeProvider, guard: _CountingGuard, symbol: str = "aapl"):
+def _detail(
+    session: Session,
+    provider: _FakeProvider,
+    guard: _CountingGuard,
+    symbol: str = "aapl",
+) -> SymbolPriceDetail:
     return get_symbol_price_detail(
         session,
         symbol,
