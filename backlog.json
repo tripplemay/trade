@@ -266,23 +266,6 @@
     "milestone": "平台原语/多市场地基 — A 股数据源",
     "source": "2026-06-13 用户要求规划 A 股数据源接入路径(基于 TradingAgents-astock 研究结论)",
     "phase_plan": "P0 可行性 spike(VM 拉 A 股 EOD,地理访问 de-risk) / P1 数据地基+A 股 lookup(符号市场维度+CN 日历+provider 插 B059+B059 详情页支持 A 股) / P2 基本面(AkShare CAS)+新闻 / P3 策略+回测+交易规则+领域因子(远期 B055-P3) / 币种 FX 延后",
-    "sequence_note": "2026-06-13 排在 B059 之后(复用 B059 provider 抽象;先插座后插头)。P0 spike 可独立小项先行(去/不去依据)。是未来多市场地基,B055-P3 多市场依赖它。与需求池其它项相对序由用户定。"
-  },
-  {
-    "id": "B0XX-clickable-symbol-links",
-    "title": "全站标的名可点击 → 跳转标的查询详情页（B059 入口扩展，research-only）",
-    "description": "【2026-06-13 用户确认：B059 标的查询的入口扩展】用户希望在系统其他页面点击标的名/代码即可查该标的价格，而非只能在 /symbols 页用代码查询。**交互（用户确认）**：点击标的名 → 跳转 `/symbols?symbol=XXX`（复用 B059 F002 已建详情页：价格+K线/折线图+52周高低+区间收益+基本面+新闻；深链 + 前进/后退）。**范围（用户确认）**：全站一次做全——所有展示标的的用户页面：Recommendations(target/current positions)、Paper(持仓)、Risk(per-sleeve/持仓)、Backtest(结果标的)、Execution(position-diff/ticket/fills/journal 的 symbol)、Home(sleeve breakdown)、News(关联 symbol)、Strategies(成分)。**实现思路**：建一个共享可复用组件（如 `<SymbolLink symbol=... />`，next/link 到 `/symbols?symbol=`，统一样式/hover/可访问性），逐页把纯文本 symbol 替换为该组件（DataTable 的 symbol 列用 cellRenderer，卡片/列表用组件）；symbol 大写规范化。**红线**：research-only——点击只查看价格（无任何交易/下单动作），与 no-execution 一致；新组件须纳入 no-execution-buttons 守门扫描（确保未来不被改成执行入口）；§12.10.2/no-broker/no-AI 不破。**复用**：B059 /symbols 页 + ?symbol= 深链已就绪（F002），本批≈搭一个 SymbolLink 组件 + 全站接线，无新后端。**测试**：组件单测（渲染正确 href/normalize）+ 各页 symbol 可点击 + 守门。**前置**：B059 done（/symbols 详情页是点击落点）。",
-    "decisions": [
-      "2026-06-13 用户确认：交互=点击跳转 /symbols?symbol=XXX（复用 F002 详情页，非浮层/非新标签）；范围=全站所有展示标的的页面一次做全",
-      "建共享 <SymbolLink> 组件统一接线（DataTable symbol 列 cellRenderer + 卡片/列表组件）；symbol 大写规范化",
-      "research-only：点击仅查看价格无交易动作；SymbolLink 纳入 no-execution-buttons 守门；§12.10.2/no-broker/no-AI 不破",
-      "复用 B059 /symbols + ?symbol= 深链（F002 已建）；无新后端；本批=组件+全站接线+测试",
-      "前置：B059 done（/symbols 详情页为落点）"
-    ],
-    "confirmed_at": "2026-06-13",
-    "priority": "medium",
-    "milestone": "平台便利 — B059 入口扩展（全站标的可点击）",
-    "source": "2026-06-13 用户需求（在其他页面点击标的名即可查价，非只在查询页用代码）",
-    "sequence_note": "2026-06-13 排在 B059（标的查询）之后——/symbols 详情页是点击落点。本批轻量（前端为主，复用 F002 深链），可在策略批次（B055/A 股/测试自动化）间隙插入；与其它需求池项相对序由用户定。"
+    "sequence_note": "2026-06-13 **P0 可行性 spike 在 B060 执行**(全站可点击同批)；本条 backlog 转为 P1+(符号/市场维度 §9/provider/lookup/基本面/新闻/策略)，待 B060 P0 spike=GO 后立项；CONDITIONAL→按缓解;NO-GO→延后或中国区组件。复用 B059 provider 抽象;是未来多市场地基,B055-P3 依赖它。"
   }
 ]

@@ -1,61 +1,37 @@
 {
-  "sprint": "B059-symbol-price-lookup",
+  "sprint": "B060-clickable-symbols-and-ashare-feasibility",
   "features": [
     {
       "id": "F001",
-      "title": "P1 后端：标的数据服务（provider 抽象 + on-demand 拉价 + 缓存 + cost_guard 限流 + 无效 ticker 报错）+ 价格查询",
+      "title": "全站标的名可点击——共享 SymbolLink 组件 + 全站接线 + no-execution 守门 + 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §5 F001。复用 yfinance_loader/cost_guard】(1) **Provider 抽象**：SymbolDataProvider 接口(get_price_history/get_quote/get_stats)，**yfinance 作首个实现**(任意 ticker 免费)，抽象留后路(未来不稳→换/加 Finnhub/FMP，不提前集成付费)。(2) **on-demand+缓存**：查询先查缓存(DB 表/复用 price_history，按 symbol+as-of EOD 日 TTL)→命中即返、未命中按需拉+写缓存。(3) **限流**：复用 cost_guard 防任意 ticker 打爆外部 API。(4) **无效 ticker**：清晰 actionable 报错(非模糊 500)。(5) **价格查询**：最新收盘+历史序列+52 周高/低+区间收益(1M/3M/6M/1Y/YTD)。(6) **边界**：§12.10.2 AST 守门过(不在请求路径 import trade；yfinance_loader 若不 import trade 则请求路径内 OK 否则异步 job)；no-broker 守门过；新路由进 next.config PROXIED_PREFIXES + dev-rewrites 守门测试(B057 教训)。测试：provider 抽象+缓存命中/未命中+限流+无效 ticker+价格统计+§12.10.2/no-broker 守门。Gates：backend pytest ≥ baseline+ / ruff / mypy 0 / api.ts drift / alembic head(若加缓存表)。",
+      "status": "pending",
+      "acceptance": "【见 spec §2。复用 B059 /symbols 深链，无新后端】(1) 建共享 `<SymbolLink symbol>` 组件(symbol 大写规范化 + `/symbols?symbol=` 深链，复用 F002 已建)。(2) 全站一次接线：推荐/持仓/position-diff/ticket/模拟盘/风险/回测/新闻 等 DataTable symbol 列 cellRenderer + 卡片/列表组件。(3) **research-only**：点击仅查看价格无交易动作——SymbolLink 纳入 no-execution-buttons 守门(它是只读导航非买卖按钮)。(4) i18n(链接 symbol 语言中性；tooltip『查看行情』需 parity)。边界：§12.10.2/no-broker/no-AI 不破；A 股代码暂无数据(点击走 B059 无效/降级路径，待 A 股数据后自然可用)。测试：SymbolLink 渲染/跳转/大写规范化 + 全站接线点 vitest + no-execution 守门含 SymbolLink + i18n parity。Gates：frontend vitest/tsc/lint / i18n parity / api.ts drift 0 / safety(no-execution+no-broker)。",
       "design_decisions": [
-        "yfinance 作首个 provider(已是依赖,任意 ticker 免费)，抽象留后路不提前付费集成。",
-        "EOD 日 TTL 缓存+cost_guard 限流防任意 ticker 打爆外部 API。",
-        "§12.10.2：yfinance_loader 不 import trade 则请求路径内可；否则异步 job。守门必过。"
+        "共享 SymbolLink 组件统一接线，复用 B059 ?symbol= 深链，无新后端。",
+        "research-only：只读导航非买卖按钮，纳入 no-execution-buttons 守门。"
       ]
     },
     {
       "id": "F002",
-      "title": "P1 前端：标的搜索 + 价格详情页（lightweight-charts 图 + 统计 + EOD/as-of/源 诚实标注，中文，新页 disclaimer）",
+      "title": "A 股 P0 probe 脚本（scripts/test/，AkShare+baostock 探针，按 §8 指标采集，不接禁列 SDK）",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §5 F002。复用已装 lightweight-charts。依赖 F001】(1) 标的搜索框 + 价格详情页：lightweight-charts 历史价格图(line/candle)+最新收盘+52 周高低+区间收益。(2) **诚实标注**：收盘价+as-of 日期+数据源 badge；**无任何买卖按钮**；新页渲染 canonical disclaimer。(3) 中文+i18n parity+api.ts 同步。(4) 测试：vitest(搜索/图渲染/诚实标注/无 execution 入口)+i18n parity+disclaimer-present 守门。(5) Gates：frontend vitest/tsc/lint / i18n parity / api.ts drift 0 / safety(disclaimer+no-broker-frontend)。",
+      "status": "pending",
+      "acceptance": "【见 spec §3 + 路径文档 §8。spike 工具，非产品代码】scripts/test/ 下独立 probe 脚本：探 **AkShare(东财历史，先试)+baostock(对照/fallback)**，对代表标的(600519.SH/000001.SZ/300750.SZ/688981.SH/000300)采集 §8.3 指标——连通性(重复拉 ×N 跨时段：成功率/p50·p95 延迟/超时率)/覆盖(5 标的)/深度(历史年数)/质量(OHLCV 完整+日历缺口+复权)/交叉源(AkShare vs baostock 同日偏差)/规模(单标耗时+推算 N≈300 日更)/依赖卫生(import 扫不引入 futu/tiger 等禁列)。脚本输出结构化指标供 Codex 汇成报告。**边界**：只接数据库不接券商 SDK；脚本入 scripts/test/(Codex 也可写区)，不动产品代码/数据/符号模型。Gates：脚本自身 lint/可运行(本地 dev sanity 可选)；不触发 backend/frontend 产品门禁(纯 scripts/test/)。",
       "design_decisions": [
-        "lightweight-charts(TradingView，已装)搭专业价格图；EOD/as-of/源诚实标注不误导成实时。",
-        "无任何买卖按钮(no-execution-buttons 守门)；新页须渲染 disclaimer(safety 守门)。"
+        "先试 AkShare(东财大站全球最可能通)+baostock 对照/fallback；探针采集 §8 全维指标。",
+        "只接数据库(AkShare/baostock)不接券商 SDK(futu/tiger 禁列)；probe 入 scripts/test/ 非产品代码。"
       ]
     },
     {
       "id": "F003",
-      "title": "P2 基本面富化（SEC 美股 + yfinance 字段；非美降级）后端 + 详情页区块",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §5 F003。复用 fundamentals_loader/xbrl/SEC。依赖 F001】SEC 美股基本面(复用 fundamentals_loader/xbrl_parser)+yfinance 补充(市值/PE/营收/利润率等)；**非美 ticker 诚实降级**(『基本面仅美股』不留空)；详情页基本面区块(中文+as-of+源)。测试：US 有基本面 / 非美降级 / 字段映射。Gates：backend pytest/ruff/mypy 0 / frontend vitest/tsc / api.ts drift / i18n parity。",
-      "design_decisions": [
-        "SEC 权威美股基本面优先 + yfinance 补字段；非美诚实降级(只价格无基本面)。",
-        "【Planner 裁定 2026-06-13：SEC→yfinance 偏离 ✅ 接受】spec 写『复用 SEC』是理想化，未计 SEC 对任意 ticker 的现实：SEC EDGAR universe-bound(27-CIK 仅策略 universe)+错误/高频请求封 IP 30 天。对任意 ticker lookup 用 SEC 会(a)需为每个 ticker 映 CIK(不现实)(b)IP 封禁危及**共享的 SEC 访问=污染真实策略基本面管道**。改用 yfinance .info(任意 ticker，保留 US-only 门禁+诚实标源)是更优解——偏离只限 lookup 展示(便利)，策略评分仍用权威 SEC(未动)。接受。"
-      ]
-    },
-    {
-      "id": "F004",
-      "title": "P3 新闻富化（复用 B034/B035 扩 symbol 查询）后端 + 详情页区块",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §5 F004。复用 B034/B035 新闻子系统。依赖 F001】复用 news/ 子系统扩『按任意 symbol 查』(现按 sleeve universe)；详情页新闻区块(标题+源+时间，中文，复用 title_zh 翻译)；无新闻诚实空态。测试：symbol 新闻查询 + 空态。Gates：backend pytest/ruff/mypy 0 / frontend vitest/tsc / api.ts drift / i18n parity。",
-      "design_decisions": [
-        "复用 B034/B035 新闻 + title_zh 中文翻译；按 symbol 查；无新闻诚实空态。"
-      ]
-    },
-    {
-      "id": "F005",
-      "title": "Codex L1+L2 真机：任意 ticker 查询 + EOD/no-execution/no-AI 边界 + US-only 降级 + 缓存/限流 + Master/B058 不破 + signoff",
+      "title": "Codex：跑 A 股 P0 spike(生产 VM)→ feasibility 报告(go/no-go) + L1/L2 验 clickable-links + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "【见 spec §5 F005。core acceptance=任意 ticker 查价格+基本面+新闻，诚实+无交易入口+不破】L1 全门禁。L2 真 VM：① **任意 ticker 查询**：universe 内(如 SPY)+universe 外任意美股(如 NVDA)+无效 ticker(报错 actionable)；② **EOD 诚实**：界面标收盘价/as-of/源，无实时假象；③ ★**边界**：无任何买卖按钮(no-execution)、无 AI 预测(no-AI)、无 broker SDK；④ **US-only 基本面降级**：非美 ticker 只价格无基本面且诚实标注；⑤ **缓存/限流**：重复查命中缓存、不打爆外部 API；⑥ Master/B058 推荐/模拟盘/执行不破+recent-errors=0+HEAD≡main；⑦ 演练自清。Signoff docs/test-reports/B059-symbol-price-lookup-signoff-2026-MM-DD.md(§任意 ticker 证据+§EOD/边界+§US-only 降级+§缓存+§不破+§Ops)。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F003】(1) **A 股 P0 spike**：生产 VM 临时 venv 装 AkShare/baostock 跑 F002 probe，采集 §8.3 指标，写 docs/test-reports/ 下 A 股数据 feasibility 报告 + **明确 go/conditional/no-go 判定**(含 conditional 缓解方案：缓存/China-region 代理/窄 universe)。**说明：本 feature『PASS』= spike 跑完+报告产出+判定明确；NO-GO 也是成功的 spike(非 fail)**。不接券商 SDK。(2) **验 clickable-links**：L1 全门禁；L2 真机——全站 symbol 可点击跳 /symbols、无任何买卖/执行按钮(no-execution 守门)、Master/B059 不破、recent-errors=0、HEAD≡main。(3) signoff docs/test-reports/B060-...-signoff-2026-MM-DD.md(§clickable-links 验收+§A 股 P0 feasibility 判定+§不破+§Ops)。",
       "design_decisions": []
     }
   ]
