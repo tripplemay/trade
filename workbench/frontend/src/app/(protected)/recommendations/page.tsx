@@ -13,6 +13,7 @@ import { NewsPanel } from "@/components/recommendations/NewsPanel";
 import { PositionCards } from "@/components/recommendations/PositionCards";
 import { RiskBanner } from "@/components/risk/RiskBanner";
 import { ModeSelector } from "@/components/strategy/ModeSelector";
+import { SymbolLink } from "@/components/symbol/SymbolLink";
 import { DataTable, percentColumn, weightColumn } from "@/components/table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,7 +42,12 @@ function buildPositionColumns(
   t: ReturnType<typeof useTranslations<"recommendations.positions">>,
 ): ColDef<TargetPosition>[] {
   return [
-    { field: "symbol", headerName: t("columnSymbol"), width: 110 },
+    {
+      field: "symbol",
+      headerName: t("columnSymbol"),
+      width: 110,
+      cellRenderer: (params: { value?: string }) => <SymbolLink symbol={params.value ?? ""} />,
+    },
     weightColumn<TargetPosition>({
       field: "target_weight",
       headerName: t("columnTarget"),
@@ -370,7 +376,9 @@ export default function RecommendationsPage() {
               <ul className="space-y-1 text-sm">
                 {(data.wash_sale_flags ?? []).map((flag) => (
                   <li key={flag.symbol}>
-                    <strong>{flag.symbol}</strong>
+                    <strong>
+                      <SymbolLink symbol={flag.symbol} />
+                    </strong>
                     {" — "}
                     {tWash("lastBuy", { date: flag.last_buy_date, days: flag.days_since })}
                   </li>

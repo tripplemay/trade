@@ -6,6 +6,7 @@ import type { ColDef } from "ag-grid-community";
 
 import { AllocationBar, type AllocationBarItem } from "@/components/chart";
 import { ModeSelector } from "@/components/strategy/ModeSelector";
+import { SymbolLink } from "@/components/symbol/SymbolLink";
 import { DataTable, type DataTableHandle, currencyColumn, percentColumn } from "@/components/table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,7 +34,13 @@ function buildDiffColumns(
   t: ReturnType<typeof useTranslations<"execution.positionDiff.columns">>,
 ): ColDef<PositionDiffEntry>[] {
   return [
-    { field: "symbol", headerName: t("symbol"), width: 110, pinned: "left" },
+    {
+      field: "symbol",
+      headerName: t("symbol"),
+      width: 110,
+      pinned: "left",
+      cellRenderer: (params: { value?: string }) => <SymbolLink symbol={params.value ?? ""} />,
+    },
     {
       field: "current_shares",
       headerName: t("currentShares"),
@@ -248,7 +255,9 @@ export default function PositionDiffPage() {
                   data-testid={`position-diff-unmatched-${row.symbol}`}
                   className="rounded-md border border-amber-700/40 bg-amber-950/20 px-3 py-2"
                 >
-                  <strong>{row.symbol}</strong>
+                  <strong>
+                    <SymbolLink symbol={row.symbol} />
+                  </strong>
                   <span className="ml-2 text-xs text-muted-foreground">
                     {t("unmatchedLabel", { weight: (row.target_weight * 100).toFixed(2) })}
                   </span>

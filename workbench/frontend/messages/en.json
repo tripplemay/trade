@@ -1,4 +1,7 @@
 {
+  "symbolLink": {
+    "viewQuote": "View {symbol} quote"
+  },
   "modeSelector": {
     "label": "Strategy mode",
     "researchBadge": "Research",

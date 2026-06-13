@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MetricsDisplay, type MetricStat } from "@/components/metrics/MetricsDisplay";
+import { SymbolLink } from "@/components/symbol/SymbolLink";
 import { BacktestRunError, BacktestTimeoutError, runBacktest } from "@/lib/backtest-poll";
 import { cn } from "@/lib/utils";
 import type { ColDef } from "ag-grid-community";
@@ -79,7 +80,12 @@ function buildTradeColumns(
 ): ColDef<BacktestTrade>[] {
   return [
     dateColumn<BacktestTrade>({ field: "date", headerName: t("columnDate"), width: 130 }),
-    { field: "symbol", headerName: t("columnSymbol"), width: 110 },
+    {
+      field: "symbol",
+      headerName: t("columnSymbol"),
+      width: 110,
+      cellRenderer: (params: { value?: string }) => <SymbolLink symbol={params.value ?? ""} />,
+    },
     { field: "side", headerName: t("columnSide"), width: 90 },
     percentColumn<BacktestTrade>({ field: "quantity", headerName: t("columnQty"), digits: 2 }),
     currencyColumn<BacktestTrade>({ field: "price", headerName: t("columnPrice") }),

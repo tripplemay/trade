@@ -7,14 +7,9 @@ import { toast } from "sonner";
 
 import MarkdownRenderer from "@/components/markdown/MarkdownRenderer";
 import { RiskBanner, useRiskPanel } from "@/components/risk/RiskBanner";
+import { SymbolLink } from "@/components/symbol/SymbolLink";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Toaster } from "@/components/ui/sonner";
 import { workbenchFetch } from "@/lib/api-fetch";
 import type { components } from "@/types/api";
@@ -82,9 +77,7 @@ export default function TicketPage() {
       // recent ticket's detail so the preview pane has something to show.
       const top = payload.items[0];
       if (latest == null && top != null) {
-        const detailResponse = await workbenchFetch(
-          `${LIST_URL}/${encodeURIComponent(top.id)}`,
-        );
+        const detailResponse = await workbenchFetch(`${LIST_URL}/${encodeURIComponent(top.id)}`);
         if (detailResponse.ok) {
           const detail = (await detailResponse.json()) as GenerateTicketResponse;
           setLatest(detail);
@@ -130,10 +123,9 @@ export default function TicketPage() {
     if (!latest) return;
     setVoiding(true);
     try {
-      const response = await workbenchFetch(
-        `${LIST_URL}/${encodeURIComponent(latest.id)}/void`,
-        { method: "POST" },
-      );
+      const response = await workbenchFetch(`${LIST_URL}/${encodeURIComponent(latest.id)}/void`, {
+        method: "POST",
+      });
       if (!response.ok) {
         const detail = await response.text();
         throw new Error(`HTTP ${response.status}: ${detail}`);
@@ -205,7 +197,11 @@ export default function TicketPage() {
               <span>
                 <strong>{t("modeDefensiveLabel")}</strong> {t("modeDefensivePrefix")}
                 <code>
-                  {risk.alternative_defensive_ticket?.target_positions[0]?.symbol ?? "SGOV"}
+                  <SymbolLink
+                    symbol={
+                      risk.alternative_defensive_ticket?.target_positions[0]?.symbol ?? "SGOV"
+                    }
+                  />
                 </code>
                 {t("modeDefensiveSuffix")}
               </span>

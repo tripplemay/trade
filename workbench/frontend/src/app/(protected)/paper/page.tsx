@@ -16,6 +16,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { EquityCurveChart, type EquityCurveSeries } from "@/components/chart";
+import { SymbolLink } from "@/components/symbol/SymbolLink";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { components } from "@/types/api";
 
@@ -388,7 +389,9 @@ function ActiveView({
                     data-testid="paper-position-row"
                     className="border-t border-border"
                   >
-                    <td className="py-1 font-medium">{p.symbol}</td>
+                    <td className="py-1 font-medium">
+                      <SymbolLink symbol={p.symbol} />
+                    </td>
                     <td className="py-1 text-right">{num(p.shares, 4)}</td>
                     <td className="py-1 text-right">{num(p.avg_cost)}</td>
                     <td className="py-1 text-right">
@@ -443,7 +446,9 @@ function ActiveView({
                     data-testid="paper-drift-row"
                     className="border-t border-border"
                   >
-                    <td className="py-1 font-medium">{d.symbol}</td>
+                    <td className="py-1 font-medium">
+                      <SymbolLink symbol={d.symbol} />
+                    </td>
                     <td className="py-1 text-right">{pct(d.current_weight)}</td>
                     <td className="py-1 text-right">{pct(d.target_weight)}</td>
                     <td className={`py-1 text-right ${signClass(d.drift)}`}>{pct(d.drift)}</td>

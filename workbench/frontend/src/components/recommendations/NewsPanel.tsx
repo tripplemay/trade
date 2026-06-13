@@ -15,8 +15,9 @@
  */
 
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
+import { SymbolLink } from "@/components/symbol/SymbolLink";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { newsSourceLabel, sleeveLabel } from "@/lib/sleeve-label";
 import type { components } from "@/types/api";
@@ -209,7 +210,13 @@ export function NewsPanel() {
                     <span>{item.published_at}</span>
                     {tickers.length > 0 ? (
                       <span data-testid="news-tickers">
-                        {t("tickersLabel")}: {tickers.join(", ")}
+                        {t("tickersLabel")}:{" "}
+                        {tickers.map((ticker, index) => (
+                          <Fragment key={ticker}>
+                            {index > 0 ? ", " : ""}
+                            <SymbolLink symbol={ticker} />
+                          </Fragment>
+                        ))}
                       </span>
                     ) : null}
                   </div>

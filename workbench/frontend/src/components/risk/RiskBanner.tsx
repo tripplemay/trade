@@ -1,8 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 
+import { SymbolLink } from "@/components/symbol/SymbolLink";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { colorForDrawdown, colorForRiskState } from "@/lib/metric-color";
@@ -133,7 +134,18 @@ export function RiskBanner({ data, noFetch, className }: RiskBannerProps) {
           {payload.valuation_basis === "cost_degraded" ? (
             <p data-testid="risk-banner-valuation-degraded" className="text-xs text-amber-200/90">
               {t("valuationBasis.costDegraded")}
-              {degradedSymbols.length > 0 ? ` (${degradedSymbols.join(", ")})` : ""}
+              {degradedSymbols.length > 0 ? (
+                <>
+                  {" ("}
+                  {degradedSymbols.map((sym, index) => (
+                    <Fragment key={sym}>
+                      {index > 0 ? ", " : ""}
+                      <SymbolLink symbol={sym} />
+                    </Fragment>
+                  ))}
+                  {")"}
+                </>
+              ) : null}
             </p>
           ) : null}
           {payload.alternative_defensive_ticket ? (

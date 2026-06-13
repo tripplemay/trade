@@ -6,7 +6,7 @@
       "title": "全站标的名可点击——共享 SymbolLink 组件 + 全站接线 + no-execution 守门 + 测试",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "【见 spec §2。复用 B059 /symbols 深链，无新后端】(1) 建共享 `<SymbolLink symbol>` 组件(symbol 大写规范化 + `/symbols?symbol=` 深链，复用 F002 已建)。(2) 全站一次接线：推荐/持仓/position-diff/ticket/模拟盘/风险/回测/新闻 等 DataTable symbol 列 cellRenderer + 卡片/列表组件。(3) **research-only**：点击仅查看价格无交易动作——SymbolLink 纳入 no-execution-buttons 守门(它是只读导航非买卖按钮)。(4) i18n(链接 symbol 语言中性；tooltip『查看行情』需 parity)。边界：§12.10.2/no-broker/no-AI 不破；A 股代码暂无数据(点击走 B059 无效/降级路径，待 A 股数据后自然可用)。测试：SymbolLink 渲染/跳转/大写规范化 + 全站接线点 vitest + no-execution 守门含 SymbolLink + i18n parity。Gates：frontend vitest/tsc/lint / i18n parity / api.ts drift 0 / safety(no-execution+no-broker)。",
       "design_decisions": [
         "共享 SymbolLink 组件统一接线，复用 B059 ?symbol= 深链，无新后端。",
@@ -18,7 +18,7 @@
       "title": "A 股 P0 probe 脚本（scripts/test/，AkShare+baostock 探针，按 §8 指标采集，不接禁列 SDK）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "【见 spec §3 + 路径文档 §8。spike 工具，非产品代码】scripts/test/ 下独立 probe 脚本：探 **AkShare(东财历史，先试)+baostock(对照/fallback)**，对代表标的(600519.SH/000001.SZ/300750.SZ/688981.SH/000300)采集 §8.3 指标——连通性(重复拉 ×N 跨时段：成功率/p50·p95 延迟/超时率)/覆盖(5 标的)/深度(历史年数)/质量(OHLCV 完整+日历缺口+复权)/交叉源(AkShare vs baostock 同日偏差)/规模(单标耗时+推算 N≈300 日更)/依赖卫生(import 扫不引入 futu/tiger 等禁列)。脚本输出结构化指标供 Codex 汇成报告。**边界**：只接数据库不接券商 SDK；脚本入 scripts/test/(Codex 也可写区)，不动产品代码/数据/符号模型。Gates：脚本自身 lint/可运行(本地 dev sanity 可选)；不触发 backend/frontend 产品门禁(纯 scripts/test/)。",
       "design_decisions": [
         "先试 AkShare(东财大站全球最可能通)+baostock 对照/fallback；探针采集 §8 全维指标。",

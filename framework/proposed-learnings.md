@@ -167,3 +167,13 @@
 **建议写入：** `framework/harness/generator.md`（§偏离裁定：spec 复用须核适用域）+ `framework/harness/planner.md`（§spec 复用条款须标 X 适用域）
 
 **状态：** ✅ 已沉淀 v0.9.44（generator.md §22 + planner.md 铁律 8）
+
+## [2026-06-13] Claude CLI — 来源：B060 F002 A 股探针依赖卫生自审
+
+**类型：** 新坑
+
+**内容：** **禁用包黑名单扫描若对 loaded modules 名用子串匹配，会误判 stdlib。** A 股探针(`scripts/test/ashare_p0_probe.py`)的依赖卫生自审须确认未引入券商 SDK(futu/tiger/ib/alpaca)。初版扫 `sys.modules` 用子串 `"futu" in mod.lower()`，而 `__future__`（`from __future__ import annotations` 几乎每个 .py 都有）含子串 `"futu"` → 误报 hygiene FAIL（offenders 空但 pass=False）。**规律**：扫 **loaded modules / import** 用**精确 top-level import-root 匹配**(`mod.split(".")[0] in {禁用根集合}`)；**子串匹配只对 pip distribution 名安全**（`__future__` 不是 dist）。同源教训：早期 `grep -rn "futu" trade/` 命中的全是 `from __future__ import annotations`。
+
+**建议写入：** `framework/harness/generator.md`（§安全守门/banlist 扫描：loaded-module 用 exact import-root，dist 名才用子串）
+
+**状态：** 待确认（单例小坑，留队列；done 阶段一并提）

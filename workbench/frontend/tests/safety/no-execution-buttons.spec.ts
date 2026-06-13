@@ -63,6 +63,11 @@ const POSITION_CARDS = join(
 // future edit can't add a buy/sell/execute button in either language.
 const SYMBOLS_PAGE = join(FRONTEND_ROOT, "src", "app", "(protected)", "symbols", "page.tsx");
 const PRICE_CHART = join(FRONTEND_ROOT, "src", "components", "chart", "PriceChart.tsx");
+// B060 F001 — the shared SymbolLink wires every displayed ticker site-wide to
+// a click-through to the read-only /symbols detail page. It is research-only
+// navigation (NOT an order/execute affordance); scan it so a future edit can't
+// turn the clickable symbol into a buy/sell button in either language.
+const SYMBOL_LINK = join(FRONTEND_ROOT, "src", "components", "symbol", "SymbolLink.tsx");
 const MESSAGES_DIR = join(FRONTEND_ROOT, "messages");
 
 const EN_BANNED = ["execute", "place order", "send to broker"] as const;
@@ -118,6 +123,7 @@ describe("no execution buttons under (protected)/execution/** + Home", () => {
     POSITION_CARDS,
     SYMBOLS_PAGE,
     PRICE_CHART,
+    SYMBOL_LINK,
   ];
 
   it(`covers the Home page`, () => {
@@ -127,6 +133,10 @@ describe("no execution buttons under (protected)/execution/** + Home", () => {
   it(`covers the symbol-lookup page + price chart`, () => {
     expect(files).toContain(SYMBOLS_PAGE);
     expect(files).toContain(PRICE_CHART);
+  });
+
+  it(`covers the shared SymbolLink component`, () => {
+    expect(files).toContain(SYMBOL_LINK);
   });
 
   it(`covers the recommendations position cards`, () => {

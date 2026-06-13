@@ -17,6 +17,7 @@
 
 import { useTranslations } from "next-intl";
 
+import { SymbolLink } from "@/components/symbol/SymbolLink";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { colorForDelta } from "@/lib/metric-color";
@@ -90,7 +91,9 @@ export function PositionCards({ positions }: { positions: TargetPosition[] }) {
         {positions.map((p) => (
           <Card key={p.symbol} data-testid={`position-card-${p.symbol}`}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">{p.symbol}</CardTitle>
+              <CardTitle className="text-base">
+                <SymbolLink symbol={p.symbol} />
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="grid grid-cols-3 gap-2">

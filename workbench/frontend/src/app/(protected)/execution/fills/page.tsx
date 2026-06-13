@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
+import { SymbolLink } from "@/components/symbol/SymbolLink";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -475,7 +476,7 @@ export default function FillsPage() {
                   data-testid={`fills-preview-row-${row.id}`}
                   className="rounded-md border border-border/60 px-2 py-1 font-mono text-xs"
                 >
-                  {row.symbol} {row.side} {row.shares} @ {row.fill_price} ·{" "}
+                  <SymbolLink symbol={row.symbol} /> {row.side} {row.shares} @ {row.fill_price} ·{" "}
                   {row.matched ? t("matchedLabel") : t("unmatchedLabel")}
                 </li>
               ))}
@@ -511,7 +512,9 @@ export default function FillsPage() {
                 {fills.map((row) => (
                   <TableRow key={row.id} data-testid={`fills-history-row-${row.id}`}>
                     <TableCell>{row.order_seq ?? "—"}</TableCell>
-                    <TableCell className="font-mono">{row.symbol}</TableCell>
+                    <TableCell className="font-mono">
+                      <SymbolLink symbol={row.symbol} />
+                    </TableCell>
                     <TableCell>{row.side}</TableCell>
                     <TableCell className="text-right">{row.shares}</TableCell>
                     <TableCell className="text-right">{row.fill_price}</TableCell>

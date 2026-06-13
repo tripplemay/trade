@@ -1,4 +1,7 @@
 {
+  "symbolLink": {
+    "viewQuote": "查看 {symbol} 行情"
+  },
   "modeSelector": {
     "label": "策略模式",
     "researchBadge": "研究态",
