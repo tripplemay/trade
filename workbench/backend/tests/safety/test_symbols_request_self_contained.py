@@ -31,6 +31,9 @@ REQUEST_PATH_MODULES = (
     SYMBOLS / "stats.py",
     SYMBOLS / "fundamentals.py",
     SYMBOLS / "news.py",
+    # B061 F001 — market-qualified symbol identity; pure value object, imports
+    # only stdlib + symbols.provider (no trade, no broker SDK).
+    SYMBOLS / "symbol_ref.py",
 )
 
 

@@ -30,7 +30,6 @@ the EOD-day cache as the concrete anti-hammer protection.
 
 from __future__ import annotations
 
-import re
 from collections.abc import Callable
 from datetime import UTC, date, datetime, timedelta
 
@@ -46,29 +45,29 @@ from workbench_api.schemas.symbols import (
     SymbolPriceDetail,
 )
 from workbench_api.symbols.provider import (
-    InvalidSymbolError,
     SymbolDataProvider,
     SymbolNotFoundError,
 )
 from workbench_api.symbols.stats import compute_price_stats
+from workbench_api.symbols.symbol_ref import SymbolRef
 from workbench_api.symbols.yfinance_provider import YFinanceSymbolProvider
 
 # ~13 months: enough history for the 1Y return + a full 52-week high / low.
 _HISTORY_LOOKBACK_DAYS = 400
-# Allow A–Z / digits / '.' (BRK.B) / '-' / '^' (indices) / '=' (FX) — uppercased.
-_SYMBOL_RE = re.compile(r"^[A-Z0-9.\-^=]{1,32}$")
 _SOURCE = "yfinance"
 
 
 def normalize_symbol(raw: str) -> str:
-    """Upper-case + strip the raw ticker; raise :class:`InvalidSymbolError`
-    for empty / over-long / illegal-character input (validated at the
-    boundary so the external API is never hit for junk)."""
+    """Canonicalise a raw ticker to its market-qualified identity string.
 
-    candidate = (raw or "").strip().upper()
-    if not _SYMBOL_RE.match(candidate):
-        raise InvalidSymbolError(raw)
-    return candidate
+    Delegates to :meth:`SymbolRef.parse` (B061 F001): a bare US ticker returns
+    its upper-cased form unchanged (so existing cache keys / paths are
+    untouched — §9.4 向后兼容铁律), a CN ticker returns its ``600519.SH``
+    canonical. Raises :class:`InvalidSymbolError` for empty / over-long /
+    illegal-character input (validated at the boundary so the external API is
+    never hit for junk)."""
+
+    return SymbolRef.parse(raw).canonical
 
 
 def _default_provider() -> SymbolDataProvider:

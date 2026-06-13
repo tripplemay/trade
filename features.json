@@ -6,7 +6,7 @@
       "title": "符号/市场维度地基：SymbolRef + canonical 约定 + normalize + 校验/消歧（§9.3-9.4）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "【见 spec §4 F001 + 路径文档 §9.3-9.4。横切地基，加一层非动全身】(1) SymbolRef 值对象：parse(canonical)→{canonical,code,market,exchange,currency,board}；US 裸=默认(market=US/currency=USD)，CN=6 位+.SH/.SZ。(2) 消歧坑：后缀 ∈ 已知市场码集合(SH/SZ)才算市场限定；BRK.B 的.B 非市场码→判 US，不能见点就拆。(3) board 由 code 前缀推断(为未来交易规则预留，P1 不用)：600/601/603/605→沪主板/688→科创/000/001/002/003→深主板/300/301→创业板。(4) normalize(symbol)：裸→US 默认；带市场码→解析；所有读写经 normalize。(5) **向后兼容铁律**：现有 US 裸 symbol 数据/键/路径**零迁移零改动**。测试：US 裸默认/CN 解析/BRK.B 消歧/board 推断/非法拒绝/US 现有路径不破。Gates：backend pytest/ruff/**mypy CI-exact(`mypy workbench_api tests`，§19 教训) 0**。",
       "design_decisions": [
         "market 限定 canonical 字符串+派生 SymbolRef，不做全表复合键迁移；裸=US 默认(US 零迁移)。",
