@@ -65,6 +65,12 @@ class SymbolPriceCache(Base):
     adj_close: Mapped[float] = mapped_column(Numeric(asdecimal=False), nullable=False)
     volume: Mapped[int] = mapped_column(BigInteger, nullable=False)
     source: Mapped[str] = mapped_column(String(32), nullable=False)
+    # B061 F002 — market dimension + display currency. Derivable from the
+    # canonical symbol (SymbolRef) but stored explicitly per §9.5 for query
+    # efficiency + provenance. US/USD server-default keeps existing rows + any
+    # caller that omits them backward-compatible.
+    market: Mapped[str] = mapped_column(String(8), nullable=False, server_default="US")
+    currency: Mapped[str] = mapped_column(String(8), nullable=False, server_default="USD")
     fetched_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False
     )

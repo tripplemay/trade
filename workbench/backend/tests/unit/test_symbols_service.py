@@ -116,7 +116,9 @@ def test_cache_miss_fetches_writes_and_normalises(initialised_db: str) -> None:
         # Symbol normalised, honest EOD labelling, latest close surfaced.
         assert detail.symbol == "AAPL"
         assert detail.is_eod is True
-        assert detail.source == "yfinance"
+        # B061 F002 — source is now honestly provider-derived (was a hardcoded
+        # "yfinance" constant); the fake provider is named "fake".
+        assert detail.source == "fake"
         assert detail.as_of == _TODAY
         assert detail.close == provider._bars[-1].close
         assert len(detail.bars) == len(provider._bars)

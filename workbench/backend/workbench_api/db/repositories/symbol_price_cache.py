@@ -55,13 +55,18 @@ class SymbolPriceCacheRepository(Repository[SymbolPriceCache, UUID]):
         adj_close: float,
         volume: int,
         source: str,
+        market: str = "US",
+        currency: str = "USD",
         fetched_at: datetime | None = None,
     ) -> SymbolPriceCache | None:
         """Insert an OHLCV bar if absent; return ``None`` if a row with the
         same ``(symbol, obs_date)`` already exists.
 
-        ``fetched_at`` defaults to ``datetime.now(UTC)`` and is overridable so
-        tests pin a deterministic timestamp (and seed cache-freshness state).
+        ``market`` / ``currency`` default to ``US`` / ``USD`` (B061 F002) so
+        existing US callers stay byte-identical; the CN provider path passes
+        ``CN`` / ``CNY``. ``fetched_at`` defaults to ``datetime.now(UTC)`` and
+        is overridable so tests pin a deterministic timestamp (and seed
+        cache-freshness state).
         """
 
         if self.get_by_symbol_and_date(symbol, obs_date) is not None:
@@ -77,6 +82,8 @@ class SymbolPriceCacheRepository(Repository[SymbolPriceCache, UUID]):
             adj_close=adj_close,
             volume=volume,
             source=source,
+            market=market,
+            currency=currency,
             fetched_at=fetched_at or datetime.now(UTC),
         )
         self._session.add(row)

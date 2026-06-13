@@ -45,7 +45,10 @@ class SymbolPriceDetail(BaseModel):
     symbol: str = Field(description="Normalised ticker, e.g. 'AAPL'.")
     as_of: date = Field(description="Latest EOD observation date (close-of-day, not live).")
     close: float = Field(description="Latest EOD closing price.")
-    source: str = Field(description="Data source label, e.g. 'yfinance'.")
+    source: str = Field(description="Data source label, e.g. 'yfinance' / 'akshare'.")
+    currency: str = Field(
+        description="ISO currency of the quote (USD for US, CNY for A-share); display-only."
+    )
     is_eod: bool = Field(
         description="Always true — end-of-day close, never intraday / real-time."
     )

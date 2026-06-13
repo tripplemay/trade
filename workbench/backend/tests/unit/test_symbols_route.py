@@ -110,7 +110,9 @@ def test_price_route_happy_path(
     body = resp.json()
     assert body["symbol"] == "AAPL"  # normalised
     assert body["is_eod"] is True
-    assert body["source"] == "yfinance"
+    # B061 F002 — source is honestly provider-derived now; fake provider = "fake".
+    assert body["source"] == "fake"
+    assert body["currency"] == "USD"  # US default (bare ticker)
     assert body["close"] == 159.0  # last bar: 100 + 59
     assert len(body["bars"]) == 60
     assert "returns" in body

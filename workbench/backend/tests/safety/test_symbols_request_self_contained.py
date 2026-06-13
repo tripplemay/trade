@@ -34,6 +34,9 @@ REQUEST_PATH_MODULES = (
     # B061 F001 — market-qualified symbol identity; pure value object, imports
     # only stdlib + symbols.provider (no trade, no broker SDK).
     SYMBOLS / "symbol_ref.py",
+    # B061 F002 — CN A-share provider (akshare + baostock, both databases).
+    # Lazy-imports the data libs; never imports trade or a broker SDK.
+    SYMBOLS / "cn_provider.py",
 )
 
 

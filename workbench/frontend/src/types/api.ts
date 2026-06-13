@@ -2713,9 +2713,14 @@ export interface components {
             close: number;
             /**
              * Source
-             * @description Data source label, e.g. 'yfinance'.
+             * @description Data source label, e.g. 'yfinance' / 'akshare'.
              */
             source: string;
+            /**
+             * Currency
+             * @description ISO currency of the quote (USD for US, CNY for A-share); display-only.
+             */
+            currency: string;
             /**
              * Is Eod
              * @description Always true — end-of-day close, never intraday / real-time.

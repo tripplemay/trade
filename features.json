@@ -18,7 +18,7 @@
       "title": "CN 价格 provider（akshare 主 + baostock 对照/fallback）插 B059 抽象 + 按市场路由 + 缓存/限流 + 币种 + §8 深度",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "【见 spec §4 F002 + §3 深度。最重。依赖 F001】(1) CN provider 实现 SymbolDataProvider，**akshare 主**(东财历史，B060 已验)+**baostock 对照/fallback**；canonical↔native 适配(akshare `600519`+市场/baostock `sh.600519`)。(2) 按市场路由(§9.8)：CN canonical→CN provider；裸/US→现有 yfinance。(3) 缓存/限流：复用 symbol_price_cache(+market/currency 列)+cost_guard，EOD 日 TTL。(4) 币种(仅元数据/展示，不入组合聚合)：价格带 currency(CN=CNY/US=USD)。(5) **§8 深度**：取**全历史**(≥3-5 年)非样本；全 5 符号(600519.SH/000001.SZ/300750.SZ/688981.SH/000300)；与 baostock 交叉源 sanity。(6) **边界**：§12.10.2(akshare/baostock 不 import trade→请求路径 OK 否则异步 job，AST 守门必过)；**no-broker(只 akshare/baostock，不接 futu/tiger 禁列)**；新路由配套 next.config(§20 教训)。测试：CN 全历史取数+适配+路由+缓存+币种+交叉源 sanity+§12.10.2/no-broker 守门。Gates：backend pytest/ruff/mypy CI-exact 0/alembic head(cache 列)/api.ts drift/no-broker safety。",
       "design_decisions": [
         "akshare 主(B060 验)+baostock 对照/fallback 插 B059 抽象；按市场路由(CN→CN provider,US→yfinance)。",

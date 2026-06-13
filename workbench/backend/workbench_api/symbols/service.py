@@ -44,6 +44,7 @@ from workbench_api.schemas.symbols import (
     PriceRangeReturns,
     SymbolPriceDetail,
 )
+from workbench_api.symbols.cn_provider import CnSymbolProvider
 from workbench_api.symbols.provider import (
     SymbolDataProvider,
     SymbolNotFoundError,
@@ -54,7 +55,6 @@ from workbench_api.symbols.yfinance_provider import YFinanceSymbolProvider
 
 # ~13 months: enough history for the 1Y return + a full 52-week high / low.
 _HISTORY_LOOKBACK_DAYS = 400
-_SOURCE = "yfinance"
 
 
 def normalize_symbol(raw: str) -> str:
@@ -71,9 +71,26 @@ def normalize_symbol(raw: str) -> str:
 
 
 def _default_provider() -> SymbolDataProvider:
-    """Production provider factory (monkeypatched in route tests)."""
+    """Production US provider factory (monkeypatched in route tests)."""
 
     return YFinanceSymbolProvider()
+
+
+def _resolve_provider(symbol: str) -> SymbolDataProvider:
+    """Pick the EOD provider by market (path-doc §9.8): a CN canonical routes
+    to the A-share provider (akshare primary + baostock fallback); US / bare
+    routes to yfinance. ``symbol`` must already be the normalized canonical."""
+
+    if SymbolRef.parse(symbol).market == "CN":
+        return CnSymbolProvider()
+    return _default_provider()
+
+
+def _provider_source(provider: SymbolDataProvider) -> str:
+    """The source that actually served the fetch — the CN provider exposes
+    ``last_source`` (akshare, or baostock on fallback); others use ``name``."""
+
+    return str(getattr(provider, "last_source", provider.name))
 
 
 def _default_guard() -> RateLimitGuard:
@@ -102,7 +119,8 @@ def get_symbol_price_detail(
     """Return the EOD price detail for ``raw_symbol`` (cache-first)."""
 
     symbol = normalize_symbol(raw_symbol)
-    provider = provider or _default_provider()
+    ref = SymbolRef.parse(symbol)
+    provider = provider or _resolve_provider(symbol)
     guard = guard or _default_guard()
     repo = SymbolPriceCacheRepository(session)
     now_day = today()
@@ -122,6 +140,7 @@ def get_symbol_price_detail(
         if not fetched:
             raise SymbolNotFoundError(symbol)
         stamp = datetime.now(UTC)
+        fetched_source = _provider_source(provider)
         for bar in fetched:
             repo.save_if_new(
                 symbol=symbol,
@@ -132,7 +151,9 @@ def get_symbol_price_detail(
                 close=bar.close,
                 adj_close=bar.adj_close,
                 volume=bar.volume,
-                source=_SOURCE,
+                source=fetched_source,
+                market=ref.market,
+                currency=ref.currency,
                 fetched_at=stamp,
             )
 
@@ -150,7 +171,8 @@ def get_symbol_price_detail(
         symbol=symbol,
         as_of=latest.bar_date,
         close=latest.close,
-        source=_SOURCE,
+        source=cached[-1].source,
+        currency=ref.currency,
         is_eod=True,
         week52_high=stats.week52_high,
         week52_low=stats.week52_low,

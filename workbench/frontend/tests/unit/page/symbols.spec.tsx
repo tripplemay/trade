@@ -27,6 +27,7 @@ const DETAIL: components["schemas"]["SymbolPriceDetail"] = {
   as_of: "2026-06-12",
   close: 150.25,
   source: "yfinance",
+  currency: "USD",
   is_eod: true,
   week52_high: 200.0,
   week52_low: 90.0,

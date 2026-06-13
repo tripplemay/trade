@@ -56,6 +56,17 @@ dependencies = [
   # asserts this contract; type stubs are unavailable, so callers
   # handle the import with ``# type: ignore[import-untyped]``.
   "feedparser>=6.0,<7",
+  # B061 F002: ``akshare`` (东财 EOD history, primary) + ``baostock``
+  # (cross-check / fallback) are the China A-share **data** libraries — NOT
+  # broker SDKs (the no-broker guard's banlist is futu / tiger / ib / alpaca /
+  # …; akshare & baostock are deliberately permitted databases). They feed the
+  # CN ``SymbolDataProvider`` for the research-only /symbols lookup. B060 P0
+  # spike verified both install + reach China sources from the prod VM. The CN
+  # provider lazy-imports them so the module loads even where they are absent
+  # (tests inject fakes); they stay in the runtime set so the prod wheel /
+  # venv install carries them (framework §12.8).
+  "akshare>=1.12",
+  "baostock>=0.8.8",
   "pydantic>=2.7,<3",
   "pydantic-settings>=2.3,<3",
   "python-jose[cryptography]>=3.3,<4",
@@ -103,3 +114,10 @@ files = ["workbench_api", "tests"]
 strict = true
 warn_unused_ignores = true
 warn_redundant_casts = true
+
+[[tool.mypy.overrides]]
+# B061 F002 — akshare / baostock (CN EOD data libs) ship no type stubs and are
+# lazy-imported by the CN provider. Treat as untyped so strict mypy passes
+# whether or not the heavy libs are installed in the local env.
+module = ["akshare", "akshare.*", "baostock", "baostock.*"]
+ignore_missing_imports = true
