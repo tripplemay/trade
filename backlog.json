@@ -258,7 +258,8 @@
       "只接数据库(AkShare/baostock)不接券商 SDK(futu/tiger 在 safety 禁列)；provider 抽象多源 fallback",
       "P0 可行性 spike 先行=地理访问(境外 VM 拉中国源)是最大未知,去/不去事实依据",
       "符号/市场维度+CN 日历=横切地基(market 维度向后兼容 US 默认)；币种 FX/基本面/新闻/交易规则逐期延后",
-      "P0 spike 细化(规划文档 §8)：先试 AkShare(东财历史,reachability 用大站最可能通)+baostock 对照/fallback；代表标的 600519.SH/000001.SZ/300750.SZ/688981.SH/000300(跨板块+指数)；指标=连通性成功率≥95%·p95<5s/覆盖 5/5/深度≥3-5y/复权可得/交叉源<0.5%/日更可行/不引入禁列 broker SDK；GO/CONDITIONAL(缓解:缓存/China-region 代理/窄 universe)/NO-GO(geo-block→需中国区组件或延后)；executor=codex(Generator 供 probe 脚本 scripts/test/,Codex VM 跑+写 feasibility 报告)；权威环境=生产 VM 非本地,跨≥1 天跨时段。"
+      "P0 spike 细化(规划文档 §8)：先试 AkShare(东财历史,reachability 用大站最可能通)+baostock 对照/fallback；代表标的 600519.SH/000001.SZ/300750.SZ/688981.SH/000300(跨板块+指数)；指标=连通性成功率≥95%·p95<5s/覆盖 5/5/深度≥3-5y/复权可得/交叉源<0.5%/日更可行/不引入禁列 broker SDK；GO/CONDITIONAL(缓解:缓存/China-region 代理/窄 universe)/NO-GO(geo-block→需中国区组件或延后)；executor=codex(Generator 供 probe 脚本 scripts/test/,Codex VM 跑+写 feasibility 报告)；权威环境=生产 VM 非本地,跨≥1 天跨时段。",
+      "P1 符号/市场维度 schema 细化(规划文档 §9)：**market 限定 canonical 字符串(后缀约定)+派生 SymbolRef，不做全表复合键迁移**；裸 ticker=US 默认(现有 US 数据零迁移零改动)，CN 用 6 位+.SH/.SZ(与 US 字母 ticker 无碰撞,可同表共存)；SymbolRef{canonical,code,market,exchange,currency,board} 派生+校验(board 由 code 前缀=未来交易规则预留；消歧坑 BRK.B 的.B 非市场码判 US)；每 provider 符号格式不同→canonical↔native 适配挂 B059 SymbolDataProvider;价格缓存按 canonical 键+可选 market/currency 列;CN 交易日历(gap 检查按市场);**币种 P1 仅元数据/展示不入组合聚合(FX 延后)**;provider 按市场路由(CN→AkShare/baostock,US→现有)。**P1 边界**:只动数据/lookup 层,账户/NAV/执行/票据/策略/交易规则一概不动(仍 US-only)。P1 草拆 5 feature:F-symbology/F-cn-provider/F-cn-calendar/F-lookup-cn/F-codex。"
     ],
     "confirmed_at": "2026-06-13",
     "priority": "medium",
