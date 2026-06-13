@@ -155,3 +155,5 @@
 **建议写入：** `framework/harness/generator.md` §17.1（两表读写分裂，补"修一个≠修另一个"+第三实例）+ `framework/harness/evaluator.md`（§验收清单须指名"生产实际读的源"）
 
 **状态：** 待确认
+
+<!-- 2026-06-13: B059 F001 — 复发提醒（不新增候选，强化既有队列项）：上面 [2026-06-12 B057 F004] 已记「CI mypy 严格扫 workbench_api + tests，本地须跑 `mypy workbench_api tests`」仍 待确认 未沉淀进 generator.md。本批 B059 F001 再次踩中：本地只跑 `mypy workbench_api`(0 error) 就推码，CI 的 "Mypy (strict — workbench_api + tests)" 步骤红（test helper 缺返回注解 no-untyped-def），一次 fix-push 修复。**第二实例**→建议 done 阶段优先沉淀该条（本地 pre-push 门禁脚本应固化为 CI-exact `mypy workbench_api tests`，而非 `mypy workbench_api`）。 -->
