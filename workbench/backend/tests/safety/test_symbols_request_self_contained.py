@@ -41,6 +41,9 @@ REQUEST_PATH_MODULES = (
     # Lazy-import the data lib; never import trade or a broker SDK.
     SYMBOLS / "hk_provider.py",
     SYMBOLS / "akshare_frames.py",
+    # B062 F003 — pure §8 data-quality checks (PriceBar in, report out; no
+    # akshare / trade import).
+    SYMBOLS / "data_quality.py",
 )
 
 

@@ -30,7 +30,7 @@
       "title": "候选 universe 数据质量验实工具（§8 深指标：全历史/复权/交叉源一致）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "【见 spec §4 F003。B061 延后的 §8 深指标现在验实(评分依赖)】候选 universe 验：全历史深度(≥策略 lookback 需要，如 momentum 12 月+)/复权正确(验已知分红/拆股被吸收)/akshare-baostock(A股)交叉源同日<0.5%/港股源一致性。产出结构化质量报告供 F004。测试：质量检查逻辑+已知样本。Gates：backend pytest/ruff/mypy CI-exact 0。依赖 F002。",
       "design_decisions": [
         "B061 延后的 §8 深指标现在对候选 universe 验实(策略评分依赖可靠全历史+复权+一致性)。"
