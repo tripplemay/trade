@@ -21,7 +21,7 @@ from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 from workbench_api.data.snapshot_loader import PriceBar
-from workbench_api.symbols.akshare_frames import bars_from_records, to_ymd
+from workbench_api.symbols.akshare_frames import bars_from_records
 from workbench_api.symbols.provider import (
     ProviderQuote,
     ProviderStats,
@@ -102,13 +102,14 @@ class HkSymbolProvider(SymbolDataProvider):
         if akshare is None:
             return []
         try:
-            frame = akshare.stock_hk_hist(
-                symbol=_akshare_hk_code(ref),
-                period="daily",
-                start_date=to_ymd(from_date),
-                end_date=to_ymd(to_date),
-                adjust="qfq",
-            )
+            # B062 fix (B062-F001-PROD-1): use ``stock_hk_daily`` (sina source),
+            # NOT ``stock_hk_hist``. The latter hits eastmoney's HK push host
+            # (33.push2his.eastmoney.com) which read-times-out reproducibly
+            # (verified locally + prod 0700.HK failure) — distinct from the
+            # A-share eastmoney host that works. ``stock_hk_daily`` (sina, which
+            # B060 confirmed reachable) returns real data. It has no date params
+            # — it returns the FULL history — so we filter to the window below.
+            frame = akshare.stock_hk_daily(symbol=_akshare_hk_code(ref), adjust="qfq")
         except Exception:
             return []
         if frame is None:
@@ -118,4 +119,5 @@ class HkSymbolProvider(SymbolDataProvider):
             records: list[dict[str, Any]] = frame.to_dict("records")
         except Exception:
             return []
-        return bars_from_records(records, columns, ref.canonical)
+        bars = bars_from_records(records, columns, ref.canonical)
+        return [bar for bar in bars if from_date <= bar.bar_date <= to_date]

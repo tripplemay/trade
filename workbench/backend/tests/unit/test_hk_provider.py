@@ -43,17 +43,19 @@ class _FakeAkshare:
         self._raises = raises
         self.calls: list[dict[str, Any]] = []
 
-    def stock_hk_hist(
-        self, *, symbol: str, period: str, start_date: str, end_date: str, adjust: str
-    ) -> _FakeFrame | None:
-        self.calls.append({"symbol": symbol, "period": period, "adjust": adjust})
+    def stock_hk_daily(self, *, symbol: str, adjust: str) -> _FakeFrame | None:
+        # B062 fix (B062-F001-PROD-1): HK uses stock_hk_daily (sina), NOT
+        # stock_hk_hist (eastmoney 33.push2his host read-times-out). No date
+        # params — returns the FULL history; the provider filters to the window.
+        self.calls.append({"symbol": symbol, "adjust": adjust})
         if self._raises:
             raise RuntimeError("akshare HK unreachable")
         return self._frame
 
 
 def _hk_frame() -> _FakeFrame:
-    cols = ["日期", "开盘", "收盘", "最高", "最低", "成交量"]
+    # stock_hk_daily (sina) returns English columns + datetime/iso dates.
+    cols = ["date", "open", "close", "high", "low", "volume"]
     rows: list[tuple[Any, ...]] = [
         ("2026-06-12", 370.0, 375.0, 378.0, 369.0, 12_000_000),
         ("2026-06-10", 360.0, 365.0, 366.0, 359.0, 10_000_000),
@@ -80,6 +82,20 @@ class TestAksharePrimary:
         # canonical 0700.HK -> akshare HK native 00700 (5-digit zero-pad) + qfq
         assert fake.calls[0]["symbol"] == "00700"
         assert fake.calls[0]["adjust"] == "qfq"
+
+    def test_full_history_is_filtered_to_window(self) -> None:
+        # Regression for B062-F001-PROD-1: stock_hk_daily returns the FULL
+        # history (no date params), so the provider must filter to
+        # [from_date, to_date] — an out-of-window bar must be dropped.
+        cols = ["date", "open", "close", "high", "low", "volume"]
+        rows: list[tuple[Any, ...]] = [
+            ("2018-01-02", 100.0, 101.0, 102.0, 99.0, 1_000),  # before window
+            ("2026-06-12", 370.0, 375.0, 378.0, 369.0, 12_000),  # in window
+        ]
+        frame = _FakeFrame(cols, [dict(zip(cols, r, strict=True)) for r in rows])
+        provider = HkSymbolProvider(akshare_module=_FakeAkshare(frame))
+        bars = provider.get_price_history("0700.HK", date(2026, 1, 1), _TODAY)
+        assert [b.bar_date for b in bars] == [date(2026, 6, 12)]
 
     def test_get_quote_returns_latest_close(self) -> None:
         provider = HkSymbolProvider(akshare_module=_FakeAkshare(_hk_frame()))
