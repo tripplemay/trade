@@ -211,3 +211,23 @@
 **建议写入：** `framework/harness/generator.md`（§新数据 provider/端点：本地实跑真调用验可达+格式，勿因兄弟端点通而推定）+ `framework/harness/planner.md`（spec 扩新市场须含"先验该端点可达"任务，勿当兄弟端点镜像，呼应 B062 planner 自承学习）。
 
 **状态：** 待确认（done 阶段一并提；与上条 evaluator §25 学习同源，B062 一并沉淀）
+
+## [2026-06-14] Claude CLI — 来源：B063 F003 — adversarial review 抓出"全门禁绿但比较不公平/不诚实"的缺陷
+
+**类型：** 新规律（generator/process）
+
+**内容：** **决策级（decision-grade）/对比类 harness：即使 pytest+mypy+ruff 全绿、单测全过，也必须跑一轮 adversarial「公平性/诚实性」复审——绿门禁抓不到 same-caliber 不对称与归因诚实问题。** B063 F003 对比 harness 全门禁绿 + 13 单测过，但 adversarial workflow(3 维度)抓出 9 个 confirmed，含 1 个 **CRITICAL 公平性**缺陷：proxy 信号原本自磁盘独立加载价格、与 execution 不同源，而 real 信号读传入帧（hermetic）→ 两侧"同口径"承诺被悄悄破坏，会让"real vs proxy"决策报告失真。其余高价值修正：CAGR wipeout 返 0.0 掩盖巨亏(→-1.0)、top_n 默认不同(2 vs 6)静默混淆集中度与数据源(→显式 surface)、PIT universe 随时间增长未披露(→avg_candidates)、defensive 混淆 data-gap 与策略规则(→forced_defensive 分离)。**规律**：(1) 当交付物是"会被用来做决策的数字/对比"时，门禁绿只证明"能跑、类型对、风格对"，**不证明"比较公平、归因诚实、边界对称"**；须专门 adversarial 复审 fairness/honesty 维度。(2) 对比类工具的检查清单：两侧同 inputs 同源(signal+execution 同帧)、同参数(或差异显式披露)、同年化、edge-case 同处理、provenance 可审计、残余偏差 caveat 入产物。(3) 这类复审值得用多 agent workflow(每维度独立 + 逐 finding 对抗验证)，因为单一视角易漏对称性问题。
+
+**建议写入：** `framework/harness/generator.md`（决策级/对比 harness 须过 adversarial fairness/honesty 复审，列对比工具检查清单）。
+
+**状态：** 待确认（done 阶段一并提）
+
+## [2026-06-14] Claude CLI — 来源：B063 F002/F003 — session_notes 用 prefix-match Edit 改值会留旧尾巴 → JSON 损坏（铁律 #11 邻域）
+
+**类型：** 新坑（operational）
+
+**内容：** **覆盖写 progress.json 的 session_notes（长中文值）时，若用 Edit 只匹配值的"前缀"来替换，旧值的尾部会残留在新闭合引号之后 → `"key": "<新>"<旧尾>",` = JSON 损坏（Expecting ',' delimiter）。** 本会话改 generator note 时正中此坑，幸而提交前按铁律 #11 跑了 `json.load` 校验当场发现。**规律**：(1) 改 JSON 里的长字符串值，**要么 old_string 覆盖整个旧值**（含结尾，确保无残留），**要么用程序化替换**——读原始文本、用无歧义边界锚点(如 `"generator": "` 与 `",\n    "evaluator"`)切片重写、写回前 `json.loads` 校验。后者对长值更稳(不依赖精确复现长串)。(2) 铁律 #11(commit 前 `json.load` 校验)是这次的安全网，**务必保留**；建议 `.git/hooks/pre-commit` 真的挂上自动校验(harness-rules 已建议但未必落地)。
+
+**建议写入：** `framework/harness/generator.md`（编码约定：改 JSON 长字符串值用整值替换或程序化边界切片+写回前校验；勿前缀 Edit）+ 呼应 harness-rules 铁律 #11 pre-commit hook 落地。
+
+**状态：** 待确认（低优先，done 阶段一并提）
