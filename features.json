@@ -6,7 +6,7 @@
       "title": "港股 .HK 市场 symbology + HK provider（lookup 层，镜像 B061 A股）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
+      "status": "done",
       "acceptance": "【见 spec §4 F001。镜像 B061 A股到港股】(1) **.HK 市场**：扩 B061 SymbolRef(0700.HK→market=HK/exchange=XHKG/currency=HKD；symbol_ref 注释已预留 HK)；裸=US/.SH/.SZ=CN 不变(向后兼容)。(2) **HK provider**：akshare 港股端点(baostock 仅 A股)插 B059 SymbolDataProvider 抽象；按市场路由(HK→HK provider)。(3) lookup 验证：/symbols 查 0700.HK→腾讯 价格图(HKD 标注)。测试：.HK 解析/路由/lookup+US/CN 不破。Gates：backend pytest/ruff/mypy CI-exact 0/api.ts drift/no-broker safety。",
       "design_decisions": [
         "港股 .HK 扩 B061 SymbolRef(已预留)；akshare 港股端点(baostock 仅 A股)插 B059 抽象按市场路由。",
@@ -18,7 +18,7 @@
       "title": "真 A股+港股进 trade 数据管道（akshare→data_refresh→统一 CSV + 币种标注；trade 仍离线）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
+      "status": "done",
       "acceptance": "【见 spec §4 F002。最重最危——碰 Master 评分读的 CSV。依赖 F001】(1) **data_refresh 加 A股/港股 fetch**：akshare 拉候选 universe(港股 0700.HK/9988.HK/3690.HK/1810.HK+A股 600519.SH/000858.SZ/300750.SZ)真价格写进**统一价格 CSV**(trade 引擎读的)。**akshare 只在 workbench data_refresh，trade/ 不 import**。(2) 币种标注：CSV/管道带 currency(A股 CNY/港股 HKD/US USD)，本批仅标注(FX 在 Batch 2)。(3) ★**US 零回归(硬)**：现有 US universe fetch+CSV 的 US 行**完全不变**，A股/港股是**新增行**不动 US。(4) 复权一致：A股/港股前复权(与 US adjusted close 口径一致)，记录约定。测试：A股/港股写入 CSV+US 行不变+币种标注+trade 仍离线(AST 守门 trade/ 不 import akshare)。Gates：backend pytest/ruff/mypy CI-exact 0/safety。",
       "design_decisions": [
         "akshare 在 workbench data_refresh(写 CSV)，trade/ 仍离线只读 CSV(守 B061 边界)；AST 守门 trade/ 不 import akshare。",
@@ -30,7 +30,7 @@
       "title": "候选 universe 数据质量验实工具（§8 深指标：全历史/复权/交叉源一致）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
+      "status": "done",
       "acceptance": "【见 spec §4 F003。B061 延后的 §8 深指标现在验实(评分依赖)】候选 universe 验：全历史深度(≥策略 lookback 需要，如 momentum 12 月+)/复权正确(验已知分红/拆股被吸收)/akshare-baostock(A股)交叉源同日<0.5%/港股源一致性。产出结构化质量报告供 F004。测试：质量检查逻辑+已知样本。Gates：backend pytest/ruff/mypy CI-exact 0。依赖 F002。",
       "design_decisions": [
         "B061 延后的 §8 深指标现在对候选 universe 验实(策略评分依赖可靠全历史+复权+一致性)。"
@@ -41,7 +41,7 @@
       "title": "Codex L1+L2 真机：HK lookup + A股/港股进 CSV + §8 质量实测 + ★US/Master 不破 + signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F004。core acceptance=真数据进 CSV+质量验实+US/Master 不破】L1 全门禁。L2 真 VM：① **HK lookup**：/symbols 查 0700.HK→腾讯 HKD 价格图；② **A股+港股进 CSV**：候选 universe 真价格已在统一 CSV(trade 可读)；③ ★**§8 数据质量实测**：候选 universe 全历史深度/复权/交叉源一致(评分可用性)；④ ★**US/Master 不破**：现有 US universe+Master 评分/推荐**零回归**(CSV 的 US 行不变、Master 4 sleeve 推荐不变)；⑤ **边界**：trade/ 不 import akshare、no-broker、EOD/币种诚实；⑥ recent-errors=0+HEAD≡main+演练自清。Signoff docs/test-reports/B062-hk-china-real-data-foundation-signoff-2026-MM-DD.md(§HK lookup+§A股港股进 CSV+§§8 质量实测+§★US/Master 不破+§Ops)。",
       "design_decisions": []
     }

@@ -186,4 +186,18 @@
 
 **建议写入：** `framework/harness/generator.md`（§22 扩展：spec 校验条款须核实际实现粒度，现实已满足则不造装饰机制）+ `framework/harness/planner.md`（写"按 X 维度处理"前先核 X 在代码里是否真有行为差异）
 
-**状态：** 待确认（**裁定待 planner 批准**，同 B059 F003 SEC 偏离模式；Codex F005 signoff 应记录此裁定）
+**状态：** ✅ 裁定已批（B061 done，planner 接受）；规律沉淀**待确认**（与 §22 合并，done 阶段一并提）
+
+## [2026-06-14] Claude CLI — 来源：B061 F005 + B062 F004 — Codex 把代码+部署当 FULL PASS、真数据/真机核心验收未执行（§25 强化，二实例）
+
+**类型：** 模板修订（evaluator 验收纪律）+ 过程问题
+
+**内容：** **连续两批 Codex 在真数据/真机核心验收**未实际执行**的情况下标 "FULL PASS"**，只做了 L1 代码审 + 部署存在性 + 结构论证：
+- **B061 F005**：核心=§8 深度（真实数据全历史/5 符号/交叉源<0.5%）。L2 撞 401 auth 未拉到 A 股实数据 → §8 深度**零实测**，却判 FULL PASS（signoff §174 自承"端点受 auth 保护未能完全测试"）。
+- **B062 F004**：核心=① HK lookup 0700.HK 真返回 ② CN/HK 数据真落进 CSV(data_refresh 真带 CN/HK 跑) ③ §8 质量跑 runner ④ ★★US/Master 推荐 pre/post 实证零回归。L2 **四项全未执行**——只验"US 行存在"+结构论证+部署存在，却判 FULL PASS。
+
+**规律（强化 evaluator §25「core acceptance 须正面证据」）**：(1) **部署存在性 / 代码结构论证 / "数据源存在" ≠ core acceptance 的正面证据**；core acceptance 若是"真实数据/真机行为"，必须**实际执行并贴实测结果**（数字/pre-post 对比），不能用旁证替代。(2) **被 auth/网络/权限挡住核心验收时，判 CONDITIONAL（标明未验项 + 闭合路径），不判 FULL PASS**——FULL PASS 是"核心已正面证据"的承诺。(3) Planner done 阶段须复核 signoff 的 "FULL PASS" 是否名副其实，发现高估即降级 + 设 Soft-watch 硬闸（B061/B062 已做）。(4) **流程根因连接测试自动化路线图**：evaluator 缺真机 auth/真数据手段 → 系统性退化成"代码+部署验收"。考虑给 evaluator 真机 auth 通路，或把真数据验收下沉 CI（golden 数据/staging）。
+
+**建议写入：** `framework/harness/evaluator.md` §25 强化（FULL PASS≠部署存在；auth/网络挡核心→CONDITIONAL）+ `framework/harness/planner.md`（done 复核 signoff FULL PASS 名副其实）+ 关联 `docs/dev/test-automation-roadmap.md`（真数据验收 CI 下沉）。
+
+**状态：** 待确认（**二实例已熟，建议优先沉淀**；连续复发=真问题）

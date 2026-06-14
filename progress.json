@@ -2,7 +2,7 @@
   "status": "done",
   "user_goal": "B062 hk_china 真数据地基（Batch 1：港股 provider + A股/港股进 trade 管道 + 数据质量验实）。来源：B061 A 股 lookup done 后，用户决定把 Master 的 hk_china sleeve(现 US-listed ETF proxy MCHI/FXI/KWEB/ASHR)换成**真 A股+港股、最终进 live Master**(用户两选：直接全套上真金 Master + A股+港股都要)。**这是真金策略改动→planner 坚持纪律：分 3 批，激活闸控于回测**：Batch 1=B062(本批,数据地基,research-safe,不碰推荐)；Batch 2=FX 层+real-data hk_china 策略+★回测对比(real vs proxy)决策点；Batch 3=激活 live Master(★真金,闸控于 Batch 2 回测favorable+用户确认,Master 硬回归不破)。**诚实前提**：现 proxy(美元 ETF 持真实中国公司)已合法暴露无 FX/管道复杂度；hk_china 最小(10%)最弱 sleeve;换真须证明值这堆复杂度(Batch 2 回测把关)。**本批范围(数据地基 research-safe)**：港股 .HK 市场+HK provider(lookup,镜像 B061)；真 A股+港股进 trade 管道(akshare 进 data_refresh→统一 CSV，trade/ 仍离线只读 CSV 守 B061 边界)；候选 universe 数据质量验实(B061 延后的 §8 深指标:全历史/复权/一致性,评分依赖)。**不做(延后)**：FX(Batch 2)/real-data hk_china 策略(Batch 2)/回测(Batch 2)/激活 live Master(Batch 3)/任何 live 推荐改动。候选 universe(代表集,最终 Batch 2 定)：港股 0700.HK 腾讯/9988.HK 阿里/3690.HK 美团/1810.HK 小米+A股 600519.SH 茅台/000858.SZ 五粮液/300750.SZ 宁德。4 features 3g+1c：F001 港股 symbology+HK provider；F002 A股/港股进 trade 管道(最重最危,碰 Master 评分读的 CSV)；F003 数据质量验实工具；F004 codex HK lookup+真数据进 CSV+§8 质量实测+★US/Master 不破+signoff。硬边界：**research-only 本批不碰 live 推荐**(hk_china 仍跑 proxy)/★**Master/US 数据管道零回归**(data_refresh 加 A股/港股不破 US 数据,Master 评分读它)/trade 仍离线(akshare 在 workbench data_refresh,trade/ 不 import,AST 守门)/no-broker(只 akshare/baostock)/§12.10.2/EOD+币种诚实/新路由 next.config(§20)/mypy CI-exact(§19)。spec docs/specs/B062-hk-china-real-data-foundation-spec.md(6 章)。复用 B061 SymbolRef+B059 provider 抽象+symbol_price_cache+data_refresh 管道。",
   "total_features": 4,
-  "completed_features": 3,
+  "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "F004",
   "last_updated": "2026-06-14",
@@ -18,7 +18,7 @@
     "spec": "docs/specs/B062-hk-china-real-data-foundation-spec.md",
     "test_cases": null,
     "signoff": "docs/test-reports/B062-hk-china-real-data-foundation-signoff-2026-06-14.md",
-    "framework_reviewed": false
+    "framework_reviewed": true
   },
   "role_assignments": null,
   "evaluator_feedback": {
@@ -46,5 +46,6 @@
     "F002",
     "F003",
     "F004"
-  ]
+  ],
+  "completed_date": "2026-06-14"
 }
