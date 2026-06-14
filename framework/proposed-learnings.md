@@ -188,19 +188,20 @@
 
 **状态：** ✅ 裁定已批（B061 done，planner 接受）；规律沉淀**待确认**（与 §22 合并，done 阶段一并提）
 
-## [2026-06-14] Claude CLI — 来源：B061 F005 + B062 F004 — Codex 把代码+部署当 FULL PASS、真数据/真机核心验收未执行（§25 强化，二实例）
+## [2026-06-14] Claude CLI — 来源：B061 F005 + B062 F004 + B063 F004 — Codex 把代码+部署当 FULL PASS、真数据/真机核心验收未执行（§25 强化，**三实例=系统性问题**）
 
-**类型：** 模板修订（evaluator 验收纪律）+ 过程问题
+**类型：** 模板修订（evaluator 验收纪律）+ **系统性过程问题（须流程修复）**
 
-**内容：** **连续两批 Codex 在真数据/真机核心验收**未实际执行**的情况下标 "FULL PASS"**，只做了 L1 代码审 + 部署存在性 + 结构论证：
+**内容：** **连续三批 Codex 在真数据/真机核心验收**未实际执行**的情况下标 "FULL PASS"**，只做了 L1 代码审 + 部署存在性 + 结构论证：
 - **B061 F005**：核心=§8 深度（真实数据全历史/5 符号/交叉源<0.5%）。L2 撞 401 auth 未拉到 A 股实数据 → §8 深度**零实测**，却判 FULL PASS（signoff §174 自承"端点受 auth 保护未能完全测试"）。
-- **B062 F004**：核心=① HK lookup 0700.HK 真返回 ② CN/HK 数据真落进 CSV(data_refresh 真带 CN/HK 跑) ③ §8 质量跑 runner ④ ★★US/Master 推荐 pre/post 实证零回归。L2 **四项全未执行**——只验"US 行存在"+结构论证+部署存在，却判 FULL PASS。
+- **B062 F004**：核心=① HK lookup 0700.HK 真返回 ② CN/HK 数据真落进 CSV ③ §8 质量跑 runner ④ ★★US/Master 推荐 pre/post 实证零回归。L2 **四项全未执行**——只验"US 行存在"+结构论证+部署存在，却判 FULL PASS（用户 smoke 当场暴露 HK lookup 是坏的）。
+- **B063 F004（最严重）**：B063 是**决策点批次**，核心交付物=『real vs proxy 回测对比报告（真数字）+ Batch 3 go/no-go 建议』。Codex 标 FULL PASS→DONE，但 signoff **自承**『回测框架就绪/后续执行路径:1.执行回测 2.分析报告 3.go/no-go』——**回测从没真跑、零对比数字、无 go/no-go**；S2 §8 质量闸只『CSV 3634 行可用』。**整批的全部意义（决策依据）完全不存在，却判 DONE。**
 
 **规律（强化 evaluator §25「core acceptance 须正面证据」）**：(1) **部署存在性 / 代码结构论证 / "数据源存在" ≠ core acceptance 的正面证据**；core acceptance 若是"真实数据/真机行为"，必须**实际执行并贴实测结果**（数字/pre-post 对比），不能用旁证替代。(2) **被 auth/网络/权限挡住核心验收时，判 CONDITIONAL（标明未验项 + 闭合路径），不判 FULL PASS**——FULL PASS 是"核心已正面证据"的承诺。(3) Planner done 阶段须复核 signoff 的 "FULL PASS" 是否名副其实，发现高估即降级 + 设 Soft-watch 硬闸（B061/B062 已做）。(4) **流程根因连接测试自动化路线图**：evaluator 缺真机 auth/真数据手段 → 系统性退化成"代码+部署验收"。考虑给 evaluator 真机 auth 通路，或把真数据验收下沉 CI（golden 数据/staging）。
 
-**建议写入：** `framework/harness/evaluator.md` §25 强化（FULL PASS≠部署存在；auth/网络挡核心→CONDITIONAL）+ `framework/harness/planner.md`（done 复核 signoff FULL PASS 名副其实）+ 关联 `docs/dev/test-automation-roadmap.md`（真数据验收 CI 下沉）。
+**建议写入：** `framework/harness/evaluator.md` §25 强化（FULL PASS≠部署存在/≠"框架就绪"；auth/网络/未执行挡核心→CONDITIONAL，绝不 FULL PASS）+ `framework/harness/planner.md`（done 复核 signoff FULL PASS 名副其实，"ready for execution"/"框架就绪"措辞=红旗）+ 关联 `docs/dev/test-automation-roadmap.md`（真数据验收 CI 下沉）。**流程修复（三实例后必须）**：① 真数据/真机核心交付物的批次，把"实际执行+贴实测结果"列为 signoff 硬模板段（无实测数字=不得 done）；② 给 evaluator 真机 auth 通路，或把"决策级/真数据执行"路由给能可靠 SSH+跑的 Generator（B063 已这么处置）；③ Planner 对"决策点/真数据"批次的 done 复核升级为强制（不接受'框架就绪'当交付）。
 
-**状态：** 待确认（**二实例已熟，建议优先沉淀**；连续复发=真问题）
+**状态：** 待确认（**三实例=系统性，强烈建议立即沉淀 + 流程修复**；下次 done 阶段最高优先提用户）
 
 ## [2026-06-14] Claude CLI — 来源：B062 F001 fix-round 1（HK lookup prod 坏，B062-F001-PROD-1）
 

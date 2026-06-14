@@ -6,7 +6,7 @@
       "title": "FX 层：FRED CNY/USD(DEXCHUS)+HKD/USD(DEXHKUS) 历史汇率进管道（复用 fred_loader，日历对齐 forward-fill）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
+      "status": "done",
       "acceptance": "【见 spec §4 F001。复用 fred_loader(B035 已集成)】(1) 复用 fred_loader 拉 **DEXCHUS(人民币/美元)+DEXHKUS(港币/美元)** 日度历史(FRED 央行权威,含数十年历史)。(2) 进 workbench data_refresh 写 FX 数据(trade 读,离线);交易日历对齐+缺日 forward-fill(FRED 周末/假期空值)。(3) **仅供回测 USD 换算**(live 多币种 NAV 是 Batch 3)。测试：FX 拉取+对齐+forward-fill+缺值处理。Gates：backend pytest/ruff/mypy CI-exact 0。",
       "design_decisions": [
         "FX 复用 FRED(fred_loader 已集成,DEXCHUS/DEXHKUS 央行权威),非 akshare FX;trade 离线读。",
@@ -18,7 +18,7 @@
       "title": "real-data hk_china 策略：宽 universe point-in-time 规则选股（复用 hk_china 逻辑，避事后偏差）+ USD 换算",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
+      "status": "done",
       "acceptance": "【见 spec §4 F002 + §2 方法论硬坑。依赖 F001】(1) **宽 universe**(~20-30 流动 HK+A 大盘,B062 管道扩量拉真价格)。(2) ★**point-in-time 规则选股**(§2 硬坑:不许 hand-pick 今天 7 个赢家回测=幸存者偏差):按 momentum+quality(复用 trade/backtest/hk_china.py 逻辑)只用当时可得数据选 top N。(3) USD 换算(用 F001 FX 把 CN/HK 价格/收益转 USD,与 USD proxy 同口径)。测试：point-in-time 选股**无未来数据泄漏**+USD 换算+复用 hk_china 逻辑。Gates：backend pytest/ruff/mypy CI-exact 0。",
       "design_decisions": [
         "★point-in-time 规则选股(只用当时可得数据)避事后偏差;不 hand-pick 赢家;宽 universe 残余选择偏差报告标注。",
@@ -30,7 +30,7 @@
       "title": "回测对比 harness：proxy-hk_china vs real-hk_china（USD 口径，复用 trade/backtest）+ 偏差感知指标",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
+      "status": "done",
       "acceptance": "【见 spec §4 F003 + §3。依赖 F002】(1) 跑两版同期同口径(USD)：(a) proxy-hk_china(MCHI/FXI/KWEB/ASHR) (b) real-hk_china(F002)。(2) 对比指标 CAGR/Sharpe/MaxDD/vol/turnover/换手成本；**偏差感知**(标注集中度差异/universe 选择)。复用 trade/backtest+B050。(3) ★诚实归因：差异来自'数据源/真实标的'还是'集中度'(proxy 分散 ETF vs real 集中个股 风险画像不同)。测试：对比 harness 双版可跑+指标+同口径。Gates：backend pytest/ruff/mypy CI-exact 0。",
       "design_decisions": [
         "复用 trade/backtest 跑双版同口径(USD);诚实归因区分集中度 vs 数据源,避免把集中赌大盘股的收益误记为'真数据更好'。"
