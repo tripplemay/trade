@@ -201,3 +201,13 @@
 **建议写入：** `framework/harness/evaluator.md` §25 强化（FULL PASS≠部署存在；auth/网络挡核心→CONDITIONAL）+ `framework/harness/planner.md`（done 复核 signoff FULL PASS 名副其实）+ 关联 `docs/dev/test-automation-roadmap.md`（真数据验收 CI 下沉）。
 
 **状态：** 待确认（**二实例已熟，建议优先沉淀**；连续复发=真问题）
+
+## [2026-06-14] Claude CLI — 来源：B062 F001 fix-round 1（HK lookup prod 坏，B062-F001-PROD-1）
+
+**类型：** 新坑（generator 实现）+ 新规律
+
+**内容：** **扩展新市场/数据端点时，不能假设"兄弟端点"（同 lib 不同函数）可达且行为一致——每个新端点须实际验证可达+格式+真返回，不能因相邻端点通就推定。** B062 HK provider 把 akshare `stock_hk_hist` 当作 A 股 `stock_zh_a_hist` 的港股镜像直接用（同为 akshare，假设同源可达），但**两者命中不同主机**：A 股走 eastmoney 常规主机（可达），HK 走 `33.push2his.eastmoney.com`（**可复现 ReadTimeout**，本地+prod 都坏，非 geo——两主机同 IP 但 33. 子域 SSL/连接异常）。结果 prod 查 0700.HK 全失败。**修复**=换 akshare `stock_hk_daily`（**sina 端点**，B060 已验 sina 从 VM 可达）→真返回 5405 行腾讯数据；该函数无 date 参（返全历史）须 provider 端按窗过滤。**规律**：(1) generator 写新数据 provider/端点时，**本地实跑一次该端点的真调用**（不只单测 mock）确认函数名/符号格式/可达/返回 shape——B062 若 F001 当时本地跑过 `stock_hk_hist(00700)` 就当场暴露；(2) 同一数据 lib 的不同市场/函数可能走不同主机、不同可达性、不同参数（有无 date 参/列名中英文），不可结构类推；(3) 选端点时优先已被 spike 验过可达的源（B060 验了 sina/eastmoney-A股/tushare，HK 端点从没验）。**与 evaluator §25 学习互补**：那条是"验收没真做"，这条是"实现建在未验证端点假设上"——两侧都指向"真数据/真端点须实跑"。
+
+**建议写入：** `framework/harness/generator.md`（§新数据 provider/端点：本地实跑真调用验可达+格式，勿因兄弟端点通而推定）+ `framework/harness/planner.md`（spec 扩新市场须含"先验该端点可达"任务，勿当兄弟端点镜像，呼应 B062 planner 自承学习）。
+
+**状态：** 待确认（done 阶段一并提；与上条 evaluator §25 学习同源，B062 一并沉淀）
