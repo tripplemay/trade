@@ -19,6 +19,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
+import pandas as pd
+
 from trade.backtest.monthly import (
     BacktestError,
     BacktestParameters,
@@ -85,6 +87,7 @@ def _resolve_hk_china_signal(
     records: tuple[PriceBar, ...],
     parameters: HkChinaMomentumParameters,
     signal_date: date,
+    signal_prices: pd.DataFrame | None = None,
 ) -> HkChinaResolvedSignal:
     """Run the shared HK-China signal and resolve the executable target weights.
 
@@ -92,9 +95,14 @@ def _resolve_hk_china_signal(
     the Master uses — then applies the Master's defensive fallback: when the
     records don't cover the chosen tickers on ``signal_date`` (legacy fixtures
     shipping only core ETFs), fall back to ``{defensive_asset: 1.0}`` so the
-    standalone backtest stays consistent with the in-Master behaviour."""
+    standalone backtest stays consistent with the in-Master behaviour.
 
-    raw = generate_hk_china_signal(parameters, signal_date)
+    ``signal_prices`` (B063 F003) is an optional already-PIT-safe frame injected
+    into the signal so a caller can pin the signal and execution to the SAME data
+    (a fair backtest comparison needs this); ``None`` keeps the default
+    self-loading behaviour exactly as before (Master / B050 unaffected)."""
+
+    raw = generate_hk_china_signal(parameters, signal_date, prices=signal_prices)
     target_weights = raw.weights_dict()
     symbols_on_signal_date = {r.symbol for r in records if r.date == signal_date}
     if not target_weights or not symbols_on_signal_date.issuperset(target_weights):
@@ -117,12 +125,18 @@ def run_hk_china_quarterly_backtest(
     signal_dates: tuple[date, ...],
     strategy_parameters: HkChinaMomentumParameters | None = None,
     backtest_parameters: BacktestParameters | None = None,
+    *,
+    signal_prices: pd.DataFrame | None = None,
 ) -> HkChinaBacktestResult:
     """Run the standalone HK-China quarterly backtest over ``signal_dates``.
 
     Mirrors ``run_risk_parity_monthly_backtest``: T-close signal, T+1 open
     execution, per-period fills + cost + equity curve. The only difference is the
-    signal generator (the shared HK-China one) + the defensive fallback."""
+    signal generator (the shared HK-China one) + the defensive fallback.
+
+    ``signal_prices`` (B063 F003) optionally pins the signal to a caller-supplied
+    PIT frame instead of the default disk load — used by the comparison harness to
+    keep signal + execution on the same data. ``None`` = unchanged behaviour."""
 
     if not signal_dates:
         raise BacktestError("signal_dates must not be empty")
@@ -144,7 +158,9 @@ def run_hk_china_quarterly_backtest(
     risk_flags: list[str] = []
 
     for signal_date in signal_dates:
-        signal = _resolve_hk_china_signal(records, strategy_parameters, signal_date)
+        signal = _resolve_hk_china_signal(
+            records, strategy_parameters, signal_date, signal_prices
+        )
         execution_date = _next_trading_date(all_dates, signal.signal_date)
         if execution_date is None:
             raise BacktestError(

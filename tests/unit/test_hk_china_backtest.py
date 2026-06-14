@@ -62,7 +62,9 @@ def test_hk_china_backtest_uses_shared_signal_and_is_isomorphic(
     records = _history(("MCHI", "FXI", "SGOV"), 90)
     calls: list[date] = []
 
-    def _fake(params: HkChinaMomentumParameters, signal_date: date) -> _FakeSignal:
+    def _fake(
+        params: HkChinaMomentumParameters, signal_date: date, *, prices: object = None
+    ) -> _FakeSignal:
         calls.append(signal_date)
         return _FakeSignal({"MCHI": 0.5, "FXI": 0.5})
 
@@ -88,6 +90,34 @@ def test_hk_china_backtest_uses_shared_signal_and_is_isomorphic(
     assert {fill.execution_price_field for fill in first.fills} == {"open"}
 
 
+def test_signal_prices_is_threaded_to_the_signal(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # B063 F003 — the optional signal_prices is forwarded to the signal generator
+    # so the comparison harness can pin signal + execution to one frame. Default
+    # (None) preserves the self-loading behaviour (Master / B050 unchanged).
+    records = _history(("MCHI", "FXI", "SGOV"), 90)
+    seen_prices: list[object] = []
+
+    def _fake(params: HkChinaMomentumParameters, signal_date: date, *, prices=None):  # type: ignore[no-untyped-def]
+        seen_prices.append(prices)
+        return _FakeSignal({"MCHI": 1.0})
+
+    monkeypatch.setattr(hk_china_engine, "generate_hk_china_signal", _fake)
+
+    # Default: prices not pinned → None reaches the signal (unchanged behaviour).
+    run_hk_china_quarterly_backtest(records, (date(2024, 3, 10),))
+    assert seen_prices == [None]
+
+    # Pinned: the exact frame is forwarded.
+    seen_prices.clear()
+    frame = object()
+    run_hk_china_quarterly_backtest(
+        records, (date(2024, 3, 10),), signal_prices=frame  # type: ignore[arg-type]
+    )
+    assert seen_prices == [frame]
+
+
 def test_hk_china_backtest_defensive_fallback_when_tickers_uncovered(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -97,7 +127,7 @@ def test_hk_china_backtest_defensive_fallback_when_tickers_uncovered(
     monkeypatch.setattr(
         hk_china_engine,
         "generate_hk_china_signal",
-        lambda params, d: _FakeSignal({"KWEB": 1.0}),
+        lambda params, d, prices=None: _FakeSignal({"KWEB": 1.0}),
     )
 
     result = run_hk_china_quarterly_backtest(records, (date(2024, 3, 10),))

@@ -30,7 +30,7 @@
       "title": "回测对比 harness：proxy-hk_china vs real-hk_china（USD 口径，复用 trade/backtest）+ 偏差感知指标",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "【见 spec §4 F003 + §3。依赖 F002】(1) 跑两版同期同口径(USD)：(a) proxy-hk_china(MCHI/FXI/KWEB/ASHR) (b) real-hk_china(F002)。(2) 对比指标 CAGR/Sharpe/MaxDD/vol/turnover/换手成本；**偏差感知**(标注集中度差异/universe 选择)。复用 trade/backtest+B050。(3) ★诚实归因：差异来自'数据源/真实标的'还是'集中度'(proxy 分散 ETF vs real 集中个股 风险画像不同)。测试：对比 harness 双版可跑+指标+同口径。Gates：backend pytest/ruff/mypy CI-exact 0。",
       "design_decisions": [
         "复用 trade/backtest 跑双版同口径(USD);诚实归因区分集中度 vs 数据源,避免把集中赌大盘股的收益误记为'真数据更好'。"
