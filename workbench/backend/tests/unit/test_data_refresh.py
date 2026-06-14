@@ -137,6 +137,13 @@ class _FakeCnHk:
         return [_bar(ticker)]
 
 
+class _FakeFx:
+    """Fake FRED FX loader (no key/network); returns no points by default."""
+
+    def fetch_fx(self, series_id: str, *, limit: int) -> list[Any]:
+        return []
+
+
 def _run(
     tmp_path: Path,
     *,
@@ -307,7 +314,7 @@ def test_cli_fetch_main_writes_both_csvs(tmp_path: Path) -> None:
     args = refresh_cli.parse_args(["fetch", "--data-root", str(tmp_path), "--lookback-days", "400"])
     summary = refresh_cli.fetch_main(
         args,
-        loader_factory=lambda: (_FakePrices(), _FakeFundamentals(), _FakeCnHk()),
+        loader_factory=lambda: (_FakePrices(), _FakeFundamentals(), _FakeCnHk(), _FakeFx()),
         today=date(2024, 12, 31),
     )
     assert summary.price_rows > 0

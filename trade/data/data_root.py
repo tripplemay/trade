@@ -39,6 +39,8 @@ DATA_ROOT_ENV = "WORKBENCH_DATA_ROOT"
 # a ``data`` segment to these for the local layout.
 UNIFIED_PRICES_RELPATH = ("snapshots", "prices", "unified", "prices_daily.csv")
 UNIFIED_FUNDAMENTALS_RELPATH = ("snapshots", "fundamentals", "unified", "fundamentals.csv")
+# B063 F001 — FX rates CSV (FRED CNY/USD + HKD/USD), for backtest USD conversion.
+UNIFIED_FX_RELPATH = ("snapshots", "fx", "unified", "fx_daily.csv")
 
 
 def data_root_override() -> Path | None:
@@ -67,4 +69,13 @@ def unified_fundamentals_path(repo_root_default: Path) -> Path:
     override = data_root_override()
     if override is not None:
         return override.joinpath(*UNIFIED_FUNDAMENTALS_RELPATH)
+    return repo_root_default
+
+
+def unified_fx_path(repo_root_default: Path) -> Path:
+    """Resolve the unified FX CSV: VM override if set, else the repo default (B063 F001)."""
+
+    override = data_root_override()
+    if override is not None:
+        return override.joinpath(*UNIFIED_FX_RELPATH)
     return repo_root_default

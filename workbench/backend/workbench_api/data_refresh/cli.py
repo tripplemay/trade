@@ -17,6 +17,7 @@ from collections.abc import Callable
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
+from workbench_api.data_refresh.fx_refresh import run_fx_refresh
 from workbench_api.data_refresh.refresh import RefreshSummary, run_refresh
 from workbench_api.data_refresh.window import DataWindow, compute_data_window
 
@@ -29,7 +30,7 @@ from workbench_api.data_refresh.window import DataWindow, compute_data_window
 DEFAULT_LOOKBACK_DAYS = 1825
 DEFAULT_DATA_ROOT = "/var/lib/workbench/data"
 
-LoaderFactory = Callable[[], tuple[object, object, object]]
+LoaderFactory = Callable[[], tuple[object, object, object, object]]
 
 
 def _default_data_root() -> Path:
@@ -58,17 +59,24 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _build_loaders() -> tuple[object, object, object]:
+def _build_loaders() -> tuple[object, object, object, object]:
     # Constructed here (not at import) so a dev rehearsal / test without the
     # secrets doesn't fail at import time. Keys come from the env file
-    # (TIINGO_API_KEY / SEC_EDGAR_CONTACT_EMAIL).
+    # (TIINGO_API_KEY / SEC_EDGAR_CONTACT_EMAIL / FRED_API_KEY).
     from workbench_api.data.sec_edgar_loader import SECEDGARFundamentalsLoader
     from workbench_api.data.tiingo_loader import TiingoSnapshotLoader
     from workbench_api.data_refresh.cn_hk_prices import CnHkPricesLoader
+    from workbench_api.data_refresh.fx_refresh import FredFxLoader
 
-    # CnHkPricesLoader lazy-imports akshare per fetch (B062 F002); constructing
-    # it is cheap + network-free.
-    return TiingoSnapshotLoader(), SECEDGARFundamentalsLoader(), CnHkPricesLoader()
+    # CnHkPricesLoader lazy-imports akshare per fetch (B062 F002); FredFxLoader
+    # lazy-builds the FRED client per fetch (B063 F001). Both cheap + key-free
+    # to construct.
+    return (
+        TiingoSnapshotLoader(),
+        SECEDGARFundamentalsLoader(),
+        CnHkPricesLoader(),
+        FredFxLoader(),
+    )
 
 
 def fetch_main(
@@ -79,10 +87,10 @@ def fetch_main(
 ) -> RefreshSummary:
     run_date = today or datetime.now(UTC).date()
     from_date = run_date - timedelta(days=max(1, args.lookback_days))
-    prices_loader, fundamentals_loader, cn_hk_prices_loader = (
+    prices_loader, fundamentals_loader, cn_hk_prices_loader, fx_loader = (
         loader_factory or _build_loaders
     )()
-    return run_refresh(
+    summary = run_refresh(
         data_root=args.data_root,
         from_date=from_date,
         to_date=run_date,
@@ -90,6 +98,10 @@ def fetch_main(
         fundamentals_loader=fundamentals_loader,  # type: ignore[arg-type]
         cn_hk_prices_loader=cn_hk_prices_loader,  # type: ignore[arg-type]
     )
+    # B063 F001 — also refresh the FX rates CSV (FRED CNY/USD + HKD/USD) the
+    # backtest reads for USD conversion. Best-effort per series (logged inside).
+    run_fx_refresh(data_root=args.data_root, fx_loader=fx_loader)  # type: ignore[arg-type]
+    return summary
 
 
 def _persist_data_window(window: DataWindow) -> None:

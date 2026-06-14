@@ -6,7 +6,7 @@
       "title": "FX 层：FRED CNY/USD(DEXCHUS)+HKD/USD(DEXHKUS) 历史汇率进管道（复用 fred_loader，日历对齐 forward-fill）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "【见 spec §4 F001。复用 fred_loader(B035 已集成)】(1) 复用 fred_loader 拉 **DEXCHUS(人民币/美元)+DEXHKUS(港币/美元)** 日度历史(FRED 央行权威,含数十年历史)。(2) 进 workbench data_refresh 写 FX 数据(trade 读,离线);交易日历对齐+缺日 forward-fill(FRED 周末/假期空值)。(3) **仅供回测 USD 换算**(live 多币种 NAV 是 Batch 3)。测试：FX 拉取+对齐+forward-fill+缺值处理。Gates：backend pytest/ruff/mypy CI-exact 0。",
       "design_decisions": [
         "FX 复用 FRED(fred_loader 已集成,DEXCHUS/DEXHKUS 央行权威),非 akshare FX;trade 离线读。",
