@@ -154,8 +154,12 @@ def test_cli_main_persists_window(
     """End-to-end L2 glue: the data-refresh entrypoint writes the CSV AND upserts
     the coverage window the request path exposes."""
 
+    # B062 F002 — _build_loaders now returns a 3rd CN/HK loader; reuse the
+    # offline _FakePrices fake for it (returns bars for any ticker, no network).
     monkeypatch.setattr(
-        refresh_cli, "_build_loaders", lambda: (_FakePrices(), _FakeFundamentals())
+        refresh_cli,
+        "_build_loaders",
+        lambda: (_FakePrices(), _FakeFundamentals(), _FakePrices()),
     )
     rc = refresh_cli.main(
         ["fetch", "--data-root", str(tmp_path), "--lookback-days", "400"]

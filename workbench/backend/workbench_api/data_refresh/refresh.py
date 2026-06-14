@@ -37,6 +37,7 @@ from workbench_api.data.fundamentals_sync import (
     raw_companyfacts_to_parsed_ratios,
 )
 from workbench_api.data.snapshot_loader import PriceBar
+from workbench_api.symbols.symbol_ref import SymbolRef
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +61,25 @@ ETF_UNIVERSE: tuple[str, ...] = (
     "TLT",  # B057 F001 — regime-adaptive universe (US treasury 20y+)
     "VEA",
     "VWO",  # B057 F001 — regime-adaptive universe (emerging markets)
+)
+
+# B062 F002 — candidate A-share + HK universe (the real underlying exposure the
+# hk_china proxy ETFs stand in for). akshare fetches these in the workbench
+# data_refresh job and appends them as NEW rows to the unified prices CSV; the
+# existing US universe rows are UNTOUCHED (US-zero-regression). trade/ stays
+# offline — it only reads the CSV, and Master scoring (load_prices) requests
+# only its US tickers, so these rows are inert for the funded strategies (P1).
+# The final universe is fixed by the Batch 2 strategy; this is the
+# representative set: HK (Tencent / Alibaba-HK / Meituan / Xiaomi) + A-share
+# (Moutai / Wuliangye / CATL).
+CN_HK_UNIVERSE: tuple[str, ...] = (
+    "0700.HK",
+    "9988.HK",
+    "3690.HK",
+    "1810.HK",
+    "600519.SH",
+    "000858.SZ",
+    "300750.SZ",
 )
 
 PRICES_RELPATH = ("snapshots", "prices", "unified", "prices_daily.csv")
@@ -102,6 +122,8 @@ class RefreshSummary:
     errors: int
     prices_path: str
     fundamentals_path: str
+    cn_hk_symbols: int = 0
+    cn_hk_rows: int = 0
 
 
 def equity_universe() -> tuple[str, ...]:
@@ -121,6 +143,19 @@ def price_universe() -> tuple[str, ...]:
     """All symbols to price: ETFs + equities, sorted + de-duplicated."""
 
     return tuple(sorted(set(ETF_UNIVERSE) | set(equity_universe())))
+
+
+def currency_for_symbol(symbol: str) -> str:
+    """Display currency derived from the canonical ticker (US→USD / CN→CNY /
+    HK→HKD), via :class:`SymbolRef`.
+
+    The unified prices CSV carries currency **implicitly via the ticker suffix**
+    (``600519.SH`` / ``0700.HK`` / bare US) — no currency column is added.
+    Adding one would rewrite every existing US row (breaking US-zero-regression)
+    and widen trade's ``UNIFIED_REQUIRED_COLUMNS`` schema. P1 only needs the
+    marker; cross-currency aggregation / FX is Batch 2 (B062 §2)."""
+
+    return SymbolRef.parse(symbol).currency
 
 
 def _prices_to_rows(bars: list[PriceBar]) -> list[list[object]]:
@@ -163,17 +198,24 @@ def run_refresh(
     to_date: date,
     prices_loader: _PricesLoader,
     fundamentals_loader: _FundamentalsLoader,
+    cn_hk_prices_loader: _PricesLoader | None = None,
 ) -> RefreshSummary:
     """Fetch prices + fundamentals for the Master universe and write the two
     unified CSVs under ``data_root``. Per-symbol failures are logged + counted
-    (best-effort) so one bad symbol never aborts the whole refresh."""
+    (best-effort) so one bad symbol never aborts the whole refresh.
+
+    When ``cn_hk_prices_loader`` is provided (B062 F002), the candidate A-share
+    + HK universe is fetched and **appended as new rows** after the US rows; the
+    US rows themselves are produced by the unchanged loop above, so the US data
+    is byte-identical (US-zero-regression). ``None`` (the default) keeps the
+    US-only behaviour fully backward-compatible."""
 
     prices_path = data_root.joinpath(*PRICES_RELPATH)
     fundamentals_path = data_root.joinpath(*FUNDAMENTALS_RELPATH)
 
     errors = 0
 
-    # --- prices (ETFs + equities) ---
+    # --- US prices (ETFs + equities) — UNCHANGED (US-zero-regression) ---
     price_rows: list[list[object]] = []
     symbols = price_universe()
     for symbol in symbols:
@@ -183,7 +225,23 @@ def run_refresh(
         except Exception:  # noqa: BLE001 — best-effort; skip a failing symbol
             errors += 1
             logger.exception("data_refresh_price_fetch_failure", extra={"symbol": symbol})
-    _write_csv(prices_path, PRICES_HEADER, price_rows)
+
+    # --- B062 F002: A-share + HK prices — NEW rows appended after the US rows
+    # (the US rows above are untouched). akshare lives only in this workbench
+    # job; trade/ stays offline + only reads the CSV. Best-effort per symbol.
+    cn_hk_rows: list[list[object]] = []
+    cn_hk_symbols = 0
+    if cn_hk_prices_loader is not None:
+        cn_hk_symbols = len(CN_HK_UNIVERSE)
+        for symbol in CN_HK_UNIVERSE:
+            try:
+                bars = cn_hk_prices_loader.fetch_daily_bars(symbol, from_date, to_date)
+                cn_hk_rows.extend(_prices_to_rows(bars))
+            except Exception:  # noqa: BLE001 — best-effort; skip a failing symbol
+                errors += 1
+                logger.exception("data_refresh_cn_hk_fetch_failure", extra={"symbol": symbol})
+
+    _write_csv(prices_path, PRICES_HEADER, price_rows + cn_hk_rows)
 
     # --- fundamentals (equities only; ETFs / synthetic tickers have none) ---
     # Synthesise the eight quarterly ratios from live SEC companyfacts using the
@@ -227,11 +285,16 @@ def run_refresh(
         errors=errors,
         prices_path=str(prices_path),
         fundamentals_path=str(fundamentals_path),
+        cn_hk_symbols=cn_hk_symbols,
+        cn_hk_rows=len(cn_hk_rows),
     )
     logger.info(
         "data_refresh_done",
         extra={
             "price_rows": summary.price_rows,
+            "cn_hk_rows": summary.cn_hk_rows,
+            # Currency is derived from the canonical ticker (no CSV column).
+            "cn_hk_currencies": sorted({currency_for_symbol(s) for s in CN_HK_UNIVERSE}),
             "fundamental_rows": summary.fundamental_rows,
             "errors": errors,
         },

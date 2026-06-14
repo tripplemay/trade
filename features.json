@@ -18,7 +18,7 @@
       "title": "真 A股+港股进 trade 数据管道（akshare→data_refresh→统一 CSV + 币种标注；trade 仍离线）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "【见 spec §4 F002。最重最危——碰 Master 评分读的 CSV。依赖 F001】(1) **data_refresh 加 A股/港股 fetch**：akshare 拉候选 universe(港股 0700.HK/9988.HK/3690.HK/1810.HK+A股 600519.SH/000858.SZ/300750.SZ)真价格写进**统一价格 CSV**(trade 引擎读的)。**akshare 只在 workbench data_refresh，trade/ 不 import**。(2) 币种标注：CSV/管道带 currency(A股 CNY/港股 HKD/US USD)，本批仅标注(FX 在 Batch 2)。(3) ★**US 零回归(硬)**：现有 US universe fetch+CSV 的 US 行**完全不变**，A股/港股是**新增行**不动 US。(4) 复权一致：A股/港股前复权(与 US adjusted close 口径一致)，记录约定。测试：A股/港股写入 CSV+US 行不变+币种标注+trade 仍离线(AST 守门 trade/ 不 import akshare)。Gates：backend pytest/ruff/mypy CI-exact 0/safety。",
       "design_decisions": [
         "akshare 在 workbench data_refresh(写 CSV)，trade/ 仍离线只读 CSV(守 B061 边界)；AST 守门 trade/ 不 import akshare。",

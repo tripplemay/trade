@@ -29,7 +29,7 @@ from workbench_api.data_refresh.window import DataWindow, compute_data_window
 DEFAULT_LOOKBACK_DAYS = 1825
 DEFAULT_DATA_ROOT = "/var/lib/workbench/data"
 
-LoaderFactory = Callable[[], tuple[object, object]]
+LoaderFactory = Callable[[], tuple[object, object, object]]
 
 
 def _default_data_root() -> Path:
@@ -58,14 +58,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _build_loaders() -> tuple[object, object]:
+def _build_loaders() -> tuple[object, object, object]:
     # Constructed here (not at import) so a dev rehearsal / test without the
     # secrets doesn't fail at import time. Keys come from the env file
     # (TIINGO_API_KEY / SEC_EDGAR_CONTACT_EMAIL).
     from workbench_api.data.sec_edgar_loader import SECEDGARFundamentalsLoader
     from workbench_api.data.tiingo_loader import TiingoSnapshotLoader
+    from workbench_api.data_refresh.cn_hk_prices import CnHkPricesLoader
 
-    return TiingoSnapshotLoader(), SECEDGARFundamentalsLoader()
+    # CnHkPricesLoader lazy-imports akshare per fetch (B062 F002); constructing
+    # it is cheap + network-free.
+    return TiingoSnapshotLoader(), SECEDGARFundamentalsLoader(), CnHkPricesLoader()
 
 
 def fetch_main(
@@ -76,13 +79,16 @@ def fetch_main(
 ) -> RefreshSummary:
     run_date = today or datetime.now(UTC).date()
     from_date = run_date - timedelta(days=max(1, args.lookback_days))
-    prices_loader, fundamentals_loader = (loader_factory or _build_loaders)()
+    prices_loader, fundamentals_loader, cn_hk_prices_loader = (
+        loader_factory or _build_loaders
+    )()
     return run_refresh(
         data_root=args.data_root,
         from_date=from_date,
         to_date=run_date,
         prices_loader=prices_loader,  # type: ignore[arg-type]
         fundamentals_loader=fundamentals_loader,  # type: ignore[arg-type]
+        cn_hk_prices_loader=cn_hk_prices_loader,  # type: ignore[arg-type]
     )
 
 

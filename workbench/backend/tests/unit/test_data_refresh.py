@@ -22,10 +22,12 @@ import pytest
 from workbench_api.data.snapshot_loader import PriceBar
 from workbench_api.data_refresh import cli as refresh_cli
 from workbench_api.data_refresh.refresh import (
+    CN_HK_UNIVERSE,
     ETF_UNIVERSE,
     FUNDAMENTALS_HEADER,
     PRICES_HEADER,
     RefreshSummary,
+    currency_for_symbol,
     equity_universe,
     price_universe,
     run_refresh,
@@ -123,11 +125,24 @@ class _FakeFundamentals:
         return _companyfacts(ticker)
 
 
+class _FakeCnHk:
+    """Fake CN/HK akshare-backed loader (no network); 1 bar per requested ticker."""
+
+    def __init__(self, fail: set[str] | None = None) -> None:
+        self.fail = fail or set()
+
+    def fetch_daily_bars(self, ticker: str, from_date: date, to_date: date) -> list[PriceBar]:
+        if ticker in self.fail:
+            raise RuntimeError(f"boom {ticker}")
+        return [_bar(ticker)]
+
+
 def _run(
     tmp_path: Path,
     *,
     prices_loader: _FakePrices | None = None,
     fundamentals_loader: _FakeFundamentals | None = None,
+    cn_hk_prices_loader: _FakeCnHk | None = None,
 ) -> RefreshSummary:
     return run_refresh(
         data_root=tmp_path,
@@ -135,6 +150,7 @@ def _run(
         to_date=_TO,
         prices_loader=prices_loader or _FakePrices(),
         fundamentals_loader=fundamentals_loader or _FakeFundamentals(),
+        cn_hk_prices_loader=cn_hk_prices_loader,
     )
 
 
@@ -213,6 +229,59 @@ def test_synthetic_ticker_fundamentals_skipped_not_error(tmp_path: Path) -> None
     assert summary.fundamental_rows == len(equity_universe()) - 1
 
 
+# --- B062 F002: A-share + HK rows + US-zero-regression ---
+
+
+def test_cn_hk_none_is_us_only_backward_compat(tmp_path: Path) -> None:
+    summary = _run(tmp_path)  # no cn_hk loader
+    assert summary.cn_hk_symbols == 0
+    assert summary.cn_hk_rows == 0
+    assert summary.price_rows == len(price_universe())
+
+
+def test_cn_hk_rows_appended_without_touching_us_rows(tmp_path: Path) -> None:
+    # US-only baseline.
+    base = _run(tmp_path / "us")
+    with Path(base.prices_path).open() as handle:
+        us_rows = list(csv.reader(handle))
+    # US + CN/HK.
+    both = _run(tmp_path / "both", cn_hk_prices_loader=_FakeCnHk())
+    with Path(both.prices_path).open() as handle:
+        both_rows = list(csv.reader(handle))
+
+    # ★US-zero-regression: the header + every US row is byte-identical and in the
+    # same position; CN/HK are strictly appended after.
+    assert both_rows[: len(us_rows)] == us_rows
+    assert both.price_rows == base.price_rows  # US count unchanged
+    assert both.cn_hk_symbols == len(CN_HK_UNIVERSE)
+    assert both.cn_hk_rows == len(CN_HK_UNIVERSE)
+    appended_tickers = {row[1] for row in both_rows[len(us_rows):]}
+    assert appended_tickers == set(CN_HK_UNIVERSE)
+    # Schema unchanged — still the exact 8-column trade schema (no currency col).
+    assert both_rows[0] == PRICES_HEADER
+
+
+def test_cn_hk_fetch_failure_counted_not_fatal(tmp_path: Path) -> None:
+    summary = _run(tmp_path, cn_hk_prices_loader=_FakeCnHk(fail={"0700.HK"}))
+    assert summary.errors >= 1
+    assert summary.cn_hk_rows == len(CN_HK_UNIVERSE) - 1
+    # US rows are unaffected by a CN/HK failure.
+    assert summary.price_rows == len(price_universe())
+
+
+def test_currency_for_symbol_derives_from_ticker() -> None:
+    assert currency_for_symbol("AAPL") == "USD"
+    assert currency_for_symbol("600519.SH") == "CNY"
+    assert currency_for_symbol("0700.HK") == "HKD"
+
+
+def test_cn_hk_universe_is_ashare_plus_hk() -> None:
+    hk = {s for s in CN_HK_UNIVERSE if s.endswith(".HK")}
+    cn = {s for s in CN_HK_UNIVERSE if s.endswith((".SH", ".SZ"))}
+    assert hk and cn  # both markets represented
+    assert hk | cn == set(CN_HK_UNIVERSE)  # nothing else
+
+
 def test_etfs_have_no_fundamentals_rows(tmp_path: Path) -> None:
     summary = _run(tmp_path)
     with Path(summary.fundamentals_path).open() as handle:
@@ -238,11 +307,12 @@ def test_cli_fetch_main_writes_both_csvs(tmp_path: Path) -> None:
     args = refresh_cli.parse_args(["fetch", "--data-root", str(tmp_path), "--lookback-days", "400"])
     summary = refresh_cli.fetch_main(
         args,
-        loader_factory=lambda: (_FakePrices(), _FakeFundamentals()),
+        loader_factory=lambda: (_FakePrices(), _FakeFundamentals(), _FakeCnHk()),
         today=date(2024, 12, 31),
     )
     assert summary.price_rows > 0
     assert summary.fundamental_rows > 0
+    assert summary.cn_hk_rows == len(CN_HK_UNIVERSE)  # B062 F002 wiring
     assert Path(summary.prices_path).exists()
     assert Path(summary.fundamentals_path).exists()
 
