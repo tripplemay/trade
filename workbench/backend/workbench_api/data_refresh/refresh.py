@@ -63,23 +63,51 @@ ETF_UNIVERSE: tuple[str, ...] = (
     "VWO",  # B057 F001 — regime-adaptive universe (emerging markets)
 )
 
-# B062 F002 — candidate A-share + HK universe (the real underlying exposure the
-# hk_china proxy ETFs stand in for). akshare fetches these in the workbench
-# data_refresh job and appends them as NEW rows to the unified prices CSV; the
-# existing US universe rows are UNTOUCHED (US-zero-regression). trade/ stays
-# offline — it only reads the CSV, and Master scoring (load_prices) requests
-# only its US tickers, so these rows are inert for the funded strategies (P1).
-# The final universe is fixed by the Batch 2 strategy; this is the
-# representative set: HK (Tencent / Alibaba-HK / Meituan / Xiaomi) + A-share
-# (Moutai / Wuliangye / CATL).
+# B062 F002 / B063 F002 — candidate A-share + HK universe (the real underlying
+# exposure the hk_china proxy ETFs stand in for). akshare fetches these in the
+# workbench data_refresh job and appends them as NEW rows to the unified prices
+# CSV; the existing US universe rows are UNTOUCHED (US-zero-regression). trade/
+# stays offline — it only reads the CSV, and Master scoring (load_prices)
+# requests only its US tickers, so these rows are inert for the funded
+# strategies (live Master still trades the USD proxy ETFs).
+#
+# B062 first shipped only the seven mega-cap winners; B063 F002 WIDENS this to a
+# multi-sector ~26 set so the real-data research strategy can SELECT names
+# point-in-time by rule rather than backtesting hand-picked winners (spec §2
+# survivorship/hindsight bias). This list MUST stay in sync with the trade-side
+# authority ``trade.data.hk_china_real_universe.REAL_HK_CHINA_UNIVERSE`` (the
+# two are separate copies only because the offline ``trade`` engine cannot
+# import this workbench module). Best-effort per symbol: a name akshare can't
+# fetch is skipped + counted, not fatal.
 CN_HK_UNIVERSE: tuple[str, ...] = (
+    # Hong Kong (HKD)
     "0700.HK",
     "9988.HK",
     "3690.HK",
     "1810.HK",
+    "9618.HK",
+    "9999.HK",
+    "0941.HK",
+    "0939.HK",
+    "1398.HK",
+    "1288.HK",
+    "2318.HK",
+    "2628.HK",
+    "1299.HK",
+    "0883.HK",
+    "0386.HK",
+    "0388.HK",
+    # Mainland A-share (CNY)
     "600519.SH",
     "000858.SZ",
+    "000333.SZ",
     "300750.SZ",
+    "601012.SH",
+    "601318.SH",
+    "600036.SH",
+    "601398.SH",
+    "600900.SH",
+    "600276.SH",
 )
 
 PRICES_RELPATH = ("snapshots", "prices", "unified", "prices_daily.csv")
