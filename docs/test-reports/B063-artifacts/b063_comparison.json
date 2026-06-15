@@ -1,0 +1,274 @@
+{
+  "batch": "B063",
+  "feature": "F004",
+  "generated_at": "2026-06-15T02:49:46.042768+00:00",
+  "proxy_top_n": 2,
+  "fx_currencies_loaded": [
+    "CNY",
+    "HKD"
+  ],
+  "configs": {
+    "default": {
+      "usd_caliber": true,
+      "starting_capital": 100000.0,
+      "n_signal_dates": 20,
+      "proxy": {
+        "label": "proxy",
+        "metrics": {
+          "cagr": 0.02774711087619175,
+          "annualized_volatility": 0.052137749502503467,
+          "sharpe": 0.549865427189218,
+          "max_drawdown": -0.009572550133752133,
+          "turnover": 13.0,
+          "transaction_costs": 408.24161339436637,
+          "n_periods": 20
+        },
+        "selection_top_n": 2,
+        "avg_holdings": 0.8,
+        "defensive_periods": 12,
+        "forced_defensive_periods": 0,
+        "total_periods": 20,
+        "universe_size": 4,
+        "holding_kind": "diversified_etf",
+        "avg_candidates": null,
+        "avg_scored": null
+      },
+      "real": {
+        "label": "real",
+        "metrics": {
+          "cagr": -0.0006172667448960389,
+          "annualized_volatility": 0.0019129542053631383,
+          "sharpe": -0.3218408953338628,
+          "max_drawdown": -0.004170390229371268,
+          "turnover": 1.0,
+          "transaction_costs": 29.999999999999996,
+          "n_periods": 20
+        },
+        "selection_top_n": 6,
+        "avg_holdings": 0.0,
+        "defensive_periods": 20,
+        "forced_defensive_periods": 0,
+        "total_periods": 20,
+        "universe_size": 26,
+        "holding_kind": "single_name",
+        "avg_candidates": 26.0,
+        "avg_scored": 17.7
+      },
+      "deltas_real_minus_proxy": {
+        "cagr": -0.02836437762108779,
+        "annualized_volatility": -0.05022479529714033,
+        "sharpe": -0.8717063225230808,
+        "max_drawdown": 0.0054021599043808655,
+        "turnover": -12.0
+      },
+      "bias_notes": [
+        "point-in-time: the real side selected names by rule each quarter from a 26-name candidate set (avg 26.0 were listing-eligible and avg 17.7 had enough history to score per quarter — the universe GROWS over the window, unlike the fixed 4-ETF proxy, so early periods are thinner). 20/20 quarters went fully defensive (0 of those FORCED by a price-coverage gap, not strategy rules — investigate as data quality, not signal). No name was hand-picked.",
+        "residual selection bias: the real candidate universe is names liquid TODAY; reconstructing historical index membership/liquidity is out of scope, so treat any real-vs-proxy edge as an UPPER BOUND (optimistic), not a clean estimate.",
+        "concentration differs: proxy selects up to top_n=2 diversified ETFs (realized avg 0.8 baskets) while real selects up to top_n=6 single names (realized avg 0.0 stocks); attribute any return/risk difference to concentration AND data-source, never data-source alone. To isolate data-source, re-run with matched top_n.",
+        "USD caliber: both backtests are in USD (real prices converted at as-of FX) and BOTH the signal and execution of each side run on one shared frame; the FX path is identical on both sides, so it is not a source of the difference."
+      ],
+      "run_metadata": {
+        "signal_dates": [
+          "2021-06-30",
+          "2021-09-30",
+          "2021-12-31",
+          "2022-03-31",
+          "2022-06-30",
+          "2022-09-30",
+          "2022-12-30",
+          "2023-03-31",
+          "2023-06-30",
+          "2023-09-29",
+          "2023-12-29",
+          "2024-03-28",
+          "2024-06-28",
+          "2024-09-30",
+          "2024-12-31",
+          "2025-03-31",
+          "2025-06-30",
+          "2025-09-30",
+          "2025-12-31",
+          "2026-03-31"
+        ],
+        "n_signal_dates": 20,
+        "proxy_coverage": {
+          "window_start": "2021-06-16",
+          "window_end": "2026-06-12",
+          "trading_dates": 1254,
+          "names_with_data": [
+            "MCHI",
+            "FXI",
+            "KWEB",
+            "ASHR"
+          ],
+          "names_missing_data": []
+        },
+        "real_coverage": {
+          "window_start": "2021-06-16",
+          "window_end": "2026-06-15",
+          "trading_dates": 1300,
+          "names_with_data": [
+            "0700.HK",
+            "9988.HK",
+            "3690.HK",
+            "1810.HK",
+            "9618.HK",
+            "9999.HK",
+            "0941.HK",
+            "0939.HK",
+            "1398.HK",
+            "1288.HK",
+            "2318.HK",
+            "2628.HK",
+            "1299.HK",
+            "0883.HK",
+            "0386.HK",
+            "0388.HK",
+            "600519.SH",
+            "000858.SZ",
+            "000333.SZ",
+            "300750.SZ",
+            "601012.SH",
+            "601318.SH",
+            "600036.SH",
+            "601398.SH",
+            "600900.SH",
+            "600276.SH"
+          ],
+          "names_missing_data": []
+        }
+      }
+    },
+    "matched_top_n": {
+      "usd_caliber": true,
+      "starting_capital": 100000.0,
+      "n_signal_dates": 20,
+      "proxy": {
+        "label": "proxy",
+        "metrics": {
+          "cagr": 0.02774711087619175,
+          "annualized_volatility": 0.052137749502503467,
+          "sharpe": 0.549865427189218,
+          "max_drawdown": -0.009572550133752133,
+          "turnover": 13.0,
+          "transaction_costs": 408.24161339436637,
+          "n_periods": 20
+        },
+        "selection_top_n": 2,
+        "avg_holdings": 0.8,
+        "defensive_periods": 12,
+        "forced_defensive_periods": 0,
+        "total_periods": 20,
+        "universe_size": 4,
+        "holding_kind": "diversified_etf",
+        "avg_candidates": null,
+        "avg_scored": null
+      },
+      "real": {
+        "label": "real",
+        "metrics": {
+          "cagr": -0.0006172667448960389,
+          "annualized_volatility": 0.0019129542053631383,
+          "sharpe": -0.3218408953338628,
+          "max_drawdown": -0.004170390229371268,
+          "turnover": 1.0,
+          "transaction_costs": 29.999999999999996,
+          "n_periods": 20
+        },
+        "selection_top_n": 2,
+        "avg_holdings": 0.0,
+        "defensive_periods": 20,
+        "forced_defensive_periods": 0,
+        "total_periods": 20,
+        "universe_size": 26,
+        "holding_kind": "single_name",
+        "avg_candidates": 26.0,
+        "avg_scored": 17.7
+      },
+      "deltas_real_minus_proxy": {
+        "cagr": -0.02836437762108779,
+        "annualized_volatility": -0.05022479529714033,
+        "sharpe": -0.8717063225230808,
+        "max_drawdown": 0.0054021599043808655,
+        "turnover": -12.0
+      },
+      "bias_notes": [
+        "point-in-time: the real side selected names by rule each quarter from a 26-name candidate set (avg 26.0 were listing-eligible and avg 17.7 had enough history to score per quarter — the universe GROWS over the window, unlike the fixed 4-ETF proxy, so early periods are thinner). 20/20 quarters went fully defensive (0 of those FORCED by a price-coverage gap, not strategy rules — investigate as data quality, not signal). No name was hand-picked.",
+        "residual selection bias: the real candidate universe is names liquid TODAY; reconstructing historical index membership/liquidity is out of scope, so treat any real-vs-proxy edge as an UPPER BOUND (optimistic), not a clean estimate.",
+        "concentration differs: proxy selects up to top_n=2 diversified ETFs (realized avg 0.8 baskets) while real selects up to top_n=2 single names (realized avg 0.0 stocks); attribute any return/risk difference to concentration AND data-source, never data-source alone. To isolate data-source, re-run with matched top_n.",
+        "USD caliber: both backtests are in USD (real prices converted at as-of FX) and BOTH the signal and execution of each side run on one shared frame; the FX path is identical on both sides, so it is not a source of the difference."
+      ],
+      "run_metadata": {
+        "signal_dates": [
+          "2021-06-30",
+          "2021-09-30",
+          "2021-12-31",
+          "2022-03-31",
+          "2022-06-30",
+          "2022-09-30",
+          "2022-12-30",
+          "2023-03-31",
+          "2023-06-30",
+          "2023-09-29",
+          "2023-12-29",
+          "2024-03-28",
+          "2024-06-28",
+          "2024-09-30",
+          "2024-12-31",
+          "2025-03-31",
+          "2025-06-30",
+          "2025-09-30",
+          "2025-12-31",
+          "2026-03-31"
+        ],
+        "n_signal_dates": 20,
+        "proxy_coverage": {
+          "window_start": "2021-06-16",
+          "window_end": "2026-06-12",
+          "trading_dates": 1254,
+          "names_with_data": [
+            "MCHI",
+            "FXI",
+            "KWEB",
+            "ASHR"
+          ],
+          "names_missing_data": []
+        },
+        "real_coverage": {
+          "window_start": "2021-06-16",
+          "window_end": "2026-06-15",
+          "trading_dates": 1300,
+          "names_with_data": [
+            "0700.HK",
+            "9988.HK",
+            "3690.HK",
+            "1810.HK",
+            "9618.HK",
+            "9999.HK",
+            "0941.HK",
+            "0939.HK",
+            "1398.HK",
+            "1288.HK",
+            "2318.HK",
+            "2628.HK",
+            "1299.HK",
+            "0883.HK",
+            "0386.HK",
+            "0388.HK",
+            "600519.SH",
+            "000858.SZ",
+            "000333.SZ",
+            "300750.SZ",
+            "601012.SH",
+            "601318.SH",
+            "600036.SH",
+            "601398.SH",
+            "600900.SH",
+            "600276.SH"
+          ],
+          "names_missing_data": []
+        }
+      }
+    }
+  }
+}

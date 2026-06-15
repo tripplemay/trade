@@ -1,11 +1,11 @@
 {
-  "status": "fixing",
+  "status": "reverifying",
   "user_goal": "B063 hk_china 真数据 Batch 2：FX 层 + real-data 策略 + 回测对比(决策点)。来源：B062 数据地基 done 后，用户『规划 batch2』。**整体定位**：hk_china 换真数据工程第 2 批=**决策点**——产出『real-data hk_china vs proxy』回测对比报告+建议，**闸控 Batch 3(是否上真金 live Master)**。研究态不碰 live 推荐。回答唯一问题：用真 A股+港股替换 US-listed ETF proxy 回测上真更好吗？值这堆 FX/管道/集中度复杂度吗？**不预设结论**(很可能=没明显更好停在 proxy,那也有效,地基不白费)。**★方法论硬坑(决定报告可不可信)**：候选大盘股(腾讯/阿里/茅台等)是今天 mega-cap,直接拿 7 个回测=幸存者/事后偏差→虚高误导'值得做'。规约:real-data 策略**必须 point-in-time 规则选股**(从~20-30 宽流动 universe 按 momentum+quality 只用当时可得数据选 top N,复用 hk_china 逻辑),不许 hand-pick 赢家;做不到→报告标'偏乐观不足为 go 依据'。**★第二诚实点**:对比不止数据源还混集中度(proxy 分散 ETF vs real 集中个股 风险画像不同),报告须归因区分。**范围(research-safe)**：S2 §8 质量真跑(入口闸,B062 延后的)；FX 层(FRED DEXCHUS/DEXHKUS 历史汇率,复用 fred_loader);real-data hk_china 策略(point-in-time 规则选股);回测对比 real vs proxy(USD 口径);对比报告+Batch 3 建议。**不做(Batch 3/延后)**:激活 live Master/改 live 推荐/live 多币种 NAV 聚合(本批 FX 仅供回测 USD 换算)/交易规则。4 features 3g+1c：F001 FX 层(FRED 历史汇率进管道,复用 fred_loader);F002 real-data hk_china 策略(宽 universe point-in-time 规则选股+USD 换算);F003 回测对比 harness(proxy vs real USD 同口径+偏差感知,复用 trade/backtest);F004 codex S2 质量闸+跑对比回测+对比报告(诚实偏差)+Batch 3 建议+signoff。硬边界：**研究态不碰 live 推荐**(hk_china 仍 proxy)/trade 仍离线(FRED/akshare 在 workbench data_refresh,trade 读 CSV)/no-broker/§12.10.2/mypy CI-exact(§19)/US/Master 不破。spec docs/specs/B063-hk-china-real-data-batch2-fx-backtest-spec.md(6 章)。复用 fred_loader(FX)+trade/backtest/hk_china.py(策略逻辑)+B050 回测+B062 数据管道。",
   "total_features": 4,
   "completed_features": 3,
-  "fix_rounds": 0,
+  "fix_rounds": 1,
   "current_sprint": "F004",
-  "last_updated": "2026-06-14",
+  "last_updated": "2026-06-15",
   "reference_docs": [
     "docs/specs/B063-hk-china-real-data-batch2-fx-backtest-spec.md",
     "workbench/backend/workbench_api/data/fred_loader.py",
@@ -18,6 +18,7 @@
     "spec": "docs/specs/B063-hk-china-real-data-batch2-fx-backtest-spec.md",
     "test_cases": null,
     "signoff": "docs/test-reports/B063-hk-china-real-data-batch2-fx-backtest-signoff-2026-06-14.md",
+    "comparison_report": "docs/test-reports/B063-hk-china-real-data-batch2-fx-backtest-comparison-report-2026-06-15.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
@@ -37,12 +38,12 @@
     ]
   },
   "generator_handoff": {
-    "summary": "B063 3 generator features + 1 codex feature all done. Ready for backtest execution.",
+    "summary": "B063-F004-CORE-1 fix DONE by Generator (planner 路由,Codex 3 次推诿真跑). 补齐缺失执行胶水(新 trade/backtest/hk_china_comparison_runner.py 装配层 + scripts/test/hk_china_proxy_vs_real_backtest.py 驱动 + ashare_quality_check 默认 universe 7→26),门禁全绿(trade 891/mypy strict/ruff),commit be05463 已部署 VM(trade 0.2.1). **VM 真跑真数字**(tripplezhou@34.180.93.185,/opt/workbench/.venv,真数据 26/26 名+FX): ①对比回测 20 季度(2021Q2-2026Q1,USD 同口径)=**proxy CAGR +2.77%/Sharpe 0.55 vs real -0.06%/Sharpe -0.32**; ②S2 §8 质量闸真跑(非 CSV 有行). **核心诚实发现(报告 §5)**: real 策略 **20/20 季度 regional_risk_off 全防守、一只股没选**(forced_defensive=0=非数据缺口,是 2021-24 中国熊市 risk-off 闸全触发)→ real 的 -0.06% = SGOV 现金-摩擦,**核心假设『真个股 vs ETF』根本没测到**; proxy vs real 差异主因=risk-off bellwether 选型(KWEB/MCHI/FXI vs 3 mega-cap)这个策略构造差异,非数据源. S2 §8=**未通过/未验证**(深度 OK 8.45yr,但 cross-source 0/3 在<0.5%内=27-61% 偏差[疑 qfq 复权口径],HK 东财端点 ConnectionError 全失败[B062 已知,应改 sina]). **Batch 3 建议=NO-GO/未证实**(真金决定归 planner+用户). 报告+artifacts JSON 入 git. 交 Codex reverify=确认报告有真执行数字(非框架就绪)+边界守.",
     "status": "completed"
   },
   "session_notes": {
     "planner": "2026-06-14 B063 planning，status→building 交 Generator F001。**hk_china 换真数据 Batch 2=决策点**(产出回测对比报告闸控 Batch 3 是否上真金)。**两个诚实硬坑焊进 spec**：①★方法论=real-data 策略必须 point-in-time 规则选股(从~20-30 宽 universe 选)避幸存者偏差,不许 hand-pick 今天 7 赢家回测(虚高误导);做不到报告标偏乐观;②对比须归因区分集中度 vs 数据源(proxy 分散 vs real 集中)。**复用核查**:FX=FRED(fred_loader 已集成,DEXCHUS/DEXHKUS 央行权威);策略逻辑=trade/backtest/hk_china.py;回测=B050;数据管道=B062。4 features：F001 g FX 层(FRED 历史汇率)/F002 g real-data 策略(point-in-time 规则选股)/F003 g 回测对比 harness/F004 c S2 质量闸+对比回测+报告+Batch 3 建议。**S2(B062 延后的 §8 质量)=本批入口闸**:F004 先跑真数据,不达标→报告=数据未就绪不进 Batch 3。**研究态不碰 live 推荐**(hk_china 仍 proxy);本批 FX 仅供回测 USD 换算(live 多币种 NAV 是 Batch 3)。 ▌**【下次 planner 续接】** status=building(Generator F001→F003,再 Codex F004)。planner 续接:(a) B063 done→读对比报告:favorable+用户确认→规划 Batch 3(激活 live Master,S3 Master 零回归硬闸);no-go/偏乐观→停在 proxy(地基不白费 lookup/A股策略用);(b) Generator 抛疑点(宽 universe 如何定/point-in-time 成员史/FRED FX 缺值/proxy 回测同口径)。**诚实**:很可能报告=没明显更好,停 proxy 是对的结论。**需求池**:Batch 3(待报告)/B055 进攻选股/测试自动化基建/A 股 P2 基本面。框架沉淀 v0.9.47 待确认(akshare 端点选型+扩新市场须验端点+§25 强化)。prod=B062 系。",
-    "generator": "2026-06-14 B063 3 generator features 全完成 → status=verifying 交 Codex F004。F001 ✅ FX 层 + F002 ✅ real-data 策略(宽 26 名多行业 universe/PIT 规则选股/as-of FX→USD,adversarial 复审 0 正确性缺陷) + F003 ✅ 回测对比 harness。F003：新 trade/backtest/hk_china_real.py(real-data 回测引擎,镜像 hk_china.py,跑 build_real_portfolio over USD 价,复用 risk_parity 执行原语+HkChinaResolvedSignal,带 RealPortfolio provenance)+新 trade/backtest/hk_china_comparison.py(proxy vs real 同 signal_dates/USD 口径/摩擦;单一 quarterly metric 函数同时作用两侧=同口径;CAGR/vol/Sharpe/MaxDD/turnover/cost;build_comparison_payload 供 F004)。改 trade/backtest/hk_china.py:加可选 signal_prices(向后兼容 None=旧行为,Master/B050 不破)让对比把 proxy signal+execution 钉同一帧。★adversarial workflow 复审(9/15 confirmed)→全部修正:①CRITICAL proxy signal 原自磁盘独立加载=不公平→API 对称(两侧传 USD 帧,proxy signal 经 signal_prices 钉同帧);②top_n 默认不同(2 vs 6)静默=集中度混淆→selection_top_n+bias note 显式;③CAGR wipeout 返 0.0 掩盖→改返 -1.0 诚实;④real PIT universe 随时间增长 vs proxy 固定→avg_candidates 显式+note;⑤defensive 混淆 rule vs data-gap→forced_defensive 分离;⑥n_periods/_cagr 周期对齐+季度 cadence guard(非季度 raise)。测试+13;门禁全绿:trade pytest 887/mypy strict 82/ruff。交 Codex F004(S2 §8 质量闸 VM 真数据+跑对比回测 run_proxy_vs_real_comparison+诚实报告 build_comparison_payload[偏差/集中度归因/PIT provenance]+Batch 3 go/no-go 建议+signoff)。",
+    "generator": "2026-06-15 **B063-F004-CORE-1 fix 完成(planner 路由 Generator 真跑,因 Codex 3 次推诿)→ status=reverifying,fix_rounds=1,交 Codex 复验**。根因=核心交付(对比报告真数字+go/no-go)从没产出:F003 只交 harness 库函数,**没驱动真调它落报告**。本轮补齐+真跑+落报告。**新建**:trade/backtest/hk_china_comparison_runner.py(装配层,mypy-strict CI-tested:unified frame+FX→两侧 USD 帧,★信号日历=两侧**股票** universe 交易日交集[排除 defensive SGOV 避 US 日历污染]→run F003→payload+coverage 元数据)+scripts/test/hk_china_proxy_vs_real_backtest.py(VM ops runner 非 CI,读真 CSV 跑双配置 default/matched_top_n,落 JSON)+ashare_quality_check 默认 universe 7→26(import CN_HK_UNIVERSE)+FxConverter.currencies()。测试+4,门禁绿(trade 891/mypy strict 83/ruff),commit be05463 已自动部署 VM(trade 0.2.1,runner 模块在轮子里). **VM 真跑(tripplezhou@34.180.93.185 sudo /opt/workbench/.venv,WORKBENCH_DATA_ROOT=/var/lib/workbench/data,真 26/26 名+FX CNY/HKD)**: ①对比 20 季度(2021Q2-2026Q1)proxy +2.77%/0.55 vs real -0.06%/-0.32; ②S2 §8 真 fetch. **★最重要诚实发现**: real **20/20 季度 regional_risk_off 全防守 0 选股**(forced_defensive=0,数据完整=不是缺口,是 2021-24 中国熊市真信号+前~4 季 200D MA 无 warmup 人为防守)→ real -0.06%=SGOV 现金-摩擦,**核心假设没测到**; proxy/real 差异主因=risk-off bellwether 选型策略构造差,非数据源(spec §3 归因). matched_top_n≡default(real 永不选股 top_n moot). S2 §8 未通过(深度 8.45yr OK,但 cross-source 0/3<0.5%[27-61% 疑复权口径],HK 东财 stock_hk_hist ConnectionError 全挂=B062 已知应改 sina). **Batch 3=NO-GO/未证实**(真金归 planner+用户). 报告 docs/test-reports/B063-...-comparison-report-2026-06-15.md + artifacts(b063_comparison.json/b063_quality.json)入 git. **坑沉淀**:①quality 工具 HK 须用 sina(同 data_refresh)非东财;②akshare-qfq vs baostock 复权口径须对齐才能 cross-source<0.5%;③回测 risk-off 闸需 200D warmup(lookback 不够). 交 Codex reverify=确认报告真数字(非框架就绪)+边界守(研究态/离线/no-broker/US-Master 不破)+签收。",
     "evaluator": null
   },
   "features": [
