@@ -69,6 +69,11 @@ class FxConverter:
     def load(cls, path: Path | None = None) -> FxConverter:
         return cls(load_fx_rates(path))
 
+    def currencies(self) -> list[str]:
+        """Currencies with at least one loaded observation (sorted)."""
+
+        return sorted(self._rates)
+
     def rate_as_of(self, currency: str, as_of: date) -> float | None:
         """Most recent rate (local-per-USD) on-or-before ``as_of``; None if the
         currency is unknown or ``as_of`` precedes the first observation."""

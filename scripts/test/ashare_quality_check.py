@@ -39,19 +39,15 @@ if str(_BACKEND_PKG) not in sys.path:
     sys.path.insert(0, str(_BACKEND_PKG))
 
 from workbench_api.data.snapshot_loader import PriceBar  # noqa: E402
+from workbench_api.data_refresh.refresh import CN_HK_UNIVERSE  # noqa: E402
 from workbench_api.symbols.akshare_frames import bars_from_records, to_iso  # noqa: E402
 from workbench_api.symbols.data_quality import assess_symbol  # noqa: E402
 from workbench_api.symbols.symbol_ref import SymbolRef  # noqa: E402
 
-_DEFAULT_UNIVERSE = (
-    "0700.HK",
-    "9988.HK",
-    "3690.HK",
-    "1810.HK",
-    "600519.SH",
-    "000858.SZ",
-    "300750.SZ",
-)
+# B063 F004: the §8 quality gate must cover the FULL candidate universe the
+# real-data strategy selects from (the wide 26-name set the data_refresh job
+# pulls), not a 7-name sample — single source of truth = the refresh universe.
+_DEFAULT_UNIVERSE = CN_HK_UNIVERSE
 _HISTORY_START = "2018-01-01"
 
 
