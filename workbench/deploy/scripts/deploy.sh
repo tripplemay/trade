@@ -497,4 +497,31 @@ if [[ -d "${SYSTEMD_SRC}" ]]; then
   fi
 fi
 
+# 4. Release GC — prune old release dirs to keep disk bounded (2026-06-16).
+# deploy.sh historically created /srv/workbench/releases/<sha>/ every deploy but
+# NEVER pruned them (the "GC" the news/market-snapshot symlinks above mention was
+# referenced in comments yet never implemented) → unbounded growth (215 releases
+# / ~18 GB observed; risks the next deploy failing for lack of space). Keep the
+# symlinked `current` release + the RETAIN most-recent by mtime; delete the rest.
+# Persistent data (news/market snapshots) lives under the data root and is
+# symlinked into each release, so it survives this prune. Best-effort: a GC error
+# never fails an otherwise-successful deploy.
+RELEASES_DIR="${WORKBENCH_ROOT}/releases"
+RETAIN="${WORKBENCH_RELEASE_RETAIN:-10}"
+CURRENT_TARGET=$(readlink -f "${CURRENT_LINK}" 2>/dev/null || echo "")
+if [[ -d "${RELEASES_DIR}" ]]; then
+  echo "→ release-gc: keep current + ${RETAIN} most-recent under ${RELEASES_DIR}"
+  gc_n=0
+  while IFS= read -r rel; do
+    rel="${rel%/}"
+    [[ -z "${rel}" ]] && continue
+    gc_n=$((gc_n + 1))
+    [[ "${gc_n}" -le "${RETAIN}" ]] && continue                 # keep the N newest
+    resolved=$(readlink -f "${rel}" 2>/dev/null || echo "")
+    [[ -n "${CURRENT_TARGET}" && "${resolved}" == "${CURRENT_TARGET}" ]] && continue  # never the live release
+    echo "  release-gc: rm ${rel}"
+    rm -rf -- "${rel}" || echo "::warning::release-gc could not remove ${rel}" >&2
+  done < <(ls -1dt "${RELEASES_DIR}"/*/ 2>/dev/null || true)
+fi
+
 echo "✓ deploy complete: ${RELEASE_DIR}"
