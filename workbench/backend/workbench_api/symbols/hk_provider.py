@@ -17,12 +17,18 @@ lazy-imported (unit tests inject a fake; production carries it via pyproject).
 from __future__ import annotations
 
 import importlib
+from dataclasses import replace
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 from workbench_api.data.snapshot_loader import PriceBar
-from workbench_api.symbols.akshare_frames import bars_from_records
+from workbench_api.symbols.akshare_frames import bars_from_records, frame_records
+from workbench_api.symbols.akshare_fundamentals import (
+    baidu_latest_value,
+    hk_fundamentals_facts,
+)
 from workbench_api.symbols.provider import (
+    HK_GAAP,
     ProviderQuote,
     ProviderStats,
     SymbolDataProvider,
@@ -83,17 +89,53 @@ class HkSymbolProvider(SymbolDataProvider):
         )
 
     def get_stats(self, symbol: str) -> ProviderStats:
-        # P1 scope is price/lookup only — HK fundamentals are out of scope.
-        # Minimal identity (HKD) so the US-gated fundamentals surface degrades
-        # honestly to "non_us" rather than fabricating data.
+        """B064 F001 — HK fundamentals (HKFRS 口径), lazy akshare.
+
+        §23-verified-reachable: ``stock_financial_hk_analysis_indicator_em``
+        (annual statement metrics + ratios: revenue / net profit / ROE /
+        margins / EPS / BPS / debt-to-asset, CURRENCY=HKD) +
+        ``stock_hk_valuation_baidu`` (市值 / PE(TTM) / 市净率, a different baidu
+        host than the eastmoney push host that timed out in B062). Each call
+        can fail independently → best-effort partial facts; akshare absent
+        returns minimal identity (HKD), never a 500."""
+
         ref = SymbolRef.parse(symbol)
-        return ProviderStats(
+        base = ProviderStats(
             symbol=symbol,
             source=self.name,
             currency=ref.currency,
             quote_type="EQUITY",
             country="Hong Kong",
+            accounting_standard=HK_GAAP,
         )
+        akshare = self._load_akshare()
+        if akshare is None:
+            return base
+        code = _akshare_hk_code(ref)
+        indicator_records, _ = frame_records(
+            akshare,
+            "stock_financial_hk_analysis_indicator_em",
+            symbol=code,
+            indicator="年度",
+        )
+        facts = hk_fundamentals_facts(
+            indicator_records=indicator_records,
+            market_cap_yi=self._baidu_value(akshare, code, "总市值"),
+            trailing_pe=self._baidu_value(akshare, code, "市盈率(TTM)"),
+            price_to_book=self._baidu_value(akshare, code, "市净率"),
+        )
+        return replace(base, **facts)
+
+    def _baidu_value(self, akshare: Any, code: str, indicator: str) -> float | None:
+        """Latest scalar for one ``stock_hk_valuation_baidu`` indicator."""
+        records, _ = frame_records(
+            akshare,
+            "stock_hk_valuation_baidu",
+            symbol=code,
+            indicator=indicator,
+            period="近一年",
+        )
+        return baidu_latest_value(records)
 
     def _fetch_akshare(
         self, ref: SymbolRef, from_date: date, to_date: date

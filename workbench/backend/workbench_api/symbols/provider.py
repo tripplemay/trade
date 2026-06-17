@@ -29,6 +29,14 @@ from datetime import date
 
 from workbench_api.data.snapshot_loader import PriceBar
 
+# B064 F001 — accounting-standard provenance labels. CN/HK fundamentals follow
+# China Accounting Standards / HK Financial Reporting Standards, a different
+# schema from SEC US-GAAP — the surface stamps the standard so the口径 is honest
+# rather than implying cross-comparability.
+US_GAAP = "US-GAAP"
+CHINA_GAAP = "CAS"
+HK_GAAP = "HKFRS"
+
 
 class InvalidSymbolError(ValueError):
     """The requested symbol failed input validation (malformed ticker → 400).
@@ -86,18 +94,27 @@ class ProviderStats:
     country: str | None = None
     sector: str | None = None
     industry: str | None = None
-    # Fundamentals (best-effort; see B059 F003 US-equity gating in the service)
+    # Fundamentals (best-effort; see the market-aware gating in the service)
     market_cap: float | None = None
     trailing_pe: float | None = None
     forward_pe: float | None = None
     price_to_book: float | None = None
     dividend_yield: float | None = None
-    profit_margins: float | None = None
-    gross_margins: float | None = None
+    profit_margins: float | None = None  # net margin, fraction (yfinance convention)
+    gross_margins: float | None = None  # fraction
     revenue: float | None = None
     shares_outstanding: float | None = None
-    return_on_equity: float | None = None
-    debt_to_equity: float | None = None
+    return_on_equity: float | None = None  # fraction
+    debt_to_equity: float | None = None  # percent (yfinance debtToEquity convention)
+    # B064 F001 — CAS / HKFRS-friendly extras that don't map onto the US-GAAP
+    # ratio set above (so the CN/HK surface is rich + honest, not coerced into
+    # yfinance's shape). All optional; US (yfinance) fills eps/bvps/net_income.
+    eps: float | None = None  # earnings per share (reporting-period or trailing)
+    book_value_per_share: float | None = None  # 每股净资产 / BPS
+    net_income: float | None = None  # 归母净利润 / HOLDER_PROFIT (raw currency)
+    debt_to_asset: float | None = None  # 资产负债率 / DEBT_ASSET_RATIO, percent
+    as_of_report: date | None = None  # fundamentals reporting date (≠ price as_of)
+    accounting_standard: str | None = None  # US_GAAP / CHINA_GAAP / HK_GAAP
 
 
 class SymbolDataProvider(ABC):

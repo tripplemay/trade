@@ -205,24 +205,60 @@ def test_fundamentals_route_us_equity_available(
     assert body["market_cap"] == 3.0e12
 
 
-def test_fundamentals_route_non_us_degrades(
+def test_fundamentals_route_hk_available(
     initialised_db: str, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    # B064 — HK (.HK) now surfaces akshare HKFRS fundamentals (available), no
+    # longer the B059 'non_us' degradation. Routing goes through
+    # _resolve_provider, so that's the monkeypatch seam (not _default_provider).
     stats = ProviderStats(
         symbol="0700.HK",
-        source="yfinance",
+        source="akshare",
+        currency="HKD",
         quote_type="EQUITY",
-        country="China",
-        market_cap=4.0e12,
+        country="Hong Kong",
+        long_name="腾讯控股",
+        accounting_standard="HKFRS",
+        market_cap=4.06e12,
+        trailing_pe=15.23,
     )
-    monkeypatch.setattr(fundamentals_module, "_default_provider", lambda: _StatsProvider(stats))
+    monkeypatch.setattr(
+        fundamentals_module, "_resolve_provider", lambda _s: _StatsProvider(stats)
+    )
     client = _authed_client()
     resp = client.get("/api/symbols/0700.HK/fundamentals")
     assert resp.status_code == 200, resp.text
     body = resp.json()
+    assert body["available"] is True
+    assert body["reason"] is None
+    assert body["accounting_standard"] == "HKFRS"
+    assert body["currency"] == "HKD"
+    assert body["market_cap"] == 4.06e12
+
+
+def test_fundamentals_route_cn_source_unavailable_degrades(
+    initialised_db: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # akshare unreachable → minimal identity, honest source_unavailable (200).
+    stats = ProviderStats(
+        symbol="600519.SH",
+        source="akshare",
+        currency="CNY",
+        quote_type="EQUITY",
+        country="China",
+        accounting_standard="CAS",
+    )
+    monkeypatch.setattr(
+        fundamentals_module, "_resolve_provider", lambda _s: _StatsProvider(stats)
+    )
+    client = _authed_client()
+    resp = client.get("/api/symbols/600519.SH/fundamentals")
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
     assert body["available"] is False
-    assert body["reason"] == "non_us"
-    assert body["market_cap"] is None  # withheld for non-US
+    assert body["reason"] == "source_unavailable"
+    assert body["market_cap"] is None
+    assert body["currency"] == "CNY"
 
 
 def test_fundamentals_route_invalid_symbol_returns_400(

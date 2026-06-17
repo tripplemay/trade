@@ -14,6 +14,10 @@ from pydantic import BaseModel, Field
 
 from workbench_api.schemas.news import LatestNewsItem
 
+# B064 F001 — reason codes the UI maps to friendly copy (extends B059's
+# US-only set with the CN/HK honest-degradation case).
+FUNDAMENTALS_REASONS = ("non_us", "not_equity", "no_data", "source_unavailable")
+
 
 class PriceRangeReturns(BaseModel):
     """Total returns over fixed windows. ``None`` when the series doesn't
@@ -63,28 +67,41 @@ class SymbolPriceDetail(BaseModel):
 
 
 class SymbolFundamentals(BaseModel):
-    """B059 F003 — best-effort fundamentals for one symbol.
+    """B059 F003 / B064 F001 — best-effort fundamentals for one symbol.
 
-    Authoritative fundamentals are a US-equity feature (SEC's domain). For
-    non-US tickers / ETFs the financial ratios are withheld and ``available``
-    is false with a ``reason`` so the UI degrades honestly (not a blank). The
-    identity fields (name / sector / industry / currency) are shown regardless.
-    Source is yfinance ``.info`` (the only feed that covers arbitrary tickers).
+    **Market-aware** (B064): US equities surface yfinance ``.info`` ratios
+    (US-GAAP); A-share (.SH/.SZ) + Hong Kong (.HK) equities surface akshare
+    fundamentals (CAS / HKFRS) — a *different* accounting standard, stamped via
+    ``accounting_standard`` so the口径 is honest and not implied
+    cross-comparable. When the source is unreachable / the ticker is a non-US
+    ETF / no data, ``available`` is false with a ``reason`` so the UI degrades
+    honestly (not a blank). Identity (name / sector / industry / currency) is
+    shown regardless. Numeric units (B064 §3): margins / ROE are fractions;
+    ``debt_to_equity`` / ``debt_to_asset`` are percent; market cap / revenue /
+    net income / shares are raw currency units.
     """
 
     symbol: str
-    source: str = Field(description="Fundamentals source label, e.g. 'yfinance'.")
+    source: str = Field(description="Fundamentals source label, e.g. 'yfinance' / 'akshare'.")
     available: bool = Field(
-        description="True when financial ratios are shown (US equities only)."
+        description="True when financial metrics are shown for this symbol."
     )
     reason: str | None = Field(
         description=(
-            "Why ratios are withheld: 'non_us' / 'not_equity' / 'no_data'. "
-            "Null when available."
+            "Why metrics are withheld: 'non_us' / 'not_equity' / 'no_data' / "
+            "'source_unavailable'. Null when available."
         )
     )
     is_us_equity: bool = Field(
         description="True when quote type is EQUITY and country is the US."
+    )
+    accounting_standard: str | None = Field(
+        default=None,
+        description="Reporting standard of the metrics: 'US-GAAP' / 'CAS' / 'HKFRS'.",
+    )
+    as_of: date | None = Field(
+        default=None,
+        description="Reporting-period date of the statements (≠ the daily price as_of).",
     )
     # Identity (shown regardless of availability)
     name: str | None
@@ -93,7 +110,7 @@ class SymbolFundamentals(BaseModel):
     currency: str | None
     quote_type: str | None
     country: str | None
-    # Financial ratios (null when not available / US-only degradation)
+    # Financial metrics (null when not available / withheld)
     market_cap: float | None
     trailing_pe: float | None
     forward_pe: float | None
@@ -105,6 +122,11 @@ class SymbolFundamentals(BaseModel):
     shares_outstanding: float | None
     return_on_equity: float | None
     debt_to_equity: float | None
+    # B064 — CAS/HKFRS-friendly extras (also filled for US from yfinance)
+    eps: float | None = None
+    book_value_per_share: float | None = None
+    net_income: float | None = None
+    debt_to_asset: float | None = None
 
 
 class SymbolNewsResponse(BaseModel):

@@ -6,7 +6,7 @@
       "title": "A股+港股 基本面取数 + 端点 market-aware + 缓存（CnSymbolProvider/HkSymbolProvider 填 ProviderStats，fundamentals.py 去 US-only 门禁改按市场分流）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F001 + §3 §23 硬前置】(1) ★**§23 前置**：从生产 VM(或等价)实跑候选 akshare 基本面函数(A股+港股)真调用,确认可达+真返回 shape+字段→选定;港股不可达→该项诚实 available=False(不假设兄弟函数可达,B062 港股端点超时教训)。(2) Cn/Hk provider 新增基本面取数(lazy akshare)映射到 ProviderStats 基本面字段(CAS 口径:市值/PE/PB/ROE/营收/净利/毛利率/资产负债率等)。(3) `symbols/fundamentals.py` 由 US-only 门禁改 **market-aware**:US→yfinance 不变 / CN·HK→provider akshare stats;不可达/非 equity→available=False+reason。(4) 新表 `symbol_fundamentals_cache`(migration **0026**,含 symbol/market/currency/as_of/source/指标/fetched_at)on-demand cache-first+EOD TTL+RateLimitGuard,照 symbol_price_cache 隔离范式不破策略表。正面证据:`/api/symbols/600519.SH/fundamentals` 返真实茅台基本面真值(CNY,贴数字);0700.HK 真值或诚实 available=False;AAPL 零回归;§12.10.2 守门(新模块入 allowlist,akshare lazy)。Gates：backend pytest/ruff/mypy CI-exact(workbench_api+tests) 0。",
       "design_decisions": [
         "★§23：基本面 akshare 函数走与价格不同的端点/主机,实施前必须 VM 实跑验可达,选已验者;港股源可达性是本批最大未知,不可达诚实空态不阻塞。",

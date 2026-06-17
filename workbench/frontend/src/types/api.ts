@@ -811,11 +811,12 @@ export interface paths {
         };
         /**
          * Get Symbol Fundamentals Route
-         * @description Return best-effort fundamentals for ``symbol`` (US-equity gated).
+         * @description Return market-aware fundamentals for ``symbol`` (B064: US-GAAP / CAS /
+         *     HKFRS by market), cache-first.
          *
          *     Always 200 for a valid ticker: ``available`` + ``reason`` carry the honest
-         *     US-only degradation (non-US / ETF / no-data) rather than a blank or a 500.
-         *     A malformed ticker → 400.
+         *     degradation (non-US / ETF / no-data / source-unavailable) rather than a
+         *     blank or a 500. A malformed ticker → 400; rate-limited → 429.
          */
         get: operations["get_symbol_fundamentals_route_api_symbols__symbol__fundamentals_get"];
         put?: never;
@@ -2603,30 +2604,35 @@ export interface components {
         };
         /**
          * SymbolFundamentals
-         * @description B059 F003 — best-effort fundamentals for one symbol.
+         * @description B059 F003 / B064 F001 — best-effort fundamentals for one symbol.
          *
-         *     Authoritative fundamentals are a US-equity feature (SEC's domain). For
-         *     non-US tickers / ETFs the financial ratios are withheld and ``available``
-         *     is false with a ``reason`` so the UI degrades honestly (not a blank). The
-         *     identity fields (name / sector / industry / currency) are shown regardless.
-         *     Source is yfinance ``.info`` (the only feed that covers arbitrary tickers).
+         *     **Market-aware** (B064): US equities surface yfinance ``.info`` ratios
+         *     (US-GAAP); A-share (.SH/.SZ) + Hong Kong (.HK) equities surface akshare
+         *     fundamentals (CAS / HKFRS) — a *different* accounting standard, stamped via
+         *     ``accounting_standard`` so the口径 is honest and not implied
+         *     cross-comparable. When the source is unreachable / the ticker is a non-US
+         *     ETF / no data, ``available`` is false with a ``reason`` so the UI degrades
+         *     honestly (not a blank). Identity (name / sector / industry / currency) is
+         *     shown regardless. Numeric units (B064 §3): margins / ROE are fractions;
+         *     ``debt_to_equity`` / ``debt_to_asset`` are percent; market cap / revenue /
+         *     net income / shares are raw currency units.
          */
         SymbolFundamentals: {
             /** Symbol */
             symbol: string;
             /**
              * Source
-             * @description Fundamentals source label, e.g. 'yfinance'.
+             * @description Fundamentals source label, e.g. 'yfinance' / 'akshare'.
              */
             source: string;
             /**
              * Available
-             * @description True when financial ratios are shown (US equities only).
+             * @description True when financial metrics are shown for this symbol.
              */
             available: boolean;
             /**
              * Reason
-             * @description Why ratios are withheld: 'non_us' / 'not_equity' / 'no_data'. Null when available.
+             * @description Why metrics are withheld: 'non_us' / 'not_equity' / 'no_data' / 'source_unavailable'. Null when available.
              */
             reason: string | null;
             /**
@@ -2634,6 +2640,16 @@ export interface components {
              * @description True when quote type is EQUITY and country is the US.
              */
             is_us_equity: boolean;
+            /**
+             * Accounting Standard
+             * @description Reporting standard of the metrics: 'US-GAAP' / 'CAS' / 'HKFRS'.
+             */
+            accounting_standard?: string | null;
+            /**
+             * As Of
+             * @description Reporting-period date of the statements (≠ the daily price as_of).
+             */
+            as_of?: string | null;
             /** Name */
             name: string | null;
             /** Sector */
@@ -2668,6 +2684,14 @@ export interface components {
             return_on_equity: number | null;
             /** Debt To Equity */
             debt_to_equity: number | null;
+            /** Eps */
+            eps?: number | null;
+            /** Book Value Per Share */
+            book_value_per_share?: number | null;
+            /** Net Income */
+            net_income?: number | null;
+            /** Debt To Asset */
+            debt_to_asset?: number | null;
         };
         /**
          * SymbolNewsResponse

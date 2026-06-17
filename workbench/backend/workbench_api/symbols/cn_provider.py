@@ -28,12 +28,20 @@ from __future__ import annotations
 
 import importlib
 from contextlib import suppress
+from dataclasses import replace
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 from workbench_api.data.snapshot_loader import PriceBar
-from workbench_api.symbols.akshare_frames import bars_from_records, to_iso, to_ymd
+from workbench_api.symbols.akshare_frames import (
+    bars_from_records,
+    frame_records,
+    to_iso,
+    to_ymd,
+)
+from workbench_api.symbols.akshare_fundamentals import cn_fundamentals_facts
 from workbench_api.symbols.provider import (
+    CHINA_GAAP,
     ProviderQuote,
     ProviderStats,
     SymbolDataProvider,
@@ -118,17 +126,38 @@ class CnSymbolProvider(SymbolDataProvider):
         )
 
     def get_stats(self, symbol: str) -> ProviderStats:
-        # P1 A-share scope is price/lookup only — CN fundamentals are out of
-        # scope. Return minimal identity (CNY) so the US-gated fundamentals
-        # surface degrades honestly to "non_us" rather than fabricating data.
+        """B064 F001 — A-share fundamentals (CAS 口径), lazy akshare.
+
+        Two §23-verified-reachable functions: ``stock_financial_abstract``
+        (CAS statement metrics + ratios: revenue / net profit / ROE / margins /
+        EPS / BPS / debt ratios) and ``stock_value_em`` (valuation: 总市值 /
+        PE(TTM) / 市净率 / 总股本). Either can fail independently → the facts are
+        best-effort + partial; akshare absent / both failing returns minimal
+        identity (CNY) so the service degrades honestly, never a 500.
+        """
+
         ref = SymbolRef.parse(symbol)
-        return ProviderStats(
+        base = ProviderStats(
             symbol=symbol,
             source=self.name,
             currency=ref.currency,
             quote_type="EQUITY",
             country="China",
+            accounting_standard=CHINA_GAAP,
         )
+        akshare = self._load_akshare()
+        if akshare is None:
+            return base
+        abstract_records, abstract_columns = frame_records(
+            akshare, "stock_financial_abstract", symbol=ref.code
+        )
+        value_records, _ = frame_records(akshare, "stock_value_em", symbol=ref.code)
+        facts = cn_fundamentals_facts(
+            abstract_records=abstract_records,
+            abstract_columns=abstract_columns,
+            value_records=value_records,
+        )
+        return replace(base, **facts)
 
     # -- per-source fetchers (never raise; empty list on any failure) ---- #
 

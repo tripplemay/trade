@@ -120,6 +120,35 @@ def _record_to_bar(
     )
 
 
+def frame_records(
+    module: Any, fn_name: str, **kwargs: Any
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """Call ``module.<fn_name>(**kwargs)`` → ``(records, columns)``.
+
+    Generic over any pandas-like frame (``.columns`` + ``.to_dict('records')``).
+    Returns ``([], [])`` on **any** failure — a missing function, a network /
+    host error, ``None``, or an unparseable frame — so the caller (a provider's
+    fundamentals fetch) degrades honestly to a partial / empty result instead of
+    raising. ``module`` is the lazily-imported akshare; no akshare import lives
+    at this module's scope (B062 / §12.10.2)."""
+
+    fn = getattr(module, fn_name, None)
+    if fn is None:
+        return [], []
+    try:
+        frame = fn(**kwargs)
+    except Exception:
+        return [], []
+    if frame is None:
+        return [], []
+    try:
+        columns = [str(c) for c in frame.columns]
+        records: list[dict[str, Any]] = frame.to_dict("records")
+    except Exception:
+        return [], []
+    return records, columns
+
+
 def bars_from_records(
     records: list[dict[str, Any]], columns: list[str], ticker: str
 ) -> list[PriceBar]:

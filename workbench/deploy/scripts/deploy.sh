@@ -325,6 +325,11 @@ required = {
     # cache for GET /api/symbols/{symbol}/price). Missing → the symbol lookup
     # surface errors on every query; fail the deploy concretely.
     "symbol_price_cache",
+    # B064 F001 — 0026 symbol_fundamentals_cache (isolated on-demand
+    # fundamentals snapshot for GET /api/symbols/{symbol}/fundamentals, US +
+    # CN/HK). Missing → the fundamentals surface errors on every CN/HK lookup;
+    # fail the deploy concretely.
+    "symbol_fundamentals_cache",
 }
 missing = required - present
 if missing:

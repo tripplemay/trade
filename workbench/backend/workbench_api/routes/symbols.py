@@ -72,21 +72,28 @@ def get_symbol_price_route(
 @router.get("/{symbol}/fundamentals", response_model=SymbolFundamentals)
 def get_symbol_fundamentals_route(
     symbol: str,
+    session: SessionDep,
     _user: AuthenticatedUserDep,
 ) -> SymbolFundamentals:
-    """Return best-effort fundamentals for ``symbol`` (US-equity gated).
+    """Return market-aware fundamentals for ``symbol`` (B064: US-GAAP / CAS /
+    HKFRS by market), cache-first.
 
     Always 200 for a valid ticker: ``available`` + ``reason`` carry the honest
-    US-only degradation (non-US / ETF / no-data) rather than a blank or a 500.
-    A malformed ticker → 400.
+    degradation (non-US / ETF / no-data / source-unavailable) rather than a
+    blank or a 500. A malformed ticker → 400; rate-limited → 429.
     """
 
     try:
-        return get_symbol_fundamentals(symbol)
+        return get_symbol_fundamentals(session, symbol)
     except InvalidSymbolError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=t("symbols.invalid_symbol", symbol=symbol),
+        ) from exc
+    except SymbolRateLimitedError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=t("symbols.rate_limited", symbol=symbol),
         ) from exc
 
 

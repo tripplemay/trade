@@ -21,6 +21,7 @@ import yfinance  # type: ignore[import-untyped]
 from workbench_api.data.snapshot_loader import PriceBar
 from workbench_api.data.yfinance_loader import YFinanceSnapshotLoader, _TickerFactory
 from workbench_api.symbols.provider import (
+    US_GAAP,
     ProviderQuote,
     ProviderStats,
     SymbolDataProvider,
@@ -47,6 +48,19 @@ def _as_float(value: Any) -> float | None:
     if result != result:  # NaN
         return None
     return result
+
+
+def _epoch_to_date(value: Any) -> date | None:
+    """yfinance ``mostRecentQuarter`` is epoch seconds → the report date, or
+    None if absent / unparseable (degrade honestly, never raise)."""
+
+    epoch = _as_float(value)
+    if epoch is None:
+        return None
+    try:
+        return datetime.fromtimestamp(epoch, tz=UTC).date()
+    except (OverflowError, OSError, ValueError):
+        return None
 
 
 class YFinanceSymbolProvider(SymbolDataProvider):
@@ -118,4 +132,11 @@ class YFinanceSymbolProvider(SymbolDataProvider):
             shares_outstanding=_as_float(info.get("sharesOutstanding")),
             return_on_equity=_as_float(info.get("returnOnEquity")),
             debt_to_equity=_as_float(info.get("debtToEquity")),
+            # B064 F001 — the new CAS/HKFRS-shared extras also map from yfinance
+            # so the US detail page renders them alongside CN/HK.
+            eps=_as_float(info.get("trailingEps")),
+            book_value_per_share=_as_float(info.get("bookValue")),
+            net_income=_as_float(info.get("netIncomeToCommon")),
+            as_of_report=_epoch_to_date(info.get("mostRecentQuarter")),
+            accounting_standard=US_GAAP,
         )

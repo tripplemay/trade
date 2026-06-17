@@ -44,6 +44,9 @@ REQUEST_PATH_MODULES = (
     # B062 F003 — pure §8 data-quality checks (PriceBar in, report out; no
     # akshare / trade import).
     SYMBOLS / "data_quality.py",
+    # B064 F001 — pure akshare fundamentals frame→facts parser (stdlib +
+    # akshare_frames only; no akshare / trade import at module scope).
+    SYMBOLS / "akshare_fundamentals.py",
 )
 
 
