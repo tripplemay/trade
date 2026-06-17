@@ -117,7 +117,11 @@ def _run_candidate(fn_name: str, args: list[Any], kwargs: dict[str, Any], q: mp.
 
         fn = getattr(ak, fn_name, None)
         if fn is None:
-            out = {"ok": False, "error_class": "AttributeError", "error": f"akshare has no {fn_name}"}
+            out = {
+                "ok": False,
+                "error_class": "AttributeError",
+                "error": f"akshare has no {fn_name}",
+            }
         else:
             result = fn(*args, **kwargs)
             out = {"ok": True, "shape": _describe(result)}
@@ -163,13 +167,18 @@ def probe_one(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="B064 §23 CN/HK fundamentals+news akshare probe")
-    parser.add_argument("--timeout", type=float, default=45.0, help="per-candidate wall-clock seconds")
-    parser.add_argument("--out", type=str, default=None, help="optional path to also write JSON")
-    parser.add_argument("--label", type=str, default="local", help="run label (env/timeslot tag)")
+    parser = argparse.ArgumentParser(description="B064 §23 CN/HK fundamentals+news probe")
+    parser.add_argument(
+        "--timeout", type=float, default=45.0, help="per-candidate wall-clock seconds"
+    )
+    parser.add_argument("--out", type=str, default=None, help="also write JSON to this path")
+    parser.add_argument("--label", type=str, default="local", help="run label (env/timeslot)")
     cli = parser.parse_args()
 
-    results = [probe_one(label, fn, args, kwargs, cli.timeout) for label, fn, args, kwargs in CANDIDATES]
+    results = [
+        probe_one(label, fn, args, kwargs, cli.timeout)
+        for label, fn, args, kwargs in CANDIDATES
+    ]
     doc = {
         "probe": "b064_cn_hk_fundamentals_news",
         "run_label": cli.label,
