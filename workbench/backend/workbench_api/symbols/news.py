@@ -1,13 +1,19 @@
-"""B059 F004 — symbol news service (reuses the B034/B035 news feed).
+"""B059 F004 / B064 F002 — symbol news service (reuses the B034/B035 news feed).
 
 Returns recent news for an arbitrary ticker by reusing the existing
 ``NewsRepository.list_by_ticker`` (exact-match on the indexed ``ticker``
-column), the B054 Simplified-Chinese ``title_zh`` (falls back to the source
-title), and the deterministic ``tag_topics`` tagger (never LLM-generated). A
-symbol the ingest doesn't cover simply returns an empty list — the honest
-"no recent news" empty state, not an error. Request-path safe: no ``trade``
-import (mirrors the existing ``services/news`` read path).
-"""
+column), the Simplified-Chinese ``title_zh`` (falls back to the source title),
+and the deterministic ``tag_topics`` tagger (never LLM-generated).
+
+**B064**: for A-share (.SH/.SZ) + Hong Kong (.HK) tickers the read is preceded
+by an **on-demand cache-first** akshare ingest (``cn_hk_news.ingest_symbol_news``)
+— the lookup is any-ticker so CN/HK news cannot be batch-ingested ahead of time.
+The ingest is best-effort: any failure (akshare unreachable / rate-limited)
+degrades to the honest empty / previously-cached state, never a 500. US tickers
+keep the pure batch-fed read path unchanged.
+
+Request-path safe (§12.10.2): no ``trade`` import (akshare is lazy-imported
+inside ``cn_hk_news``)."""
 
 from __future__ import annotations
 
@@ -17,7 +23,9 @@ from workbench_api.db.repositories.news import NewsRepository
 from workbench_api.news.topics import tag_topics
 from workbench_api.schemas.news import LatestNewsItem
 from workbench_api.schemas.symbols import SymbolNewsResponse
+from workbench_api.symbols.cn_hk_news import ingest_symbol_news
 from workbench_api.symbols.service import normalize_symbol
+from workbench_api.symbols.symbol_ref import SymbolRef
 
 _DEFAULT_LIMIT = 20
 
@@ -32,6 +40,14 @@ def get_symbol_news(
     state). A malformed ticker raises :class:`InvalidSymbolError` (→ 400)."""
 
     symbol = normalize_symbol(raw_symbol)
+    ref = SymbolRef.parse(symbol)
+    if ref.market in ("CN", "HK"):
+        try:
+            ingest_symbol_news(session, ref)
+        except Exception:
+            # Honest degrade: discard any partial/failed write so the read can
+            # still serve previously-cached rows (or the empty state).
+            session.rollback()
     repo = NewsRepository(session)
     rows = repo.list_by_ticker(symbol, limit=limit)
     items = [

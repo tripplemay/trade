@@ -20,7 +20,7 @@
       "title": "A股+港股 个股新闻 on-demand ingest + 端点（akshare 个股新闻→news 表幂等入库,复用 get_symbol_news 读取,港股英文标题走 B054 翻译）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F002 + §3 §23】(1) ★**§23 前置**：实跑 akshare A股个股新闻函数(候选 stock_news_em)确认可达+shape;港股新闻源不可达→诚实空态。(2) **on-demand cache-first**(planner 决策:lookup 任意 ticker 不能预 ingest 全市场,故请求时 lazy akshare 取个股新闻→save_if_new 入 news 表幂等,ticker 关联;近端已 ingest 不重取)+RateLimitGuard。(3) A股标题已中文免翻;港股英文标题→复用 B054 translate_title 填 title_zh(边界仅翻译)。(4) `/{symbol}/news` 端点签名不变,CN/HK 走新 ingest 后由 get_symbol_news 读出。正面证据:`/api/symbols/600519.SH/news` 返真实茅台个股新闻条目(中文标题,贴条目);0700.HK 真条目或诚实空态;AAPL 新闻零回归;§12.10.2 守门;no-AI(仅展示+B054 翻译,无观点生成)。Gates：backend pytest/ruff/mypy CI-exact 0;若新增 timer/job 须 deploy 接线(§24)+入口 env 守门(§12.11.1,若写生产 DB)。",
       "design_decisions": [
         "★planner 设计决策:CN/HK 新闻采 on-demand cache-first(非美股 job/timer 范式),因 lookup 是任意 ticker 不可预 ingest;偏离美股范式有诚实理由,Generator 若发现更优实现可偏离+报 planner 裁定(§22)。",

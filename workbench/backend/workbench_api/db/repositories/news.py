@@ -86,6 +86,23 @@ class NewsRepository(Repository[News, UUID]):
         self._session.flush()
         return row
 
+    def latest_fetched_at_for_ticker(
+        self, ticker: str, *, source: str | None = None
+    ) -> datetime | None:
+        """B064 F002 — the most recent ``fetched_at`` for ``ticker`` (optionally
+        scoped to ``source``), or None when no row exists.
+
+        Backs the on-demand CN/HK news ingest's EOD cache-first check: the
+        request path re-fetches a symbol's eastmoney news at most once per UTC
+        day, so a same-day ``fetched_at`` means the lookup serves the already-
+        ingested rows instead of re-hitting akshare."""
+
+        stmt = select(News.fetched_at).where(News.ticker == ticker)
+        if source is not None:
+            stmt = stmt.where(News.source == source)
+        stmt = stmt.order_by(News.fetched_at.desc()).limit(1)
+        return self._session.execute(stmt).scalar_one_or_none()
+
     def list_by_ticker(
         self,
         ticker: str,

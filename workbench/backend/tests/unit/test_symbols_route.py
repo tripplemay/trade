@@ -316,3 +316,45 @@ def test_news_route_invalid_symbol_returns_400(initialised_db: str) -> None:
     client = _authed_client()
     resp = client.get(f"/api/symbols/{'A' * 40}/news")
     assert resp.status_code == 400, resp.text
+
+
+def test_news_route_cn_on_demand_ingest(
+    initialised_db: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # B064 F002 — a CN ticker triggers on-demand akshare ingest (fake fetcher),
+    # then the existing read surfaces the Chinese headlines.
+    import workbench_api.symbols.cn_hk_news as cn_hk_news
+
+    def _fake_fetcher(code: str) -> list[dict[str, object]]:
+        assert code == "600519"  # canonical → native 6-digit
+        return [
+            {
+                "新闻标题": "贵州茅台：余思明获聘董事会秘书",
+                "新闻内容": "公告披露……",
+                "发布时间": "2026-06-12 10:27:00",
+                "文章来源": "南方财经网",
+                "新闻链接": "http://finance.eastmoney.com/a/202606123769599746.html",
+            }
+        ]
+
+    monkeypatch.setattr(cn_hk_news, "_default_fetcher", _fake_fetcher)
+    client = _authed_client()
+    resp = client.get("/api/symbols/600519.SH/news")
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert body["symbol"] == "600519.SH"
+    assert len(body["items"]) == 1
+    assert body["items"][0]["title"] == "贵州茅台：余思明获聘董事会秘书"
+
+
+def test_news_route_cn_source_unavailable_empty_state(
+    initialised_db: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # akshare unreachable (fetcher returns []) → honest empty state, not 500.
+    import workbench_api.symbols.cn_hk_news as cn_hk_news
+
+    monkeypatch.setattr(cn_hk_news, "_default_fetcher", lambda _c: [])
+    client = _authed_client()
+    resp = client.get("/api/symbols/600519.SH/news")
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["items"] == []

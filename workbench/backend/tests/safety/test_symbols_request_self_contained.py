@@ -47,6 +47,9 @@ REQUEST_PATH_MODULES = (
     # B064 F001 — pure akshare fundamentals frame→facts parser (stdlib +
     # akshare_frames only; no akshare / trade import at module scope).
     SYMBOLS / "akshare_fundamentals.py",
+    # B064 F002 — on-demand CN/HK news ingest (lazy akshare stock_news_em →
+    # news table). Imports the news repo + NewsItem; no trade, akshare lazy.
+    SYMBOLS / "cn_hk_news.py",
 )
 
 
