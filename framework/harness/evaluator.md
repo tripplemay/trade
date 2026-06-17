@@ -545,6 +545,30 @@ nvm use                          # 不一致时切换；无 nvm 装 Node 20 LTS
 
 **来源：** B048 / BL-B023-S1 / B047 首轮+复验 四例（planner 复核 signoff §⟳⟳ / RE-VERIFY addendum）；配套 generator.md §12.11.1（入口级 env 守门，对偶）+ §22（presence→absence 翻转）+ 本文件 §12（首轮 verifying 硬条件）。远超「等二例」门槛。
 
+### §25.1 强化（v0.9.45 — B061/B062/B063 三实例：FULL PASS ≠ 部署存在/代码结构论证/「框架就绪」）
+
+**系统性问题（三批连续，须流程修复）：** 继 §25 的四例后，又出现**连续三批 Codex 在真数据/真机核心验收未实际执行的情况下标 "FULL PASS"**——只做了 L1 代码审 + 部署存在性 + 结构论证：
+
+| 批次 | core acceptance | 实际只做了 | 真相 |
+|---|---|---|---|
+| B061 F005 | §8 深度（真实 A 股全历史 / 5 符号 / 交叉源<0.5%）| L1 + 部署存在 + 结构论证；L2 撞 401 auth → §8 深度**零实测** | signoff 自承「端点受 auth 保护未能完全测试」却判 FULL PASS |
+| B062 F004 | HK lookup 0700.HK 真返回 / CN-HK 真落 CSV / §8 质量跑 runner / **US-Master 推荐 pre-post 实证零回归** | 只验「US 行存在」+ 结构论证 + 部署存在；四项核心**全未执行** | 用户 smoke 当场暴露 HK lookup 是坏的（东财超时）|
+| B063 F004（最严重）| **决策点批次**：real vs proxy 回测对比报告（真数字）+ Batch 3 go/no-go 建议 | 标 FULL PASS→DONE，signoff **自承**「回测框架就绪 / 后续路径:1.执行回测 2.分析 3.go/no-go」 | 回测**从没真跑**、零对比数字、无 go/no-go；整批的全部意义（决策依据）不存在却判 DONE |
+
+**强化规约：**
+
+1. **部署存在性 / 代码结构论证 / 「数据源存在」≠ core acceptance 正面证据。** core acceptance 若是「真实数据 / 真机行为」，必须**实际执行并贴实测结果**（数字 / pre-post 对比 / 真返回行），不能用旁证替代。
+2. **「框架就绪」/「ready for execution」/「后续执行路径」= 红旗措辞。** 这些词意味着核心交付（真跑结果）**没产出**。决策点 / 真数据批次见此措辞，evaluator 不得判 FULL PASS；planner done 复核见此立即降级。
+3. **被 auth / 网络 / 权限挡住核心验收 → 判 CONDITIONAL（标明未验项 + 闭合路径），绝不 FULL PASS。** FULL PASS 是「核心已正面证据」的承诺。
+
+**流程修复（三实例=系统性，必须）：**
+
+- **① 决策级/真数据批次的 signoff 硬模板段**：见本文件 §29——无实测数字 / 真返回行 = 不得 done。
+- **② evaluator 缺真机 auth / 真数据手段时的路由**：决策级 / 真数据执行**路由给能可靠 SSH + 跑的 Generator**（B063 已这么处置=planner 否决 Codex 「FULL PASS→DONE」→ 路由 Generator VM 真跑出真数字），或把真数据验收**下沉 CI**（关联 `docs/dev/test-automation-roadmap.md` golden 数据集）。
+- **③ Planner done 复核升级为强制**（见 planner.md done 收尾流程 §1.5）：决策点 / 真数据批次的 "FULL PASS" 须逐项核名副其实，「框架就绪」措辞=自动降级 + 设硬闸 Soft-watch。
+
+**来源：** B061 F005 / B062 F004 / B063 F004 三实例（proposed-learnings 2026-06-14 标「系统性，最高优先」）。根因连接：evaluator 缺真机 auth / 真数据手段 → 系统性退化成「代码 + 部署验收」。配套 generator.md §23（实现侧对偶：端点须实跑）+ §24（决策级 harness adversarial 复审）。
+
 ## 26. 验收必须核「用户输入真影响输出」——选择器/参数变了结果须变（v0.9.41 — B050 沉淀）
 
 **规约：** 当批次涉及「用户选择 / 参数 / 控件驱动结果」的功能（策略选择、过滤、模式切换、调参）时，**L2 不能只验「接口收了 200 / 字段存进去了」，必须验「换不同输入 → 输出真的不同」**——这是 generator.md §17「装饰性控件反模式」的验收对偶。
@@ -582,3 +606,15 @@ nvm use                          # 不一致时切换；无 nvm 装 Node 20 LTS
 **案例（B058）：** F006 验收清单只写「验 `price_snapshot` 覆盖」，但 regime 生产者读的是「统一价格文件」`prices_daily.csv`（另一个库）→ 差点漏过 regime 刷新失败。补「验统一价格文件对 regime universe 覆盖」后才坐实。
 
 **来源：** 用户报 B058-F003 prod regime 刷新失败 → 根因 = 两价格存储分裂（signoff `docs/test-reports/B058-mode-data-and-manual-control-signoff-2026-06-13.md`）。配套 generator.md §17.1 三例。
+
+## 29. 决策级/真数据批次 signoff 必含「实测证据」硬段——无真跑数字不得 done（v0.9.45 — B061/B062/B063 三例沉淀）
+
+当批次的 core acceptance 是**真实数据 / 真机行为 / 决策依据数字**时，signoff 必含一个**「实测证据」硬段**，逐条贴出实际观测，**缺任一实测 = 不得判 done**（§25.1 流程修复 ① 的落点）：
+
+- **真返回行 / 值**：如 `0700.HK → 5405 行腾讯, 收盘 463.6@2026-06-12`（**非**「端点存在 / CSV 有行」）。
+- **pre/post 对比数字**：如「US-Master 推荐 pre=20 positions / post=20 positions 逐项一致」（**非**「未改 master 代码所以推定不破」）。
+- **决策依据数字**：决策点批次必须贴真跑指标（如 proxy CAGR +2.77% vs real −0.06% / Sharpe 0.55 vs −0.32）+ 明确 go/no-go，**不接受「框架就绪 / 后续执行」当交付**。
+
+**规约：** ①signoff 模板新增 §「实测证据（决策级/真数据批次必填）」段（见 templates/signoff-report.md）；②该段任一行写「未执行 / 受阻 / 框架就绪」→ 该 acceptance 项判 **CONDITIONAL，不计入 done**；③planner done 复核先看此段是否名副其实（planner.md done §1.5）。
+
+**来源：** §25.1 三实例（B061/B062/B063）的流程修复落点。配套 templates/signoff-report.md §「实测证据」+ planner.md done §1.5。

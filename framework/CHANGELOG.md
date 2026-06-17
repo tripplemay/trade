@@ -5,6 +5,24 @@
 
 ---
 
+## v0.9.45 — 2026-06-18（B061+B062+B063：evaluator FULL PASS 系统性退化 + 流程修复 + 5 条队列清空）
+
+**来源批次：** B061 / B062 / B063（done 阶段累积，用户 2026-06-18「全部沉淀，含 §25 流程修复」确认一并沉淀）。**B063 决策点真跑闭合后的 done 收尾。**
+
+**沉淀内容（用户确认全部）：**
+
+- **① ★系统性问题：evaluator 在真数据/真机核心验收未执行下标 FULL PASS（B061/B062/B063 三实例）** → `evaluator.md §25.1`（FULL PASS ≠ 部署存在/代码结构论证/「框架就绪」；「框架就绪/ready for execution/后续执行路径」=红旗；auth/网络/权限挡核心→CONDITIONAL 绝不 FULL PASS）+ **流程修复**：`evaluator.md §29`（决策级/真数据批次 signoff 必含「实测证据」硬段，无真跑数字不得 done）+ `planner.md done §1.5`（done 复核 FULL PASS 名副其实，决策点批次强制，路由能 SSH 真跑的 Generator 或下沉 CI）+ `templates/signoff-report.md §实测证据`。关联 `docs/dev/test-automation-roadmap.md`（真数据验收 CI 下沉=结构性解法）。
+- **② 新数据 provider/端点须本地实跑真调用，勿因兄弟端点通而推定**（B062 F001 HK `stock_hk_hist` 撞不同主机 ReadTimeout）→ `generator.md §23`（本地实跑真调用验可达+格式+返回 shape；同 lib 不同市场可能走不同主机/参数；优先 spike 验过的源）+ `planner.md 铁律 9`（spec 扩新市场须含「先验端点可达」任务）。与 §25.1 互补（验收侧 vs 实现侧）。
+- **③ 决策级/对比类 harness 须过 adversarial 公平性/诚实性复审**（B063 F003 全门禁绿但抓出 1 CRITICAL 公平性 + 8 高价值修）→ `generator.md §24`（绿门禁只证「能跑/类型对」不证「比较公平/归因诚实/边界对称」；对比工具 6 项检查清单；多 agent workflow 逐 finding 对抗验证）。
+- **④ spec 校验/检查条款须核「实际实现的粒度」，现实已隐含满足则不造装饰机制**（B061 F003 CN 日历，§22 扩展）→ `generator.md §22.1` + `planner.md`（写「按 X 维度处理」前核 X 在代码里是否真有行为差异，避免 §17 装饰代码）。
+- **⑤ 队列清空（单例小坑 + 范式，用户批一并沉淀）：** async job 范式（B047）→ `generator.md §25`；narrow-sudoers 落盘须经 root 属 wrapper 防路径穿越（B037-OPS1）→ `generator.md §12.12`；satellite 子策略权重口径 total-level vs sleeve-relative（BL-B011-S2）→ `planner.md`；JSON 长值 Edit 坑 + banlist exact import-root + venv trade copy 刷新（B063/B060/B057）→ `generator.md §26` 小坑合集。
+
+**队列状态：** proposed-learnings.md 活跃候选**全部清空**（含历史单例 async worker / sudoers wrapper / satellite 权重）。归档 `framework/archive/proposed-learnings-archive-v0.9.45.md`。
+
+**流程根因记录：** evaluator 缺真机 auth/真数据手段 → 系统性退化成「代码+部署验收」。结构性解法 = 测试自动化基建（golden 真数据集下沉 CI），已在 backlog（`B0XX-test-automation-infra`）。当前缓解 = 决策级/真数据批次路由 Generator 真跑 + planner done 强制复核。
+
+---
+
 ## v0.9.44 — 2026-06-13（B057+B058+B059：两价格存储分裂三例 + 本地门禁 CI-exact + 新路由配套 + merge-default + spec 复用适用域）
 
 **来源批次：** B057 / B058 / B059（done 阶段累积 5 条，用户 2026-06-13 确认一并沉淀）。

@@ -88,7 +88,8 @@
       "数据走 B045 data-refresh pipeline（加 proxy symbol 入 universe）；保持 research-only / no-broker 边界",
       "数据范围参照 docs/strategy/04-hk-china-etf-small-allocation.md",
       "建议排在交易闭环冒烟（BL-B023-S1）之后、B043 AI 解释层之前，使 B043 解释一个 4/4 完整真实 Master",
-      "2026-06-14 用户决定 proxy→真 A股+港股进 live Master(直接全套+A股港股都要)。**planner 真金纪律=分 3 批激活闸控于回测**：Batch 1=B062(数据地基:港股 provider+A股港股进 trade 管道+§8 质量,research-safe 立项 building)；Batch 2=FX+real-data hk_china 策略+回测对比 real vs proxy(决策点);Batch 3=激活 live Master(★真金,闸控于回测favorable+用户确认,Master 硬回归)。诚实前提:现 proxy 已合法真实暴露无 FX/管道复杂度,hk_china 最小最弱 10%,须回测证明值。"
+      "2026-06-14 用户决定 proxy→真 A股+港股进 live Master(直接全套+A股港股都要)。**planner 真金纪律=分 3 批激活闸控于回测**：Batch 1=B062(数据地基:港股 provider+A股港股进 trade 管道+§8 质量,research-safe 立项 building)；Batch 2=FX+real-data hk_china 策略+回测对比 real vs proxy(决策点);Batch 3=激活 live Master(★真金,闸控于回测favorable+用户确认,Master 硬回归)。诚实前提:现 proxy 已合法真实暴露无 FX/管道复杂度,hk_china 最小最弱 10%,须回测证明值。",
+      "2026-06-18 Batch 2(B063 done)真跑结论=NO-GO/未证实:proxy CAGR +2.77%/Sharpe 0.55 vs real −0.06%/−0.32,但 real 20/20 季度全防守 0 选股(200D 趋势闸 2021-24 中国熊市 risk-off+前~4 季无 warmup)→『真个股 vs proxy ETF』核心假设根本没测到;S2 §8 质量未通过(A股交叉源 0/5 偏差 2-60% 疑 qfq 复权口径;HK 东财 ConnectionError 须 sina)。**用户裁定:不接受 NO-GO,修方法学重测一轮**(修 200D warmup 不足+HK 改 sina+qfq 复权口径对齐,把真个股 vs proxy 真正测到)→新 backlog 项 B0XX-hk-china-real-data-retest。**暂不停 proxy**(hk_china 仍 ETF proxy),待重测结论再定 Batch 3。planner 提示:200D 闸本就让真个股全程躲开 2021-24 中国股灾,重测大概率仍难看,但能把假设真正测到=有效结论。"
     ],
     "confirmed_at": "2026-05-13",
     "priority": "high",
@@ -133,7 +134,25 @@
     ],
     "source": "B011 signoff soft-watch S2",
     "milestone": "C — Master 4/4 真实（去 hk_china by-design stub）",
-    "sequence_note": "2026-06-14 启动=B062(Batch 1 数据地基 building)。后续 Batch 2(FX+策略+回测)/Batch 3(激活 live Master 闸控)待 B062 done 续规划。"
+    "sequence_note": "2026-06-14 启动=B062(Batch 1 数据地基 done)。Batch 2=B063(FX+real 策略+回测对比,done 2026-06-15,结论 NO-GO/未证实)。2026-06-18 用户不接受 NO-GO→Batch 2.5=B0XX-hk-china-real-data-retest(修方法学重测,新 backlog 项)。Batch 3(激活 live Master)待重测结论 favorable+用户确认。当前 hk_china 仍 ETF proxy(暂不停)。"
+  },
+  {
+    "id": "B0XX-hk-china-real-data-retest",
+    "title": "hk_china real-data Batch 2.5：修方法学重测一轮(把『真个股 vs proxy』真正测到)",
+    "description": "【2026-06-18 用户裁定:B063 真跑结论 NO-GO/未证实=方法学缺陷致核心假设没测到,不接受,修方法学重测一轮】B063 对比真跑(proxy CAGR +2.77%/Sharpe 0.55 vs real −0.06%/−0.32)的致命缺陷:real 策略 20/20 季度 regional_risk_off **全防守、0 选股**(forced_defensive=0=数据完整,是 2021-24 中国熊市真 risk-off 信号 + 前~4 季 200D MA 无 warmup 人为防守)→ real −0.06% = 持 SGOV 现金减摩擦,**『真个股 vs proxy ETF』核心假设根本没测到**。本批=修三处方法学缺陷重跑对比,让真个股真正参与回测,得到可信 go/no-go:(1) **200D warmup**——回测窗口前预留≥200 交易日数据预热趋势闸,避免前几季因 MA 未成形人为全防守;(2) **HK 数据源改 sina**(B062 已知:东财 stock_hk_hist ConnectionError → akshare stock_hk_daily sina 端点,B060 验过可达);(3) **A股 qfq 复权口径对齐**——akshare-baostock 交叉源偏差 2-60% 疑后复权/前复权口径不一致,对齐到 S2 §8 cross-source<0.5% 门槛(决策报告可信前提)。复跑后:若 real 仍全防守=结论坐实(200D 闸让真个股全程躲开 2021-24 中国股灾,任何中国股暴露这窗口都难看);若 real 真选了股=首次得到真个股 vs proxy 的真对比 → 据此重定 Batch 3。",
+    "decisions": [
+      "2026-06-18 用户裁定:不接受 B063 NO-GO(方法学缺陷致核心假设没测到),修方法学重测一轮",
+      "三处必修:①回测窗口前 200D warmup(趋势闸预热);②HK 改 sina(akshare stock_hk_daily,东财端点弃用);③A股 qfq 复权口径对齐到 cross-source<0.5%",
+      "复用 B063 已建资产:trade/backtest/hk_china_comparison_runner.py(装配层)+scripts/test/hk_china_proxy_vs_real_backtest.py(VM 驱动)+ashare_quality_check(26 universe)+FxConverter;只补 warmup/数据源/复权口径,不重写 harness",
+      "decision-grade=执行者须真跑出真数字(evaluator.md §29 实测证据硬段);若 Codex 无真机手段路由 Generator VM 真跑(planner.md done §1.5)",
+      "研究态不碰 live 推荐(hk_china 仍 proxy);trade 仍离线读 CSV;Master/US 不破——边界同 B063",
+      "planner 诚实提示:200D 闸本就让真个股全程躲开 2021-24 中国股灾,重测大概率仍 NO-GO,但能把假设真正测到=有效结论(值得做以闭合决策点)"
+    ],
+    "confirmed_at": "2026-06-18",
+    "priority": "medium",
+    "milestone": "C — hk_china 真数据 Batch 2.5(决策点重测,闸控 Batch 3)",
+    "source": "2026-06-18 B063 done 收尾用户裁定(不接受 NO-GO,修方法学重测)",
+    "sequence_note": "2026-06-18 用户选下一批=A 股数据源 P2;本重测排其后(或与 P2 数据质量工作协同——qfq 复权口径对齐对两者都有用)。完成后据真对比重定 BL-B011-S2 Batch 3。"
   },
   {
     "id": "BL-B023-S2",

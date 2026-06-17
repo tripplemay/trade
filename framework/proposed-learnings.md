@@ -75,7 +75,7 @@
 
 **建议写入：** `framework/harness/generator.md` §12.x（与 §12.9 production secret 三处接线 / §12.10 deploy-artifact 自包含 同属 "deploy/ops hardening" 系列）；或 security 专章。复用窗口：未来任何 deploy 用户 narrow-sudoers 扩权（新增需 root 落盘的运维动作）。
 
-**状态：** 待确认（单例；可与未来同类 sudoers/ops-privilege 案例二例合并，遵循"等二例再沉淀"原则）
+**状态：** ✅ 已沉淀 v0.9.45（generator.md §12.12；用户 2026-06-18 批「全部沉淀」一并清队列，不再等二例）
 
 <!-- 2026-06-06: v0.9.34 沉淀完成（B038：§12.10 自包含审计扩到所有生产执行路径）：B038 F003 L2 blocker — news/cli.py 接入 workbench-news.timer 后首次 prod 执行触发 import scripts.* ModuleNotFoundError（B033 起隐患，manual-only 期全程掩盖）。signoff §Framework Learnings 由 Planner done 阶段裁定沉淀。写入 generator.md §12.10.1（manual-only CLI 接入自动执行路径时按 §12.10 重审 + 规约 5 + L2 手动 trigger service 验真 + 对比表 v0.9.34 行）+ CHANGELOG v0.9.34。边界 (q)→(r) 收编属产品边界（已落 project-status §永久硬边界），非 framework；B037-OPS1 durable 首验属预期行为确认，不单独沉淀。 -->
 
@@ -95,7 +95,7 @@
 
 **建议写入：** `framework/harness/planner.md`（spec 写 satellite 策略 acceptance 时，cap 参数须标注 total-level vs sleeve-relative，避免 generator 二义）；或 strategy-design 约定文档「master 子策略权重口径 = sleeve-relative sum-to-1.0」。
 
-**状态：** 待确认（BL-B011-S2 done 阶段一并提出；evaluator F004 可复核口径是否正确）
+**状态：** ✅ 已沉淀 v0.9.45（planner.md「satellite 子策略权重口径」段；用户 2026-06-18 批一并清队列）
 
 <!-- 2026-06-08: v0.9.39 沉淀完成（B034/BL-B011-S2 二例：wheel packages 只打源码树，运行时非包数据须 force-include）：BL-B011-S2 trade wheel 缺 repo-root data/fixtures→satellite 双 stub（editable 掩盖 wheel-on-VM 暴露，同 §12.10 机理）。用户批沉淀 generator.md §12.10.3（force-include/materialise 进包目录+守门测试+L2 fresh deploy 验不 stub）+对比表 v0.9.39 行+CHANGELOG。 -->
 
@@ -109,7 +109,7 @@
 
 **建议写入：** generator.md 新 §（async job 范式）或 patterns。
 
-**状态：** 待确认（单例，等二例再沉淀）。
+**状态：** ✅ 已沉淀 v0.9.45（generator.md §25；用户 2026-06-18 批一并清队列）。
 
 <!-- 当前活动候选：BL-B011-S2 satellite 权重口径（④）+ B047 async worker 范式（③），均单例待二例。 -->
 
@@ -121,9 +121,9 @@
 
 **建议写入：** 该 spec 加显式 `await waitFor` 稳态断言或 quarantine；或 evaluator.md §18 E2E 稳定性补一条「单测集成态 flake 先本地复跑 N 次定性，确认与本批无关后 re-run CI，不阻塞」。
 
-**状态：** 待确认（软关注，非阻塞；B047-OPS2 done 阶段一并提出）。
+**状态：** ✅ 已沉淀 v0.9.43（evaluator.md §27；CI flake 候选闭环结案，见下方「第二例」与 v0.9.43 沉淀注记）。
 
-**第二例（2026-06-10，B052 F001）：** commit `0173ec4`（仅改 backend 测试文件）再次触发同一 spec 同一断言失败（`expected { defensive: false } to deeply equal { defensive: true }`），与改动无关性确凿；gh run rerun 后绿。二例已凑齐，建议 done 阶段沉淀：该 spec 加 waitFor 稳态断言或 quarantine。
+**第二例（2026-06-10，B052 F001）：** commit `0173ec4`（仅改 backend 测试文件）再次触发同一 spec 同一断言失败（`expected { defensive: false } to deeply equal { defensive: true }`），与改动无关性确凿；gh run rerun 后绿。二例已凑齐。**状态：** ✅ 已沉淀 v0.9.43（evaluator.md §27 CI flake 放行纪律，候选闭环结案）——此处为遗留块，v0.9.45 清理标注。
 
 <!-- 2026-06-09: v0.9.41 沉淀完成（B050 done 阶段，用户批 A+B）：A 装饰性控件/plumbed-but-ignored 反模式（三例：strategy_id 落库被 worker 忽略 / backtest parameters / backlog status）→ generator.md §17 + evaluator.md §26；B CI mypy trade 分层陷阱（B050 F002/F003）→ environment.md。CHANGELOG v0.9.41。未沉淀留队列：③async worker ④satellite 权重口径 + B037-OPS1 sudoers wrapper + B047-OPS2 CI flake（均单例/软关注待二例）；B050 _execute_period 复用模式复用窗口窄不沉淀。 -->
 <!-- 当前活动候选（v0.9.41 后）：③async worker 范式 + ④satellite 权重口径 + B037-OPS1 sudoers wrapper + B047-OPS2 CI flake，均单例/软关注待二例。 -->
@@ -144,7 +144,7 @@
 
 **建议写入：** `framework/harness/generator.md`（§编码坑：merge-UPDATE 不应用 column default + CI mypy 含 tests + workbench venv trade copy 刷新）
 
-**状态：** ✅ 已沉淀 v0.9.44（merge-default→generator.md §21；CI mypy 含 tests→§19）。**残留待确认**：workbench venv trade 是 copy 装、改 trade/ 后须 `pip install --force-reinstall --no-deps` 刷新——单例小坑，留队列。
+**状态：** ✅ 已沉淀 v0.9.44（merge-default→generator.md §21；CI mypy 含 tests→§19）。**残留已沉淀 v0.9.45**：workbench venv trade 是 copy 装、改 trade/ 后须 `pip install --force-reinstall --no-deps` 刷新 → generator.md §26.3。
 
 ## [2026-06-13] Claude CLI — 来源：B058-F003 prod regime 刷新失败（两价格存储分裂）
 
@@ -176,7 +176,7 @@
 
 **建议写入：** `framework/harness/generator.md`（§安全守门/banlist 扫描：loaded-module 用 exact import-root，dist 名才用子串）
 
-**状态：** 待确认（单例小坑，留队列；done 阶段一并提）
+**状态：** ✅ 已沉淀 v0.9.45（generator.md §26.2；用户 2026-06-18 批一并清队列）
 
 ## [2026-06-13] Claude CLI — 来源：B061 F003 CN 交易日历裁定（spec 前提粒度 vs 代码现实）
 
@@ -186,7 +186,7 @@
 
 **建议写入：** `framework/harness/generator.md`（§22 扩展：spec 校验条款须核实际实现粒度，现实已满足则不造装饰机制）+ `framework/harness/planner.md`（写"按 X 维度处理"前先核 X 在代码里是否真有行为差异）
 
-**状态：** ✅ 裁定已批（B061 done，planner 接受）；规律沉淀**待确认**（与 §22 合并，done 阶段一并提）
+**状态：** ✅ 裁定已批（B061 done，planner 接受）；规律已沉淀 v0.9.45（generator.md §22.1 + planner.md「按 X 维度处理前核行为差异」）
 
 ## [2026-06-14] Claude CLI — 来源：B061 F005 + B062 F004 + B063 F004 — Codex 把代码+部署当 FULL PASS、真数据/真机核心验收未执行（§25 强化，**三实例=系统性问题**）
 
@@ -201,7 +201,7 @@
 
 **建议写入：** `framework/harness/evaluator.md` §25 强化（FULL PASS≠部署存在/≠"框架就绪"；auth/网络/未执行挡核心→CONDITIONAL，绝不 FULL PASS）+ `framework/harness/planner.md`（done 复核 signoff FULL PASS 名副其实，"ready for execution"/"框架就绪"措辞=红旗）+ 关联 `docs/dev/test-automation-roadmap.md`（真数据验收 CI 下沉）。**流程修复（三实例后必须）**：① 真数据/真机核心交付物的批次，把"实际执行+贴实测结果"列为 signoff 硬模板段（无实测数字=不得 done）；② 给 evaluator 真机 auth 通路，或把"决策级/真数据执行"路由给能可靠 SSH+跑的 Generator（B063 已这么处置）；③ Planner 对"决策点/真数据"批次的 done 复核升级为强制（不接受'框架就绪'当交付）。
 
-**状态：** 待确认（**三实例=系统性，强烈建议立即沉淀 + 流程修复**；下次 done 阶段最高优先提用户）
+**状态：** ✅ 已沉淀 v0.9.45（evaluator.md §25.1 + §29 + planner.md done §1.5 + templates/signoff-report.md §实测证据；用户 2026-06-18 批「全部沉淀，含 §25 流程修复」）
 
 ## [2026-06-14] Claude CLI — 来源：B062 F001 fix-round 1（HK lookup prod 坏，B062-F001-PROD-1）
 
@@ -211,7 +211,7 @@
 
 **建议写入：** `framework/harness/generator.md`（§新数据 provider/端点：本地实跑真调用验可达+格式，勿因兄弟端点通而推定）+ `framework/harness/planner.md`（spec 扩新市场须含"先验该端点可达"任务，勿当兄弟端点镜像，呼应 B062 planner 自承学习）。
 
-**状态：** 待确认（done 阶段一并提；与上条 evaluator §25 学习同源，B062 一并沉淀）
+**状态：** ✅ 已沉淀 v0.9.45（generator.md §23 + planner.md 铁律 9；用户 2026-06-18 批一并沉淀）
 
 ## [2026-06-14] Claude CLI — 来源：B063 F003 — adversarial review 抓出"全门禁绿但比较不公平/不诚实"的缺陷
 
@@ -221,7 +221,7 @@
 
 **建议写入：** `framework/harness/generator.md`（决策级/对比 harness 须过 adversarial fairness/honesty 复审，列对比工具检查清单）。
 
-**状态：** 待确认（done 阶段一并提）
+**状态：** ✅ 已沉淀 v0.9.45（generator.md §24；用户 2026-06-18 批一并沉淀）
 
 ## [2026-06-14] Claude CLI — 来源：B063 F002/F003 — session_notes 用 prefix-match Edit 改值会留旧尾巴 → JSON 损坏（铁律 #11 邻域）
 
@@ -231,4 +231,8 @@
 
 **建议写入：** `framework/harness/generator.md`（编码约定：改 JSON 长字符串值用整值替换或程序化边界切片+写回前校验；勿前缀 Edit）+ 呼应 harness-rules 铁律 #11 pre-commit hook 落地。
 
-**状态：** 待确认（低优先，done 阶段一并提）
+**状态：** ✅ 已沉淀 v0.9.45（generator.md §26.1；用户 2026-06-18 批一并沉淀）
+
+<!-- 2026-06-18: v0.9.45 沉淀完成（B061+B062+B063 done 收尾，用户「全部沉淀，含 §25 流程修复」批准）：清空全部活跃候选——①★evaluator FULL PASS 系统性退化三实例(B061/B062/B063)→evaluator.md §25.1+§29+planner.md done §1.5+signoff 模板§实测证据(流程修复)；②新端点须实跑(B062 F001)→generator.md §23+planner.md 铁律 9；③决策级/对比 harness adversarial 复审(B063 F003)→generator.md §24；④spec 校验须核实现粒度(B061 F003)→generator.md §22.1+planner.md；⑤队列清空(单例)：async worker(B047)→§25 / sudoers wrapper(B037-OPS1)→§12.12 / satellite 权重口径(BL-B011-S2)→planner.md / JSON 长值 Edit(B063)→§26.1 / banlist exact import-root(B060)→§26.2 / venv trade copy(B057)→§26.3。归档 framework/archive/proposed-learnings-archive-v0.9.45.md。CHANGELOG v0.9.45。**活跃候选队列=空。** -->
+
+<!-- 当前活动候选（v0.9.45 后）：无。下批 done 阶段从空队列起。 -->
