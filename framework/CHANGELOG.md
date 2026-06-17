@@ -5,6 +5,20 @@
 
 ---
 
+## v0.9.46 — 2026-06-18（B064：前端「本机绿≠CI 绿」二坑）
+
+**来源批次：** B064 cn-hk-fundamentals-news（A股+港股 基本面+新闻 lookup，0 fix-round done；Generator F003 自评 adversarial review 排队 2 条，用户 done 收尾批准）。
+
+**沉淀内容（用户确认）：**
+- **① 被断言的金额/数字显示用确定性符号前缀，勿 `Intl` compact+currency / narrowSymbol**（B064 F003 US 基本面断言跨 ICU 版本两连红 + HKD narrowSymbol→裸 `$` 歧义）→ `generator.md §27.1`（确定性 `currency→symbol` 映射 ¥/HK$/$ + 稳定 plain 数字 + 多币种 per-currency fixture）。
+- **② 测试 `waitFor` 等被断言的目标元素本身，勿等容器后同步查异步子元素**（B064 F003 等 fundamentals 卡片后同步查 standard note → CI 慢 race）→ `generator.md §27.2`（`await waitFor(() => expect(getByTestId("目标")).toBeInTheDocument())`）。
+
+两条共同根因=前端本机绿 ≠ CI 绿（ICU 版本 / 异步 fetch 时序），与 evaluator.md §27（CI flake 放行纪律）互补（那条放行、本条预防）。归档 `framework/archive/proposed-learnings-archive-v0.9.46.md`。**活跃候选队列清空。**
+
+**备注（流程正面验证）：** B064 是 v0.9.45 §29（实测证据硬段）+ §23（端点须实跑）落地后**第一个真数据批次**，Codex F004 一轮 PASS 且**贴了真值数字**（600519.SH ¥1.55T/PE18.74、0700.HK HK$4.06T/PE15.23）+ §23 港股端点 VM 可达性确认——v0.9.45 流程修复生效。
+
+---
+
 ## v0.9.45 — 2026-06-18（B061+B062+B063：evaluator FULL PASS 系统性退化 + 流程修复 + 5 条队列清空）
 
 **来源批次：** B061 / B062 / B063（done 阶段累积，用户 2026-06-18「全部沉淀，含 §25 流程修复」确认一并沉淀）。**B063 决策点真跑闭合后的 done 收尾。**

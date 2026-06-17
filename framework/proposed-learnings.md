@@ -243,7 +243,7 @@
 
 **建议写入：** `framework/harness/generator.md`（前端编码约定：被断言的金额显示用确定性符号前缀，勿 Intl compact+currency / narrowSymbol；多币种须 per-currency fixture）。
 
-**状态：** 待确认
+**状态：** ✅ 已沉淀 v0.9.46（generator.md §27.1；用户 2026-06-18 批 B064 done 收尾）
 
 ## [2026-06-18] Claude CLI — 来源：B064 F003 — vitest `waitFor(容器)` 后同步查异步子元素 = CI flake
 
@@ -253,6 +253,8 @@
 
 **建议写入：** `framework/harness/generator.md`（前端测试约定：waitFor 等被断言的目标元素本身,勿等容器后同步查异步子元素）。
 
-**状态：** 待确认
+**状态：** ✅ 已沉淀 v0.9.46（generator.md §27.2；用户 2026-06-18 批 B064 done 收尾）
+
+<!-- 2026-06-18: v0.9.46 沉淀完成（B064 F003 done 收尾，用户批）：2 条前端「本机绿≠CI 绿」坑 → generator.md §27（27.1 货币显示用确定性符号前缀勿 Intl compact+currency/narrowSymbol + per-currency fixture；27.2 测试 waitFor 等被断言目标元素本身勿等容器后同步查异步子元素）。归档 framework/archive/proposed-learnings-archive-v0.9.46.md。CHANGELOG v0.9.46。**活跃候选队列=空。** -->
 
 <!-- 当前活动候选（v0.9.45 后）：B064 2 条（generator/frontend）——①Intl compact+currency/narrowSymbol 跨 ICU flake→确定性符号前缀；②vitest waitFor 容器后同步查异步子元素 race。下批 done 阶段一并提请用户裁定。 -->

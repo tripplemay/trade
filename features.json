@@ -45,7 +45,7 @@
       "title": "Codex：L2 真机验收(真返回基本面/新闻实测) + 边界 adversarial + US 零回归 + signoff(含实测证据硬段)",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F004。决策/真数据批次——signoff 必含「实测证据」硬段,evaluator §29:无真值=不得 done】L1 全门禁(backend pytest+mypy strict workbench_api+tests CI-exact+ruff;trade 不动确认离线不破;frontend vitest/tsc/eslint/i18n parity/api.ts drift)。**L2 真机实测(贴真返回,非'端点存在')**:① 600519.SH 基本面**真值数字**(市值/PE/ROE)+个股新闻**真条目**;② 0700.HK 基本面+新闻真返回**或**诚实 available=False/空态(§23 港股源结论,二者皆可 done 但须贴实测结论);③ 美股 AAPL 基本面/新闻/价格**零回归**(pre/post 对比);Master/策略路径不破;§12.10.2 请求路径无 trade;④ HEAD≡prod+recent-errors=0;若新 timer→systemd enabled+active(§24)。**边界 adversarial 抽验**:no-AI(基本面/新闻无预测/无观点生成)+no-broker+research-safe(基本面/新闻未进任何策略路径)。signoff docs/test-reports/B064-...-signoff-*.md,**实测证据硬段逐条贴真观测**('框架就绪/部署存在'不算)+演练自清。",
       "design_decisions": []
     }
