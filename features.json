@@ -33,7 +33,7 @@
       "title": "B059 /symbols 详情页 A股+港股 基本面 + 新闻区块（货币感知 CAS 指标 + 中文新闻 + 诚实空态 + 双语 i18n）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F003】(1) /symbols 详情页对 CN/HK 标的渲染**基本面区块**(CAS 指标+货币感知 ¥/HK$+诚实源/as-of+CAS 口径说明)+**新闻区块**(复用 B059 新闻 UI,中文标题优先)。(2) available=False 友好空态(双语,标 reason:源不可达/非 equity),不漏英文原文。(3) i18n 双语 parity;CAS 指标名标签双语。(4) no-execution/disclaimer 守门不破(无买卖按钮,详情页 disclaimer 仍渲染);api.ts 重生+drift 检查。正面证据:详情页查 600519.SH→价格图+真实基本面区块(¥/CNY/CAS)+真实新闻(中文);0700.HK 同理或诚实空态;AAPL 详情页零回归($/USD)。Gates：vitest/tsc/eslint/i18n parity/api.ts drift 全绿;no-execution+disclaimer safety 守门过。",
       "design_decisions": [
         "复用 B059 美股详情页基本面/新闻区块 UI,CN/HK 走货币感知 + CAS 指标标签;诚实空态走 reason 文案。",

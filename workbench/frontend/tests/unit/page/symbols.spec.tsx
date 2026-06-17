@@ -102,6 +102,37 @@ const FUND_NON_US: components["schemas"]["SymbolFundamentals"] = {
   debt_to_equity: null,
 };
 
+const FUND_CN: components["schemas"]["SymbolFundamentals"] = {
+  symbol: "600519.SH",
+  source: "akshare",
+  available: true,
+  reason: null,
+  is_us_equity: false,
+  accounting_standard: "CAS",
+  as_of: "2026-03-31",
+  name: null,
+  sector: null,
+  industry: null,
+  currency: "CNY",
+  quote_type: "EQUITY",
+  country: "China",
+  market_cap: 1.55e12,
+  trailing_pe: 18.74,
+  forward_pe: null,
+  price_to_book: 5.72,
+  dividend_yield: null,
+  profit_margins: 0.5222,
+  gross_margins: 0.8976,
+  revenue: 5.47e10,
+  shares_outstanding: 1.25e9,
+  return_on_equity: 0.1057,
+  debt_to_equity: 14.32,
+  eps: 21.76,
+  book_value_per_share: 216.32,
+  net_income: 2.72e10,
+  debt_to_asset: 12.12,
+};
+
 type RouteSpec = { status: number; body: unknown };
 
 const NEWS_ONE: components["schemas"]["SymbolNewsResponse"] = {
@@ -216,6 +247,44 @@ describe("SymbolsPage", () => {
     buildFetch({
       price: { status: 200, body: DETAIL },
       fundamentals: { status: 200, body: FUND_NON_US },
+    });
+    const { getByTestId } = renderWithIntl(<SymbolsPage />);
+    await waitFor(() =>
+      expect(getByTestId("symbols-fundamentals-unavailable")).toBeInTheDocument(),
+    );
+  });
+
+  it("renders A-share fundamentals with CAS standard + ¥ market cap + EPS (B064)", async () => {
+    nav.search = "symbol=600519.SH";
+    buildFetch({
+      price: { status: 200, body: DETAIL_CN },
+      fundamentals: { status: 200, body: FUND_CN },
+    });
+    const { getByTestId } = renderWithIntl(<SymbolsPage />);
+    await waitFor(() => expect(getByTestId("symbols-fundamentals")).toBeInTheDocument());
+    const standard = getByTestId("symbols-fundamentals-standard");
+    expect(standard).toHaveTextContent("CAS");
+    expect(standard).toHaveTextContent("2026-03-31"); // reporting period
+    const fund = getByTestId("symbols-fundamentals");
+    expect(fund).toHaveTextContent("¥"); // currency-aware market cap (CNY)
+    expect(fund).toHaveTextContent("1.55T"); // compact market cap
+    expect(fund).toHaveTextContent("21.76"); // EPS (CAS extra)
+    expect(fund).toHaveTextContent("12.12%"); // debt/assets percent points
+  });
+
+  it("degrades CN fundamentals honestly when the akshare source is unreachable (B064)", async () => {
+    nav.search = "symbol=600519.SH";
+    const unreachable: components["schemas"]["SymbolFundamentals"] = {
+      ...FUND_CN,
+      available: false,
+      reason: "source_unavailable",
+      market_cap: null,
+      trailing_pe: null,
+      eps: null,
+    };
+    buildFetch({
+      price: { status: 200, body: DETAIL_CN },
+      fundamentals: { status: 200, body: unreachable },
     });
     const { getByTestId } = renderWithIntl(<SymbolsPage />);
     await waitFor(() =>

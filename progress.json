@@ -2,9 +2,9 @@
   "status": "building",
   "user_goal": "B064 A股+港股 基本面+新闻(lookup 展示)=A股数据源 P2。来源:backlog B0XX-ashare-data-source §P2 + 2026-06-18 用户拍板『基本面+新闻一起做』『A股+港股一并』。**定位**:让 B059 /symbols 详情页对 A股(.SH/.SZ)+港股(.HK)也展示真实基本面(CAS 口径关键指标)+真实个股新闻,从『只有价格』丰富到价格+基本面+新闻三段,与美股详情页对齐。**红线(硬性)**:research-safe lookup 展示 only(不喂策略/不进任何策略·回测·推荐·账户路径,A股策略是 P3)/no-broker(只接 akshare·baostock 不接券商 SDK)/no-AI 预测(新闻翻译沿用 B054 仅翻译边界)/§12.10.2 请求路径不 import trade(akshare lazy,新模块入 AST 守门)/EOD+诚实标源+优雅失败(不可达 available=False 非 500)/美股+Master+trade 零回归。**★方法论硬坑(framework v0.9.45 §23/铁律 9)**:akshare 基本面·新闻函数走与价格不同的端点/主机/可达性(B062 港股价格端点超时前车之鉴),Generator 实施 F001/F002 必须先 VM 实跑候选 akshare 函数真调用验可达+shape,选已验者;港股源不可达→诚实空态不阻塞 done(A股达成即核心价值)。**4 features 3g+1c**:F001 g 基本面取数+端点 market-aware+缓存(symbol_fundamentals_cache migration 0026);F002 g 个股新闻 on-demand ingest+端点(akshare→news 表幂等);F003 g 详情页基本面+新闻区块(货币感知+CAS+中文新闻+双语);F004 c Codex L2 真机验收(真返回实测,signoff 含实测证据硬段 evaluator §29)+边界 adversarial+US 零回归+signoff。**不做(P3/延后)**:A股/港股策略·回测·交易规则·领域信号因子化·跨市场 FX/NAV 聚合·基本面进评分。spec docs/specs/B064-cn-hk-fundamentals-news-spec.md(6 章)。复用 B059 SymbolDataProvider 抽象+B061 CnProvider+B062 HkProvider+B034/B035 news 表+B054 翻译+symbol_price_cache 隔离范式。",
   "total_features": 4,
-  "completed_features": 2,
+  "completed_features": 3,
   "fix_rounds": 0,
-  "current_sprint": "F003",
+  "current_sprint": "F004",
   "last_updated": "2026-06-18",
   "reference_docs": [
     "docs/specs/B064-cn-hk-fundamentals-news-spec.md",

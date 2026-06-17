@@ -69,6 +69,35 @@ function formatPct(value: number | null): string {
   return `${sign}${pct.toFixed(2)}%`;
 }
 
+// B064 F003 — currency-aware compact money for the big raw-currency metrics
+// (market cap / revenue / net income): ¥1.55T (CNY) / HK$4.06T (HKD) / $3T (USD).
+function formatCompactMoney(value: number | null | undefined, currency: string): string {
+  if (value === null || value === undefined) return "—";
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      currencyDisplay: "narrowSymbol",
+      notation: "compact",
+      maximumFractionDigits: 2,
+    }).format(value);
+  } catch {
+    return formatCompact(value);
+  }
+}
+
+// Per-share money (EPS / book value per share), currency-aware, or a dash.
+function formatMoneyOrDash(value: number | null | undefined, currency: string): string {
+  if (value === null || value === undefined) return "—";
+  return formatMoney(value, currency);
+}
+
+// A value already expressed in percentage points (debt ratios) → "12.12%".
+function formatPercentPoints(value: number | null | undefined): string {
+  if (value === null || value === undefined) return "—";
+  return `${value.toFixed(2)}%`;
+}
+
 function pctClass(value: number | null): string {
   if (value === null) return "text-muted-foreground";
   if (value > 0) return "text-emerald-400";
@@ -337,27 +366,46 @@ function FundamentalsSection({
     };
   }, [symbol]);
 
+  const currency = data?.currency ?? "USD";
+
   function unavailableMsg(reason: string | null): string {
     if (reason === "non_us") return t("fundUnavailableNonUs");
     if (reason === "not_equity") return t("fundUnavailableNotEquity");
+    if (reason === "source_unavailable") return t("fundUnavailableSourceUnavailable");
     return t("fundUnavailableNoData");
   }
 
-  const rows: Array<[string, string]> =
-    data && data.available
-      ? [
-          [t("fundMarketCap"), formatCompact(data.market_cap)],
-          [t("fundTrailingPe"), formatRatio(data.trailing_pe)],
-          [t("fundForwardPe"), formatRatio(data.forward_pe)],
-          [t("fundPriceToBook"), formatRatio(data.price_to_book)],
-          [t("fundDividendYield"), formatPctRaw(data.dividend_yield)],
-          [t("fundProfitMargin"), formatPctRaw(data.profit_margins)],
-          [t("fundGrossMargin"), formatPctRaw(data.gross_margins)],
-          [t("fundRevenue"), formatCompact(data.revenue)],
-          [t("fundRoe"), formatPctRaw(data.return_on_equity)],
-          [t("fundDebtToEquity"), formatRatio(data.debt_to_equity)],
-        ]
-      : [];
+  function buildRows(d: SymbolFundamentals): Array<[string, string]> {
+    // Original B059 set — currency-aware big numbers; preserved for US.
+    const base: Array<[string, string]> = [
+      [t("fundMarketCap"), formatCompactMoney(d.market_cap, currency)],
+      [t("fundTrailingPe"), formatRatio(d.trailing_pe)],
+      [t("fundForwardPe"), formatRatio(d.forward_pe)],
+      [t("fundPriceToBook"), formatRatio(d.price_to_book)],
+      [t("fundDividendYield"), formatPctRaw(d.dividend_yield)],
+      [t("fundProfitMargin"), formatPctRaw(d.profit_margins)],
+      [t("fundGrossMargin"), formatPctRaw(d.gross_margins)],
+      [t("fundRevenue"), formatCompactMoney(d.revenue, currency)],
+      [t("fundRoe"), formatPctRaw(d.return_on_equity)],
+      [t("fundDebtToEquity"), formatRatio(d.debt_to_equity)],
+    ];
+    // B064 CAS/HKFRS-friendly extras — appended only when present (US fills
+    // eps / book value / net income from yfinance; CN/HK add debt/assets).
+    const extras: Array<
+      [string, [number | null | undefined, (v: number | null | undefined) => string]]
+    > = [
+      [t("fundEps"), [d.eps, (v) => formatMoneyOrDash(v, currency)]],
+      [t("fundBookValuePerShare"), [d.book_value_per_share, (v) => formatMoneyOrDash(v, currency)]],
+      [t("fundNetIncome"), [d.net_income, (v) => formatCompactMoney(v, currency)]],
+      [t("fundDebtToAsset"), [d.debt_to_asset, formatPercentPoints]],
+    ];
+    const present = extras
+      .filter(([, [value]]) => value !== null && value !== undefined)
+      .map(([label, [value, fmt]]): [string, string] => [label, fmt(value)]);
+    return [...base, ...present];
+  }
+
+  const rows: Array<[string, string]> = data && data.available ? buildRows(data) : [];
 
   return (
     <Card data-testid="symbols-fundamentals">
@@ -376,6 +424,22 @@ function FundamentalsSection({
           <p className="text-destructive">{error}</p>
         ) : data && data.available ? (
           <>
+            {data.name ? (
+              <div className="text-sm font-medium" data-testid="symbols-fundamentals-name">
+                {data.name}
+              </div>
+            ) : null}
+            {data.accounting_standard ? (
+              <div
+                className="mb-1 text-xs text-muted-foreground"
+                data-testid="symbols-fundamentals-standard"
+              >
+                {t("fundStandardNote", {
+                  standard: data.accounting_standard,
+                  asOf: data.as_of ?? "—",
+                })}
+              </div>
+            ) : null}
             {data.sector ? (
               <div className="mb-2 text-xs text-muted-foreground">
                 {t("fundSector")}: {data.sector}
