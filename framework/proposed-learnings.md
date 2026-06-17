@@ -235,4 +235,24 @@
 
 <!-- 2026-06-18: v0.9.45 沉淀完成（B061+B062+B063 done 收尾，用户「全部沉淀，含 §25 流程修复」批准）：清空全部活跃候选——①★evaluator FULL PASS 系统性退化三实例(B061/B062/B063)→evaluator.md §25.1+§29+planner.md done §1.5+signoff 模板§实测证据(流程修复)；②新端点须实跑(B062 F001)→generator.md §23+planner.md 铁律 9；③决策级/对比 harness adversarial 复审(B063 F003)→generator.md §24；④spec 校验须核实现粒度(B061 F003)→generator.md §22.1+planner.md；⑤队列清空(单例)：async worker(B047)→§25 / sudoers wrapper(B037-OPS1)→§12.12 / satellite 权重口径(BL-B011-S2)→planner.md / JSON 长值 Edit(B063)→§26.1 / banlist exact import-root(B060)→§26.2 / venv trade copy(B057)→§26.3。归档 framework/archive/proposed-learnings-archive-v0.9.45.md。CHANGELOG v0.9.45。**活跃候选队列=空。** -->
 
-<!-- 当前活动候选（v0.9.45 后）：无。下批 done 阶段从空队列起。 -->
+## [2026-06-18] Claude CLI — 来源：B064 F003 — Intl 数字格式化跨 ICU 版本不稳 → CI flake（前端货币显示）
+
+**类型：** 新坑（frontend/CI）
+
+**内容：** **`Intl.NumberFormat` 的 `notation:"compact"` 与 `style:"currency"` 组合渲染依赖运行环境的 ICU 版本/数据，本机绿、CI 红（或反之）→ 断言 substring（如 "3T"）的测试会 flake。** 本批 formatCompactMoney 用 compact+currency 本机产 "$3T"，CI 的 Node ICU 产不含 "3T" 的串 → US 基本面断言两连红。**且** `currencyDisplay:"narrowSymbol"` 对 HKD 解析成裸 `$`（与 USD 混淆，同卡市值却显 `HK$` → 不一致）。**规律**：(1) 任何会被**断言子串**的金额/紧凑数字显示，别用 `Intl` compact+currency 组合；用**确定性符号前缀映射**(¥/HK$/$)+ 稳定的 plain 数字格式(decimal grouping 跨 ICU 稳)。(2) 多币种 UI 不要依赖 `narrowSymbol`（HKD→`$`、其它币种也可能歧义）；显式维护 `currency→symbol` 映射。(3) 前端格式化函数若被测试断言，本机绿≠CI 绿，须用确定性实现 + 跨币种 fixture(本批 CN-only fixture 漏掉 HKD `$` 歧义,补 HKD fixture 才抓到)。
+
+**建议写入：** `framework/harness/generator.md`（前端编码约定：被断言的金额显示用确定性符号前缀，勿 Intl compact+currency / narrowSymbol；多币种须 per-currency fixture）。
+
+**状态：** 待确认
+
+## [2026-06-18] Claude CLI — 来源：B064 F003 — vitest `waitFor(容器)` 后同步查异步子元素 = CI flake
+
+**类型：** 新坑（frontend/test）
+
+**内容：** **测试里 `await waitFor(() => getByTestId("容器"))` 后**紧接** `getByTestId("仅在 fetch 完成后渲染的子元素")` 会 race：容器(如 fundamentals 卡片)在 loading 态就渲染,waitFor 立即通过,但子元素(依赖二段 fetch)尚未出现 → 本机 fetch 快侥幸过、CI 慢则 `Unable to find element` 红。** 本批新 CN 用例正中此坑(等卡片后同步查 standard note)。**规律**：waitFor 必须**等真正要断言的目标元素本身**(`await waitFor(() => expect(getByTestId("目标子元素")).toBeInTheDocument())`),不要等一个"总会先渲染"的祖先容器再同步取子元素。本机单测全绿不代表 CI 绿——异步渲染断言尤甚。
+
+**建议写入：** `framework/harness/generator.md`（前端测试约定：waitFor 等被断言的目标元素本身,勿等容器后同步查异步子元素）。
+
+**状态：** 待确认
+
+<!-- 当前活动候选（v0.9.45 后）：B064 2 条（generator/frontend）——①Intl compact+currency/narrowSymbol 跨 ICU flake→确定性符号前缀；②vitest waitFor 容器后同步查异步子元素 race。下批 done 阶段一并提请用户裁定。 -->
