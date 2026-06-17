@@ -152,7 +152,7 @@
     "priority": "medium",
     "milestone": "C — hk_china 真数据 Batch 2.5(决策点重测,闸控 Batch 3)",
     "source": "2026-06-18 B063 done 收尾用户裁定(不接受 NO-GO,修方法学重测)",
-    "sequence_note": "2026-06-18 用户选下一批=A 股数据源 P2;本重测排其后(或与 P2 数据质量工作协同——qfq 复权口径对齐对两者都有用)。完成后据真对比重定 BL-B011-S2 Batch 3。"
+    "sequence_note": "2026-06-18 用户选 A 股进攻模型方向→数据批 B065(立项 building)做 qfq 复权口径对齐时**顺带覆盖 hk_china 26 universe=本重测数据前置就绪**。B065 done 后,本重测只剩『200D warmup + 重跑对比』(HK 价格已 sina,qfq 已对齐)=轻量收口。完成后据真对比重定 BL-B011-S2 Batch 3。"
   },
   {
     "id": "BL-B023-S2",
@@ -246,7 +246,7 @@
     "milestone": "Phase 4 — 策略深化（进攻型选股模式）",
     "source": "2026-06-11 用户讨论确认新方向（增加新交易策略）",
     "phase_plan": "P1 美股引擎+独立回测(验证) / P2 推荐+执行 surface(独立账户) / P3 多市场扩展",
-    "sequence_note": "2026-06-12 用户调序：B057 regime 模式已 done；又新增 B058(多模式数据修复+手动控制基建，hotfix 优先)插在前。现序 B057(done)→B058→B055。B055 届时复用 B057 通用模式框架 + B058 手动控制原语零成本插入。"
+    "sequence_note": "2026-06-12 用户调序：B057 regime 模式已 done；又新增 B058(多模式数据修复+手动控制基建，hotfix 优先)插在前。**2026-06-18 用户调整方向=A 股进攻模型先行(非美股)**:拍板路线 A(动量+质量)+拆数据批→策略批+先 A股(港股后扩)+universe=自建 top-N(市值+成交额)。**3 步路线图**:①数据批=**B065(立项 building)**(A股 CAS 基本面进策略 fundamentals.csv+qfq 质量对齐+宽 PIT universe,顺带解锁 hk_china 重测)→②**策略批=本 B055 的 A股 版**(动量+质量引擎+独立账户 B057+独立回测 B050+walk-forward,待 B065 done 立项)→③港股扩+实盘 surface。关键洞察:trade fundamentals.csv schema+us_quality_momentum.quality_score 已 point-in-time 就绪,B065 把 CN CAS 写进同 CSV 则质量因子直接对 A股 生效。原 B055 美股版优先级降(A股 先行);复用 B057 框架+B050 回测+动量原语不变。"
   },
   {
     "id": "B0XX-test-automation-infra",
