@@ -42,24 +42,17 @@ function formatPctRaw(value: number | null): string {
 }
 
 function formatMoney(value: number, currency: string): string {
-  // B061 F004 — currency-aware price formatting: ¥ for A-share (CNY), $ for US
-  // (USD) via the narrow symbol. The explicit ISO code is also surfaced in a
-  // badge so CNY is honestly labelled (¥ alone is ambiguous with JPY).
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      currencyDisplay: "narrowSymbol",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value);
-  } catch {
-    // Defensive: an unexpected currency code must never break the page.
-    return new Intl.NumberFormat("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value);
-  }
+  // B061 F004 / B064 F003 — currency-aware money. Uses a deterministic symbol
+  // prefix (currencySymbol) + a plain grouped decimal, NOT Intl's
+  // currencyDisplay:'narrowSymbol' — narrowSymbol resolves HKD to a bare '$'
+  // (USD-ambiguous), so a HK stock would render '$' on price AND fundamentals.
+  // The explicit ISO code is also surfaced in a badge. ¥ for CNY, HK$ for HKD,
+  // $ for USD — consistent across price, 52-week range and fundamentals.
+  const number = new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+  return `${currencySymbol(currency)}${number}`;
 }
 
 function formatPct(value: number | null): string {
@@ -387,7 +380,9 @@ function FundamentalsSection({
       [t("fundGrossMargin"), formatPctRaw(d.gross_margins)],
       [t("fundRevenue"), formatCompactMoney(d.revenue, currency)],
       [t("fundRoe"), formatPctRaw(d.return_on_equity)],
-      [t("fundDebtToEquity"), formatRatio(d.debt_to_equity)],
+      // debt_to_equity is stored in percent magnitude (yfinance debtToEquity /
+      // CAS 产权比率) — render with '%', consistent with debt_to_asset below.
+      [t("fundDebtToEquity"), formatPercentPoints(d.debt_to_equity)],
     ];
     // B064 CAS/HKFRS-friendly extras — appended only when present (US fills
     // eps / book value / net income from yfinance; CN/HK add debt/assets).

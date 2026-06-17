@@ -182,6 +182,18 @@ def ingest_symbol_news(
             # it (Chinese→Chinese is wasteful) and the lookup shows Chinese.
             row.title_zh = item.title
             ingested += 1
+
+    if ingested == 0:
+        # A fetch happened but nothing new was persisted (all duplicates, or an
+        # empty/garbage response). save_if_new only stamps fetched_at on insert,
+        # so without this the EOD cache-first marker would never advance for an
+        # unchanged-news ticker → akshare re-hit on every request that UTC day.
+        # Bump the newest existing row's fetched_at so the marker advances. A
+        # ticker that has never had any news (no row to bump) is the only
+        # remaining re-fetch case — rare, and an empty fetch is cheap.
+        repo.touch_latest_fetched_at(
+            ref.canonical, source=EASTMONEY_SOURCE, fetched_at=stamp
+        )
     return ingested
 
 

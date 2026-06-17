@@ -129,6 +129,32 @@ def test_hk_ingest_uses_5digit_native_code(initialised_db: str) -> None:
         assert rows[0].ticker == "0700.HK"
 
 
+def test_dup_only_fetch_advances_cache_marker(initialised_db: str) -> None:
+    # Regression (B064 review): the EOD cache-first marker must advance even when
+    # a new-day fetch returns only duplicates (save_if_new no-ops, so fetched_at
+    # is never refreshed by insert). Otherwise an unchanged-news ticker re-hits
+    # akshare on every request that day.
+    ref = SymbolRef.parse("600519.SH")
+    calls: list[str] = []
+
+    def _fetcher(code: str) -> list[dict[str, object]]:
+        calls.append(code)
+        return list(_CN_RECORDS)
+
+    day1 = _NOW
+    day2 = _NOW + timedelta(days=1)
+    with Session(get_engine()) as session:
+        ingest_symbol_news(session, ref, fetcher=_fetcher, now=day1)
+        session.commit()
+        # day2 first request → fetch fires, all dup → ingested 0, marker bumped.
+        ingest_symbol_news(session, ref, fetcher=_fetcher, now=day2)
+        session.commit()
+        # day2 second request → marker now day2 → cache-first short-circuits.
+        ingest_symbol_news(session, ref, fetcher=_fetcher, now=day2 + timedelta(hours=3))
+        session.commit()
+        assert calls == ["600519", "600519"]  # NOT a third fetch the same day
+
+
 def test_ingest_empty_source_yields_zero(initialised_db: str) -> None:
     ref = SymbolRef.parse("600519.SH")
     with Session(get_engine()) as session:

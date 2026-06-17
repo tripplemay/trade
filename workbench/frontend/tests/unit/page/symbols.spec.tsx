@@ -261,7 +261,9 @@ describe("SymbolsPage", () => {
       fundamentals: { status: 200, body: FUND_CN },
     });
     const { getByTestId } = renderWithIntl(<SymbolsPage />);
-    await waitFor(() => expect(getByTestId("symbols-fundamentals")).toBeInTheDocument());
+    // Wait for the standard note itself (the fundamentals card renders during
+    // loading too, so waiting on the card would race the fetch).
+    await waitFor(() => expect(getByTestId("symbols-fundamentals-standard")).toBeInTheDocument());
     const standard = getByTestId("symbols-fundamentals-standard");
     expect(standard).toHaveTextContent("CAS");
     expect(standard).toHaveTextContent("2026-03-31"); // reporting period
@@ -270,6 +272,34 @@ describe("SymbolsPage", () => {
     expect(fund).toHaveTextContent("1.55T"); // compact market cap
     expect(fund).toHaveTextContent("21.76"); // EPS (CAS extra)
     expect(fund).toHaveTextContent("12.12%"); // debt/assets percent points
+  });
+
+  it("renders HK fundamentals with HK$ on market cap AND EPS (no USD-ambiguous $)", async () => {
+    nav.search = "symbol=0700.HK";
+    const FUND_HK: components["schemas"]["SymbolFundamentals"] = {
+      ...FUND_CN,
+      symbol: "0700.HK",
+      accounting_standard: "HKFRS",
+      as_of: "2025-12-31",
+      name: "腾讯控股",
+      currency: "HKD",
+      country: "Hong Kong",
+      market_cap: 4.06e12,
+      eps: 24.749,
+      book_value_per_share: 126.72,
+      debt_to_equity: null, // HK source has none
+    };
+    buildFetch({
+      price: { status: 200, body: { ...DETAIL_CN, symbol: "0700.HK", currency: "HKD" } },
+      fundamentals: { status: 200, body: FUND_HK },
+    });
+    const { getByTestId } = renderWithIntl(<SymbolsPage />);
+    await waitFor(() => expect(getByTestId("symbols-fundamentals-standard")).toBeInTheDocument());
+    const fund = getByTestId("symbols-fundamentals");
+    expect(fund).toHaveTextContent("HK$4.06T"); // market cap
+    expect(fund).toHaveTextContent("HK$24.75"); // EPS — HK$, NOT a bare $
+    expect(getByTestId("symbols-fundamentals-name")).toHaveTextContent("腾讯控股");
+    expect(getByTestId("symbols-fundamentals-standard")).toHaveTextContent("HKFRS");
   });
 
   it("degrades CN fundamentals honestly when the akshare source is unreachable (B064)", async () => {

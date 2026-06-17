@@ -86,6 +86,29 @@ class NewsRepository(Repository[News, UUID]):
         self._session.flush()
         return row
 
+    def touch_latest_fetched_at(
+        self, ticker: str, *, source: str, fetched_at: datetime
+    ) -> bool:
+        """B064 F002 — advance the newest (ticker, source) row's ``fetched_at``
+        to ``fetched_at`` WITHOUT inserting, so the on-demand news EOD
+        cache-first marker advances even when a fetch returns only duplicates
+        (``save_if_new`` no-ops on dedup and never refreshes ``fetched_at``).
+        Returns False when no such row exists (a ticker that has never had
+        news) — the rare case where the next request still re-fetches."""
+
+        stmt = (
+            select(News)
+            .where(News.ticker == ticker, News.source == source)
+            .order_by(News.fetched_at.desc())
+            .limit(1)
+        )
+        row = self._session.execute(stmt).scalar_one_or_none()
+        if row is None:
+            return False
+        row.fetched_at = fetched_at
+        self._session.flush()
+        return True
+
     def latest_fetched_at_for_ticker(
         self, ticker: str, *, source: str | None = None
     ) -> datetime | None:
