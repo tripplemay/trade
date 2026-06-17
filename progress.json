@@ -1,42 +1,45 @@
 {
-  "status": "done",
-  "user_goal": "B063 hk_china 真数据 Batch 2：FX 层 + real-data 策略 + 回测对比(决策点)。来源：B062 数据地基 done 后，用户『规划 batch2』。**整体定位**：hk_china 换真数据工程第 2 批=**决策点**——产出『real-data hk_china vs proxy』回测对比报告+建议，**闸控 Batch 3(是否上真金 live Master)**。研究态不碰 live 推荐。回答唯一问题：用真 A股+港股替换 US-listed ETF proxy 回测上真更好吗？值这堆 FX/管道/集中度复杂度吗？**不预设结论**(很可能=没明显更好停在 proxy,那也有效,地基不白费)。**★方法论硬坑(决定报告可不可信)**：候选大盘股(腾讯/阿里/茅台等)是今天 mega-cap,直接拿 7 个回测=幸存者/事后偏差→虚高误导'值得做'。规约:real-data 策略**必须 point-in-time 规则选股**(从~20-30 宽流动 universe 按 momentum+quality 只用当时可得数据选 top N,复用 hk_china 逻辑),不许 hand-pick 赢家;做不到→报告标'偏乐观不足为 go 依据'。**★第二诚实点**:对比不止数据源还混集中度(proxy 分散 ETF vs real 集中个股 风险画像不同),报告须归因区分。**范围(research-safe)**：S2 §8 质量真跑(入口闸,B062 延后的)；FX 层(FRED DEXCHUS/DEXHKUS 历史汇率,复用 fred_loader);real-data hk_china 策略(point-in-time 规则选股);回测对比 real vs proxy(USD 口径);对比报告+Batch 3 建议。**不做(Batch 3/延后)**:激活 live Master/改 live 推荐/live 多币种 NAV 聚合(本批 FX 仅供回测 USD 换算)/交易规则。4 features 3g+1c：F001 FX 层(FRED 历史汇率进管道,复用 fred_loader);F002 real-data hk_china 策略(宽 universe point-in-time 规则选股+USD 换算);F003 回测对比 harness(proxy vs real USD 同口径+偏差感知,复用 trade/backtest);F004 codex S2 质量闸+跑对比回测+对比报告(诚实偏差)+Batch 3 建议+signoff。硬边界：**研究态不碰 live 推荐**(hk_china 仍 proxy)/trade 仍离线(FRED/akshare 在 workbench data_refresh,trade 读 CSV)/no-broker/§12.10.2/mypy CI-exact(§19)/US/Master 不破。spec docs/specs/B063-hk-china-real-data-batch2-fx-backtest-spec.md(6 章)。复用 fred_loader(FX)+trade/backtest/hk_china.py(策略逻辑)+B050 回测+B062 数据管道。",
+  "status": "building",
+  "user_goal": "B064 A股+港股 基本面+新闻(lookup 展示)=A股数据源 P2。来源:backlog B0XX-ashare-data-source §P2 + 2026-06-18 用户拍板『基本面+新闻一起做』『A股+港股一并』。**定位**:让 B059 /symbols 详情页对 A股(.SH/.SZ)+港股(.HK)也展示真实基本面(CAS 口径关键指标)+真实个股新闻,从『只有价格』丰富到价格+基本面+新闻三段,与美股详情页对齐。**红线(硬性)**:research-safe lookup 展示 only(不喂策略/不进任何策略·回测·推荐·账户路径,A股策略是 P3)/no-broker(只接 akshare·baostock 不接券商 SDK)/no-AI 预测(新闻翻译沿用 B054 仅翻译边界)/§12.10.2 请求路径不 import trade(akshare lazy,新模块入 AST 守门)/EOD+诚实标源+优雅失败(不可达 available=False 非 500)/美股+Master+trade 零回归。**★方法论硬坑(framework v0.9.45 §23/铁律 9)**:akshare 基本面·新闻函数走与价格不同的端点/主机/可达性(B062 港股价格端点超时前车之鉴),Generator 实施 F001/F002 必须先 VM 实跑候选 akshare 函数真调用验可达+shape,选已验者;港股源不可达→诚实空态不阻塞 done(A股达成即核心价值)。**4 features 3g+1c**:F001 g 基本面取数+端点 market-aware+缓存(symbol_fundamentals_cache migration 0026);F002 g 个股新闻 on-demand ingest+端点(akshare→news 表幂等);F003 g 详情页基本面+新闻区块(货币感知+CAS+中文新闻+双语);F004 c Codex L2 真机验收(真返回实测,signoff 含实测证据硬段 evaluator §29)+边界 adversarial+US 零回归+signoff。**不做(P3/延后)**:A股/港股策略·回测·交易规则·领域信号因子化·跨市场 FX/NAV 聚合·基本面进评分。spec docs/specs/B064-cn-hk-fundamentals-news-spec.md(6 章)。复用 B059 SymbolDataProvider 抽象+B061 CnProvider+B062 HkProvider+B034/B035 news 表+B054 翻译+symbol_price_cache 隔离范式。",
   "total_features": 4,
-  "completed_features": 4,
-  "fix_rounds": 1,
-  "current_sprint": "F004",
-  "last_updated": "2026-06-15",
+  "completed_features": 0,
+  "fix_rounds": 0,
+  "current_sprint": "F001",
+  "last_updated": "2026-06-18",
   "reference_docs": [
-    "docs/specs/B063-hk-china-real-data-batch2-fx-backtest-spec.md",
-    "workbench/backend/workbench_api/data/fred_loader.py",
-    "trade/backtest/hk_china.py",
-    "trade/data/hk_china_universe.py",
-    "workbench/backend/workbench_api/data_refresh/refresh.py",
-    "scripts/test/ashare_quality_check.py"
+    "docs/specs/B064-cn-hk-fundamentals-news-spec.md",
+    "docs/product/a-share-data-source-integration-path-2026-06.md",
+    "workbench/backend/workbench_api/routes/symbols.py",
+    "workbench/backend/workbench_api/symbols/fundamentals.py",
+    "workbench/backend/workbench_api/symbols/cn_provider.py",
+    "workbench/backend/workbench_api/symbols/hk_provider.py",
+    "workbench/backend/workbench_api/symbols/news.py",
+    "workbench/backend/workbench_api/db/models/symbol_price_cache.py",
+    "workbench/backend/workbench_api/db/models/news.py",
+    "workbench/backend/tests/safety/test_symbols_request_self_contained.py"
   ],
   "docs": {
-    "spec": "docs/specs/B063-hk-china-real-data-batch2-fx-backtest-spec.md",
+    "spec": "docs/specs/B064-cn-hk-fundamentals-news-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B063-hk-china-real-data-batch2-fx-backtest-reverify-signoff-2026-06-15.md",
-    "comparison_report": "docs/test-reports/B063-hk-china-real-data-batch2-fx-backtest-comparison-report-2026-06-15.md",
-    "framework_reviewed": true
+    "signoff": null,
+    "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "✅ B063 done(fix-round 1 真跑闭合)。Generator 在 VM 真跑回测产出真报告(非框架就绪)：对比 20 季度 USD proxy CAGR +2.77%/Sharpe 0.55 vs real -0.06%/Sharpe -0.32。★核心诚实发现:real 20/20 季度全防守(200D 趋势闸 2021-24 中国熊市 risk-off+前 4 季无 warmup)、0 选股→『真个股 vs proxy』假设根本没测到,real -0.06%=持 SGOV 现金。S2 §8 质量未通过(A股交叉源 0/5,偏差 2-60% 疑 qfq 口径;HK 东财 ConnectionError 须改 sina)。**报告结论=NO-GO/未证实**。真金 Batch 3 决定归 planner+用户:建议停在 proxy(数据没测出更好+质量未达交叉验证标准),地基不白费。报告 docs/test-reports/B063-...-comparison-report-2026-06-15.md。",
-    "pass_count": 1,
+    "summary": null,
+    "pass_count": 0,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
   },
   "generator_handoff": {
-    "summary": "B063-F004-CORE-1 fix DONE by Generator (planner 路由,Codex 3 次推诿真跑). 补齐缺失执行胶水(新 trade/backtest/hk_china_comparison_runner.py 装配层 + scripts/test/hk_china_proxy_vs_real_backtest.py 驱动 + ashare_quality_check 默认 universe 7→26),门禁全绿(trade 891/mypy strict/ruff),commit be05463 已部署 VM(trade 0.2.1). **VM 真跑真数字**(tripplezhou@34.180.93.185,/opt/workbench/.venv,真数据 26/26 名+FX): ①对比回测 20 季度(2021Q2-2026Q1,USD 同口径)=**proxy CAGR +2.77%/Sharpe 0.55 vs real -0.06%/Sharpe -0.32**; ②S2 §8 质量闸真跑(非 CSV 有行). **核心诚实发现(报告 §5)**: real 策略 **20/20 季度 regional_risk_off 全防守、一只股没选**(forced_defensive=0=非数据缺口,是 2021-24 中国熊市 risk-off 闸全触发)→ real 的 -0.06% = SGOV 现金-摩擦,**核心假设『真个股 vs ETF』根本没测到**; proxy vs real 差异主因=risk-off bellwether 选型(KWEB/MCHI/FXI vs 3 mega-cap)这个策略构造差异,非数据源. S2 §8=**未通过/未验证**(深度 OK 8.45yr,但 cross-source 0/3 在<0.5%内=27-61% 偏差[疑 qfq 复权口径],HK 东财端点 ConnectionError 全失败[B062 已知,应改 sina]). **Batch 3 建议=NO-GO/未证实**(真金决定归 planner+用户). 报告+artifacts JSON 入 git. 交 Codex reverify=确认报告有真执行数字(非框架就绪)+边界守.",
-    "status": "completed"
+    "summary": null,
+    "status": "pending"
   },
   "session_notes": {
-    "planner": "2026-06-18 B063 done 收尾(planner)。**用户三裁定**:①B063 结论=不接受 NO-GO,修方法学重测一轮(200D warmup 不足+HK 改 sina+qfq 复权口径对齐→把『真个股 vs proxy』真正测到)→新 backlog 项 B0XX-hk-china-real-data-retest(Batch 2.5),暂不停 proxy(hk_china 仍 ETF),待重测重定 Batch 3;②下一批次=A 股数据源 P2(基本面 AkShare CAS+新闻,backlog B0XX-ashare-data-source);③Framework=全部沉淀。**已完成**:(a) **Framework v0.9.45 沉淀**(CHANGELOG+archive 写完,proposed-learnings 活跃候选全清空):★§25.1 evaluator FULL PASS 系统性退化三实例(B061/B062/B063)+evaluator §29 实测证据硬段+planner done §1.5 强制复核+signoff 模板§实测证据=流程修复;generator §23 新端点实跑/§24 决策级 harness adversarial 复审/§22.1 spec 校验核实现粒度/§12.12 sudoers wrapper/§25 async 范式/§26 小坑3条;planner 铁律 9+satellite 权重口径段。(b) backlog:BL-B011-S2 记 Batch 2 NO-GO+用户重测裁定;新增 B0XX-hk-china-real-data-retest(三处必修焊进,复用 B063 harness 资产)。(c) project-status 更新 B063 决定+Framework v0.9.45。**【本会话续接】**:待用户确认 A 股 P2 scope(基本面 only?+新闻?P2/P2.1 分期?symbol universe?)后→启动新批次(status new→planning,写 spec+features.json)。B0XX-ashare-data-source backlog 项 phase_plan 已有 P2=基本面 AkShare CAS+新闻雏形。**需求池其余**:B055 进攻选股(P1 spec 已备)/测试自动化基建(正面解 §25 系统性,golden 数据下沉 CI)/hk_china 重测(Batch 2.5)。prod=B062 系(hk_china proxy 未变,用户交易不受影响)。",
-    "generator": "2026-06-15 **B063-F004-CORE-1 fix 完成(planner 路由 Generator 真跑,因 Codex 3 次推诿)→ status=reverifying,fix_rounds=1,交 Codex 复验**。根因=核心交付(对比报告真数字+go/no-go)从没产出:F003 只交 harness 库函数,**没驱动真调它落报告**。本轮补齐+真跑+落报告。**新建**:trade/backtest/hk_china_comparison_runner.py(装配层,mypy-strict CI-tested:unified frame+FX→两侧 USD 帧,★信号日历=两侧**股票** universe 交易日交集[排除 defensive SGOV 避 US 日历污染]→run F003→payload+coverage 元数据)+scripts/test/hk_china_proxy_vs_real_backtest.py(VM ops runner 非 CI,读真 CSV 跑双配置 default/matched_top_n,落 JSON)+ashare_quality_check 默认 universe 7→26(import CN_HK_UNIVERSE)+FxConverter.currencies()。测试+4,门禁绿(trade 891/mypy strict 83/ruff),commit be05463 已自动部署 VM(trade 0.2.1,runner 模块在轮子里). **VM 真跑(tripplezhou@34.180.93.185 sudo /opt/workbench/.venv,WORKBENCH_DATA_ROOT=/var/lib/workbench/data,真 26/26 名+FX CNY/HKD)**: ①对比 20 季度(2021Q2-2026Q1)proxy +2.77%/0.55 vs real -0.06%/-0.32; ②S2 §8 真 fetch. **★最重要诚实发现**: real **20/20 季度 regional_risk_off 全防守 0 选股**(forced_defensive=0,数据完整=不是缺口,是 2021-24 中国熊市真信号+前~4 季 200D MA 无 warmup 人为防守)→ real -0.06%=SGOV 现金-摩擦,**核心假设没测到**; proxy/real 差异主因=risk-off bellwether 选型策略构造差,非数据源(spec §3 归因). matched_top_n≡default(real 永不选股 top_n moot). S2 §8 未通过(深度 8.45yr OK,但 cross-source 0/3<0.5%[27-61% 疑复权口径],HK 东财 stock_hk_hist ConnectionError 全挂=B062 已知应改 sina). **Batch 3=NO-GO/未证实**(真金归 planner+用户). 报告 docs/test-reports/B063-...-comparison-report-2026-06-15.md + artifacts(b063_comparison.json/b063_quality.json)入 git. **坑沉淀**:①quality 工具 HK 须用 sina(同 data_refresh)非东财;②akshare-qfq vs baostock 复权口径须对齐才能 cross-source<0.5%;③回测 risk-off 闸需 200D warmup(lookback 不够). 交 Codex reverify=确认报告真数字(非框架就绪)+边界守(研究态/离线/no-broker/US-Master 不破)+签收。",
-    "evaluator": "2026-06-15 **B063 reverify PASS → DONE**。复验要点：(1)真执行数字确认=从 b063_comparison.json 解析 proxy +2.77%/0.55 vs real -0.06%/-0.32，20/20 防守，forced_defensive=0；(2)L1 887 passed(.venv Python 3.11)+B063 专项 13 passed+mypy strict 0+ruff clean；(3)master guard test_master_does_not_import_real_strategy PASS；(4)trade/ 模块无 network import 确认 trade 离线；(5)S2 §8 honest=NOT PASS(工具端点缺陷，支持 NO-GO，不是 backtest 数据缺陷)；(6)Batch 3 建议 NO-GO/未证实=有效结论(核心假设没测到+方法学未就绪)。reverify signoff: docs/test-reports/B063-hk-china-real-data-batch2-fx-backtest-reverify-signoff-2026-06-15.md。**交 Planner done 阶段**：读真报告 §5/§6→go/no-go 最终决定→需求池规划(Batch 3 若 no-go=停 proxy，地基用于 A 股策略/lookup；框架沉淀 v0.9.47 待确认)。"
+    "planner": "2026-06-18 B063 done 收尾 + B064 planning(planner)。**B063 done 收尾已完成**:framework v0.9.45 全部沉淀(§25.1 evaluator FULL PASS 系统性退化三实例+流程修复+5 条队列清空,CHANGELOG+archive)；backlog 记 B063 NO-GO+用户『不接受 NO-GO 修方法学重测』裁定→新增 B0XX-hk-china-real-data-retest(Batch 2.5)；commit b2cb0e1。**B064 planning 完成→status=building 交 Generator F001**:用户拍板下一批=A股 P2『基本面+新闻一起+A股港股一并』。已写 spec(docs/specs/B064-cn-hk-fundamentals-news-spec.md 6 章)+features.json(4 features 3g+1c)。Explore agent 摸清代码面:基本面=CN/HK provider get_stats 现仅返身份(无基本面)+fundamentals.py US-only 门禁→须改 market-aware+akshare 取数+新缓存表 0026;新闻=现仅 SEC/Yahoo ingest 无 CN/HK 源→F002 真新工作(akshare 个股新闻 on-demand cache-first 入 news 表)。**★焊进 spec 的硬坑**:§23 akshare 基本面/新闻函数须 VM 实跑验可达(走不同端点/主机,B062 港股超时教训),港股源不可达诚实空态不阻塞;F004 signoff 必含实测证据硬段(§29,真值数字非'端点存在')。**【续接】**:status=building,Generator 接 F001(基本面)→F002(新闻)→F003(前端),再 Codex F004。Generator 起手第一件事=§23 实跑候选 akshare 函数(A股 stock_financial_abstract/stock_news_em 等,港股 stock_hk_spot_em/financial_hk 等)验可达,选定再建。**需求池其余**:hk_china 重测 Batch 2.5(B0XX-hk-china-real-data-retest,修 200D warmup+HK sina+qfq 口径)/B055 进攻选股(P1 spec 已备)/测试自动化基建(正面解 §25 系统性,golden 数据下沉 CI)。prod=B062 系(hk_china proxy 未变,用户交易不受影响)。",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",
@@ -44,5 +47,5 @@
     "F003",
     "F004"
   ],
-  "completed_date": "2026-06-15"
+  "completed_date": null
 }

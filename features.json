@@ -1,48 +1,52 @@
 {
-  "sprint": "B063-hk-china-real-data-batch2-fx-backtest",
+  "sprint": "B064-cn-hk-fundamentals-news",
   "features": [
     {
       "id": "F001",
-      "title": "FX 层：FRED CNY/USD(DEXCHUS)+HKD/USD(DEXHKUS) 历史汇率进管道（复用 fred_loader，日历对齐 forward-fill）",
+      "title": "A股+港股 基本面取数 + 端点 market-aware + 缓存（CnSymbolProvider/HkSymbolProvider 填 ProviderStats，fundamentals.py 去 US-only 门禁改按市场分流）",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §4 F001。复用 fred_loader(B035 已集成)】(1) 复用 fred_loader 拉 **DEXCHUS(人民币/美元)+DEXHKUS(港币/美元)** 日度历史(FRED 央行权威,含数十年历史)。(2) 进 workbench data_refresh 写 FX 数据(trade 读,离线);交易日历对齐+缺日 forward-fill(FRED 周末/假期空值)。(3) **仅供回测 USD 换算**(live 多币种 NAV 是 Batch 3)。测试：FX 拉取+对齐+forward-fill+缺值处理。Gates：backend pytest/ruff/mypy CI-exact 0。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F001 + §3 §23 硬前置】(1) ★**§23 前置**：从生产 VM(或等价)实跑候选 akshare 基本面函数(A股+港股)真调用,确认可达+真返回 shape+字段→选定;港股不可达→该项诚实 available=False(不假设兄弟函数可达,B062 港股端点超时教训)。(2) Cn/Hk provider 新增基本面取数(lazy akshare)映射到 ProviderStats 基本面字段(CAS 口径:市值/PE/PB/ROE/营收/净利/毛利率/资产负债率等)。(3) `symbols/fundamentals.py` 由 US-only 门禁改 **market-aware**:US→yfinance 不变 / CN·HK→provider akshare stats;不可达/非 equity→available=False+reason。(4) 新表 `symbol_fundamentals_cache`(migration **0026**,含 symbol/market/currency/as_of/source/指标/fetched_at)on-demand cache-first+EOD TTL+RateLimitGuard,照 symbol_price_cache 隔离范式不破策略表。正面证据:`/api/symbols/600519.SH/fundamentals` 返真实茅台基本面真值(CNY,贴数字);0700.HK 真值或诚实 available=False;AAPL 零回归;§12.10.2 守门(新模块入 allowlist,akshare lazy)。Gates：backend pytest/ruff/mypy CI-exact(workbench_api+tests) 0。",
       "design_decisions": [
-        "FX 复用 FRED(fred_loader 已集成,DEXCHUS/DEXHKUS 央行权威),非 akshare FX;trade 离线读。",
-        "本批 FX 仅供回测 USD 换算,live 多币种 NAV 聚合延后 Batch 3。"
+        "★§23：基本面 akshare 函数走与价格不同的端点/主机,实施前必须 VM 实跑验可达,选已验者;港股源可达性是本批最大未知,不可达诚实空态不阻塞。",
+        "fundamentals.py US-only 门禁改 market-aware 分流(US→yfinance / CN·HK→akshare provider stats),保 US gate 不破。",
+        "基本面缓存照 symbol_price_cache 隔离范式新建独立表(migration 0026),不触 price_snapshot/price_history/symbol_price_cache 策略数据。",
+        "CAS 口径与 SEC US-GAAP 不同 schema,独立呈现 + 诚实标注 CAS + 货币 CNY/HKD。"
       ]
     },
     {
       "id": "F002",
-      "title": "real-data hk_china 策略：宽 universe point-in-time 规则选股（复用 hk_china 逻辑，避事后偏差）+ USD 换算",
+      "title": "A股+港股 个股新闻 on-demand ingest + 端点（akshare 个股新闻→news 表幂等入库,复用 get_symbol_news 读取,港股英文标题走 B054 翻译）",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §4 F002 + §2 方法论硬坑。依赖 F001】(1) **宽 universe**(~20-30 流动 HK+A 大盘,B062 管道扩量拉真价格)。(2) ★**point-in-time 规则选股**(§2 硬坑:不许 hand-pick 今天 7 个赢家回测=幸存者偏差):按 momentum+quality(复用 trade/backtest/hk_china.py 逻辑)只用当时可得数据选 top N。(3) USD 换算(用 F001 FX 把 CN/HK 价格/收益转 USD,与 USD proxy 同口径)。测试：point-in-time 选股**无未来数据泄漏**+USD 换算+复用 hk_china 逻辑。Gates：backend pytest/ruff/mypy CI-exact 0。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F002 + §3 §23】(1) ★**§23 前置**：实跑 akshare A股个股新闻函数(候选 stock_news_em)确认可达+shape;港股新闻源不可达→诚实空态。(2) **on-demand cache-first**(planner 决策:lookup 任意 ticker 不能预 ingest 全市场,故请求时 lazy akshare 取个股新闻→save_if_new 入 news 表幂等,ticker 关联;近端已 ingest 不重取)+RateLimitGuard。(3) A股标题已中文免翻;港股英文标题→复用 B054 translate_title 填 title_zh(边界仅翻译)。(4) `/{symbol}/news` 端点签名不变,CN/HK 走新 ingest 后由 get_symbol_news 读出。正面证据:`/api/symbols/600519.SH/news` 返真实茅台个股新闻条目(中文标题,贴条目);0700.HK 真条目或诚实空态;AAPL 新闻零回归;§12.10.2 守门;no-AI(仅展示+B054 翻译,无观点生成)。Gates：backend pytest/ruff/mypy CI-exact 0;若新增 timer/job 须 deploy 接线(§24)+入口 env 守门(§12.11.1,若写生产 DB)。",
       "design_decisions": [
-        "★point-in-time 规则选股(只用当时可得数据)避事后偏差;不 hand-pick 赢家;宽 universe 残余选择偏差报告标注。",
-        "复用 trade/backtest/hk_china.py momentum+quality 逻辑,换 universe 到真 HK+A。"
+        "★planner 设计决策:CN/HK 新闻采 on-demand cache-first(非美股 job/timer 范式),因 lookup 是任意 ticker 不可预 ingest;偏离美股范式有诚实理由,Generator 若发现更优实现可偏离+报 planner 裁定(§22)。",
+        "★§23：akshare 新闻函数须 VM 实跑验可达;港股新闻源不可达诚实空态不阻塞。",
+        "复用 news 表(ticker indexed)+ save_if_new 幂等 + B054 翻译子系统,不新建新闻存储。"
       ]
     },
     {
       "id": "F003",
-      "title": "回测对比 harness：proxy-hk_china vs real-hk_china（USD 口径，复用 trade/backtest）+ 偏差感知指标",
+      "title": "B059 /symbols 详情页 A股+港股 基本面 + 新闻区块（货币感知 CAS 指标 + 中文新闻 + 诚实空态 + 双语 i18n）",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §4 F003 + §3。依赖 F002】(1) 跑两版同期同口径(USD)：(a) proxy-hk_china(MCHI/FXI/KWEB/ASHR) (b) real-hk_china(F002)。(2) 对比指标 CAGR/Sharpe/MaxDD/vol/turnover/换手成本；**偏差感知**(标注集中度差异/universe 选择)。复用 trade/backtest+B050。(3) ★诚实归因：差异来自'数据源/真实标的'还是'集中度'(proxy 分散 ETF vs real 集中个股 风险画像不同)。测试：对比 harness 双版可跑+指标+同口径。Gates：backend pytest/ruff/mypy CI-exact 0。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F003】(1) /symbols 详情页对 CN/HK 标的渲染**基本面区块**(CAS 指标+货币感知 ¥/HK$+诚实源/as-of+CAS 口径说明)+**新闻区块**(复用 B059 新闻 UI,中文标题优先)。(2) available=False 友好空态(双语,标 reason:源不可达/非 equity),不漏英文原文。(3) i18n 双语 parity;CAS 指标名标签双语。(4) no-execution/disclaimer 守门不破(无买卖按钮,详情页 disclaimer 仍渲染);api.ts 重生+drift 检查。正面证据:详情页查 600519.SH→价格图+真实基本面区块(¥/CNY/CAS)+真实新闻(中文);0700.HK 同理或诚实空态;AAPL 详情页零回归($/USD)。Gates：vitest/tsc/eslint/i18n parity/api.ts drift 全绿;no-execution+disclaimer safety 守门过。",
       "design_decisions": [
-        "复用 trade/backtest 跑双版同口径(USD);诚实归因区分集中度 vs 数据源,避免把集中赌大盘股的收益误记为'真数据更好'。"
+        "复用 B059 美股详情页基本面/新闻区块 UI,CN/HK 走货币感知 + CAS 指标标签;诚实空态走 reason 文案。",
+        "PROXIED_PREFIXES / dev-rewrites guard 无新前缀(端点前缀 /api/symbols 已存在,B059 已配),无需新增。"
       ]
     },
     {
       "id": "F004",
-      "title": "Codex：★S2 §8 质量闸(真数据 VM) + 跑对比回测 + 对比报告(诚实偏差) + Batch 3 建议 + signoff",
+      "title": "Codex：L2 真机验收(真返回基本面/新闻实测) + 边界 adversarial + US 零回归 + signoff(含实测证据硬段)",
       "priority": "high",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "【见 spec §4 F004。core acceptance=诚实对比报告=Batch 3 决策依据】L1 全门禁。L2 真 VM：① ★**S2 §8 质量闸**(跑 B062 runner 真数据):候选 universe 全历史深度/复权/akshare-baostock 交叉源<0.5%/HK 源——**不达标→报告=数据未就绪、不进 Batch 3、重估**(像 B060 NO-GO);② **跑对比回测**(proxy vs real-data,USD 同口径);③ **对比报告**(docs/test-reports/)：指标对比+★**诚实偏差分析**(point-in-time 是否真做到/残余选择偏差/集中度 vs 数据源归因)+**Batch 3 建议**(值得上真金 go/不值 no-go/条件性);④ **边界**:trade 离线、no-broker、研究态不碰 live 推荐、US/Master 不破;⑤ recent-errors=0+HEAD≡main+演练自清。Signoff docs/test-reports/B063-...-signoff-*.md(§S2 质量实测+§回测对比指标+§★偏差诚实分析+§Batch 3 建议+§不破+§Ops)。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F004。决策/真数据批次——signoff 必含「实测证据」硬段,evaluator §29:无真值=不得 done】L1 全门禁(backend pytest+mypy strict workbench_api+tests CI-exact+ruff;trade 不动确认离线不破;frontend vitest/tsc/eslint/i18n parity/api.ts drift)。**L2 真机实测(贴真返回,非'端点存在')**:① 600519.SH 基本面**真值数字**(市值/PE/ROE)+个股新闻**真条目**;② 0700.HK 基本面+新闻真返回**或**诚实 available=False/空态(§23 港股源结论,二者皆可 done 但须贴实测结论);③ 美股 AAPL 基本面/新闻/价格**零回归**(pre/post 对比);Master/策略路径不破;§12.10.2 请求路径无 trade;④ HEAD≡prod+recent-errors=0;若新 timer→systemd enabled+active(§24)。**边界 adversarial 抽验**:no-AI(基本面/新闻无预测/无观点生成)+no-broker+research-safe(基本面/新闻未进任何策略路径)。signoff docs/test-reports/B064-...-signoff-*.md,**实测证据硬段逐条贴真观测**('框架就绪/部署存在'不算)+演练自清。",
       "design_decisions": []
     }
   ]
