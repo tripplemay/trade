@@ -69,21 +69,21 @@ function formatPct(value: number | null): string {
   return `${sign}${pct.toFixed(2)}%`;
 }
 
+// Narrow currency symbol prefix for the markets we surface (deterministic —
+// Intl compact + currency rendering is ICU-version-dependent, so we prepend a
+// fixed symbol to the proven-stable plain compact number instead).
+function currencySymbol(currency: string): string {
+  if (currency === "USD") return "$";
+  if (currency === "CNY") return "¥";
+  if (currency === "HKD") return "HK$";
+  return `${currency} `;
+}
+
 // B064 F003 — currency-aware compact money for the big raw-currency metrics
 // (market cap / revenue / net income): ¥1.55T (CNY) / HK$4.06T (HKD) / $3T (USD).
 function formatCompactMoney(value: number | null | undefined, currency: string): string {
   if (value === null || value === undefined) return "—";
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      currencyDisplay: "narrowSymbol",
-      notation: "compact",
-      maximumFractionDigits: 2,
-    }).format(value);
-  } catch {
-    return formatCompact(value);
-  }
+  return `${currencySymbol(currency)}${formatCompact(value)}`;
 }
 
 // Per-share money (EPS / book value per share), currency-aware, or a dash.
