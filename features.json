@@ -11,7 +11,8 @@
       "design_decisions": [
         "★universe=自建 top-N(市值+成交额)point-in-time,绕开 akshare 历史指数成分可达性风险(用户 2026-06-18 拍板)。",
         "★§23:历史市值/成交额可达性是本批最大未知,实跑验;不可达 fallback 成交额近似+诚实标注。",
-        "fetch 取宽 superset 减幸存者偏差(B063 方法学硬坑),残余偏差诚实文档。"
+        "fetch 取宽 superset 减幸存者偏差(B063 方法学硬坑),残余偏差诚实文档。",
+        "★universe 排除 ST/退市风险名(akshare ST 前缀标记):策略批两变体之一=纯动量(不做质量过滤),若不在 universe 层排 ST,投机 ST 动量票会进选股→universe 层排 ST 同时保护质量+动量两变体(2026-06-18 策略讨论)。"
       ]
     },
     {
