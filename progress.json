@@ -1,8 +1,8 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "B064 A股+港股 基本面+新闻(lookup 展示)=A股数据源 P2。来源:backlog B0XX-ashare-data-source §P2 + 2026-06-18 用户拍板『基本面+新闻一起做』『A股+港股一并』。**定位**:让 B059 /symbols 详情页对 A股(.SH/.SZ)+港股(.HK)也展示真实基本面(CAS 口径关键指标)+真实个股新闻,从『只有价格』丰富到价格+基本面+新闻三段,与美股详情页对齐。**红线(硬性)**:research-safe lookup 展示 only(不喂策略/不进任何策略·回测·推荐·账户路径,A股策略是 P3)/no-broker(只接 akshare·baostock 不接券商 SDK)/no-AI 预测(新闻翻译沿用 B054 仅翻译边界)/§12.10.2 请求路径不 import trade(akshare lazy,新模块入 AST 守门)/EOD+诚实标源+优雅失败(不可达 available=False 非 500)/美股+Master+trade 零回归。**★方法论硬坑(framework v0.9.45 §23/铁律 9)**:akshare 基本面·新闻函数走与价格不同的端点/主机/可达性(B062 港股价格端点超时前车之鉴),Generator 实施 F001/F002 必须先 VM 实跑候选 akshare 函数真调用验可达+shape,选已验者;港股源不可达→诚实空态不阻塞 done(A股达成即核心价值)。**4 features 3g+1c**:F001 g 基本面取数+端点 market-aware+缓存(symbol_fundamentals_cache migration 0026);F002 g 个股新闻 on-demand ingest+端点(akshare→news 表幂等);F003 g 详情页基本面+新闻区块(货币感知+CAS+中文新闻+双语);F004 c Codex L2 真机验收(真返回实测,signoff 含实测证据硬段 evaluator §29)+边界 adversarial+US 零回归+signoff。**不做(P3/延后)**:A股/港股策略·回测·交易规则·领域信号因子化·跨市场 FX/NAV 聚合·基本面进评分。spec docs/specs/B064-cn-hk-fundamentals-news-spec.md(6 章)。复用 B059 SymbolDataProvider 抽象+B061 CnProvider+B062 HkProvider+B034/B035 news 表+B054 翻译+symbol_price_cache 隔离范式。",
   "total_features": 4,
-  "completed_features": 3,
+  "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "F004",
   "last_updated": "2026-06-18",
@@ -21,7 +21,7 @@
   "docs": {
     "spec": "docs/specs/B064-cn-hk-fundamentals-news-spec.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/B064-cn-hk-fundamentals-news-signoff-2026-06-18.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
@@ -39,7 +39,7 @@
   "session_notes": {
     "planner": "2026-06-18 B063 done 收尾 + B064 planning(planner)。**B063 done 收尾已完成**:framework v0.9.45 全部沉淀(§25.1 evaluator FULL PASS 系统性退化三实例+流程修复+5 条队列清空,CHANGELOG+archive)；backlog 记 B063 NO-GO+用户『不接受 NO-GO 修方法学重测』裁定→新增 B0XX-hk-china-real-data-retest(Batch 2.5)；commit b2cb0e1。**B064 planning 完成→status=building 交 Generator F001**:用户拍板下一批=A股 P2『基本面+新闻一起+A股港股一并』。已写 spec(docs/specs/B064-cn-hk-fundamentals-news-spec.md 6 章)+features.json(4 features 3g+1c)。Explore agent 摸清代码面:基本面=CN/HK provider get_stats 现仅返身份(无基本面)+fundamentals.py US-only 门禁→须改 market-aware+akshare 取数+新缓存表 0026;新闻=现仅 SEC/Yahoo ingest 无 CN/HK 源→F002 真新工作(akshare 个股新闻 on-demand cache-first 入 news 表)。**★焊进 spec 的硬坑**:§23 akshare 基本面/新闻函数须 VM 实跑验可达(走不同端点/主机,B062 港股超时教训),港股源不可达诚实空态不阻塞;F004 signoff 必含实测证据硬段(§29,真值数字非'端点存在')。**【续接】**:status=building,Generator 接 F001(基本面)→F002(新闻)→F003(前端),再 Codex F004。Generator 起手第一件事=§23 实跑候选 akshare 函数(A股 stock_financial_abstract/stock_news_em 等,港股 stock_hk_spot_em/financial_hk 等)验可达,选定再建。**需求池其余**:hk_china 重测 Batch 2.5(B0XX-hk-china-real-data-retest,修 200D warmup+HK sina+qfq 口径)/B055 进攻选股(P1 spec 已备)/测试自动化基建(正面解 §25 系统性,golden 数据下沉 CI)。prod=B062 系(hk_china proxy 未变,用户交易不受影响)。",
     "generator": "2026-06-18 B064 building (generator). **§23 实跑闭合**：写探针 scripts/test/cn_hk_fundamentals_news_probe.py 真跑候选 akshare 函数→选定可达者：CN 基本面=stock_financial_abstract(财务+比率)+stock_value_em(市值/PE/PB/股本 raw 元)；HK 基本面=stock_financial_hk_analysis_indicator_em(年度,CURRENCY=HKD)+stock_hk_valuation_baidu(市值亿×1e8/PE/PB,baidu host 非 eastmoney push)；CN+HK 新闻=stock_news_em(同函数均可达,标题均中文免翻)。**港股源可达=§23 最大未知正面解决**(基本面+新闻都可达,不需空态降级)。弃用不可达：stock_individual_info_em(JSONDecode)/stock_hk_spot_em(SSL push host)/stock_a_indicator_lg(已删)/eniu(timeout)。**F001 done**：ProviderStats 扩 6 CAS 字段(eps/bps/net_income/debt_to_asset/as_of_report/accounting_standard)；akshare_fundamentals.py 纯解析(单位:margins/ROE÷100→分数,debt 比率留百分数,市值 raw)；cn/hk provider get_stats lazy akshare；fundamentals.py market-aware+cache-first(symbol_fundamentals_cache migration 0026,EOD TTL,失败不缓存);route 加 session+429;§12.10.2 allowlist+deploy required-tables+api.ts 重生。**真值实跑**(backend venv 装 akshare 后):600519.SH 市值¥1.55万亿/PE18.74/ROE10.57%/CAS,0700.HK 市值HK$4.06万亿/PE15.23/ROE21.13%/HKFRS/腾讯控股,AAPL 零回归+enriched。门禁:backend ruff/mypy(414)/unit 1199+2skip/safety 158;migration 0026 up/down idempotent,ORM==schema;frontend tsc+drift 绿。报告 docs/test-reports/B064-...-akshare-probe-2026-06-18.md。**续接**:F002(stock_news_em on-demand ingest 入 news 表幂等)→F003(详情页区块)。注:本机 backend venv 之前缺 akshare(已 pip 装,prod VM B061 已装)。**B064 generator 全交付完成,status=verifying 交 Codex F004**——详见 generator_handoff.summary(完整批次摘要+真值数字+commit 列表)。F001/F002/F003 全 done,自跑 adversarial review workflow 修 3 findings(HKD '$' 歧义/debt 百分数显示/新闻 cache-first dup 标记),所有 commit CI 全绿自动部署 prod(936fcaf/a946b22/386a41e/3f2ff0b/178be1e/f7e93d6)。**给 Codex F004 提示**:本机已实跑出真值(报告 docs/test-reports/B064-...-akshare-probe-2026-06-18.md),VM 须复跑探针确认 host 可达性并贴部署后 /api/symbols/{600519.SH,0700.HK,AAPL}/{fundamentals,news} 真返回(evaluator §29 实测证据硬段);港股源本机可达=最大未知已正面解,但 VM 可达性以 F004 为权威。",
-    "evaluator": null
+    "evaluator": "2026-06-18 **B064 verifying PASS → DONE**。L1: backend 1367/17skip + mypy CI-exact 416 files 0 errors + ruff clean + safety 158 passed + frontend vitest 334 + tsc 0 + eslint 0 + i18n parity PASS。L2 VM(34.180.93.185,f7e93d6,alembic 0026): ①600519.SH 基本面真值=market_cap¥1.55T/pe18.74/roe10.57%/CAS/2026-03-31; ②0700.HK 基本面真值=market_cap HK$4.06T/pe15.23/roe21.13%/HKFRS/腾讯控股; ③CN+HK 新闻各 10 条中文真条目(ingest 真跑); ④cache-first 生效(二次 0 new); ⑤AAPL→YFinanceSymbolProvider/USD 零回归; §23 VM 可达性确认(stock_financial_hk_analysis_indicator_em+stock_news_em 均 OK); recent-errors=0; 边界: no-broker/no-AI/no-trade/AST 守门/缓存隔离/research-safe 全通过。signoff: docs/test-reports/B064-cn-hk-fundamentals-news-signoff-2026-06-18.md"
   },
   "features": [
     "F001",
@@ -47,5 +47,5 @@
     "F003",
     "F004"
   ],
-  "completed_date": null
+  "completed_date": "2026-06-18"
 }
