@@ -1,51 +1,50 @@
 {
-  "sprint": "B067-ashare-attack-p2-advisory",
+  "sprint": "B068-ashare-attack-wide-universe-revalidation",
   "features": [
     {
       "id": "F001",
-      "title": "cn_attack 两变体 advisory 模式接入(registry+producer+每日 precompute+★cash-buffer 补 1.0+获利了结 meta+升格出 STANDALONE_RESEARCH)",
+      "title": "宽 A股 universe 实建(§23 全市场列表端点 VM 可达性 + top 200-300 PIT,B065 因 SSL 降级 seed 43)",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §4 F001 + §3 三陷阱 + §0 诚实约束】(1) registry.py 加 CADENCE_DAILY+2 strategy_id 常量(cn_attack_quality_momentum/cn_attack_pure_momentum)+2 行 _MODES(funding_state=research,cadence=daily,双语 display_name)。(2) refresh_worker._DISPATCH 加 2 producer(共用 1 参数化 cn_attack_precompute(session,strategy_id,factor_variant),lazy import trade)。(3) precompute 跑 cn_attack daily-driver(run_cn_attack_backtest 到 as_of 取 final-day record 的 target/rebalanced/forced_exits),★cash_buffer 显式补成 1.0 一行(否则 save_batch L68 守门 raise),save_batch(strategy_id,as_of,rows,master_meta);★forced_exits+跌出 top-N 写进 rationale/master_meta(获利了结落地)。(4) cn_attack 升格出 STANDALONE_RESEARCH_STRATEGY_IDS(进 mode 体系,非 master sleeve)。(5) ★OOS 诚实 meta:master_meta 带 cn_attack OOS 负/未验证 caveat 供 surface 渲染。正面证据(§29):跑 precompute→recommendation_snapshot 写两 strategy_id target(权重和=1.0 含 cash 行,过 save_batch);/api/recommendations/current?strategy_id= 各返对应变体;forced_exits 体现在 rationale。Gates:backend pytest/ruff 目录上下文/mypy CI-exact 0;registry/targets 无 trade import(AST 守门)。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F001 + §3】(1) ★§23 前置:VM 实跑验 akshare 全市场 A股 列表端点(候选 stock_zh_a_spot_em/stock_info_a_code_name/sina/baidu 等价;B065 本地 SSL 挂,VM 可能可达如 B062/B064 先例)。(2) 可达→discover_ashare_superset 产宽 superset(数百只)→build_cn_universe 写 cn_pit_universe.csv(top 200-300 PIT,ST 排除,无未来泄漏)。(3) 不可达/不稳→诚实降级+报告标注(宽宇宙未达成,沿用 seed,Q1 仍未答=有效 NO-GO 不强凑)。正面证据(§29):§23 端点可达性结论(贴真返回行数);宽宇宙建成则 cn_pit_universe.csv 含数百名 PIT 成员(贴样本日成员数);US 零回归。Gates:backend+trade pytest/ruff 目录上下文/mypy CI-exact 0。",
       "design_decisions": [
-        "★头号陷阱:save_batch 守门权重和=1.0,cn_attack 有 cash_buffer→producer 必须补 cash 行(类比 regime _finalize_weights 路由残差)。",
-        "两变体两 strategy_id(共用引擎,factor_variant 区分),各独立账户/推荐流;cn_attack 是独立模式非 master sleeve(registry 与 sleeve registry 两套)。",
-        "live 默认退出=momentum_decay 基线(跌出 top-N 自然获利了结);trailing_stop/hard_target 留后扩。",
-        "★获利了结落地:forced_exits 写 snapshot rationale/master_meta→position-diff reason 列体现(diff 现无专门 profit-take 标记)。"
+        "★§23:全市场列表端点 VM 可达性是本批最大未知(B065 本地 SSL 降级 seed 43),实跑验;不可达诚实 NO-GO 不强凑宽宇宙。",
+        "宽宇宙=top 200-300 PIT(市值+成交额排名,ST 排除),质量门槛才有筛选空间→解 Q1。"
       ]
     },
     {
       "id": "F002",
-      "title": "每日 timer/service + CLI 接线(daily cadence)+ deploy glob 自动接线 + scope safety + env 守门",
+      "title": "波动率倒数加权变体(construction weighting_scheme ∈ {equal,inverse_vol},默认 equal 向后兼容)",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §4 F002】(1) CLI entrypoint(strategy_modes/cn_attack_cli.py 或子命令)跑两变体 precompute。(2) 2 对 workbench-cn-attack-*.timer(daily OnCalendar)+.service(ExecStart 跑 CLI,WORKBENCH_DATA_ROOT,hardening,不含 broker/order/fills/reconcile 字样);deploy.sh L442 glob 自动 install+enable(不动 deploy.sh)。(3) 入口级 env 守门(§12.11.1,precompute 写生产 DB)。(4) scope safety-test 块(test_market_scheduler_scope.py 同构,evaluator §24)+test_deploy_timer_wiring(sibling .service/glob/无硬编码 enable)。正面证据:两 timer/service 文件就位;本地 safety test 过(scope/wiring);CLI 可跑 precompute;env 守门测试过。Gates 同 F001。L2 由 F004 验 systemd enabled+active。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F002 + §2 分析师立场】(1) construction.py 加 weighting_scheme 分支:equal(现状 1/N 默认)/inverse_vol(weight_i ∝ 1/σ_i,σ 复用 us_quality low_vol trailing 窗口;缺 σ 名诚实降级)。(2) 归一化→同样单票 cap→cash buffer。(3) CnAttackParameters 加 weighting_scheme(默认 equal,★B066/B067 向后兼容零回归)。(4) σ PIT/as_of 安全(只用 ≤as_of 数据无泄漏)。正面证据:inverse_vol 产不同于等权的权重(高波动票权重更低可验);σ 计算 PIT 无泄漏;equal 默认不变(B066/B067 回归);mypy trade。Gates 同 F001。",
       "design_decisions": [
-        "deploy.sh glob loop(B037-OPS1)自动接线→新增 timer/service 文件即被 install+enable,deploy.sh 零改。",
-        "service ExecStart 只跑 CLI(precompute),不含执行/券商字样(scope safety pin)。"
+        "分析师定:唯一值得测的权重优化=波动率倒数加权(风险控制非收益预测,低过拟合,精准打 B066 OOS 动量崩盘);动量/打分加权明确排除(堆高崩盘+最 overfit);MVO 排除(OOS 不稳)。",
+        "weighting_scheme 默认 equal=B066/B067 向后兼容零回归(本批不改实盘 surface 默认行为)。",
+        "σ 复用 low_vol_score trailing 窗口,PIT 安全。"
       ]
     },
     {
       "id": "F003",
-      "title": "前端 advisory surface + ★cn_attack OOS 诚实框架 + 获利了结渲染 + no-execution 守门",
+      "title": "4 配置(2 因子×2 权重,退出固定)宽宇宙回测 + 对比报告(答 Q1/Q2/Q3)+ walk-forward",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §4 F003 + §0 诚实约束】(1) ModeSelector 自动列两新模式(research 徽章自动);recommendation 页+position-diff 页按 ?strategy_id= 工作(多数零改动)。(2) ★cn_attack 专属诚实披露(超出通用研究徽章):选中 cn_attack 模式时醒目展示『未经样本外验证/OOS 动量逆转期会亏/按它交易风险自负』+可触达 B066 IS/OOS 回测记录,双语。(3) 获利了结清单清晰渲染(position-diff reason 列体现 forced_exits/跌出 top-N)。(4) no-execution 扫描列表加新 surface(若新增页/组件);disclaimer 仍渲染;api.ts 重生+drift(若 schema 变);i18n parity。正面证据:两模式在 ModeSelector 带研究徽章;选 cn_attack 见专属 OOS 诚实披露;每日 target+diff+获利了结 渲染;no-execution/disclaimer 守门过。Gates:vitest/tsc/eslint/i18n parity/api.ts drift 绿。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F003 + §2 数据窥探纪律】(1) 回测对比扩为 2 因子(质量+动量/纯动量)×2 权重(等权/波动倒数)=4 配置(退出固定 momentum_decay 基线,不乘 3 避变体爆炸)。(2) 宽宇宙上跑(F001 建成);walk-forward IS/OOS 段对比+vs 沪深300+真 A股 方向化成本(沿用 B066)。(3) 对比报告(双语)答 Q1(质量 vs 纯动量分化了吗)/Q2(波动倒数 vs 等权 OOS 崩盘改善了吗)/Q3(宽宇宙更长 OOS 仍脆弱否)。(4) §29 红旗:no_activity/同族 toggle 失效/过拟合 IS≠OOS winner/夏普离谱;★全 4 配置诚实披露不 cherry-pick。正面证据:4 配置各产非退化可对比 IS/OOS 指标(贴真数字);报告明确答 Q1/Q2/Q3+过拟合红旗。Gates:backend pytest+ruff 目录上下文+mypy(前端展示则 frontend 门禁)。",
       "design_decisions": [
-        "★诚实约束(§0)无条件:cn_attack 专属 OOS 负/未验证披露,不止通用研究徽章(用户在未验证策略上交易,须看到真实 OOS 记录)。",
-        "ModeSelector/recommendation/position-diff 页多数零改动(框架 strategy_id 参数化已就绪),主要加 cn_attack 专属诚实文案+no-execution 扫描。"
+        "★限 4 配置(2 因子×2 权重,退出固定 momentum_decay)=数据窥探纪律(已有 B066 退出维度,本批只加权重维度);walk-forward+全披露不 cherry-pick。",
+        "复用 B066 多变体报告+§29 红旗+方向化成本;参数 sweep 非新 strategy_id。"
       ]
     },
     {
       "id": "F004",
-      "title": "Codex:L2 真机验收(两 timer 真跑+两 strategy_id target 权重和=1.0+执行闭环隔离+OOS 诚实披露+零回归)+signoff(实测证据硬段)",
+      "title": "Codex:回测验证(4 配置真数字+Q1/Q2/Q3 真答+无过拟合)+研究判定+signoff(实测证据硬段)",
       "priority": "high",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "【见 spec §4 F004。真数据/真机批次——signoff 必含实测证据硬段,§29:无真值=不得 done】L1 全门禁(backend+trade mypy+ruff 目录上下文+frontend+safety)。L2 真机实测(VM,贴真返回):①两 timer 触发→precompute 真跑→recommendation_snapshot 两 strategy_id target 真值(★权重和=1.0 含 cash 行);systemd timer enabled+active(§24);②ModeSelector 见两 cn_attack 模式+研究徽章+★专属 OOS 诚实披露(真渲染);③/recommendations?strategy_id= 各变体真推荐;position-diff 真 target/current/diff+获利了结体现;④★执行闭环 per strategy_id 隔离真验:seed 独立账户→ticket(strategy_id 隔离)→fills→reconcile→journal 跑通一次(advisory 无自动下单);Master/regime 账户/推荐零回归;⑤边界 adversarial:advisory-only/no-broker/no 收益预测/no 自动执行/研究态不碰真金自动化;HEAD≡prod+recent-errors=0。signoff docs/test-reports/B067-...-signoff-*.md 实测证据硬段逐条贴真观测+演练自清(执行闭环冒烟后 void ticket/恢复账户)。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F004。真数据批次——signoff 必含实测证据硬段,§29:无真值=不得 done】L1 全门禁(backend+trade mypy+ruff 目录上下文)。L2 真机实测(VM,贴真返回):①F001 宽宇宙真建(成员数/§23 端点可达结论)或诚实 NO-GO;②4 配置回测真数字(IS/OOS CAGR/Sharpe/MaxDD/换手 各异非退化);③★Q1 真答(宽宇宙下质量+动量 vs 纯动量 是否分化/谁 OOS 更优,贴对比);④★Q2 真答(波动倒数 vs 等权 OOS 崩盘/回撤/夏普对比,贴数字);⑤Q3(更长 OOS 是否仍逆转);过拟合红旗核(IS≠OOS winner 存疑不 cherry-pick);研究态/no-broker/no 收益预测;B066/B067 引擎+surface 零回归(默认 equal 不变);HEAD≡prod;★S1 全量 cross-source 可顺带补(VM 已可达 34.180.93.185)。研究判定:(a)质量是否加值(b)波动倒数是否值得换(c)是否建议调 B067 实盘默认配置(本批不改给建议)。signoff docs/test-reports/B068-...-signoff-*.md 实测证据硬段逐条贴真观测。",
       "design_decisions": []
     }
   ]
