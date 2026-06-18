@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+
 from workbench_api.data.snapshot_loader import PriceBar
 from workbench_api.data_refresh import cli as refresh_cli
 from workbench_api.data_refresh.refresh import (
