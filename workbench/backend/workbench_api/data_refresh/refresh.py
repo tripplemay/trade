@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import csv
 import logging
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
@@ -152,6 +153,10 @@ class RefreshSummary:
     fundamentals_path: str
     cn_hk_symbols: int = 0
     cn_hk_rows: int = 0
+    # B065 F001 — A-share universe superset price extension (new rows beyond the
+    # CN_HK proxy set; only symbols not already priced are fetched).
+    cn_universe_price_symbols: int = 0
+    cn_universe_price_rows: int = 0
 
 
 def equity_universe() -> tuple[str, ...]:
@@ -227,6 +232,7 @@ def run_refresh(
     prices_loader: _PricesLoader,
     fundamentals_loader: _FundamentalsLoader,
     cn_hk_prices_loader: _PricesLoader | None = None,
+    cn_extra_price_symbols: Sequence[str] | None = None,
 ) -> RefreshSummary:
     """Fetch prices + fundamentals for the Master universe and write the two
     unified CSVs under ``data_root``. Per-symbol failures are logged + counted
@@ -236,7 +242,13 @@ def run_refresh(
     + HK universe is fetched and **appended as new rows** after the US rows; the
     US rows themselves are produced by the unchanged loop above, so the US data
     is byte-identical (US-zero-regression). ``None`` (the default) keeps the
-    US-only behaviour fully backward-compatible."""
+    US-only behaviour fully backward-compatible.
+
+    When ``cn_extra_price_symbols`` is provided (B065 F001), the A-share universe
+    superset members **not already priced** above are fetched via the same
+    ``cn_hk_prices_loader`` and appended as a third block of new rows (so the
+    point-in-time universe builder has prices for turnover). US + CN_HK rows stay
+    untouched; ``None`` is fully backward-compatible."""
 
     prices_path = data_root.joinpath(*PRICES_RELPATH)
     fundamentals_path = data_root.joinpath(*FUNDAMENTALS_RELPATH)
@@ -269,7 +281,25 @@ def run_refresh(
                 errors += 1
                 logger.exception("data_refresh_cn_hk_fetch_failure", extra={"symbol": symbol})
 
-    _write_csv(prices_path, PRICES_HEADER, price_rows + cn_hk_rows)
+    # --- B065 F001: A-share universe superset price EXTENSION — NEW rows for the
+    # curated wide universe the point-in-time builder ranks. Only symbols NOT
+    # already priced above are fetched (deduped against US + CN_HK), so US +
+    # CN_HK rows are byte-identical (US-zero-regression). Best-effort per symbol.
+    cn_universe_rows: list[list[object]] = []
+    cn_universe_price_symbols = 0
+    if cn_extra_price_symbols and cn_hk_prices_loader is not None:
+        already = set(symbols) | set(CN_HK_UNIVERSE)
+        extra = [s for s in dict.fromkeys(cn_extra_price_symbols) if s not in already]
+        cn_universe_price_symbols = len(extra)
+        for symbol in extra:
+            try:
+                bars = cn_hk_prices_loader.fetch_daily_bars(symbol, from_date, to_date)
+                cn_universe_rows.extend(_prices_to_rows(bars))
+            except Exception:  # noqa: BLE001 — best-effort; skip a failing symbol
+                errors += 1
+                logger.exception("data_refresh_cn_universe_fetch_failure", extra={"symbol": symbol})
+
+    _write_csv(prices_path, PRICES_HEADER, price_rows + cn_hk_rows + cn_universe_rows)
 
     # --- fundamentals (equities only; ETFs / synthetic tickers have none) ---
     # Synthesise the eight quarterly ratios from live SEC companyfacts using the
@@ -315,12 +345,15 @@ def run_refresh(
         fundamentals_path=str(fundamentals_path),
         cn_hk_symbols=cn_hk_symbols,
         cn_hk_rows=len(cn_hk_rows),
+        cn_universe_price_symbols=cn_universe_price_symbols,
+        cn_universe_price_rows=len(cn_universe_rows),
     )
     logger.info(
         "data_refresh_done",
         extra={
             "price_rows": summary.price_rows,
             "cn_hk_rows": summary.cn_hk_rows,
+            "cn_universe_price_rows": summary.cn_universe_price_rows,
             # Currency is derived from the canonical ticker (no CSV column).
             "cn_hk_currencies": sorted({currency_for_symbol(s) for s in CN_HK_UNIVERSE}),
             "fundamental_rows": summary.fundamental_rows,

@@ -13,10 +13,17 @@ import argparse
 import logging
 import os
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
+from workbench_api.data_refresh.cn_universe import (
+    DEFAULT_TOP_N,
+    CnUniverseSummary,
+    MarketCapLoader,
+    build_cn_universe,
+    quarterly_rebalance_dates,
+)
 from workbench_api.data_refresh.fx_refresh import run_fx_refresh
 from workbench_api.data_refresh.refresh import RefreshSummary, run_refresh
 from workbench_api.data_refresh.window import DataWindow, compute_data_window
@@ -56,6 +63,24 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=DEFAULT_LOOKBACK_DAYS,
         help="Calendar days of history to fetch (default: %(default)s).",
     )
+    # B065 F001 — A-share point-in-time universe build (off the same fetch).
+    fetch.add_argument(
+        "--no-cn-universe",
+        action="store_true",
+        help="Skip the B065 A-share point-in-time universe build.",
+    )
+    fetch.add_argument(
+        "--cn-universe-top-n",
+        type=int,
+        default=DEFAULT_TOP_N,
+        help="Members per rebalance in the A-share PIT universe (default: %(default)s).",
+    )
+    fetch.add_argument(
+        "--cn-universe-max-superset",
+        type=int,
+        default=300,
+        help="Cap on the discovered/seed A-share fetch superset (default: %(default)s).",
+    )
     return parser.parse_args(argv)
 
 
@@ -84,12 +109,24 @@ def fetch_main(
     *,
     loader_factory: LoaderFactory | None = None,
     today: date | None = None,
+    cn_universe_loader: MarketCapLoader | None = None,
+    superset_provider: Callable[[], Sequence[str]] | None = None,
 ) -> RefreshSummary:
     run_date = today or datetime.now(UTC).date()
     from_date = run_date - timedelta(days=max(1, args.lookback_days))
     prices_loader, fundamentals_loader, cn_hk_prices_loader, fx_loader = (
         loader_factory or _build_loaders
     )()
+
+    # B065 F001 — resolve the A-share fetch superset BEFORE the refresh so its
+    # members' prices are fetched (the universe builder needs them for turnover).
+    # ``cn_universe_loader is None`` (the default / tests) keeps the US+CN_HK
+    # behaviour unchanged.
+    build_universe = cn_universe_loader is not None and not getattr(args, "no_cn_universe", False)
+    superset: Sequence[str] = (
+        (superset_provider() if superset_provider is not None else ()) if build_universe else ()
+    )
+
     summary = run_refresh(
         data_root=args.data_root,
         from_date=from_date,
@@ -97,11 +134,51 @@ def fetch_main(
         prices_loader=prices_loader,  # type: ignore[arg-type]
         fundamentals_loader=fundamentals_loader,  # type: ignore[arg-type]
         cn_hk_prices_loader=cn_hk_prices_loader,  # type: ignore[arg-type]
+        cn_extra_price_symbols=superset or None,
     )
     # B063 F001 — also refresh the FX rates CSV (FRED CNY/USD + HKD/USD) the
     # backtest reads for USD conversion. Best-effort per series (logged inside).
     run_fx_refresh(data_root=args.data_root, fx_loader=fx_loader)  # type: ignore[arg-type]
+
+    # B065 F001 — build the A-share point-in-time universe membership artifact
+    # from the prices CSV just written + historical market caps. Best-effort: a
+    # universe failure never fails the US/CN_HK refresh.
+    if build_universe and superset and cn_universe_loader is not None:
+        _build_cn_universe(
+            args,
+            prices_path=Path(summary.prices_path),
+            marketcap_loader=cn_universe_loader,
+            superset=superset,
+            from_date=from_date,
+            to_date=run_date,
+        )
     return summary
+
+
+def _build_cn_universe(
+    args: argparse.Namespace,
+    *,
+    prices_path: Path,
+    marketcap_loader: MarketCapLoader,
+    superset: Sequence[str],
+    from_date: date,
+    to_date: date,
+) -> CnUniverseSummary | None:
+    rebalances = quarterly_rebalance_dates(from_date, to_date)
+    try:
+        return build_cn_universe(
+            data_root=args.data_root,
+            prices_path=prices_path,
+            marketcap_loader=marketcap_loader,
+            superset=superset,
+            rebalance_dates=rebalances,
+            from_date=from_date,
+            to_date=to_date,
+            top_n=args.cn_universe_top_n,
+        )
+    except Exception:  # noqa: BLE001 — best-effort; never fail the US refresh
+        logging.getLogger(__name__).exception("cn_universe_build_failed")
+        return None
 
 
 def _persist_data_window(window: DataWindow) -> None:
@@ -137,12 +214,35 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     if args.command != "fetch":
         return 2
-    summary = fetch_main(args)
+
+    # B065 F001 — wire the A-share PIT universe build into the production fetch.
+    # The loader (akshare stock_value_em) + best-effort superset discovery are
+    # lazy/key-free; ``--no-cn-universe`` disables it. Tests call fetch_main with
+    # cn_universe_loader=None, so this only runs in the real job.
+    cn_universe_loader: MarketCapLoader | None = None
+    superset_provider: Callable[[], Sequence[str]] | None = None
+    if not args.no_cn_universe:
+        from workbench_api.data_refresh.cn_marketcap import (
+            CnMarketCapLoader,
+            discover_ashare_superset,
+        )
+
+        cn_universe_loader = CnMarketCapLoader()
+        superset_provider = lambda: discover_ashare_superset(  # noqa: E731
+            top_n=args.cn_universe_max_superset
+        )[0]
+
+    summary = fetch_main(
+        args,
+        cn_universe_loader=cn_universe_loader,
+        superset_provider=superset_provider,
+    )
     print(
         "data refresh done — "
         f"price_symbols={summary.price_symbols} price_rows={summary.price_rows} "
         f"fundamental_symbols={summary.fundamental_symbols} "
-        f"fundamental_rows={summary.fundamental_rows} errors={summary.errors}"
+        f"fundamental_rows={summary.fundamental_rows} "
+        f"cn_universe_price_rows={summary.cn_universe_price_rows} errors={summary.errors}"
     )
 
     # B047-OPS2 F001 (L2) — record the real coverage window so the request-path

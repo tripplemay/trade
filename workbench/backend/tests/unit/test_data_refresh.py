@@ -18,7 +18,6 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-
 from workbench_api.data.snapshot_loader import PriceBar
 from workbench_api.data_refresh import cli as refresh_cli
 from workbench_api.data_refresh.refresh import (
@@ -328,3 +327,123 @@ def test_cli_default_data_root_from_env(monkeypatch: pytest.MonkeyPatch) -> None
     monkeypatch.setenv("WORKBENCH_DATA_ROOT", "/var/lib/workbench/data")
     args = refresh_cli.parse_args(["fetch"])
     assert str(args.data_root) == "/var/lib/workbench/data"
+
+
+# --- B065 F001: A-share universe superset price EXTENSION + US/CN_HK zero-regression ---
+
+
+def test_cn_extra_none_is_backward_compat(tmp_path: Path) -> None:
+    summary = _run(tmp_path, cn_hk_prices_loader=_FakeCnHk())  # no extra symbols
+    assert summary.cn_universe_price_symbols == 0
+    assert summary.cn_universe_price_rows == 0
+
+
+def test_cn_extra_appends_new_rows_without_touching_us_or_cn_hk(tmp_path: Path) -> None:
+    # Baseline: US + CN_HK only.
+    base = run_refresh(
+        data_root=tmp_path / "base",
+        from_date=_FROM,
+        to_date=_TO,
+        prices_loader=_FakePrices(),
+        fundamentals_loader=_FakeFundamentals(),
+        cn_hk_prices_loader=_FakeCnHk(),
+    )
+    with Path(base.prices_path).open() as handle:
+        base_rows = list(csv.reader(handle))
+
+    # + an A-share superset: one name already in CN_HK (deduped) + two new names.
+    extra = ["600519.SH", "600999.SH", "000001.SZ"]
+    both = run_refresh(
+        data_root=tmp_path / "both",
+        from_date=_FROM,
+        to_date=_TO,
+        prices_loader=_FakePrices(),
+        fundamentals_loader=_FakeFundamentals(),
+        cn_hk_prices_loader=_FakeCnHk(),
+        cn_extra_price_symbols=extra,
+    )
+    with Path(both.prices_path).open() as handle:
+        both_rows = list(csv.reader(handle))
+
+    # 600519.SH is already in CN_HK_UNIVERSE → not re-fetched; only the 2 new ones.
+    assert both.cn_universe_price_symbols == 2
+    assert both.cn_universe_price_rows == 2
+    # ★US + CN_HK rows are byte-identical and in the same position; extras append after.
+    assert both_rows[: len(base_rows)] == base_rows
+    appended = {row[1] for row in both_rows[len(base_rows):]}
+    assert appended == {"600999.SH", "000001.SZ"}
+
+
+def test_cn_extra_without_cn_hk_loader_is_noop(tmp_path: Path) -> None:
+    # The extension reuses the cn_hk loader to fetch; no loader → nothing fetched.
+    summary = run_refresh(
+        data_root=tmp_path,
+        from_date=_FROM,
+        to_date=_TO,
+        prices_loader=_FakePrices(),
+        fundamentals_loader=_FakeFundamentals(),
+        cn_hk_prices_loader=None,
+        cn_extra_price_symbols=["600999.SH"],
+    )
+    assert summary.cn_universe_price_symbols == 0
+    assert summary.price_rows == len(price_universe())
+
+
+def test_cn_extra_fetch_failure_counted_not_fatal(tmp_path: Path) -> None:
+    summary = run_refresh(
+        data_root=tmp_path,
+        from_date=_FROM,
+        to_date=_TO,
+        prices_loader=_FakePrices(),
+        fundamentals_loader=_FakeFundamentals(),
+        cn_hk_prices_loader=_FakeCnHk(fail={"600999.SH"}),
+        cn_extra_price_symbols=["600999.SH", "000001.SZ"],
+    )
+    assert summary.errors >= 1
+    assert summary.cn_universe_price_rows == 1  # the surviving extra still wrote
+
+
+class _FakeMcap:
+    """Fake market-cap loader for the cli universe-build wiring test."""
+
+    def fetch_market_cap_history(
+        self, ticker: str, from_date: date, to_date: date
+    ) -> list[Any]:
+        from workbench_api.data_refresh.cn_universe import MarketCapBar
+
+        return [MarketCapBar(ticker=ticker, bar_date=date(2024, 6, 1), total_mv=1.0e12)]
+
+
+def test_cli_fetch_main_builds_cn_universe(tmp_path: Path) -> None:
+    args = refresh_cli.parse_args(["fetch", "--data-root", str(tmp_path), "--lookback-days", "400"])
+    superset = ["600519.SH", "600999.SH"]  # 600519 in CN_HK (deduped), 600999 new
+    summary = refresh_cli.fetch_main(
+        args,
+        loader_factory=lambda: (_FakePrices(), _FakeFundamentals(), _FakeCnHk(), _FakeFx()),
+        today=date(2024, 12, 31),
+        cn_universe_loader=_FakeMcap(),
+        superset_provider=lambda: superset,
+    )
+    # US refresh unaffected; universe artifact written.
+    assert summary.price_rows == len(price_universe())
+    universe_csv = tmp_path / "snapshots" / "universe" / "cn_pit_universe.csv"
+    marketcap_csv = tmp_path / "snapshots" / "universe" / "cn_marketcap.csv"
+    assert universe_csv.exists() and marketcap_csv.exists()
+    with universe_csv.open() as handle:
+        rows = list(csv.reader(handle))
+    members = {r[1] for r in rows[1:]}
+    assert members == set(superset)  # both ranked at each quarterly rebalance
+
+
+def test_cli_no_cn_universe_flag_skips_build(tmp_path: Path) -> None:
+    args = refresh_cli.parse_args(
+        ["fetch", "--data-root", str(tmp_path), "--lookback-days", "400", "--no-cn-universe"]
+    )
+    refresh_cli.fetch_main(
+        args,
+        loader_factory=lambda: (_FakePrices(), _FakeFundamentals(), _FakeCnHk(), _FakeFx()),
+        today=date(2024, 12, 31),
+        cn_universe_loader=_FakeMcap(),
+        superset_provider=lambda: ["600519.SH"],
+    )
+    assert not (tmp_path / "snapshots" / "universe" / "cn_pit_universe.csv").exists()

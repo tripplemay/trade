@@ -6,7 +6,7 @@
       "title": "宽 A股 流动 universe + point-in-time 自建成员(市值+成交额 top-N,避幸存者偏差)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §3 F001 + §23】(1) ★§23 前置:实跑验 akshare 能否取历史市值+成交额(候选 stock_zh_a_spot_em 当前/总股本×历史收盘/stock_individual_info_em),取不到历史市值→fallback 成交额(volume×close)+总股本近似+诚实标注。(2) point-in-time universe builder:**任意 as_of(支持每日评估,因策略改为每日监控+不动区触发)** 按当时可得 trailing 市值+成交额排名取 top-N(~200-300),无未来泄漏。(3) fetch superset(曾进 top-N 并集/当前 top-500)减幸存者偏差+残余偏差文档。(4) 预算/时长感知。正面证据:给定历史 as_of 产 point-in-time top-N 可验只用当时数据;superset 覆盖;§12.10.2/§26.2 守门;US 零回归。Gates:backend pytest/ruff/mypy CI-exact 0;改 trade/ 本地 mypy trade。",
       "design_decisions": [
         "★universe=自建 top-N(市值+成交额)point-in-time,绕开 akshare 历史指数成分可达性风险(用户 2026-06-18 拍板)。",
