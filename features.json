@@ -44,7 +44,7 @@
       "title": "Codex:L2 真机验收(两 timer 真跑+两 strategy_id target 权重和=1.0+执行闭环隔离+OOS 诚实披露+零回归)+signoff(实测证据硬段)",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F004。真数据/真机批次——signoff 必含实测证据硬段,§29:无真值=不得 done】L1 全门禁(backend+trade mypy+ruff 目录上下文+frontend+safety)。L2 真机实测(VM,贴真返回):①两 timer 触发→precompute 真跑→recommendation_snapshot 两 strategy_id target 真值(★权重和=1.0 含 cash 行);systemd timer enabled+active(§24);②ModeSelector 见两 cn_attack 模式+研究徽章+★专属 OOS 诚实披露(真渲染);③/recommendations?strategy_id= 各变体真推荐;position-diff 真 target/current/diff+获利了结体现;④★执行闭环 per strategy_id 隔离真验:seed 独立账户→ticket(strategy_id 隔离)→fills→reconcile→journal 跑通一次(advisory 无自动下单);Master/regime 账户/推荐零回归;⑤边界 adversarial:advisory-only/no-broker/no 收益预测/no 自动执行/研究态不碰真金自动化;HEAD≡prod+recent-errors=0。signoff docs/test-reports/B067-...-signoff-*.md 实测证据硬段逐条贴真观测+演练自清(执行闭环冒烟后 void ticket/恢复账户)。",
       "design_decisions": []
     }

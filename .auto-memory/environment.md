@@ -10,17 +10,24 @@ type: reference
 - API：`[https://example.com/api]`
 - [其他端点，如 MCP / SDK / Admin]
 
-## 生产服务器
+## 生产服务器（2026-06-18 — B067 done 实测填实，治本占位符）
 
 | 项目 | 值 |
 |---|---|
-| 机型 | [e.g. e2-highmem-2 (2 vCPU, 16GB RAM)] |
-| 地区 | [e.g. asia-northeast1-b] |
-| 外网 IP | `[x.x.x.x]` |
-| SSH | `ssh [user]@[ip]` |
-| 部署路径 | `/opt/[app]` |
-| 启动 | [PM2 / systemd / docker] |
-| CI/CD | [GitHub Actions / GitLab CI] |
+| 云 | GCP（hostname `instance-20260403-154049`）|
+| **外网 IP** | **`34.180.93.185`**（2026-06-18 SSH 实测可达）|
+| **SSH** | **`ssh tripplezhou@34.180.93.185`** |
+| 部署路径 | `/srv/workbench/current/backend`（symlink → `/srv/workbench/releases/<sha>/backend`；历史 release GC 见 commit e49e217）|
+| 启动 | systemd（`workbench-*.service` + `*.timer`）|
+| 数据根 | `WORKBENCH_DATA_ROOT=/var/lib/workbench/data` |
+| 部署后台 venv | `/opt/workbench/.venv`（含 akshare/baostock）|
+| CI/CD | GitHub Actions（绿 CI 自动链式部署）|
+
+### ★连接失败先核对 IP，勿误判 fail2ban/封锁（2026-06-18 — B065+B067 两次误判教训；evaluator §25 实例）
+
+- **真 VM IP = `34.180.93.185`**。曾出现 agent 用**旧/猜的 IP**（如 `162.14.96.221`）连不上 → **误判为「SSH fail2ban 封锁」并把核心验收降级为 soft-watch**（B067 F004 evaluator + B065 各一次）。
+- **规约（evaluator §25 实例）：SSH/连接失败 → 先核对用的是不是上表 `34.180.93.185`**，再判封锁/超时；勿在用错 IP 时归因 fail2ban。
+- **timer/precompute job 运行机制**：`*.service` 设 `WorkingDirectory=/srv/workbench/current/backend` + `ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.<module>`。`workbench_api` 从 **WorkingDirectory 源树** import（`/opt/workbench/.venv` 的 site-packages 里 workbench_api 是 stale，缺 strategy_modes 等子包）→ **本地 import-check 必须先 `cd /srv/workbench/current/backend`**，否则误报 ModuleNotFoundError（B067 planner 自己也差点踩此 false alarm）。
 
 ## 测试账号（如有）
 
