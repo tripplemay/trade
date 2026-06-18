@@ -16,8 +16,9 @@ This probe runs each candidate in an isolated subprocess with a hard wall-clock
 timeout (a hung socket is killed, not waited on) and prints one structured JSON
 document so a human / Codex can map the real columns + reachability.
 
-Findings (local dev box, 2026-06-18 — see the F001 design doc / module
-docstring; Codex re-runs this on the prod VM for F004):
+Findings (local dev box, 2026-06-18 — captured in the
+``workbench_api.data_refresh.cn_universe`` module docstring; Codex re-runs this
+on the prod VM for F004):
 
 * ``stock_value_em(600519)`` — ✅ REACHABLE: ~2050 daily rows, columns
   ``数据日期 / 当日收盘价 / 总市值 / 流通市值 / 总股本 / PE(TTM) / 市净率 / …``
