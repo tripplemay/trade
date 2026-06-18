@@ -10,7 +10,9 @@ import pytest
 from trade.data.cn_attack_universe import (
     CnUniverseError,
     load_cn_universe,
+    load_cn_universe_history,
     load_cn_universe_members,
+    resolve_pit_members,
 )
 
 _HEADER = "as_of_date,ticker,rank,market_cap,avg_turnover,composite_score\n"
@@ -87,3 +89,20 @@ def test_bad_date_raises(tmp_path: Path) -> None:
     path.write_text(_HEADER + "31-03-2024,600519.SH,1,1e12,1e9,0.5\n", encoding="utf-8")
     with pytest.raises(CnUniverseError, match="YYYY-MM-DD"):
         load_cn_universe(date(2024, 5, 15), universe_path=path)
+
+
+def test_history_loads_all_blocks_ordered_by_rank(universe_csv: Path) -> None:
+    history = load_cn_universe_history(universe_path=universe_csv)
+    assert set(history) == {date(2024, 3, 31), date(2024, 6, 30)}
+    assert history[date(2024, 3, 31)] == ("600519.SH", "000858.SZ", "600036.SH")
+    assert history[date(2024, 6, 30)] == ("600519.SH", "000858.SZ", "300750.SZ")
+
+
+def test_resolve_pit_members_matches_disk_loader_semantics(universe_csv: Path) -> None:
+    history = load_cn_universe_history(universe_path=universe_csv)
+    march = ("600519.SH", "000858.SZ", "600036.SH")
+    june = ("600519.SH", "000858.SZ", "300750.SZ")
+    # Same point-in-time rule as the disk loader, but resolved in memory.
+    assert resolve_pit_members(history, date(2024, 5, 15)) == march
+    assert resolve_pit_members(history, date(2024, 6, 30)) == june
+    assert resolve_pit_members(history, date(2024, 1, 1)) == ()

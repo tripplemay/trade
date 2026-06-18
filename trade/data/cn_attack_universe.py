@@ -23,6 +23,7 @@ engine reuses :func:`trade.data.us_quality_universe.load_prices` /
 from __future__ import annotations
 
 import csv
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
@@ -150,10 +151,52 @@ def load_cn_universe(
     )
 
 
+def load_cn_universe_history(
+    *,
+    universe_path: Path | None = None,
+) -> dict[date, tuple[str, ...]]:
+    """All rebalance blocks: ``{rebalance_date: tickers ordered by rank}``.
+
+    Reads the CSV **once** for a backtest's whole window so the daily driver can
+    resolve point-in-time membership in memory (via :func:`resolve_pit_members`)
+    instead of re-reading the file every trading day.
+    """
+
+    rows = _read_rows(_resolve_path(universe_path))
+    ranked: dict[date, list[tuple[int, str]]] = {}
+    for row in rows:
+        rebalance_date = _parse_iso_date(row["as_of_date"], "as_of_date")
+        ranked.setdefault(rebalance_date, []).append(
+            (int(row["rank"]), str(row["ticker"]).strip())
+        )
+    return {
+        rebalance_date: tuple(ticker for _, ticker in sorted(members))
+        for rebalance_date, members in ranked.items()
+    }
+
+
+def resolve_pit_members(
+    history: Mapping[date, tuple[str, ...]], as_of: date
+) -> tuple[str, ...]:
+    """Members of the latest rebalance block dated ``<= as_of`` (point-in-time).
+
+    The in-memory twin of :func:`load_cn_universe`'s membership rule, over a
+    history loaded once by :func:`load_cn_universe_history`. Empty before the
+    first rebalance on or before ``as_of`` (no look-ahead).
+    """
+
+    visible = [rebalance_date for rebalance_date in history if rebalance_date <= as_of]
+    if not visible:
+        return ()
+    return history[max(visible)]
+
+
 __all__ = [
     "CN_UNIVERSE_REQUIRED_COLUMNS",
     "CnUniverseError",
     "CnUniverseMember",
     "load_cn_universe",
+    "load_cn_universe_history",
     "load_cn_universe_members",
+    "resolve_pit_members",
 ]

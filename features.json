@@ -20,7 +20,7 @@
       "title": "每日监控驱动 + 不动区(no-trade band) + 3 退出变体 + A股 方向化成本(印花税仅卖)回测引擎",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F002 + §3】(1) 每日驱动循环:按交易日推进,每日 generate_signal(as_of,current_holdings) 算目标。(2) 不动区:仅当目标 vs 现仓偏离超阈值(跌出 top-N 缓冲带/新票强势入选/权重漂移超容忍)才调仓,否则持有;输出每日{目标,是否调仓,卖出/获利了结清单}(P1 落回测)。(3) 3 退出变体参数化:(a)动量衰减退出(跌出 top-N)/(b)移动止损(跟踪每仓持有期 peak,回撤 X% 卖)/(c)硬获利目标(+X% 卖)。(4) 方向化 A股 成本:BacktestConfig 扩 stamp_duty_bps(仅卖出 10bps=0.1%)+commission_bps+slippage_bps;_weight_turnover 拆 buy/sell 分方向计;T+1 open 成交。(5) 真换手/成本/回撤 metrics(诚实,纯进攻吃满回撤)。正面证据(§29 实测):回测非退化 equity(多点/有交易);不动区生效(多数日无调仓,换手受控);3 退出变体产不同 turnover/收益;A股 成本正确(卖含印花税/买不含)。Gates 同 F001。",
       "design_decisions": [
         "★每日监控+不动区(no-trade band):每天算≠每天交易;current_holdings 是 held-frozen/不动区天然挂载点(earnings 已用)。P1 回测模拟此循环得真实换手/成本。",
