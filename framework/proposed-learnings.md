@@ -267,6 +267,10 @@
 
 **建议写入：** `environment.md` §CI 分层（补一条：ruff 本地必须目录上下文 `python -m ruff check .`,勿单文件）/ 或 `framework/harness/generator.md` §19。
 
-**状态：** 待确认
+**状态：** ✅ 已沉淀 v0.9.47（generator.md §19.1 + environment.md §CI 分层；用户 2026-06-18 批 B065 done 收尾）
+
+<!-- 2026-06-18: v0.9.47 沉淀完成（B065 F001 done 收尾，用户批）：1 条 ruff CI-exact 坑 → generator.md §19.1（本地 ruff 必须目录上下文 python -m ruff check . 勿单文件/子集，单文件缺 project 根漏 isort first-party 分组致 I001 本地绿 CI 红）+ environment.md §CI 分层补一行。归档 framework/archive/proposed-learnings-archive-v0.9.47.md。CHANGELOG v0.9.47。**活跃候选队列=空。** -->
+
+<!-- 当前活动候选（v0.9.47 后）：无。 -->
 
 <!-- 当前活动候选（v0.9.46 后）：B065 1 条（generator/gate）——本地 ruff 须目录上下文 python -m ruff check .（单文件漏 first-party 分组→I001 本地绿 CI 红）。下批 done 阶段提请用户裁定。 -->

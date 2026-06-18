@@ -1320,6 +1320,14 @@ CI 的 mypy 步骤是 **strict 扫 `workbench_api` AND `tests`**（见 `workbenc
 
 **来源：** B057 F004（第一实例，记入 proposed-learnings 未沉淀）+ B059 F001（第二实例，本地只跑 `mypy workbench_api` 漏 test helper `no-untyped-def`，一次 fix-push）。
 
+### §19.1 ruff 本地必须**目录上下文** `python -m ruff check .`，勿对单文件/子集跑 check 或 `--fix`（v0.9.47 — B065 F001 沉淀）
+
+**坑：** `ruff` 的 isort first-party 检测**依赖 project 上下文**：`ruff check <单文件>`（或对子集跑 `--fix`）从 `workbench/backend` 跑时**不把 `workbench_api` 识别为 first-party** → 不要求 third-party(`pytest`) 与 first-party(`workbench_api`) import **组间空行**；而 CI（Backend `python -m ruff check .` + Python CI 根 `ruff check .`，都是**目录上下文**）能识别 first-party → 要求空行 → `I001`。B065 F001 对单测单文件跑 `ruff check --fix` 反而**删掉**了该空行，本地单文件 "All checks passed!"，push 后 Backend CI + Python CI **双红 I001**。
+
+**规约：** push 前本地 ruff 门禁**必须 `python -m ruff check .`（目录上下文，与 CI 完全一致）**，**不要对单文件 / 子集跑 `check` 或 `--fix`**——单文件模式因缺 project 根而漏检 import 分组，造成"本地绿 CI 红"。这是 §19「本地门禁 CI-exact」对 ruff 的具体落点（与 environment.md §CI 分层 同族）。
+
+**来源：** B065 F001（commit `e3705a6` 修 I001 import 分组）。
+
 ## 20. 新增后端路由的配套清单（v0.9.44 — B057+B059 二例沉淀）
 
 新增一个后端路由前缀（如 `/api/symbols`）时，**仅加路由 + 实现是不够的**，必须同步：

@@ -39,5 +39,6 @@ type: reference
 - 有**两条独立 CI**：Workbench Backend CI 只查 `workbench_api`；独立「Python CI」对仓库根跑 `mypy trade` + `ruff check .` + 全 root pytest，**比 backend CI 严**。
 - **改了 `trade/` 包的代码，本地门禁必须额外跑 `.venv/bin/mypy trade`**（不止 workbench 那套），否则 backend CI 绿但 Python CI 红。
 - 来源：B050 F002/F003 触红（hotfix `8728621`：us_quality `_iso_date` 用 `Any`+`str()`、hk_china `_execute_period` 复用加 `arg-type` ignore）。
+- **ruff 本地必须目录上下文 `python -m ruff check .`，勿对单文件/子集跑 `check`/`--fix`**（v0.9.47 — B065 F001）：单文件模式缺 project 根 → 不识别 `workbench_api` 为 first-party → 漏 isort 组间空行（`I001`）→ 本地绿 CI 红。详见 generator.md §19.1。
 
 <!-- 写入规则：由 Planner 统一维护，环境变更后及时更新。账号密码避免明文，必要时引用 secret manager。 -->

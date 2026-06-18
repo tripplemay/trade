@@ -5,6 +5,17 @@
 
 ---
 
+## v0.9.47 — 2026-06-18（B065：ruff 本地须目录上下文，勿单文件）
+
+**来源批次：** B065 ashare-strategy-data-foundation（A股 策略数据地基，0 fix-round done；F001 ruff I001 本地绿 CI 红，用户 done 收尾批准）。
+
+**沉淀内容（用户确认）：**
+- **ruff 本地必须目录上下文 `python -m ruff check .`，勿对单文件/子集跑 `check`/`--fix`**（B065 F001：单文件模式缺 project 根 → 不识别 `workbench_api` 为 first-party → 漏 isort 组间空行 `I001` → 本地绿 CI 红，commit `e3705a6` 修）→ `generator.md §19.1`（§19 本地门禁 CI-exact 对 ruff 的落点）+ `environment.md §CI 分层`（补一行）。
+
+同族于 §19（mypy 本地 CI-exact）+ environment.md（改 trade/ 须 mypy trade）——「本地门禁命令逐字对齐 CI，含扫描范围/目录上下文」系列又一例。归档 `framework/archive/proposed-learnings-archive-v0.9.47.md`。**活跃候选队列清空。**
+
+---
+
 ## v0.9.46 — 2026-06-18（B064：前端「本机绿≠CI 绿」二坑）
 
 **来源批次：** B064 cn-hk-fundamentals-news（A股+港股 基本面+新闻 lookup，0 fix-round done；Generator F003 自评 adversarial review 排队 2 条，用户 done 收尾批准）。
