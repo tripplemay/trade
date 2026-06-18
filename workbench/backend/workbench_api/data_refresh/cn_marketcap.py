@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import importlib
 import logging
+from collections.abc import Sequence
 from datetime import date
 from typing import Any
 
@@ -45,10 +46,21 @@ _COL_TOTAL_SHARES = "总股本"
 _COL_PE_TTM = "PE(TTM)"
 _COL_PB = "市净率"
 
-# stock_zh_a_spot_em column names (best-effort discovery).
+# stock_zh_a_spot_em column names (eastmoney push host — best-effort discovery).
 _SPOT_COL_CODE = "代码"
 _SPOT_COL_NAME = "名称"
 _SPOT_COL_TOTAL_MV = "总市值"
+
+# stock_zh_a_spot (sina host) column names. B068 F001 §23: the sina spot is the
+# bulk endpoint that actually answers on the prod VM (the eastmoney push hosts
+# ConnectionError there). It carries NO 总市值, so 成交额 (today's turnover) is
+# the only liquidity field available to bound the candidate pool — the
+# point-in-time builder re-ranks on historical market cap afterwards. Its 代码 is
+# exchange-prefixed (``sh600519`` / ``sz000858`` / ``bj920000``), unlike the
+# eastmoney bare 6-digit code.
+_SINA_COL_CODE = "代码"
+_SINA_COL_NAME = "名称"
+_SINA_COL_AMOUNT = "成交额"
 
 
 def _bar_from_record(record: dict[str, Any], ticker: str) -> MarketCapBar | None:
@@ -105,7 +117,7 @@ class CnMarketCapLoader:
 
 
 def _spot_code_to_canonical(code: str) -> str | None:
-    """6-digit A-share spot code → canonical (.SH for 6xx/9xx, else .SZ)."""
+    """6-digit eastmoney A-share spot code → canonical (.SH for 6xx/9xx, else .SZ)."""
 
     digits = "".join(ch for ch in str(code) if ch.isdigit())
     if len(digits) != 6:
@@ -118,33 +130,49 @@ def _spot_code_to_canonical(code: str) -> str | None:
         return None
 
 
-def discover_ashare_superset(
-    akshare_module: Any | None = None, *, top_n: int = 300
-) -> tuple[tuple[str, ...], str]:
-    """Best-effort current top-``top_n`` A-share names by market cap.
+def _sina_code_to_canonical(code: str) -> str | None:
+    """Exchange-prefixed sina spot code → canonical.
 
-    Returns ``(symbols, provenance)`` where provenance is ``"bulk_spot"`` when
-    the ``stock_zh_a_spot_em`` snapshot succeeded, else ``"seed"`` (the curated
-    fallback — the §23-honest degrade when the push host is unreachable). ST /
-    退市 risk-warning names are filtered out (B065 F001). The seed is always
-    unioned in (it is curated non-ST) so discovery never drops a curated name."""
+    ``sh600519`` → ``600519.SH``, ``sz000858`` → ``000858.SZ``. 北交所 (``bj``
+    prefix) names have no ``.SH`` / ``.SZ`` canonical and are out of scope for
+    this liquid large-cap universe, so they return ``None`` (B068 F001)."""
 
-    akshare = akshare_module
-    if akshare is None:
-        try:
-            akshare = importlib.import_module("akshare")
-        except Exception:
-            return CN_UNIVERSE_SEED, "seed"
+    raw = str(code).strip().lower()
+    if len(raw) != 8:
+        return None
+    prefix, digits = raw[:2], raw[2:]
+    if not digits.isdigit():
+        return None
+    suffix = {"sh": "SH", "sz": "SZ"}.get(prefix)
+    if suffix is None:  # bj (北交所) or any unexpected prefix → out of scope
+        return None
+    try:
+        return SymbolRef.parse(f"{digits}.{suffix}").canonical
+    except Exception:
+        return None
+
+
+def _union_with_seed(discovered: Sequence[str]) -> tuple[str, ...]:
+    """Discovered names with the curated seed appended (order-preserving dedupe).
+
+    The seed is curated non-ST blue chips, so unioning it guarantees a
+    hand-picked name is never dropped regardless of the snapshot's coverage."""
+
+    return tuple(dict.fromkeys([*discovered, *CN_UNIVERSE_SEED]))
+
+
+def _discover_from_eastmoney(akshare: Any, top_n: int) -> list[str] | None:
+    """eastmoney ``stock_zh_a_spot_em`` ranked by 总市值 (market cap).
+
+    Returns the top-``top_n`` canonical symbols, or ``None`` when the endpoint is
+    unreachable / unparseable (so the caller can try the next source). ST / 退市
+    names are filtered out (B065 F001)."""
 
     records, columns = frame_records(akshare, "stock_zh_a_spot_em")
     if not records or _SPOT_COL_CODE not in columns or _SPOT_COL_TOTAL_MV not in columns:
-        logger.warning("cn_universe_superset_discovery_unreachable_using_seed")
-        return CN_UNIVERSE_SEED, "seed"
-
+        return None
     ranked: list[tuple[float, str]] = []
     for record in records:
-        # B065 F001 — exclude ST / 退市 risk-warning names (protects the next
-        # batch's pure-momentum variant from speculative ST momentum picks).
         if is_st_name(str(record.get(_SPOT_COL_NAME, ""))):
             continue
         canonical = _spot_code_to_canonical(record.get(_SPOT_COL_CODE, ""))
@@ -153,8 +181,94 @@ def discover_ashare_superset(
             continue
         ranked.append((total_mv, canonical))
     ranked.sort(key=lambda item: (-item[0], item[1]))
-    discovered = [canonical for _, canonical in ranked[:top_n]]
-    # Union the curated seed so a hand-picked name is never dropped.
-    union = list(dict.fromkeys([*discovered, *CN_UNIVERSE_SEED]))
-    logger.info("cn_universe_superset_discovered", extra={"count": len(union)})
-    return tuple(union), "bulk_spot"
+    return [canonical for _, canonical in ranked[:top_n]]
+
+
+def _discover_from_sina(akshare: Any, top_n: int) -> list[str] | None:
+    """sina ``stock_zh_a_spot`` ranked by 成交额 (today's turnover).
+
+    Returns the top-``top_n`` canonical symbols, or ``None`` when unreachable /
+    unparseable. The sina snapshot carries no 总市值, so turnover is the liquidity
+    proxy that bounds the candidate pool; the point-in-time builder re-ranks on
+    historical market cap afterwards, so this only decides *which* names are ever
+    fetched. ST / 退市 and 北交所 (``bj``) names are filtered out (B068 F001)."""
+
+    records, columns = frame_records(akshare, "stock_zh_a_spot")
+    if not records or _SINA_COL_CODE not in columns or _SINA_COL_AMOUNT not in columns:
+        return None
+    ranked: list[tuple[float, str]] = []
+    for record in records:
+        if is_st_name(str(record.get(_SINA_COL_NAME, ""))):
+            continue
+        canonical = _sina_code_to_canonical(record.get(_SINA_COL_CODE, ""))
+        turnover = coerce_float(record.get(_SINA_COL_AMOUNT))
+        if canonical is None or turnover is None or turnover <= 0:
+            continue
+        ranked.append((turnover, canonical))
+    ranked.sort(key=lambda item: (-item[0], item[1]))
+    return [canonical for _, canonical in ranked[:top_n]]
+
+
+def discover_ashare_superset(
+    akshare_module: Any | None = None,
+    *,
+    top_n: int = 300,
+    allow_sina_fallback: bool = False,
+) -> tuple[tuple[str, ...], str]:
+    """Best-effort current top-``top_n`` A-share names by liquidity.
+
+    Tries the widest reachable bulk-snapshot endpoint in turn, returning
+    ``(symbols, provenance)``:
+
+    * ``"bulk_spot"`` — eastmoney ``stock_zh_a_spot_em`` ranked by 总市值. The
+      richest source, but it routes through an eastmoney *push* host that
+      SSL-/Connection-fails off-box AND on the prod VM (B062/B065 lesson).
+    * ``"sina_spot"`` — sina ``stock_zh_a_spot`` ranked by 成交额 turnover. **The
+      §23-verified VM-reachable bulk endpoint** (B068 F001: the eastmoney push
+      hosts ConnectionError on the VM while the sina spot answers with the full
+      ~5500-name market). 北交所 (``bj``) + ST / 退市 names are filtered out.
+      **Opt-in only** (see below).
+    * ``"seed"`` — the curated :data:`CN_UNIVERSE_SEED` fallback when no bulk
+      endpoint answers (the §23-honest degrade).
+
+    ``allow_sina_fallback`` gates the sina branch and **defaults False so the
+    production daily refresh's behaviour is byte-identical to B065/B067**: on the
+    VM the eastmoney push host fails and discovery degrades to the curated seed,
+    so B067's live cn_attack advisory keeps consuming the seed-43 universe it is
+    calibrated to. Only the B068 research wide-universe build passes ``True`` (and
+    writes to a research data root), so the wide universe never leaks into the
+    live advisory surface (spec invariant #1, "不改 B067 surface").
+
+    The seed is always unioned in (curated non-ST) so discovery never drops a
+    curated name. The per-symbol historical-mcap fetch in
+    :func:`~workbench_api.data_refresh.cn_universe.build_cn_universe` then re-ranks
+    this candidate pool point-in-time."""
+
+    akshare = akshare_module
+    if akshare is None:
+        try:
+            akshare = importlib.import_module("akshare")
+        except Exception:
+            return CN_UNIVERSE_SEED, "seed"
+
+    discovered = _discover_from_eastmoney(akshare, top_n)
+    if discovered is not None:
+        union = _union_with_seed(discovered)
+        logger.info(
+            "cn_universe_superset_discovered",
+            extra={"count": len(union), "provenance": "bulk_spot"},
+        )
+        return union, "bulk_spot"
+
+    if allow_sina_fallback:
+        discovered = _discover_from_sina(akshare, top_n)
+        if discovered is not None:
+            union = _union_with_seed(discovered)
+            logger.info(
+                "cn_universe_superset_discovered",
+                extra={"count": len(union), "provenance": "sina_spot"},
+            )
+            return union, "sina_spot"
+
+    logger.warning("cn_universe_superset_discovery_unreachable_using_seed")
+    return CN_UNIVERSE_SEED, "seed"

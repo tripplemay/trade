@@ -22,6 +22,7 @@ import pytest
 
 from workbench_api.data_refresh.cn_marketcap import (
     CnMarketCapLoader,
+    _sina_code_to_canonical,
     discover_ashare_superset,
 )
 from workbench_api.data_refresh.cn_universe import (
@@ -266,10 +267,14 @@ def test_build_cn_universe_fetch_failure_counted_not_fatal(tmp_path: Path) -> No
 
 class _FakeAkshare:
     def __init__(
-        self, value_frame: pd.DataFrame | None = None, spot_frame: pd.DataFrame | None = None
+        self,
+        value_frame: pd.DataFrame | None = None,
+        spot_frame: pd.DataFrame | None = None,
+        sina_frame: pd.DataFrame | None = None,
     ) -> None:
         self._value = value_frame
         self._spot = spot_frame
+        self._sina = sina_frame
 
     def stock_value_em(self, symbol: str) -> pd.DataFrame:
         if self._value is None:
@@ -277,9 +282,16 @@ class _FakeAkshare:
         return self._value
 
     def stock_zh_a_spot_em(self) -> pd.DataFrame:
+        # The eastmoney push host — ConnectionError on the prod VM (B068 F001 §23).
         if self._spot is None:
             raise RuntimeError("unreachable")
         return self._spot
+
+    def stock_zh_a_spot(self) -> pd.DataFrame:
+        # The sina host — the VM-reachable bulk endpoint (B068 F001 §23).
+        if self._sina is None:
+            raise RuntimeError("unreachable")
+        return self._sina
 
 
 def test_marketcap_loader_parses_value_em_frame_and_filters_window() -> None:
@@ -367,6 +379,79 @@ def test_discover_superset_excludes_st_names() -> None:
     # The two ST names are dropped despite their larger market cap; 600519 stays.
     assert "600519.SH" in symbols
     assert "002999.SZ" not in symbols and "600666.SH" not in symbols
+
+
+# --------------------------------------------------------------------------- #
+# sina spot fallback (B068 F001 §23 — the VM-reachable bulk endpoint)
+# --------------------------------------------------------------------------- #
+
+
+@pytest.mark.parametrize(
+    ("code", "expected"),
+    [
+        ("sh600519", "600519.SH"),
+        ("sz000858", "000858.SZ"),
+        ("sz300750", "300750.SZ"),
+        ("bj920000", None),  # 北交所 — out of scope, no SH/SZ canonical
+        ("600519", None),  # bare 6-digit (eastmoney form) — wrong length here
+        ("xx123456", None),  # unknown prefix
+        ("shabcdef", None),  # non-digit body
+        ("", None),
+    ],
+)
+def test_sina_code_to_canonical(code: str, expected: str | None) -> None:
+    assert _sina_code_to_canonical(code) == expected
+
+
+def test_discover_superset_sina_fallback_when_eastmoney_unreachable() -> None:
+    # eastmoney push host down (spot_frame=None → raises), sina answers + the
+    # research build opts in: discovery falls through to the sina spot, ranks by
+    # 成交额 turnover, drops bj + ST, and still unions the seed. Real prod-VM path.
+    sina = pd.DataFrame(
+        {
+            "代码": ["sh600519", "sz300750", "sz000858", "bj920000", "sz000999"],
+            "名称": ["贵州茅台", "宁德时代", "五粮液", "北交所示例", "*ST示例"],
+            "成交额": [9.0e9, 8.0e9, 7.0e9, 9.9e9, 9.9e9],  # bj + ST biggest on purpose
+        }
+    )
+    fake = _FakeAkshare(spot_frame=None, sina_frame=sina)
+    symbols, provenance = discover_ashare_superset(
+        akshare_module=fake, top_n=3, allow_sina_fallback=True
+    )
+    assert provenance == "sina_spot"
+    # Ranked by turnover among eligible names (bj + ST excluded despite bigger 成交额).
+    assert symbols[:3] == ("600519.SH", "300750.SZ", "000858.SZ")
+    assert "920000" not in "".join(symbols)  # 北交所 dropped
+    assert "000999.SZ" not in symbols  # ST dropped
+    assert set(CN_UNIVERSE_SEED).issubset(set(symbols))  # seed unioned in
+
+
+def test_discover_superset_sina_off_by_default_keeps_seed_b067_regression() -> None:
+    # B067 zero-regression guard (spec invariant #1): with the sina fallback OFF
+    # (the production-refresh default), an unreachable eastmoney push host degrades
+    # to the curated seed even though the sina spot WOULD answer — so the daily
+    # refresh keeps producing the seed-43 universe B067's live advisory consumes.
+    sina = pd.DataFrame(
+        {
+            "代码": ["sh600519", "sz300750"],
+            "名称": ["贵州茅台", "宁德时代"],
+            "成交额": [9.0e9, 8.0e9],
+        }
+    )
+    fake = _FakeAkshare(spot_frame=None, sina_frame=sina)
+    symbols, provenance = discover_ashare_superset(akshare_module=fake, top_n=10)
+    assert provenance == "seed"  # sina NOT consulted without the opt-in
+    assert symbols == CN_UNIVERSE_SEED
+
+
+def test_discover_superset_all_endpoints_unreachable_falls_back_to_seed() -> None:
+    # Both eastmoney and sina down (even with sina opt-in) → curated seed.
+    fake = _FakeAkshare(spot_frame=None, sina_frame=None)
+    symbols, provenance = discover_ashare_superset(
+        akshare_module=fake, allow_sina_fallback=True
+    )
+    assert provenance == "seed"
+    assert symbols == CN_UNIVERSE_SEED
 
 
 # --------------------------------------------------------------------------- #

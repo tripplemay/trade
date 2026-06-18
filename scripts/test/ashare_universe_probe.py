@@ -64,9 +64,16 @@ CANDIDATES: list[tuple[str, str, list[Any], dict[str, Any]]] = [
         [],
         {"symbol": CN_SYMBOL_6, "period": "daily", "adjust": "qfq"},
     ),
-    # --- bulk superset discovery (current top-N liquid; push2 / szse hosts) ---
+    # --- bulk superset discovery (current top-N liquid; push2 / szse / sina hosts) ---
+    # B068 F001 §23 re-run on the VM: B065 found these push hosts SSL-fail off-box
+    # and degraded to the curated seed. The wide-universe revalidation hinges on at
+    # least ONE of these list endpoints answering on the prod VM, so the sina spot
+    # (stock_zh_a_spot) and the Shenzhen push host (stock_sz_a_spot_em) are added as
+    # alternates to the eastmoney candidates.
     ("superset.stock_zh_a_spot_em", "stock_zh_a_spot_em", [], {}),
     ("superset.stock_sh_a_spot_em", "stock_sh_a_spot_em", [], {}),
+    ("superset.stock_sz_a_spot_em", "stock_sz_a_spot_em", [], {}),
+    ("superset.stock_zh_a_spot", "stock_zh_a_spot", [], {}),
     ("superset.stock_info_a_code_name", "stock_info_a_code_name", [], {}),
 ]
 
