@@ -5,9 +5,9 @@ type: project
 ---
 
 ## 当前状态
-- **当前：B068 ✅ done**（2026-06-19，用户自验指示置 done，覆盖状态机；research-only；无 Codex F004 signoff）。F001+F002+F003 harness 入 git。**★4 配置对比报告已补入 git**：`docs/dev/B068-wide-comparison-report.md`（generator 跑 committed harness 于全真宽数据 2019-04→2026-06，393 名/250 期）。
-- **B068 研究结论（真数字，OOS 2024-04→2026-06）**：**Q1 质量加值=是(仅风险调整)**——quality OOS Sharpe 两权重均高(+0.15/+0.13)，CAGR 略低。**Q2 波动倒数=不值得换**——inverse_vol OOS Sharpe 略降、回撤改善微弱不稳→印证 equal(1/N)稳健基线。**Q3 不脆弱(表面)**——4 配置 OOS 全正(CAGR 62~77%/Sharpe 1.65~1.88,远超 CSI300 3%)，B066 −9~−11% 未复现。**★诚实警示**：OOS 高 = **幸存者偏差(当前在市名单回溯)+ 2024Q4 顺风行情** 双重高估，不足证稳健。**对 B067 建议(本批不改)：维持 equal 默认**(inverse_vol 无值得换优势)。红旗:IS≠OOS winner(不 cherry-pick)。
-- **F002 ✅**：CnAttackParameters 加 weighting_scheme∈{equal(默认),inverse_vol};construction inverse_vol=∝1/σ(σ 复用 us_quality trailing_volatility,中位数插补缺σ,无σ降级等权);hash 条件 payload→equal-default 字节级零回归;signal equal 路径零开销。commit b74183e 已部署。backend cn_attack 105 passed=B067 surface 零回归。
+- **当前：B069 verifying（不切，维持 equal）** = B068 follow-up。generator 跑 committed B068 harness 于全真宽数据得**权威数字 → inverse_vol 不支持切**（OOS Sharpe+CAGR 两模式更差，仅 quality 回撤弱改善，且 OOS 受幸存者偏差高估）→**用户裁定维持 equal**。F001 决策依据入 git（`docs/dev/B069-inverse-vol-default-decision.md`）；F002 不改产品代码（precompute 续 equal）+守门单测焊死 equal；F003 待 Codex **NO-SWITCH** 验收。
+- **B068 ✅ done**（2026-06-19 用户自验置 done，无 Codex signoff）= A股 宽宇宙重验。报告 `docs/dev/B068-wide-comparison-report.md`（committed harness，全真宽数据 393名/250期，2019-04→2026-06）。
+- **B068 研究结论（真数字 OOS）**：**Q1 质量加值=是(仅风险调整)**(quality OOS Sharpe 高+0.15/+0.13,CAGR 略低)；**Q2 波动倒数=不值得换**(inverse_vol OOS Sharpe/CAGR 更差→印证 equal 1/N 基线)；**Q3 表面不脆弱**(OOS CAGR 62~77%,B066 −9~−11% 未复现)。**★诚实警示:OOS 高=幸存者偏差+2024Q4 顺风 双重高估,不足证稳健**;红旗 IS≠OOS winner。weighting_scheme F002 已落代码(默认 equal 零回归)。
 - **B068 F001 实测（§23=GO）**：sina `stock_zh_a_spot` 可达=宽 superset 端点（eastmoney push hosts 全挂）；宽宇宙真建 **513 superset→250 成员/期×29 季度,0 fetch error,393 distinct,LEAKAGE=0**。commit d5a60c1 已部署。**sina gated 于 allow_sina_fallback(默认 False)→生产 daily refresh 字节级不变,B067 读 seed-43 宇宙不动**。runbook: docs/dev/B068-wide-universe-runbook.md；产物本地 data/research/b068/(gitignored)。
 - **上一批 B067 ✅ done**（2026-06-18，Codex 签收）= A股 进攻 P2（两 cn_attack advisory 模式进 _MODES，timer 03:30/03:40 UTC，cash 补 1.0，OOS 负/未验证红卡，advisory-only 全守门）。真 VM=`34.180.93.185`。B066 ✅ done。
 - **★诚实约束（spec §0 焊死）**：advisory surface 须持续显示 OOS 负/未验证披露（B068 OOS 强劲但受幸存者偏差高估，不撤披露）。B067 默认维持 equal。

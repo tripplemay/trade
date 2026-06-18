@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 3,
-  "completed_features": 0,
+  "completed_features": 2,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F003",
   "last_updated": "2026-06-19",
   "user_goal": "B069 cn_attack 实盘 advisory 默认权重切 inverse_vol(据 B068 验证)=B068 follow-up 落地批(小)。来源:用户自验 B068(等权 vs 波动倒数对比)支持 inverse_vol 改善 OOS→选 follow-up 调实盘默认权重。**★诚实前提**:切线上推荐默认=产品变更须可审计依据;B068 数字没进 git(用户本地自验)→F001 先落依据入 git(确认 inverse_vol vs equal OOS 改善),F002 据此才切(确认改善才切,没改善不切+报告,不盲切)。OOS 红卡不动(inverse_vol=改善崩盘非已验证赚钱);研究态/advisory-only/不自动下单不变;回测/研究全局默认仍 equal(只改 live producer cn_attack_precompute.py:183 传参)。**切换点**:cn_attack_precompute.py:183 现 CnAttackParameters(factor_variant=...)不传 weighting_scheme→默认 equal;改传 weighting_scheme='inverse_vol'(两模式);全局 DEFAULT_WEIGHTING_SCHEME 不动。**3 features 2g+1c**:F001 落 B068 切换依据入 git+明确支持/不支持结论;F002 据确认切两模式 live inverse_vol(全局默认 equal 不变);F003 Codex L2(切后 snapshot 反映 1/σ+OOS 红卡+零回归+§29)。spec docs/specs/B069-cn-attack-inverse-vol-default-spec.md。复用 B068 harness+宽宇宙+B067 precompute。",
   "reference_docs": [
@@ -28,12 +28,12 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B069 F001+F002 done = **诚实出口路径(不切)**。F001:跑 B068 committed harness 于全真宽数据(393名/250期,2019-04→2026-06 walk-forward)落切换依据入 git → docs/dev/B069-inverse-vol-default-decision.md(引 docs/dev/B068-wide-comparison-report.md 真数字)。**结论=不支持切 inverse_vol**:OOS Sharpe(quality 1.88→1.78/pure 1.72→1.65)+CAGR 两模式均更差,仅 quality 回撤弱改善(-23.9%→-20.7%),且 OOS 受幸存者偏差+顺风行情双重高估。用户裁定(2026-06-19)维持 equal。F002:**不改** cn_attack_precompute.py:183(续用默认 equal)+不改全局 DEFAULT_WEIGHTING_SCHEME → live/回测**字节级零回归**;新增回归守门单测 test_live_producer_keeps_equal_weighting_b069(焊死 equal,误切即红)。Gates:backend ruff/mypy 0(428)+precompute 11 passed;trade ruff/mypy 0;wide-comparison 7 passed。**给 Codex F003**:本批=NO-SWITCH,验收点改为『确认 live 仍 equal(未切)+守门测试在+OOS 红卡在+零回归』,不是『切后反映 1/σ』。",
+    "status": "completed"
   },
   "session_notes": {
     "planner": "2026-06-19 B069 planning(planner)。B068 follow-up 小批:用户自验 B068 支持 inverse_vol→切 B067 实盘 advisory 两 cn_attack 模式默认权重 equal→inverse_vol。**★诚实前提焊死**:B068 数字没进 git(用户本地自验)→切线上默认=产品变更须可审计依据→F001 先落依据(确认 inverse_vol vs equal OOS 改善)再 F002 切(确认改善才切,否则不切+报告,不盲切)。OOS 红卡/研究态/advisory-only 不动;回测全局默认仍 equal(只改 live producer)。**切换点已核**:cn_attack_precompute.py:183 传 weighting_scheme='inverse_vol'(两模式);trade parameters DEFAULT_WEIGHTING_SCHEME 不动。**【续接】**:status=building,Generator 接 F001(落 B068 依据入 git+结论)→F002(据确认切两模式),再 Codex F003(切后 snapshot 反映 1/σ+零回归+§29)。**后续候选**:P3 港股扩/hk_china 重测 Batch 2.5/测试自动化基建。prod=B067 系(切后两模式 advisory 用 inverse_vol)。",
-    "generator": null,
+    "generator": "2026-06-19 B069 building→verifying(generator)。**诚实出口路径**:用户问『按 B068 证据如何推进』→裁定『不切,维持 equal』。背景:用户原自验认为 B068 支持 inverse_vol,但 generator 跑 committed B068 harness(scripts/research/run_cn_wide_backtest.py)于全真宽数据(F001 宽 universe 393名/250期 + F003 抓的宽 prices 393/393 0err 750k 行 + fundamentals 393/393 13267 行 + CSI300)得**权威数字反向**:inverse_vol OOS Sharpe+CAGR 两模式均更差,仅 quality 回撤弱改善;OOS 高(62~77%)受幸存者偏差+2024Q4 顺风双重高估。**F001**=决策依据入 git(docs/dev/B069-inverse-vol-default-decision.md + B068 报告 docs/dev/B068-wide-comparison-report.md,B068-F003 缺口『报告未入 git』一并补齐 commit 52e64a0)。**F002**=不改产品代码(precompute 续用 equal)+守门单测焊死 equal。**【续接 Codex F003】**:NO-SWITCH 验收(live 仍 equal/守门测试/OOS 红卡/零回归/HEAD≡prod),非『切后 1/σ』。研究产物本地 data/research/b068/(gitignored)。",
     "evaluator": null
   },
   "features": [

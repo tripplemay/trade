@@ -36,6 +36,7 @@ from workbench_api.strategy_modes.cn_attack_precompute import (
     CnAttackTargetResult,
     _build_target_result,
     run_cn_attack_precompute,
+    score_cn_attack_target,
 )
 from workbench_api.strategy_modes.refresh_worker import _DISPATCH
 from workbench_api.strategy_modes.registry import (
@@ -279,6 +280,44 @@ def test_precompute_unexpected_error_is_scoring_error(session: Session) -> None:
     assert summary.error == "scoring blew up"
     assert summary.error_kind == ERROR_KIND_SCORING
     assert get_target(session, CN_ATTACK_PURE_MOMENTUM_STRATEGY_ID) is None
+
+
+def test_live_producer_keeps_equal_weighting_b069(monkeypatch: pytest.MonkeyPatch) -> None:
+    # B069 decision (2026-06-19): the live cn_attack advisory default weighting STAYS
+    # equal — B068's authoritative OOS did NOT support inverse_vol (lower OOS Sharpe +
+    # CAGR; only a weak quality-mode drawdown benefit, survivorship-inflated). This
+    # guard fails if the live producer is ever switched to inverse_vol without a fresh
+    # decision (encodes the "keep equal" choice; see docs/dev/B069-...-decision.md).
+    import trade.backtest.cn_attack_momentum_quality.live as live_mod  # type: ignore[import-untyped]
+    from trade.backtest.cn_attack_momentum_quality.live import CnAttackLiveTarget
+    from trade.strategies.cn_attack_momentum_quality.parameters import (  # type: ignore[import-untyped]
+        WEIGHTING_SCHEME_EQUAL,
+    )
+
+    captured: dict[str, str] = {}
+
+    def _capture(parameters: object) -> CnAttackLiveTarget:
+        captured["weighting"] = parameters.weighting_scheme  # type: ignore[attr-defined]
+        return CnAttackLiveTarget(
+            as_of_date=_AS_OF,
+            signal_date=_AS_OF,
+            factor_variant=parameters.factor_variant,  # type: ignore[attr-defined]
+            target_weights={"600519.SH": 1.0},
+            cash_weight=0.0,
+            rebalanced=True,
+            profit_take=(),
+            would_be_turnover=0.0,
+            no_trade_band=0.20,
+            top_n=25,
+        )
+
+    monkeypatch.setattr(live_mod, "compute_cn_attack_live_target", _capture)
+    for sid, factor in (
+        (CN_ATTACK_QUALITY_MOMENTUM_STRATEGY_ID, "quality_momentum"),
+        (CN_ATTACK_PURE_MOMENTUM_STRATEGY_ID, "pure_momentum"),
+    ):
+        score_cn_attack_target(strategy_id=sid, factor_variant=factor)
+        assert captured["weighting"] == WEIGHTING_SCHEME_EQUAL
 
 
 def test_cn_attack_write_does_not_trample_regime(session: Session) -> None:

@@ -6,7 +6,7 @@
       "title": "落 B068 切换依据入 git(inverse_vol vs equal OOS 对比+明确支持/不支持结论)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F001 + §0 诚实前提】(1) 跑 B068 4 配置对比(等权 vs 波动倒数×2 因子,复用 B068 F003 harness+宽宇宙)on VM,或整理用户自验结论→落简短研究依据报告入 git(docs/test-reports/ 或 docs/product/):Q2 核心=inverse_vol vs equal 的 OOS CAGR/Sharpe/MaxDD 对比真数字(+Q1 质量/Q3 顺带)。(2) 明确给『是否支持切 inverse_vol』结论(改善 OOS→支持;无改善/更差→不支持,F002 不切)。正面证据(§29):切换依据报告入 git 含 inverse_vol vs equal OOS 真数字对比+明确结论。Gates:backend+trade 门禁绿。",
       "design_decisions": [
         "★切线上默认=产品变更须可审计依据;B068 数字没进 git(用户本地自验)→本批先落依据再切,不盲切。",
@@ -18,7 +18,7 @@
       "title": "cn_attack 两模式 live 默认切 inverse_vol(据 F001 确认;全局默认仍 equal 回测零回归)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §1 §2 F002 + §0】(1) 据 F001 结论:支持→cn_attack_precompute.py:183 两模式(quality_momentum+pure_momentum)传 weighting_scheme='inverse_vol'(targeted);不支持→保持 equal+升级 planner(诚实不盲切)。(2) CnAttackParameters 全局默认不动(equal=回测/研究/向后兼容);snapshot meta 标 live 权重=inverse_vol。(3) ★OOS 红卡+研究态披露不动;前端展示权重方案则标注(可选双语)。(4) 单测:precompute 两模式产出反映 inverse_vol(高波动票权重更低);equal 全局默认回归(B066/B068 回测不变)。正面证据:两模式 precompute 用 inverse_vol;CnAttackParameters 默认仍 equal(回测零回归);OOS 红卡在。Gates:backend pytest/ruff 目录上下文/mypy CI-exact+frontend(若动)。",
       "design_decisions": [
         "切换点=cn_attack_precompute.py:183 传 weighting_scheme(全局 DEFAULT_WEIGHTING_SCHEME 不动=回测/向后兼容 equal)。",
