@@ -1,53 +1,53 @@
 {
-  "sprint": "B065-ashare-strategy-data-foundation",
+  "sprint": "B066-ashare-attack-momentum-quality",
   "features": [
     {
       "id": "F001",
-      "title": "宽 A股 流动 universe + point-in-time 自建成员(市值+成交额 top-N,避幸存者偏差)",
+      "title": "A股 进攻引擎 + cn universe loader(读 cn_pit_universe.csv) + 2 因子变体(质量过滤→动量 / 纯动量)",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §3 F001 + §23】(1) ★§23 前置:实跑验 akshare 能否取历史市值+成交额(候选 stock_zh_a_spot_em 当前/总股本×历史收盘/stock_individual_info_em),取不到历史市值→fallback 成交额(volume×close)+总股本近似+诚实标注。(2) point-in-time universe builder:**任意 as_of(支持每日评估,因策略改为每日监控+不动区触发)** 按当时可得 trailing 市值+成交额排名取 top-N(~200-300),无未来泄漏。(3) fetch superset(曾进 top-N 并集/当前 top-500)减幸存者偏差+残余偏差文档。(4) 预算/时长感知。正面证据:给定历史 as_of 产 point-in-time top-N 可验只用当时数据;superset 覆盖;§12.10.2/§26.2 守门;US 零回归。Gates:backend pytest/ruff/mypy CI-exact 0;改 trade/ 本地 mypy trade。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F001 + §3】(1) 新 cn universe loader 读 B065 的 cn_pit_universe.csv,按 as_of_date 取 top-N 成员(PIT 无泄漏);A股 无 GICS sector/earnings→build_portfolio 的 sector_map/earnings_dates 传空降级。(2) 镜像 us_quality factors/ranking/construction/signal;质量因子直接复用(B065 已把 A股 CAS 写进同一 fundamentals.csv,quality_score 对 A股 算排名已验);动量复用 momentum_12_1。(3) 2 因子变体参数化:变体A 质量过滤→动量排名 / 变体B 纯动量(quality 权重0/跳过质量过滤);top 20-30 等权+单票≤8%;纯进攻无 regime gate。(4) generate_signal(as_of,current_holdings) 每日 as-of 可算。(5) S3:CN 价源稳健(eastmoney 不可达 fallback sina,B062 同款),回测 prices 新鲜。正面证据:cn universe loader 给定 as_of 取正确 PIT 成员(无泄漏单测);引擎产 top 20-30 等权(质量变体 vs 纯动量变体选股不同);质量因子对 A股 算真排名。Gates:backend+trade pytest/ruff 目录上下文/mypy(workbench+trade) 0。",
       "design_decisions": [
-        "★universe=自建 top-N(市值+成交额)point-in-time,绕开 akshare 历史指数成分可达性风险(用户 2026-06-18 拍板)。",
-        "★§23:历史市值/成交额可达性是本批最大未知,实跑验;不可达 fallback 成交额近似+诚实标注。",
-        "fetch 取宽 superset 减幸存者偏差(B063 方法学硬坑),残余偏差诚实文档。",
-        "★universe 排除 ST/退市风险名(akshare ST 前缀标记):策略批两变体之一=纯动量(不做质量过滤),若不在 universe 层排 ST,投机 ST 动量票会进选股→universe 层排 ST 同时保护质量+动量两变体(2026-06-18 策略讨论)。"
+        "复用 us_quality_momentum factors/ranking/construction/signal(PIT-aware,as_of 友好);A股 universe 走新 loader(cn_pit_universe.csv schema 异于 US universe.csv)。",
+        "2 因子变体=参数化(变体A 质量+动量 / 变体B 纯动量),内置质量因子 A/B 测试。",
+        "纯进攻无 regime gate(吸取 hk_china_real 全防御教训);A股 无 sector→行业cap 降级/关。",
+        "S3:CN 价源 eastmoney stock_zh_a_hist 不可达→优先/fallback sina stock_zh_a_daily(B065 实测发现,B062 修 HK 同款)。"
       ]
     },
     {
       "id": "F002",
-      "title": "A股 CAS 基本面接进 fundamentals.csv(同 schema 平行 SEC,质量因子直接生效)",
+      "title": "每日监控驱动 + 不动区(no-trade band) + 3 退出变体 + A股 方向化成本(印花税仅卖)回测引擎",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §3 F002 + §23。核心洞察:写进同一 fundamentals.csv→现成 us_quality_momentum.quality_score 直接对 A股 生效】(1) ★§23 前置:实跑验 akshare CAS 历史季度财务函数可达+多季历史(候选 stock_financial_abstract/stock_financial_analysis_indicator)。(2) 映射 CAS→FUNDAMENTALS_HEADER(roe/gross_margin/debt_to_assets 直映;pe/pb 用市值+收盘算;fcf_yield/ev_ebitda/earnings_yield 能算则算否则诚实 null——quality_score 只用 roe/gross_margin/fcf_yield/debt_to_assets);每季一行带 report_date(point-in-time)。(3) CN 行追加进同一 fundamentals.csv(US SEC 行不动零回归,同 refresh.py CN prices 追加模式)+CAS 口径诚实标注。(4) §12.10.3 wheel 自包含,trade 读 CSV 离线。正面证据(§29 实测):data_refresh 跑后 fundamentals.csv 含 A股 真值(600519.SH roe/gross_margin/debt_to_assets 非空+多季 report_date);US 行逐行不变(zero-regression assert);quality_score 能对含 A股 frame 算排名。Gates 同 F001。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F002 + §3】(1) 每日驱动循环:按交易日推进,每日 generate_signal(as_of,current_holdings) 算目标。(2) 不动区:仅当目标 vs 现仓偏离超阈值(跌出 top-N 缓冲带/新票强势入选/权重漂移超容忍)才调仓,否则持有;输出每日{目标,是否调仓,卖出/获利了结清单}(P1 落回测)。(3) 3 退出变体参数化:(a)动量衰减退出(跌出 top-N)/(b)移动止损(跟踪每仓持有期 peak,回撤 X% 卖)/(c)硬获利目标(+X% 卖)。(4) 方向化 A股 成本:BacktestConfig 扩 stamp_duty_bps(仅卖出 10bps=0.1%)+commission_bps+slippage_bps;_weight_turnover 拆 buy/sell 分方向计;T+1 open 成交。(5) 真换手/成本/回撤 metrics(诚实,纯进攻吃满回撤)。正面证据(§29 实测):回测非退化 equity(多点/有交易);不动区生效(多数日无调仓,换手受控);3 退出变体产不同 turnover/收益;A股 成本正确(卖含印花税/买不含)。Gates 同 F001。",
       "design_decisions": [
-        "★核心洞察:CN CAS 按同 schema 写进同一 fundamentals.csv→现成 point-in-time 质量因子(quality_score 按 report_date<=cutoff 过滤)直接对 A股 生效,策略批质量这半解锁。",
-        "★§23:akshare CAS 历史季度可达性实跑验;只取当前快照则 point-in-time 受限须诚实标注+缩范围。",
-        "CN 行追加不改 US SEC 行(零回归铁律);CAS 口径与 US-GAAP 不同诚实标注。"
+        "★每日监控+不动区(no-trade band):每天算≠每天交易;current_holdings 是 held-frozen/不动区天然挂载点(earnings 已用)。P1 回测模拟此循环得真实换手/成本。",
+        "3 退出变体回测对比(动量衰减/移动止损/硬获利目标),walk-forward 选净收益最优,不 cherry-pick。",
+        "★A股 成本方向化:印花税 0.1% 仅卖出(现 BacktestConfig 对称 friction 表达不了),turnover 拆买卖。"
       ]
     },
     {
       "id": "F003",
-      "title": "A股 数据质量对齐(qfq 复权口径 cross-source<0.5%)+ §8 质量闸(解锁 hk_china 重测)",
+      "title": "多变体回测接线(B050 _DISPATCH+registry research)+ 回测页露出 + 对比报告 + walk-forward",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §3 F003】(1) qfq 复权口径对齐:B063 发现 akshare-baostock 交叉源偏差 2-60%(qfq 口径不一致);定 akshare qfq 为 canonical(与 CN provider 价格一致),核 baostock 对齐(后复权/前复权口径),对齐到 cross-source<0.5%(或诚实记录不可对齐的口径差+canonical 选定理由,不强造假象)。(2) §8 质量闸:复用 ashare_quality_check/data_quality.py 对宽 universe 跑深度/覆盖/cross-source/缺口→质量报告。(3) 解锁 hk_china 重测:qfq 对齐覆盖 hk_china 26 universe→Batch 2.5 数据前置就绪。正面证据(§29 实测):A股 样本 akshare-baostock cross-source<0.5%(或诚实口径差+canonical);§8 深度/覆盖达标报告;hk_china 26 qfq 对齐确认。Gates 同 F001。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F003 + §3】(1) B050 分发:_DISPATCH 加 strategy_id(如 cn-attack-momentum-quality)+runner(自 load universe/prices/fundamentals,吃 start/end+变体参数)+adapter(复用/新增)+report builder。(2) registry 露出:services/strategies.py 加条目,★id==dispatch key 同字符串,status=research,双语名,★不入 INACTIVE_STRATEGY_IDS(否则回测被拒);前端零改动可选跑。(3) 多变体对比报告(双语):2 因子×3 退出=6 配置 CAGR/Sharpe/MaxDD/换手/成本/vs 沪深300;walk-forward(in-sample 段+out-of-sample 验证段);★过拟合红旗标注(全变体披露/不 cherry-pick in-sample winner/夏普离谱存疑)。(4) 回测页可跑。正面证据:回测页可选该策略跑出真 A股 结果;报告含 6 变体对比+walk-forward+过拟合标注+沪深300 基准;inactive_strategy 不误触。Gates:backend pytest+frontend vitest/tsc/eslint/i18n parity/api.ts drift+ruff 目录上下文。",
       "design_decisions": [
-        "akshare qfq 为 canonical(与 B061/B062 价格 provider 一致),baostock 交叉校验。",
-        "qfq 不可完全对齐则选定 canonical+诚实记录残余口径差(B063 诚实精神,不强造 <0.5% 假象)。",
-        "本批 qfq 对齐顺带解锁 hk_china 重测 Batch 2.5(共享前置)。"
+        "registry id==_DISPATCH key 同字符串(前端把 s.id 当 strategy_id 发);status=research 且不入 INACTIVE_STRATEGY_IDS(B057 regime 同款,可跑但标研究态)。",
+        "★过拟合纪律:6 变体全披露,不 cherry-pick in-sample winner,out-of-sample 验证+夏普离谱存疑(用户定案+B055 诚实原则)。",
+        "前端 backtest 页零改动(拉 /api/strategies 自动列出),只需 registry 露出。"
       ]
     },
     {
       "id": "F004",
-      "title": "Codex:L2 真机验收(质量达标+universe PIT 无泄漏+基本面进 CSV 真值+US 零回归)+ signoff(实测证据硬段)",
+      "title": "Codex:回测验证(变体对比真数字+walk-forward 样本外+无过拟合红旗)+S1 全量复确认+边界+signoff(实测证据硬段)",
       "priority": "high",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "【见 spec §3 F004。真数据批次——signoff 必含实测证据硬段,evaluator §29:无真值=不得 done】L1 全门禁(backend pytest+mypy CI-exact workbench_api+tests+ruff;trade pytest+mypy trade)。L2 真机实测(VM,贴真返回):①F001 universe builder 给定历史 as_of 产 PIT top-N 无未来泄漏(抽查一历史日只含当时数据)+superset 覆盖;②F002 data_refresh 真跑→fundamentals.csv 含 A股 真值(600519.SH roe/gross_margin/debt_to_assets 真数字+多季 report_date)+US 行零回归(pre/post 逐行);③F003 akshare-baostock cross-source<0.5% 实测数字(或诚实口径差结论)+§8 质量报告真指标+hk_china qfq 对齐;US/Master/lookup 零回归+recent-errors=0+HEAD≡prod。边界 adversarial:no-broker+research-safe(数据未进 live/推荐)+§12.10.2 守门。signoff docs/test-reports/B065-...-signoff-*.md 实测证据硬段逐条贴真观测(无真值=不得 done)。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F004。真数据批次——signoff 必含实测证据硬段,evaluator §29:无真值=不得 done】L1 全门禁(backend+trade mypy+ruff 目录上下文+frontend)。L2 真机实测(VM,贴真返回):①回测页跑该策略→非退化结果(equity 多点/有交易/真 metrics);②变体对比真数字(2 因子×3 退出各产非退化且彼此不同→质量是否加值/哪退出好的研究证据);③walk-forward 样本外合理性(out-of-sample plausible,非明显过拟合,夏普离谱存疑,选出合理 A股 流动大盘股,换手合理);④A股 成本保真(卖含印花税 0.1%/买不含,不动区换手受控);⑤★S1 全量复确认(用 B065 F003 cross-source 工具对全 cn_seed universe 复跑,扩 planner 3 名抽样到全量,确认<0.5% 或诚实口径差);⑥边界 adversarial:research-only(无实盘推荐/执行 surface)+no-broker+no 收益预测+不碰 live;回归 B050-B065 不破+HEAD≡prod+recent-errors=0。P1 结论=研究判定(是否值得进 P2 实盘 advisory:哪变体最优/质量是否加值/哪退出好/样本外是否稳)。signoff docs/test-reports/B066-...-signoff-*.md 实测证据硬段逐条贴真观测。",
       "design_decisions": []
     }
   ]
