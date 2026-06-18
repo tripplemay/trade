@@ -6,7 +6,7 @@
       "title": "A股 进攻引擎 + cn universe loader(读 cn_pit_universe.csv) + 2 因子变体(质量过滤→动量 / 纯动量)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F001 + §3】(1) 新 cn universe loader 读 B065 的 cn_pit_universe.csv,按 as_of_date 取 top-N 成员(PIT 无泄漏);A股 无 GICS sector/earnings→build_portfolio 的 sector_map/earnings_dates 传空降级。(2) 镜像 us_quality factors/ranking/construction/signal;质量因子直接复用(B065 已把 A股 CAS 写进同一 fundamentals.csv,quality_score 对 A股 算排名已验);动量复用 momentum_12_1。(3) 2 因子变体参数化:变体A 质量过滤→动量排名 / 变体B 纯动量(quality 权重0/跳过质量过滤);top 20-30 等权+单票≤8%;纯进攻无 regime gate。(4) generate_signal(as_of,current_holdings) 每日 as-of 可算。(5) S3:CN 价源稳健(eastmoney 不可达 fallback sina,B062 同款),回测 prices 新鲜。正面证据:cn universe loader 给定 as_of 取正确 PIT 成员(无泄漏单测);引擎产 top 20-30 等权(质量变体 vs 纯动量变体选股不同);质量因子对 A股 算真排名。Gates:backend+trade pytest/ruff 目录上下文/mypy(workbench+trade) 0。",
       "design_decisions": [
         "复用 us_quality_momentum factors/ranking/construction/signal(PIT-aware,as_of 友好);A股 universe 走新 loader(cn_pit_universe.csv schema 异于 US universe.csv)。",

@@ -59,8 +59,14 @@ def _baostock_code(ref: SymbolRef) -> str:
     return f"{prefix}.{ref.code}"
 
 
+def _sina_code(ref: SymbolRef) -> str:
+    """canonical 600519.SH -> sina stock_zh_a_daily code sh600519 (sz for .SZ)."""
+    prefix = "sh" if ref.canonical.endswith(".SH") else "sz"
+    return f"{prefix}{ref.code}"
+
+
 class CnSymbolProvider(SymbolDataProvider):
-    """A-share EOD provider: akshare primary, baostock cross-check / fallback."""
+    """A-share EOD provider: akshare(eastmoney) primary, sina + baostock fallback."""
 
     name = "akshare"
 
@@ -72,8 +78,9 @@ class CnSymbolProvider(SymbolDataProvider):
     ) -> None:
         self._akshare = akshare_module
         self._baostock = baostock_module
-        # The source that actually served the most recent fetch (akshare or
-        # baostock) — the service records it for honest provenance.
+        # The source that actually served the most recent fetch ("akshare" =
+        # eastmoney stock_zh_a_hist, "sina" = stock_zh_a_daily, or "baostock") —
+        # the service records it for honest provenance.
         self.last_source: str = self.name
 
     # -- module loading (lazy; injectable for tests) --------------------- #
@@ -103,6 +110,17 @@ class CnSymbolProvider(SymbolDataProvider):
         bars = self._fetch_akshare(ref, from_date, to_date)
         if bars:
             self.last_source = "akshare"
+            return bars
+        # B066 F001 (S3): the akshare primary above hits eastmoney's push2his
+        # host (``stock_zh_a_hist``), which reproducibly ConnectionErrors from the
+        # prod VM (B065 finding) even though it works from the dev box. sina's
+        # ``stock_zh_a_daily`` is reachable there AND agrees with baostock on
+        # returns (cross-source soft-watch S1 closed at <0.013%), so it is the
+        # reliable middle tier before the slower baostock login fallback — the
+        # B062 HK fix (eastmoney push → sina) applied to A-shares.
+        bars = self._fetch_sina(ref, from_date, to_date)
+        if bars:
+            self.last_source = "sina"
             return bars
         bars = self._fetch_baostock(ref, from_date, to_date)
         if bars:
@@ -185,6 +203,37 @@ class CnSymbolProvider(SymbolDataProvider):
         except Exception:
             return []
         return bars_from_records(records, columns, ref.canonical)
+
+    def _fetch_sina(
+        self, ref: SymbolRef, from_date: date, to_date: date
+    ) -> list[PriceBar]:
+        """sina ``stock_zh_a_daily`` (qfq). Reachable where eastmoney push isn't.
+
+        Like the HK provider's sina path (B062), this endpoint takes no date args
+        — it returns the FULL history — so we filter to the requested window. A
+        missing function (older akshare / injected fakes that only stub
+        ``stock_zh_a_hist``) or any network error degrades to ``[]`` so the caller
+        falls through to baostock, never raising."""
+
+        akshare = self._load_akshare()
+        if akshare is None:
+            return []
+        fetch = getattr(akshare, "stock_zh_a_daily", None)
+        if fetch is None:
+            return []
+        try:
+            frame = fetch(symbol=_sina_code(ref), adjust="qfq")
+        except Exception:
+            return []
+        if frame is None:
+            return []
+        try:
+            columns = [str(c) for c in frame.columns]
+            records: list[dict[str, Any]] = frame.to_dict("records")
+        except Exception:
+            return []
+        bars = bars_from_records(records, columns, ref.canonical)
+        return [bar for bar in bars if from_date <= bar.bar_date <= to_date]
 
     def _fetch_baostock(
         self, ref: SymbolRef, from_date: date, to_date: date

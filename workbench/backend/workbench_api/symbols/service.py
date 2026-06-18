@@ -93,7 +93,8 @@ def _resolve_provider(symbol: str) -> SymbolDataProvider:
 
 def _provider_source(provider: SymbolDataProvider) -> str:
     """The source that actually served the fetch — the CN provider exposes
-    ``last_source`` (akshare, or baostock on fallback); others use ``name``."""
+    ``last_source`` (akshare/eastmoney, sina, or baostock on fallback); others
+    use ``name``."""
 
     return str(getattr(provider, "last_source", provider.name))
 

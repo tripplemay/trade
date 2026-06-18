@@ -41,6 +41,12 @@ UNIFIED_PRICES_RELPATH = ("snapshots", "prices", "unified", "prices_daily.csv")
 UNIFIED_FUNDAMENTALS_RELPATH = ("snapshots", "fundamentals", "unified", "fundamentals.csv")
 # B063 F001 — FX rates CSV (FRED CNY/USD + HKD/USD), for backtest USD conversion.
 UNIFIED_FX_RELPATH = ("snapshots", "fx", "unified", "fx_daily.csv")
+# B066 F001 — A-share point-in-time universe CSV produced by the B065 refresh
+# (``workbench_api.data_refresh.cn_universe.UNIVERSE_RELPATH``). The CN attack
+# engine's universe loader reads it; drift between the two writes/reads a file
+# the refresh job never produced (same contract as the prices/fundamentals
+# relpaths above).
+UNIFIED_CN_UNIVERSE_RELPATH = ("snapshots", "universe", "cn_pit_universe.csv")
 
 
 def data_root_override() -> Path | None:
@@ -78,4 +84,13 @@ def unified_fx_path(repo_root_default: Path) -> Path:
     override = data_root_override()
     if override is not None:
         return override.joinpath(*UNIFIED_FX_RELPATH)
+    return repo_root_default
+
+
+def unified_cn_universe_path(repo_root_default: Path) -> Path:
+    """Resolve the CN PIT universe CSV: VM override if set, else repo default (B066 F001)."""
+
+    override = data_root_override()
+    if override is not None:
+        return override.joinpath(*UNIFIED_CN_UNIVERSE_RELPATH)
     return repo_root_default

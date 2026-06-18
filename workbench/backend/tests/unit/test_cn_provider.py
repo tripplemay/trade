@@ -196,6 +196,80 @@ class TestBaostockFallback:
         assert provider.last_source == "baostock"
 
 
+class _FakeAkshareWithSina:
+    """akshare fake whose eastmoney ``stock_zh_a_hist`` is down but sina works.
+
+    Models the B065 prod-VM reality: the eastmoney push2his host
+    ConnectionErrors while sina's ``stock_zh_a_daily`` is reachable. sina takes no
+    date params (it returns the full history); the provider filters to the window.
+    """
+
+    def __init__(self, sina_frame: _FakeFrame) -> None:
+        self._sina_frame = sina_frame
+        self.hist_calls = 0
+        self.sina_calls: list[dict[str, Any]] = []
+
+    def stock_zh_a_hist(
+        self, *, symbol: str, period: str, start_date: str, end_date: str, adjust: str
+    ) -> _FakeFrame | None:
+        self.hist_calls += 1
+        raise RuntimeError("eastmoney push2his ConnectionError")
+
+    def stock_zh_a_daily(self, *, symbol: str, adjust: str) -> _FakeFrame | None:
+        self.sina_calls.append({"symbol": symbol, "adjust": adjust})
+        return self._sina_frame
+
+
+def _sina_frame() -> _FakeFrame:
+    # sina stock_zh_a_daily columns; one row is OUTSIDE the requested window to
+    # prove the provider's date filtering (sina returns full history).
+    cols = ["date", "open", "high", "low", "close", "volume", "outstanding_share"]
+    rows: list[tuple[Any, ...]] = [
+        ("2024-01-01", 900.0, 905.0, 895.0, 902.0, 90000, 1e9),  # out of window
+        ("2026-06-10", 1600.0, 1615.0, 1595.0, 1610.0, 100000, 1e9),
+        ("2026-06-11", 1610.0, 1625.0, 1605.0, 1620.0, 110000, 1e9),
+        ("2026-06-12", 1620.0, 1635.0, 1615.0, 1630.0, 120000, 1e9),
+    ]
+    records = [dict(zip(cols, row, strict=True)) for row in rows]
+    return _FakeFrame(columns=cols, records=records)
+
+
+class TestSinaMiddleTier:
+    def test_eastmoney_down_falls_to_sina_and_filters_window(self) -> None:
+        fake = _FakeAkshareWithSina(_sina_frame())
+        provider = CnSymbolProvider(akshare_module=fake)
+        bars = provider.get_price_history(
+            "600519.SH", _TODAY - timedelta(days=400), _TODAY
+        )
+        # The 2024-01-01 row is filtered out; 3 in-window bars remain, sorted.
+        assert [b.bar_date for b in bars] == [
+            date(2026, 6, 10),
+            date(2026, 6, 11),
+            date(2026, 6, 12),
+        ]
+        assert bars[-1].close == 1630.0
+        assert provider.last_source == "sina"
+        assert fake.hist_calls == 1  # eastmoney tried first
+        # canonical 600519.SH -> sina code sh600519 + qfq
+        assert fake.sina_calls[0]["symbol"] == "sh600519"
+        assert fake.sina_calls[0]["adjust"] == "qfq"
+
+    def test_shenzhen_symbol_maps_to_sz_prefix(self) -> None:
+        fake = _FakeAkshareWithSina(_sina_frame())
+        provider = CnSymbolProvider(akshare_module=fake)
+        provider.get_price_history("000001.SZ", _TODAY - timedelta(days=400), _TODAY)
+        assert fake.sina_calls[0]["symbol"] == "sz000001"
+
+    def test_sina_preferred_over_baostock_when_reachable(self) -> None:
+        fake = _FakeAkshareWithSina(_sina_frame())
+        bs = _FakeBaostock(_bs_result())
+        provider = CnSymbolProvider(akshare_module=fake, baostock_module=bs)
+        provider.get_price_history("600519.SH", _TODAY - timedelta(days=400), _TODAY)
+        # sina served → baostock (the slower login fallback) is never queried.
+        assert provider.last_source == "sina"
+        assert bs.queries == []
+
+
 class TestBothUnavailable:
     def test_both_sources_failing_raises_symbol_not_found(self) -> None:
         # Both sources present but failing (unreachable / empty) → honest
