@@ -20,7 +20,7 @@
       "title": "每日 timer/service + CLI 接线(daily cadence)+ deploy glob 自动接线 + scope safety + env 守门",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F002】(1) CLI entrypoint(strategy_modes/cn_attack_cli.py 或子命令)跑两变体 precompute。(2) 2 对 workbench-cn-attack-*.timer(daily OnCalendar)+.service(ExecStart 跑 CLI,WORKBENCH_DATA_ROOT,hardening,不含 broker/order/fills/reconcile 字样);deploy.sh L442 glob 自动 install+enable(不动 deploy.sh)。(3) 入口级 env 守门(§12.11.1,precompute 写生产 DB)。(4) scope safety-test 块(test_market_scheduler_scope.py 同构,evaluator §24)+test_deploy_timer_wiring(sibling .service/glob/无硬编码 enable)。正面证据:两 timer/service 文件就位;本地 safety test 过(scope/wiring);CLI 可跑 precompute;env 守门测试过。Gates 同 F001。L2 由 F004 验 systemd enabled+active。",
       "design_decisions": [
         "deploy.sh glob loop(B037-OPS1)自动接线→新增 timer/service 文件即被 install+enable,deploy.sh 零改。",

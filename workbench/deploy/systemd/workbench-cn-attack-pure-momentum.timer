@@ -1,0 +1,18 @@
+[Unit]
+Description=Daily timer for workbench CN attack pure-momentum advisory precompute (B067, research-state, advisory-only, read-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B067-ashare-attack-p2-advisory-spec.md
+
+[Timer]
+# Daily 03:40 UTC — after the data-refresh (00:30) and recommendations (03:00)
+# timers, staggered 10 min after the quality+momentum variant so the two
+# trade-importing precomputes do not run concurrently on the VM. The cn_attack
+# engine re-evaluates daily (每日监控 / 不动区): the published target is the
+# band-managed current book. Persistent=true catches up a missed run after a VM
+# reboot; the precompute is idempotent (save_batch overwrites the
+# (cn_attack_pure_momentum, as_of_date) set).
+OnCalendar=*-*-* 03:40:00
+Persistent=true
+Unit=workbench-cn-attack-pure-momentum.service
+
+[Install]
+WantedBy=timers.target

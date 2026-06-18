@@ -1,0 +1,42 @@
+[Unit]
+Description=Workbench CN attack quality+momentum advisory target precompute (B067, research-state, advisory-only, read-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B067-ashare-attack-p2-advisory-spec.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=deploy
+Group=deploy
+WorkingDirectory=/srv/workbench/current/backend
+
+# Secrets (WORKBENCH_DB_URL, ...) live in /etc/workbench/workbench.env
+# (chmod 600 root:deploy). Never committed.
+EnvironmentFile=/etc/workbench/workbench.env
+
+# B045 F002 / B066 — point the trade loaders at the VM data root the data-refresh
+# job writes, so the CN attack precompute reads the real refreshed A-share daily
+# prices + CN PIT universe (B062 prices + B065 universe) instead of the
+# wheel-bundled fixture. Not a secret — a fixed path. Local / CI leave it unset.
+Environment=WORKBENCH_DATA_ROOT=/var/lib/workbench/data
+
+# Permanent product boundary (r-c) (B067 spec §0): this timer runs the
+# DETERMINISTIC QUANT CN attack advisory target precompute ONLY — it imports the
+# trade package (cn_attack daily-monitor engine) and writes the
+# recommendation_snapshot table under strategy_id=cn_attack_quality_momentum.
+# ExecStart invokes the cn_attack precompute CLI and nothing else — it never runs
+# broker / order-ticket / execution / fills / reconcile code. The mode is
+# research-state + advisory-only: it never places an order, never auto-trades and
+# never predicts returns. tests/safety/test_market_scheduler_scope.py greps this
+# ExecStart line + scans the precompute package to enforce that.
+ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.strategy_modes.cn_attack_cli quality_momentum
+
+# Standard hardening (mirrors workbench-recommendations.service).
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/workbench /var/log/workbench /tmp
+
+# No [Install] section — this oneshot is pulled by
+# workbench-cn-attack-quality-momentum.timer, never enabled / started directly.

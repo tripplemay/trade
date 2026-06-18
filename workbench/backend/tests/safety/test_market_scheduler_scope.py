@@ -80,6 +80,14 @@ PAPER_MTM_SERVICE_UNIT = SYSTEMD_DIR / "workbench-paper-mtm.service"
 PAPER_MTM_TIMER_UNIT = SYSTEMD_DIR / "workbench-paper-mtm.timer"
 REGIME_SERVICE_UNIT = SYSTEMD_DIR / "workbench-regime-precompute.service"
 REGIME_TIMER_UNIT = SYSTEMD_DIR / "workbench-regime-precompute.timer"
+CN_ATTACK_QUALITY_SERVICE_UNIT = (
+    SYSTEMD_DIR / "workbench-cn-attack-quality-momentum.service"
+)
+CN_ATTACK_QUALITY_TIMER_UNIT = (
+    SYSTEMD_DIR / "workbench-cn-attack-quality-momentum.timer"
+)
+CN_ATTACK_PURE_SERVICE_UNIT = SYSTEMD_DIR / "workbench-cn-attack-pure-momentum.service"
+CN_ATTACK_PURE_TIMER_UNIT = SYSTEMD_DIR / "workbench-cn-attack-pure-momentum.timer"
 RISK_EXPL_MODULE = (
     BACKEND_ROOT / "workbench_api" / "services" / "risk_explanation.py"
 )
@@ -694,3 +702,82 @@ def test_regime_precompute_may_import_trade() -> None:
         encoding="utf-8"
     )
     assert "trade.strategies.regime_adaptive" in precompute_src
+
+
+# --- B067 F002 CN attack advisory precompute (boundary (r-c): read-only quant
+# scoring of the two CN attack modes' daily target; research-state, advisory-only,
+# no prediction, no execution) ---
+
+
+def test_cn_attack_quality_service_execstart_runs_cn_attack_cli() -> None:
+    assert CN_ATTACK_QUALITY_SERVICE_UNIT.is_file(), (
+        f"missing {CN_ATTACK_QUALITY_SERVICE_UNIT}"
+    )
+    text = CN_ATTACK_QUALITY_SERVICE_UNIT.read_text(encoding="utf-8")
+    execstart = [ln for ln in text.splitlines() if ln.strip().startswith("ExecStart=")]
+    assert len(execstart) == 1
+    assert "workbench_api.strategy_modes.cn_attack_cli quality_momentum" in execstart[0]
+    assert "EnvironmentFile=/etc/workbench/workbench.env" in text
+
+
+def test_cn_attack_pure_service_execstart_runs_cn_attack_cli() -> None:
+    assert CN_ATTACK_PURE_SERVICE_UNIT.is_file(), f"missing {CN_ATTACK_PURE_SERVICE_UNIT}"
+    text = CN_ATTACK_PURE_SERVICE_UNIT.read_text(encoding="utf-8")
+    execstart = [ln for ln in text.splitlines() if ln.strip().startswith("ExecStart=")]
+    assert len(execstart) == 1
+    assert "workbench_api.strategy_modes.cn_attack_cli pure_momentum" in execstart[0]
+    assert "EnvironmentFile=/etc/workbench/workbench.env" in text
+
+
+def test_cn_attack_services_reference_no_trade_execution() -> None:
+    # Scan only systemd directive lines, not comments — the boundary comment
+    # legitimately *names* the forbidden surfaces to document (r-c).
+    for unit in (CN_ATTACK_QUALITY_SERVICE_UNIT, CN_ATTACK_PURE_SERVICE_UNIT):
+        directives = "\n".join(
+            ln
+            for ln in unit.read_text(encoding="utf-8").splitlines()
+            if not ln.strip().startswith("#")
+        ).lower()
+        for frag in ("broker", "order_ticket", "execution", "fills", "reconcile"):
+            assert frag not in directives, (
+                f"cn_attack .service directive references trade-execution {frag!r} "
+                f"({unit.name}, boundary (r-c))"
+            )
+
+
+def test_cn_attack_timers_run_daily_and_pull_service() -> None:
+    for timer, service in (
+        (CN_ATTACK_QUALITY_TIMER_UNIT, "workbench-cn-attack-quality-momentum.service"),
+        (CN_ATTACK_PURE_TIMER_UNIT, "workbench-cn-attack-pure-momentum.service"),
+    ):
+        assert timer.is_file(), f"missing {timer}"
+        text = timer.read_text(encoding="utf-8")
+        assert "OnCalendar=" in text
+        assert f"Unit={service}" in text
+        assert "WantedBy=timers.target" in text
+
+
+def test_cn_attack_timers_wired_by_dry_loop() -> None:
+    """B067 timers install via the B037-OPS1 workbench-*.timer loop — zero
+    deploy.sh change, no hardcoded enable literal."""
+    text = DEPLOY_SH.read_text(encoding="utf-8")
+    for timer in (
+        "workbench-cn-attack-quality-momentum.timer",
+        "workbench-cn-attack-pure-momentum.timer",
+    ):
+        assert f"enable --now {timer}" not in text, (
+            f"{timer} must be wired by the DRY loop, not a hardcoded enable"
+        )
+        assert (SYSTEMD_DIR / timer).is_file()
+
+
+def test_cn_attack_precompute_may_import_trade() -> None:
+    """Boundary (r-c, B067): the cn_attack precompute is explicitly ALLOWED to
+    import the ``trade`` package (real CN attack daily-driver scoring) — pin that
+    it does, so a regression that severs the scoring import is caught. The generic
+    target layer + registry must NOT import trade (separate §12.10 AST guard)."""
+
+    precompute_src = (STRATEGY_MODES_PKG / "cn_attack_precompute.py").read_text(
+        encoding="utf-8"
+    )
+    assert "trade.backtest.cn_attack_momentum_quality" in precompute_src
