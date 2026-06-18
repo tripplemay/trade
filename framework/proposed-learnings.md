@@ -258,3 +258,15 @@
 <!-- 2026-06-18: v0.9.46 沉淀完成（B064 F003 done 收尾，用户批）：2 条前端「本机绿≠CI 绿」坑 → generator.md §27（27.1 货币显示用确定性符号前缀勿 Intl compact+currency/narrowSymbol + per-currency fixture；27.2 测试 waitFor 等被断言目标元素本身勿等容器后同步查异步子元素）。归档 framework/archive/proposed-learnings-archive-v0.9.46.md。CHANGELOG v0.9.46。**活跃候选队列=空。** -->
 
 <!-- 当前活动候选（v0.9.45 后）：B064 2 条（generator/frontend）——①Intl compact+currency/narrowSymbol 跨 ICU flake→确定性符号前缀；②vitest waitFor 容器后同步查异步子元素 race。下批 done 阶段一并提请用户裁定。 -->
+
+## [2026-06-18] Claude CLI — 来源：B065 F001 — 本地 ruff 单文件检查漏 isort first-party 分组 → I001 本地绿 CI 红
+
+**类型：** 新坑（gate/CI — 本地门禁非 CI-exact）
+
+**内容：** **ruff 的 isort first-party 检测依赖 project 上下文：`ruff check <单文件>`（或对子集跑 `--fix`）从 `workbench/backend` 跑时不把 `workbench_api` 识别为 first-party → 不要求 third-party(`pytest`) 与 first-party(`workbench_api`) import 组间留空行；但 CI（Backend `python -m ruff check .` + Python CI 根 `ruff check .`，都是目录上下文）能识别 first-party → 要求空行 → `I001`。** 本批 F001 我对单测单文件跑 `ruff check --fix` 反而**删掉**了该空行,本地 `ruff check <files>` "All checks passed!",push 后 Backend CI + Python CI 双红（I001）。**规律**：本地 ruff 门禁**必须 `python -m ruff check .`（目录上下文,与 CI 完全一致）**,不要对单文件 / 子集跑 check 或 `--fix`——单文件模式因缺 project 根而漏检 import 分组,造成"本地绿 CI 红"。同族于 environment.md §CI 分层（改 trade/ 须本地 mypy trade）+ generator.md §19（本地门禁 CI-exact）。
+
+**建议写入：** `environment.md` §CI 分层（补一条：ruff 本地必须目录上下文 `python -m ruff check .`,勿单文件）/ 或 `framework/harness/generator.md` §19。
+
+**状态：** 待确认
+
+<!-- 当前活动候选（v0.9.46 后）：B065 1 条（generator/gate）——本地 ruff 须目录上下文 python -m ruff check .（单文件漏 first-party 分组→I001 本地绿 CI 红）。下批 done 阶段提请用户裁定。 -->
