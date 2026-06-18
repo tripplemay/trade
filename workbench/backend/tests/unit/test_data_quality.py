@@ -17,6 +17,8 @@ from workbench_api.symbols.data_quality import (
     assess_symbol,
     count_suspicious_jumps,
     cross_source_deviation,
+    cross_source_reanchored_deviation,
+    cross_source_return_deviation,
     history_years,
 )
 
@@ -88,6 +90,47 @@ class TestCrossSource:
         assert max_dev is None
 
 
+class TestAnchorRobustCrossSource:
+    """B065 F003 — return + re-anchored lenses isolate the qfq-anchor 口径."""
+
+    @staticmethod
+    def _anchor_offset_series(scale: float) -> list[PriceBar]:
+        # Same underlying returns (+10%/day), levels scaled by `scale` (a pure
+        # front-adjustment-anchor difference, like akshare qfq vs baostock).
+        closes = [100.0, 110.0, 121.0, 133.1, 146.41]
+        return [
+            _bar(date(2024, 1, 1) + timedelta(days=i), c * scale)
+            for i, c in enumerate(closes)
+        ]
+
+    def test_pure_anchor_offset_huge_level_but_zero_return_and_reanchored(self) -> None:
+        primary = self._anchor_offset_series(1.0)
+        secondary = self._anchor_offset_series(0.6)  # 40% lower levels, same returns
+        _, level_dev = cross_source_deviation(primary, secondary)
+        _, return_dev = cross_source_return_deviation(primary, secondary)
+        _, reanchored_dev = cross_source_reanchored_deviation(primary, secondary)
+        assert level_dev is not None and level_dev > 0.3  # B063-style large level gap
+        assert return_dev is not None and return_dev < 1e-9  # returns agree → same underlying
+        assert reanchored_dev is not None and reanchored_dev < 1e-9  # 口径 offset only
+
+    def test_genuine_discrepancy_survives_reanchoring(self) -> None:
+        primary = self._anchor_offset_series(1.0)
+        # Secondary diverges in the MIDDLE (a real data error, not an anchor offset).
+        secondary = self._anchor_offset_series(1.0)
+        broken = list(secondary)
+        broken[2] = _bar(broken[2].bar_date, 200.0)  # genuine bad close
+        _, return_dev = cross_source_return_deviation(primary, broken)
+        _, reanchored_dev = cross_source_reanchored_deviation(primary, broken)
+        assert return_dev is not None and return_dev > 0.005  # real divergence shows
+        assert reanchored_dev is not None and reanchored_dev > 0.005
+
+    def test_no_overlap_is_none(self) -> None:
+        primary = [_bar(date(2024, 1, 1), 100.0)]
+        secondary = [_bar(date(2024, 2, 1), 100.0)]
+        assert cross_source_return_deviation(primary, secondary) == (0, None)
+        assert cross_source_reanchored_deviation(primary, secondary) == (0, None)
+
+
 class TestSuspiciousJumps:
     def test_clean_series_has_none(self) -> None:
         assert count_suspicious_jumps(_series(10)) == 0
@@ -119,6 +162,9 @@ class TestAssessSymbol:
         assert report.adjustment_available is True
         assert report.cross_source_overlap_days == 60
         assert report.cross_source_within_tolerance is True
+        # B065 F003 — anchor-robust lenses populated (identical series → agree).
+        assert report.cross_source_return_within_tolerance is True
+        assert report.cross_source_reanchored_within_tolerance is True
         assert report.suspicious_jumps == 0
 
     def test_history_floor_not_met(self) -> None:

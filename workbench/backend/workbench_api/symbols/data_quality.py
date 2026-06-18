@@ -8,6 +8,17 @@ runner (``scripts/test/ashare_quality_check.py``, executed by Codex on the VM in
 F004) fetches via the providers and feeds these checks; this module stays pure
 so the logic is unit-tested deterministically with synthetic samples.
 
+**qfq canonical (B065 F003):** akshare ``adjust="qfq"`` (前复权) is the canonical
+A-share price series — it is what the CN provider (B061/B062) and the trade
+pipeline use everywhere, so the strategy and the lookup surface stay consistent.
+B063 found the raw akshare-vs-baostock close levels disagree 2–60%; F003 adds two
+**anchor-robust** lenses (daily-return + re-anchored-close deviation) that remove
+the front-adjustment-base (口径) offset, so cross-source agreement can be measured
+honestly. Where even the re-anchored residual stays large the discrepancy is a
+genuine methodology/data difference — kept honest (not forced to <0.5%), with
+akshare qfq retained as canonical. The real akshare↔baostock numbers are measured
+on the VM by Codex (F004); baostock is CN-only (no HK cross-source).
+
 request-path safe: stdlib + :class:`PriceBar` only — no akshare / trade import.
 """
 
@@ -39,6 +50,12 @@ class SymbolQualityReport:
     cross_source_overlap_days: int
     cross_source_max_pct_dev: float | None
     cross_source_within_tolerance: bool | None
+    # B065 F003 — anchor-robust alignment lenses (the raw level dev above is the
+    # B063 measure that saw 2–60%; these isolate the adjustment-anchor 口径).
+    cross_source_return_max_dev: float | None
+    cross_source_return_within_tolerance: bool | None
+    cross_source_reanchored_max_pct_dev: float | None
+    cross_source_reanchored_within_tolerance: bool | None
     suspicious_jumps: int
 
 
@@ -90,6 +107,72 @@ def cross_source_deviation(
     return len(deviations), max(deviations)
 
 
+def _daily_returns(bars: list[PriceBar]) -> dict[date, float]:
+    """date -> daily adjusted-close return. **Anchor-invariant**: two qfq series
+    of the same underlying have identical daily returns regardless of which date
+    the front-adjustment is anchored to, so this isolates a genuine data
+    discrepancy from a pure adjustment-base (口径) offset."""
+
+    ordered = sorted(bars, key=lambda b: b.bar_date)
+    out: dict[date, float] = {}
+    for prev, cur in zip(ordered, ordered[1:], strict=False):
+        if prev.adj_close != 0:
+            out[cur.bar_date] = cur.adj_close / prev.adj_close - 1.0
+    return out
+
+
+def cross_source_return_deviation(
+    primary: list[PriceBar], secondary: list[PriceBar]
+) -> tuple[int, float | None]:
+    """Max abs **daily-return** difference between two sources (B065 F003).
+
+    akshare qfq and baostock 前复权 can disagree on close *levels* (B063 found
+    2–60%) because they anchor the front-adjustment differently, yet still track
+    the same underlying. Comparing daily returns removes that anchor offset, so a
+    small return deviation means the two sources agree up to 口径 (the level gap
+    is a documented adjustment-base artifact, not a data error). Returns
+    ``(overlapping_days, max_abs_return_diff)``; ``None`` when no overlap."""
+
+    primary_returns = _daily_returns(primary)
+    secondary_returns = _daily_returns(secondary)
+    common = sorted(set(primary_returns) & set(secondary_returns))
+    deviations = [abs(primary_returns[day] - secondary_returns[day]) for day in common]
+    if not deviations:
+        return 0, None
+    return len(deviations), max(deviations)
+
+
+def cross_source_reanchored_deviation(
+    primary: list[PriceBar], secondary: list[PriceBar]
+) -> tuple[int, float | None]:
+    """Max abs pct close deviation after **re-anchoring** ``secondary`` to
+    ``primary`` at their latest common day (B065 F003).
+
+    If the two sources differ only by their front-adjustment anchor (口径), a
+    single multiplicative re-scale at the latest overlap makes the historical
+    closes line up — the residual deviation then measures genuine agreement. If
+    it stays large, the discrepancy is a real methodology/data difference (kept
+    honest, not forced to <0.5%). Returns ``(overlapping_days, max_pct_dev)``."""
+
+    primary_close = {b.bar_date: b.close for b in primary}
+    secondary_close = {b.bar_date: b.close for b in secondary}
+    common = sorted(set(primary_close) & set(secondary_close))
+    if not common:
+        return 0, None
+    anchor = common[-1]
+    if secondary_close[anchor] == 0:
+        return 0, None
+    scale = primary_close[anchor] / secondary_close[anchor]
+    deviations = [
+        abs(secondary_close[day] * scale - primary_close[day]) / abs(primary_close[day])
+        for day in common
+        if primary_close[day] != 0
+    ]
+    if not deviations:
+        return 0, None
+    return len(deviations), max(deviations)
+
+
 def count_suspicious_jumps(
     bars: list[PriceBar], threshold: float = DEFAULT_JUMP_THRESHOLD
 ) -> int:
@@ -131,6 +214,16 @@ def assess_symbol(
         if cross_source_bars
         else (0, None)
     )
+    _, return_dev = (
+        cross_source_return_deviation(ordered, cross_source_bars)
+        if cross_source_bars
+        else (0, None)
+    )
+    _, reanchored_dev = (
+        cross_source_reanchored_deviation(ordered, cross_source_bars)
+        if cross_source_bars
+        else (0, None)
+    )
     return SymbolQualityReport(
         symbol=symbol,
         rows=len(ordered),
@@ -145,6 +238,14 @@ def assess_symbol(
         cross_source_max_pct_dev=max_dev,
         cross_source_within_tolerance=(
             max_dev <= cross_source_tolerance if max_dev is not None else None
+        ),
+        cross_source_return_max_dev=return_dev,
+        cross_source_return_within_tolerance=(
+            return_dev <= cross_source_tolerance if return_dev is not None else None
+        ),
+        cross_source_reanchored_max_pct_dev=reanchored_dev,
+        cross_source_reanchored_within_tolerance=(
+            reanchored_dev <= cross_source_tolerance if reanchored_dev is not None else None
         ),
         suspicious_jumps=count_suspicious_jumps(ordered, jump_threshold),
     )

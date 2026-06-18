@@ -33,7 +33,7 @@
       "title": "A股 数据质量对齐(qfq 复权口径 cross-source<0.5%)+ §8 质量闸(解锁 hk_china 重测)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §3 F003】(1) qfq 复权口径对齐:B063 发现 akshare-baostock 交叉源偏差 2-60%(qfq 口径不一致);定 akshare qfq 为 canonical(与 CN provider 价格一致),核 baostock 对齐(后复权/前复权口径),对齐到 cross-source<0.5%(或诚实记录不可对齐的口径差+canonical 选定理由,不强造假象)。(2) §8 质量闸:复用 ashare_quality_check/data_quality.py 对宽 universe 跑深度/覆盖/cross-source/缺口→质量报告。(3) 解锁 hk_china 重测:qfq 对齐覆盖 hk_china 26 universe→Batch 2.5 数据前置就绪。正面证据(§29 实测):A股 样本 akshare-baostock cross-source<0.5%(或诚实口径差+canonical);§8 深度/覆盖达标报告;hk_china 26 qfq 对齐确认。Gates 同 F001。",
       "design_decisions": [
         "akshare qfq 为 canonical(与 B061/B062 价格 provider 一致),baostock 交叉校验。",

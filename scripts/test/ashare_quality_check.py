@@ -8,6 +8,16 @@ VM in F004 to verify the §8 deep metrics (full-history depth / adjustment /
 akshare-baostock cross-source agreement) before the data could ever feed a
 strategy.
 
+B065 F003 — each per-symbol report now also carries the **anchor-robust**
+cross-source lenses (``cross_source_return_*`` / ``cross_source_reanchored_*``)
+beside the raw level deviation. B063 saw the raw akshare-vs-baostock close levels
+disagree 2–60%; the new lenses remove the front-adjustment-base (口径) offset, so
+Codex's VM run can tell a pure anchor difference (returns + re-anchored agree
+<0.5% → akshare qfq canonical, level gap is a documented 口径 artifact) from a
+genuine data discrepancy (residual stays large → kept honest, not forced). HK
+names have no baostock cross-source (CN-only), so they are graded on depth /
+adjustment / jumps only.
+
 This is a spike/ops runner like ``scripts/test/ashare_p0_probe.py``: not in CI
 (``testpaths = ["tests"]``), akshare / baostock lazy-imported (degrades to an
 honest per-symbol error when absent), databases-only (never a broker SDK).
@@ -39,6 +49,7 @@ if str(_BACKEND_PKG) not in sys.path:
     sys.path.insert(0, str(_BACKEND_PKG))
 
 from workbench_api.data.snapshot_loader import PriceBar  # noqa: E402
+from workbench_api.data_refresh.cn_universe import CN_UNIVERSE_SEED  # noqa: E402
 from workbench_api.data_refresh.refresh import CN_HK_UNIVERSE  # noqa: E402
 from workbench_api.symbols.akshare_frames import bars_from_records, to_iso  # noqa: E402
 from workbench_api.symbols.data_quality import assess_symbol  # noqa: E402
@@ -48,6 +59,9 @@ from workbench_api.symbols.symbol_ref import SymbolRef  # noqa: E402
 # real-data strategy selects from (the wide 26-name set the data_refresh job
 # pulls), not a 7-name sample — single source of truth = the refresh universe.
 _DEFAULT_UNIVERSE = CN_HK_UNIVERSE
+# B065 F003: the wide A-share universe the F001 builder ranks from — the §8 gate
+# must also be able to grade THIS set (spec §3 F003 "对宽 universe 跑").
+_NAMED_UNIVERSES = {"cn_hk": CN_HK_UNIVERSE, "cn_seed": CN_UNIVERSE_SEED}
 _HISTORY_START = "2018-01-01"
 
 
@@ -173,7 +187,13 @@ def _parse_ymd(ymd: str) -> date:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--symbols", default=None, help="Comma list (default: candidate universe).")
+    parser.add_argument("--symbols", default=None, help="Comma list (overrides --universe).")
+    parser.add_argument(
+        "--universe",
+        choices=sorted(_NAMED_UNIVERSES),
+        default="cn_hk",
+        help="Named universe to grade: cn_hk (26 proxy set) or cn_seed (F001 wide A-share).",
+    )
     parser.add_argument("--history-start", default=_HISTORY_START, help="YYYY-MM-DD history start.")
     parser.add_argument("--out", default=None, help="Optional path to write the JSON report.")
     args = parser.parse_args(argv)
@@ -181,7 +201,7 @@ def main(argv: list[str] | None = None) -> int:
     symbols = (
         tuple(s.strip() for s in args.symbols.split(",") if s.strip())
         if args.symbols
-        else _DEFAULT_UNIVERSE
+        else _NAMED_UNIVERSES[args.universe]
     )
     report = run(symbols, args.history_start)
     serialized = json.dumps(report, ensure_ascii=False, indent=2)
