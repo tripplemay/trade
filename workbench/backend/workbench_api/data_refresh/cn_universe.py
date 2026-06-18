@@ -124,7 +124,11 @@ _TURNOVER_WEIGHT = 0.5
 
 @dataclass(frozen=True, slots=True)
 class MarketCapBar:
-    """One daily market-cap observation (from akshare ``stock_value_em``)."""
+    """One daily valuation observation (from akshare ``stock_value_em``).
+
+    The universe builder (F001) uses ``total_mv``; the CN fundamentals builder
+    (F002) reuses the same series for ``close`` / ``pe_ttm`` / ``pb`` at each
+    quarter's disclosure date (no second fetch)."""
 
     ticker: str  # canonical, e.g. 600519.SH
     bar_date: date
@@ -132,6 +136,8 @@ class MarketCapBar:
     circ_mv: float | None = None  # 流通市值
     total_shares: float | None = None  # 总股本
     close: float | None = None  # 当日收盘价
+    pe_ttm: float | None = None  # PE(TTM)  — B065 F002
+    pb: float | None = None  # 市净率     — B065 F002
 
 
 @dataclass(frozen=True, slots=True)

@@ -448,3 +448,111 @@ def test_cli_no_cn_universe_flag_skips_build(tmp_path: Path) -> None:
         superset_provider=lambda: ["600519.SH"],
     )
     assert not (tmp_path / "snapshots" / "universe" / "cn_pit_universe.csv").exists()
+
+
+# --- B065 F002: A-share CAS fundamentals appended + US-zero-regression ---
+
+
+def _cn_fundamentals_row(ticker: str) -> dict[str, Any]:
+    """One unified-schema CN fundamentals row (all 12 columns keyed)."""
+
+    return {
+        "report_date": "2024-10-31",
+        "ticker": ticker,
+        "fiscal_quarter": "2024Q3",
+        "fiscal_quarter_end": "2024-09-30",
+        "roe": 0.24,
+        "gross_margin": 0.90,
+        "fcf_yield": 0.03,
+        "debt_to_assets": 0.13,
+        "pe": 19.0,
+        "pb": 6.0,
+        "ev_ebitda": None,
+        "earnings_yield": 0.05,
+    }
+
+
+class _FakeCnFundamentals:
+    """Fake CAS fundamentals loader; ``fail`` raises, others yield 2 rows."""
+
+    def __init__(self, fail: set[str] | None = None) -> None:
+        self.fail = fail or set()
+
+    def fetch_fundamentals_rows(
+        self, ticker: str, from_date: date, to_date: date
+    ) -> list[dict[str, Any]]:
+        if ticker in self.fail:
+            raise RuntimeError(f"boom {ticker}")
+        q3 = _cn_fundamentals_row(ticker)
+        return [q3, {**q3, "fiscal_quarter": "2024Q2"}]
+
+
+def test_cn_fundamentals_appended_after_us_rows(tmp_path: Path) -> None:
+    base = run_refresh(
+        data_root=tmp_path / "base",
+        from_date=_FROM,
+        to_date=_TO,
+        prices_loader=_FakePrices(),
+        fundamentals_loader=_FakeFundamentals(),
+    )
+    with Path(base.fundamentals_path).open() as handle:
+        us_rows = list(csv.reader(handle))
+
+    both = run_refresh(
+        data_root=tmp_path / "both",
+        from_date=_FROM,
+        to_date=_TO,
+        prices_loader=_FakePrices(),
+        fundamentals_loader=_FakeFundamentals(),
+        cn_fundamentals_loader=_FakeCnFundamentals(),
+        cn_fundamentals_symbols=["600519.SH", "000001.SZ"],
+    )
+    with Path(both.fundamentals_path).open() as handle:
+        both_rows = list(csv.reader(handle))
+
+    # ★US SEC rows byte-identical + in the same position; CN rows strictly after.
+    assert both_rows[: len(us_rows)] == us_rows
+    assert both.fundamental_rows == base.fundamental_rows  # US count unchanged
+    assert both.cn_fundamental_symbols == 2
+    assert both.cn_fundamental_rows == 4  # 2 rows × 2 symbols
+    appended_tickers = {row[1] for row in both_rows[len(us_rows):]}
+    assert appended_tickers == {"600519.SH", "000001.SZ"}
+    # ev_ebitda None → empty CSV cell (column 11), schema unchanged.
+    assert both_rows[0] == FUNDAMENTALS_HEADER
+    assert both_rows[len(us_rows)][10] == ""  # ev_ebitda empty
+
+
+def test_cn_fundamentals_none_is_backward_compat(tmp_path: Path) -> None:
+    summary = _run(tmp_path)
+    assert summary.cn_fundamental_symbols == 0
+    assert summary.cn_fundamental_rows == 0
+
+
+def test_cn_fundamentals_fetch_failure_counted_not_fatal(tmp_path: Path) -> None:
+    summary = run_refresh(
+        data_root=tmp_path,
+        from_date=_FROM,
+        to_date=_TO,
+        prices_loader=_FakePrices(),
+        fundamentals_loader=_FakeFundamentals(),
+        cn_fundamentals_loader=_FakeCnFundamentals(fail={"000001.SZ"}),
+        cn_fundamentals_symbols=["600519.SH", "000001.SZ"],
+    )
+    assert summary.errors >= 1
+    assert summary.cn_fundamental_rows == 2  # only the surviving symbol's rows
+
+
+def test_cli_fetch_main_writes_cn_fundamentals(tmp_path: Path) -> None:
+    args = refresh_cli.parse_args(["fetch", "--data-root", str(tmp_path), "--lookback-days", "400"])
+    summary = refresh_cli.fetch_main(
+        args,
+        loader_factory=lambda: (_FakePrices(), _FakeFundamentals(), _FakeCnHk(), _FakeFx()),
+        today=date(2024, 12, 31),
+        cn_universe_loader=_FakeMcap(),
+        superset_provider=lambda: ["600519.SH", "000001.SZ"],
+        cn_fundamentals_loader=_FakeCnFundamentals(),
+    )
+    assert summary.cn_fundamental_symbols == 2
+    assert summary.cn_fundamental_rows == 4
+    # US fundamentals untouched.
+    assert summary.fundamental_rows == len(equity_universe())

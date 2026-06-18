@@ -42,6 +42,8 @@ _COL_CLOSE = "当日收盘价"
 _COL_TOTAL_MV = "总市值"
 _COL_CIRC_MV = "流通市值"
 _COL_TOTAL_SHARES = "总股本"
+_COL_PE_TTM = "PE(TTM)"
+_COL_PB = "市净率"
 
 # stock_zh_a_spot_em column names (best-effort discovery).
 _SPOT_COL_CODE = "代码"
@@ -61,6 +63,8 @@ def _bar_from_record(record: dict[str, Any], ticker: str) -> MarketCapBar | None
         circ_mv=coerce_float(record.get(_COL_CIRC_MV)),
         total_shares=coerce_float(record.get(_COL_TOTAL_SHARES)),
         close=coerce_float(record.get(_COL_CLOSE)),
+        pe_ttm=coerce_float(record.get(_COL_PE_TTM)),
+        pb=coerce_float(record.get(_COL_PB)),
     )
 
 

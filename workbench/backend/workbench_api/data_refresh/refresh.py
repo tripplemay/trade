@@ -142,6 +142,14 @@ class _FundamentalsLoader(Protocol):
     def fetch_raw_companyfacts(self, ticker: str) -> dict[str, Any]: ...
 
 
+class _CnFundamentalsLoader(Protocol):
+    """B065 F002 — A-share CAS fundamentals → unified ``fundamentals.csv`` rows."""
+
+    def fetch_fundamentals_rows(
+        self, ticker: str, from_date: date, to_date: date
+    ) -> list[dict[str, Any]]: ...
+
+
 @dataclass(frozen=True, slots=True)
 class RefreshSummary:
     price_symbols: int
@@ -157,6 +165,10 @@ class RefreshSummary:
     # CN_HK proxy set; only symbols not already priced are fetched).
     cn_universe_price_symbols: int = 0
     cn_universe_price_rows: int = 0
+    # B065 F002 — A-share CAS fundamentals appended to fundamentals.csv (new rows
+    # after the US SEC rows; US rows untouched).
+    cn_fundamental_symbols: int = 0
+    cn_fundamental_rows: int = 0
 
 
 def equity_universe() -> tuple[str, ...]:
@@ -233,6 +245,8 @@ def run_refresh(
     fundamentals_loader: _FundamentalsLoader,
     cn_hk_prices_loader: _PricesLoader | None = None,
     cn_extra_price_symbols: Sequence[str] | None = None,
+    cn_fundamentals_loader: _CnFundamentalsLoader | None = None,
+    cn_fundamentals_symbols: Sequence[str] | None = None,
 ) -> RefreshSummary:
     """Fetch prices + fundamentals for the Master universe and write the two
     unified CSVs under ``data_root``. Per-symbol failures are logged + counted
@@ -248,7 +262,13 @@ def run_refresh(
     superset members **not already priced** above are fetched via the same
     ``cn_hk_prices_loader`` and appended as a third block of new rows (so the
     point-in-time universe builder has prices for turnover). US + CN_HK rows stay
-    untouched; ``None`` is fully backward-compatible."""
+    untouched; ``None`` is fully backward-compatible.
+
+    When ``cn_fundamentals_loader`` + ``cn_fundamentals_symbols`` are provided
+    (B065 F002), CAS quarterly fundamentals for those A-shares are mapped to the
+    unified schema and **appended after the US SEC rows** in fundamentals.csv (the
+    US rows are produced by the unchanged loop above, so they are byte-identical —
+    US-zero-regression). ``None`` keeps the US-only fundamentals behaviour."""
 
     prices_path = data_root.joinpath(*PRICES_RELPATH)
     fundamentals_path = data_root.joinpath(*FUNDAMENTALS_RELPATH)
@@ -333,7 +353,31 @@ def run_refresh(
                 extra={"symbol": symbol, "skips": skips[:5]},
             )
         fundamental_rows.extend(_fundamentals_dict_to_row(row) for row in rows)
-    _write_csv(fundamentals_path, FUNDAMENTALS_HEADER, fundamental_rows)
+
+    # --- B065 F002: A-share CAS fundamentals — NEW rows appended after the US
+    # SEC rows (the US loop above is untouched → US-zero-regression). Each CN row
+    # is keyed by the same FUNDAMENTALS_HEADER, so the trade quality/value factors
+    # work on A-shares with no change. Best-effort per symbol.
+    cn_fundamental_rows: list[list[object]] = []
+    cn_fundamental_symbols = 0
+    if cn_fundamentals_loader is not None and cn_fundamentals_symbols:
+        cn_fundamental_symbols = len(cn_fundamentals_symbols)
+        for symbol in cn_fundamentals_symbols:
+            try:
+                cn_rows = cn_fundamentals_loader.fetch_fundamentals_rows(
+                    symbol, from_date, to_date
+                )
+            except Exception:  # noqa: BLE001 — best-effort; skip a failing symbol
+                errors += 1
+                logger.exception(
+                    "data_refresh_cn_fundamentals_fetch_failure", extra={"symbol": symbol}
+                )
+                continue
+            cn_fundamental_rows.extend(_fundamentals_dict_to_row(row) for row in cn_rows)
+
+    _write_csv(
+        fundamentals_path, FUNDAMENTALS_HEADER, fundamental_rows + cn_fundamental_rows
+    )
 
     summary = RefreshSummary(
         price_symbols=len(symbols),
@@ -347,6 +391,8 @@ def run_refresh(
         cn_hk_rows=len(cn_hk_rows),
         cn_universe_price_symbols=cn_universe_price_symbols,
         cn_universe_price_rows=len(cn_universe_rows),
+        cn_fundamental_symbols=cn_fundamental_symbols,
+        cn_fundamental_rows=len(cn_fundamental_rows),
     )
     logger.info(
         "data_refresh_done",
@@ -357,6 +403,7 @@ def run_refresh(
             # Currency is derived from the canonical ticker (no CSV column).
             "cn_hk_currencies": sorted({currency_for_symbol(s) for s in CN_HK_UNIVERSE}),
             "fundamental_rows": summary.fundamental_rows,
+            "cn_fundamental_rows": summary.cn_fundamental_rows,
             "errors": errors,
         },
     )

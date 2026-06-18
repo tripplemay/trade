@@ -25,7 +25,11 @@ from workbench_api.data_refresh.cn_universe import (
     quarterly_rebalance_dates,
 )
 from workbench_api.data_refresh.fx_refresh import run_fx_refresh
-from workbench_api.data_refresh.refresh import RefreshSummary, run_refresh
+from workbench_api.data_refresh.refresh import (
+    RefreshSummary,
+    _CnFundamentalsLoader,
+    run_refresh,
+)
 from workbench_api.data_refresh.window import DataWindow, compute_data_window
 
 # B047-OPS2 F001 (L4 deep backfill): ~5 years. risk_parity (120-day daily vol)
@@ -111,6 +115,7 @@ def fetch_main(
     today: date | None = None,
     cn_universe_loader: MarketCapLoader | None = None,
     superset_provider: Callable[[], Sequence[str]] | None = None,
+    cn_fundamentals_loader: _CnFundamentalsLoader | None = None,
 ) -> RefreshSummary:
     run_date = today or datetime.now(UTC).date()
     from_date = run_date - timedelta(days=max(1, args.lookback_days))
@@ -135,6 +140,10 @@ def fetch_main(
         fundamentals_loader=fundamentals_loader,  # type: ignore[arg-type]
         cn_hk_prices_loader=cn_hk_prices_loader,  # type: ignore[arg-type]
         cn_extra_price_symbols=superset or None,
+        # B065 F002 — CAS fundamentals for the same A-share superset (appended
+        # after the US SEC rows in fundamentals.csv).
+        cn_fundamentals_loader=cn_fundamentals_loader,
+        cn_fundamentals_symbols=superset or None,
     )
     # B063 F001 — also refresh the FX rates CSV (FRED CNY/USD + HKD/USD) the
     # backtest reads for USD conversion. Best-effort per series (logged inside).
@@ -221,7 +230,9 @@ def main(argv: list[str] | None = None) -> int:
     # cn_universe_loader=None, so this only runs in the real job.
     cn_universe_loader: MarketCapLoader | None = None
     superset_provider: Callable[[], Sequence[str]] | None = None
+    cn_fundamentals_loader: _CnFundamentalsLoader | None = None
     if not args.no_cn_universe:
+        from workbench_api.data_refresh.cn_fundamentals import CnFundamentalsLoader
         from workbench_api.data_refresh.cn_marketcap import (
             CnMarketCapLoader,
             discover_ashare_superset,
@@ -231,18 +242,22 @@ def main(argv: list[str] | None = None) -> int:
         superset_provider = lambda: discover_ashare_superset(  # noqa: E731
             top_n=args.cn_universe_max_superset
         )[0]
+        # B065 F002 — CAS fundamentals for the superset → fundamentals.csv.
+        cn_fundamentals_loader = CnFundamentalsLoader()
 
     summary = fetch_main(
         args,
         cn_universe_loader=cn_universe_loader,
         superset_provider=superset_provider,
+        cn_fundamentals_loader=cn_fundamentals_loader,
     )
     print(
         "data refresh done — "
         f"price_symbols={summary.price_symbols} price_rows={summary.price_rows} "
         f"fundamental_symbols={summary.fundamental_symbols} "
         f"fundamental_rows={summary.fundamental_rows} "
-        f"cn_universe_price_rows={summary.cn_universe_price_rows} errors={summary.errors}"
+        f"cn_universe_price_rows={summary.cn_universe_price_rows} "
+        f"cn_fundamental_rows={summary.cn_fundamental_rows} errors={summary.errors}"
     )
 
     # B047-OPS2 F001 (L2) — record the real coverage window so the request-path

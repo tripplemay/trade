@@ -20,7 +20,7 @@
       "title": "A股 CAS 基本面接进 fundamentals.csv(同 schema 平行 SEC,质量因子直接生效)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §3 F002 + §23。核心洞察:写进同一 fundamentals.csv→现成 us_quality_momentum.quality_score 直接对 A股 生效】(1) ★§23 前置:实跑验 akshare CAS 历史季度财务函数可达+多季历史(候选 stock_financial_abstract/stock_financial_analysis_indicator)。(2) 映射 CAS→FUNDAMENTALS_HEADER(roe/gross_margin/debt_to_assets 直映;pe/pb 用市值+收盘算;fcf_yield/ev_ebitda/earnings_yield 能算则算否则诚实 null——quality_score 只用 roe/gross_margin/fcf_yield/debt_to_assets);每季一行带 report_date(point-in-time)。(3) CN 行追加进同一 fundamentals.csv(US SEC 行不动零回归,同 refresh.py CN prices 追加模式)+CAS 口径诚实标注。(4) §12.10.3 wheel 自包含,trade 读 CSV 离线。正面证据(§29 实测):data_refresh 跑后 fundamentals.csv 含 A股 真值(600519.SH roe/gross_margin/debt_to_assets 非空+多季 report_date);US 行逐行不变(zero-regression assert);quality_score 能对含 A股 frame 算排名。Gates 同 F001。",
       "design_decisions": [
         "★核心洞察:CN CAS 按同 schema 写进同一 fundamentals.csv→现成 point-in-time 质量因子(quality_score 按 report_date<=cutoff 过滤)直接对 A股 生效,策略批质量这半解锁。",
