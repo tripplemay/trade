@@ -1,50 +1,38 @@
 {
-  "sprint": "B068-ashare-attack-wide-universe-revalidation",
+  "sprint": "B069-cn-attack-inverse-vol-default",
   "features": [
     {
       "id": "F001",
-      "title": "宽 A股 universe 实建(§23 全市场列表端点 VM 可达性 + top 200-300 PIT,B065 因 SSL 降级 seed 43)",
+      "title": "落 B068 切换依据入 git(inverse_vol vs equal OOS 对比+明确支持/不支持结论)",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §4 F001 + §3】(1) ★§23 前置:VM 实跑验 akshare 全市场 A股 列表端点(候选 stock_zh_a_spot_em/stock_info_a_code_name/sina/baidu 等价;B065 本地 SSL 挂,VM 可能可达如 B062/B064 先例)。(2) 可达→discover_ashare_superset 产宽 superset(数百只)→build_cn_universe 写 cn_pit_universe.csv(top 200-300 PIT,ST 排除,无未来泄漏)。(3) 不可达/不稳→诚实降级+报告标注(宽宇宙未达成,沿用 seed,Q1 仍未答=有效 NO-GO 不强凑)。正面证据(§29):§23 端点可达性结论(贴真返回行数);宽宇宙建成则 cn_pit_universe.csv 含数百名 PIT 成员(贴样本日成员数);US 零回归。Gates:backend+trade pytest/ruff 目录上下文/mypy CI-exact 0。",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F001 + §0 诚实前提】(1) 跑 B068 4 配置对比(等权 vs 波动倒数×2 因子,复用 B068 F003 harness+宽宇宙)on VM,或整理用户自验结论→落简短研究依据报告入 git(docs/test-reports/ 或 docs/product/):Q2 核心=inverse_vol vs equal 的 OOS CAGR/Sharpe/MaxDD 对比真数字(+Q1 质量/Q3 顺带)。(2) 明确给『是否支持切 inverse_vol』结论(改善 OOS→支持;无改善/更差→不支持,F002 不切)。正面证据(§29):切换依据报告入 git 含 inverse_vol vs equal OOS 真数字对比+明确结论。Gates:backend+trade 门禁绿。",
       "design_decisions": [
-        "★§23:全市场列表端点 VM 可达性是本批最大未知(B065 本地 SSL 降级 seed 43),实跑验;不可达诚实 NO-GO 不强凑宽宇宙。",
-        "宽宇宙=top 200-300 PIT(市值+成交额排名,ST 排除),质量门槛才有筛选空间→解 Q1。"
+        "★切线上默认=产品变更须可审计依据;B068 数字没进 git(用户本地自验)→本批先落依据再切,不盲切。",
+        "复用 B068 F003 harness+宽宇宙,产 OOS 对比数字。"
       ]
     },
     {
       "id": "F002",
-      "title": "波动率倒数加权变体(construction weighting_scheme ∈ {equal,inverse_vol},默认 equal 向后兼容)",
+      "title": "cn_attack 两模式 live 默认切 inverse_vol(据 F001 确认;全局默认仍 equal 回测零回归)",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §4 F002 + §2 分析师立场】(1) construction.py 加 weighting_scheme 分支:equal(现状 1/N 默认)/inverse_vol(weight_i ∝ 1/σ_i,σ 复用 us_quality low_vol trailing 窗口;缺 σ 名诚实降级)。(2) 归一化→同样单票 cap→cash buffer。(3) CnAttackParameters 加 weighting_scheme(默认 equal,★B066/B067 向后兼容零回归)。(4) σ PIT/as_of 安全(只用 ≤as_of 数据无泄漏)。正面证据:inverse_vol 产不同于等权的权重(高波动票权重更低可验);σ 计算 PIT 无泄漏;equal 默认不变(B066/B067 回归);mypy trade。Gates 同 F001。",
+      "status": "pending",
+      "acceptance": "【见 spec §1 §2 F002 + §0】(1) 据 F001 结论:支持→cn_attack_precompute.py:183 两模式(quality_momentum+pure_momentum)传 weighting_scheme='inverse_vol'(targeted);不支持→保持 equal+升级 planner(诚实不盲切)。(2) CnAttackParameters 全局默认不动(equal=回测/研究/向后兼容);snapshot meta 标 live 权重=inverse_vol。(3) ★OOS 红卡+研究态披露不动;前端展示权重方案则标注(可选双语)。(4) 单测:precompute 两模式产出反映 inverse_vol(高波动票权重更低);equal 全局默认回归(B066/B068 回测不变)。正面证据:两模式 precompute 用 inverse_vol;CnAttackParameters 默认仍 equal(回测零回归);OOS 红卡在。Gates:backend pytest/ruff 目录上下文/mypy CI-exact+frontend(若动)。",
       "design_decisions": [
-        "分析师定:唯一值得测的权重优化=波动率倒数加权(风险控制非收益预测,低过拟合,精准打 B066 OOS 动量崩盘);动量/打分加权明确排除(堆高崩盘+最 overfit);MVO 排除(OOS 不稳)。",
-        "weighting_scheme 默认 equal=B066/B067 向后兼容零回归(本批不改实盘 surface 默认行为)。",
-        "σ 复用 low_vol_score trailing 窗口,PIT 安全。"
+        "切换点=cn_attack_precompute.py:183 传 weighting_scheme(全局 DEFAULT_WEIGHTING_SCHEME 不动=回测/向后兼容 equal)。",
+        "两模式都切(权重方案正交于因子变体);OOS 红卡不动(inverse_vol=改善崩盘非已验证赚钱)。",
+        "诚实出口:F001 若 inverse_vol 不改善 OOS→不切,保持 equal+报告。"
       ]
     },
     {
       "id": "F003",
-      "title": "4 配置(2 因子×2 权重,退出固定)宽宇宙回测 + 对比报告(答 Q1/Q2/Q3)+ walk-forward",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §4 F003 + §2 数据窥探纪律】(1) 回测对比扩为 2 因子(质量+动量/纯动量)×2 权重(等权/波动倒数)=4 配置(退出固定 momentum_decay 基线,不乘 3 避变体爆炸)。(2) 宽宇宙上跑(F001 建成);walk-forward IS/OOS 段对比+vs 沪深300+真 A股 方向化成本(沿用 B066)。(3) 对比报告(双语)答 Q1(质量 vs 纯动量分化了吗)/Q2(波动倒数 vs 等权 OOS 崩盘改善了吗)/Q3(宽宇宙更长 OOS 仍脆弱否)。(4) §29 红旗:no_activity/同族 toggle 失效/过拟合 IS≠OOS winner/夏普离谱;★全 4 配置诚实披露不 cherry-pick。正面证据:4 配置各产非退化可对比 IS/OOS 指标(贴真数字);报告明确答 Q1/Q2/Q3+过拟合红旗。Gates:backend pytest+ruff 目录上下文+mypy(前端展示则 frontend 门禁)。",
-      "design_decisions": [
-        "★限 4 配置(2 因子×2 权重,退出固定 momentum_decay)=数据窥探纪律(已有 B066 退出维度,本批只加权重维度);walk-forward+全披露不 cherry-pick。",
-        "复用 B066 多变体报告+§29 红旗+方向化成本;参数 sweep 非新 strategy_id。"
-      ]
-    },
-    {
-      "id": "F004",
-      "title": "Codex:回测验证(4 配置真数字+Q1/Q2/Q3 真答+无过拟合)+研究判定+signoff(实测证据硬段)",
+      "title": "Codex:L2 验收(切后 snapshot 反映 1/σ+OOS 红卡+零回归)+signoff(实测证据)",
       "priority": "high",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "【见 spec §4 F004。真数据批次——signoff 必含实测证据硬段,§29:无真值=不得 done】L1 全门禁(backend+trade mypy+ruff 目录上下文)。L2 真机实测(VM,贴真返回):①F001 宽宇宙真建(成员数/§23 端点可达结论)或诚实 NO-GO;②4 配置回测真数字(IS/OOS CAGR/Sharpe/MaxDD/换手 各异非退化);③★Q1 真答(宽宇宙下质量+动量 vs 纯动量 是否分化/谁 OOS 更优,贴对比);④★Q2 真答(波动倒数 vs 等权 OOS 崩盘/回撤/夏普对比,贴数字);⑤Q3(更长 OOS 是否仍逆转);过拟合红旗核(IS≠OOS winner 存疑不 cherry-pick);研究态/no-broker/no 收益预测;B066/B067 引擎+surface 零回归(默认 equal 不变);HEAD≡prod;★S1 全量 cross-source 可顺带补(VM 已可达 34.180.93.185)。研究判定:(a)质量是否加值(b)波动倒数是否值得换(c)是否建议调 B067 实盘默认配置(本批不改给建议)。signoff docs/test-reports/B068-...-signoff-*.md 实测证据硬段逐条贴真观测。",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F003。真机批次 signoff 含实测证据 §29】L1 全门禁。L2 真机(VM,贴真返回):切后两模式 precompute 真跑→recommendation_snapshot 权重反映 1/σ(高波动票权重<等权时,贴对比数字)+权重和=1.0(cash 补);OOS 红卡仍渲染;astock.guangai.ai /recommendations 两模式新权重生效。零回归:B068/B066 回测默认 equal 不变;Master/regime/B067 其它不破;HEAD≡prod;recent-errors=0。边界:research-only/advisory-only/no 自动下单/no 收益预测。signoff docs/test-reports/B069-...-signoff-*.md 实测证据逐条贴真观测。",
       "design_decisions": []
     }
   ]

@@ -1,48 +1,45 @@
 {
-  "status": "done",
-  "total_features": 4,
-  "completed_features": 4,
+  "status": "building",
+  "total_features": 3,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F004",
+  "current_sprint": "F001",
   "last_updated": "2026-06-19",
-  "user_goal": "B068 A股 进攻策略 宽宇宙重验+波动率倒数加权对比(research-only 验证)=解 B066 P1 留白。来源:2026-06-18 用户 B067 上线后发现等权配置,要求策略分析师角度评判权重机制+定本批验证。**定位**:生产宽宇宙(top 200-300 PIT)上重跑 cn_attack,加权重维度对比(等权 vs 波动率倒数),walk-forward 样本外答三问:Q1 质量到底加不加值(B066 本地种子 43 全通质量门槛没分化→宽宇宙才分得开);Q2 波动倒数加权能否驯服 OOS 动量崩盘(B066 OOS −9~−11% 逆转;风险管理动量 Barroso-Santa-Clara/Daniel-Moskowitz 理论解药);Q3 更长/更干净 OOS 是否仍脆弱。**纯回测,不改 B067 实盘 advisory surface**。**分析师立场(焊进)**:等权是稳健基线(DeMiguel 1/N 难被优化打败,A股 短史高噪正是此场景),保留做对照;唯一值得测=波动率倒数加权(风险控制非收益预测,低过拟合,精准打崩盘);动量/打分加权排除(堆崩盘+最 overfit);MVO 排除;组合层波动目标留后续 overlay(带择时与纯进攻冲突)。**数据窥探纪律**:2 因子×2 权重=4 配置,退出固定 momentum_decay(不乘 3),walk-forward OOS,全披露不 cherry-pick(B066 §29 红旗沿用)。诚实出口:宽宇宙建不起来(akshare 全市场列表端点 VM 不可达)→诚实 NO-GO(Q1 仍未答,不强凑)。**4 features 3g+1c**:F001 宽宇宙实建(§23 全市场列表端点+top 200-300 PIT);F002 波动率倒数加权变体(construction weighting_scheme 默认 equal 向后兼容);F003 4 配置宽宇宙回测+对比报告答 Q1/Q2/Q3+walk-forward;F004 Codex 验收+研究判定(质量是否加值/波动倒数是否值得换/是否建议调 B067 默认)+§29。spec docs/specs/B068-ashare-attack-wide-universe-revalidation-spec.md(6 章)。复用 B066 引擎/回测/§29 红旗+B065 universe builder+us_quality low_vol(算 σ)。",
+  "user_goal": "B069 cn_attack 实盘 advisory 默认权重切 inverse_vol(据 B068 验证)=B068 follow-up 落地批(小)。来源:用户自验 B068(等权 vs 波动倒数对比)支持 inverse_vol 改善 OOS→选 follow-up 调实盘默认权重。**★诚实前提**:切线上推荐默认=产品变更须可审计依据;B068 数字没进 git(用户本地自验)→F001 先落依据入 git(确认 inverse_vol vs equal OOS 改善),F002 据此才切(确认改善才切,没改善不切+报告,不盲切)。OOS 红卡不动(inverse_vol=改善崩盘非已验证赚钱);研究态/advisory-only/不自动下单不变;回测/研究全局默认仍 equal(只改 live producer cn_attack_precompute.py:183 传参)。**切换点**:cn_attack_precompute.py:183 现 CnAttackParameters(factor_variant=...)不传 weighting_scheme→默认 equal;改传 weighting_scheme='inverse_vol'(两模式);全局 DEFAULT_WEIGHTING_SCHEME 不动。**3 features 2g+1c**:F001 落 B068 切换依据入 git+明确支持/不支持结论;F002 据确认切两模式 live inverse_vol(全局默认 equal 不变);F003 Codex L2(切后 snapshot 反映 1/σ+OOS 红卡+零回归+§29)。spec docs/specs/B069-cn-attack-inverse-vol-default-spec.md。复用 B068 harness+宽宇宙+B067 precompute。",
   "reference_docs": [
+    "docs/specs/B069-cn-attack-inverse-vol-default-spec.md",
     "docs/specs/B068-ashare-attack-wide-universe-revalidation-spec.md",
-    "docs/specs/B066-ashare-attack-momentum-quality-spec.md",
-    "trade/strategies/cn_attack_momentum_quality/construction.py",
+    "workbench/backend/workbench_api/strategy_modes/cn_attack_precompute.py",
     "trade/strategies/cn_attack_momentum_quality/parameters.py",
-    "trade/backtest/cn_attack_momentum_quality/engine.py",
-    "trade/strategies/us_quality_momentum/factors.py",
-    "workbench/backend/workbench_api/data_refresh/cn_universe.py"
+    "trade/strategies/cn_attack_momentum_quality/construction.py"
   ],
   "docs": {
-    "spec": "docs/specs/B068-ashare-attack-wide-universe-revalidation-spec.md",
+    "spec": "docs/specs/B069-cn-attack-inverse-vol-default-spec.md",
     "test_cases": null,
     "signoff": null,
-    "framework_reviewed": true
+    "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "用户自验并指示置 done(2026-06-19),覆盖状态机,绕过 Codex F004 正常验收/§29 流程。**无 Codex signoff**。已落地:F001 宽宇宙真建(sina §23 GO,250/期×29 季,393 distinct,leakage=0,gated 不动 B067);F002 波动倒数加权变体(默认 equal 零回归);F003 4 配置对比 harness+runner 已建并提交(commit 0b63103)。**但 F003 实际 4 配置对比报告(Q1 质量是否加值/Q2 波动倒数 vs 等权/Q3 OOS)未入 git**——研究结论以用户本地自验为准,未在项目记录中捕获具体数字。",
+    "summary": null,
     "pass_count": 0,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
   },
   "generator_handoff": {
-    "summary": "F001+F002 done(commit 0a940ac/c7520bf);F003 对比模块+runner 提交(0b63103)。用户自验后指示置 done,F003/F004 未走完整 generator-run/Codex-verify 流程。",
-    "status": "completed"
+    "summary": null,
+    "status": "pending"
   },
   "session_notes": {
-    "planner": "2026-06-19 B068 done(用户自验指示置 done,planner 执行)。**用户覆盖状态机**:F003(4 配置宽宇宙对比报告)未在 git 产出、Codex F004 未验收,用户『我已验证』并指示直接 done。planner 照办+如实记录(非 Codex signoff;研究结论 Q1/Q2/Q3 以用户本地自验为准,未入项目记录)。**已扎实落地(入 git)**:F001 宽宇宙真建(§23 sina spot VM 可达 GO,513 superset→250/期×29 季,393 distinct,0 fetch error,leakage=0;gated allow_sina_fallback 默认 False→B067 daily refresh 字节级不变,读 seed-43 不动;runbook docs/dev/B068-wide-universe-runbook.md);F002 波动倒数加权(weighting_scheme∈{equal 默认,inverse_vol},σ 复用 trailing vol,默认 equal 字节级零回归,B067 surface 零回归);F003 4 配置对比 harness+runner(commit 0b63103,未在 git 落报告)。**待捕获/follow-up**:①B068 研究判定(Q1 质量是否加值/Q2 波动倒数 vs 等权 OOS/Q3)用户自验,未入记录→建议向用户索取结论补记,据此定是否调 B067 实盘默认配置(weighting_scheme);②S1 全量 cross-source 仍延用 B065 抽样(VM 可达可补)。**【续接=下一批待用户定】**:候选:①据 B068 结论调 B067 实盘默认(若波动倒数明显改善 OOS,follow-up 小批);②P3 港股扩;③hk_china 重测 Batch 2.5(qfq+sina 已就绪);④测试自动化基建(golden 下沉 CI,解 §25 系统性+真机验证误诊)。prod=B067 系(A股 进攻 P2 advisory 研究态,等权 momentum_decay)。",
-    "generator": "2026-06-19 B068 building(generator)。**F001 ✅ done**。§23 VM 实测=GO:sina stock_zh_a_spot 可达(5527 行全市场)=宽 superset 列表端点;eastmoney push hosts 全 ConnectionError(B065 预言坐实);sina stock_zh_a_daily(F003 价格源)可达含 amount+outstanding_share。**宽宇宙真建成功**(VM 后台 build_cn_wide_universe.py):provenance=sina_spot, superset=513, **0 fetch error**, 29 季度(2019-03-31→2026-03-31), **250 成员/期**, 393 distinct(轮换=PIT), **LEAKAGE=0**(42 名 2023+ 首现者在 2019-2022 零出现)。代码 commit d5a60c1(已部署,3 CI 绿+deploy 绿):discover_ashare_superset 三级 eastmoney→sina→seed,**sina gated 于 allow_sina_fallback(默认 False)→生产 daily refresh 字节级不变,B067 读 seed-43 不动**(实测守门 default_off→seed/43)。研究构建写研究 out-dir(非生产 data root),F003 经 universe_history 注入。产物:VM ~/b068_out/, 本地 data/research/b068/(gitignored), runbook docs/dev/B068-wide-universe-runbook.md。**【续接 F002】**:construction.py 加 weighting_scheme∈{equal(默认,B066/B067 兼容),inverse_vol(1/σ,σ 复用 us_quality low_vol trailing 窗口,PIT 安全)},CnAttackParameters 加字段默认 equal。**F003**:4 配置(2因子×2权重,退出固定 momentum_decay)宽宇宙回测+walk-forward+双语报告答 Q1/Q2/Q3+§29 红旗;宽名价格走 sina daily 抓后注入。",
+    "planner": "2026-06-19 B069 planning(planner)。B068 follow-up 小批:用户自验 B068 支持 inverse_vol→切 B067 实盘 advisory 两 cn_attack 模式默认权重 equal→inverse_vol。**★诚实前提焊死**:B068 数字没进 git(用户本地自验)→切线上默认=产品变更须可审计依据→F001 先落依据(确认 inverse_vol vs equal OOS 改善)再 F002 切(确认改善才切,否则不切+报告,不盲切)。OOS 红卡/研究态/advisory-only 不动;回测全局默认仍 equal(只改 live producer)。**切换点已核**:cn_attack_precompute.py:183 传 weighting_scheme='inverse_vol'(两模式);trade parameters DEFAULT_WEIGHTING_SCHEME 不动。**【续接】**:status=building,Generator 接 F001(落 B068 依据入 git+结论)→F002(据确认切两模式),再 Codex F003(切后 snapshot 反映 1/σ+零回归+§29)。**后续候选**:P3 港股扩/hk_china 重测 Batch 2.5/测试自动化基建。prod=B067 系(切后两模式 advisory 用 inverse_vol)。",
+    "generator": null,
     "evaluator": null
   },
   "features": [
     "F001",
     "F002",
-    "F003",
-    "F004"
+    "F003"
   ],
-  "completed_date": "2026-06-19"
+  "completed_date": null
 }
