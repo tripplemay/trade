@@ -31,7 +31,7 @@
       "title": "4 配置(2 因子×2 权重,退出固定)宽宇宙回测 + 对比报告(答 Q1/Q2/Q3)+ walk-forward",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F003 + §2 数据窥探纪律】(1) 回测对比扩为 2 因子(质量+动量/纯动量)×2 权重(等权/波动倒数)=4 配置(退出固定 momentum_decay 基线,不乘 3 避变体爆炸)。(2) 宽宇宙上跑(F001 建成);walk-forward IS/OOS 段对比+vs 沪深300+真 A股 方向化成本(沿用 B066)。(3) 对比报告(双语)答 Q1(质量 vs 纯动量分化了吗)/Q2(波动倒数 vs 等权 OOS 崩盘改善了吗)/Q3(宽宇宙更长 OOS 仍脆弱否)。(4) §29 红旗:no_activity/同族 toggle 失效/过拟合 IS≠OOS winner/夏普离谱;★全 4 配置诚实披露不 cherry-pick。正面证据:4 配置各产非退化可对比 IS/OOS 指标(贴真数字);报告明确答 Q1/Q2/Q3+过拟合红旗。Gates:backend pytest+ruff 目录上下文+mypy(前端展示则 frontend 门禁)。",
       "design_decisions": [
         "★限 4 配置(2 因子×2 权重,退出固定 momentum_decay)=数据窥探纪律(已有 B066 退出维度,本批只加权重维度);walk-forward+全披露不 cherry-pick。",
@@ -43,7 +43,7 @@
       "title": "Codex:回测验证(4 配置真数字+Q1/Q2/Q3 真答+无过拟合)+研究判定+signoff(实测证据硬段)",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F004。真数据批次——signoff 必含实测证据硬段,§29:无真值=不得 done】L1 全门禁(backend+trade mypy+ruff 目录上下文)。L2 真机实测(VM,贴真返回):①F001 宽宇宙真建(成员数/§23 端点可达结论)或诚实 NO-GO;②4 配置回测真数字(IS/OOS CAGR/Sharpe/MaxDD/换手 各异非退化);③★Q1 真答(宽宇宙下质量+动量 vs 纯动量 是否分化/谁 OOS 更优,贴对比);④★Q2 真答(波动倒数 vs 等权 OOS 崩盘/回撤/夏普对比,贴数字);⑤Q3(更长 OOS 是否仍逆转);过拟合红旗核(IS≠OOS winner 存疑不 cherry-pick);研究态/no-broker/no 收益预测;B066/B067 引擎+surface 零回归(默认 equal 不变);HEAD≡prod;★S1 全量 cross-source 可顺带补(VM 已可达 34.180.93.185)。研究判定:(a)质量是否加值(b)波动倒数是否值得换(c)是否建议调 B067 实盘默认配置(本批不改给建议)。signoff docs/test-reports/B068-...-signoff-*.md 实测证据硬段逐条贴真观测。",
       "design_decisions": []
     }
