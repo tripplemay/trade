@@ -274,3 +274,25 @@
 <!-- 当前活动候选（v0.9.47 后）：无。 -->
 
 <!-- 当前活动候选（v0.9.46 后）：B065 1 条（generator/gate）——本地 ruff 须目录上下文 python -m ruff check .（单文件漏 first-party 分组→I001 本地绿 CI 红）。下批 done 阶段提请用户裁定。 -->
+
+## [2026-06-18] Claude CLI — 来源：B066 F002 — 回测引擎处理停牌/缺价名 + `x or 0.0` 不能归零 NaN
+
+**类型：** 新坑（backtest 引擎 / pandas — 真实数据缺口被合成测试掩盖）
+
+**内容：** A股 **停牌(停盘)** 在真实价格数据里 = 某 (ticker,日) 行缺失 → pivot 出 **NaN**。两个被合成测试(每个 ticker 每日都有价)完全掩盖的真实 bug(自跑对抗审查抓到,均 HIGH)：**(1)** rebalance 分支只从「有价目标」重建持仓 → 停牌持仓被丢弃,市值凭空蒸发(权益守恒被破,实测 100k→50k)；**(2)** `float(row.get(t,0.0) or 0.0)` **不能**把 NaN 归零——**`nan or 0.0 == nan`(NaN 在 Python 为真值)** → 停牌名污染 mark-to-market → equity 出 NaN → pct_change 吞掉跨 NaN 的真实收益、cummax 被毒化致 max_drawdown 失真。**规律**：(a) 回测引擎对停牌/缺价名须 **ffill 结转最后已知价**(标准处理,价值守恒)+持仓 carry-forward 永不让持仓静默消失；(b) 任何按价估值/读价处须 **显式 NaN 安全读价**(`v is None or pd.isna(v) or v<=0`),**禁用 `v or 0.0`**(NaN 真值陷阱)；(c) 合成回测数据若每格都有价,会系统性掩盖停牌路径——真实数据批次须专门构造缺价回归测试。
+
+**建议写入：** `framework/harness/generator.md`（回测引擎真实数据缺口：停牌 ffill+NaN 安全读价禁 `or 0.0`+缺价回归测试）。
+
+**状态：** 待确认
+
+## [2026-06-18] Claude CLI — 来源：B066 F003 — 退化空仓回测变体必须红旗,勿静默报 0.00%
+
+**类型：** 新规律（研究诚实性 / 多变体回测报告）
+
+**内容：** 多变体对比报告里,一个变体若**空截面/缺因子数据**(如 A股 质量因子在 fundamentals 稀薄时选不出股)→ 退化为满仓现金、CAGR/Sharpe/换手全 0、never traded。自跑对抗审查指出：报告若把这个干净的 **0.00%** 当真实结果展示(尤其它是 headline 驱动图表+payload metrics),**研究判定被悄悄破坏**——分不清「故意持现金」vs「数据缺失没测到」。**规律**：研究报告的过拟合/红旗体系除了「样本内≠样本外 winner / 夏普离谱 / 全变体无差异」,**必须含 no_activity 红旗**(`rebalance_count==0`/换手 0+曲线平 → 标"never traded,0.00% 非真实结果",命中 headline 时尤其响亮)+**同子族内 toggle 失效红旗**(如同因子的 N 个退出变体结果字节相同 = 退出规则从未生效,全局 spread 测试在两族发散时会漏掉)。同族于「真值=不得 done / 0-result 不判 non-blocking」(evaluator §29/§25)。
+
+**建议写入：** `framework/harness/generator.md` 或 `evaluator.md`（多变体研究报告红旗须含 no_activity 退化 + 同族 toggle 失效；0.00% 非真实结果）。
+
+**状态：** 待确认
+
+<!-- 当前活动候选（v0.9.47 后）：B066 2 条（generator）——①回测引擎停牌/缺价 ffill+NaN 安全读价禁 `or 0.0`(NaN 真值)+缺价回归测试(对抗审查 2 HIGH)；②多变体研究报告须 no_activity 退化红旗+同族 toggle 失效红旗(勿静默 0.00%)。另含 2 条设计模式待评：镜像新市场写专属引擎保 US 零回归 by construction(F001/F002 construction+costs 不改 us)；standalone 研究策略 registry 模式(入 list_strategies 但排除 sleeve_strategies via STANDALONE_RESEARCH_STRATEGY_IDS 避 phantom sleeve/paper)。下批 done 阶段提请用户裁定。 -->
