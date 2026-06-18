@@ -301,6 +301,33 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
             "note_key": "strategy.note.regime_adaptive",
         },
     ),
+    # B066 F003 — A-share attack momentum+quality (research-only). A STANDALONE
+    # research strategy, independent of the Master portfolio (NOT a Master sleeve),
+    # surfaced here so the backtest page lists + runs it. id == the worker _DISPATCH
+    # key (the frontend sends s.id as strategy_id); status="research"; and it is
+    # excluded from sleeve_strategies() (STANDALONE_RESEARCH_STRATEGY_IDS) so the
+    # home / advisor / risk / news sleeve consumers never materialise a phantom
+    # "cn_attack" Master sleeve. It is deliberately NOT a paper mode (P1 research).
+    "cn_attack_momentum_quality": (
+        _summary(
+            id="cn_attack_momentum_quality",
+            name="A股 进攻动量质量（研究态）",
+            sleeve="cn_attack",
+            status="research",
+        ),
+        StrategyProvenance(
+            spec_path="docs/specs/B066-ashare-attack-momentum-quality-spec.md",
+            code_path="trade/strategies/cn_attack_momentum_quality",
+            last_sweep_path=None,
+        ),
+        {
+            "rebalance": "daily-monitor",
+            "factor_variants": "quality_momentum / pure_momentum (A/B)",
+            "exit_variants": "momentum_decay / trailing_stop / hard_profit_target",
+            "benchmark": "沪深300 (CSI 300)",
+            "note_key": "strategy.note.cn_attack",
+        },
+    ),
 }
 
 
@@ -309,6 +336,16 @@ _REGISTRY: dict[str, tuple[StrategySummary, StrategyProvenance, dict[str, object
 # breakdown, advisor precompute, risk panel, news tickers) must exclude them so
 # they don't materialise an empty "master" sleeve.
 PORTFOLIO_LEVEL_STRATEGY_IDS = frozenset({"master_portfolio"})
+
+# B066 F003 — standalone research strategies that are selectable backtests but are
+# NOT Master sleeves. Excluded from sleeve-derivation consumers (home breakdown,
+# advisor precompute, risk panel, news tickers, paper targets) so they never
+# materialise a phantom sleeve / paper account — they live only on the backtest
+# list. (Distinct from regime entries, which DO map to a real zero-weight Master
+# sleeve and stay in sleeve_strategies.)
+STANDALONE_RESEARCH_STRATEGY_IDS = frozenset({"cn_attack_momentum_quality"})
+
+_NON_SLEEVE_STRATEGY_IDS = PORTFOLIO_LEVEL_STRATEGY_IDS | STANDALONE_RESEARCH_STRATEGY_IDS
 
 
 def list_strategies() -> StrategyListResponse:
@@ -329,7 +366,7 @@ def sleeve_strategies() -> list[StrategySummary]:
     return [
         entry[0]
         for entry in _REGISTRY.values()
-        if entry[0].id not in PORTFOLIO_LEVEL_STRATEGY_IDS
+        if entry[0].id not in _NON_SLEEVE_STRATEGY_IDS
     ]
 
 

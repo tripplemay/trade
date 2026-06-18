@@ -158,3 +158,32 @@ def adapt_us_quality(result: Any) -> dict[str, list[dict[str, Any]]]:
         for period in result.rebalance_periods
     ]
     return {"equity": equity, "allocations": allocations, "trades": []}
+
+
+def adapt_cn_attack(result: Any) -> dict[str, list[dict[str, Any]]]:
+    """Adapt the headline ``CnAttackBacktestResult`` (B066 F003) → equity/allocations/trades.
+
+    Like ``adapt_us_quality``, the equity curve is a daily ``pd.DataFrame`` and the
+    engine reports no per-leg fills (it records daily turnover, not priced legs), so
+    trades is intentionally **empty** (no fabricated legs). Allocations are surfaced
+    on rebalance days from the daily records as the equal-weight target among that
+    day's names — the engine builds an equal-weighted top-N portfolio, so 1/N is the
+    held weight (the position cap rarely binds at top 20-30). The chart shows this
+    headline variant; the full 6-variant comparison lives in ``report_markdown``."""
+
+    curve = result.equity_curve
+    equity = [
+        {"date": _iso_date(d), "nav": float(v)}
+        for d, v in zip(curve["date"].tolist(), curve["equity"].tolist(), strict=False)
+    ]
+    allocations: list[dict[str, Any]] = []
+    for record in result.daily_records:
+        if record.rebalanced and record.target_tickers:
+            weight = 1.0 / len(record.target_tickers)
+            allocations.append(
+                {
+                    "date": _iso_date(record.date),
+                    "weights": {ticker: weight for ticker in record.target_tickers},
+                }
+            )
+    return {"equity": equity, "allocations": allocations, "trades": []}

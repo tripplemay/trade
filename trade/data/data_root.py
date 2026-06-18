@@ -47,6 +47,10 @@ UNIFIED_FX_RELPATH = ("snapshots", "fx", "unified", "fx_daily.csv")
 # the refresh job never produced (same contract as the prices/fundamentals
 # relpaths above).
 UNIFIED_CN_UNIVERSE_RELPATH = ("snapshots", "universe", "cn_pit_universe.csv")
+# B066 F003 — CSI 300 (沪深300) index daily close CSV produced by the refresh
+# (akshare sina ``stock_zh_index_daily`` sh000300). The CN attack comparison
+# report reads it as the benchmark; absent → the report degrades honestly.
+UNIFIED_CN_BENCHMARK_RELPATH = ("snapshots", "benchmark", "cn_csi300.csv")
 
 
 def data_root_override() -> Path | None:
@@ -93,4 +97,13 @@ def unified_cn_universe_path(repo_root_default: Path) -> Path:
     override = data_root_override()
     if override is not None:
         return override.joinpath(*UNIFIED_CN_UNIVERSE_RELPATH)
+    return repo_root_default
+
+
+def unified_cn_benchmark_path(repo_root_default: Path) -> Path:
+    """Resolve the CSI 300 benchmark CSV: VM override if set, else repo default (B066 F003)."""
+
+    override = data_root_override()
+    if override is not None:
+        return override.joinpath(*UNIFIED_CN_BENCHMARK_RELPATH)
     return repo_root_default

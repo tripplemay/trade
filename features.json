@@ -33,7 +33,7 @@
       "title": "多变体回测接线(B050 _DISPATCH+registry research)+ 回测页露出 + 对比报告 + walk-forward",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F003 + §3】(1) B050 分发:_DISPATCH 加 strategy_id(如 cn-attack-momentum-quality)+runner(自 load universe/prices/fundamentals,吃 start/end+变体参数)+adapter(复用/新增)+report builder。(2) registry 露出:services/strategies.py 加条目,★id==dispatch key 同字符串,status=research,双语名,★不入 INACTIVE_STRATEGY_IDS(否则回测被拒);前端零改动可选跑。(3) 多变体对比报告(双语):2 因子×3 退出=6 配置 CAGR/Sharpe/MaxDD/换手/成本/vs 沪深300;walk-forward(in-sample 段+out-of-sample 验证段);★过拟合红旗标注(全变体披露/不 cherry-pick in-sample winner/夏普离谱存疑)。(4) 回测页可跑。正面证据:回测页可选该策略跑出真 A股 结果;报告含 6 变体对比+walk-forward+过拟合标注+沪深300 基准;inactive_strategy 不误触。Gates:backend pytest+frontend vitest/tsc/eslint/i18n parity/api.ts drift+ruff 目录上下文。",
       "design_decisions": [
         "registry id==_DISPATCH key 同字符串(前端把 s.id 当 strategy_id 发);status=research 且不入 INACTIVE_STRATEGY_IDS(B057 regime 同款,可跑但标研究态)。",

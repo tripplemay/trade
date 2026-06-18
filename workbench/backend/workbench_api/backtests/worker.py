@@ -41,6 +41,7 @@ from typing import Any, Protocol
 from sqlalchemy.orm import Session, sessionmaker
 
 from workbench_api.backtests.adapters import (
+    adapt_cn_attack,
     adapt_momentum,
     adapt_regime,
     adapt_risk_parity,
@@ -456,6 +457,35 @@ def _run_hk_china(snapshot: Any, run: BacktestRunLike) -> dict[str, Any]:
     }
 
 
+def _run_cn_attack(snapshot: Any, run: BacktestRunLike) -> dict[str, Any]:
+    """A-share attack momentum+quality (B066 F003) — 6-variant comparison report.
+
+    Loads its own CN PIT universe / prices / fundamentals / CSI 300 benchmark
+    internally (like ``_run_us_quality``; the US ``snapshot`` is unused), runs the 2
+    factor × 3 exit = 6 variants over ``[start, end]``, and surfaces the **headline**
+    variant's daily equity for the chart while the full comparison + walk-forward
+    out-of-sample + over-fitting red flags + 沪深300 benchmark live in
+    ``report_markdown``. research-only: no live recommendation / execution surface."""
+
+    from trade.reporting.cn_attack_momentum_quality import (  # type: ignore[import-untyped]
+        build_cn_attack_report_payload,
+        render_cn_attack_markdown,
+        run_cn_attack_comparison,
+    )
+
+    request = run.params or {}
+    comparison = run_cn_attack_comparison(
+        start=_parse_iso(request.get("start_date")),
+        end=_parse_iso(request.get("end_date")),
+    )
+    payload = build_cn_attack_report_payload(comparison, run.run_id)
+    return {
+        "metrics": map_metrics(payload),
+        **adapt_cn_attack(comparison.headline),
+        "report_markdown": render_cn_attack_markdown(comparison),
+    }
+
+
 def _run_regime(snapshot: Any, run: BacktestRunLike) -> dict[str, Any]:
     """Regime-Adaptive Multi-Asset (monthly) — the B057 F002 standalone engine.
 
@@ -505,6 +535,10 @@ _DISPATCH: dict[str, Callable[[Any, BacktestRunLike], dict[str, Any]]] = {
     "B025-us-quality-momentum": _run_us_quality,
     "B011-satellite-hk-china": _run_hk_china,
     "regime_adaptive": _run_regime,
+    # B066 F003 — A-share attack momentum+quality (research-only multi-variant
+    # comparison). id matches the registry entry; NOT in INACTIVE_STRATEGY_IDS so
+    # the research strategy is runnable from the backtest page.
+    "cn_attack_momentum_quality": _run_cn_attack,
 }
 
 

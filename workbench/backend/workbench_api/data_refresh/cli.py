@@ -116,6 +116,7 @@ def fetch_main(
     cn_universe_loader: MarketCapLoader | None = None,
     superset_provider: Callable[[], Sequence[str]] | None = None,
     cn_fundamentals_loader: _CnFundamentalsLoader | None = None,
+    cn_benchmark_loader: object | None = None,
 ) -> RefreshSummary:
     run_date = today or datetime.now(UTC).date()
     from_date = run_date - timedelta(days=max(1, args.lookback_days))
@@ -148,6 +149,18 @@ def fetch_main(
     # B063 F001 — also refresh the FX rates CSV (FRED CNY/USD + HKD/USD) the
     # backtest reads for USD conversion. Best-effort per series (logged inside).
     run_fx_refresh(data_root=args.data_root, fx_loader=fx_loader)  # type: ignore[arg-type]
+
+    # B066 F003 — refresh the CSI 300 (沪深300) benchmark CSV the CN attack
+    # comparison report reads. Best-effort (logged inside): a fetch failure leaves
+    # the file unwritten → the report degrades to "benchmark unavailable". Only the
+    # real job injects the loader (tests pass None).
+    if cn_benchmark_loader is not None:
+        from workbench_api.data_refresh.cn_benchmark import run_cn_benchmark_refresh
+
+        run_cn_benchmark_refresh(
+            data_root=args.data_root,
+            loader=cn_benchmark_loader,  # type: ignore[arg-type]
+        )
 
     # B065 F001 — build the A-share point-in-time universe membership artifact
     # from the prices CSV just written + historical market caps. Best-effort: a
@@ -231,7 +244,9 @@ def main(argv: list[str] | None = None) -> int:
     cn_universe_loader: MarketCapLoader | None = None
     superset_provider: Callable[[], Sequence[str]] | None = None
     cn_fundamentals_loader: _CnFundamentalsLoader | None = None
+    cn_benchmark_loader: object | None = None
     if not args.no_cn_universe:
+        from workbench_api.data_refresh.cn_benchmark import AkshareCsiLoader
         from workbench_api.data_refresh.cn_fundamentals import CnFundamentalsLoader
         from workbench_api.data_refresh.cn_marketcap import (
             CnMarketCapLoader,
@@ -244,12 +259,15 @@ def main(argv: list[str] | None = None) -> int:
         )[0]
         # B065 F002 — CAS fundamentals for the superset → fundamentals.csv.
         cn_fundamentals_loader = CnFundamentalsLoader()
+        # B066 F003 — CSI 300 benchmark for the CN attack comparison report.
+        cn_benchmark_loader = AkshareCsiLoader()
 
     summary = fetch_main(
         args,
         cn_universe_loader=cn_universe_loader,
         superset_provider=superset_provider,
         cn_fundamentals_loader=cn_fundamentals_loader,
+        cn_benchmark_loader=cn_benchmark_loader,
     )
     print(
         "data refresh done — "

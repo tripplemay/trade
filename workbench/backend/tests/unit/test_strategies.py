@@ -81,6 +81,10 @@ def test_strategies_list_reflects_master_sleeves(initialised_db: str) -> None:
         # B057 F002: the Regime-Adaptive strategy as a first-class backtestable
         # mode (distinct from the B013/B014/B015 overlays), research-state.
         "regime_adaptive",
+        # B066 F003: A-share attack momentum+quality — a STANDALONE research
+        # strategy (not a Master sleeve; excluded from sleeve_strategies), listed
+        # last so the backtest page can select + run it.
+        "cn_attack_momentum_quality",
     ]
 
 

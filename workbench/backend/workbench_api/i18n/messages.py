@@ -104,6 +104,12 @@ MESSAGES: Final[dict[str, dict[str, str]]] = {
             "月度调仓。基于真实日线价格回测(Tiingo,B045 数据刷新)。研究态、前向验证中"
             "——不构成收益预测,亦非交易指令。"
         ),
+        "strategy.note.cn_attack": (
+            "A股 进攻动量质量(B066,研究态):独立于 Master 的进攻型 A股 个股选股引擎,"
+            "纯进攻满仓无防御闸。回测页跑 2 因子×3 退出=6 变体对比+样本外验证+沪深300 基准,"
+            "据此判断是否值得进 P2 实盘 advisory。research-only:无实盘推荐/无执行/不构成"
+            "收益预测/不碰 live。"
+        ),
         "gate.kill_switch_detail": "主组合回撤 {master_dd} {comparator} 阈值 {threshold}。",
         "gate.min_equity_detail": "账户权益 = {equity}",
         "diff.reason.sell_to_zero": "已持有但已不在目标内——清仓至零",
@@ -225,6 +231,14 @@ MESSAGES: Final[dict[str, dict[str, str]]] = {
             "rebalance. Backtested on real daily prices (Tiingo, B045 "
             "data-refresh). Research-state, forward-validation only — not a "
             "return forecast, not a trading instruction."
+        ),
+        "strategy.note.cn_attack": (
+            "A-share Attack Momentum+Quality (B066, research-state): a pure-attack "
+            "A-share single-stock engine independent of the Master (always fully "
+            "invested, no defensive gate). The backtest page runs the 2 factor × 3 "
+            "exit = 6-variant comparison + out-of-sample validation + CSI 300 "
+            "benchmark to judge whether it merits a P2 live advisory. Research-only: "
+            "no live recommendation / no execution / not a return forecast / not live."
         ),
         "gate.kill_switch_detail": (
             "Master drawdown {master_dd} {comparator} threshold {threshold}."
