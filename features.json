@@ -46,7 +46,7 @@
       "title": "Codex:回测验证(变体对比真数字+walk-forward 样本外+无过拟合红旗)+S1 全量复确认+边界+signoff(实测证据硬段)",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F004。真数据批次——signoff 必含实测证据硬段,evaluator §29:无真值=不得 done】L1 全门禁(backend+trade mypy+ruff 目录上下文+frontend)。L2 真机实测(VM,贴真返回):①回测页跑该策略→非退化结果(equity 多点/有交易/真 metrics);②变体对比真数字(2 因子×3 退出各产非退化且彼此不同→质量是否加值/哪退出好的研究证据);③walk-forward 样本外合理性(out-of-sample plausible,非明显过拟合,夏普离谱存疑,选出合理 A股 流动大盘股,换手合理);④A股 成本保真(卖含印花税 0.1%/买不含,不动区换手受控);⑤★S1 全量复确认(用 B065 F003 cross-source 工具对全 cn_seed universe 复跑,扩 planner 3 名抽样到全量,确认<0.5% 或诚实口径差);⑥边界 adversarial:research-only(无实盘推荐/执行 surface)+no-broker+no 收益预测+不碰 live;回归 B050-B065 不破+HEAD≡prod+recent-errors=0。P1 结论=研究判定(是否值得进 P2 实盘 advisory:哪变体最优/质量是否加值/哪退出好/样本外是否稳)。signoff docs/test-reports/B066-...-signoff-*.md 实测证据硬段逐条贴真观测。",
       "design_decisions": []
     }

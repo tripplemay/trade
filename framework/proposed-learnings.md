@@ -283,7 +283,7 @@
 
 **建议写入：** `framework/harness/generator.md`（回测引擎真实数据缺口：停牌 ffill+NaN 安全读价禁 `or 0.0`+缺价回归测试）。
 
-**状态：** 待确认
+**状态：** ✅ 已沉淀 v0.9.48（generator.md §28；用户 2026-06-18 批 B066 done 收尾）
 
 ## [2026-06-18] Claude CLI — 来源：B066 F003 — 退化空仓回测变体必须红旗,勿静默报 0.00%
 
@@ -293,6 +293,10 @@
 
 **建议写入：** `framework/harness/generator.md` 或 `evaluator.md`（多变体研究报告红旗须含 no_activity 退化 + 同族 toggle 失效；0.00% 非真实结果）。
 
-**状态：** 待确认
+**状态：** ✅ 已沉淀 v0.9.48（generator.md §29；用户 2026-06-18 批 B066 done 收尾）
+
+<!-- 2026-06-18: v0.9.48 沉淀完成（B066 F002/F003 done 收尾，用户批）：2 条 B066 自评 adversarial review 产 → generator.md §28（回测引擎停牌 ffill+NaN 安全读价禁 or 0.0+缺价回归测试）+ §29（多变体研究报告退化空仓必须红旗:no_activity+同族 toggle 失效,0.00% 非真实结果）。归档 framework/archive/proposed-learnings-archive-v0.9.48.md。CHANGELOG v0.9.48。**活跃候选队列=空。** -->
+
+<!-- 当前活动候选（v0.9.48 后）：无。 -->
 
 <!-- 当前活动候选（v0.9.47 后）：B066 2 条（generator）——①回测引擎停牌/缺价 ffill+NaN 安全读价禁 `or 0.0`(NaN 真值)+缺价回归测试(对抗审查 2 HIGH)；②多变体研究报告须 no_activity 退化红旗+同族 toggle 失效红旗(勿静默 0.00%)。另含 2 条设计模式待评：镜像新市场写专属引擎保 US 零回归 by construction(F001/F002 construction+costs 不改 us)；standalone 研究策略 registry 模式(入 list_strategies 但排除 sleeve_strategies via STANDALONE_RESEARCH_STRATEGY_IDS 避 phantom sleeve/paper)。下批 done 阶段提请用户裁定。 -->

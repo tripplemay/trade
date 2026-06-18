@@ -5,6 +5,18 @@
 
 ---
 
+## v0.9.48 — 2026-06-18（B066：回测引擎停牌缺价 + 多变体退化空仓红旗）
+
+**来源批次：** B066 ashare-attack-momentum-quality（A股 进攻策略 P1，0 fix-round done；F002/F003 自跑对抗审查抓出 2 真 bug，用户 done 收尾批准沉淀）。
+
+**沉淀内容（用户确认）：**
+- **① 回测引擎真实数据缺口：停牌 ffill + NaN 安全读价（禁 `or 0.0`）+ 缺价回归测试**（B066 F002：停牌=缺价行→NaN；`nan or 0.0 == nan` NaN 真值陷阱 → 持仓蒸发 + equity NaN + max_drawdown 失真）→ `generator.md §28`。
+- **② 多变体研究报告：退化空仓变体必须红旗，勿静默报 0.00%**（B066 F003：空截面变体退化满仓现金→0.00% 当真实结果展示则研究判定被破坏）→ `generator.md §29`（no_activity 红旗 + 同族 toggle 失效红旗；evaluator.md §29/§25 的多变体对偶）。
+
+两条均 B066 自评 adversarial review 产（generator 主动对抗审查抓真 bug，good practice）。归档 `framework/archive/proposed-learnings-archive-v0.9.48.md`。**活跃候选队列清空。**
+
+---
+
 ## v0.9.47 — 2026-06-18（B065：ruff 本地须目录上下文，勿单文件）
 
 **来源批次：** B065 ashare-strategy-data-foundation（A股 策略数据地基，0 fix-round done；F001 ruff I001 本地绿 CI 红，用户 done 收尾批准）。
