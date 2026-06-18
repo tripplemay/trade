@@ -35,6 +35,19 @@ FACTOR_VARIANTS: frozenset[str] = frozenset(
     {FACTOR_VARIANT_QUALITY_MOMENTUM, FACTOR_VARIANT_PURE_MOMENTUM}
 )
 
+# B068 F002 — weighting schemes (the spec's second A/B dimension). ``equal`` is the
+# B066/B067 default (1/N capital); ``inverse_vol`` sizes each name ∝ 1/σ_i
+# (risk-managed-momentum weighting, Barroso-Santa-Clara / Daniel-Moskowitz). The
+# analyst decision (spec §2) excludes momentum/score-weighting and MVO; inverse_vol
+# is the ONLY weighting optimisation tested (risk control, not return prediction →
+# low overfit). ``equal`` stays the default so B066/B067 are zero-regression.
+WEIGHTING_SCHEME_EQUAL = "equal"
+WEIGHTING_SCHEME_INVERSE_VOL = "inverse_vol"
+WEIGHTING_SCHEMES: frozenset[str] = frozenset(
+    {WEIGHTING_SCHEME_EQUAL, WEIGHTING_SCHEME_INVERSE_VOL}
+)
+DEFAULT_WEIGHTING_SCHEME = WEIGHTING_SCHEME_EQUAL
+
 REBALANCE_FREQUENCIES: frozenset[str] = frozenset({"daily", "weekly", "monthly", "quarterly"})
 
 WEIGHT_SUM_TOLERANCE = 1e-8
@@ -64,6 +77,7 @@ class CnAttackParameters:
     quality_weight: float = DEFAULT_QUALITY_WEIGHT
     max_position_weight: float = DEFAULT_MAX_POSITION_WEIGHT
     rebalance_frequency: str = DEFAULT_REBALANCE_FREQUENCY
+    weighting_scheme: str = DEFAULT_WEIGHTING_SCHEME
 
     def __post_init__(self) -> None:
         if not self.strategy_id:
@@ -82,6 +96,11 @@ class CnAttackParameters:
         if self.rebalance_frequency not in REBALANCE_FREQUENCIES:
             raise CnAttackParameterError(
                 f"rebalance_frequency must be one of {sorted(REBALANCE_FREQUENCIES)}"
+            )
+        if self.weighting_scheme not in WEIGHTING_SCHEMES:
+            raise CnAttackParameterError(
+                f"weighting_scheme must be one of {sorted(WEIGHTING_SCHEMES)}; "
+                f"got {self.weighting_scheme!r}"
             )
         # The blend weights only have to sum to 1.0 for the quality_momentum
         # variant; pure_momentum ignores them (the mapping forces momentum=1.0).
@@ -128,6 +147,12 @@ class CnAttackParameters:
             "strategy_id": self.strategy_id,
             "top_n": self.top_n,
         }
+        # B068 F002 — only fold weighting_scheme into the payload when it differs
+        # from the default, so the equal-weight (B066/B067) hash stays byte-identical
+        # to the pre-B068 hash (zero-regression: the live advisory's recorded
+        # identifier does not churn just because a new dimension was added).
+        if self.weighting_scheme != DEFAULT_WEIGHTING_SCHEME:
+            payload["weighting_scheme"] = self.weighting_scheme
         canonical = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode(
             "utf-8"
         )
@@ -135,9 +160,13 @@ class CnAttackParameters:
 
 
 __all__ = [
+    "DEFAULT_WEIGHTING_SCHEME",
     "FACTOR_VARIANTS",
     "FACTOR_VARIANT_PURE_MOMENTUM",
     "FACTOR_VARIANT_QUALITY_MOMENTUM",
+    "WEIGHTING_SCHEMES",
+    "WEIGHTING_SCHEME_EQUAL",
+    "WEIGHTING_SCHEME_INVERSE_VOL",
     "CnAttackParameterError",
     "CnAttackParameters",
 ]

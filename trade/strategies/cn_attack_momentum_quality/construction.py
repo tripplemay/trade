@@ -26,12 +26,16 @@ The function is pure: inputs are read-only and the output is a fresh
 
 from __future__ import annotations
 
+import statistics
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 
 import pandas as pd
 
-from trade.strategies.cn_attack_momentum_quality.parameters import CnAttackParameters
+from trade.strategies.cn_attack_momentum_quality.parameters import (
+    WEIGHTING_SCHEME_INVERSE_VOL,
+    CnAttackParameters,
+)
 from trade.strategies.us_quality_momentum.ranking import percent_rank
 
 
@@ -92,17 +96,73 @@ def _top_n_candidates(scores: pd.Series, top_n: int) -> list[str]:
     return [str(ticker) for ticker in ordered["ticker"].head(top_n).tolist()]
 
 
+def _equal_target_weights(candidates: list[str]) -> dict[str, float]:
+    """Step 4a (default) — 1/N capital across the survivors (B066/B067 behaviour)."""
+
+    equal_weight = 1.0 / len(candidates)
+    return {ticker: equal_weight for ticker in candidates}
+
+
+def _valid_sigma(
+    candidates: list[str], volatilities: Mapping[str, float] | pd.Series | None
+) -> dict[str, float]:
+    """Per-candidate σ that is usable for ``1/σ`` (positive, finite)."""
+
+    if volatilities is None:
+        return {}
+    valid: dict[str, float] = {}
+    for ticker in candidates:
+        sigma = volatilities.get(ticker)
+        if sigma is None or pd.isna(sigma) or sigma <= 0:
+            continue
+        valid[ticker] = float(sigma)
+    return valid
+
+
+def _inverse_vol_target_weights(
+    candidates: list[str],
+    volatilities: Mapping[str, float] | pd.Series | None,
+) -> dict[str, float]:
+    """Step 4b (B068 F002) — pre-cap weight ∝ ``1/σ_i`` (risk-managed weighting).
+
+    A name with a missing / non-positive σ keeps its place in the basket (so the
+    name composition matches the equal-weight basket and the comparison isolates
+    the *weighting* effect) but is imputed the cross-sectional **median** σ — a
+    neutral, typical risk rather than a dropped name or an infinite weight. If NOT
+    ONE candidate has a usable σ (e.g. the caller passed no volatilities), the
+    scheme degrades honestly to equal weight."""
+
+    valid = _valid_sigma(candidates, volatilities)
+    if not valid:
+        return _equal_target_weights(candidates)
+    median_sigma = statistics.median(valid.values())
+    inverse = {ticker: 1.0 / valid.get(ticker, median_sigma) for ticker in candidates}
+    total = sum(inverse.values())
+    return {ticker: value / total for ticker, value in inverse.items()}
+
+
 def build_cn_portfolio(
     factor_scores: Mapping[str, pd.Series],
     eligible_tickers: Iterable[str],
     parameters: CnAttackParameters,
+    *,
+    volatilities: Mapping[str, float] | pd.Series | None = None,
 ) -> CnPortfolioWeights:
-    """Run the composite → top-N → equal-weight → position-cap pipeline.
+    """Run the composite → top-N → weight → position-cap pipeline.
 
     ``eligible_tickers`` is the point-in-time A-share universe at the as-of date;
     only those names can enter the portfolio (the composite is computed over the
-    factor cross-section, then restricted to the universe). See module docstring
-    for the per-step semantics.
+    factor cross-section, then restricted to the universe). The survivors are then
+    sized by ``parameters.weighting_scheme``:
+
+    - ``equal`` (default) — 1/N capital (B066/B067 behaviour, unchanged);
+    - ``inverse_vol`` — ``∝ 1/σ_i`` from ``volatilities`` (the trailing realized σ
+      the caller computes point-in-time; see
+      :func:`trade.strategies.us_quality_momentum.factors.trailing_volatility`).
+
+    Both schemes share the same post-processing: cap each position at
+    ``max_position_weight`` (excess → implicit cash buffer). ``volatilities`` is
+    ignored for the equal scheme. See module docstring for the per-step semantics.
     """
 
     eligible = set(eligible_tickers)
@@ -129,10 +189,13 @@ def build_cn_portfolio(
     if not candidates:
         return CnPortfolioWeights(weights=(), cash_buffer=1.0)
 
-    equal_weight = 1.0 / len(candidates)
+    if parameters.weighting_scheme == WEIGHTING_SCHEME_INVERSE_VOL:
+        target = _inverse_vol_target_weights(candidates, volatilities)
+    else:
+        target = _equal_target_weights(candidates)
     capped = {
-        ticker: min(equal_weight, parameters.max_position_weight)
-        for ticker in candidates
+        ticker: min(weight, parameters.max_position_weight)
+        for ticker, weight in target.items()
     }
     sorted_pairs = tuple(sorted(capped.items(), key=lambda kv: kv[0]))
     invested = sum(weight for _, weight in sorted_pairs)

@@ -19,6 +19,7 @@ import pytest
 from trade.strategies.cn_attack_momentum_quality.parameters import (
     FACTOR_VARIANT_PURE_MOMENTUM,
     FACTOR_VARIANT_QUALITY_MOMENTUM,
+    WEIGHTING_SCHEME_INVERSE_VOL,
     CnAttackParameters,
 )
 from trade.strategies.cn_attack_momentum_quality.signal import generate_cn_attack_signal
@@ -227,3 +228,66 @@ def test_current_holdings_accepted_but_band_agnostic(prices: pd.DataFrame) -> No
         universe_members=_MEMBERS,
     )
     assert without.weights_dict() == with_holdings.weights_dict()
+
+
+# --------------------------------------------------------------------------- #
+# B068 F002 — inverse-vol weighting end-to-end (signal computes σ from prices)
+# --------------------------------------------------------------------------- #
+
+# Per-name volatility via a deterministic alternating term of increasing
+# amplitude (same upward drift → same selection); 600519 calmest, 002594 choppiest.
+_VOL_AMPLITUDE = {
+    "600519.SH": 0.002,
+    "000858.SZ": 0.010,
+    "600036.SH": 0.020,
+    "300750.SZ": 0.030,
+    "002594.SZ": 0.050,
+}
+
+
+def _synth_prices_varied_vol() -> pd.DataFrame:
+    days = pd.bdate_range("2024-04-01", "2025-06-02")
+    rows: list[dict[str, object]] = []
+    for ticker, amplitude in _VOL_AMPLITUDE.items():
+        for i, day in enumerate(days):
+            trend = 100.0 * (1.0 + 0.0008) ** i
+            price = trend * (1.0 + amplitude * (1.0 if i % 2 == 0 else -1.0))
+            rows.append(
+                {
+                    "date": day,
+                    "ticker": ticker,
+                    "open": price,
+                    "high": price * 1.01,
+                    "low": price * 0.99,
+                    "close": price,
+                    "adj_close": price,
+                    "volume": 1_000_000,
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def test_inverse_vol_signal_tilts_weights_toward_calm_names() -> None:
+    # top_n=5 selects all 5 members (composition fixed) so the comparison isolates
+    # the weighting effect. The signal must compute trailing σ from the prices and
+    # pass it through to construction: inverse_vol tilts, equal does not.
+    prices = _synth_prices_varied_vol()
+    common = dict(
+        factor_variant=FACTOR_VARIANT_PURE_MOMENTUM, top_n=5, max_position_weight=0.5
+    )
+    equal = generate_cn_attack_signal(
+        CnAttackParameters(**common), _AS_OF, prices=prices, universe_members=_MEMBERS
+    )
+    inverse = generate_cn_attack_signal(
+        CnAttackParameters(**common, weighting_scheme=WEIGHTING_SCHEME_INVERSE_VOL),
+        _AS_OF,
+        prices=prices,
+        universe_members=_MEMBERS,
+    )
+    assert set(equal.tickers()) == set(inverse.tickers()) == set(_MEMBERS)
+    # equal: flat 0.2 each (cap 0.5 not binding).
+    assert all(w == pytest.approx(0.2) for w in equal.weights_dict().values())
+    # inverse_vol: tilted — calmest name (600519) > choppiest (002594).
+    inv_w = inverse.weights_dict()
+    assert inv_w["600519.SH"] > inv_w["002594.SZ"]
+    assert inverse.weights_dict() != equal.weights_dict()

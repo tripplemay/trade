@@ -19,6 +19,7 @@ from trade.strategies.us_quality_momentum.factors import (
     momentum_6m,
     momentum_12_1,
     quality_score,
+    trailing_volatility,
     trend_score,
     value_score,
 )
@@ -392,6 +393,60 @@ def test_low_vol_score_rejects_invalid_window() -> None:
     prices = _synthetic_prices(["A"], date(2022, 1, 3), 100)
     with pytest.raises(FactorInputError, match="window"):
         low_vol_score(prices, date(2022, 3, 1), windows=(1,))
+
+
+# ---------------------------------------------------------------------------
+# Trailing volatility (B068 F002 — raw σ for inverse-vol weighting)
+# ---------------------------------------------------------------------------
+
+
+def test_trailing_volatility_higher_for_choppy_ticker() -> None:
+    # The raw-σ companion to low_vol_score: a choppy name has a larger σ *level*.
+    days = 120
+    dates = pd.bdate_range(start=pd.Timestamp(date(2022, 1, 3)), periods=days)
+    calm = 100.0 * np.power(1.0 + 0.0005, np.arange(days))  # constant return → σ≈0
+    chop_returns = np.array([0.05 if i % 2 == 0 else -0.05 for i in range(days)])
+    chop = 100.0 * np.cumprod(1.0 + chop_returns)
+    prices = pd.concat(
+        [
+            pd.DataFrame({"date": dates, "ticker": "CALM", "adj_close": calm}),
+            pd.DataFrame({"date": dates, "ticker": "CHOP", "adj_close": chop}),
+        ],
+        ignore_index=True,
+    )
+    sigma = trailing_volatility(prices, date(2022, 6, 1), windows=(20, 40))
+    assert sigma["CHOP"] > sigma["CALM"]
+    assert sigma["CHOP"] > 0.0
+
+
+def test_trailing_volatility_nan_for_insufficient_history() -> None:
+    prices = _synthetic_prices(
+        tickers=["A"], start=date(2024, 1, 1), days=30, daily_return={"A": 0.001}
+    )
+    sigma = trailing_volatility(prices, date(2024, 2, 1), windows=(60,))
+    assert pd.isna(sigma["A"])
+
+
+def test_trailing_volatility_is_point_in_time_safe() -> None:
+    # Rows dated after as_of must not change σ at as_of (no future leakage).
+    days = 120
+    dates = pd.bdate_range(start=pd.Timestamp(date(2022, 1, 3)), periods=days)
+    returns = np.linspace(0.0, 0.02, days)
+    prices_full = pd.DataFrame(
+        {"date": dates, "ticker": "A", "adj_close": 100.0 * np.cumprod(1.0 + returns)}
+    )
+    as_of = dates[70].date()
+    full = trailing_volatility(prices_full, as_of, windows=(20,))
+    truncated = trailing_volatility(
+        prices_full[prices_full["date"] <= pd.Timestamp(as_of)], as_of, windows=(20,)
+    )
+    assert full["A"] == pytest.approx(truncated["A"])
+
+
+def test_trailing_volatility_rejects_empty_windows() -> None:
+    prices = _synthetic_prices(["A"], date(2022, 1, 3), 100)
+    with pytest.raises(FactorInputError, match="window"):
+        trailing_volatility(prices, date(2022, 3, 1), windows=())
 
 
 # ---------------------------------------------------------------------------

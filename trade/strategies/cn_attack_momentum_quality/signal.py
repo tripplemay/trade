@@ -28,8 +28,15 @@ from trade.strategies.cn_attack_momentum_quality.construction import (
     CnPortfolioWeights,
     build_cn_portfolio,
 )
-from trade.strategies.cn_attack_momentum_quality.parameters import CnAttackParameters
-from trade.strategies.us_quality_momentum.factors import momentum_12_1, quality_score
+from trade.strategies.cn_attack_momentum_quality.parameters import (
+    WEIGHTING_SCHEME_INVERSE_VOL,
+    CnAttackParameters,
+)
+from trade.strategies.us_quality_momentum.factors import (
+    momentum_12_1,
+    quality_score,
+    trailing_volatility,
+)
 from trade.strategies.us_quality_momentum.ranking import percent_rank
 
 
@@ -158,7 +165,17 @@ def generate_cn_attack_signal(
     factor_scores = _compute_factor_scores(
         weight_mapping, cn_prices, cn_fundamentals, as_of_date
     )
-    portfolio = build_cn_portfolio(factor_scores, members, parameters)
+    # B068 F002 — inverse-vol weighting needs per-name trailing σ (point-in-time
+    # safe; trailing_volatility re-filters to <= as_of). The equal scheme computes
+    # nothing extra, so the B066/B067 default path is zero-overhead / zero-change.
+    volatilities = (
+        trailing_volatility(cn_prices, as_of_date)
+        if parameters.weighting_scheme == WEIGHTING_SCHEME_INVERSE_VOL
+        else None
+    )
+    portfolio = build_cn_portfolio(
+        factor_scores, members, parameters, volatilities=volatilities
+    )
     contributions = _compute_factor_contributions(
         factor_scores, weight_mapping, portfolio.tickers()
     )

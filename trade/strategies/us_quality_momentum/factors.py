@@ -211,6 +211,34 @@ def low_vol_score(
     return average_ranks(*inv_vol_ranks)
 
 
+def trailing_volatility(
+    prices: pd.DataFrame,
+    as_of: date,
+    windows: tuple[int, ...] = DEFAULT_LOW_VOL_WINDOWS,
+) -> pd.Series:
+    """Average annualized realized volatility (σ) per ticker across trailing windows.
+
+    The raw-σ companion to :func:`low_vol_score` (which percent-RANKS ``1/σ`` for
+    the quality blend): this returns the *level* of σ so a caller can size
+    positions by ``1/σ`` — inverse-volatility weighting (B068 F002). Reuses the
+    same trailing-log-return-vol primitive + default windows, so the σ here is the
+    same estimate the low-vol score ranks. A ticker with insufficient history for
+    *every* window is NaN; one with at least one usable window is averaged over
+    whichever windows produced a value (mirrors ``low_vol_score``'s availability
+    handling). Point-in-time safe — only data dated ``<= as_of`` is used.
+    """
+
+    if not windows:
+        raise FactorInputError("trailing_volatility requires at least one window")
+    wide = _wide_adjusted_close(prices, as_of)
+    if wide.empty:
+        return pd.Series(dtype=float)
+    vols = [_trailing_log_return_vol(wide, window) for window in windows]
+    # Average σ across windows, skipping NaN so a name with >= 1 usable window
+    # survives; a name with no usable window stays NaN (the caller degrades it).
+    return pd.concat(vols, axis=1).mean(axis=1, skipna=True)
+
+
 # ---------------------------------------------------------------------------
 # Value
 # ---------------------------------------------------------------------------
