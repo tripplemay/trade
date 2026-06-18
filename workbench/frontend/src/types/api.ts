@@ -2088,6 +2088,8 @@ export interface components {
              * @description False when accounts/me.json is missing — the page renders an empty state.
              */
             account_present: boolean;
+            /** @description B067 F003 — out-of-sample honesty disclosure from the latest snapshot's master_meta.research_caveat. None for funded / other modes that persist no caveat; the surface renders a prominent OOS disclosure only when present. */
+            research_caveat?: components["schemas"]["ResearchCaveat"] | null;
         };
         /** ReconcileResponse */
         ReconcileResponse: {
@@ -2219,6 +2221,65 @@ export interface components {
             columns: string[];
             /** Rows */
             rows: string[][];
+        };
+        /**
+         * ResearchCaveat
+         * @description B067 F003 — out-of-sample honesty disclosure surfaced from the latest
+         *     snapshot's ``master_meta.research_caveat``.
+         *
+         *     Populated **only** for research-state strategies that persist this block
+         *     (the cn_attack momentum modes — see ``strategy_modes/cn_attack_precompute``
+         *     ``CN_ATTACK_RESEARCH_CAVEAT``). ``None`` for funded / other modes whose
+         *     ``master_meta`` carries no caveat, which is exactly how the frontend gates
+         *     the disclosure (render only when this field is present).
+         *
+         *     Every field is optional with a ``None`` default so the response is robust to
+         *     older / partial snapshots and so future caveat keys never break validation
+         *     (extra keys are ignored by Pydantic). The fields are honest disclosures, not
+         *     computed values — the frontend renders them verbatim (B067 spec §0). The
+         *     bilingual headline/detail pair lets the surface follow the active locale.
+         */
+        ResearchCaveat: {
+            /**
+             * Validated
+             * @description False when the strategy is not out-of-sample validated.
+             */
+            validated?: boolean | null;
+            /**
+             * Oos Result
+             * @description Out-of-sample verdict, e.g. 'negative'.
+             */
+            oos_result?: string | null;
+            /**
+             * Oos Cagr Range
+             * @description Observed out-of-sample CAGR range, e.g. '-9% ~ -11%'.
+             */
+            oos_cagr_range?: string | null;
+            /**
+             * Headline Zh
+             * @description Chinese headline warning.
+             */
+            headline_zh?: string | null;
+            /**
+             * Headline En
+             * @description English headline warning.
+             */
+            headline_en?: string | null;
+            /**
+             * Detail Zh
+             * @description Chinese advisory-only detail.
+             */
+            detail_zh?: string | null;
+            /**
+             * Detail En
+             * @description English advisory-only detail.
+             */
+            detail_en?: string | null;
+            /**
+             * Backtest Ref
+             * @description Repo-relative path to the IS/OOS backtest record (B066 spec).
+             */
+            backtest_ref?: string | null;
         };
         /** RiskPanelResponse */
         RiskPanelResponse: {

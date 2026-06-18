@@ -318,6 +318,11 @@
     "statePrefix": "as of {date} · account {accountStatus}",
     "disclaimerBold": "Research-only.",
     "disclaimerBody": "This page produces a manual review checklist; the workbench never places orders. Export the markdown ticket and execute manually after independent review.",
+    "oosDisclosure": {
+      "title": "Out-of-sample unvalidated · research-state strategy",
+      "oosCagrLabel": "OOS CAGR",
+      "backtestRefLabel": "Backtest record"
+    },
     "emptyAccount": {
       "title": "No account on file",
       "descriptionPrefix": "Drop a ",

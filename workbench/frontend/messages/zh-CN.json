@@ -318,6 +318,11 @@
     "statePrefix": "更新于 {date} · 账户 {accountStatus}",
     "disclaimerBold": "仅供研究。",
     "disclaimerBody": "本页生成的是人工核对清单;工作台从不下单。请导出 markdown 订单清单并在独立复核后人工执行。",
+    "oosDisclosure": {
+      "title": "样本外未验证 · 研究态策略",
+      "oosCagrLabel": "样本外 CAGR",
+      "backtestRefLabel": "回测记录"
+    },
     "emptyAccount": {
       "title": "尚未配置账户",
       "descriptionPrefix": "请放置一个含现金 + 持仓的 ",

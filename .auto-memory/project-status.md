@@ -5,8 +5,8 @@ type: project
 ---
 
 ## 当前状态
-- **当前：B067 🔨 building**（2026-06-18，generator）= A股 进攻 P2（实盘 advisory surface + 手动执行闭环）。**F001+F002 ✅ done（推 main，CI 绿），F003 待做，F004=Codex L2**。上一批 B066 ✅ done。
-- **B067 进度**：F001 两变体 advisory 模式接入（registry+producer+precompute+★cash 补 1.0+★OOS 诚实 meta `research_caveat`+data_not_covered 不发空仓）；F002 每日 timer/CLI/scope safety/§12.11.1 env 守门（deploy glob 零改）。**F003=前端 surface+★cn_attack 专属 OOS 披露+获利了结渲染**；F004=Codex 真机（两 timer 真跑+权重和=1.0 含 cash 行+执行闭环隔离+OOS 披露+零回归）。spec `docs/specs/B067-...-spec.md`。
+- **当前：B067 🔍 verifying**（2026-06-18，Codex 接 F004）= A股 进攻 P2（实盘 advisory surface + 手动执行闭环）。**F001+F002+F003 ✅ done（推 main，CI 绿），F004=Codex L2 真机验收待做**。上一批 B066 ✅ done。
+- **B067 进度**：F001/F002 ✅（模式接入+precompute+cash 补 1.0+OOS meta；timer/CLI/scope safety，deploy glob 零改）；**F003 ✅**（后端暴露 typed `research_caveat`+获利了结读 `master_meta.profit_take` 标注 diff reason；前端 `CnAttackOosDisclosure` 红卡按 research_caveat self-gate+双语+引用 B066；no-execution 注册+api.ts 重生；门禁全绿:后端 1294 unit / 前端 343 vitest）。**F004=Codex L2 真机**（两 timer 真跑+权重和=1.0 含 cash 行+OOS 披露真渲染+执行闭环隔离+零回归+§29）。spec `docs/specs/B067-...-spec.md`。
 - **★诚实约束（spec §0 焊死）**：用户 B066 P1 done 后拍板上 P2（有权用）。B066 诚实结论=**OOS −9~−11% 动量逆转 + 质量 A/B 本地未分胜负（需宽宇宙）**。surface 须 cn_attack 专属 OOS 负/未验证披露 + advisory-only/不自动下单/非收益预测。
 - **关键决策**：cn_attack 两 advisory 模式（cn_attack_quality_momentum/pure_momentum）进 **mode registry _MODES**（非 master sleeve，守不变量#3）；B066 backtest id `cn_attack_momentum_quality` 仍在 STANDALONE_RESEARCH 不动。纯进攻无 regime gate。
 

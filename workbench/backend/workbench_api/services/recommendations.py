@@ -40,6 +40,7 @@ from workbench_api.schemas.recommendations import (
     ExportTicketResponse,
     GateCheck,
     RecommendationsResponse,
+    ResearchCaveat,
     SleeveNewsItem,
     SleeveNewsResponse,
     TargetPosition,
@@ -278,6 +279,17 @@ def get_current_recommendations(
         if snapshot_rows
         else datetime.now(UTC).date().isoformat()
     )
+    # B067 F003 — surface the out-of-sample honesty caveat persisted in the
+    # batch-level master_meta. save_batch denormalises one master_meta dict onto
+    # every row, so row[0] is representative. Only research-state modes
+    # (cn_attack) write a research_caveat block; for funded / other modes the key
+    # is absent and research_caveat stays None (the surface then renders no OOS
+    # disclosure). This is a pure DB read — never imports trade (§12.10.2).
+    master_meta = snapshot_rows[0].master_meta if snapshot_rows else None
+    caveat = (master_meta or {}).get("research_caveat")
+    research_caveat = (
+        ResearchCaveat.model_validate(caveat) if isinstance(caveat, dict) else None
+    )
     return RecommendationsResponse(
         as_of_date=as_of,
         target_positions=_build_target_positions(session, strategy_id=strategy_id),
@@ -287,6 +299,7 @@ def get_current_recommendations(
         # qualifying pair — the frontend's flag panel renders its empty state.
         wash_sale_flags=detect_wash_sales(session),
         account_present=account_present,
+        research_caveat=research_caveat,
     )
 
 

@@ -172,6 +172,73 @@ def test_current_returns_target_positions_from_snapshot(
     assert len(set(weights)) > 1
 
 
+def test_current_research_caveat_null_when_meta_has_no_caveat(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """B067 F003: funded / non-cn_attack modes persist no research_caveat in
+    master_meta, so the response field stays None and the surface renders no OOS
+    disclosure. (_seed_snapshot's master_meta has data_source/planning_weights only.)"""
+    _seed_snapshot()
+    client = _authed_client(tmp_path)
+    payload = client.get("/api/recommendations/current").json()
+    assert "research_caveat" in payload
+    assert payload["research_caveat"] is None
+
+
+def _seed_caveat_snapshot() -> None:
+    """B067 F003: seed a research-state snapshot whose master_meta carries the
+    cn_attack OOS honesty caveat (mirrors strategy_modes.cn_attack_precompute)."""
+    from sqlalchemy.orm import Session
+
+    from workbench_api.db.repositories.recommendation_snapshot import (
+        RecommendationSnapshotRepository,
+    )
+
+    with Session(get_engine()) as session:
+        RecommendationSnapshotRepository(session).save_batch(
+            as_of_date=date(2024, 12, 31),
+            rows=[
+                {"symbol": "600519", "sleeve": "cn_attack", "target_weight": 0.5, "rationale": "m"},
+                {"symbol": "CASH", "sleeve": "cash", "target_weight": 0.5, "rationale": "c"},
+            ],
+            master_meta={
+                "data_source": "fixture",
+                "profit_take": ["000001"],
+                "research_caveat": {
+                    "validated": False,
+                    "oos_result": "negative",
+                    "oos_cagr_range": "-9% ~ -11%",
+                    "headline_zh": "未经样本外验证。",
+                    "headline_en": "Unvalidated out-of-sample.",
+                    "detail_zh": "advisory-only：风险自负。",
+                    "detail_en": "Advisory-only: at your own risk.",
+                    "backtest_ref": "docs/specs/B066-ashare-attack-momentum-quality-spec.md",
+                },
+            },
+            strategy_id="cn_attack_quality_momentum",
+        )
+        session.commit()
+
+
+def test_current_research_caveat_surfaced_from_master_meta(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """B067 F003: the OOS honesty caveat persisted in master_meta is surfaced
+    verbatim on the response so the frontend renders the cn_attack disclosure."""
+    _seed_caveat_snapshot()
+    client = _authed_client(tmp_path)
+    payload = client.get(
+        "/api/recommendations/current?strategy_id=cn_attack_quality_momentum"
+    ).json()
+    caveat = payload["research_caveat"]
+    assert caveat is not None
+    assert caveat["validated"] is False
+    assert caveat["oos_result"] == "negative"
+    assert caveat["oos_cagr_range"] == "-9% ~ -11%"
+    assert caveat["headline_zh"] and caveat["headline_en"]
+    assert caveat["backtest_ref"].endswith("B066-ashare-attack-momentum-quality-spec.md")
+
+
 class _FakeProvider:
     """PriceProvider returning fixed marks (B046 F001 — inject known closes)."""
 

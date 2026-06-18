@@ -254,6 +254,18 @@ def get_position_diff(
             )
         )
 
+    # B067 F003 — names rotated out of today's top-N (获利了结 / 跌出 top-N) are
+    # persisted in the batch-level master_meta.profit_take by the cn_attack
+    # producer. Label those held-but-dropped names as a profit-take exit rather
+    # than a generic "sell to zero", so the diff reason column conveys the
+    # rebalance semantics the spec calls for. Other modes carry no profit_take
+    # key → empty set → identical "sell to zero" behaviour (zero regression).
+    # Pure DB read of the persisted snapshot meta — never imports trade.
+    snapshot_meta = target_rows[0].master_meta if target_rows else None
+    profit_take_symbols = {
+        str(s).upper() for s in (snapshot_meta or {}).get("profit_take", []) or []
+    }
+
     # Symbols held but no longer in target → flag as "sell to zero" so the
     # diff table tells the user to liquidate the position.
     for symbol, current in current_by_symbol.items():
@@ -273,7 +285,11 @@ def get_position_diff(
             delta_weight=-current_weight,
             delta_dollar=delta_dollar,
             reference_price=reference_price,
-            reason=t("diff.reason.sell_to_zero"),
+            reason=(
+                t("diff.reason.profit_take")
+                if symbol in profit_take_symbols
+                else t("diff.reason.sell_to_zero")
+            ),
         )
         diff.append(entry)
         if reference_price is None:

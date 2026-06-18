@@ -32,7 +32,7 @@
       "title": "前端 advisory surface + ★cn_attack OOS 诚实框架 + 获利了结渲染 + no-execution 守门",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F003 + §0 诚实约束】(1) ModeSelector 自动列两新模式(research 徽章自动);recommendation 页+position-diff 页按 ?strategy_id= 工作(多数零改动)。(2) ★cn_attack 专属诚实披露(超出通用研究徽章):选中 cn_attack 模式时醒目展示『未经样本外验证/OOS 动量逆转期会亏/按它交易风险自负』+可触达 B066 IS/OOS 回测记录,双语。(3) 获利了结清单清晰渲染(position-diff reason 列体现 forced_exits/跌出 top-N)。(4) no-execution 扫描列表加新 surface(若新增页/组件);disclaimer 仍渲染;api.ts 重生+drift(若 schema 变);i18n parity。正面证据:两模式在 ModeSelector 带研究徽章;选 cn_attack 见专属 OOS 诚实披露;每日 target+diff+获利了结 渲染;no-execution/disclaimer 守门过。Gates:vitest/tsc/eslint/i18n parity/api.ts drift 绿。",
       "design_decisions": [
         "★诚实约束(§0)无条件:cn_attack 专属 OOS 负/未验证披露,不止通用研究徽章(用户在未验证策略上交易,须看到真实 OOS 记录)。",

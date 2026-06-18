@@ -68,6 +68,17 @@ const PRICE_CHART = join(FRONTEND_ROOT, "src", "components", "chart", "PriceChar
 // navigation (NOT an order/execute affordance); scan it so a future edit can't
 // turn the clickable symbol into a buy/sell button in either language.
 const SYMBOL_LINK = join(FRONTEND_ROOT, "src", "components", "symbol", "SymbolLink.tsx");
+// B067 F003 — the cn_attack out-of-sample honesty disclosure is a research-only
+// advisory banner (it renders the negative-OOS caveat; no order/execute
+// affordance). Scan it so a future edit can't add a buy/sell/execute button in
+// either language to the A-share attack advisory surface.
+const CN_ATTACK_OOS_DISCLOSURE = join(
+  FRONTEND_ROOT,
+  "src",
+  "components",
+  "recommendations",
+  "CnAttackOosDisclosure.tsx",
+);
 const MESSAGES_DIR = join(FRONTEND_ROOT, "messages");
 
 const EN_BANNED = ["execute", "place order", "send to broker"] as const;
@@ -124,6 +135,7 @@ describe("no execution buttons under (protected)/execution/** + Home", () => {
     SYMBOLS_PAGE,
     PRICE_CHART,
     SYMBOL_LINK,
+    CN_ATTACK_OOS_DISCLOSURE,
   ];
 
   it(`covers the Home page`, () => {
@@ -141,6 +153,10 @@ describe("no execution buttons under (protected)/execution/** + Home", () => {
 
   it(`covers the recommendations position cards`, () => {
     expect(files).toContain(POSITION_CARDS);
+  });
+
+  it(`covers the cn_attack OOS disclosure`, () => {
+    expect(files).toContain(CN_ATTACK_OOS_DISCLOSURE);
   });
 
   it(`covers the Home news panel`, () => {

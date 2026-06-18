@@ -381,6 +381,61 @@ def test_position_diff_flags_held_but_not_targeted_as_sell_to_zero(
     assert "sell" in zzz_rows[0]["reason"].lower()
 
 
+def _seed_target_with_profit_take(
+    target_symbols: tuple[str, ...], profit_take: list[str]
+) -> None:
+    """B067 F003: seed a target snapshot whose batch-level master_meta carries the
+    cn_attack ``profit_take`` list (names rotated out of today's top-N)."""
+    from datetime import date
+
+    from workbench_api.db.repositories.recommendation_snapshot import (
+        RecommendationSnapshotRepository,
+    )
+
+    weight = round(1.0 / len(target_symbols), 4)
+    with Session(get_engine()) as session:
+        RecommendationSnapshotRepository(session).save_batch(
+            as_of_date=date(2024, 12, 31),
+            rows=[
+                {"symbol": s, "sleeve": "cn_attack", "target_weight": weight, "rationale": "t"}
+                for s in target_symbols
+            ],
+            master_meta={"data_source": "fixture", "profit_take": profit_take},
+        )
+        session.commit()
+
+
+def test_position_diff_labels_profit_take_distinctly_from_sell_to_zero(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """B067 F003: a held name rotated out via master_meta.profit_take is labelled
+    as a profit-take exit; a held name simply absent from target keeps the generic
+    sell-to-zero reason. Other modes (no profit_take key) are unaffected."""
+
+    _seed_account(cash=100_000.0)
+    _seed_snapshot(
+        cash=100_000.0,
+        positions=[
+            {"symbol": "TGTKEEP", "shares": 10, "avg_cost": 50.0},  # stays in target
+            {"symbol": "PROFITSYM", "shares": 20, "avg_cost": 50.0},  # rotated out → profit-take
+            {"symbol": "PLAINSYM", "shares": 5, "avg_cost": 50.0},  # dropped → generic sell
+        ],
+    )
+    _seed_target_with_profit_take(("TGTKEEP",), profit_take=["PROFITSYM"])
+    client = _authed_client(_settings(tmp_path))
+    payload = client.get("/api/execution/position-diff").json()
+
+    profit_rows = [r for r in payload["diff"] if r["symbol"] == "PROFITSYM"]
+    plain_rows = [r for r in payload["diff"] if r["symbol"] == "PLAINSYM"]
+    assert len(profit_rows) == 1 and len(plain_rows) == 1
+    assert profit_rows[0]["delta_shares"] == -20
+    assert plain_rows[0]["delta_shares"] == -5
+    # Profit-take name carries the dedicated reason; plain drop keeps sell-to-zero.
+    assert "profit-take" in profit_rows[0]["reason"].lower()
+    assert "sell to zero" in plain_rows[0]["reason"].lower()
+    assert "profit-take" not in plain_rows[0]["reason"].lower()
+
+
 def test_put_account_then_position_diff_reflects_new_state(
     initialised_db: str, tmp_path: Path
 ) -> None:

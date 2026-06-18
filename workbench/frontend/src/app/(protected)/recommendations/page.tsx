@@ -9,6 +9,7 @@ import {
   type AllocationBarItem,
   type AllocationSlice,
 } from "@/components/chart";
+import { CnAttackOosDisclosure } from "@/components/recommendations/CnAttackOosDisclosure";
 import { NewsPanel } from "@/components/recommendations/NewsPanel";
 import { PositionCards } from "@/components/recommendations/PositionCards";
 import { RiskBanner } from "@/components/risk/RiskBanner";
@@ -215,6 +216,12 @@ export default function RecommendationsPage() {
       </header>
 
       <ModeSelector />
+
+      {/* B067 F003 — cn_attack OOS honesty disclosure. Self-gates on the API's
+          research_caveat (present only for the research-state cn_attack modes),
+          so it appears beside the generic 研究态 notice exactly when such a mode
+          is selected and disappears for funded / other modes. */}
+      <CnAttackOosDisclosure researchCaveat={data?.research_caveat} />
 
       <RiskBanner />
 

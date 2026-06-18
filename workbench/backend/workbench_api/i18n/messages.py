@@ -113,6 +113,7 @@ MESSAGES: Final[dict[str, dict[str, str]]] = {
         "gate.kill_switch_detail": "主组合回撤 {master_dd} {comparator} 阈值 {threshold}。",
         "gate.min_equity_detail": "账户权益 = {equity}",
         "diff.reason.sell_to_zero": "已持有但已不在目标内——清仓至零",
+        "diff.reason.profit_take": "已持有但已跌出 top-N——获利了结 / 调仓退出",
         "risk.defense_target_rationale": (
             "熔断已触发——全部轮动至防御子策略,直至主组合回撤回落至阈值以下。"
         ),
@@ -245,6 +246,7 @@ MESSAGES: Final[dict[str, dict[str, str]]] = {
         ),
         "gate.min_equity_detail": "Account equity = {equity}",
         "diff.reason.sell_to_zero": "held but no longer in target — sell to zero",
+        "diff.reason.profit_take": "held but dropped out of top-N — profit-take / rebalance exit",
         "risk.defense_target_rationale": (
             "Kill switch tripped — rotate fully into the defensive sleeve until "
             "master drawdown recovers below threshold."

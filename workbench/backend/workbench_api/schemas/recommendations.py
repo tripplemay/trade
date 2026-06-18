@@ -41,6 +41,42 @@ class WashSaleFlag(BaseModel):
     days_since: int = Field(ge=0)
 
 
+class ResearchCaveat(BaseModel):
+    """B067 F003 — out-of-sample honesty disclosure surfaced from the latest
+    snapshot's ``master_meta.research_caveat``.
+
+    Populated **only** for research-state strategies that persist this block
+    (the cn_attack momentum modes — see ``strategy_modes/cn_attack_precompute``
+    ``CN_ATTACK_RESEARCH_CAVEAT``). ``None`` for funded / other modes whose
+    ``master_meta`` carries no caveat, which is exactly how the frontend gates
+    the disclosure (render only when this field is present).
+
+    Every field is optional with a ``None`` default so the response is robust to
+    older / partial snapshots and so future caveat keys never break validation
+    (extra keys are ignored by Pydantic). The fields are honest disclosures, not
+    computed values — the frontend renders them verbatim (B067 spec §0). The
+    bilingual headline/detail pair lets the surface follow the active locale.
+    """
+
+    validated: bool | None = Field(
+        default=None, description="False when the strategy is not out-of-sample validated."
+    )
+    oos_result: str | None = Field(
+        default=None, description="Out-of-sample verdict, e.g. 'negative'."
+    )
+    oos_cagr_range: str | None = Field(
+        default=None, description="Observed out-of-sample CAGR range, e.g. '-9% ~ -11%'."
+    )
+    headline_zh: str | None = Field(default=None, description="Chinese headline warning.")
+    headline_en: str | None = Field(default=None, description="English headline warning.")
+    detail_zh: str | None = Field(default=None, description="Chinese advisory-only detail.")
+    detail_en: str | None = Field(default=None, description="English advisory-only detail.")
+    backtest_ref: str | None = Field(
+        default=None,
+        description="Repo-relative path to the IS/OOS backtest record (B066 spec).",
+    )
+
+
 class RecommendationsResponse(BaseModel):
     """GET /api/recommendations/current payload."""
 
@@ -50,6 +86,14 @@ class RecommendationsResponse(BaseModel):
     wash_sale_flags: list[WashSaleFlag] = Field(default_factory=list)
     account_present: bool = Field(
         description="False when accounts/me.json is missing — the page renders an empty state."
+    )
+    research_caveat: ResearchCaveat | None = Field(
+        default=None,
+        description=(
+            "B067 F003 — out-of-sample honesty disclosure from the latest snapshot's "
+            "master_meta.research_caveat. None for funded / other modes that persist no "
+            "caveat; the surface renders a prominent OOS disclosure only when present."
+        ),
     )
 
 
