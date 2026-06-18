@@ -6,7 +6,7 @@
       "title": "cn_attack 两变体 advisory 模式接入(registry+producer+每日 precompute+★cash-buffer 补 1.0+获利了结 meta+升格出 STANDALONE_RESEARCH)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F001 + §3 三陷阱 + §0 诚实约束】(1) registry.py 加 CADENCE_DAILY+2 strategy_id 常量(cn_attack_quality_momentum/cn_attack_pure_momentum)+2 行 _MODES(funding_state=research,cadence=daily,双语 display_name)。(2) refresh_worker._DISPATCH 加 2 producer(共用 1 参数化 cn_attack_precompute(session,strategy_id,factor_variant),lazy import trade)。(3) precompute 跑 cn_attack daily-driver(run_cn_attack_backtest 到 as_of 取 final-day record 的 target/rebalanced/forced_exits),★cash_buffer 显式补成 1.0 一行(否则 save_batch L68 守门 raise),save_batch(strategy_id,as_of,rows,master_meta);★forced_exits+跌出 top-N 写进 rationale/master_meta(获利了结落地)。(4) cn_attack 升格出 STANDALONE_RESEARCH_STRATEGY_IDS(进 mode 体系,非 master sleeve)。(5) ★OOS 诚实 meta:master_meta 带 cn_attack OOS 负/未验证 caveat 供 surface 渲染。正面证据(§29):跑 precompute→recommendation_snapshot 写两 strategy_id target(权重和=1.0 含 cash 行,过 save_batch);/api/recommendations/current?strategy_id= 各返对应变体;forced_exits 体现在 rationale。Gates:backend pytest/ruff 目录上下文/mypy CI-exact 0;registry/targets 无 trade import(AST 守门)。",
       "design_decisions": [
         "★头号陷阱:save_batch 守门权重和=1.0,cn_attack 有 cash_buffer→producer 必须补 cash 行(类比 regime _finalize_weights 路由残差)。",

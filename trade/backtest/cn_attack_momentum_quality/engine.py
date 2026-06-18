@@ -101,6 +101,26 @@ class CnAttackDailyRecord:
 
 
 @dataclass(frozen=True, slots=True)
+class CnAttackHoldings:
+    """The portfolio actually HELD at the backtest's final day, close-valued.
+
+    B067 F001 — the live advisory producer needs the band-managed book the
+    strategy *currently holds* (not a fresh signal): in a no-trade-band strategy
+    the held book IS the recommendation on a hold day. ``weights`` are the
+    invested names' market-value weights at the last day's close; ``cash_weight``
+    is the residual cash fraction. ``sum(weights) + cash_weight == 1.0`` (a value
+    decomposition of equity), so appending a cash row yields a fully-allocated
+    snapshot that passes the ``save_batch`` weight-sum guard.
+    """
+
+    weights: tuple[tuple[str, float], ...]
+    cash_weight: float
+
+    def as_dict(self) -> dict[str, float]:
+        return dict(self.weights)
+
+
+@dataclass(frozen=True, slots=True)
 class CnAttackBacktestResult:
     """Container for CN attack backtest outputs consumed by the F003 report."""
 
@@ -117,6 +137,9 @@ class CnAttackBacktestResult:
     trading_days: int
     metrics: PerformanceMetrics
     daily_records: tuple[CnAttackDailyRecord, ...]
+    # B067 F001 — the held book at the final day's close (for the live advisory
+    # producer). Default empty so existing constructors / pickles stay valid.
+    final_holdings: CnAttackHoldings = CnAttackHoldings(weights=(), cash_weight=1.0)
 
 
 # --------------------------------------------------------------------------- #
@@ -435,6 +458,18 @@ def run_cn_attack_backtest(
             )
         )
 
+    # Final held book (close-valued) — the live advisory producer publishes this as
+    # "what the band-managed strategy holds today". ``close_row`` / ``equity`` /
+    # ``shares`` / ``cash`` hold the last iteration's state (the loop ran >= 2 days).
+    if equity > 0:
+        held = _current_weights(shares, close_row, equity)
+        final_holdings = CnAttackHoldings(
+            weights=tuple(sorted(held.items())),
+            cash_weight=max(0.0, cash / equity),
+        )
+    else:
+        final_holdings = CnAttackHoldings(weights=(), cash_weight=1.0)
+
     equity_curve = pd.DataFrame(equity_rows)
     daily_returns = equity_curve.set_index("date")["equity"].pct_change().dropna()
     ending_value = float(equity_curve["equity"].iloc[-1])
@@ -454,6 +489,7 @@ def run_cn_attack_backtest(
         trading_days=len(window),
         metrics=metrics,
         daily_records=tuple(records),
+        final_holdings=final_holdings,
     )
 
 
@@ -465,6 +501,7 @@ __all__ = [
     "CnAttackBacktestConfig",
     "CnAttackBacktestResult",
     "CnAttackDailyRecord",
+    "CnAttackHoldings",
     "CnBacktestError",
     "run_cn_attack_backtest",
 ]

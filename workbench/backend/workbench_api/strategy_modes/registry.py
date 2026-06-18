@@ -30,6 +30,14 @@ from dataclasses import dataclass
 # heavier modules.
 MASTER_STRATEGY_ID = "master_portfolio"
 REGIME_STRATEGY_ID = "regime_adaptive"
+# B067 F001 — the two CN attack advisory modes (same engine, different factor
+# variant). These are NEW strategy ids distinct from the B066 backtest research
+# id ``cn_attack_momentum_quality``: that one stays a backtest-only standalone
+# research strategy (services.strategies STANDALONE_RESEARCH_STRATEGY_IDS, NOT a
+# Master sleeve); these two are first-class *modes* (their own daily target /
+# recommendation / account / execution chain), each with an independent account.
+CN_ATTACK_QUALITY_MOMENTUM_STRATEGY_ID = "cn_attack_quality_momentum"
+CN_ATTACK_PURE_MOMENTUM_STRATEGY_ID = "cn_attack_pure_momentum"
 
 # Funding states (B057 §1 honesty boundary).
 FUNDING_LIVE = "live"  # the user is trading real money in this mode
@@ -39,6 +47,7 @@ FUNDING_RESEARCH = "research"  # research / forward-validation only — not fund
 # dates — see B057 design note on regime monthly vs Master quarterly).
 CADENCE_QUARTERLY = "quarterly"
 CADENCE_MONTHLY = "monthly"
+CADENCE_DAILY = "daily"  # B067 F001 — CN attack daily-monitor / no-trade-band cadence
 
 
 @dataclass(frozen=True, slots=True)
@@ -108,6 +117,39 @@ _MODES: tuple[StrategyMode, ...] = (
         # it ships research-state until the user funds it after paper validation.
         funding_state=FUNDING_RESEARCH,
         description="基于市场状态（正常/熊市/危机）自适应的多资产研究组合，月度调仓；研究态，前向验证中。",
+    ),
+    # B067 F001 — CN attack advisory modes (P2). Same daily-monitor / no-trade-band
+    # engine, two factor variants (quality+momentum vs pure momentum), each its own
+    # daily target / recommendation / account. Research-state and honestly caveated:
+    # B066 P1 found the out-of-sample period a momentum reversal (CAGR −9~−11%), so
+    # these are advisory-only, unvalidated — never an implication of a funded edge.
+    StrategyMode(
+        id="cn_attack_quality_momentum",
+        strategy_id=CN_ATTACK_QUALITY_MOMENTUM_STRATEGY_ID,
+        display_name="A股 进攻·质量动量（研究态）",
+        target_producer="workbench_api.strategy_modes.cn_attack_precompute",
+        # No per-mode backtest is wired off the registry: the B066 backtest is run
+        # via the strategies list (cn_attack_momentum_quality), not the mode key.
+        backtest_key=None,
+        cadence=CADENCE_DAILY,
+        funding_state=FUNDING_RESEARCH,
+        description=(
+            "A股 进攻型选股：质量过滤 + 12-1 动量，每日监控 / 不动区。研究态：未经样本外验证，"
+            "B066 样本外为动量逆转期（CAGR −9~−11%）；advisory-only，不自动下单，非收益预测。"
+        ),
+    ),
+    StrategyMode(
+        id="cn_attack_pure_momentum",
+        strategy_id=CN_ATTACK_PURE_MOMENTUM_STRATEGY_ID,
+        display_name="A股 进攻·纯动量（研究态）",
+        target_producer="workbench_api.strategy_modes.cn_attack_precompute",
+        backtest_key=None,
+        cadence=CADENCE_DAILY,
+        funding_state=FUNDING_RESEARCH,
+        description=(
+            "A股 进攻型选股：纯 12-1 动量（无质量过滤），每日监控 / 不动区。研究态：未验证，"
+            "B066 样本外为动量逆转期（CAGR −9~−11%）；advisory-only，不自动下单，非收益预测。"
+        ),
     ),
 )
 

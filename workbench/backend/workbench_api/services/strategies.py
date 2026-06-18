@@ -343,6 +343,15 @@ PORTFOLIO_LEVEL_STRATEGY_IDS = frozenset({"master_portfolio"})
 # materialise a phantom sleeve / paper account — they live only on the backtest
 # list. (Distinct from regime entries, which DO map to a real zero-weight Master
 # sleeve and stay in sleeve_strategies.)
+#
+# B067 F001 — cn_attack "升格" into the mode system: the two P2 advisory modes
+# (cn_attack_quality_momentum / cn_attack_pure_momentum) are registered in the
+# *mode* registry (strategy_modes.registry._MODES), a separate registry from this
+# *sleeve* registry. The B066 backtest id below stays here unchanged: removing it
+# would put cn_attack into sleeve_strategies() and materialise a phantom Master
+# sleeve, violating the B067 hard invariant "cn_attack 不进 master sleeve". The
+# new advisory ids are NOT _REGISTRY sleeves at all, so they are excluded from
+# sleeve_strategies() by construction — no entry here is needed for them.
 STANDALONE_RESEARCH_STRATEGY_IDS = frozenset({"cn_attack_momentum_quality"})
 
 _NON_SLEEVE_STRATEGY_IDS = PORTFOLIO_LEVEL_STRATEGY_IDS | STANDALONE_RESEARCH_STRATEGY_IDS

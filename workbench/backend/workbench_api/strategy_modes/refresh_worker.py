@@ -36,7 +36,12 @@ from workbench_api.db.require_production_db import (
     ScratchDatabaseError,
     require_production_db,
 )
-from workbench_api.strategy_modes.registry import MASTER_STRATEGY_ID, REGIME_STRATEGY_ID
+from workbench_api.strategy_modes.registry import (
+    CN_ATTACK_PURE_MOMENTUM_STRATEGY_ID,
+    CN_ATTACK_QUALITY_MOMENTUM_STRATEGY_ID,
+    MASTER_STRATEGY_ID,
+    REGIME_STRATEGY_ID,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +105,42 @@ def _run_regime_producer(session: Session) -> ProducerResult:
     )
 
 
+def _run_cn_attack_producer(
+    session: Session, strategy_id: str, factor_variant: str
+) -> ProducerResult:
+    """CN attack advisory producer (B067) — one parameterised body for both modes.
+
+    The quality+momentum and pure-momentum modes share this; ``factor_variant``
+    is the only difference. Imports trade lazily (off the request path)."""
+
+    from workbench_api.strategy_modes.cn_attack_precompute import (
+        run_cn_attack_precompute,
+    )
+
+    summary = run_cn_attack_precompute(
+        session, strategy_id, factor_variant=factor_variant
+    )
+    return ProducerResult(
+        saved=summary.saved,
+        as_of_date=_iso(summary.as_of_date),
+        data_source=summary.data_source,
+        error=summary.error,
+        error_kind=summary.error_kind,
+    )
+
+
+def _run_cn_attack_quality_momentum_producer(session: Session) -> ProducerResult:
+    return _run_cn_attack_producer(
+        session, CN_ATTACK_QUALITY_MOMENTUM_STRATEGY_ID, "quality_momentum"
+    )
+
+
+def _run_cn_attack_pure_momentum_producer(session: Session) -> ProducerResult:
+    return _run_cn_attack_producer(
+        session, CN_ATTACK_PURE_MOMENTUM_STRATEGY_ID, "pure_momentum"
+    )
+
+
 Producer = Callable[[Session], ProducerResult]
 
 # strategy_id → target producer. Adding a mode = append one row here (plus its
@@ -107,6 +148,8 @@ Producer = Callable[[Session], ProducerResult]
 _DISPATCH: dict[str, Producer] = {
     MASTER_STRATEGY_ID: _run_master_producer,
     REGIME_STRATEGY_ID: _run_regime_producer,
+    CN_ATTACK_QUALITY_MOMENTUM_STRATEGY_ID: _run_cn_attack_quality_momentum_producer,
+    CN_ATTACK_PURE_MOMENTUM_STRATEGY_ID: _run_cn_attack_pure_momentum_producer,
 }
 
 
