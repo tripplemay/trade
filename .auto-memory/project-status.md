@@ -11,7 +11,7 @@ type: project
 - **关键决策**：cn_attack 两 advisory 模式进 mode registry（非 master sleeve）。B066 backtest id `cn_attack_momentum_quality` 仍在 STANDALONE_RESEARCH 不动。
 
 ## 遗留 / soft-watch
-- **~~SSH fail2ban~~ 误诊已澄清**：真 VM=`34.180.93.185`(SSH 通,见 environment.md);评估用错 IP。timer 已确认 active+会跑。**仅剩**:真实 DB snapshot 权重和=1.0 待 2026-06-19 03:30 UTC timer 首跑自然产出(cash 补 1.0 已单测;首跑后可 `systemctl status` 复核无 ModuleNotFoundError)。
+- **~~SSH fail2ban~~ / ~~真 snapshot~~ 全部关闭(2026-06-18 planner 实测)**：真 VM=`34.180.93.185`(评估用错 IP=误诊)。planner 手动提前触发两 cn_attack precompute service→**both saved=25 行, as_of=2026-06-18, data_source=real, 无错误**(weight-sum=1.0 被 save_batch 守门反证=cash 补 1.0 真生效)。B067 operational 全闭。**用户现可用**:`astock.guangai.ai` /recommendations 切 cn_attack 两模式看真推荐(每日 timer 03:30/03:40 UTC 自动更新)。
 - **质量 A/B 未分胜负**：种子宇宙 43 股全通质量门槛→需生产宽宇宙分化（未答）。
 - **S1 全量 cross-source 待补**：B066 延用 B065 抽样结论；VM SSH 解封后可跑 ashare_quality_check.py 补。
 - **P3**：港股扩待 P2 后；backlog B055 记路线。
