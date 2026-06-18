@@ -6,7 +6,7 @@
       "title": "宽 A股 universe 实建(§23 全市场列表端点 VM 可达性 + top 200-300 PIT,B065 因 SSL 降级 seed 43)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F001 + §3】(1) ★§23 前置:VM 实跑验 akshare 全市场 A股 列表端点(候选 stock_zh_a_spot_em/stock_info_a_code_name/sina/baidu 等价;B065 本地 SSL 挂,VM 可能可达如 B062/B064 先例)。(2) 可达→discover_ashare_superset 产宽 superset(数百只)→build_cn_universe 写 cn_pit_universe.csv(top 200-300 PIT,ST 排除,无未来泄漏)。(3) 不可达/不稳→诚实降级+报告标注(宽宇宙未达成,沿用 seed,Q1 仍未答=有效 NO-GO 不强凑)。正面证据(§29):§23 端点可达性结论(贴真返回行数);宽宇宙建成则 cn_pit_universe.csv 含数百名 PIT 成员(贴样本日成员数);US 零回归。Gates:backend+trade pytest/ruff 目录上下文/mypy CI-exact 0。",
       "design_decisions": [
         "★§23:全市场列表端点 VM 可达性是本批最大未知(B065 本地 SSL 降级 seed 43),实跑验;不可达诚实 NO-GO 不强凑宽宇宙。",

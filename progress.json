@@ -1,10 +1,10 @@
 {
   "status": "building",
   "total_features": 4,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
-  "last_updated": "2026-06-18",
+  "current_sprint": "F002",
+  "last_updated": "2026-06-19",
   "user_goal": "B068 A股 进攻策略 宽宇宙重验+波动率倒数加权对比(research-only 验证)=解 B066 P1 留白。来源:2026-06-18 用户 B067 上线后发现等权配置,要求策略分析师角度评判权重机制+定本批验证。**定位**:生产宽宇宙(top 200-300 PIT)上重跑 cn_attack,加权重维度对比(等权 vs 波动率倒数),walk-forward 样本外答三问:Q1 质量到底加不加值(B066 本地种子 43 全通质量门槛没分化→宽宇宙才分得开);Q2 波动倒数加权能否驯服 OOS 动量崩盘(B066 OOS −9~−11% 逆转;风险管理动量 Barroso-Santa-Clara/Daniel-Moskowitz 理论解药);Q3 更长/更干净 OOS 是否仍脆弱。**纯回测,不改 B067 实盘 advisory surface**。**分析师立场(焊进)**:等权是稳健基线(DeMiguel 1/N 难被优化打败,A股 短史高噪正是此场景),保留做对照;唯一值得测=波动率倒数加权(风险控制非收益预测,低过拟合,精准打崩盘);动量/打分加权排除(堆崩盘+最 overfit);MVO 排除;组合层波动目标留后续 overlay(带择时与纯进攻冲突)。**数据窥探纪律**:2 因子×2 权重=4 配置,退出固定 momentum_decay(不乘 3),walk-forward OOS,全披露不 cherry-pick(B066 §29 红旗沿用)。诚实出口:宽宇宙建不起来(akshare 全市场列表端点 VM 不可达)→诚实 NO-GO(Q1 仍未答,不强凑)。**4 features 3g+1c**:F001 宽宇宙实建(§23 全市场列表端点+top 200-300 PIT);F002 波动率倒数加权变体(construction weighting_scheme 默认 equal 向后兼容);F003 4 配置宽宇宙回测+对比报告答 Q1/Q2/Q3+walk-forward;F004 Codex 验收+研究判定(质量是否加值/波动倒数是否值得换/是否建议调 B067 默认)+§29。spec docs/specs/B068-ashare-attack-wide-universe-revalidation-spec.md(6 章)。复用 B066 引擎/回测/§29 红旗+B065 universe builder+us_quality low_vol(算 σ)。",
   "reference_docs": [
     "docs/specs/B068-ashare-attack-wide-universe-revalidation-spec.md",
@@ -35,7 +35,7 @@
   },
   "session_notes": {
     "planner": "2026-06-18 B068 planning(planner)。A股 进攻 宽宇宙重验+波动率倒数加权对比(research-only)=解 B066 P1 留白。用户 B067 上线后发现等权配置,要分析师评判权重机制→定本批。**分析师评判(已与用户讨论)**:等权=1/N capital(非等股数),N=25 时 8% cap 睡着=纯 1/N。等权是稳健基线(DeMiguel 1/N),保留对照;唯一值得测=波动率倒数加权(风险管理动量,精准打 B066 OOS 动量崩盘,低过拟合);动量加权/MVO 排除。**三问**:Q1 质量加不加值(宽宇宙才分得开,种子 43 全通门槛)/Q2 波动倒数 vs 等权 OOS 崩盘/Q3 更长 OOS。**4 配置(2 因子×2 权重,退出固定)**,walk-forward,全披露不 cherry-pick。**纯回测不改 B067 surface**(weighting_scheme 默认 equal 向后兼容)。**最大未知(§23)**:宽宇宙要 akshare 全市场 A股 列表端点 VM 可达(B065 本地 SSL 降级 seed 43;VM 可能可达如 B062 sina/B064 baidu 先例)。F001 实跑验,不可达诚实 NO-GO。**【续接】**:status=building,Generator 接 F001(宽宇宙实建,起手§23 验全市场列表端点)→F002(波动倒数加权变体)→F003(4 配置回测+对比报告),再 Codex F004(研究判定+顺带补 S1 全量,VM 已可达 34.180.93.185)。**后续**:本批结论→是否调 B067 实盘默认配置(follow-up);P3 港股扩/hk_china 重测/测试自动化基建仍在池。prod=B067 系(A股 进攻 P2 advisory 上线研究态,等权 momentum_decay)。",
-    "generator": null,
+    "generator": "2026-06-19 B068 building(generator)。**F001 ✅ done**。§23 VM 实测=GO:sina stock_zh_a_spot 可达(5527 行全市场)=宽 superset 列表端点;eastmoney push hosts 全 ConnectionError(B065 预言坐实);sina stock_zh_a_daily(F003 价格源)可达含 amount+outstanding_share。**宽宇宙真建成功**(VM 后台 build_cn_wide_universe.py):provenance=sina_spot, superset=513, **0 fetch error**, 29 季度(2019-03-31→2026-03-31), **250 成员/期**, 393 distinct(轮换=PIT), **LEAKAGE=0**(42 名 2023+ 首现者在 2019-2022 零出现)。代码 commit d5a60c1(已部署,3 CI 绿+deploy 绿):discover_ashare_superset 三级 eastmoney→sina→seed,**sina gated 于 allow_sina_fallback(默认 False)→生产 daily refresh 字节级不变,B067 读 seed-43 不动**(实测守门 default_off→seed/43)。研究构建写研究 out-dir(非生产 data root),F003 经 universe_history 注入。产物:VM ~/b068_out/, 本地 data/research/b068/(gitignored), runbook docs/dev/B068-wide-universe-runbook.md。**【续接 F002】**:construction.py 加 weighting_scheme∈{equal(默认,B066/B067 兼容),inverse_vol(1/σ,σ 复用 us_quality low_vol trailing 窗口,PIT 安全)},CnAttackParameters 加字段默认 equal。**F003**:4 配置(2因子×2权重,退出固定 momentum_decay)宽宇宙回测+walk-forward+双语报告答 Q1/Q2/Q3+§29 红旗;宽名价格走 sina daily 抓后注入。",
     "evaluator": null
   },
   "features": [
