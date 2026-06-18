@@ -18,7 +18,7 @@
       "title": "波动率倒数加权变体(construction weighting_scheme ∈ {equal,inverse_vol},默认 equal 向后兼容)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §4 F002 + §2 分析师立场】(1) construction.py 加 weighting_scheme 分支:equal(现状 1/N 默认)/inverse_vol(weight_i ∝ 1/σ_i,σ 复用 us_quality low_vol trailing 窗口;缺 σ 名诚实降级)。(2) 归一化→同样单票 cap→cash buffer。(3) CnAttackParameters 加 weighting_scheme(默认 equal,★B066/B067 向后兼容零回归)。(4) σ PIT/as_of 安全(只用 ≤as_of 数据无泄漏)。正面证据:inverse_vol 产不同于等权的权重(高波动票权重更低可验);σ 计算 PIT 无泄漏;equal 默认不变(B066/B067 回归);mypy trade。Gates 同 F001。",
       "design_decisions": [
         "分析师定:唯一值得测的权重优化=波动率倒数加权(风险控制非收益预测,低过拟合,精准打 B066 OOS 动量崩盘);动量/打分加权明确排除(堆高崩盘+最 overfit);MVO 排除(OOS 不稳)。",

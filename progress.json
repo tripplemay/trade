@@ -1,9 +1,9 @@
 {
   "status": "building",
   "total_features": 4,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
-  "current_sprint": "F002",
+  "current_sprint": "F003",
   "last_updated": "2026-06-19",
   "user_goal": "B068 A股 进攻策略 宽宇宙重验+波动率倒数加权对比(research-only 验证)=解 B066 P1 留白。来源:2026-06-18 用户 B067 上线后发现等权配置,要求策略分析师角度评判权重机制+定本批验证。**定位**:生产宽宇宙(top 200-300 PIT)上重跑 cn_attack,加权重维度对比(等权 vs 波动率倒数),walk-forward 样本外答三问:Q1 质量到底加不加值(B066 本地种子 43 全通质量门槛没分化→宽宇宙才分得开);Q2 波动倒数加权能否驯服 OOS 动量崩盘(B066 OOS −9~−11% 逆转;风险管理动量 Barroso-Santa-Clara/Daniel-Moskowitz 理论解药);Q3 更长/更干净 OOS 是否仍脆弱。**纯回测,不改 B067 实盘 advisory surface**。**分析师立场(焊进)**:等权是稳健基线(DeMiguel 1/N 难被优化打败,A股 短史高噪正是此场景),保留做对照;唯一值得测=波动率倒数加权(风险控制非收益预测,低过拟合,精准打崩盘);动量/打分加权排除(堆崩盘+最 overfit);MVO 排除;组合层波动目标留后续 overlay(带择时与纯进攻冲突)。**数据窥探纪律**:2 因子×2 权重=4 配置,退出固定 momentum_decay(不乘 3),walk-forward OOS,全披露不 cherry-pick(B066 §29 红旗沿用)。诚实出口:宽宇宙建不起来(akshare 全市场列表端点 VM 不可达)→诚实 NO-GO(Q1 仍未答,不强凑)。**4 features 3g+1c**:F001 宽宇宙实建(§23 全市场列表端点+top 200-300 PIT);F002 波动率倒数加权变体(construction weighting_scheme 默认 equal 向后兼容);F003 4 配置宽宇宙回测+对比报告答 Q1/Q2/Q3+walk-forward;F004 Codex 验收+研究判定(质量是否加值/波动倒数是否值得换/是否建议调 B067 默认)+§29。spec docs/specs/B068-ashare-attack-wide-universe-revalidation-spec.md(6 章)。复用 B066 引擎/回测/§29 红旗+B065 universe builder+us_quality low_vol(算 σ)。",
   "reference_docs": [

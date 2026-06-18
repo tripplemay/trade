@@ -5,7 +5,8 @@ type: project
 ---
 
 ## 当前状态
-- **当前：B068 building**（A股 进攻 宽宇宙重验+波动倒数加权对比，research-only）。**F001 ✅ done**（宽宇宙真建）→ 在做 F002（波动倒数加权变体）→ F003（4 配置回测+报告）→ F004（Codex 验收）。
+- **当前：B068 building**（A股 进攻 宽宇宙重验+波动倒数加权对比，research-only）。**F001+F002 ✅ done** → 在做 **F003**（4 配置宽宇宙回测+报告答 Q1/Q2/Q3）→ F004（Codex 验收）。
+- **F002 ✅**：CnAttackParameters 加 weighting_scheme∈{equal(默认),inverse_vol};construction inverse_vol=∝1/σ(σ 复用 us_quality trailing_volatility,中位数插补缺σ,无σ降级等权);hash 条件 payload→equal-default 字节级零回归;signal equal 路径零开销。commit b74183e 已部署。backend cn_attack 105 passed=B067 surface 零回归。
 - **B068 F001 实测（§23=GO）**：sina `stock_zh_a_spot` 可达=宽 superset 端点（eastmoney push hosts 全挂）；宽宇宙真建 **513 superset→250 成员/期×29 季度,0 fetch error,393 distinct,LEAKAGE=0**。commit d5a60c1 已部署。**sina gated 于 allow_sina_fallback(默认 False)→生产 daily refresh 字节级不变,B067 读 seed-43 宇宙不动**。runbook: docs/dev/B068-wide-universe-runbook.md；产物本地 data/research/b068/(gitignored)。
 - **上一批 B067 ✅ done**（2026-06-18，Codex 签收）= A股 进攻 P2（两 cn_attack advisory 模式进 _MODES，timer 03:30/03:40 UTC，cash 补 1.0，OOS 负/未验证红卡，advisory-only 全守门）。真 VM=`34.180.93.185`。B066 ✅ done。
 - **★诚实约束（spec §0 焊死）**：B066 OOS −9~−11% 动量逆转 + 质量 A/B 待答（B068 宽宇宙建成后 F003 答）。advisory surface 须持续显示 OOS 负/未验证披露。本批纯回测**不改 B067 surface**（weighting_scheme 默认 equal）。
