@@ -1,53 +1,51 @@
 {
-  "sprint": "B066-ashare-attack-momentum-quality",
+  "sprint": "B067-ashare-attack-p2-advisory",
   "features": [
     {
       "id": "F001",
-      "title": "A股 进攻引擎 + cn universe loader(读 cn_pit_universe.csv) + 2 因子变体(质量过滤→动量 / 纯动量)",
+      "title": "cn_attack 两变体 advisory 模式接入(registry+producer+每日 precompute+★cash-buffer 补 1.0+获利了结 meta+升格出 STANDALONE_RESEARCH)",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §4 F001 + §3】(1) 新 cn universe loader 读 B065 的 cn_pit_universe.csv,按 as_of_date 取 top-N 成员(PIT 无泄漏);A股 无 GICS sector/earnings→build_portfolio 的 sector_map/earnings_dates 传空降级。(2) 镜像 us_quality factors/ranking/construction/signal;质量因子直接复用(B065 已把 A股 CAS 写进同一 fundamentals.csv,quality_score 对 A股 算排名已验);动量复用 momentum_12_1。(3) 2 因子变体参数化:变体A 质量过滤→动量排名 / 变体B 纯动量(quality 权重0/跳过质量过滤);top 20-30 等权+单票≤8%;纯进攻无 regime gate。(4) generate_signal(as_of,current_holdings) 每日 as-of 可算。(5) S3:CN 价源稳健(eastmoney 不可达 fallback sina,B062 同款),回测 prices 新鲜。正面证据:cn universe loader 给定 as_of 取正确 PIT 成员(无泄漏单测);引擎产 top 20-30 等权(质量变体 vs 纯动量变体选股不同);质量因子对 A股 算真排名。Gates:backend+trade pytest/ruff 目录上下文/mypy(workbench+trade) 0。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F001 + §3 三陷阱 + §0 诚实约束】(1) registry.py 加 CADENCE_DAILY+2 strategy_id 常量(cn_attack_quality_momentum/cn_attack_pure_momentum)+2 行 _MODES(funding_state=research,cadence=daily,双语 display_name)。(2) refresh_worker._DISPATCH 加 2 producer(共用 1 参数化 cn_attack_precompute(session,strategy_id,factor_variant),lazy import trade)。(3) precompute 跑 cn_attack daily-driver(run_cn_attack_backtest 到 as_of 取 final-day record 的 target/rebalanced/forced_exits),★cash_buffer 显式补成 1.0 一行(否则 save_batch L68 守门 raise),save_batch(strategy_id,as_of,rows,master_meta);★forced_exits+跌出 top-N 写进 rationale/master_meta(获利了结落地)。(4) cn_attack 升格出 STANDALONE_RESEARCH_STRATEGY_IDS(进 mode 体系,非 master sleeve)。(5) ★OOS 诚实 meta:master_meta 带 cn_attack OOS 负/未验证 caveat 供 surface 渲染。正面证据(§29):跑 precompute→recommendation_snapshot 写两 strategy_id target(权重和=1.0 含 cash 行,过 save_batch);/api/recommendations/current?strategy_id= 各返对应变体;forced_exits 体现在 rationale。Gates:backend pytest/ruff 目录上下文/mypy CI-exact 0;registry/targets 无 trade import(AST 守门)。",
       "design_decisions": [
-        "复用 us_quality_momentum factors/ranking/construction/signal(PIT-aware,as_of 友好);A股 universe 走新 loader(cn_pit_universe.csv schema 异于 US universe.csv)。",
-        "2 因子变体=参数化(变体A 质量+动量 / 变体B 纯动量),内置质量因子 A/B 测试。",
-        "纯进攻无 regime gate(吸取 hk_china_real 全防御教训);A股 无 sector→行业cap 降级/关。",
-        "S3:CN 价源 eastmoney stock_zh_a_hist 不可达→优先/fallback sina stock_zh_a_daily(B065 实测发现,B062 修 HK 同款)。"
+        "★头号陷阱:save_batch 守门权重和=1.0,cn_attack 有 cash_buffer→producer 必须补 cash 行(类比 regime _finalize_weights 路由残差)。",
+        "两变体两 strategy_id(共用引擎,factor_variant 区分),各独立账户/推荐流;cn_attack 是独立模式非 master sleeve(registry 与 sleeve registry 两套)。",
+        "live 默认退出=momentum_decay 基线(跌出 top-N 自然获利了结);trailing_stop/hard_target 留后扩。",
+        "★获利了结落地:forced_exits 写 snapshot rationale/master_meta→position-diff reason 列体现(diff 现无专门 profit-take 标记)。"
       ]
     },
     {
       "id": "F002",
-      "title": "每日监控驱动 + 不动区(no-trade band) + 3 退出变体 + A股 方向化成本(印花税仅卖)回测引擎",
+      "title": "每日 timer/service + CLI 接线(daily cadence)+ deploy glob 自动接线 + scope safety + env 守门",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §4 F002 + §3】(1) 每日驱动循环:按交易日推进,每日 generate_signal(as_of,current_holdings) 算目标。(2) 不动区:仅当目标 vs 现仓偏离超阈值(跌出 top-N 缓冲带/新票强势入选/权重漂移超容忍)才调仓,否则持有;输出每日{目标,是否调仓,卖出/获利了结清单}(P1 落回测)。(3) 3 退出变体参数化:(a)动量衰减退出(跌出 top-N)/(b)移动止损(跟踪每仓持有期 peak,回撤 X% 卖)/(c)硬获利目标(+X% 卖)。(4) 方向化 A股 成本:BacktestConfig 扩 stamp_duty_bps(仅卖出 10bps=0.1%)+commission_bps+slippage_bps;_weight_turnover 拆 buy/sell 分方向计;T+1 open 成交。(5) 真换手/成本/回撤 metrics(诚实,纯进攻吃满回撤)。正面证据(§29 实测):回测非退化 equity(多点/有交易);不动区生效(多数日无调仓,换手受控);3 退出变体产不同 turnover/收益;A股 成本正确(卖含印花税/买不含)。Gates 同 F001。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F002】(1) CLI entrypoint(strategy_modes/cn_attack_cli.py 或子命令)跑两变体 precompute。(2) 2 对 workbench-cn-attack-*.timer(daily OnCalendar)+.service(ExecStart 跑 CLI,WORKBENCH_DATA_ROOT,hardening,不含 broker/order/fills/reconcile 字样);deploy.sh L442 glob 自动 install+enable(不动 deploy.sh)。(3) 入口级 env 守门(§12.11.1,precompute 写生产 DB)。(4) scope safety-test 块(test_market_scheduler_scope.py 同构,evaluator §24)+test_deploy_timer_wiring(sibling .service/glob/无硬编码 enable)。正面证据:两 timer/service 文件就位;本地 safety test 过(scope/wiring);CLI 可跑 precompute;env 守门测试过。Gates 同 F001。L2 由 F004 验 systemd enabled+active。",
       "design_decisions": [
-        "★每日监控+不动区(no-trade band):每天算≠每天交易;current_holdings 是 held-frozen/不动区天然挂载点(earnings 已用)。P1 回测模拟此循环得真实换手/成本。",
-        "3 退出变体回测对比(动量衰减/移动止损/硬获利目标),walk-forward 选净收益最优,不 cherry-pick。",
-        "★A股 成本方向化:印花税 0.1% 仅卖出(现 BacktestConfig 对称 friction 表达不了),turnover 拆买卖。"
+        "deploy.sh glob loop(B037-OPS1)自动接线→新增 timer/service 文件即被 install+enable,deploy.sh 零改。",
+        "service ExecStart 只跑 CLI(precompute),不含执行/券商字样(scope safety pin)。"
       ]
     },
     {
       "id": "F003",
-      "title": "多变体回测接线(B050 _DISPATCH+registry research)+ 回测页露出 + 对比报告 + walk-forward",
+      "title": "前端 advisory surface + ★cn_attack OOS 诚实框架 + 获利了结渲染 + no-execution 守门",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §4 F003 + §3】(1) B050 分发:_DISPATCH 加 strategy_id(如 cn-attack-momentum-quality)+runner(自 load universe/prices/fundamentals,吃 start/end+变体参数)+adapter(复用/新增)+report builder。(2) registry 露出:services/strategies.py 加条目,★id==dispatch key 同字符串,status=research,双语名,★不入 INACTIVE_STRATEGY_IDS(否则回测被拒);前端零改动可选跑。(3) 多变体对比报告(双语):2 因子×3 退出=6 配置 CAGR/Sharpe/MaxDD/换手/成本/vs 沪深300;walk-forward(in-sample 段+out-of-sample 验证段);★过拟合红旗标注(全变体披露/不 cherry-pick in-sample winner/夏普离谱存疑)。(4) 回测页可跑。正面证据:回测页可选该策略跑出真 A股 结果;报告含 6 变体对比+walk-forward+过拟合标注+沪深300 基准;inactive_strategy 不误触。Gates:backend pytest+frontend vitest/tsc/eslint/i18n parity/api.ts drift+ruff 目录上下文。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F003 + §0 诚实约束】(1) ModeSelector 自动列两新模式(research 徽章自动);recommendation 页+position-diff 页按 ?strategy_id= 工作(多数零改动)。(2) ★cn_attack 专属诚实披露(超出通用研究徽章):选中 cn_attack 模式时醒目展示『未经样本外验证/OOS 动量逆转期会亏/按它交易风险自负』+可触达 B066 IS/OOS 回测记录,双语。(3) 获利了结清单清晰渲染(position-diff reason 列体现 forced_exits/跌出 top-N)。(4) no-execution 扫描列表加新 surface(若新增页/组件);disclaimer 仍渲染;api.ts 重生+drift(若 schema 变);i18n parity。正面证据:两模式在 ModeSelector 带研究徽章;选 cn_attack 见专属 OOS 诚实披露;每日 target+diff+获利了结 渲染;no-execution/disclaimer 守门过。Gates:vitest/tsc/eslint/i18n parity/api.ts drift 绿。",
       "design_decisions": [
-        "registry id==_DISPATCH key 同字符串(前端把 s.id 当 strategy_id 发);status=research 且不入 INACTIVE_STRATEGY_IDS(B057 regime 同款,可跑但标研究态)。",
-        "★过拟合纪律:6 变体全披露,不 cherry-pick in-sample winner,out-of-sample 验证+夏普离谱存疑(用户定案+B055 诚实原则)。",
-        "前端 backtest 页零改动(拉 /api/strategies 自动列出),只需 registry 露出。"
+        "★诚实约束(§0)无条件:cn_attack 专属 OOS 负/未验证披露,不止通用研究徽章(用户在未验证策略上交易,须看到真实 OOS 记录)。",
+        "ModeSelector/recommendation/position-diff 页多数零改动(框架 strategy_id 参数化已就绪),主要加 cn_attack 专属诚实文案+no-execution 扫描。"
       ]
     },
     {
       "id": "F004",
-      "title": "Codex:回测验证(变体对比真数字+walk-forward 样本外+无过拟合红旗)+S1 全量复确认+边界+signoff(实测证据硬段)",
+      "title": "Codex:L2 真机验收(两 timer 真跑+两 strategy_id target 权重和=1.0+执行闭环隔离+OOS 诚实披露+零回归)+signoff(实测证据硬段)",
       "priority": "high",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "【见 spec §4 F004。真数据批次——signoff 必含实测证据硬段,evaluator §29:无真值=不得 done】L1 全门禁(backend+trade mypy+ruff 目录上下文+frontend)。L2 真机实测(VM,贴真返回):①回测页跑该策略→非退化结果(equity 多点/有交易/真 metrics);②变体对比真数字(2 因子×3 退出各产非退化且彼此不同→质量是否加值/哪退出好的研究证据);③walk-forward 样本外合理性(out-of-sample plausible,非明显过拟合,夏普离谱存疑,选出合理 A股 流动大盘股,换手合理);④A股 成本保真(卖含印花税 0.1%/买不含,不动区换手受控);⑤★S1 全量复确认(用 B065 F003 cross-source 工具对全 cn_seed universe 复跑,扩 planner 3 名抽样到全量,确认<0.5% 或诚实口径差);⑥边界 adversarial:research-only(无实盘推荐/执行 surface)+no-broker+no 收益预测+不碰 live;回归 B050-B065 不破+HEAD≡prod+recent-errors=0。P1 结论=研究判定(是否值得进 P2 实盘 advisory:哪变体最优/质量是否加值/哪退出好/样本外是否稳)。signoff docs/test-reports/B066-...-signoff-*.md 实测证据硬段逐条贴真观测。",
+      "status": "pending",
+      "acceptance": "【见 spec §4 F004。真数据/真机批次——signoff 必含实测证据硬段,§29:无真值=不得 done】L1 全门禁(backend+trade mypy+ruff 目录上下文+frontend+safety)。L2 真机实测(VM,贴真返回):①两 timer 触发→precompute 真跑→recommendation_snapshot 两 strategy_id target 真值(★权重和=1.0 含 cash 行);systemd timer enabled+active(§24);②ModeSelector 见两 cn_attack 模式+研究徽章+★专属 OOS 诚实披露(真渲染);③/recommendations?strategy_id= 各变体真推荐;position-diff 真 target/current/diff+获利了结体现;④★执行闭环 per strategy_id 隔离真验:seed 独立账户→ticket(strategy_id 隔离)→fills→reconcile→journal 跑通一次(advisory 无自动下单);Master/regime 账户/推荐零回归;⑤边界 adversarial:advisory-only/no-broker/no 收益预测/no 自动执行/研究态不碰真金自动化;HEAD≡prod+recent-errors=0。signoff docs/test-reports/B067-...-signoff-*.md 实测证据硬段逐条贴真观测+演练自清(执行闭环冒烟后 void ticket/恢复账户)。",
       "design_decisions": []
     }
   ]

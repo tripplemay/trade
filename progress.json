@@ -1,45 +1,45 @@
 {
-  "status": "done",
-  "user_goal": "B066 A股 进攻型动量+质量选股策略 P1(引擎+多变体回测验证,research-only)=A股 进攻模型 3 步路线图第②步(策略批)。来源:2026-06-18 用户讨论定案(捕获 backlog B055)。前置就绪:B065 数据地基 done(A股 CAS 基本面进 fundamentals.csv+宽 PIT universe)+S1 cross-source 闸已关(收益率偏差<0.013%,数据可信)。**定位**:建独立于 Master 的进攻型 A股 个股选股引擎,跑多变体回测+样本外验证,用户在回测页看历史表现+变体对比,判定是否值得上 P2 实盘 advisory surface(先验证再上实盘)。**设计定案(用户拍板)**:纯进攻(满仓无 regime gate,吸取 hk_china_real 全防御教训,诚实披露回撤);2 因子变体(质量过滤→动量 / 纯动量=质量 A/B 测试);3 退出变体回测对比(动量衰减/移动止损/硬获利目标);每日监控+不动区(no-trade band)阈值触发(每天算≠每天交易,P1 回测模拟得真换手/成本);top 20-30 等权+单票≤8%;真 A股 成本(印花税 0.1% 仅卖+佣金+滑点);walk-forward 样本外强制+全变体诚实披露不 cherry-pick;基准沪深300。**P1 边界(research-only)**:只建引擎+回测验证,不含实盘推荐/执行 surface(每日 advisory=P2);advisory 不自动下单/no-broker/no 收益预测/不碰 live 不变。**必须新写(Explore 结论)**:cn universe loader(读 cn_pit_universe.csv,异于 US universe.csv)/方向化 A股 成本(印花税仅卖,现 BacktestConfig 对称 friction 不够)/每日 as-of 驱动循环+不动区(无现成,generate_signal+current_holdings 是挂载点)/registry id==_DISPATCH key+status=research 不入 INACTIVE/S3 CN 价源 fallback sina。**4 features 3g+1c**:F001 引擎+cn universe loader+2 因子变体;F002 每日驱动+不动区+3 退出变体+方向化成本回测;F003 B050 接线+回测页露出+对比报告+walk-forward;F004 Codex 验收(变体对比真数字+样本外+S1 全量复确认+§29 实测证据)。复用 us_quality_momentum 引擎(几乎原样镜像)+B050 分发+B065 数据。spec docs/specs/B066-ashare-attack-momentum-quality-spec.md(6 章)。",
+  "status": "building",
   "total_features": 4,
-  "completed_features": 4,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F004",
+  "current_sprint": "F001",
   "last_updated": "2026-06-18",
+  "user_goal": "B067 A股 进攻策略 P2(实盘 advisory surface+手动执行闭环)=A股 进攻模型路线图第②步 P2(接 B066 P1 引擎)。来源:2026-06-18 用户拍板(P1 done 后选 P2):两份推荐+完整执行闭环。**定位**:把 cn_attack 引擎每日信号接成实盘 advisory surface——两份推荐流(cn_attack_quality_momentum 质量+动量 / cn_attack_pure_momentum 纯动量,各独立账户)+每日输出{推荐目标持仓,是否调仓,获利了结清单}+完整手动执行闭环(ticket→fills→reconcile→journal,复用 B023/B057 按 strategy_id 隔离)。**★不可妥协诚实约束**:B066 P1 诚实结论=OOS 动量逆转(样本外 −9~−11%)+质量 A/B 本地未分胜负。surface 绝不能让用户误以为是验证过的赚钱策略→研究态徽章+★cn_attack 专属 OOS 负/未验证披露(摆推荐旁,IS/OOS 可触达)+advisory-only/不自动下单/no 收益预测(硬边界+no-execution 守门)。质量 A/B 在宽宇宙 advisory 上自然分化(解 P1 本地未分胜负)。**框架已 strategy_id 参数化(Explore)**:执行闭环/账户/diff/recommendation/ModeSelector 全零改动自动覆盖新 strategy_id;P2 主要是注册(加 2 _MODES+2 producer+每日 precompute+2 timer)。**三硬陷阱**:①save_batch 守门权重和=1.0 但 cn_attack 有 cash_buffer→producer 必须补 cash 行;②cn_attack 现在 STANDALONE_RESEARCH_STRATEGY_IDS(P1 刻意排除)→P2 升格进 _MODES;③获利了结=forced_exits 须写进 snapshot rationale/meta 才在 diff reason 体现。**4 features 3g+1c**:F001 两变体模式接入(registry+producer+每日 precompute+cash 补 1.0+获利了结 meta);F002 每日 timer/service+CLI+deploy glob+scope safety;F003 前端 advisory surface+cn_attack OOS 诚实框架+获利了结渲染+no-execution;F004 Codex L2(两 timer 真跑+权重和=1.0+执行闭环隔离+OOS 披露+零回归+§29)。spec docs/specs/B067-ashare-attack-p2-advisory-spec.md(7 章)。复用 B057 模式框架+B023/B056 执行/paper+B066 引擎(daily-driver final-day target)。",
   "reference_docs": [
-    "docs/specs/B066-ashare-attack-momentum-quality-spec.md",
-    "docs/specs/B055-attack-stock-selection-spec.md",
-    "trade/strategies/us_quality_momentum/signal.py",
-    "trade/strategies/us_quality_momentum/factors.py",
-    "trade/strategies/us_quality_momentum/construction.py",
-    "trade/backtest/us_quality_momentum/engine.py",
-    "workbench/backend/workbench_api/backtests/worker.py",
-    "workbench/backend/workbench_api/services/strategies.py",
-    "workbench/backend/workbench_api/data_refresh/cn_universe.py",
-    "trade/data/us_quality_universe.py"
+    "docs/specs/B067-ashare-attack-p2-advisory-spec.md",
+    "workbench/backend/workbench_api/strategy_modes/registry.py",
+    "workbench/backend/workbench_api/strategy_modes/refresh_worker.py",
+    "workbench/backend/workbench_api/strategy_modes/regime_precompute.py",
+    "workbench/backend/workbench_api/db/repositories/recommendation_snapshot.py",
+    "workbench/backend/workbench_api/services/execution.py",
+    "trade/strategies/cn_attack_momentum_quality/signal.py",
+    "trade/backtest/cn_attack_momentum_quality/engine.py",
+    "workbench/frontend/src/components/strategy/ModeSelector.tsx",
+    "workbench/deploy/systemd/workbench-recommendations.timer"
   ],
   "docs": {
-    "spec": "docs/specs/B066-ashare-attack-momentum-quality-spec.md",
+    "spec": "docs/specs/B067-ashare-attack-p2-advisory-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B066-ashare-attack-momentum-quality-signoff-2026-06-18.md",
-    "framework_reviewed": true
+    "signoff": null,
+    "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "F001-F003 全通。L1 门禁全绿(trade 957/backend 1434/safety 158)。L2 本地实测:6变体非退化,CAGR 9-10% > CSI300 8.94%,OOS 动量逆转诚实披露。成本方向化+不动区换手受控。过拟合标记0。研究判定:P2等OOS正向确认。",
-    "pass_count": 3,
+    "summary": null,
+    "pass_count": 0,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
   },
   "generator_handoff": {
-    "summary": "B066 F001-F003 全部 generator 特性 done(3 features,各含自跑对抗审查+修复)。**F001** CN attack 引擎(`trade/strategies/cn_attack_momentum_quality/`,镜像 us_quality import 复用 factors/ranking)+cn universe loader(`trade/data/cn_attack_universe.py` 读 cn_pit_universe.csv PIT 无前视)+2 因子变体(quality_momentum 软质量过滤 vs pure_momentum)+S3 sina 价源(CnSymbolProvider eastmoney→sina→baostock)。**F002** 每日驱动+不动区+3 退出变体+方向化成本回测引擎(`trade/backtest/cn_attack_momentum_quality/{costs,engine}.py`;印花税仅卖;L1 band 多数日 hold;T+1 执行;momentum_decay/trailing_stop/hard_profit_target;复用 us metrics)。审查修 2 真实 HIGH(A股 停牌 ffill 结转+NaN 安全)。**F003** B050 接线:worker `_DISPATCH['cn_attack_momentum_quality']`+`_run_cn_attack` runner+`adapt_cn_attack`+registry 条目(status=research,id==dispatch key,**不入 INACTIVE_STRATEGY_IDS**,排除 sleeve_strategies via STANDALONE_RESEARCH_STRATEGY_IDS=无 phantom sleeve)+多变体对比报告(`trade/reporting/cn_attack_momentum_quality.py`:2 因子×3 退出=6 配置 walk-forward in/out-sample+沪深300 基准+过拟合红旗 no_activity/exit_overlay_inert/implausible_sharpe/in≠out)+沪深300 数据层(`data_refresh/cn_benchmark.py` akshare sina stock_zh_index_daily sh000300→cn_csi300.csv,trade `data/cn_benchmark.py` 优雅降级)。审查修 4(no_activity 红旗+benchmark loader 非数值 close 不抛+exit_overlay_inert 同族内+benchmark 写盘守护)。**门禁全绿**:trade pytest 953/mypy 93f/ruff;workbench mypy 424f/ruff/F003+sleeve 回归(无 phantom sleeve)。**前端零改动**(registry 露出即可选跑)。**【F004 Codex §29 实测要点】**:(1) L1 全门禁;(2) L2 真机:回测页跑 cn_attack_momentum_quality→6 变体对比真数字(非退化,质量是否加值/哪退出好的研究证据)+walk-forward 样本外合理(夏普离谱存疑)+A股 成本保真(卖含印花税/不动区换手受控)+研究判定;(3) ★沪深300 基准需 data-refresh 先在 VM 跑(写 cn_csi300.csv,§23 sina sh000300 可达性真验)+cn_pit_universe.csv(B065)就位,否则报告标 benchmark/universe unavailable;(4) S1 全量 cross-source 复确认(B065 F003 工具对全 cn_seed);(5) 边界 adversarial:research-only/无实盘/无执行/无 paper(cn_attack 不在 PAPER_STRATEGIES)/不碰 live;(6) 回归 B050-B065 不破+HEAD≡prod+recent-errors=0。**注**:6 变体×walk-forward 单次回测较重(数分钟,worker async 可接受)。",
-    "status": "ready"
+    "summary": null,
+    "status": "pending"
   },
   "session_notes": {
-    "planner": "2026-06-18 B066 done 收尾(planner)。B066(A股 进攻型动量+质量 P1,research-only)=✅ done,0 fix-round。**研究判定(诚实,done §1.5 复核=sound)**:引擎正确,全窗口 CAGR 10.2%>沪深300 8.94%(小胜),但 OOS(2025H2)CAGR −9~−11%=动量逆转(A股 切防御风格,诚实披露无 cherry-pick)→P2 实盘建议等 ≥6 个月正向 OOS。Codex(Andy CLI 代)真验收真数字=§29 纪律生效。Generator 自跑对抗审查抓 2 真 bug(停牌 NaN/退化空仓)。**done 收尾完成**:(1) framework v0.9.48 沉淀=generator §28 回测停牌 ffill+NaN 安全读价禁 or 0.0+缺价回归测试 / §29 多变体退化空仓红旗(no_activity+同族 toggle 失效),CHANGELOG+archive,队列清空;(2) F004 status pending→done(Codex 漏翻);(3) ★project-status 修复=Generator 把它重写成简版丢了永久硬边界/Framework 状态/已知 gap,planner 补回(保简洁+恢复持久段+反映 B066 真判定+soft-watch);(4) framework_reviewed=true。**soft-watch**:①质量 A/B 本地未分胜负(种子 43 全通质量门槛→quality≡momentum,需生产宽宇宙才分化,'质量是否加值'未答);②S1 全量 cross-source 待 VM 真跑(B066 延用 B065 抽样,合理);③S3 eastmoney 价源不可达 B066 F001 已 fold sina ✅。**【续接=下一批方向待用户定】**:候选:①A股 进攻 P2(实盘 advisory surface,但 OOS 动量逆转=宜等更多正向 OOS,或先在宽宇宙重跑解质量 A/B);②hk_china 重测 Batch 2.5(qfq 工具+sina 已就绪,补 200D warmup+重跑);③测试自动化基建(golden 数据下沉 CI,正面解 §25 系统性);④A股 进攻宽宇宙重验(解质量 A/B+更长 OOS,可能比直接 P2 更该先做)。prod=B064 系(A股+港股 lookup)。",
-    "generator": "2026-06-18 F001+F002+F003 全部 done → status=verifying(Codex F004)。**F003 done**:B050 _DISPATCH+`_run_cn_attack` runner+`adapt_cn_attack`+registry research 条目(不入 INACTIVE,排除 sleeve_strategies 无 phantom sleeve)+6 变体对比报告(walk-forward+沪深300+过拟合红旗)+沪深300 数据层(akshare sina sh000300→cn_csi300.csv,优雅降级)。自跑 3-lens 审查修 4(no_activity 红旗/benchmark loader 非数值 close 不抛/exit_overlay_inert 同族/写盘守护)。F004 详见 generator_handoff。**F002 done**:每日驱动+不动区+3 退出变体+方向化成本回测引擎(`trade/backtest/cn_attack_momentum_quality/{costs,engine}.py`)。costs=CnCostModel 方向化(印花税仅卖 sell_rate,买 buy_rate,不改 us BacktestConfig=US 零回归)。engine=每日循环(每交易日 generate_cn_attack_signal 重算目标)+不动区(L1 would-be turnover>band 才调仓→多数日 hold)+T+1 open 执行+daily close mark-to-market+3 退出变体(momentum_decay 基线无强制退/trailing_stop 跟踪 peak 回撤 X% 卖/hard_profit_target +X% 卖,per-position entry/peak 跟踪)+复用 us metrics 模块。universe loader 加 load_cn_universe_history+resolve_pit_members(回测一次读全 history,日循环内存 PIT 解析,免每日重读 CSV)。**自跑 3-lens 对抗审查=CHANGES REQUESTED→修 2 个真实 HIGH bug**(同根因 A股 停牌/缺价名,合成测试每日有价完全掩盖):(1) rebalance 分支丢失停牌持仓→市值蒸发(权益守恒破);(2) `x or 0.0` 不能归零 NaN(nan 为真值)→停牌名污染 mark-to-market→equity NaN。**修复**:`_wide` ffill(停牌名结转最后价=标准回测处理)+`_price` NaN 安全读价+rebalance 分支防御性 carry-forward+停牌回归测试(无 NaN+价值守恒)。nice:config 上界校验+exit_count 语义注释。门禁全绿(trade pytest 940+16cn/ruff/mypy 91f 0)。**【续接 F003=最后 generator 特性,大】**:B050 分发(`worker.py` _DISPATCH 加 cn-attack-momentum-quality runner→自 load universe_history/prices/fundamentals+吃 start/end+变体参数;adapter 可能新增因 CnAttackBacktestResult 异构 us;report builder 镜像)+registry(services/strategies.py 加条目 id==dispatch key,status=research,双语名,**不入 INACTIVE_STRATEGY_IDS**)+多变体对比报告(2 因子×3 退出=6 配置 CAGR/Sharpe/MaxDD/换手/成本/vs 沪深300+walk-forward in/out-sample+过拟合红旗)+回测页零改动露出。**F003 开放设计点**(需决):①6 变体(+walk-forward 分段=12 回测)每次点击算→6×~1min 慢,worker async 可接受但需注意;②沪深300 基准数据=000300 指数不在 unified prices(个股 universe),需加索引价或等权 CN universe proxy;③单 backtest_run schema 容 1 结果→6 变体对比塞 report_markdown,equity/metrics 用 headline 变体。详见 worker.py _DISPATCH 架构(已研读)。**原 F001 note↓**\n\n2026-06-18 F001 done(generator)。A股 进攻引擎+cn universe loader+2 因子变体 已建成。**新增**:trade/data/cn_attack_universe.py(读 cn_pit_universe.csv,PIT=取 latest rebalance<=as_of 块,无前视);trade/strategies/cn_attack_momentum_quality/{parameters,construction,signal}.py;data_root.py 加 unified_cn_universe_path。**复用**:momentum_12_1+quality_score+percent_rank 由 import(非 copy);us load_prices/load_fundamentals 直接读同一 unified CSV(已含 A股)。**变体**:quality_momentum(动量+质量 blend,无 fundamentals 名被 min_count drop=软质量过滤) vs pure_momentum(仅动量,{momentum:1.0},不需 fundamentals)→单测证两变体选不同篮子。**构造决策**:写了 CN 专属 construction(镜像 us 6 步,省 step3 earnings+step6 sector=A股 天然没有),**未**字面复用 build_portfolio——理由:US 零回归(零改 us 文件)+A股 无 sector/earnings 故更简洁更正确;held-frozen 机制对 A股 无 earnings 本就 no-op,无损失。**S3**:CnSymbolProvider 加 sina stock_zh_a_daily 中间档(eastmoney hist→sina→baostock,additive 保留现有4测试),data_refresh 经 CnHkPricesLoader 自动受益。**signal 设计**:generate_cn_attack_signal(params,as_of,current_holdings,*,prices/fundamentals/universe_members 可注入)——注入为 F002 日循环高效铺路(不每日重读 CSV)+测试;current_holdings 接受但 F001 不用(F002 不动区消费)。**门禁全绿**:trade pytest 920+35cn/ruff 目录上下文/mypy 88f 0;workbench cn_provider 13(+3 sina)/unit 1267/mypy 421f 0/ruff。**自跑 5-lens 对抗审查 workflow=PASS 零 must-fix**,应用 5 nice-to-have(construction eligible 预过滤硬化+rank 不变性测试+disk-load 分支测试+sina 文档漂移修正+注释措辞)。**【续接 F002】**:每日驱动循环+不动区(no-trade band)+3 退出变体+方向化 A股 成本(印花税仅卖)。挂载点:generate_cn_attack_signal 的注入参数(日循环 inject once-loaded frames)+current_holdings(band 比对);成本改 BacktestConfig(现对称 friction 不够)。",
-    "evaluator": "2026-06-18 B066 F004 verifying done(evaluator=Andy CLI 代 Codex)。**L1 全绿**:trade 957/backend 1434+17skip/safety 158+15skip/cn_attack dispatch 4。**L2 本地 sina 价格+akshare CAS 基本面实测**:6 变体均非退化(质量动量=纯动量,原因=种子宇宙 43 股全通质量门槛;生产宽宇宙才差异化)。实测数字:quality_momentum+momentum_decay CAGR=10.20% Sharpe=0.90 MaxDD=-12.4% vs CSI300 8.94%;IS CAGR=20.7% OOS=-10.8%(动量逆转诚实披露)。不动区控换手:momentum_decay 调仓1次(换手0.80),trailing_stop 9次,hard_profit_target 11次。成本方向化:test_directional_cost_is_charged PASS+test_sell_rate_includes_stamp_duty PASS。过拟合标记=0清洁。**边界全通**:不在 INACTIVE/PAPER/sleeve;research-only/no-broker/no-execution。**HEAD≡prod** bd75d86=B066 F003 VM确认。**S1** 延用B065结论(B066无改价格逻辑)。研究判定:P2实盘建议等OOS正向确认再推进。→status=done。"
+    "planner": "2026-06-18 B067 planning(planner)。A股 进攻 P2(实盘 advisory surface+手动执行闭环)=策略批 P2。用户 B066 P1 done 后选 P2:两份推荐(质量+动量/纯动量)+完整执行闭环。**★诚实约束焊进 spec §0(无条件)**:B066 OOS 动量逆转+质量 A/B 未答→surface 须 cn_attack 专属 OOS 负/未验证披露(超通用研究徽章)+advisory-only/不自动下单+IS/OOS 可触达。planner 已向用户明示(用户坚持上 P2,有权用,planner 职责=诚实框架+守门非拒绝)。**Explore 摸清(关键)**:B057/B058 框架已把加新模式做成纯注册——执行闭环/账户/diff/recommendation/ModeSelector 全 strategy_id 参数化零改动(migration 0021 已建 strategy_id 列);regime 是逐字模板。**三硬陷阱**:①save_batch 权重和=1.0 守门 vs cn_attack cash_buffer→producer 补 cash 行(头号);②cn_attack 现 STANDALONE_RESEARCH_STRATEGY_IDS→升格进 _MODES;③获利了结=forced_exits 写 snapshot meta 才在 diff 体现。daily target 走 daily-driver(run_cn_attack_backtest 取 final-day record)非裸 signal。**【续接】**:status=building,Generator 接 F001(模式接入+precompute+cash 补 1.0+获利了结 meta)→F002(每日 timer/CLI/deploy glob)→F003(前端 surface+OOS 诚实框架),再 Codex F004(两 timer 真跑+权重和=1.0+执行闭环隔离+§29)。**P3(港股扩)/宽宇宙重验(解质量 A/B)待 P2 后**;hk_china 重测 Batch 2.5/测试自动化基建仍在需求池。prod=B064 系。",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",
@@ -47,5 +47,5 @@
     "F003",
     "F004"
   ],
-  "completed_date": "2026-06-18"
+  "completed_date": null
 }
