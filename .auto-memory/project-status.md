@@ -5,16 +5,16 @@ type: project
 ---
 
 ## 当前状态
-- **当前：B066 ✅ done**（2026-06-18，0 fix-round）；**上一批：B065 ✅ done**（2026-06-18）。
-- **B066 = A股 进攻型动量+质量选股 P1（research-only）**：F001 引擎+cn universe loader+2 因子变体 / F002 每日驱动+不动区+3 退出变体+方向化成本（印花税仅卖）/ F003 B050 接线+回测页+6 变体对比报告+沪深300 基准 / F004 Codex 验收 ✅。
-- **研究判定（诚实）**：引擎正确，全窗口 CAGR **10.2% > 沪深300 8.94%**（小胜），但 **OOS（2025H2 起）CAGR −9~−11% = 动量逆转**（A股 切防御风格→动量崩溃，诚实披露无 cherry-pick）。**P2 实盘 advisory 建议等 ≥6 个月正向 OOS 再推进**。signoff `docs/test-reports/B066-...-signoff-2026-06-18.md`。
-- **关键决策**：cn_attack = STANDALONE_RESEARCH（不入 Master/PAPER/INACTIVE，回测页可跑研究态）；纯进攻无 regime gate（吸取 hk_china_real 全防御教训）。
+- **当前：B067 🔨 building**（2026-06-18，generator）= A股 进攻 P2（实盘 advisory surface + 手动执行闭环）。**F001+F002 ✅ done（推 main，CI 绿），F003 待做，F004=Codex L2**。上一批 B066 ✅ done。
+- **B067 进度**：F001 两变体 advisory 模式接入（registry+producer+precompute+★cash 补 1.0+★OOS 诚实 meta `research_caveat`+data_not_covered 不发空仓）；F002 每日 timer/CLI/scope safety/§12.11.1 env 守门（deploy glob 零改）。**F003=前端 surface+★cn_attack 专属 OOS 披露+获利了结渲染**；F004=Codex 真机（两 timer 真跑+权重和=1.0 含 cash 行+执行闭环隔离+OOS 披露+零回归）。spec `docs/specs/B067-...-spec.md`。
+- **★诚实约束（spec §0 焊死）**：用户 B066 P1 done 后拍板上 P2（有权用）。B066 诚实结论=**OOS −9~−11% 动量逆转 + 质量 A/B 本地未分胜负（需宽宇宙）**。surface 须 cn_attack 专属 OOS 负/未验证披露 + advisory-only/不自动下单/非收益预测。
+- **关键决策**：cn_attack 两 advisory 模式（cn_attack_quality_momentum/pure_momentum）进 **mode registry _MODES**（非 master sleeve，守不变量#3）；B066 backtest id `cn_attack_momentum_quality` 仍在 STANDALONE_RESEARCH 不动。纯进攻无 regime gate。
 
 ## 遗留 / soft-watch
 - **质量 A/B 未分胜负**：种子宇宙 43 股全通质量门槛→「质量+动量」≡「纯动量」，"质量是否加值" **需生产宽宇宙才分化**（未答）。
 - **S1 全量 cross-source 待补**：B066 延用 B065 抽样结论（未改价格逻辑=合理）；全 universe baostock 复确认待 VM 真跑（S2 SSH 本会话已恢复）。
 - **S3 已处理**：akshare eastmoney `stock_zh_a_hist` 端点 VM 不可达 → B066 F001 已 fold sina `stock_zh_a_daily` fallback（B062 同款）。
-- **P2/P3**：P2（实盘 advisory surface=每日推荐/调仓/获利了结）待 OOS 正向证据；P3 港股扩。backlog B055 记 A股 进攻 P2/P3 路线。
+- **P2/P3**：P2 = 本批 B067（用户拍板上，不等 OOS 正向；靠诚实框架守门，宽宇宙 advisory 自然分化解质量 A/B）。P3 港股扩待 P2 后；backlog B055 记路线。
 
 ## 永久硬边界
 - B045 market data refresh (r) 只读 + §12.10.2 AST 守门 + data self-contained。
