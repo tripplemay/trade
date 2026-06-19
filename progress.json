@@ -17,7 +17,7 @@
     "spec": "docs/specs/B069-cn-attack-inverse-vol-default-spec.md",
     "test_cases": null,
     "signoff": "docs/test-reports/B069-cn-attack-no-switch-signoff-2026-06-19.md",
-    "framework_reviewed": false
+    "framework_reviewed": true
   },
   "role_assignments": null,
   "evaluator_feedback": {
@@ -32,7 +32,7 @@
     "status": "completed"
   },
   "session_notes": {
-    "planner": "2026-06-19 B069 planning(planner)。B068 follow-up 小批:用户自验 B068 支持 inverse_vol→切 B067 实盘 advisory 两 cn_attack 模式默认权重 equal→inverse_vol。**★诚实前提焊死**:B068 数字没进 git(用户本地自验)→切线上默认=产品变更须可审计依据→F001 先落依据(确认 inverse_vol vs equal OOS 改善)再 F002 切(确认改善才切,否则不切+报告,不盲切)。OOS 红卡/研究态/advisory-only 不动;回测全局默认仍 equal(只改 live producer)。**切换点已核**:cn_attack_precompute.py:183 传 weighting_scheme='inverse_vol'(两模式);trade parameters DEFAULT_WEIGHTING_SCHEME 不动。**【续接】**:status=building,Generator 接 F001(落 B068 依据入 git+结论)→F002(据确认切两模式),再 Codex F003(切后 snapshot 反映 1/σ+零回归+§29)。**后续候选**:P3 港股扩/hk_china 重测 Batch 2.5/测试自动化基建。prod=B067 系(切后两模式 advisory 用 inverse_vol)。",
+    "planner": "2026-06-19 B069 done 收尾(planner)。B069(B068 follow-up:cn_attack 实盘权重切 inverse_vol?)=✅ done,0 fix-round,**结果=NO-SWITCH 维持 equal**。**★planner B069『验证→切,确认改善才切』诚实设计起关键作用**:Generator 把 B068 harness 在全真宽数据(393名/250期,2019-2026 walk-forward)重跑落依据入 git→inverse_vol 不支持切(OOS Sharpe quality 1.88→1.78/pure 1.72→1.65 两模式更差,CAGR 更差,换手/成本更高;唯一收益=quality 回撤少挖~3pp)→印证 equal 1/N 难被权重优化打败(DeMiguel/分析师判断)。F002 不改产品代码(precompute 续 equal 字节级零回归)+守门单测焊死 equal。Codex F003 NO-SWITCH PASS。signoff docs/test-reports/B069-cn-attack-no-switch-signoff-2026-06-19.md。决策依据 docs/dev/B069-inverse-vol-default-decision.md+报告 docs/dev/B068-wide-comparison-report.md 入 git。**★最重要诚实发现(策略可信度真瓶颈)**:B068 强 OOS(CAGR 62-77%,B066 −9~−11% 未复现)很可能=幸存者偏差+2024Q4 顺风双重高估,不足证稳健;消除需付费历史成分股数据(现宽宇宙用当前名单建=天然幸存者偏差)。OOS 红卡继续挂对。**A股 进攻策略现状:等权对、质量有风险调整价值,但『看起来赚钱』很可能是数据偏差幻觉,未真验证。****【续接=下一批待用户定】**:候选(planner 觉得幸存者偏差是真瓶颈,该优先):①消除幸存者偏差(接历史指数成分股 feed,使 OOS 可信)②测试自动化基建(golden 下沉 CI 解 §25)③P3 港股扩④hk_china 重测 Batch 2.5。prod=B067 系(A股 进攻 P2 advisory equal/momentum_decay,研究态)。",
     "generator": "2026-06-19 B069 building→verifying(generator)。**诚实出口路径**:用户问『按 B068 证据如何推进』→裁定『不切,维持 equal』。背景:用户原自验认为 B068 支持 inverse_vol,但 generator 跑 committed B068 harness(scripts/research/run_cn_wide_backtest.py)于全真宽数据(F001 宽 universe 393名/250期 + F003 抓的宽 prices 393/393 0err 750k 行 + fundamentals 393/393 13267 行 + CSI300)得**权威数字反向**:inverse_vol OOS Sharpe+CAGR 两模式均更差,仅 quality 回撤弱改善;OOS 高(62~77%)受幸存者偏差+2024Q4 顺风双重高估。**F001**=决策依据入 git(docs/dev/B069-inverse-vol-default-decision.md + B068 报告 docs/dev/B068-wide-comparison-report.md,B068-F003 缺口『报告未入 git』一并补齐 commit 52e64a0)。**F002**=不改产品代码(precompute 续用 equal)+守门单测焊死 equal。**【续接 Codex F003】**:NO-SWITCH 验收(live 仍 equal/守门测试/OOS 红卡/零回归/HEAD≡prod),非『切后 1/σ』。研究产物本地 data/research/b068/(gitignored)。",
     "evaluator": "2026-06-19 B069 F003 done(evaluator)。NO-SWITCH 验收全通：precompute.py:183 未传 weighting_scheme(默认 equal)✅；守门单测 test_live_producer_keeps_equal_weighting_b069 PASSED✅；OOS 红卡(validated=False,oos_result=negative)在位✅；L1 全绿(trade 983/backend safety 164/precompute 11/cn_universe 39/wide_comparison 7)；VM HEAD=a6b7d1d(B069 F001+F002)✅；零回归(precompute.py 字节级未变)✅；决策依据入 git(B069-inverse-vol-default-decision.md,不支持切)✅。signoff=docs/test-reports/B069-cn-attack-no-switch-signoff-2026-06-19.md。"
   },

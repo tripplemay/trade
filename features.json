@@ -31,7 +31,7 @@
       "title": "Codex:L2 验收(切后 snapshot 反映 1/σ+OOS 红卡+零回归)+signoff(实测证据)",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F003。真机批次 signoff 含实测证据 §29】L1 全门禁。L2 真机(VM,贴真返回):切后两模式 precompute 真跑→recommendation_snapshot 权重反映 1/σ(高波动票权重<等权时,贴对比数字)+权重和=1.0(cash 补);OOS 红卡仍渲染;astock.guangai.ai /recommendations 两模式新权重生效。零回归:B068/B066 回测默认 equal 不变;Master/regime/B067 其它不破;HEAD≡prod;recent-errors=0。边界:research-only/advisory-only/no 自动下单/no 收益预测。signoff docs/test-reports/B069-...-signoff-*.md 实测证据逐条贴真观测。",
       "design_decisions": []
     }

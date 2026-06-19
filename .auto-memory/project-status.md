@@ -5,7 +5,7 @@ type: project
 ---
 
 ## 当前状态
-- **当前：B069 verifying（不切，维持 equal）** = B068 follow-up。generator 跑 committed B068 harness 于全真宽数据得**权威数字 → inverse_vol 不支持切**（OOS Sharpe+CAGR 两模式更差，仅 quality 回撤弱改善，且 OOS 受幸存者偏差高估）→**用户裁定维持 equal**。F001 决策依据入 git（`docs/dev/B069-inverse-vol-default-decision.md`）；F002 不改产品代码（precompute 续 equal）+守门单测焊死 equal；F003 待 Codex **NO-SWITCH** 验收。
+- **当前：B069 ✅ done（2026-06-19，NO-SWITCH 维持 equal）** = B068 follow-up。planner『验证→确认改善才切』诚实设计奏效:generator 跑 committed B068 harness 于全真宽数据(393名/250期 walk-forward)→**inverse_vol 不支持切**(OOS Sharpe quality 1.88→1.78/pure 1.72→1.65 两模式更差,CAGR 更差,换手/成本更高,唯 quality 回撤少挖~3pp)→印证 equal 1/N 难被权重优化打败。F002 不改产品代码(precompute 续 equal 字节级零回归)+守门单测焊死 equal;Codex F003 NO-SWITCH PASS。决策依据 docs/dev/B069-inverse-vol-default-decision.md+报告 docs/dev/B068-wide-comparison-report.md 入 git。signoff docs/test-reports/B069-cn-attack-no-switch-signoff-2026-06-19.md。
 - **B068 ✅ done**（2026-06-19 用户自验置 done，无 Codex signoff）= A股 宽宇宙重验。报告 `docs/dev/B068-wide-comparison-report.md`（committed harness，全真宽数据 393名/250期，2019-04→2026-06）。
 - **B068 研究结论（真数字 OOS）**：**Q1 质量加值=是(仅风险调整)**(quality OOS Sharpe 高+0.15/+0.13,CAGR 略低)；**Q2 波动倒数=不值得换**(inverse_vol OOS Sharpe/CAGR 更差→印证 equal 1/N 基线)；**Q3 表面不脆弱**(OOS CAGR 62~77%,B066 −9~−11% 未复现)。**★诚实警示:OOS 高=幸存者偏差+2024Q4 顺风 双重高估,不足证稳健**;红旗 IS≠OOS winner。weighting_scheme F002 已落代码(默认 equal 零回归)。
 - **B068 F001 实测（§23=GO）**：sina `stock_zh_a_spot` 可达=宽 superset 端点（eastmoney push hosts 全挂）；宽宇宙真建 **513 superset→250 成员/期×29 季度,0 fetch error,393 distinct,LEAKAGE=0**。commit d5a60c1 已部署。**sina gated 于 allow_sina_fallback(默认 False)→生产 daily refresh 字节级不变,B067 读 seed-43 宇宙不动**。runbook: docs/dev/B068-wide-universe-runbook.md；产物本地 data/research/b068/(gitignored)。
