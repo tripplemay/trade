@@ -6,7 +6,7 @@
       "title": "§23 三关口 feasibility 验证(历史 PIT 成分+退市价格+规模)VM 实跑 + GO/PARTIAL/NO-GO 报告",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §1 §3 F001 + feasibility-first】(1) VM 实跑验三关口:A 历史 PIT 成分(akshare index_stock_cons_csindex/index_stock_cons/成分变更史)/B 退市/历史名价格(akshare/baostock 退市股价格)/C 规模(sina/baidu host)。(2) 明确判定 GO(A+B 拿得到)/PARTIAL(A 有 B 缺)/NO-GO(A 缺=免费修不了),报告入 git(贴真返回:成分史几年/退市名价格样本/覆盖率)。(3) ★NO-GO/PARTIAL=成功 spike 非失败(免费源天花板=有效诚实结论:策略停研究态,真验证需付费数据如 Wind/聚宽)。正面证据(§29):三关口可达性各贴真返回证据+明确 GO/PARTIAL/NO-GO。Gates:backend+trade 门禁绿。NO-GO→批次主要在此收(F002/F003 跳/缩)。",
       "design_decisions": [
         "feasibility-first(像 B060 P0 spike):免费源能否拿到去偏数据=最大未知,先验;NO-GO 是有效成功结论非失败。",
