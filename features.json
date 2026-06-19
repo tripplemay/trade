@@ -19,7 +19,7 @@
       "title": "survivorship-free PIT 宇宙构建(真历史成分+退市名价格,GO/PARTIAL 才做,gated 不动生产)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §3 F002】(1) 历史成分 loader(成分史→每调仓日 PIT 成分,含后来退市名)。(2) 退市/历史名价格拉取(在册期间)→进数据帧。(3) survivorship-free universe builder(真成分+退市价格,替 B068 自建 top-N);PARTIAL 时诚实标残余偏差。(4) gated(默认关,不动 B067/生产 daily refresh,同 B068 allow_sina_fallback 范式)。正面证据:去偏宇宙含历史成分(含已退市名,贴样本日成员+退市名占比);US/B067 零回归。Gates 同 F001。",
       "design_decisions": [
         "去偏宇宙=真 PIT 历史成分(含已退市/已剔除名),替 B068 自建 top-N(只含当前活着的=幸存者偏差源)。",

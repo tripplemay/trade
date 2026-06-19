@@ -1,9 +1,9 @@
 {
   "status": "building",
   "total_features": 4,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
-  "current_sprint": "F002",
+  "current_sprint": "F003",
   "last_updated": "2026-06-19",
   "user_goal": "B070 A股 进攻策略 去幸存者偏差重验(point-in-time 历史成分股)=攻策略可信度真瓶颈。来源:2026-06-19 用户 B069 done 后选『消除幸存者偏差』。**为什么是真瓶颈**:现宽宇宙(B068)用当前可得名单建→只含活下来的赢家,已退市/已剔除输家缺席→回测系统性虚高(B068 OOS CAGR 62-77% 大概率假)。去偏需 point-in-time 真实成分(每调仓日当时真实指数成分含后退市名)+这些名在册期间真实价格=付费数据商(Wind/聚宽)卖钱的东西。**feasibility-first(像 B060 P0 spike)**:免费源(akshare/baostock)能否拿到去偏数据=最大未知,F001 先验三关口:A 历史 PIT 成分/B 退市名价格/C 规模→GO(A+B)/PARTIAL(A 有 B 缺)/NO-GO(A 缺=免费修不了)。**NO-GO=成功 spike 非失败**(诚实结论:策略停研究态,真验证需付费数据)。**核心问题**:去掉幸存者偏差后这个 A股 进攻策略还成立吗(去偏 OOS vs B068 偏差 OOS,量化高估;去偏后正收益=真成立/塌掉=幻觉)。**4 features 3g+1c**:F001 §23 三关口 feasibility(VM 实跑)+GO/PARTIAL/NO-GO;F002 survivorship-free PIT 宇宙(真成分+退市价格,gated 不动生产);F003 去偏宇宙重跑+偏差量化对比;F004 Codex 研究判定(去偏后是否成立/或 NO-GO 诚实结论)。spec docs/specs/B070-ashare-survivorship-free-revalidation-spec.md(4 章)。复用 cn_universe builder+cn_attack 引擎+B068 harness。",
   "reference_docs": [
@@ -28,12 +28,12 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": "F001 ✅ done — §23 三关口 = GO(免费源能去偏)。baostock dated query_{hs300,zz500,sz50}_stocks(date=) 本机可达,真 PIT(成分回溯 2007,HS300 跨期换 226/300,且含已退市名:武钢/葛洲坝/退市长油等),退市名 k 线可拉(乐视17.89→1.69 等4/4)。akshare index_stock_cons* 无 date(current-only)→baostock 是唯一免费使能源。证伪 cn_universe.py:33『需付费 feed』。多 agent verify=CONFIRM_GO(独立复现新名/新日期)。产物:probe scripts/research/b070_feasibility_probe.py + 报告 docs/dev/B070-feasibility-report.md(含 §5 carry-into-F002 高优约束) + 单测 tests/unit/test_b070_feasibility_judge.py(7 pass)。gates 全绿(ruff/pytest/mypy trade)。下一步 F002 建去偏宇宙,须照 §5 硬约束。",
-    "status": "f001_done_f002_next"
+    "summary": "F001 ✅ + F002 ✅ done。【F001】§23 三关口=GO,免费 baostock 能去幸存者偏差,证伪 cn_universe.py 付费 feed,多 agent verify=CONFIRM_GO。【F002】去偏宇宙真建成功:29 季度×800 PIT 成分(HS300∪ZZ500∪SZ50),1310 ever/536 non-current,退市抽样 10/80=12.5%(小天鹅A/*ST泛海/ST阳光城...),non-current 占比 2019=46.5%→2026=5.6%。trade load_cn_universe 零改读取通过(小天鹅A∈2019-03 宇宙=True)。建 PIT + current 对照两宇宙(F003 隔离单变量)。价格脚本验证 60/60 119k 行含 tradestatus。§5 硬约束全落实(指数成分直接当宇宙不 mcap 重排/band 断言重试/单 session/CEILING 标/停牌列)。gated 研究 root,cn_universe.py 仅 docstring 改。1005 单测全绿。【F003 续接】跑 PIT vs control 回测对比(需全量价格拉取 3-4h=VM/长跑),量化幸存者偏差+研究判定『去偏后是否仍成立』。复用 B068 harness(run_cn_attack_wide_comparison)+ b070 builder/fetch 脚本。",
+    "status": "f001_f002_done_f003_next"
   },
   "session_notes": {
     "planner": "2026-06-19 B070 planning(planner)。A股 进攻策略去幸存者偏差重验=攻可信度真瓶颈(B069 暴露:B068 强 OOS 大概率幸存者偏差+顺风高估幻觉)。用户选此为下一批。**feasibility-first(像 B060)**:免费源能否拿到去偏数据(历史 PIT 成分+退市名价格)=最大未知,F001 先验三关口 VM 实跑→GO/PARTIAL/NO-GO;NO-GO(免费修不了,需付费 Wind/聚宽)=有效诚实结论非失败,焊进 spec。**核心问题**:去掉幸存者偏差后策略还成立吗(去偏 OOS vs B068 偏差 OOS 对比,量化高估)。默认 equal(B069 定);gated 不动生产(B068 范式)。**【续接】**:status=building,Generator 接 F001(VM 实跑验 akshare 历史成分史端点+退市股价格可达性,这是本批成败)→若 GO:F002 去偏宇宙+F003 去偏重跑对比;若 NO-GO:F001 收+诚实结论。再 Codex F004 研究判定。**后续**:据 B070 结论(策略真成立?幻觉?还是免费修不了?)定是否还推进 A股 进攻(P3 港股/配资讨论)。其它候选:测试自动化基建/hk_china 重测。prod=B067 系。",
-    "generator": "2026-06-19 F001 done(generator,ultracode)。§23 三关口=GO,免费 baostock 能去幸存者偏差(违 spec NO-GO 悲观先验)。实测:dated 成分 query_{hs300,zz500,sz50}_stocks(date=) 本机可达(baostock 自有 host,非 akshare push host),回溯 2007,真 PIT(HS300 跨 19yr 换 226/300),含已退市名(1914 ever/800 current,抽样确证退市:武钢/葛洲坝/退市长油/邯郸钢铁...);退市名 k 线 query_history_k_data_plus 可拉(右删失到 outDate,乐视 17.89→1.69 4/4);规模 14s/名~3-4h/800名 gated 研究态。【续接 F002】须照报告 §5 硬约束(verify lens 多 agent 实测):①STOP-BIAS 停牌非尾部(乐视29.6%/康得26.5%零成交)→信号+成交都剔停牌,退市价记出场;②CEILING baostock 只有 hs300/zz500/sz50(无 zz1000/zz800)→只在指数band去偏非完全;③MCAP-RANK GAP 退市名无免费历史 mcap→别 mcap top-N(会重造偏差),最安全=B068宇宙+补退市名隔离单变量 或 只按 amount 排序标注;④成分端点瞬时空返回 err0→loader 须断言 n 在band+退避重试;⑤持一 session+按 updateDate 缓存;⑥更新 cn_universe.py:33 falsified docstring。复用 cn_provider.py(已含 baostock fallback+adjustflag=2 qfq 锁测)。",
+    "generator": "2026-06-19 F001+F002 done(generator,ultracode)。【F001】§23=GO,免费 baostock 去幸存者偏差,CONFIRM_GO(多 agent 独立复现)。【F002】去偏宇宙真建+集成通过。用户裁定口径=『PIT 指数成分直接当宇宙(不 mcap 重排,因退市名无免费 mcap 会重造偏差)+ current 成分做对照(F003 隔离单变量)』。真建:29 季度×800 PIT(HS300∪ZZ500∪SZ50),union 1310/non-current 536,退市抽样 12.5%(小天鹅A 000418 2019-06 被美的吸并∈2019-03 宇宙=True),non-current 占比 2019=46.5%/2022=31%/2026=5.6%。trade.load_cn_universe 零改读取(网络无关集成证据)。建 cn_pit_universe.csv(PIT)+ cn_pit_universe_current_control.csv(对照)。价格脚本 60/60 119k 行 schema 含 tradestatus(F003 剔停牌)。§5 全落实:指数成分直接当宇宙/within_expected_band 断言+退避重试 TransientConstituentError/单 session/CEILING(仅指数band去偏非完全,退市微小盘仍缺)/停牌列/cn_universe.py:31-44 docstring 据实改。代码 scripts/research/b070_survivorship_free.py(纯逻辑+loader,19 单测)+ build/fetch 脚本;runbook docs/dev/B070-survivorship-free-universe-runbook.md。1005 单测全绿,gated 研究 root 零生产回归。【F003 续接】PIT vs control walk-forward 回测,量化幸存者偏差(去偏 OOS vs 对照 OOS)+判定『去偏后是否仍成立』;需全量价格(~1310 名 3-4h)→VM/长跑;复用 run_cn_attack_wide_comparison harness。",
     "evaluator": null
   },
   "features": [

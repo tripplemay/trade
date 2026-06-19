@@ -28,13 +28,18 @@ loader is injected); ``trade`` stays offline and only reads the resulting CSVs.
 This module imports neither ``trade`` nor a broker SDK — the akshare loader is a
 ``MarketCapLoader`` Protocol, faked in tests.
 
-Survivorship bias (honest residual, B063 method discipline): the fetch superset
-is current-listed liquid large-caps (the seed, or a VM bulk-spot snapshot). It
-cannot include names delisted before today without a paid historical-constituents
-feed, so the universe slightly over-represents survivors. The point-in-time
+Survivorship bias (honest residual, B063 method discipline): THIS builder's fetch
+superset is current-listed liquid large-caps (the seed, or a VM bulk-spot snapshot),
+so it over-represents survivors. The earlier claim here — that delisted names cannot
+be recovered "without a paid historical-constituents feed" — was FALSIFIED by B070
+F001 (§23 = GO): baostock's *dated* ``query_{hs300,zz500,sz50}_stocks(date=)`` give
+real point-in-time index membership back to 2007, INCLUDING since-delisted names, for
+free. The survivorship-free universe built on that feed lives separately as a gated
+research artifact (``scripts/research/b070_build_survivorship_free_universe.py`` →
+``cn_pit_universe.csv``); this production builder is unchanged. The point-in-time
 *ranking* within the superset is leakage-free (it ranks on data at the rebalance
-date), which is the material anti-lookahead guarantee; the residual listing bias
-is documented here and in the membership CSV header.
+date), which is the material anti-lookahead guarantee; the residual listing bias of
+THIS builder is documented here and in the membership CSV header.
 """
 
 from __future__ import annotations
