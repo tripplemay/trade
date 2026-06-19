@@ -1,23 +1,23 @@
 {
-  "status": "done",
-  "total_features": 3,
-  "completed_features": 3,
+  "status": "building",
+  "total_features": 4,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F003",
+  "current_sprint": "F001",
   "last_updated": "2026-06-19",
-  "user_goal": "B069 cn_attack 实盘 advisory 默认权重切 inverse_vol(据 B068 验证)=B068 follow-up 落地批(小)。来源:用户自验 B068(等权 vs 波动倒数对比)支持 inverse_vol 改善 OOS→选 follow-up 调实盘默认权重。**★诚实前提**:切线上推荐默认=产品变更须可审计依据;B068 数字没进 git(用户本地自验)→F001 先落依据入 git(确认 inverse_vol vs equal OOS 改善),F002 据此才切(确认改善才切,没改善不切+报告,不盲切)。OOS 红卡不动(inverse_vol=改善崩盘非已验证赚钱);研究态/advisory-only/不自动下单不变;回测/研究全局默认仍 equal(只改 live producer cn_attack_precompute.py:183 传参)。**切换点**:cn_attack_precompute.py:183 现 CnAttackParameters(factor_variant=...)不传 weighting_scheme→默认 equal;改传 weighting_scheme='inverse_vol'(两模式);全局 DEFAULT_WEIGHTING_SCHEME 不动。**3 features 2g+1c**:F001 落 B068 切换依据入 git+明确支持/不支持结论;F002 据确认切两模式 live inverse_vol(全局默认 equal 不变);F003 Codex L2(切后 snapshot 反映 1/σ+OOS 红卡+零回归+§29)。spec docs/specs/B069-cn-attack-inverse-vol-default-spec.md。复用 B068 harness+宽宇宙+B067 precompute。",
+  "user_goal": "B070 A股 进攻策略 去幸存者偏差重验(point-in-time 历史成分股)=攻策略可信度真瓶颈。来源:2026-06-19 用户 B069 done 后选『消除幸存者偏差』。**为什么是真瓶颈**:现宽宇宙(B068)用当前可得名单建→只含活下来的赢家,已退市/已剔除输家缺席→回测系统性虚高(B068 OOS CAGR 62-77% 大概率假)。去偏需 point-in-time 真实成分(每调仓日当时真实指数成分含后退市名)+这些名在册期间真实价格=付费数据商(Wind/聚宽)卖钱的东西。**feasibility-first(像 B060 P0 spike)**:免费源(akshare/baostock)能否拿到去偏数据=最大未知,F001 先验三关口:A 历史 PIT 成分/B 退市名价格/C 规模→GO(A+B)/PARTIAL(A 有 B 缺)/NO-GO(A 缺=免费修不了)。**NO-GO=成功 spike 非失败**(诚实结论:策略停研究态,真验证需付费数据)。**核心问题**:去掉幸存者偏差后这个 A股 进攻策略还成立吗(去偏 OOS vs B068 偏差 OOS,量化高估;去偏后正收益=真成立/塌掉=幻觉)。**4 features 3g+1c**:F001 §23 三关口 feasibility(VM 实跑)+GO/PARTIAL/NO-GO;F002 survivorship-free PIT 宇宙(真成分+退市价格,gated 不动生产);F003 去偏宇宙重跑+偏差量化对比;F004 Codex 研究判定(去偏后是否成立/或 NO-GO 诚实结论)。spec docs/specs/B070-ashare-survivorship-free-revalidation-spec.md(4 章)。复用 cn_universe builder+cn_attack 引擎+B068 harness。",
   "reference_docs": [
-    "docs/specs/B069-cn-attack-inverse-vol-default-spec.md",
-    "docs/specs/B068-ashare-attack-wide-universe-revalidation-spec.md",
-    "workbench/backend/workbench_api/strategy_modes/cn_attack_precompute.py",
-    "trade/strategies/cn_attack_momentum_quality/parameters.py",
-    "trade/strategies/cn_attack_momentum_quality/construction.py"
+    "docs/specs/B070-ashare-survivorship-free-revalidation-spec.md",
+    "docs/dev/B068-wide-comparison-report.md",
+    "workbench/backend/workbench_api/data_refresh/cn_universe.py",
+    "trade/strategies/cn_attack_momentum_quality/construction.py",
+    "trade/backtest/cn_attack_momentum_quality/engine.py"
   ],
   "docs": {
-    "spec": "docs/specs/B069-cn-attack-inverse-vol-default-spec.md",
+    "spec": "docs/specs/B070-ashare-survivorship-free-revalidation-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B069-cn-attack-no-switch-signoff-2026-06-19.md",
-    "framework_reviewed": true
+    "signoff": null,
+    "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
@@ -28,18 +28,19 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": "B069 F001+F002 done = **诚实出口路径(不切)**。F001:跑 B068 committed harness 于全真宽数据(393名/250期,2019-04→2026-06 walk-forward)落切换依据入 git → docs/dev/B069-inverse-vol-default-decision.md(引 docs/dev/B068-wide-comparison-report.md 真数字)。**结论=不支持切 inverse_vol**:OOS Sharpe(quality 1.88→1.78/pure 1.72→1.65)+CAGR 两模式均更差,仅 quality 回撤弱改善(-23.9%→-20.7%),且 OOS 受幸存者偏差+顺风行情双重高估。用户裁定(2026-06-19)维持 equal。F002:**不改** cn_attack_precompute.py:183(续用默认 equal)+不改全局 DEFAULT_WEIGHTING_SCHEME → live/回测**字节级零回归**;新增回归守门单测 test_live_producer_keeps_equal_weighting_b069(焊死 equal,误切即红)。Gates:backend ruff/mypy 0(428)+precompute 11 passed;trade ruff/mypy 0;wide-comparison 7 passed。**给 Codex F003**:本批=NO-SWITCH,验收点改为『确认 live 仍 equal(未切)+守门测试在+OOS 红卡在+零回归』,不是『切后反映 1/σ』。",
-    "status": "completed"
+    "summary": null,
+    "status": "pending"
   },
   "session_notes": {
-    "planner": "2026-06-19 B069 done 收尾(planner)。B069(B068 follow-up:cn_attack 实盘权重切 inverse_vol?)=✅ done,0 fix-round,**结果=NO-SWITCH 维持 equal**。**★planner B069『验证→切,确认改善才切』诚实设计起关键作用**:Generator 把 B068 harness 在全真宽数据(393名/250期,2019-2026 walk-forward)重跑落依据入 git→inverse_vol 不支持切(OOS Sharpe quality 1.88→1.78/pure 1.72→1.65 两模式更差,CAGR 更差,换手/成本更高;唯一收益=quality 回撤少挖~3pp)→印证 equal 1/N 难被权重优化打败(DeMiguel/分析师判断)。F002 不改产品代码(precompute 续 equal 字节级零回归)+守门单测焊死 equal。Codex F003 NO-SWITCH PASS。signoff docs/test-reports/B069-cn-attack-no-switch-signoff-2026-06-19.md。决策依据 docs/dev/B069-inverse-vol-default-decision.md+报告 docs/dev/B068-wide-comparison-report.md 入 git。**★最重要诚实发现(策略可信度真瓶颈)**:B068 强 OOS(CAGR 62-77%,B066 −9~−11% 未复现)很可能=幸存者偏差+2024Q4 顺风双重高估,不足证稳健;消除需付费历史成分股数据(现宽宇宙用当前名单建=天然幸存者偏差)。OOS 红卡继续挂对。**A股 进攻策略现状:等权对、质量有风险调整价值,但『看起来赚钱』很可能是数据偏差幻觉,未真验证。****【续接=下一批待用户定】**:候选(planner 觉得幸存者偏差是真瓶颈,该优先):①消除幸存者偏差(接历史指数成分股 feed,使 OOS 可信)②测试自动化基建(golden 下沉 CI 解 §25)③P3 港股扩④hk_china 重测 Batch 2.5。prod=B067 系(A股 进攻 P2 advisory equal/momentum_decay,研究态)。",
-    "generator": "2026-06-19 B069 building→verifying(generator)。**诚实出口路径**:用户问『按 B068 证据如何推进』→裁定『不切,维持 equal』。背景:用户原自验认为 B068 支持 inverse_vol,但 generator 跑 committed B068 harness(scripts/research/run_cn_wide_backtest.py)于全真宽数据(F001 宽 universe 393名/250期 + F003 抓的宽 prices 393/393 0err 750k 行 + fundamentals 393/393 13267 行 + CSI300)得**权威数字反向**:inverse_vol OOS Sharpe+CAGR 两模式均更差,仅 quality 回撤弱改善;OOS 高(62~77%)受幸存者偏差+2024Q4 顺风双重高估。**F001**=决策依据入 git(docs/dev/B069-inverse-vol-default-decision.md + B068 报告 docs/dev/B068-wide-comparison-report.md,B068-F003 缺口『报告未入 git』一并补齐 commit 52e64a0)。**F002**=不改产品代码(precompute 续用 equal)+守门单测焊死 equal。**【续接 Codex F003】**:NO-SWITCH 验收(live 仍 equal/守门测试/OOS 红卡/零回归/HEAD≡prod),非『切后 1/σ』。研究产物本地 data/research/b068/(gitignored)。",
-    "evaluator": "2026-06-19 B069 F003 done(evaluator)。NO-SWITCH 验收全通：precompute.py:183 未传 weighting_scheme(默认 equal)✅；守门单测 test_live_producer_keeps_equal_weighting_b069 PASSED✅；OOS 红卡(validated=False,oos_result=negative)在位✅；L1 全绿(trade 983/backend safety 164/precompute 11/cn_universe 39/wide_comparison 7)；VM HEAD=a6b7d1d(B069 F001+F002)✅；零回归(precompute.py 字节级未变)✅；决策依据入 git(B069-inverse-vol-default-decision.md,不支持切)✅。signoff=docs/test-reports/B069-cn-attack-no-switch-signoff-2026-06-19.md。"
+    "planner": "2026-06-19 B070 planning(planner)。A股 进攻策略去幸存者偏差重验=攻可信度真瓶颈(B069 暴露:B068 强 OOS 大概率幸存者偏差+顺风高估幻觉)。用户选此为下一批。**feasibility-first(像 B060)**:免费源能否拿到去偏数据(历史 PIT 成分+退市名价格)=最大未知,F001 先验三关口 VM 实跑→GO/PARTIAL/NO-GO;NO-GO(免费修不了,需付费 Wind/聚宽)=有效诚实结论非失败,焊进 spec。**核心问题**:去掉幸存者偏差后策略还成立吗(去偏 OOS vs B068 偏差 OOS 对比,量化高估)。默认 equal(B069 定);gated 不动生产(B068 范式)。**【续接】**:status=building,Generator 接 F001(VM 实跑验 akshare 历史成分史端点+退市股价格可达性,这是本批成败)→若 GO:F002 去偏宇宙+F003 去偏重跑对比;若 NO-GO:F001 收+诚实结论。再 Codex F004 研究判定。**后续**:据 B070 结论(策略真成立?幻觉?还是免费修不了?)定是否还推进 A股 进攻(P3 港股/配资讨论)。其它候选:测试自动化基建/hk_china 重测。prod=B067 系。",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",
     "F002",
-    "F003"
+    "F003",
+    "F004"
   ],
-  "completed_date": "2026-06-19"
+  "completed_date": null
 }
