@@ -185,7 +185,32 @@ GET https://trade.guangai.ai/api/health
 
 ---
 
-## §10 签收结论
+## §10 独立复跑验证（evaluator 独立运行）
+
+```bash
+.venv/bin/python scripts/research/b070_survivorship_comparison.py \
+    --data-root data/research/b070 --start 2019-04-01 \
+    --out-md /tmp/b070_reverify.md --out-json /tmp/b070_reverify.json
+```
+
+| 指标 | Generator 存档 | Evaluator 复跑 | 一致 |
+|---|---|---|---|
+| verdict | SURVIVES_DEBIASING | SURVIVES_DEBIASING | ✅ |
+| pit.oos_cagr | 0.2839 | 0.2839 | ✅ |
+| pit.oos_sharpe | 0.93 | 0.93 | ✅ |
+| pit.full_cagr | 0.1312 | 0.1312 | ✅ |
+| pit.rebalance_count | 639 | 639 | ✅ |
+| pit.exit_count | 0 | 0 | ✅ |
+| pit.is_split_date | 2024-04-18 | 2024-04-18 | ✅ |
+| control.oos_cagr | 0.5502 | 0.5502 | ✅ |
+| control.oos_sharpe | 1.447 | 1.447 | ✅ |
+| bias_oos_cagr | 0.2663 | 0.2663 | ✅ |
+
+**All match = True** — 数字确定性，无随机性 ✅
+
+---
+
+## §11 签收结论
 
 **B070 F001-F003 全部特性签收：PASS（研究态：SURVIVES_DEBIASING）**
 
@@ -194,5 +219,7 @@ GET https://trade.guangai.ai/api/health
 | F001 | §23 三关口 feasibility = GO（免费 baostock 能去幸存者偏差） | ✅ |
 | F002 | PIT 宇宙真建（29 季度×800，1310 union，536 历史名含退市） | ✅ |
 | F003 | 去偏 vs 偏差 OOS 对比 + 研究判定（SURVIVES_DEBIASING，偏差+26.6pp） | ✅ |
+
+**独立复跑确认（§10）：数字确定性，evaluator 独立运行与 generator 存档完全一致。**
 
 **→ status: verifying → done**
