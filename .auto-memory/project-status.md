@@ -5,9 +5,10 @@ type: project
 ---
 
 ## 当前状态
-- **当前：B070 building（F001+F002 ✅ done，F003 next，2026-06-19）** = A股 进攻策略去幸存者偏差重验。**§23 三关口=GO**（免费 baostock 能去偏，证伪 spec NO-GO 先验+`cn_universe.py` 付费 feed 说；多 agent verify=CONFIRM_GO）。**F002 去偏宇宙真建成功**：dated `query_{hs300,zz500,sz50}_stocks(date=)` 回溯 2007 → **29 季度×800 PIT 成分**（HS300∪ZZ500∪SZ50），union 1310/non-current 536，退市抽样 **12.5%**（小天鹅A/*ST泛海/ST阳光城…），non-current 占比 2019=**46.5%**→2026=5.6%。`trade.load_cn_universe` **零改读取**（小天鹅A 000418∈2019-03 宇宙=True=策略真见退市输家）。建 PIT + current-control 两宇宙。代码 `scripts/research/b070_survivorship_free.py`(纯逻辑+loader,19 单测)+build/fetch 脚本；runbook `docs/dev/B070-survivorship-free-universe-runbook.md`。1005 单测全绿，gated 研究 root 零生产回归。
-- **【口径裁定（用户 2026-06-19）】**：F003 比 **PIT 去偏宇宙 vs current 对照宇宙**（同口径同成员数 800，唯一差=是否含退市/轮出名）→ 差值=纯幸存者偏差。**不**走 mcap top-N（退市名无免费 mcap 会重造偏差）。
-- **【F003 续接】**：去偏宇宙 walk-forward 重跑 cn_attack（默认 equal,B069）→ 去偏 OOS vs 对照 OOS 量化幸存者偏差 + 判定『去偏后是否仍成立』。需全量价格(~1310 名 3-4h)→VM/长跑。复用 `run_cn_attack_wide_comparison` harness + b070 fetch 脚本。**§5**：F003 据 `tradestatus`/volume 剔停牌（退市名停牌~30%）、退市价记出场；CEILING=仅指数band去偏非完全。
+- **当前：B070 verifying（F001+F002+F003 ✅ 三 generator done → Codex F004 验收，2026-06-19）** = A股 进攻去幸存者偏差重验。**★核心结论：去掉幸存者偏差后,A股 动量进攻策略仍成立(SURVIVES_DEBIASING)但表观 OOS 虚高约一倍。** F003 真数据(全量 1310 名 2.47M 行价格含 52 退市名)PIT 去偏 vs current 对照(pure_momentum+equal,WF 70/30)：**PIT OOS CAGR 28.4%/Sharpe 0.93(仍正)** vs 对照 55.0%/1.45 → **幸存者偏差高估 OOS CAGR +26.6pp、Sharpe +0.52**(全样本 +15.7pp)。报告 `docs/test-reports/B070-survivorship-comparison.md`。
+- **F001 §23=GO**（免费 baostock dated 成分能去偏，证伪付费 feed 说；多 agent verify=CONFIRM_GO）。**F002 去偏宇宙真建**：29 季度×800 PIT(回溯 2007)，union 1310/退市 52(小天鹅A/*ST泛海/ST阳光城…)，`trade.load_cn_universe` 零改读取。建 PIT + current-control 两宇宙隔离单变量。代码 `scripts/research/b070_*`(judge+builder+comparison 31 单测)。
+- **【F003 多 agent verify=CONFIRM_WITH_DISCLOSURES，纠正 generator 误判】**：①exits=0=momentum_decay 结构性非 bug;②退市估值伪命题:引擎 _wide() **ffill 冻结最后成交价(非计 0)**，ffill-vs-计0 实测**完全一致**→零影响，**+26.6pp 为下界**;③52 退市名 43 *ST 真崩(正确拖累 PIT)全在 PIT/0 在对照。**诚实**:正 OOS 主来自 2024Q4『924』反弹落 OOS 窗口(OOS Sharpe>IS 窗口落位假象);仅 pure_momentum(退市名无免费 quality 基本面=follow-on);仅指数band去偏;仍研究态不可配资。
+- **【F004 Codex 验收 carry】**：VM 复跑确认数字 + 复验退市估值 null result + 对照构造有效性 + 修正披露已入 .md（详见 progress.json session_notes.generator）。
 - **B069 ✅ done**（NO-SWITCH 维持 equal）：committed B068 harness 跑全真宽数据（393名/250期）→ inverse_vol 不支持切（OOS 两模式更差）→ 印证 equal 1/N 难被权重优化打败。守门单测焊死 equal，precompute 续 equal 零回归。
 - **B068 ✅ done** = A股 宽宇宙重验（report `docs/dev/B068-wide-comparison-report.md`，393名/250期）。**研究结论**：质量加值=是（仅风险调整）；波动倒数不值得换；OOS CAGR 62-77% 但**幸存者偏差+2024Q4 顺风双重高估**（B070 正在攻幸存者偏差这一半）。
 - **B067 ✅ done**（A股 进攻 P2 advisory 上线）。真 VM=`34.180.93.185`。prod=B067 系。

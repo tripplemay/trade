@@ -31,7 +31,7 @@
       "title": "去偏宇宙重跑回测 + 幸存者偏差量化对比(去偏 vs 偏差 OOS,GO/PARTIAL 才做)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §3 F003】(1) 在 survivorship-free 宇宙上重跑 cn_attack(默认 equal,B069 结论;2 因子)walk-forward。(2) 对比偏差宇宙(B068)vs 去偏宇宙的 OOS→量化幸存者偏差高估多少(CAGR/Sharpe 差)。(3) ★研究判定:去偏后策略是否仍正收益/正夏普(=真成立)还是塌掉(=之前是幻觉)。§29 红旗沿用。正面证据:去偏宇宙回测真数字+偏差量化(去偏 vs 偏差 OOS 对比)+明确『去偏后是否仍成立』结论。Gates 同 F001。",
       "design_decisions": [
         "核心交付=回答『去掉幸存者偏差后策略还成立吗』:去偏 OOS vs B068 偏差 OOS 对比,量化高估。",
