@@ -43,7 +43,7 @@
       "title": "Codex:验收(三关口结论+去偏宇宙真建+去偏 vs 偏差 OOS+去偏后是否成立)+研究判定+signoff(实测证据)",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §3 F004。真数据批次 signoff 含实测证据 §29】L1 全门禁。L2 真机(VM,贴真返回):F001 三关口可达结论;(GO/PARTIAL)去偏宇宙真建(历史成分+退市价格样本);去偏 vs 偏差 OOS 对比真数字;★去偏后策略是否仍成立研究判定。零回归(B067/B068/B066/Master 不破,gated 不动生产);研究态/no-broker;HEAD≡prod。★结论分支:GO+仍成立→A股 进攻策略首次真验证(可议信心/配资,仍研究态);GO+塌掉→诚实『之前是幻觉,不成立』;NO-GO→『免费修不了需付费,停研究态』。signoff docs/test-reports/B070-...-signoff-*.md 实测证据逐条。",
       "design_decisions": []
     }
