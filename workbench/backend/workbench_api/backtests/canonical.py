@@ -22,6 +22,7 @@ from types import SimpleNamespace
 from sqlalchemy.orm import Session, sessionmaker
 
 from workbench_api.backtests.worker import run_backtest_job
+from workbench_api.cli_clock import add_as_of_argument
 from workbench_api.db.engine import get_engine
 from workbench_api.db.repositories.investment_report import InvestmentReportRepository
 from workbench_api.db.require_production_db import (
@@ -70,7 +71,8 @@ def main(argv: list[str] | None = None) -> int:
         prog="python -m workbench_api.backtests.canonical",
         description="B047 canonical investment report generation (real Master backtest).",
     )
-    parser.parse_args(argv)
+    add_as_of_argument(parser)
+    args = parser.parse_args(argv)
     # B047-OPS1 F001 — hard-fail before any DB access if WORKBENCH_DB_URL is
     # unset (would silently write the dev scratch DB, not prod — the B047
     # re-verify root cause). Loud non-zero exit, no DB write.
@@ -82,7 +84,8 @@ def main(argv: list[str] | None = None) -> int:
     factory = sessionmaker(bind=get_engine(), autoflush=False, future=True)
     session = factory()
     try:
-        count = generate_canonical_reports(session)
+        # B072 F003 — --as-of pins the report date; omitted → today (UTC).
+        count = generate_canonical_reports(session, as_of=args.as_of)
     except Exception as exc:  # noqa: BLE001 — surface the failure on the CLI
         logger.exception("canonical_report_generation_failed")
         session.rollback()

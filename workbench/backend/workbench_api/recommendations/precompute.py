@@ -101,7 +101,9 @@ class PrecomputeSummary:
 _WEIGHT_ROUND_DIGITS = 6
 
 
-def score_master_target(*, fixture_dir: Path | None = None) -> MasterTargetResult:
+def score_master_target(
+    *, fixture_dir: Path | None = None, as_of: date | None = None
+) -> MasterTargetResult:
     """Run the real ``trade`` Master Portfolio scoring and return the current
     target. **The only place trade is imported.**
 
@@ -109,6 +111,11 @@ def score_master_target(*, fixture_dir: Path | None = None) -> MasterTargetResul
     checkout (e.g. ``data/fixtures/golden/``) for deterministic CI
     recommendation assertions, threaded through :func:`_load_scoring_records`
     to :func:`trade.data.loader.load_prices`.
+
+    ``as_of`` (B072 F003) pins the price-load horizon (the "as of when" the job
+    runs) to a fixed date instead of today (UTC) — so a CI fast-forward over
+    golden scores the target *as of* an earlier date deterministically. ``None``
+    (the default) keeps the production wall-clock behaviour unchanged.
 
     Prices come from :func:`_load_scoring_records` — real unified daily prices
     (B045 F001 refresh, read via the F002 ``WORKBENCH_DATA_ROOT`` loader) on the
@@ -143,7 +150,7 @@ def score_master_target(*, fixture_dir: Path | None = None) -> MasterTargetResul
         UsQualityMomentumParameters,
     )
 
-    records, prices_source = _load_scoring_records(fixture_dir=fixture_dir)
+    records, prices_source = _load_scoring_records(fixture_dir=fixture_dir, as_of=as_of)
     all_dates = tuple(sorted({record.date for record in records}))
     quarter_ends = identify_quarter_end_signal_dates(all_dates)
     if not quarter_ends:
@@ -214,7 +221,7 @@ def score_master_target(*, fixture_dir: Path | None = None) -> MasterTargetResul
 
 
 def _load_scoring_records(
-    *, fixture_dir: Path | None = None
+    *, fixture_dir: Path | None = None, as_of: date | None = None
 ) -> tuple[tuple[PriceBar, ...], str]:
     """Return ``(records, prices_source)`` for the Master scoring.
 
@@ -223,6 +230,9 @@ def _load_scoring_records(
     deterministic CI assertions — it short-circuits the VM-real / bundled-
     fixture resolution below and is labelled ``golden`` (→ DATA_SOURCE_FIXTURE,
     honest committed-test-data provenance).
+
+    ``as_of`` (B072 F003) is the price-load upper bound (the run "as of" date);
+    ``None`` → today (UTC), unchanged production behaviour.
 
     With it unset, prefers the **real** unified daily prices the B045 F001
     refresh job wrote (read via the B045 F002 ``WORKBENCH_DATA_ROOT``-aware
@@ -243,9 +253,10 @@ def _load_scoring_records(
         load_prices,
     )
 
+    cutoff = as_of or datetime.now(UTC).date()
     if fixture_dir is not None:
         by_ticker = load_prices(
-            list(price_universe()), datetime.now(UTC).date(), fixture_dir=fixture_dir
+            list(price_universe()), cutoff, fixture_dir=fixture_dir
         )
         records = tuple(bar for bars in by_ticker.values() for bar in bars)
         if not records:
@@ -259,7 +270,7 @@ def _load_scoring_records(
     # would have ``load_prices`` silently fall back to the bundled B025 fixture
     # (loader's 2nd tier) and we'd mislabel that fixture data as ``real``.
     if data_root_override() is not None and unified_prices_path(UNIFIED_PRICES_PATH).exists():
-        by_ticker = load_prices(list(price_universe()), datetime.now(UTC).date())
+        by_ticker = load_prices(list(price_universe()), cutoff)
         records = tuple(bar for bars in by_ticker.values() for bar in bars)
         if records:
             return records, _PRICES_SOURCE_REAL

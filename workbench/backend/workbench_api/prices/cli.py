@@ -53,6 +53,7 @@ from typing import Protocol
 
 from sqlalchemy.orm import Session, sessionmaker
 
+from workbench_api.cli_clock import add_as_of_argument
 from workbench_api.data.snapshot_loader import PriceBar
 from workbench_api.db.engine import get_engine
 from workbench_api.db.models.price_snapshot import PriceSnapshot
@@ -163,6 +164,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=DEFAULT_LOOKBACK_DAYS,
         help="Calendar days back to fetch (default: %(default)s).",
     )
+    add_as_of_argument(fetch)
     return parser.parse_args(argv)
 
 
@@ -254,7 +256,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     if args.command != "fetch":
         return 2
-    summary = fetch_main(args)
+    # B072 F003 — --as-of pins the fetch window's run date; omitted → today (UTC).
+    summary = fetch_main(args, today=args.as_of)
     print(
         f"price-snapshot ingest done — symbols={summary.symbols} "
         f"saved={summary.saved} errors={summary.errors} "

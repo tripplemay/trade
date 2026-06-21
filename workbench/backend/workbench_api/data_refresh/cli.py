@@ -17,6 +17,7 @@ from collections.abc import Callable, Sequence
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
+from workbench_api.cli_clock import add_as_of_argument
 from workbench_api.data_refresh.cn_universe import (
     DEFAULT_TOP_N,
     CnUniverseSummary,
@@ -85,6 +86,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=300,
         help="Cap on the discovered/seed A-share fetch superset (default: %(default)s).",
     )
+    add_as_of_argument(fetch)
     return parser.parse_args(argv)
 
 
@@ -264,6 +266,8 @@ def main(argv: list[str] | None = None) -> int:
 
     summary = fetch_main(
         args,
+        # B072 F003 — --as-of pins the refresh window's run date; omitted → today (UTC).
+        today=args.as_of,
         cn_universe_loader=cn_universe_loader,
         superset_provider=superset_provider,
         cn_fundamentals_loader=cn_fundamentals_loader,

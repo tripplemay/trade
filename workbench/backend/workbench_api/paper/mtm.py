@@ -17,14 +17,16 @@ reads the stored strategy target + price snapshots only — never imports
 
 from __future__ import annotations
 
+import argparse
 import logging
 import sys
 import uuid
 from dataclasses import dataclass
-from datetime import UTC, date, datetime
+from datetime import date, datetime
 
 from sqlalchemy.orm import Session, sessionmaker
 
+from workbench_api.cli_clock import add_as_of_argument, resolve_now
 from workbench_api.db.engine import get_engine
 from workbench_api.db.repositories.paper_account import (
     PaperAccountRepository,
@@ -113,18 +115,27 @@ def run_daily_mtm(
     return MtmSummary(accounts=len(accounts), points=points, rebalanced=rebalanced)
 
 
-def main(argv: list[str] | None = None) -> int:  # noqa: ARG001
+def main(argv: list[str] | None = None) -> int:
     """Entrypoint for ``python -m workbench_api.paper.mtm`` (timer)."""
 
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s %(message)s",
     )
-    now = datetime.now(UTC)
+    parser = argparse.ArgumentParser(
+        prog="python -m workbench_api.paper.mtm",
+        description="B056 daily paper-trading mark-to-market job.",
+    )
+    add_as_of_argument(parser)
+    args = parser.parse_args(argv)
+
+    # B072 F003 — --as-of fast-forwards the mark/rebalance date; omitted → now (UTC).
+    now = resolve_now(args.as_of)
+    on_date = args.as_of or now.date()
     factory = sessionmaker(bind=get_engine(), autoflush=False, future=True)
     session = factory()
     try:
-        summary = run_daily_mtm(session, on_date=now.date(), now=now)
+        summary = run_daily_mtm(session, on_date=on_date, now=now)
     finally:
         session.close()
     print(

@@ -32,11 +32,12 @@ import os
 import sys
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 from sqlalchemy.orm import sessionmaker
 
+from workbench_api.cli_clock import add_as_of_argument, resolve_now
 from workbench_api.db.engine import get_engine
 from workbench_api.db.repositories.news import NewsRepository
 from workbench_api.news.adapters.base import NewsAdapter, NewsItem
@@ -164,13 +165,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=DEFAULT_SNAPSHOT_ROOT,
         help="Root dir for raw body snapshots (default: %(default)s).",
     )
+    add_as_of_argument(fetch)
     return parser.parse_args(argv)
 
 
-def resolve_since(since_arg: str | None) -> datetime:
-    if since_arg is None:
-        return datetime.now(UTC) - timedelta(days=DEFAULT_LOOKBACK_DAYS)
-    return datetime.fromisoformat(since_arg).replace(tzinfo=UTC)
+def resolve_since(since_arg: str | None, *, as_of: date | None = None) -> datetime:
+    # An explicit --since lower bound always wins. Otherwise the default lookback
+    # window is anchored on the run clock — today (UTC), or, under B072 F003
+    # --as-of, midnight of the injected date (CI fast-forward, zero regression).
+    if since_arg is not None:
+        return datetime.fromisoformat(since_arg).replace(tzinfo=UTC)
+    return resolve_now(as_of) - timedelta(days=DEFAULT_LOOKBACK_DAYS)
 
 
 def resolve_form_types(form_types_arg: str) -> frozenset[str]:
@@ -258,7 +263,7 @@ def fetch_main(
     builds real adapters from ``args``.
     """
 
-    since = resolve_since(args.since)
+    since = resolve_since(args.since, as_of=args.as_of)
     form_types = resolve_form_types(args.form_types)
     tickers = resolve_tickers(args.ticker)
     ensure_snapshot_dirs(args.snapshot_root, ("sec_edgar", "yahoo_rss"))

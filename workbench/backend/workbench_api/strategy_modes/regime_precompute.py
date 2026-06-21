@@ -101,13 +101,17 @@ class RegimePrecomputeSummary:
     error_kind: str | None = None
 
 
-def score_regime_target() -> RegimeTargetResult:
+def score_regime_target(*, as_of: date | None = None) -> RegimeTargetResult:
     """Load the regime universe prices and compute the current regime target.
 
     **The only place trade is imported for production scoring.** Prices come
     from :func:`_load_regime_records` (real unified daily prices on the VM, else
     the bundled fixture). Delegates the pipeline to :func:`compute_regime_target`
     so the engine logic is unit-testable against synthetic records without disk.
+
+    ``as_of`` (B072 F003) pins the price-load horizon to a fixed date instead of
+    today (UTC) so a CI fast-forward runs the monthly timer "as of" that date.
+    ``None`` (the default) keeps the production wall-clock behaviour unchanged.
     """
 
     from trade.strategies.regime_adaptive.config import (  # type: ignore[import-untyped]
@@ -116,7 +120,7 @@ def score_regime_target() -> RegimeTargetResult:
 
     config = default_regime_adaptive_config()
     universe = tuple(entry.symbol for entry in config.universe)
-    records, prices_source = _load_regime_records(universe)
+    records, prices_source = _load_regime_records(universe, as_of=as_of)
     return compute_regime_target(records, prices_source=prices_source, config=config)
 
 
@@ -301,13 +305,18 @@ def run_regime_precompute(
     )
 
 
-def _load_regime_records(universe: tuple[str, ...]) -> tuple[tuple[PriceBar, ...], str]:
+def _load_regime_records(
+    universe: tuple[str, ...], *, as_of: date | None = None
+) -> tuple[tuple[PriceBar, ...], str]:
     """Return ``(records, prices_source)`` for the regime universe.
 
     Mirrors the Master precompute loader (B045 F002): trust the VM unified daily
     prices as REAL only when the data-root override is set AND the unified file
     exists; classify ``real`` (all 9 regime assets present) vs ``mixed`` (some
     missing) honestly. Local / CI (no override) fall back to the bundled fixture.
+
+    ``as_of`` (B072 F003) is the price-load upper bound; ``None`` → today (UTC),
+    unchanged production behaviour.
     """
 
     from trade.data.data_root import (  # type: ignore[import-untyped]
@@ -321,7 +330,7 @@ def _load_regime_records(universe: tuple[str, ...]) -> tuple[tuple[PriceBar, ...
     )
 
     if data_root_override() is not None and unified_prices_path(UNIFIED_PRICES_PATH).exists():
-        by_ticker = load_prices(list(universe), datetime.now(UTC).date())
+        by_ticker = load_prices(list(universe), as_of or datetime.now(UTC).date())
         records = tuple(bar for bars in by_ticker.values() for bar in bars)
         if records:
             present = sum(1 for symbol in universe if by_ticker.get(symbol))
