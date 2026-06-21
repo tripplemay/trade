@@ -1,62 +1,49 @@
 {
-  "sprint": "B071-test-automation-golden-foundation",
+  "sprint": "B072-test-automation-fullstack-e2e-clock",
   "features": [
     {
       "id": "F001",
-      "title": "Phase 0 门禁确权(审计 7 workflow 坐实 L1 全门禁/safety/ai-safety-eval 在 CI+required 缺口+用户改 ruleset 交接)",
+      "title": "golden 全栈 CI 编排(sqlite+进程,无 docker)+ golden→DB 播种(account/recommendation/report 确定性)",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §2 F001】(1) 审计 7 workflow 坐实 L1 全门禁(pytest/mypy/ruff 后端+trade、vitest/tsc/eslint)+safety(tests/safety 29)+ai-safety-eval 都在 CI/PR 跑→确权报告入 git,结论=Codex verifying 复跑 L1 冗余可跳 L1 直入 L2。(2) 补缺口:branch-protection-guidance.md required-checks 清单加 AI Safety Eval+点明 path-scoped『required』语义。(3) ★用户动作交接(agent 不改仓库设置):明列用户需在 GitHub branch protection ruleset 设 required 的 checks(python-ci/workbench-backend/workbench-frontend/ai-safety-eval)。正面证据:确权报告入 git(7 workflow 各跑什么+required 缺口+用户待设清单);guidance.md 补 AI Safety Eval。Gates:门禁绿(纯 doc+审计)。",
+      "status": "pending",
+      "acceptance": "【见 spec §3 F001 + §0 范围裁定】(1) golden→DB seed 脚本:WORKBENCH_DATA_ROOT=data/fixtures/golden+跑 precompute/recommendations CLI(或扩 seed_e2e_*.py)推 golden 进 DB(recommendation_snapshot 确定性目标+account_snapshot 闭环账户+investment_report),确定性(同 golden→同 DB)。(2) 全栈编排(sqlite+进程无 docker):扩 workbench-frontend.yml(或新 workbench-fullstack-e2e.yml)起 backend(uvicorn sqlite)+worker daemon+frontend+golden DB seed,CI 一键起。(3) golden 确定性全栈断言:打 /recommendations/current、/strategies、/home 断数据形状/golden 值合理(acceptance 层)。(4) ★不引 docker/Postgres(范围裁定,全仓 0 docker+sqlite+Postgres 排除);docker-compose 可选本地 dev 非硬性。正面证据:golden→DB seed 确定性;全栈 CI 起得来(backend+worker+frontend+seed);关键端点返 golden 数据。Gates:backend pytest/ruff 目录上下文/mypy+CI 全栈 step 绿。",
       "design_decisions": [
-        "agent 不改仓库设置(branch protection ruleset)=用户动作,F001 只审计+更新 advisory doc+明列用户待设清单。",
-        "AI Safety Eval 未列 required-checks 是确权缺口(Explore 发现);path-scoped workflow『required』语义须点明。"
+        "★范围裁定:全仓 0 docker+DB=sqlite(Postgres 排除)+生产 systemd→不引 docker/Postgres(冲突大 scope creep),复用现有 sqlite+进程编排半栈扩成全栈。",
+        "golden→DB seed=经 precompute CLI 把 golden 推进 DB(确定性);复用 B071 golden CSV+fixture_dir/WORKBENCH_DATA_ROOT seam。"
       ]
     },
     {
       "id": "F002",
-      "title": "golden 真数据集(committed fixture data/fixtures/golden/,真 Tiingo+SEC 子集含 2020/2022 危机窗,<5MB)",
+      "title": "e2e 交易闭环(推荐→diff→ticket→fills→reconcile→journal,= BL-B023-S1 手动冒烟自动化)",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §2 F002 + §1】(1) 冻结真实 Tiingo 价格+SEC 基本面子集为 committed fixture data/fixtures/golden/(必须 data/fixtures/** 下才 commit,data/snapshots/ 被 ignore)。(2) 体量裁<5MB(~10-30 ticker×2019-2023 含 2020 COVID+2022 熊市);schema 严格匹配 PRICES_REQUIRED_COLUMNS+FUNDAMENTALS_REQUIRED_COLUMNS(零改 loader)。(3) README 标真实来源+冻结日期+用途+不可重生成性(区别 synthetic _generate.py);附冻结脚本(从真 snapshot 裁非生成)。(4) 更新 workbench-testing-strategy.md:golden 真数据是 fixture-first 正式补充。正面证据:data/fixtures/golden/ committed(<5MB 真实数据含 2020/2022 窗 schema 匹配);README 诚实标源。Gates:门禁绿;golden git-tracked 可验。",
+      "status": "pending",
+      "acceptance": "【见 spec §3 F002 + §2】(1) 闭环 e2e spec:全栈(F001 golden seed)上串 /recommendations→/execution/position-diff→生成 /execution/ticket(Markdown checklist)→上传 /execution/fills(CSV)→/execution/reconcile/{id}→/execution/journal-history(看记录)=BL-B023-S1 手动冒烟自动化。(2) 合规:测 checklist 生成+fills CSV 上传+reconcile+journal(非下单),避 no-execution-buttons 禁词。(3) 闭环 DB 种子(account_snapshot+recommendation_snapshot,F001 复用)+HS256 auth(现成 auth-setup)。(4) 接 CI(扩 workbench-frontend.yml e2e 或全栈 workflow)+失败上传 Playwright trace。正面证据:e2e 跑通完整闭环(6 步全绿,journal 见记录);合规守门过;CI 接入。Gates:Playwright e2e 绿+no-execution/disclaimer safety 守门过+vitest/tsc/eslint。",
       "design_decisions": [
-        "golden 必须落 data/fixtures/**(gitignore !data/fixtures/** 才 commit),不能落 data/snapshots/(被 ignore)。",
-        "真实数据子集(非 synthetic),裁<5MB 与现 us_quality fixture 同级;含危机窗供 regime/危机断言;schema 匹配零改 loader。"
+        "★最高价值缺口:0 闭环 e2e(13 spec 全研究页/shell);闭环=BL-B023-S1/B067 Codex 反复手动冒烟,自动化它。",
+        "execution 6 页+13 API 全齐,e2e 缺串联;合规=测 checklist+fills+reconcile 非下单(避 no-execution 禁词)。"
       ]
     },
     {
       "id": "F003",
-      "title": "数据源注入(loader.py/engine.py 补 fixture_dir)+CI 用 golden 跑确定性回测/推荐+★N 策略两两不同断言",
+      "title": "可注入时钟(timer CLI --as-of 贯穿现有 seam,CI 快进验证定时行为,默认 now 生产零回归)",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §2 F003 + §1】(1) 补注入 seam:trade/data/loader.py+engine.py:run_backtest 加 fixture_dir 透传(对齐 us_quality_universe);master/per-strategy 回测+precompute 评分吃 golden。(2) 确定性断言:CI 用 golden 跑 Master 回测+≥2 per-strategy+推荐评分→同输入同输出(committed 数值快照/范围)。(3) ★核心反例(B050 现 CI 无覆盖):N 策略同时段 golden 跑→结果两两不同且各非退化(pairwise-distinct 永久断言)。(4) mypy trade+ruff 目录上下文。正面证据:golden 经 fixture_dir 注入跑出确定性结果(重跑 bit-identical);★N 策略 pairwise-distinct 通过。Gates:backend+trade pytest/ruff 目录上下文/mypy CI-exact 0。",
+      "status": "pending",
+      "acceptance": "【见 spec §3 F003 + §1】(1) 贯穿注入:各 timer CLI 入口加 --as-of/--now 旗标贯穿现有服务层 seam(now=/today=/computed_at=/as_of=)替顶层硬 datetime.now(UTC)(~10 处:prices/data-refresh/recommendations/advisor/news/regime/cn_attack/paper-mtm/canonical/worker);默认仍 datetime.now(UTC)(生产零回归)。(2) CI 快进验证定时:用 --as-of <golden 日期> 跑 precompute/MTM/news 断按注入日期产出正确(paper MTM 按指定日 mark/precompute 按指定 as-of 评分),不等真实时间。(3) acceptance 断言(golden+注入时钟)。正面证据:timer CLI 全支持 --as-of 贯穿现有 seam(默认 now 生产零回归);CI 用注入日期快进验证 ≥3 个 timer 定时行为正确。Gates:backend pytest/ruff 目录上下文/mypy+acceptance。",
       "design_decisions": [
-        "注入 seam:us_quality 用现有 fixture_dir(最高优先)+precompute 用现有 score_fn;loader.py/engine.py run_backtest 无 fixture_dir→本批补透传(P1-F2 真改造点)。",
-        "★N 策略两两不同是唯一无 CI 永久回归的复发不变量(B050 反例),本批核心新增。"
+        "服务层 seam 已全齐(now=/today=/as_of=/computed_at=),缺口只在 timer CLI 顶层硬 datetime.now→加 --as-of 贯穿(最小改动,Explore 推荐 option a)。",
+        "默认 datetime.now(UTC)=生产 timer 零回归;--as-of 仅 CI 注入。"
       ]
     },
     {
       "id": "F004",
-      "title": "验收即代码(tests/acceptance/ 两处+6 复发不变量永久回归+显式 CI step+流程约定)",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §2 F004 + §1】(1) 建 acceptance 层:trade tests/acceptance/(纯引擎无 DB 用 golden)+backend tests/acceptance/(DB/推荐链复用 initialised_db)。(2) 6 复发不变量上提永久 acceptance(用 golden):①★N 策略两两不同 ②权重和=1(含 cash buffer)③无负现金 ④账户源单一 ⑤Master 向后兼容 ⑥防守 shares×市价≈equity。(3) 显式 CI step:python-ci.yml 加 pytest tests/acceptance;workbench-backend.yml 加 pytest tests/acceptance -q(trade/** 触发)。(4) 流程约定:testing-strategy.md/角色规范记『每批写本批新颖 L2 检查为 acceptance 断言』。正面证据:tests/acceptance/ 两处建成+6 不变量永久断言(用 golden);CI step 显式接入;故意破坏任一不变量→对应 acceptance 红(有牙齿)。Gates:CI step 绿+acceptance 全过。",
-      "design_decisions": [
-        "acceptance 层不存在(tests/integration/ 空壳)→新建;6 复发不变量 5 条已有单元覆盖上提+1 条(N 策略两两不同)新增。",
-        "显式 CI step(非靠 testpaths 隐式),python-ci+workbench-backend 两处接。",
-        "验收即代码常态化=每批新颖 L2 检查写成 acceptance 断言(复发不变量永久守)。"
-      ]
-    },
-    {
-      "id": "F005",
-      "title": "Codex:元批次验收(★mutation 核 acceptance 有牙齿+golden 确定性+门禁确权)+signoff(流程确认)",
+      "title": "Codex:验收(golden 全栈起得来+★e2e 闭环 6 步绿+时钟快进真验+★mutation 核有牙齿+零回归)+signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "【见 spec §2 F005。元批次=确认基建真减负 evaluator】L1 全门禁。★mutation-style 核『acceptance 有牙齿』:故意改坏每条不变量(权重和改 1.1/N 策略喂同数据/防守 shares=equity)→对应 acceptance 必须红(证明测试真抓回归,对冲桶 D 盲点 roadmap §4.1)。golden 确定性:CI 同输入同输出(重跑 bit-identical 无随机无真网络)。门禁确权:确认 F001 报告属实(L1 复跑冗余)+required 缺口已标。零回归;research-only 不破;CI step 真接入(PR 触发可见)。signoff 含『本批起 evaluator verifying 可跳 L1 复跑、复发不变量由 acceptance CI 守、只审新颖/模糊残留』流程确认(守铁律 4 独立性)。signoff docs/test-reports/B071-...-signoff-*.md 实测证据逐条。",
+      "status": "pending",
+      "acceptance": "【见 spec §3 F004。真机/全栈批次 signoff 含实测证据 §29】L1 全门禁(B071 起 verifying 可跳 L1 复跑,确认 CI 绿即可 evaluator §30)。L2 实测(贴真返回):①golden 全栈 CI 起得来+golden→DB seed 确定性(同 golden→同 DB);②★e2e 交易闭环 6 步全绿(trace/截图+journal 真记录)=BL-B023-S1 自动化达成;③时钟快进真验(--as-of 跑 timer→按注入日期产出正确,贴对比);④零回归(生产 timer 默认 now 不变/B067/B071 不破)。★mutation 核(沿 B071 §31):故意破坏闭环一环(fills 数量错)→e2e 红(有牙齿)。research-only/no-execution/no-broker 边界守;HEAD≡prod。signoff docs/test-reports/B072-...-signoff-*.md 实测证据逐条。",
       "design_decisions": []
     }
   ]
