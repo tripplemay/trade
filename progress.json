@@ -1,23 +1,26 @@
 {
-  "status": "done",
-  "total_features": 4,
-  "completed_features": 4,
+  "status": "building",
+  "total_features": 5,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F004",
+  "current_sprint": "F001",
   "last_updated": "2026-06-21",
-  "user_goal": "B070 A股 进攻策略 去幸存者偏差重验(point-in-time 历史成分股)=攻策略可信度真瓶颈。来源:2026-06-19 用户 B069 done 后选『消除幸存者偏差』。**为什么是真瓶颈**:现宽宇宙(B068)用当前可得名单建→只含活下来的赢家,已退市/已剔除输家缺席→回测系统性虚高(B068 OOS CAGR 62-77% 大概率假)。去偏需 point-in-time 真实成分(每调仓日当时真实指数成分含后退市名)+这些名在册期间真实价格=付费数据商(Wind/聚宽)卖钱的东西。**feasibility-first(像 B060 P0 spike)**:免费源(akshare/baostock)能否拿到去偏数据=最大未知,F001 先验三关口:A 历史 PIT 成分/B 退市名价格/C 规模→GO(A+B)/PARTIAL(A 有 B 缺)/NO-GO(A 缺=免费修不了)。**NO-GO=成功 spike 非失败**(诚实结论:策略停研究态,真验证需付费数据)。**核心问题**:去掉幸存者偏差后这个 A股 进攻策略还成立吗(去偏 OOS vs B068 偏差 OOS,量化高估;去偏后正收益=真成立/塌掉=幻觉)。**4 features 3g+1c**:F001 §23 三关口 feasibility(VM 实跑)+GO/PARTIAL/NO-GO;F002 survivorship-free PIT 宇宙(真成分+退市价格,gated 不动生产);F003 去偏宇宙重跑+偏差量化对比;F004 Codex 研究判定(去偏后是否成立/或 NO-GO 诚实结论)。spec docs/specs/B070-ashare-survivorship-free-revalidation-spec.md(4 章)。复用 cn_universe builder+cn_attack 引擎+B068 harness。",
+  "user_goal": "B071 测试自动化基建 Phase 0+1(门禁确权+golden 真数据+验收即代码)=路线图地基批(★最高 ROI)。来源:2026-06-19 用户 B070(A股 进攻调查收官)后选『测试自动化基建』。触发=B061/B062/B063 evaluator 空洞 FULL PASS+B065/B067 SSH 误诊+B066-B070 策略批反复靠手动/agent 真机回测分幻觉与真信号→§25 真机验收退化是系统性,确定性回测基建是结构性解法。**目标**:把 Codex L2 真机验收的『真实数据回归行为』桶(桶 A)下沉 CI——冻结真实数据为 committed golden fixture→回测/推荐确定性可断言→复发不变量永久 acceptance 回归(做一次永远守)。不干掉 evaluator,是把它从复跑机械门禁解放出来只做机器做不了的判断。**现状(Explore 核)**:L1 全门禁+safety+ai-safety-eval+部署后 healthcheck 已全自动 CI(Codex 复跑 L1 冗余);缺口=branch protection 只 advisory doc+AI Safety Eval 漏列/无 golden 真数据(testing-strategy fixture-first)/acceptance 层不存在/『N 策略两两不同』(B050 反例)无 CI 永久回归。**5 features 4g+1c**:F001 Phase 0 门禁确权(审计+补 required 缺口+用户改 ruleset 交接);F002 golden 真数据集(data/fixtures/golden/ 真 Tiingo+SEC 子集含 2020/2022 危机窗<5MB);F003 数据注入(loader.py/engine.py 补 fixture_dir)+确定性回测/推荐+★N 策略两两不同;F004 验收即代码(tests/acceptance/ 两处+6 复发不变量永久+CI step);F005 Codex 元验收(★mutation 核 acceptance 有牙齿+golden 确定性+流程确认守铁律 4)。**诚实边界(roadmap §4)**:铁律 4 独立性≠测试执行(acceptance 由 Generator 写又 CI 跑有同向错盲点→F005 mutation-check+保留独立对抗评审缩到新颖/模糊);新颖验收设计/真金判断/裁定/框架沉淀仍人/独立 agent。本批只下沉复发不变量+确定性真数据回归。spec docs/specs/B071-test-automation-golden-foundation-spec.md。",
   "reference_docs": [
-    "docs/specs/B070-ashare-survivorship-free-revalidation-spec.md",
-    "docs/dev/B068-wide-comparison-report.md",
-    "workbench/backend/workbench_api/data_refresh/cn_universe.py",
-    "trade/strategies/cn_attack_momentum_quality/construction.py",
-    "trade/backtest/cn_attack_momentum_quality/engine.py"
+    "docs/specs/B071-test-automation-golden-foundation-spec.md",
+    "docs/dev/test-automation-roadmap.md",
+    "trade/data/us_quality_universe.py",
+    "trade/data/loader.py",
+    "trade/backtest/us_quality_momentum/engine.py",
+    "workbench/backend/workbench_api/recommendations/precompute.py",
+    "docs/dev/branch-protection-guidance.md",
+    ".github/workflows/python-ci.yml"
   ],
   "docs": {
-    "spec": "docs/specs/B070-ashare-survivorship-free-revalidation-spec.md",
+    "spec": "docs/specs/B071-test-automation-golden-foundation-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B070-ashare-survivorship-free-signoff-2026-06-19.md",
-    "framework_reviewed": true
+    "signoff": null,
+    "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
@@ -28,19 +31,20 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": "F001+F002+F003 ✅ 三 generator 特性全 done → status=verifying(Codex F004)。【核心研究结论】去掉幸存者偏差后 A股 动量进攻策略仍成立(SURVIVES_DEBIASING)但表观 OOS 虚高约一倍:PIT 去偏 OOS CAGR 28.4%/Sharpe 0.93(仍正);对照(偏差)55.0%/1.45 → 幸存者偏差高估 OOS CAGR +26.6pp、Sharpe +0.52(全样本 +15.7pp)。多 agent verify=CONFIRM_WITH_DISCLOSURES。【F003 真数据】全量 1310 名价格(2.47M 行,2018-2026,含 52 退市名,0 漏)+ PIT(1310)vs current 对照(800 幸存集)回测(pure_momentum+equal,WF 70/30,split 2024-04-18)。【verify 实测纠正】①exits=0=momentum_decay 结构性(无显式离场,band 调仓卖出)非 bug;②退市估值伪命题:引擎 _wide() ffill 冻结最后成交价(非计 0),ffill-vs-计0 实测完全一致→零影响,+26.6pp 为下界;③52 退市名 43 *ST 真崩(正确拖累 PIT)/6 并购高位/全在 PIT 0 在对照。【诚实】正 OOS 主来自 2024Q4『924』反弹落 OOS 窗口,OOS Sharpe>IS 是窗口落位假象;仅 pure_momentum(退市名无免费 quality 基本面);仅指数band去偏;仍研究态。报告 docs/test-reports/B070-survivorship-comparison.md。【F004 Codex】见 session_notes carry。",
-    "status": "f001_f002_f003_done_verifying_f004"
+    "summary": null,
+    "status": "pending"
   },
   "session_notes": {
-    "planner": "2026-06-21 B070 done 收尾(planner)。B070(去幸存者偏差重验)=✅ done,0 fix-round,**研究判定=SURVIVES_DEBIASING**。**★A股 进攻策略调查收官(B066→B070 五批)诚实结论**:去偏后 OOS CAGR 28.4%/Sharpe 0.93 仍正(非纯幻觉,有真实信号)但幸存者偏差把表观吹大约一倍(对照 55%/1.45,bias +26.6pp 下界)。🎯 planner『可能要付费数据』判断被证伪=免费 baostock 带日期历史成分+退市价格够用(F001 GO,多 agent CONFIRM;1310 union/52 退市名)。多 agent 对抗复审纠 generator 2 误判(退市估值 ffill 非计0=伪命题/exits=0 结构性)+钉诚实:★正 OOS 主因 2024Q4『924』反弹落 OOS 窗口=窗口落位假象(OOS Sharpe 0.93>IS 0.39),正收益=边际为正非可配资证据;仅 pure_momentum(退市名无免费 quality 基本面);仅指数 band 去偏;仍研究态不可配资。报告 docs/test-reports/B070-survivorship-comparison.md+signoff。**总结**:A股 进攻策略有真实但微弱、未稳健的 edge,能研究/看推荐,远未到押真金;全程守诚实(NO-GO 出口/对抗复审/窗口假象披露)。**继续深挖(2 因子去偏/P3 港股)性价比下降。****done 收尾**:F004 status→done(Codex 漏翻);framework_reviewed=true(0 新 learnings);project-status→done。**【续接=下一批待用户定】**:planner 倾向换方向。候选:①测试自动化基建(golden 下沉 CI 解 §25 真机验收反复问题,这串策略批证明回测基建重要)②A股 进攻 2 因子去偏 follow-on(需 baostock 退市名基本面,可能缺)③P3 港股扩④hk_china 重测 Batch 2.5。prod=B067 系(A股 进攻 P2 advisory equal/momentum_decay 研究态)。",
-    "generator": "2026-06-19 F001+F002+F003 done(generator,ultracode,用户=tripplemay)。批次核心问题答案:【去掉幸存者偏差后 A股 动量进攻策略还成立吗?→ 仍成立但表观 OOS 虚高约一倍】。F001 §23=GO(免费 baostock 去偏);F002 去偏宇宙真建(29季度×800 PIT,1310 union 含 52 退市名);F003 PIT vs current 对照回测(pure_momentum+equal):PIT OOS CAGR 28.4%/Sharpe 0.93 仍正,对照 55%/1.45 → 幸存者偏差高估 OOS CAGR +26.6pp。两轮多 agent 对抗 verify(F001=CONFIRM_GO,F003=CONFIRM_WITH_DISCLOSURES,纠正了我自己对退市估值的误判:引擎 ffill 非计 0,实测零影响,+26.6pp 为下界)。【F004 Codex 验收 carry(VM 真机)】:①复跑 b070_survivorship_comparison.py 确认数字(PIT full 0.1312/OOS 0.2839/Sharpe 0.93/rebal 639/exits 0/split 2024-04-18;control OOS 0.5502/1.447);②复验退市估值 null result(monkeypatch _wide 强制退市名末 bar 后置零,确认 PIT ending bit-identical~243406);③确认对照构造(control=单一幸存集 1 distinct membership;PIT 多 set/1310 名;52 退市名全在 PIT 0 在对照);④确认修正后的退市披露已入 committed .md;⑤可选 rolling/multi-split 稳健性探针(单 70/30 把 2024Q4 反弹全放 OOS,已披露非缺陷)。零回归:gated 研究 root,生产/B067/seed-43 未触,cn_universe.py 仅 docstring。【follow-on(非本批)】2 因子(quality)去偏需 baostock 基本面管线(query_profit/balance_data,退市名 fcf_yield 缺);港股 P3。prod=B067 系。",
-    "evaluator": "2026-06-19 B070 F004 done(evaluator)。研究判定：SURVIVES_DEBIASING。L1 全绿(trade 983/backend+safety 214/B070 unit 60)。F001 GO(baostock PIT 成分+退市价格 Gate A+B)✅；F002 PIT 宇宙(29 季度×800，1310 union，536 历史名)✅；对照构造验证(control all_same=True/PIT all_same=False)✅；F003 实测(PIT OOS CAGR 28.4%/Sharpe 0.93 正收益，偏差 OOS 55.0%/1.45，bias +26.6pp)✅；退市估值 null-result(ffill vs 计0 PIT 结论完全一致)✅；诚实边界全入 committed .md✅；VM HEAD=e91b669✅；零回归(仅研究脚本，生产字节级不变)✅。signoff=docs/test-reports/B070-ashare-survivorship-free-signoff-2026-06-19.md。"
+    "planner": "2026-06-21 B071 planning(planner)。测试自动化基建 Phase 0+1(地基,★最高 ROI)。用户 B070 后选此=结构性解 §25 真机验收退化(空洞 FULL PASS/SSH 误诊),这串策略批证明确定性回测基建是核心。**Explore 摸清**:L1 全门禁+safety+ai-safety-eval 已全自动 CI(复跑冗余);golden 必须落 data/fixtures/**(snapshots 被 ignore);注入 seam=fixture_dir(us_quality 已有)+score_fn(precompute 已有)+给 loader.py/engine.py 补 fixture_dir;『N 策略两两不同』(B050)是唯一无 CI 回归的复发不变量(P1-F3 核心);acceptance 层不存在(新建)。**5 features 4g+1c**:F001 门禁确权(用户改 ruleset 交接)/F002 golden 真数据/F003 注入+确定性+N 策略两两不同/F004 验收即代码(6 不变量永久+CI step)/F005 Codex 元验收(★mutation 核 acceptance 有牙齿)。**【续接】**:status=building,Generator 接 F001(审计 7 workflow+确权报告)→F002(golden 真数据冻结)→F003(注入+确定性)→F004(acceptance 层),再 Codex F005。**诚实边界**:本批只下沉复发不变量+确定性真数据回归,不碰新颖验收设计/真金判断/裁定(守铁律 4,F005 mutation-check 对冲同向错盲点)。**后续**:Phase 2(CI 全栈+时钟/录放)/Phase 3(prod synthetic+canary)/Phase 4(LLM-judge)/Phase 5(瘦身评审+signoff 起草)待本批跑顺。A股 进攻 P3/2 因子去偏 follow-on/hk_china 重测 仍在池。prod=B067 系。",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",
     "F002",
     "F003",
-    "F004"
+    "F004",
+    "F005"
   ],
-  "completed_date": "2026-06-19"
+  "completed_date": null
 }

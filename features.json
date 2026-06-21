@@ -1,50 +1,62 @@
 {
-  "sprint": "B070-ashare-survivorship-free-revalidation",
+  "sprint": "B071-test-automation-golden-foundation",
   "features": [
     {
       "id": "F001",
-      "title": "§23 三关口 feasibility 验证(历史 PIT 成分+退市价格+规模)VM 实跑 + GO/PARTIAL/NO-GO 报告",
+      "title": "Phase 0 门禁确权(审计 7 workflow 坐实 L1 全门禁/safety/ai-safety-eval 在 CI+required 缺口+用户改 ruleset 交接)",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §1 §3 F001 + feasibility-first】(1) VM 实跑验三关口:A 历史 PIT 成分(akshare index_stock_cons_csindex/index_stock_cons/成分变更史)/B 退市/历史名价格(akshare/baostock 退市股价格)/C 规模(sina/baidu host)。(2) 明确判定 GO(A+B 拿得到)/PARTIAL(A 有 B 缺)/NO-GO(A 缺=免费修不了),报告入 git(贴真返回:成分史几年/退市名价格样本/覆盖率)。(3) ★NO-GO/PARTIAL=成功 spike 非失败(免费源天花板=有效诚实结论:策略停研究态,真验证需付费数据如 Wind/聚宽)。正面证据(§29):三关口可达性各贴真返回证据+明确 GO/PARTIAL/NO-GO。Gates:backend+trade 门禁绿。NO-GO→批次主要在此收(F002/F003 跳/缩)。",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F001】(1) 审计 7 workflow 坐实 L1 全门禁(pytest/mypy/ruff 后端+trade、vitest/tsc/eslint)+safety(tests/safety 29)+ai-safety-eval 都在 CI/PR 跑→确权报告入 git,结论=Codex verifying 复跑 L1 冗余可跳 L1 直入 L2。(2) 补缺口:branch-protection-guidance.md required-checks 清单加 AI Safety Eval+点明 path-scoped『required』语义。(3) ★用户动作交接(agent 不改仓库设置):明列用户需在 GitHub branch protection ruleset 设 required 的 checks(python-ci/workbench-backend/workbench-frontend/ai-safety-eval)。正面证据:确权报告入 git(7 workflow 各跑什么+required 缺口+用户待设清单);guidance.md 补 AI Safety Eval。Gates:门禁绿(纯 doc+审计)。",
       "design_decisions": [
-        "feasibility-first(像 B060 P0 spike):免费源能否拿到去偏数据=最大未知,先验;NO-GO 是有效成功结论非失败。",
-        "幸存者偏差去偏=付费数据商卖钱的东西(Wind/聚宽),免费拿不到很可能→诚实 NO-GO 出口焊死。",
-        "§23 VM 实跑(akshare 成分史/退市价格端点走哪个 host 可达,仿 B068 sina 验法)。"
+        "agent 不改仓库设置(branch protection ruleset)=用户动作,F001 只审计+更新 advisory doc+明列用户待设清单。",
+        "AI Safety Eval 未列 required-checks 是确权缺口(Explore 发现);path-scoped workflow『required』语义须点明。"
       ]
     },
     {
       "id": "F002",
-      "title": "survivorship-free PIT 宇宙构建(真历史成分+退市名价格,GO/PARTIAL 才做,gated 不动生产)",
+      "title": "golden 真数据集(committed fixture data/fixtures/golden/,真 Tiingo+SEC 子集含 2020/2022 危机窗,<5MB)",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §3 F002】(1) 历史成分 loader(成分史→每调仓日 PIT 成分,含后来退市名)。(2) 退市/历史名价格拉取(在册期间)→进数据帧。(3) survivorship-free universe builder(真成分+退市价格,替 B068 自建 top-N);PARTIAL 时诚实标残余偏差。(4) gated(默认关,不动 B067/生产 daily refresh,同 B068 allow_sina_fallback 范式)。正面证据:去偏宇宙含历史成分(含已退市名,贴样本日成员+退市名占比);US/B067 零回归。Gates 同 F001。",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F002 + §1】(1) 冻结真实 Tiingo 价格+SEC 基本面子集为 committed fixture data/fixtures/golden/(必须 data/fixtures/** 下才 commit,data/snapshots/ 被 ignore)。(2) 体量裁<5MB(~10-30 ticker×2019-2023 含 2020 COVID+2022 熊市);schema 严格匹配 PRICES_REQUIRED_COLUMNS+FUNDAMENTALS_REQUIRED_COLUMNS(零改 loader)。(3) README 标真实来源+冻结日期+用途+不可重生成性(区别 synthetic _generate.py);附冻结脚本(从真 snapshot 裁非生成)。(4) 更新 workbench-testing-strategy.md:golden 真数据是 fixture-first 正式补充。正面证据:data/fixtures/golden/ committed(<5MB 真实数据含 2020/2022 窗 schema 匹配);README 诚实标源。Gates:门禁绿;golden git-tracked 可验。",
       "design_decisions": [
-        "去偏宇宙=真 PIT 历史成分(含已退市/已剔除名),替 B068 自建 top-N(只含当前活着的=幸存者偏差源)。",
-        "gated 默认关,生产 daily refresh 字节级不变(B068 范式),B067 读 seed-43 不动。"
+        "golden 必须落 data/fixtures/**(gitignore !data/fixtures/** 才 commit),不能落 data/snapshots/(被 ignore)。",
+        "真实数据子集(非 synthetic),裁<5MB 与现 us_quality fixture 同级;含危机窗供 regime/危机断言;schema 匹配零改 loader。"
       ]
     },
     {
       "id": "F003",
-      "title": "去偏宇宙重跑回测 + 幸存者偏差量化对比(去偏 vs 偏差 OOS,GO/PARTIAL 才做)",
+      "title": "数据源注入(loader.py/engine.py 补 fixture_dir)+CI 用 golden 跑确定性回测/推荐+★N 策略两两不同断言",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §3 F003】(1) 在 survivorship-free 宇宙上重跑 cn_attack(默认 equal,B069 结论;2 因子)walk-forward。(2) 对比偏差宇宙(B068)vs 去偏宇宙的 OOS→量化幸存者偏差高估多少(CAGR/Sharpe 差)。(3) ★研究判定:去偏后策略是否仍正收益/正夏普(=真成立)还是塌掉(=之前是幻觉)。§29 红旗沿用。正面证据:去偏宇宙回测真数字+偏差量化(去偏 vs 偏差 OOS 对比)+明确『去偏后是否仍成立』结论。Gates 同 F001。",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F003 + §1】(1) 补注入 seam:trade/data/loader.py+engine.py:run_backtest 加 fixture_dir 透传(对齐 us_quality_universe);master/per-strategy 回测+precompute 评分吃 golden。(2) 确定性断言:CI 用 golden 跑 Master 回测+≥2 per-strategy+推荐评分→同输入同输出(committed 数值快照/范围)。(3) ★核心反例(B050 现 CI 无覆盖):N 策略同时段 golden 跑→结果两两不同且各非退化(pairwise-distinct 永久断言)。(4) mypy trade+ruff 目录上下文。正面证据:golden 经 fixture_dir 注入跑出确定性结果(重跑 bit-identical);★N 策略 pairwise-distinct 通过。Gates:backend+trade pytest/ruff 目录上下文/mypy CI-exact 0。",
       "design_decisions": [
-        "核心交付=回答『去掉幸存者偏差后策略还成立吗』:去偏 OOS vs B068 偏差 OOS 对比,量化高估。",
-        "默认 equal(B069 已定不切 inverse_vol);2 因子(质量是否加值 B068 已答=是风险调整,去偏后复核)。"
+        "注入 seam:us_quality 用现有 fixture_dir(最高优先)+precompute 用现有 score_fn;loader.py/engine.py run_backtest 无 fixture_dir→本批补透传(P1-F2 真改造点)。",
+        "★N 策略两两不同是唯一无 CI 永久回归的复发不变量(B050 反例),本批核心新增。"
       ]
     },
     {
       "id": "F004",
-      "title": "Codex:验收(三关口结论+去偏宇宙真建+去偏 vs 偏差 OOS+去偏后是否成立)+研究判定+signoff(实测证据)",
+      "title": "验收即代码(tests/acceptance/ 两处+6 复发不变量永久回归+显式 CI step+流程约定)",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F004 + §1】(1) 建 acceptance 层:trade tests/acceptance/(纯引擎无 DB 用 golden)+backend tests/acceptance/(DB/推荐链复用 initialised_db)。(2) 6 复发不变量上提永久 acceptance(用 golden):①★N 策略两两不同 ②权重和=1(含 cash buffer)③无负现金 ④账户源单一 ⑤Master 向后兼容 ⑥防守 shares×市价≈equity。(3) 显式 CI step:python-ci.yml 加 pytest tests/acceptance;workbench-backend.yml 加 pytest tests/acceptance -q(trade/** 触发)。(4) 流程约定:testing-strategy.md/角色规范记『每批写本批新颖 L2 检查为 acceptance 断言』。正面证据:tests/acceptance/ 两处建成+6 不变量永久断言(用 golden);CI step 显式接入;故意破坏任一不变量→对应 acceptance 红(有牙齿)。Gates:CI step 绿+acceptance 全过。",
+      "design_decisions": [
+        "acceptance 层不存在(tests/integration/ 空壳)→新建;6 复发不变量 5 条已有单元覆盖上提+1 条(N 策略两两不同)新增。",
+        "显式 CI step(非靠 testpaths 隐式),python-ci+workbench-backend 两处接。",
+        "验收即代码常态化=每批新颖 L2 检查写成 acceptance 断言(复发不变量永久守)。"
+      ]
+    },
+    {
+      "id": "F005",
+      "title": "Codex:元批次验收(★mutation 核 acceptance 有牙齿+golden 确定性+门禁确权)+signoff(流程确认)",
       "priority": "high",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "【见 spec §3 F004。真数据批次 signoff 含实测证据 §29】L1 全门禁。L2 真机(VM,贴真返回):F001 三关口可达结论;(GO/PARTIAL)去偏宇宙真建(历史成分+退市价格样本);去偏 vs 偏差 OOS 对比真数字;★去偏后策略是否仍成立研究判定。零回归(B067/B068/B066/Master 不破,gated 不动生产);研究态/no-broker;HEAD≡prod。★结论分支:GO+仍成立→A股 进攻策略首次真验证(可议信心/配资,仍研究态);GO+塌掉→诚实『之前是幻觉,不成立』;NO-GO→『免费修不了需付费,停研究态』。signoff docs/test-reports/B070-...-signoff-*.md 实测证据逐条。",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F005。元批次=确认基建真减负 evaluator】L1 全门禁。★mutation-style 核『acceptance 有牙齿』:故意改坏每条不变量(权重和改 1.1/N 策略喂同数据/防守 shares=equity)→对应 acceptance 必须红(证明测试真抓回归,对冲桶 D 盲点 roadmap §4.1)。golden 确定性:CI 同输入同输出(重跑 bit-identical 无随机无真网络)。门禁确权:确认 F001 报告属实(L1 复跑冗余)+required 缺口已标。零回归;research-only 不破;CI step 真接入(PR 触发可见)。signoff 含『本批起 evaluator verifying 可跳 L1 复跑、复发不变量由 acceptance CI 守、只审新颖/模糊残留』流程确认(守铁律 4 独立性)。signoff docs/test-reports/B071-...-signoff-*.md 实测证据逐条。",
       "design_decisions": []
     }
   ]

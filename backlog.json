@@ -266,7 +266,7 @@
     "milestone": "工程基建 — 测试自动化(CI 下沉 Codex L2)",
     "source": "2026-06-12 用户工程基建讨论(Codex 测试能否 CI 全自动化)",
     "phase_plan": "P0 门禁确权 / P1 golden 真数据+验收即代码(地基) / P2 CI 全栈+时钟+VCR / P3 prod synthetic+canary / P4 LLM-judge 语义 / P5 瘦身独立评审+signoff 起草",
-    "sequence_note": "2026-06-12 用户调序：排在 B055 进攻选股之后(B057→B055→本批)；属工程基建非交易 gate，可在策略批次间隙插入。Phase 1 golden 数据集为最高 ROI 单项，可独立优先立项。"
+    "sequence_note": "2026-06-12 用户调序：排在 B055 进攻选股之后；属工程基建非交易 gate。Phase 1 golden 数据集为最高 ROI 单项。**2026-06-21 Phase 0+1 已立项=B071**(building,5 features 4g+1c):门禁确权+golden 真数据(data/fixtures/golden/ 真 Tiingo+SEC 含 2020/2022 危机窗)+验收即代码(tests/acceptance/ 6 复发不变量永久回归,★N 策略两两不同新增)+Codex mutation 元验收。触发=A股 进攻 B066-B070 五批反复靠手动真机回测分幻觉/真信号+§25 evaluator 退化系统性。本项余 **Phase 2(CI 全栈+时钟/录放)/P3(prod synthetic+canary)/P4(LLM-judge)/P5(瘦身评审+signoff 起草)**,待 B071 跑顺。spec docs/specs/B071-test-automation-golden-foundation-spec.md。"
   },
   {
     "id": "B0XX-ashare-data-source",
