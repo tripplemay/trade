@@ -56,6 +56,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e ".[dev]"
+          # B072 F001 — the golden→DB seed (recommendations precompute) and the
+          # backtest worker daemon import the repo-root ``trade`` package for the
+          # real Master Portfolio scoring; install it like the backend CI does
+          # (working-directory is workbench/backend → `../..` is the repo root).
+          python -m pip install ../..
 
       - name: Install npm dependencies
         run: npm ci
@@ -120,11 +125,13 @@ jobs:
           set -euxo pipefail
           rm -f e2e-workbench.db
           ${{ env.pythonLocation }}/bin/python -m alembic upgrade head
-          # B047 F004: Reports is DB-backed (kind='investment'). Seed one
-          # canonical Master Portfolio investment report so /reports +
-          # /reports/[slug] (b040 metrics-card e2e) have a real DB row to
-          # render — the canonical engine itself is too heavy to run in CI.
-          ${{ env.pythonLocation }}/bin/python scripts/seed_e2e_reports.py
+          # B072 F001 — golden→DB full-stack seed. Pushes the committed golden
+          # fixture into the DB so the e2e trading loop (F002) runs on real-shaped
+          # data: price_snapshot (marks) + recommendation_snapshot (real Master
+          # target scored on golden) + account_snapshot (closed-loop account) +
+          # investment_report (b040 metrics-card slug, via seed_e2e_reports.seed).
+          # Deterministic: same golden → same DB content.
+          ${{ env.pythonLocation }}/bin/python scripts/seed_golden_e2e.py
           ${{ env.pythonLocation }}/bin/python -m uvicorn workbench_api.app:app \
             --host 127.0.0.1 --port 8723 --log-level warning \
             > /tmp/uvicorn-e2e.log 2>&1 &
@@ -138,6 +145,32 @@ jobs:
           echo "::error::FastAPI backend did not start after 30s" >&2
           cat /tmp/uvicorn-e2e.log >&2
           exit 1
+
+      - name: Start backtest worker daemon (B072 F001 — full-stack orchestration)
+        env:
+          # Same DB as the uvicorn step — the worker drains the backtest_run /
+          # target_refresh_job queues against the seeded e2e DB. WORKBENCH_DB_URL
+          # is a non-default value so require_production_db lets the worker run
+          # (no WORKBENCH_ALLOW_DEV_DB needed). Tight poll for low-latency drain.
+          WORKBENCH_DB_URL: sqlite:///./e2e-workbench.db
+          WORKBENCH_BACKTEST_POLL_SECONDS: "1.0"
+        working-directory: workbench/backend
+        run: |
+          set -euxo pipefail
+          # Background the worker alongside uvicorn; it survives into the
+          # Playwright step (same as the backgrounded uvicorn). No WORKBENCH_DATA_ROOT
+          # is set, so any enqueued real backtest resolves to a graceful "error"
+          # rather than crashing the loop — the closed-loop e2e does not enqueue one.
+          ${{ env.pythonLocation }}/bin/python -m workbench_api.backtests.worker \
+            > /tmp/worker-e2e.log 2>&1 &
+          worker_pid=$!
+          sleep 3
+          if ! kill -0 "${worker_pid}" 2>/dev/null; then
+            echo "::error::backtest worker daemon exited within 3s" >&2
+            cat /tmp/worker-e2e.log >&2
+            exit 1
+          fi
+          echo "backtest worker daemon alive (pid=${worker_pid})"
 
       - name: Playwright E2E smoke (boots dev server via start-server-and-test)
         env:
