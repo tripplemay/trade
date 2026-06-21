@@ -18,7 +18,7 @@
       "title": "e2e 交易闭环(推荐→diff→ticket→fills→reconcile→journal,= BL-B023-S1 手动冒烟自动化)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §3 F002 + §2】(1) 闭环 e2e spec:全栈(F001 golden seed)上串 /recommendations→/execution/position-diff→生成 /execution/ticket(Markdown checklist)→上传 /execution/fills(CSV)→/execution/reconcile/{id}→/execution/journal-history(看记录)=BL-B023-S1 手动冒烟自动化。(2) 合规:测 checklist 生成+fills CSV 上传+reconcile+journal(非下单),避 no-execution-buttons 禁词。(3) 闭环 DB 种子(account_snapshot+recommendation_snapshot,F001 复用)+HS256 auth(现成 auth-setup)。(4) 接 CI(扩 workbench-frontend.yml e2e 或全栈 workflow)+失败上传 Playwright trace。正面证据:e2e 跑通完整闭环(6 步全绿,journal 见记录);合规守门过;CI 接入。Gates:Playwright e2e 绿+no-execution/disclaimer safety 守门过+vitest/tsc/eslint。",
       "design_decisions": [
         "★最高价值缺口:0 闭环 e2e(13 spec 全研究页/shell);闭环=BL-B023-S1/B067 Codex 反复手动冒烟,自动化它。",
