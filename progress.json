@@ -1,7 +1,7 @@
 {
-  "status": "verifying",
+  "status": "done",
   "total_features": 4,
-  "completed_features": 3,
+  "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "F004",
   "last_updated": "2026-06-22",
@@ -18,16 +18,16 @@
   "docs": {
     "spec": "docs/specs/B072-test-automation-fullstack-e2e-clock-spec.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/B072-fullstack-e2e-clock-signoff-2026-06-22.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": null,
-    "pass_count": 0,
+    "summary": "B072 全 PASS。acceptance 13/13(backend)+5/5(trade)全绿。Playwright e2e 2 passed(6 步 recommend→reconcile→journal 闭环)。mutation K/L/M 全 3 变红验证有牙齿。时钟快进真验(不同 as_of → 不同 signal_date → 不同目标)。零回归(B071 13+5 全在)。AI Safety Eval 红=外部 aigc-gateway 503/429(网关宕机,与 F003 无关,须恢复后单次重跑)。→ done。",
+    "pass_count": 4,
     "partial_count": 0,
     "fail_count": 0,
-    "issues": []
+    "issues": ["AI Safety Eval 红(外部 aigc-gateway 宕机,网关恢复后手动单次重跑,非代码问题,不阻断签收)"]
   },
   "generator_handoff": {
     "summary": "F001+F002+F003 done (generator,building 完结→verifying 交 Codex F004). **F003**:可注入时钟 timer CLI --as-of(默认 now 零回归)。共享 helper cli_clock.py;8 timer 接旗标(recommendations+regime 深 plumb as_of→价格 cutoff 真快进;advisor/prices/data_refresh/canonical/paper-mtm/news 现有 run-date seam 直穿);cn_attack(as-of 数据派生)+worker(daemon)出范围(cli_clock 文档说明)。acceptance test_b072_clock_injection.py ≥3 timer 快进有牙齿(recommendations golden 2021-12-31→2023-12-31 目标确定性不同/canonical 报告日期/news lookback 锚)+unit test_b072_clock_cli.py 全 8 CLI 贯穿+默认 now。本机全绿 ruff+mypy(435)+acceptance 13+safety 164+unit 1319。 **F002**:e2e 交易闭环 spec `workbench/frontend/tests/e2e/b072-closed-loop.spec.ts`(6 步 recommend→diff→ticket→fills→reconcile→journal,reconcile 经鉴权 page.request 调用=无 UI;CSV 内联 buffer 避 gitignore;账户由 F001 golden seed 提供)+ playwright.config authed testMatch;本机 Playwright 全栈实跑 2 passed + tsc/eslint/vitest 343 绿。**F001**:golden→DB 全栈 seed `workbench/backend/scripts/seed_golden_e2e.py` 推 4 表(price_snapshot 38×2 marks / recommendation_snapshot 真 Master golden 评分 7 行 sum=1.0 as_of=2023-09-29 / account_snapshot 闭环账户 1M cash+SPY10+AAPL5 / investment_report 复用 seed_e2e_reports b040 slug);确定性(同 golden→同 DB 内容)。全栈 CI 编排扩 workbench-frontend.yml:装 root trade(../..)+跑 golden seed(替原 seed_e2e_reports 单跑,golden seed 内含)+起 backtest worker daemon(同 e2e db,3s 存活检查)。acceptance `tests/acceptance/test_b072_golden_fullstack_seed.py` 3 测(确定性 fingerprint/recommendations 端点全 marked golden 目标/position-diff equity>cash+买单+0 unmatched)。Gates 本机全绿:ruff+mypy(432)+acceptance 8+safety 164。F002/F003 待续。",
@@ -37,7 +37,7 @@
   "session_notes": {
     "planner": "2026-06-21 B072 planning(planner)。测试基建 Phase 2 核心(golden 全栈+e2e 闭环+可注入时钟)。用户 B071 后选 Phase 2。**★范围裁定(焊死)**:Explore 发现全仓 0 docker+sqlite(Postgres 排除)+systemd→不引 docker/Postgres(架构冲突大 scope creep),复用现有 sqlite+进程编排半栈扩全栈。VCR(P2-F3)ROI 最低延后 Phase 2.1。**Explore 摸清**:e2e 闭环=最高价值缺口(0 闭环 e2e,execution 6 页+13 API 全齐缺串联,=BL-B023-S1 手动冒烟);时钟服务层 seam 全齐(now=/today=/as_of=/computed_at=)缺口只在 timer CLI 顶层硬 datetime.now→加 --as-of 贯穿;golden→DB seed 缺(经 precompute CLI 推 DB)。**4 features 3g+1c**:F001 golden 全栈+DB 播种/F002 e2e 闭环(合规避 no-execution 禁词,测 checklist+fills+reconcile 非下单)/F003 可注入时钟(默认 now 零回归)/F004 Codex(e2e 闭环 6 步绿+时钟快进+mutation 核)。**【续接】**:status=building,Generator 接 F001(golden→DB seed+全栈编排)→F002(e2e 闭环)→F003(时钟),再 Codex F004。**诚实边界**:e2e/时钟断言写码方写存同向错→F004 mutation-check 对冲;真金判断不自动化。**后续**:Phase 2.1(VCR)/P3(prod synthetic+canary)/P4(LLM-judge)/P5(瘦身评审)。A股 进攻 P3/hk_china 重测仍在池。prod=B067 系。",
     "generator": "2026-06-22 B072 building 完结(generator)→status=verifying 交 Codex F004。**F001+F002+F003 全 done,本机全绿(ruff+mypy 435+acceptance 13+safety 164+unit 1319+前端 Playwright 实跑);F001 CI 双绿、F002 Frontend CI 绿、F003 CI 跑中(推送时)。** 给 Codex(F004 验收)的要点:①golden 全栈 seed=`scripts/seed_golden_e2e.py`(已入 workbench-frontend.yml,装 trade+seed+worker daemon);确定性 acceptance=`tests/acceptance/test_b072_golden_fullstack_seed.py`。②e2e 闭环=`tests/e2e/b072-closed-loop.spec.ts`(reconcile 无 UI→page.request 鉴权调;CSV 内联 buffer)。③时钟=`cli_clock.py`+8 CLI;快进 acceptance=`tests/acceptance/test_b072_clock_injection.py`(recommendations golden 真快进有牙齿)。④mutation 核建议:破坏闭环一环(fills 数量/CSV symbol)→e2e 红;改 as_of plumb→快进 signal date 错→红;破 golden seed→acceptance 红。⑤诚实边界:cn_attack/worker 时钟出范围(已文档)。**F003 done**:可注入时钟 timer CLI --as-of。**F002 done**:e2e 交易闭环 `workbench/frontend/tests/e2e/b072-closed-loop.spec.ts`(加入 playwright.config authed testMatch)。6 步:recommend(/recommendations 断 positions-card+disclaimer)→diff(/execution/position-diff 断 export-csv enabled+非空)→ticket(/execution/ticket 点 ticket-generate→preview+history,经 GET /tickets 取 ticketId)→fills(/execution/fills selectOption(ticketId)+check allow-unmatched+setInputFiles({buffer})上传 generic CSV+submit→preview)→reconcile(无 UI 控件,经 page.request.post /api/execution/reconcile/{id} 鉴权调用,=BL-B023-S1 手动冒烟)→journal(/execution/journal-history 断 journal-history-link-{id})。**坑/决策**:①reconcile 无前端按钮(仅 backend endpoint)→e2e 用 page.request 鉴权调(storageState cookie 随行);②fills CSV 文件被 .gitignore `*.csv` 忽略(仅 data/fixtures/** 反忽略)→改 setInputFiles({name,mimeType,buffer}) 内联 CSV 避 fixture 文件;③fixture 账户已由 F001 golden seed 提供(1M cash 不超卖)。本机验证:chain(generate→submit_csv→reconcile→journal status=executed)+ Playwright 全栈实跑 2 passed(golden seed→uvicorn 8723→next dev 3000→spec 3.4s)+ tsc+eslint+vitest 343 全绿。**续接 F003**:可注入时钟。clean seam(加 --as-of 即可):paper/mtm.py(main now=datetime.now(UTC)→on_date/now,run_daily_mtm 已全 thread)、advisor/cli.py(run_daily today=)、prices/cli.py(fetch_main today=)、data_refresh/cli.py(fetch_main today=)、canonical.py(generate_canonical_reports as_of=)。深 seam(需 plumb):recommendations/cli.py→run_precompute,但 score_master_target/_load_scoring_records 价格 cutoff 硬 datetime.now(UTC).date()(precompute.py:248/262)→须加 as_of 参数才能真 golden 快进(flagship 验证:golden as of 不同日→不同确定性目标)。regime/cn_attack 类似。worker 是 daemon 无 run-date 语义/market 纯网络→文档说明不在本批。≥3 timer 快进:recommendations(golden 深)+ paper MTM(seed paper account+注入 as_of)+ canonical/advisor(--as-of 线程注入)。",
-    "evaluator": null
+    "evaluator": "2026-06-22 B072 F004 元验收(evaluator)。acceptance 13/13 backend(B071×5+B072 clock×5+seed×3)+5/5 trade 全绿。Playwright e2e 2 passed(6 步闭环+reconcile page.request 鉴权调)。mutation K(忽略 as_of→早晚信号相同→RED)/L(不播种 price_snapshot→has_mark=False→RED)/M(填报 shares=-999→fills-preview-card 不可见→RED)全 3 红后还原,接收全绿。时钟快进真验:early as_of=2021-12-31→signal=2021-09-30,late=2023-12-31→signal=2023-09-29,目标权重真不同。测试设施坑:uvicorn 须携 NEXTAUTH_SECRET=ci-playwright-secret-do-not-use-in-prod;漏设→auth token 解码失败→API 返空(非 401)。AI Safety Eval 红=外部 aigc-gateway 503/429,F003 无关,网关恢复后手动重跑解除阻断。→ status=done。"
   },
   "features": [
     "F001",
@@ -45,5 +45,5 @@
     "F003",
     "F004"
   ],
-  "completed_date": null
+  "completed_date": "2026-06-22"
 }
