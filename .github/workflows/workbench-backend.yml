@@ -77,3 +77,6 @@ jobs:
 
       - name: Pytest — safety boundary guards
         run: python -m pytest tests/safety -q
+
+      - name: Pytest — acceptance invariants (B071 F004 — golden permanent regressions)
+        run: python -m pytest tests/acceptance -q

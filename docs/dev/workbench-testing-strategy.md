@@ -73,6 +73,39 @@ read what came back. The chromium-only choice in B020 is a CI wall-time
 tradeoff; rebalance only when a customer-facing bug shows up that
 chromium would miss.
 
+## Acceptance — permanent recurring-invariant regressions (B071 F004)
+
+| | Detail |
+|---|---|
+| Tool | `pytest` (golden real-data fixture, no DB) + `pytest` + `initialised_db` (DB / recommendation chain) |
+| Where | `tests/acceptance/` (repo-root, pure engine) + `workbench/backend/tests/acceptance/` (DB) |
+| Network | none — runs entirely on `data/fixtures/golden/` (committed real data) and in-process SQLite |
+| CI step | `python-ci.yml` → "Run acceptance invariants"; `workbench-backend.yml` → "Pytest — acceptance invariants" (explicit, not folded into the implicit testpaths run) |
+
+The acceptance tier is where a batch's **bespoke L2 real-data verification
+becomes a permanent regression** — "验收即代码". It freezes the recurring
+behaviour invariants the evaluator used to re-verify by hand each batch, run
+deterministically on the golden fixture. The B071 seed set (6 invariants):
+① ★N strategies same-window pairwise-distinct (B050) · ② weights + cash buffer
+sum to 1 · ③ no negative cash (reconcile 409) · ④ single account source ·
+⑤ Master backwards-compat (canonical 4-sleeve composition + regime default) ·
+⑥ defensive shares × mark ≈ equity (golden SGOV).
+
+Each acceptance invariant must have **teeth**: deliberately breaking the
+invariant (mutation) must turn the corresponding test red. The evaluator
+mutation-checks this (B071 F005) — an acceptance test that stays green when the
+invariant is broken is worse than no test.
+
+> **Convention — verification-as-code is standard going forward.** Every batch,
+> the Generator (or an independent agent) writes that batch's **novel** L2
+> real-data checks as acceptance assertions here, so they become permanent CI
+> regressions instead of one-off Codex real-machine passes. This does **not**
+> retire the independent adversarial review (铁律 4): because the assertions are
+> written by the same side that writes the code, the review area is narrowed to
+> the **novel / ambiguous** judgement, while the mechanical recurring invariants
+> are CI-green by construction. (Role-context formalisation of this convention
+> is a Planner item — see `framework/proposed-learnings.md`.)
+
 ## Safety boundary guards
 
 Hard-policy enforcement, separate from feature tests. A red guard is a

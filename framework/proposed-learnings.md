@@ -322,3 +322,13 @@
 **状态：** 待确认
 
 <!-- 2026-06-21: B071 F003 新增 2 条活动候选（golden 真数据暴露复权 bug 类）：①us_quality raw-open/adj-close 混用(本批已修+golden 回归守)+合成 adj==close 系统性掩盖规律；②records 引擎 raw-close 估值轻微失真(用户裁本批不修,待 Planner)。下批 done 阶段提请用户裁定沉淀 generator.md。 -->
+
+## [2026-06-21] Claude CLI — 来源：B071 F004 — 验收即代码常态化约定，建议入 role-context
+
+**类型：** 模板修订 / 流程约定（角色规范）
+
+**内容：** B071 建 `tests/acceptance/` 永久不变量回归层（验收即代码）。约定：**每批 Generator/独立 agent 把本批新颖 L2 真实数据检查写成 acceptance 断言**（用 golden 跑），使一次性 Codex 真机验收沉淀为永久 CI 回归；不削弱铁律 4 独立评审——因断言由写码方写存同向错盲点，故独立评审面积缩到「新颖/模糊」判断，机械复发不变量由 CI 绿 by construction + F005 mutation-check 对冲（故意改坏不变量→对应 acceptance 必须红）。已记 `docs/dev/workbench-testing-strategy.md`「Acceptance tier」节。**建议**：Planner 把此约定正式写入 `role-context/generator.md`（+ evaluator.md：verifying 跳 L1 复跑、只审新颖/模糊残留）。
+
+**建议写入：** `.auto-memory/role-context/generator.md` + `evaluator.md`（验收即代码常态化 + evaluator 面积缩到新颖/模糊；Planner 统一制定 role-context）。
+
+**状态：** 待确认（Planner done 阶段裁定）

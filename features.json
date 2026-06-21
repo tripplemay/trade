@@ -42,7 +42,7 @@
       "title": "验收即代码(tests/acceptance/ 两处+6 复发不变量永久回归+显式 CI step+流程约定)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F004 + §1】(1) 建 acceptance 层:trade tests/acceptance/(纯引擎无 DB 用 golden)+backend tests/acceptance/(DB/推荐链复用 initialised_db)。(2) 6 复发不变量上提永久 acceptance(用 golden):①★N 策略两两不同 ②权重和=1(含 cash buffer)③无负现金 ④账户源单一 ⑤Master 向后兼容 ⑥防守 shares×市价≈equity。(3) 显式 CI step:python-ci.yml 加 pytest tests/acceptance;workbench-backend.yml 加 pytest tests/acceptance -q(trade/** 触发)。(4) 流程约定:testing-strategy.md/角色规范记『每批写本批新颖 L2 检查为 acceptance 断言』。正面证据:tests/acceptance/ 两处建成+6 不变量永久断言(用 golden);CI step 显式接入;故意破坏任一不变量→对应 acceptance 红(有牙齿)。Gates:CI step 绿+acceptance 全过。",
       "design_decisions": [
         "acceptance 层不存在(tests/integration/ 空壳)→新建;6 复发不变量 5 条已有单元覆盖上提+1 条(N 策略两两不同)新增。",

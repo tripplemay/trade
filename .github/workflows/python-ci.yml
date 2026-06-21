@@ -43,7 +43,13 @@ jobs:
         run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
 
       - name: Run pytest
-        run: python -m pytest
+        # Acceptance invariants run as their own explicit step below (B071 F004)
+        # so a red acceptance gate is visibly labelled — not folded into the
+        # implicit testpaths run.
+        run: python -m pytest --ignore=tests/acceptance
+
+      - name: Run acceptance invariants (B071 F004 — golden permanent regressions)
+        run: python -m pytest tests/acceptance -q
 
       - name: Run ruff
         run: python -m ruff check .
