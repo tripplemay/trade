@@ -18,7 +18,7 @@
       "title": "golden 真数据集(committed fixture data/fixtures/golden/,真 Tiingo+SEC 子集含 2020/2022 危机窗,<5MB)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F002 + §1】(1) 冻结真实 Tiingo 价格+SEC 基本面子集为 committed fixture data/fixtures/golden/(必须 data/fixtures/** 下才 commit,data/snapshots/ 被 ignore)。(2) 体量裁<5MB(~10-30 ticker×2019-2023 含 2020 COVID+2022 熊市);schema 严格匹配 PRICES_REQUIRED_COLUMNS+FUNDAMENTALS_REQUIRED_COLUMNS(零改 loader)。(3) README 标真实来源+冻结日期+用途+不可重生成性(区别 synthetic _generate.py);附冻结脚本(从真 snapshot 裁非生成)。(4) 更新 workbench-testing-strategy.md:golden 真数据是 fixture-first 正式补充。正面证据:data/fixtures/golden/ committed(<5MB 真实数据含 2020/2022 窗 schema 匹配);README 诚实标源。Gates:门禁绿;golden git-tracked 可验。",
       "design_decisions": [
         "golden 必须落 data/fixtures/**(gitignore !data/fixtures/** 才 commit),不能落 data/snapshots/(被 ignore)。",

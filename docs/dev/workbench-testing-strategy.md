@@ -109,6 +109,27 @@ the offender."
   upstream data shape gets a Codex-driven real-data reverify before
   signoff. Day-to-day CI never escapes the fixtures.
 
+### Golden real-data fixture (B071 F002 — fixture-first formal supplement)
+
+`data/fixtures/golden/` is a committed **real-data** fixture: a frozen subset
+of real Tiingo prices + real SEC EDGAR fundamentals (38 price tickers / 25 with
+fundamentals, 2019-2023 covering the 2020 COVID + 2022 bear regimes, < 5 MB),
+carved (not generated) from the gitignored `data/snapshots/` real-data files by
+`data/fixtures/golden/_freeze.py`. See `data/fixtures/golden/README.md`.
+
+It is the **fixture-first principle extended**, not violated: it lets CI run
+**deterministic real-data backtest / recommendation assertions** (same input →
+same output, no network, no random) — directly attacking the self-declared gap
+above ("real-data reverify could only be a one-time Codex pass"). The recurring
+invariants (N-strategy pairwise-distinct / weights sum to 1 / no negative cash /
+defensive shares×mark≈equity / Master backwards-compat) become **permanent
+acceptance regressions** under `tests/acceptance/` (B071 F003/F004), so they are
+守一次永远守 instead of re-verified by hand each batch. The synthetic
+`_generate.py` fixtures stay for their deterministic unit baselines; golden is a
+*real-data* layer on top, never a replacement. The v0.9.21 #1 reverify rule
+still governs **genuinely new** real-data shapes — golden only retires the
+*recurring* real-data checks, not the novel ones.
+
 ## What this document doesn't try to do
 
 - Visual regression / Lighthouse / Sentry — out of every currently
