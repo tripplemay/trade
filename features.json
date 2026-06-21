@@ -6,7 +6,7 @@
       "title": "Phase 0 门禁确权(审计 7 workflow 坐实 L1 全门禁/safety/ai-safety-eval 在 CI+required 缺口+用户改 ruleset 交接)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F001】(1) 审计 7 workflow 坐实 L1 全门禁(pytest/mypy/ruff 后端+trade、vitest/tsc/eslint)+safety(tests/safety 29)+ai-safety-eval 都在 CI/PR 跑→确权报告入 git,结论=Codex verifying 复跑 L1 冗余可跳 L1 直入 L2。(2) 补缺口:branch-protection-guidance.md required-checks 清单加 AI Safety Eval+点明 path-scoped『required』语义。(3) ★用户动作交接(agent 不改仓库设置):明列用户需在 GitHub branch protection ruleset 设 required 的 checks(python-ci/workbench-backend/workbench-frontend/ai-safety-eval)。正面证据:确权报告入 git(7 workflow 各跑什么+required 缺口+用户待设清单);guidance.md 补 AI Safety Eval。Gates:门禁绿(纯 doc+审计)。",
       "design_decisions": [
         "agent 不改仓库设置(branch protection ruleset)=用户动作,F001 只审计+更新 advisory doc+明列用户待设清单。",
