@@ -55,7 +55,7 @@
       "title": "Codex:元批次验收(★mutation 核 acceptance 有牙齿+golden 确定性+门禁确权)+signoff(流程确认)",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F005。元批次=确认基建真减负 evaluator】L1 全门禁。★mutation-style 核『acceptance 有牙齿』:故意改坏每条不变量(权重和改 1.1/N 策略喂同数据/防守 shares=equity)→对应 acceptance 必须红(证明测试真抓回归,对冲桶 D 盲点 roadmap §4.1)。golden 确定性:CI 同输入同输出(重跑 bit-identical 无随机无真网络)。门禁确权:确认 F001 报告属实(L1 复跑冗余)+required 缺口已标。零回归;research-only 不破;CI step 真接入(PR 触发可见)。signoff 含『本批起 evaluator verifying 可跳 L1 复跑、复发不变量由 acceptance CI 守、只审新颖/模糊残留』流程确认(守铁律 4 独立性)。signoff docs/test-reports/B071-...-signoff-*.md 实测证据逐条。",
       "design_decisions": []
     }

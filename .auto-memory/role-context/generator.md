@@ -36,3 +36,8 @@ type: feedback
 - 若目标路由只是 embed-old-components 占位，redirect 会造成 URL 换名但体验混乱，优先保留旧 deep-link
 - 列表页、新建页、报表页、子路径等深链需逐条验证目标功能是否 ready
 - redirect scope 在 building 中因 wire-readiness 缩减属于合理调整，不等同质量问题
+
+## 验收即代码 + 回测复权口径（v0.9.49 — B071）
+
+- 每批把本批**新颖 L2 真实数据检查**写成 `tests/acceptance/` 断言（用 `data/fixtures/golden/` 真数据跑），把一次性真机验收沉淀为**永久 CI 回归**。复发不变量（权重和=1 含 cash buffer / 无负现金 / 账户源单一 / N 策略两两不同 / Master 兼容 / 防守 shares×市价）已在 acceptance 层。详见 framework/harness/generator.md §31。
+- 回测引擎执行（买股数）与估值（mark）**同一复权口径**：禁 raw-open 买 + adj-close 估值混用（合成 fixture `adj==close` 会系统性掩盖此 bug，golden 真数据才抓得到；§30）。

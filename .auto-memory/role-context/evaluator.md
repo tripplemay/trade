@@ -35,3 +35,9 @@ type: feedback
 - 任何对比性收益 acceptance（"variant A 优于 variant B"、"gap 缩窄 N%"、"turnover 改善"）必须在真实数据 snapshot 上 reverify 才能签收 PASS
 - 来源：B016 → B017 反转（synthetic 上 HRP 略优 → real-data 上 HRP `-$496` + turnover +41%）
 - 详见 `docs/engineering/testing-and-fixture-policy.md` §Fixture vs Real-Data Signal Reversal
+
+## verifying 可跳 L1 复跑，只审新颖/模糊（v0.9.49 — B071）
+
+- L1 全门禁（pytest/mypy/ruff 后端+trade、vitest/tsc/eslint）+ safety + ai-safety-eval 已全自动 CI（push+PR 全跑）→ verifying **无需逐条复跑 L1**，确认 CI 绿即可。
+- 复发不变量（权重和=1 / 无负现金 / 账户源单一 / N 策略两两不同 / Master 兼容 / 防守 shares×市价）由 `tests/acceptance/` CI 永久守（mutation-check 保有牙齿）→ 不每批手验。
+- evaluator **聚焦机器做不了的判断**：本批**新颖** L2 真实数据检查 + 模糊裁定 + 真金生产判断 + 独立对抗复审（守铁律 4）。决策级/真数据核心仍须实际执行+贴实测证据（§25.1/§29）。详见 framework/harness/evaluator.md §30。

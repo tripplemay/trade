@@ -5,6 +5,19 @@
 
 ---
 
+## v0.9.49 — 2026-06-21（B071：回测复权口径一致 + 验收即代码常态化 + evaluator verifying 跳 L1）
+
+**来源批次：** B071 测试自动化基建 Phase 0+1（门禁确权 + golden 真数据 + 验收即代码，0 fix-round done）。3 条 learnings 用户 done 收尾批准。
+
+**沉淀内容（用户确认）：**
+- **① 回测引擎复权口径必须一致（raw-open 买 / adj-close 估值混用 = bug，合成 fixture `adj==close` 系统性掩盖）** → `generator.md §30`。B071 golden 真数据首跑即抓出 us_quality 此 bug（真数据假亏 −99.4%，合成 adj==close 掩盖；commit `cb69763` 修 + 亦修生产 VM us_quality 回测自动部署）。**§30.1** 折入同族潜伏实例（records 引擎 raw-close 估值持有拆股名穿越拆股月轻微失真，用户裁本批不修=已知非阻断限制）。同族 §28。
+- **② 验收即代码常态化（每批新颖 L2 真实数据检查写成 acceptance 断言，沉淀为永久 CI 回归）** → `generator.md §31` + `role-context/generator.md`。守铁律 4：独立评审缩到新颖/模糊 + F005 mutation-check 对冲（B071 10/10 mutation 全红）。
+- **③ evaluator verifying 可跳 L1 复跑，复发不变量由 acceptance CI 守，只审新颖/模糊** → `evaluator.md §30` + `role-context/evaluator.md`。门禁确权坐实 L1 全门禁已全自动 CI（`docs/dev/B071-gate-authority-audit.md`）。目标=把 evaluator 从复跑机械门禁解放，只做机器做不了的判断。
+
+**意义：** 测试自动化路线图地基落地——把「真实数据回归行为」桶下沉 CI（golden 确定性 + 复发不变量永久守），且 golden 真数据当场修了潜伏生产 bug。归档 `framework/archive/proposed-learnings-archive-v0.9.49.md`。**活跃候选队列清空。** 后续 Phase 2-5 待按需。
+
+---
+
 ## v0.9.48 — 2026-06-18（B066：回测引擎停牌缺价 + 多变体退化空仓红旗）
 
 **来源批次：** B066 ashare-attack-momentum-quality（A股 进攻策略 P1，0 fix-round done；F002/F003 自跑对抗审查抓出 2 真 bug，用户 done 收尾批准沉淀）。

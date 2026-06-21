@@ -618,3 +618,15 @@ nvm use                          # 不一致时切换；无 nvm 装 Node 20 LTS
 **规约：** ①signoff 模板新增 §「实测证据（决策级/真数据批次必填）」段（见 templates/signoff-report.md）；②该段任一行写「未执行 / 受阻 / 框架就绪」→ 该 acceptance 项判 **CONDITIONAL，不计入 done**；③planner done 复核先看此段是否名副其实（planner.md done §1.5）。
 
 **来源：** §25.1 三实例（B061/B062/B063）的流程修复落点。配套 templates/signoff-report.md §「实测证据」+ planner.md done §1.5。
+
+## 30. verifying 可跳 L1 复跑；复发不变量由 acceptance CI 守；只审新颖/模糊（v0.9.49 — B071 测试基建沉淀）
+
+**背景：** B071 门禁确权坐实——**L1 全门禁（pytest/mypy/ruff 后端+trade、vitest/tsc/eslint）+ safety 守门 + ai-safety-eval 已全自动 CI（push+PR 全跑）**，Codex 在 verifying 复跑 L1 = 纯冗余。且 B071 建了 `tests/acceptance/` 永久不变量回归层（golden 真数据），复发不变量（权重和=1 / 无负现金 / 账户源单一 / N 策略两两不同 / Master 兼容 / 防守 shares×市价）变 **CI 永久守**。
+
+**规约（evaluator verifying/reverify）：**
+1. **可跳 L1 复跑**：L1 全门禁已由 CI 守（PR 绿即过），verifying 无需逐条复跑 L1；确认 CI 绿即可。
+2. **复发不变量由 acceptance CI 守**：上述 6 条不再每批手验，CI 绿 by construction（mutation-check 保有牙齿）。
+3. **evaluator 聚焦「新颖/模糊」判断**：本批**新颖**的 L2 真实数据检查（首次出现的不变量/行为）+ **模糊裁定** + 真金生产判断 + 独立对抗复审——机器做不了的判断，才是 evaluator 的核心价值（守铁律 4 独立性）。
+4. **决策级/真数据核心**：仍按 §25.1 / §29 必须实际执行 + 贴实测证据（acceptance 只守「复发」不变量，新颖真数据交付物仍须真验）。
+
+**来源：** B071（门禁确权 `docs/dev/B071-gate-authority-audit.md` + acceptance 层）。配套 generator.md §31（验收即代码常态化）。目标=把 evaluator 从「复跑机械门禁」解放出来,只做机器做不了的判断。

@@ -309,7 +309,7 @@
 
 **建议写入：** `framework/harness/generator.md`（§28 同节扩：回测引擎真实数据复权——执行价与估值价须同复权基准；合成 fixture adj==close 系统性掩盖 raw/adj 混用，golden 真数据是结构解）。
 
-**状态：** 待确认
+**状态：** ✅ 已沉淀 v0.9.49（generator.md §30；用户 2026-06-21 批 B071 done 收尾）
 
 ## [2026-06-21] Claude CLI — 来源：B071 F003 — records-based 引擎 raw-close 估值 + adj-close 信号的「持有拆股名穿越拆股」轻微失真（非阻断，待 Planner 评）
 
@@ -319,7 +319,7 @@
 
 **建议写入：** 待 Planner 裁定（可能并入上一条 generator.md 复权规则，或单列 records 引擎 raw-close 估值修正 feature）。
 
-**状态：** 待确认
+**状态：** ✅ 已沉淀 v0.9.49（并入 generator.md §30.1 作同族潜伏实例=已知非阻断限制;用户 2026-06-21 批 B071 done 收尾,本批不修)
 
 <!-- 2026-06-21: B071 F003 新增 2 条活动候选（golden 真数据暴露复权 bug 类）：①us_quality raw-open/adj-close 混用(本批已修+golden 回归守)+合成 adj==close 系统性掩盖规律；②records 引擎 raw-close 估值轻微失真(用户裁本批不修,待 Planner)。下批 done 阶段提请用户裁定沉淀 generator.md。 -->
 
@@ -331,4 +331,8 @@
 
 **建议写入：** `.auto-memory/role-context/generator.md` + `evaluator.md`（验收即代码常态化 + evaluator 面积缩到新颖/模糊；Planner 统一制定 role-context）。
 
-**状态：** 待确认（Planner done 阶段裁定）
+**状态：** ✅ 已沉淀 v0.9.49（generator.md §31 + evaluator.md §30 + role-context/generator.md + role-context/evaluator.md;用户 2026-06-21 批 B071 done 收尾）
+
+<!-- 2026-06-21: v0.9.49 沉淀完成（B071 done 收尾,用户批）：3 条→①回测复权口径一致(raw-open 买/adj-close 估值混用=bug,合成 adj==close 系统性掩盖)generator.md §30+②records 引擎轻微失真折入 §30.1 已知非阻断限制;③验收即代码常态化+evaluator verifying 跳 L1=generator.md §31+evaluator.md §30+role-context 两文件。归档 framework/archive/proposed-learnings-archive-v0.9.49.md。CHANGELOG v0.9.49。**活跃候选队列=空。** -->
+
+<!-- 当前活动候选（v0.9.49 后）：无。 -->

@@ -5,7 +5,7 @@ type: project
 ---
 
 ## 当前状态
-- **当前：B071 verifying（2026-06-21，generator F001-F004 全 done，交 Codex F005 元批次验收）** = 测试自动化基建 Phase 0+1（地基批，★最高 ROI）。把 Codex L2「真实数据回归行为」桶下沉 CI。
+- **当前：B071 ✅ done（2026-06-21，Codex F005 元验收 PASS）** = 测试自动化基建 Phase 0+1（地基批，★最高 ROI）。把 Codex L2「真实数据回归行为」桶下沉 CI。**F005:10/10 mutation 全红=acceptance 有牙齿+L1 全绿+golden bit-identical+门禁确权属实+零回归**。🎯golden 真数据首跑当场抓出 us_quality raw-open 买/adj-close 估值混用 bug(真数据假亏-99%,合成 adj==close 掩盖,已修+亦修生产 VM 自动部署)。**framework v0.9.49 沉淀 3 条**(generator.md §30 复权口径一致+§31 验收即代码+evaluator.md §30 verifying 跳 L1+role-context)。signoff docs/test-reports/B071-test-automation-golden-signoff-2026-06-21.md。
 - **F001 门禁确权（纯 doc）**：`docs/dev/B071-gate-authority-audit.md` 逐 7 workflow 实测，结论=L1 全门禁在 push+PR 全跑→**Codex verifying 复跑 L1 冗余可跳 L2**；补 `safety-eval`（job 名，≠workflow 名 `AI Safety Eval`）入 branch-protection required + path-scoped required 卡死语义。
 - **F002 golden 真数据** `data/fixtures/golden/`：25 优质（真 SEC）+13 ETF（真价）2019-2023 含 2020/2022 危机窗，3.74MB，`_freeze.py` 从 gitignored snapshot 裁 bit-identical（剔 CAT/GOOGL 无窗内 SEC）。
 - **F003 注入 seam + 确定性 + N 策略两两不同**：loader.py/us_quality engine.py/precompute.py 补 `fixture_dir`；5 策略重跑 bit-identical + ★N 策略两两不同非退化（B050）。**★★用户授权修 us_quality 真实复权 bug**（raw open 买/adj close 估值→真数据-99% 假亏；修 `_wide_open` 用复权 open，合成 adj==close 故向后兼容，golden 上 -26.7% 合理；**亦影响生产 VM us_quality 回测，已随绿 CI 自动部署**）。
@@ -22,6 +22,7 @@ type: project
 - golden 只进测试 fixture seam，不碰生产 data_root/unified 真数据路径。
 
 ## Framework 状态（最新 4 版）
+- **v0.9.49**（B071）：generator.md §30 回测复权口径一致(raw-open 买/adj-close 估值混用=bug,合成 adj==close 系统性掩盖) / §31 验收即代码常态化 / evaluator.md §30 verifying 跳 L1 只审新颖/模糊 + role-context 两文件。
 - **v0.9.48**（B066）：generator.md §28 停牌 ffill+NaN 安全读价禁 `or 0.0` / §29 多变体退化空仓必须红旗。
 - **v0.9.47**（B065）：generator.md §19.1 ruff 本地须目录上下文 `python -m ruff check .`。
 - **v0.9.46**（B064）：generator.md §27 前端「本机绿≠CI 绿」二坑。
