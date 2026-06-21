@@ -29,6 +29,12 @@ from trade.data.trading_calendar import trading_calendar_gaps
 FIXTURE_FILE_NAME = "market_prices.json"
 REQUIRED_PRICE_FIELDS = ("date", "symbol", "open", "close", "adjusted_close", "volume")
 
+# B071 F003 — file names a caller-supplied ``fixture_dir`` (e.g.
+# ``data/fixtures/golden/``) must use, matching the unified-file +
+# us_quality_universe convention so the golden fixture is a drop-in source.
+FIXTURE_PRICES_FILE_NAME = "prices_daily.csv"
+FIXTURE_FUNDAMENTALS_FILE_NAME = "fundamentals.csv"
+
 # B028 F003 — paths the PIT loader resolves to in priority order.
 # Both paths sit under the repo root (loader.py lives at
 # ``trade/data/loader.py``; parents[2] is the repo root).
@@ -192,12 +198,23 @@ def load_prices(
     tickers: list[str],
     as_of_date: date,
     from_date: date | None = None,
+    *,
+    fixture_dir: Path | None = None,
 ) -> dict[str, list[PriceBar]]:
     """Return PIT-filtered daily price bars per ticker.
 
-    Reads from :data:`UNIFIED_PRICES_PATH` (real-data unified file
-    produced by ``scripts/backfill_prices.py``) when it exists,
-    otherwise falls back to :data:`B025_FIXTURE_PRICES_PATH` (B025
+    ``fixture_dir`` (B071 F003) pins the source to ``fixture_dir /
+    prices_daily.csv``, bypassing the unified-file / B025-fixture
+    resolution below — this is the deterministic-injection seam that
+    lets the records-based engines (master / momentum / risk_parity /
+    hk_china) and recommendation scoring read the committed golden
+    real-data fixture (``data/fixtures/golden/``). Mirrors
+    :func:`trade.data.us_quality_universe.load_prices`'s ``fixture_dir``.
+
+    With ``fixture_dir`` unset, reads from :data:`UNIFIED_PRICES_PATH`
+    (real-data unified file produced by ``scripts/backfill_prices.py``)
+    when it exists, otherwise falls back to
+    :data:`B025_FIXTURE_PRICES_PATH` (B025
     synthetic). Strategy code is intended to migrate to this function
     in the B030 cutover; it does not yet replace the existing fixture
     loaders.
@@ -230,7 +247,7 @@ def load_prices(
     if as_of_date > date.today():
         as_of_date = date.today()
 
-    source_path = _resolve_prices_source()
+    source_path = _resolve_prices_source(fixture_dir)
     if source_path is None:
         # Neither the unified file nor the B025 fixture is on disk.
         # Strategy callers asking for prices before either ships shouldn't
@@ -256,15 +273,31 @@ def load_prices(
     return out
 
 
-def _resolve_prices_source() -> Path | None:
+def _resolve_prices_source(fixture_dir: Path | None = None) -> Path | None:
     """Pick the highest-priority on-disk source for :func:`load_prices`.
 
-    The unified path honours the ``WORKBENCH_DATA_ROOT`` override (B045 F002):
-    on the VM it resolves under the refresh job's data root; locally / in CI
-    (env unset) it stays :data:`UNIFIED_PRICES_PATH` under the repo root. The
-    B025 fixture fall-back is unchanged.
+    ``fixture_dir`` (B071 F003) wins over everything — an explicit
+    caller-supplied fixture checkout (e.g. ``data/fixtures/golden/``).
+    The file inside must be named ``prices_daily.csv`` (same convention
+    as the unified file and :func:`trade.data.us_quality_universe`); a
+    missing file raises :class:`FixtureDataError` rather than silently
+    falling through, because the caller explicitly asked for it.
+
+    With ``fixture_dir`` unset, the unified path honours the
+    ``WORKBENCH_DATA_ROOT`` override (B045 F002): on the VM it resolves
+    under the refresh job's data root; locally / in CI (env unset) it
+    stays :data:`UNIFIED_PRICES_PATH` under the repo root. The B025
+    fixture fall-back is unchanged.
     """
 
+    if fixture_dir is not None:
+        candidate = fixture_dir / FIXTURE_PRICES_FILE_NAME
+        if not candidate.is_file():
+            raise FixtureDataError(
+                f"fixture_dir prices file not found: {candidate}. Expected "
+                f"'{FIXTURE_PRICES_FILE_NAME}' under the supplied fixture_dir."
+            )
+        return candidate
     unified = unified_prices_path(UNIFIED_PRICES_PATH)
     if unified.exists():
         return unified
@@ -276,10 +309,17 @@ def _resolve_prices_source() -> Path | None:
 def load_fundamentals(
     tickers: list[str],
     as_of_date: date,
+    *,
+    fixture_dir: Path | None = None,
 ) -> dict[str, FundamentalsRow | None]:
     """Return the latest PIT-visible :class:`FundamentalsRow` per ticker.
 
-    Reads from :data:`UNIFIED_FUNDAMENTALS_PATH` (real-data unified CSV
+    ``fixture_dir`` (B071 F003) pins the source to ``fixture_dir /
+    fundamentals.csv`` (the golden real-data injection seam), mirroring
+    :func:`load_prices`.
+
+    With ``fixture_dir`` unset, reads from
+    :data:`UNIFIED_FUNDAMENTALS_PATH` (real-data unified CSV
     produced by ``scripts/backfill_fundamentals.py``) when it exists,
     otherwise falls back to :data:`B025_FIXTURE_FUNDAMENTALS_PATH`
     (B025 synthetic fixture; row 1 of B025 universe fixture). Strategy
@@ -323,7 +363,7 @@ def load_fundamentals(
     if as_of_date > date.today():
         as_of_date = date.today()
 
-    source_path = _resolve_fundamentals_source()
+    source_path = _resolve_fundamentals_source(fixture_dir)
     if source_path is None:
         # Neither the unified file nor the B025 fixture is on disk.
         return {ticker: None for ticker in tickers}
@@ -354,14 +394,24 @@ def load_fundamentals(
     return out
 
 
-def _resolve_fundamentals_source() -> Path | None:
+def _resolve_fundamentals_source(fixture_dir: Path | None = None) -> Path | None:
     """Pick the highest-priority on-disk source for :func:`load_fundamentals`.
 
-    The unified path honours the ``WORKBENCH_DATA_ROOT`` override (B045 F002),
-    mirroring :func:`_resolve_prices_source`; the B025 fixture fall-back is
-    unchanged.
+    ``fixture_dir`` (B071 F003) wins — the file inside must be named
+    ``fundamentals.csv``; a missing file raises :class:`FixtureDataError`.
+    With it unset, the unified path honours the ``WORKBENCH_DATA_ROOT``
+    override (B045 F002), mirroring :func:`_resolve_prices_source`; the
+    B025 fixture fall-back is unchanged.
     """
 
+    if fixture_dir is not None:
+        candidate = fixture_dir / FIXTURE_FUNDAMENTALS_FILE_NAME
+        if not candidate.is_file():
+            raise FixtureDataError(
+                f"fixture_dir fundamentals file not found: {candidate}. Expected "
+                f"'{FIXTURE_FUNDAMENTALS_FILE_NAME}' under the supplied fixture_dir."
+            )
+        return candidate
     unified = unified_fundamentals_path(UNIFIED_FUNDAMENTALS_PATH)
     if unified.exists():
         return unified

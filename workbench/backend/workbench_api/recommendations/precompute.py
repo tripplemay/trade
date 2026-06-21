@@ -34,6 +34,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol
 
 from sqlalchemy.orm import Session
@@ -62,6 +63,11 @@ _SLEEVE_STATUS_STUBBED = "stubbed_data_unavailable"
 _SLEEVE_STATUS_SCORED = "scored"
 _PRICES_SOURCE_REAL = "real"
 _PRICES_SOURCE_FIXTURE = "fixture"
+# B071 F003 — committed golden real-data fixture injected via fixture_dir.
+# Distinct from the bundled monthly fixture; _classify_data_source maps any
+# non-REAL source to DATA_SOURCE_FIXTURE, so this stays honest (committed test
+# data, not live VM data) without changing the real/mixed/fixture contract.
+_PRICES_SOURCE_GOLDEN = "golden"
 
 
 class PrecomputeError(RuntimeError):
@@ -95,9 +101,14 @@ class PrecomputeSummary:
 _WEIGHT_ROUND_DIGITS = 6
 
 
-def score_master_target() -> MasterTargetResult:
+def score_master_target(*, fixture_dir: Path | None = None) -> MasterTargetResult:
     """Run the real ``trade`` Master Portfolio scoring and return the current
     target. **The only place trade is imported.**
+
+    ``fixture_dir`` (B071 F003) pins the scoring prices to that fixture
+    checkout (e.g. ``data/fixtures/golden/``) for deterministic CI
+    recommendation assertions, threaded through :func:`_load_scoring_records`
+    to :func:`trade.data.loader.load_prices`.
 
     Prices come from :func:`_load_scoring_records` — real unified daily prices
     (B045 F001 refresh, read via the F002 ``WORKBENCH_DATA_ROOT`` loader) on the
@@ -132,7 +143,7 @@ def score_master_target() -> MasterTargetResult:
         UsQualityMomentumParameters,
     )
 
-    records, prices_source = _load_scoring_records()
+    records, prices_source = _load_scoring_records(fixture_dir=fixture_dir)
     all_dates = tuple(sorted({record.date for record in records}))
     quarter_ends = identify_quarter_end_signal_dates(all_dates)
     if not quarter_ends:
@@ -202,15 +213,24 @@ def score_master_target() -> MasterTargetResult:
     )
 
 
-def _load_scoring_records() -> tuple[tuple[PriceBar, ...], str]:
+def _load_scoring_records(
+    *, fixture_dir: Path | None = None
+) -> tuple[tuple[PriceBar, ...], str]:
     """Return ``(records, prices_source)`` for the Master scoring.
 
-    Prefers the **real** unified daily prices the B045 F001 refresh job wrote
-    (read via the B045 F002 ``WORKBENCH_DATA_ROOT``-aware loader) so risk_parity
-    has daily vol history and the us_quality equities appear on the signal date.
-    Falls back to the bundled monthly ETF fixture when the VM data root is unset
-    (local / CI) or the unified file is absent / empty (pre-refresh VM) — the
-    real-data path is opt-in and never breaks the deterministic fixture run.
+    ``fixture_dir`` (B071 F003) pins the records to ``fixture_dir /
+    prices_daily.csv`` (the committed golden real-data fixture) for
+    deterministic CI assertions — it short-circuits the VM-real / bundled-
+    fixture resolution below and is labelled ``golden`` (→ DATA_SOURCE_FIXTURE,
+    honest committed-test-data provenance).
+
+    With it unset, prefers the **real** unified daily prices the B045 F001
+    refresh job wrote (read via the B045 F002 ``WORKBENCH_DATA_ROOT``-aware
+    loader) so risk_parity has daily vol history and the us_quality equities
+    appear on the signal date. Falls back to the bundled monthly ETF fixture
+    when the VM data root is unset (local / CI) or the unified file is absent /
+    empty (pre-refresh VM) — the real-data path is opt-in and never breaks the
+    deterministic fixture run.
     """
 
     from trade.data.data_root import (  # type: ignore[import-untyped]
@@ -222,6 +242,17 @@ def _load_scoring_records() -> tuple[tuple[PriceBar, ...], str]:
         load_fixture_prices,
         load_prices,
     )
+
+    if fixture_dir is not None:
+        by_ticker = load_prices(
+            list(price_universe()), datetime.now(UTC).date(), fixture_dir=fixture_dir
+        )
+        records = tuple(bar for bars in by_ticker.values() for bar in bars)
+        if not records:
+            raise PrecomputeError(
+                f"golden fixture_dir {fixture_dir} yielded no price records"
+            )
+        return records, _PRICES_SOURCE_GOLDEN
 
     # Only trust the VM path as REAL when the unified file the F001 refresh job
     # writes actually exists. Without this guard, an env-set-but-pre-refresh VM

@@ -30,7 +30,7 @@
       "title": "数据源注入(loader.py/engine.py 补 fixture_dir)+CI 用 golden 跑确定性回测/推荐+★N 策略两两不同断言",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F003 + §1】(1) 补注入 seam:trade/data/loader.py+engine.py:run_backtest 加 fixture_dir 透传(对齐 us_quality_universe);master/per-strategy 回测+precompute 评分吃 golden。(2) 确定性断言:CI 用 golden 跑 Master 回测+≥2 per-strategy+推荐评分→同输入同输出(committed 数值快照/范围)。(3) ★核心反例(B050 现 CI 无覆盖):N 策略同时段 golden 跑→结果两两不同且各非退化(pairwise-distinct 永久断言)。(4) mypy trade+ruff 目录上下文。正面证据:golden 经 fixture_dir 注入跑出确定性结果(重跑 bit-identical);★N 策略 pairwise-distinct 通过。Gates:backend+trade pytest/ruff 目录上下文/mypy CI-exact 0。",
       "design_decisions": [
         "注入 seam:us_quality 用现有 fixture_dir(最高优先)+precompute 用现有 score_fn;loader.py/engine.py run_backtest 无 fixture_dir→本批补透传(P1-F2 真改造点)。",

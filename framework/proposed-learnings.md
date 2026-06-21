@@ -300,3 +300,25 @@
 <!-- 当前活动候选（v0.9.48 后）：无。 -->
 
 <!-- 当前活动候选（v0.9.47 后）：B066 2 条（generator）——①回测引擎停牌/缺价 ffill+NaN 安全读价禁 `or 0.0`(NaN 真值)+缺价回归测试(对抗审查 2 HIGH)；②多变体研究报告须 no_activity 退化红旗+同族 toggle 失效红旗(勿静默 0.00%)。另含 2 条设计模式待评：镜像新市场写专属引擎保 US 零回归 by construction(F001/F002 construction+costs 不改 us)；standalone 研究策略 registry 模式(入 list_strategies 但排除 sleeve_strategies via STANDALONE_RESEARCH_STRATEGY_IDS 避 phantom sleeve/paper)。下批 done 阶段提请用户裁定。 -->
+
+## [2026-06-21] Claude CLI — 来源：B071 F003 — golden 真数据暴露 us_quality raw-open/adj-close 混用 bug（合成 fixture adj==close 系统性掩盖）
+
+**类型：** 新坑（backtest 引擎 / 真实数据复权）+ 验证本批 golden 使命
+
+**内容：** B071 建 golden 真数据 fixture 注入 us_quality 回测，**首跑即抓到真实 bug**：`engine.py:307` 用**未复权 `open`** 买股数，`:308` 用**复权 `adj_close`** 估值。真实数据 close/adj_close 因累计拆股+分红回调差 ~40x（NVDA close 751 vs adj_close 18.7）→ 每期持仓系统性错配 → golden 上 us_quality 假亏 **-99.4%**（ending 557/起始 10 万）。**关键规律**：合成 fixture 的 `adj_close == close`（B025 us_quality fixture 实测全 86790 行差异=0）→ raw-open/adj-close 混用在合成数据上是**数学 no-op**，**系统性掩盖**此 bug 类；只有真实数据（adj≠close）才暴露。这与 §28（停牌 ffill 被合成每格有价掩盖）**同主题**：合成回测数据掩盖真实数据行为 bug，golden 真数据是结构性解。**修复**（用户 2026-06-21 授权本批内修）：`_wide_open` 改用复权 open=`open×adj_close/close`，执行+估值同基准；合成 adj==close 处 adj_open=open bit-identical 向后兼容（18 现有测试全过），golden 上 us_quality 回到 -26.7%（2022 熊市合理）。golden 回归测试永久守（tests/unit/test_b071_golden_deterministic_backtests.py）。**注意：此 bug 也影响生产 VM 上 us_quality 真数据回测**（读同样 raw-open/adj-close unified 数据）。
+
+**建议写入：** `framework/harness/generator.md`（§28 同节扩：回测引擎真实数据复权——执行价与估值价须同复权基准；合成 fixture adj==close 系统性掩盖 raw/adj 混用，golden 真数据是结构解）。
+
+**状态：** 待确认
+
+## [2026-06-21] Claude CLI — 来源：B071 F003 — records-based 引擎 raw-close 估值 + adj-close 信号的「持有拆股名穿越拆股」轻微失真（非阻断，待 Planner 评）
+
+**类型：** 新坑候选（backtest 引擎 / 真实数据复权 — 轻微，非阻断）
+
+**内容：** 同源排查发现 records-based 引擎（monthly.py / risk_parity.py）执行用**未复权 open**、估值用**未复权 close**（`:139/:146`、`:149/:154`，内部一致），但信号 momentum 用 **adj_close**（`global_etf_momentum.py:165+`）。后果：**持有一个拆股个股穿越其拆股月**时，raw open(拆股前)→raw close(拆股后)显示假期亏（如 AMZN 2022-06 20:1 拆股）。golden 上 master/momentum/risk_parity 结果合理（±22%，ETF 为主、个股拆股月恰未持有），**故本批不阻断**。用户 2026-06-21 裁定本批只修 us_quality（option B，非 option C），此项入后台队列待 Planner 评估是否值得统一为「全引擎执行+估值+信号同复权基准」。
+
+**建议写入：** 待 Planner 裁定（可能并入上一条 generator.md 复权规则，或单列 records 引擎 raw-close 估值修正 feature）。
+
+**状态：** 待确认
+
+<!-- 2026-06-21: B071 F003 新增 2 条活动候选（golden 真数据暴露复权 bug 类）：①us_quality raw-open/adj-close 混用(本批已修+golden 回归守)+合成 adj==close 系统性掩盖规律；②records 引擎 raw-close 估值轻微失真(用户裁本批不修,待 Planner)。下批 done 阶段提请用户裁定沉淀 generator.md。 -->

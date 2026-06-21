@@ -12,6 +12,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import date
+from pathlib import Path
 
 import pandas as pd
 
@@ -128,9 +129,23 @@ def _wide_close(prices: pd.DataFrame) -> pd.DataFrame:
 
 
 def _wide_open(prices: pd.DataFrame) -> pd.DataFrame:
+    # B071 F003 — execute at the SPLIT/DIVIDEND-ADJUSTED open so execution
+    # (this function) and valuation (``_wide_close``, which uses ``adj_close``)
+    # share one price basis. Real data back-adjusts ``close`` to ``adj_close``
+    # (e.g. NVDA ``close``/``adj_close`` ~40x from cumulative splits), so the
+    # previous raw-``open`` execution marked positions on a basis mismatched
+    # from the ``adj_close`` valuation — golden real data exposed a ~-99%
+    # phantom loss (B071 F003 finding). The cumulative adjustment factor
+    # ``adj_close / close`` applied to ``open`` yields the adjusted open. On the
+    # synthetic B025 fixture ``adj_close == close`` so this is a no-op
+    # (backwards-compatible); it only changes behaviour on real split/dividend
+    # data, which is exactly where the bug bit.
+    adjusted = prices.assign(
+        adj_open=prices["open"] * prices["adj_close"] / prices["close"]
+    )
     return (
-        prices.pivot_table(
-            index="date", columns="ticker", values="open", aggfunc="last"
+        adjusted.pivot_table(
+            index="date", columns="ticker", values="adj_open", aggfunc="last"
         )
         .sort_index()
     )
@@ -232,10 +247,18 @@ def run_backtest(
     config: BacktestConfig | None = None,
     start: date | None = None,
     end: date | None = None,
+    *,
+    fixture_dir: Path | None = None,
 ) -> UsQualityBacktestResult:
     """Run the monthly-rebalance single-sleeve backtest over ``[start, end]``.
 
     Defaults: full fixture range, parameter defaults, ``BacktestConfig()``.
+
+    ``fixture_dir`` (B071 F003) pins the universe / prices / fundamentals /
+    earnings to that fixture checkout (e.g. ``data/fixtures/golden/``),
+    passed straight through to the four
+    :mod:`trade.data.us_quality_universe` loaders — the deterministic
+    real-data injection seam for CI acceptance.
     """
 
     if parameters is None:
@@ -245,10 +268,10 @@ def run_backtest(
     if config.starting_capital <= 0:
         raise BacktestError("starting_capital must be positive")
 
-    universe = load_universe()
-    prices = load_prices()
-    fundamentals = load_fundamentals()
-    earnings = load_earnings_calendar()
+    universe = load_universe(fixture_dir=fixture_dir)
+    prices = load_prices(fixture_dir=fixture_dir)
+    fundamentals = load_fundamentals(fixture_dir=fixture_dir)
+    earnings = load_earnings_calendar(fixture_dir=fixture_dir)
 
     wide_close = _wide_close(prices)
     wide_open = _wide_open(prices)
