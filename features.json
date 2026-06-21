@@ -30,7 +30,7 @@
       "title": "可注入时钟(timer CLI --as-of 贯穿现有 seam,CI 快进验证定时行为,默认 now 生产零回归)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §3 F003 + §1】(1) 贯穿注入:各 timer CLI 入口加 --as-of/--now 旗标贯穿现有服务层 seam(now=/today=/computed_at=/as_of=)替顶层硬 datetime.now(UTC)(~10 处:prices/data-refresh/recommendations/advisor/news/regime/cn_attack/paper-mtm/canonical/worker);默认仍 datetime.now(UTC)(生产零回归)。(2) CI 快进验证定时:用 --as-of <golden 日期> 跑 precompute/MTM/news 断按注入日期产出正确(paper MTM 按指定日 mark/precompute 按指定 as-of 评分),不等真实时间。(3) acceptance 断言(golden+注入时钟)。正面证据:timer CLI 全支持 --as-of 贯穿现有 seam(默认 now 生产零回归);CI 用注入日期快进验证 ≥3 个 timer 定时行为正确。Gates:backend pytest/ruff 目录上下文/mypy+acceptance。",
       "design_decisions": [
         "服务层 seam 已全齐(now=/today=/as_of=/computed_at=),缺口只在 timer CLI 顶层硬 datetime.now→加 --as-of 贯穿(最小改动,Explore 推荐 option a)。",
