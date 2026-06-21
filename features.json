@@ -6,7 +6,7 @@
       "title": "golden 全栈 CI 编排(sqlite+进程,无 docker)+ golden→DB 播种(account/recommendation/report 确定性)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §3 F001 + §0 范围裁定】(1) golden→DB seed 脚本:WORKBENCH_DATA_ROOT=data/fixtures/golden+跑 precompute/recommendations CLI(或扩 seed_e2e_*.py)推 golden 进 DB(recommendation_snapshot 确定性目标+account_snapshot 闭环账户+investment_report),确定性(同 golden→同 DB)。(2) 全栈编排(sqlite+进程无 docker):扩 workbench-frontend.yml(或新 workbench-fullstack-e2e.yml)起 backend(uvicorn sqlite)+worker daemon+frontend+golden DB seed,CI 一键起。(3) golden 确定性全栈断言:打 /recommendations/current、/strategies、/home 断数据形状/golden 值合理(acceptance 层)。(4) ★不引 docker/Postgres(范围裁定,全仓 0 docker+sqlite+Postgres 排除);docker-compose 可选本地 dev 非硬性。正面证据:golden→DB seed 确定性;全栈 CI 起得来(backend+worker+frontend+seed);关键端点返 golden 数据。Gates:backend pytest/ruff 目录上下文/mypy+CI 全栈 step 绿。",
       "design_decisions": [
         "★范围裁定:全仓 0 docker+DB=sqlite(Postgres 排除)+生产 systemd→不引 docker/Postgres(冲突大 scope creep),复用现有 sqlite+进程编排半栈扩成全栈。",

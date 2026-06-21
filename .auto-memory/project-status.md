@@ -5,28 +5,26 @@ type: project
 ---
 
 ## 当前状态
-- **当前：B071 ✅ done（2026-06-21，Codex F005 元验收 PASS）** = 测试自动化基建 Phase 0+1（地基批，★最高 ROI）。把 Codex L2「真实数据回归行为」桶下沉 CI。**F005:10/10 mutation 全红=acceptance 有牙齿+L1 全绿+golden bit-identical+门禁确权属实+零回归**。🎯golden 真数据首跑当场抓出 us_quality raw-open 买/adj-close 估值混用 bug(真数据假亏-99%,合成 adj==close 掩盖,已修+亦修生产 VM 自动部署)。**framework v0.9.49 沉淀 3 条**(generator.md §30 复权口径一致+§31 验收即代码+evaluator.md §30 verifying 跳 L1+role-context)。signoff docs/test-reports/B071-test-automation-golden-signoff-2026-06-21.md。
-- **F001 门禁确权（纯 doc）**：`docs/dev/B071-gate-authority-audit.md` 逐 7 workflow 实测，结论=L1 全门禁在 push+PR 全跑→**Codex verifying 复跑 L1 冗余可跳 L2**；补 `safety-eval`（job 名，≠workflow 名 `AI Safety Eval`）入 branch-protection required + path-scoped required 卡死语义。
-- **F002 golden 真数据** `data/fixtures/golden/`：25 优质（真 SEC）+13 ETF（真价）2019-2023 含 2020/2022 危机窗，3.74MB，`_freeze.py` 从 gitignored snapshot 裁 bit-identical（剔 CAT/GOOGL 无窗内 SEC）。
-- **F003 注入 seam + 确定性 + N 策略两两不同**：loader.py/us_quality engine.py/precompute.py 补 `fixture_dir`；5 策略重跑 bit-identical + ★N 策略两两不同非退化（B050）。**★★用户授权修 us_quality 真实复权 bug**（raw open 买/adj close 估值→真数据-99% 假亏；修 `_wide_open` 用复权 open，合成 adj==close 故向后兼容，golden 上 -26.7% 合理；**亦影响生产 VM us_quality 回测，已随绿 CI 自动部署**）。
-- **F004 验收即代码**：`tests/acceptance/` 两处（trade ①②⑤ + backend ②③④⑥）6 不变量永久回归 + python-ci/workbench-backend 显式 acceptance CI step + testing-strategy.md 约定。
-- **门禁**：本机 CI-exact 全绿（ruff/mypy 两侧 + root 1031 + backend 1474/17skip + acceptance 5+5）；F003 CI 全绿已部署；F004 Python CI 绿，backend/frontend CI 跑中。
+- **当前：B072 building（generator）** = 测试自动化 Phase 2 核心（golden 全栈 CI + e2e 交易闭环 + 可注入时钟）。混合批次 3g+1c。**★范围裁定（焊死）**：全仓 0 docker + sqlite（Postgres 排除）+ systemd → 不引 docker/Postgres，复用现有 sqlite+进程编排半栈扩全栈。spec `docs/specs/B072-test-automation-fullstack-e2e-clock-spec.md`。
+- **F001 ✅ done**：golden→DB 全栈 seed `workbench/backend/scripts/seed_golden_e2e.py` 推 4 表（price_snapshot 38×2 marks / recommendation_snapshot 真 Master golden 评分 7 行 sum=1.0 as_of=2023-09-29 / account_snapshot 1M+SPY10+AAPL5 闭环账户 / investment_report 复用 seed_e2e_reports b040 slug），确定性。全栈 CI 编排扩 `workbench-frontend.yml`：装 root trade（../..）+ golden seed + backtest worker daemon。acceptance `tests/acceptance/test_b072_golden_fullstack_seed.py` 3 测有牙齿。**坑**：DbPriceProvider 需 price_snapshot 2 close 否则 diff 全 unmatched（spec 只列 3 表但闭环要 marks，故加 price_snapshot）；frontend CI 原不装 trade。
+- **F002 building（下一步）**：e2e 交易闭环 playwright spec（recommend→diff→ticket→fills→reconcile→journal）。目标账户已由 F001 golden seed 提供。
+- **F003 / F004**：可注入时钟（timer CLI --as-of）/ Codex 验收（待 building 完）。
+- **门禁**：本机 backend ruff+mypy(432)+acceptance 8+safety 164 全绿；F001 待推 CI 验证全栈起得来。
 
 ## 遗留 / soft-watch
-- **Codex F005 重点**：①L1 全门禁 ②★mutation 核 acceptance 有牙齿（改坏每条不变量→对应 acceptance 必须红）③golden 确定性（重跑 bit-identical）④门禁确权属实 ⑤零回归 ⑥signoff 流程确认（verifying 跳 L1 复跑、复发不变量 acceptance CI 守、只审新颖/模糊，守铁律 4）。
-- **proposed-learnings 留 3 条 B071**（待 done 阶段 Planner 裁）：①复权 bug 规律+合成 adj==close 系统性掩盖 ②records 引擎 raw-close 估值轻微失真（用户裁本批不修）③验收即代码常态化约定入 role-context。
-- **B070 follow-on（非本批）**：2 因子（quality）去偏 baostock 基本面管线；港股 P3（backlog B055）。
+- **F002 合规**：避 no-execution 禁词（EN execute/place order/send to broker；ZH 执行/下单/实盘等）；新 spec 须加入 playwright.config.ts authed testMatch；fills CSV generic 格式小额买单+allow_unmatched，reconcile 1M cash 不超卖。
+- **F003 clock-seams**：paper/mtm+advisor+prices+canonical 干净 seam（加 flag 即可）；precompute 簇（recommendations/regime/cn_attack）需 plumb as_of 入价格 cutoff（precompute.py:248/262 硬 now）。
+- **B070 follow-on（非本批）**：2 因子去偏 baostock；港股 P3（backlog B055）。A股 进攻 P3 / hk_china 重测在池。
 
 ## 永久硬边界
 - B045 market data refresh (r) 只读 + §12.10.2 AST 守门；research-safe / no-broker / no-AI 预测 / no 自动下单；hk_china 仍 ETF proxy。
-- golden 只进测试 fixture seam，不碰生产 data_root/unified 真数据路径。
+- golden 只进测试 fixture seam（fixture_dir / 测试 DB seed），不碰生产 data_root/unified 真数据路径。
 
 ## Framework 状态（最新 4 版）
-- **v0.9.49**（B071）：generator.md §30 回测复权口径一致(raw-open 买/adj-close 估值混用=bug,合成 adj==close 系统性掩盖) / §31 验收即代码常态化 / evaluator.md §30 verifying 跳 L1 只审新颖/模糊 + role-context 两文件。
-- **v0.9.48**（B066）：generator.md §28 停牌 ffill+NaN 安全读价禁 `or 0.0` / §29 多变体退化空仓必须红旗。
-- **v0.9.47**（B065）：generator.md §19.1 ruff 本地须目录上下文 `python -m ruff check .`。
-- **v0.9.46**（B064）：generator.md §27 前端「本机绿≠CI 绿」二坑。
-- **v0.9.45**（B061+B062+B063）：★evaluator FULL PASS 系统性退化三实例。
+- **v0.9.49**（B071）：generator.md §30 复权口径一致 / §31 验收即代码常态化 / evaluator.md §30 verifying 跳 L1。
+- **v0.9.48**（B066）：§28 停牌 ffill+NaN 安全读价 / §29 多变体退化空仓必须红旗。
+- **v0.9.47**（B065）：§19.1 ruff 本地须目录上下文 `python -m ruff check .`。
+- **v0.9.46**（B064）：§27 前端「本机绿≠CI 绿」二坑。
 
 ## 已知 gap
-- 本机 python3=3.9.6，用 `.venv/bin/python`；ruff 本地须 `python -m ruff check .`。backend 测试跑前需 `cd workbench/backend && .venv/bin/python -m pip install ../..`（装新 trade）。golden 必须落 `data/fixtures/**` 才 commit。
+- 本机 python3=3.9.6，用 `.venv/bin/python`；ruff 本地须 `python -m ruff check .`。backend 测试跑前需 `cd workbench/backend && .venv/bin/python -m pip install ../..`（装 trade）。golden 必须落 `data/fixtures/**` 才 commit。

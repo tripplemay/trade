@@ -1,10 +1,10 @@
 {
   "status": "building",
   "total_features": 4,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
-  "last_updated": "2026-06-21",
+  "current_sprint": "F002",
+  "last_updated": "2026-06-22",
   "user_goal": "B072 测试自动化基建 Phase 2 核心(golden 全栈 CI+e2e 交易闭环+可注入时钟)=接 B071 golden 地基。来源:2026-06-21 用户 B071 done 后选 Phase 2。**★范围裁定(Explore 现实校正,焊死)**:全仓 0 docker(无 compose/Dockerfile)+DB=sqlite(Postgres 排除)+生产 systemd→roadmap『docker-compose 全栈』理想化,引 docker+Postgres=架构冲突大 scope creep。本批走务实:复用现有 sqlite+进程编排半栈(workbench-frontend.yml 已 CI 起 uvicorn sqlite backend+Playwright)扩成全栈,不引 docker/Postgres。VCR 录放(P2-F3)ROI 最低(golden 已给确定性)→延后 Phase 2.1。**核心价值**:①e2e 交易闭环=BL-B023-S1 Codex 反复手动冒烟自动化(推荐→diff→ticket→fills→reconcile→journal,现 0 闭环 e2e);②可注入时钟=CI 快进验证 timer 定时行为(服务层 seam 已全齐,缺口只在 timer CLI 顶层硬 datetime.now→加 --as-of 贯穿);③golden 全栈 DB 播种=确定性全系统测试。**4 features 3g+1c**:F001 golden 全栈 CI 编排+golden→DB 播种;F002 e2e 交易闭环;F003 可注入时钟(timer CLI --as-of 默认 now 零回归);F004 Codex 验收(★e2e 闭环 6 步绿+时钟快进+mutation 核有牙齿+零回归)。spec docs/specs/B072-test-automation-fullstack-e2e-clock-spec.md(4 章)。复用 workbench-frontend.yml 半栈+B071 golden+执行链 API/页(全齐)+服务层时钟 seam(全齐)。",
   "reference_docs": [
     "docs/specs/B072-test-automation-fullstack-e2e-clock-spec.md",
@@ -30,12 +30,12 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "F001 done (generator). golden→DB 全栈 seed `workbench/backend/scripts/seed_golden_e2e.py` 推 4 表(price_snapshot 38×2 marks / recommendation_snapshot 真 Master golden 评分 7 行 sum=1.0 as_of=2023-09-29 / account_snapshot 闭环账户 1M cash+SPY10+AAPL5 / investment_report 复用 seed_e2e_reports b040 slug);确定性(同 golden→同 DB 内容)。全栈 CI 编排扩 workbench-frontend.yml:装 root trade(../..)+跑 golden seed(替原 seed_e2e_reports 单跑,golden seed 内含)+起 backtest worker daemon(同 e2e db,3s 存活检查)。acceptance `tests/acceptance/test_b072_golden_fullstack_seed.py` 3 测(确定性 fingerprint/recommendations 端点全 marked golden 目标/position-diff equity>cash+买单+0 unmatched)。Gates 本机全绿:ruff+mypy(432)+acceptance 8+safety 164。F002/F003 待续。",
+    "status": "in_progress"
   },
   "session_notes": {
     "planner": "2026-06-21 B072 planning(planner)。测试基建 Phase 2 核心(golden 全栈+e2e 闭环+可注入时钟)。用户 B071 后选 Phase 2。**★范围裁定(焊死)**:Explore 发现全仓 0 docker+sqlite(Postgres 排除)+systemd→不引 docker/Postgres(架构冲突大 scope creep),复用现有 sqlite+进程编排半栈扩全栈。VCR(P2-F3)ROI 最低延后 Phase 2.1。**Explore 摸清**:e2e 闭环=最高价值缺口(0 闭环 e2e,execution 6 页+13 API 全齐缺串联,=BL-B023-S1 手动冒烟);时钟服务层 seam 全齐(now=/today=/as_of=/computed_at=)缺口只在 timer CLI 顶层硬 datetime.now→加 --as-of 贯穿;golden→DB seed 缺(经 precompute CLI 推 DB)。**4 features 3g+1c**:F001 golden 全栈+DB 播种/F002 e2e 闭环(合规避 no-execution 禁词,测 checklist+fills+reconcile 非下单)/F003 可注入时钟(默认 now 零回归)/F004 Codex(e2e 闭环 6 步绿+时钟快进+mutation 核)。**【续接】**:status=building,Generator 接 F001(golden→DB seed+全栈编排)→F002(e2e 闭环)→F003(时钟),再 Codex F004。**诚实边界**:e2e/时钟断言写码方写存同向错→F004 mutation-check 对冲;真金判断不自动化。**后续**:Phase 2.1(VCR)/P3(prod synthetic+canary)/P4(LLM-judge)/P5(瘦身评审)。A股 进攻 P3/hk_china 重测仍在池。prod=B067 系。",
-    "generator": null,
+    "generator": "2026-06-22 B072 building(generator)。**F001 done**:golden→DB 全栈 seed + 全栈 CI 编排 + acceptance。Explore 工作流先并行摸清 10 子系统(CI/worker/seed/golden/schema/execution API+页/playwright/timer CLI/clock seam)。**关键复用**:run_precompute(score_fn=lambda: score_master_target(fixture_dir=GOLDEN_DIR), computed_at=FIXED, explainer=None)=确定性 golden 目标;PriceSnapshotRepo.save_if_new 灌 golden 最新2 close(DbPriceProvider 需2 close 才 mark);AccountSnapshotRepo.upsert 闭环账户;seed_e2e_reports.seed 复用报告。**坑**:①DbPriceProvider 需 price_snapshot 2 close 否则 position-diff 全 unmatched 无买卖单→必须 seed price_snapshot(spec 只列3表但闭环要 marks);②frontend CI 原不装 trade→golden seed/worker 导入 trade 故加 `pip install ../..`;③seed 放 scripts/(test-only 不入 wheel,同 seed_e2e_reports 约定),acceptance 用 importlib 加载(避 mypy/namespace 摩擦);④ruff I001 seed_e2e_reports 当三方排序(--fix 目录上下文修);⑤mypy list 不变性→fingerprint 返 dict[str,list[str]]。本机验证:seed 0.7s→price76/rec7/acc1/report1,position-diff equity 1,005,715>1M+7买1卖0unmatched。**续接 F002**:e2e 闭环 spec(playwright),目标账户已由 F001 golden seed 提供(diff 页有真买卖单),fills CSV 用 generic 格式小额买单+allow_unmatched,reconcile 不超卖(1M cash)。新 spec 须加入 playwright.config.ts authed testMatch;合规避 no-execution 禁词(EN execute/place order/send to broker;ZH 执行/下单/实盘等)。F003:timer CLI --as-of(clock-seams map:paper/mtm+advisor+prices+canonical 干净 seam;precompute 簇需 plumb as_of 入价格 cutoff)。",
     "evaluator": null
   },
   "features": [
