@@ -350,3 +350,16 @@
 <!-- 2026-06-22: v0.9.50 沉淀完成（B074 done 收尾,用户批）：1 条 paper 搁浅现金诊断 family(双查证券 mark+cash sentinel)→generator.md §32+planner.md §根因诊断。归档 framework/archive/proposed-learnings-archive-v0.9.50.md。CHANGELOG v0.9.50。**活跃候选队列=空。** -->
 
 <!-- 当前活动候选（v0.9.50 后）：无。 -->
+
+## [2026-06-22] Claude CLI — 来源：B075 F001+F002 实现(A股 宽 universe 接生产)
+
+**类型：** 新坑 / 规律 / 流程约定（3 条）
+
+**内容：**
+1. **【VM 执行坑，refines environment.md】** 在 VM 跑 `/tmp/*.py` 用部署 venv 时,`sys.path[0]=/tmp`,而 `/opt/workbench/.venv` site-packages 里 `workbench_api` 是 stale(缺 data_refresh 等子包)→ `import workbench_api.data_refresh` 报 ModuleNotFoundError,即便已 `cd /srv/workbench/current/backend`(cwd 不进 sys.path[0])。**修法:`PYTHONPATH=/srv/workbench/current/backend` 前置**让源树覆盖 stale site-packages。environment.md 现有『cd 进 backend 再 import-check』对 `-m`/cwd-import 有效,对 `/tmp` 脚本无效——补这一行。
+2. **【可行性探针即代码路径验证】** B075 §23 VM 探针复用**真生产 loader**(discover_ashare_superset/CnHkPricesLoader/CnMarketCapLoader/CnFundamentalsLoader),非合成→探针同时验证 ungate 代码路径真能在 VM 跑通(sina 发现 1501/日刷 100% 成功)。规律:feasibility-first 探针应调真生产 API,既测可行性又测代码路径(对比 b070_feasibility_probe 用裸 baostock=只测数据源)。
+3. **【宽 universe partial-failure exit-code 容忍】** 大宇宙(~1500)逐只刷必有尾部失败(退市/停牌),旧 `main()` `errors>0→exit 1` 会让日 timer 天天假阳报红。修法:宽块错误单列计数(cn_universe_price_errors/cn_fundamental_errors,同时进 errors 总数=单一 error 契约)+`resolve_exit_decision`= core(US/CN_HK)错误严格 + 宽块按 rate floor(≤20%)容忍,真停摆(host down→大批失败)才红。是『partial-failure 优雅不炸整轮』的 exit-code 层落地,可复用于任何宽集逐只刷 job。
+
+**建议写入：** `.auto-memory/environment.md`(§ VM /tmp 脚本 PYTHONPATH) / `framework/harness/generator.md`(§宽集逐只刷 partial-failure exit-code 容忍 + 可行性探针复用真 loader)
+
+**状态：** 待确认（B075 done 阶段提请用户裁定）
