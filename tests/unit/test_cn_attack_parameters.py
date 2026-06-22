@@ -8,9 +8,11 @@ import json
 import pytest
 
 from trade.strategies.cn_attack_momentum_quality.parameters import (
+    DEFAULT_SIZE_TILT_WEIGHT,
     DEFAULT_WEIGHTING_SCHEME,
     FACTOR_VARIANT_PURE_MOMENTUM,
     FACTOR_VARIANT_QUALITY_MOMENTUM,
+    SIZE_FACTOR_KEY,
     WEIGHTING_SCHEME_EQUAL,
     WEIGHTING_SCHEME_INVERSE_VOL,
     CnAttackParameterError,
@@ -131,3 +133,75 @@ def test_parameter_hash_is_weighting_scheme_sensitive() -> None:
     # ...but inverse_vol gets its own identifier.
     assert inv.parameter_hash() != equal.parameter_hash()
     assert len(inv.parameter_hash()) == 64
+
+
+# --------------------------------------------------------------------------- #
+# B076 F001 — size_tilt_weight (the third A/B dimension; small-cap tilt)
+# --------------------------------------------------------------------------- #
+
+
+def test_size_tilt_defaults_to_zero() -> None:
+    # Zero-regression: the production default must be 0 (no size factor at all).
+    assert CnAttackParameters().size_tilt_weight == 0.0
+    assert DEFAULT_SIZE_TILT_WEIGHT == 0.0
+
+
+def test_size_tilt_zero_mapping_has_no_size_factor() -> None:
+    # weight 0 → the mapping is byte-identical to the pre-B076 mapping (no "size" key),
+    # so the production default never scores / loads market cap.
+    qm = CnAttackParameters(
+        factor_variant=FACTOR_VARIANT_QUALITY_MOMENTUM,
+        momentum_weight=0.5,
+        quality_weight=0.5,
+    )
+    assert qm.factor_weight_mapping() == {"momentum": 0.5, "quality": 0.5}
+    pure = CnAttackParameters(factor_variant=FACTOR_VARIANT_PURE_MOMENTUM)
+    assert pure.factor_weight_mapping() == {"momentum": 1.0}
+
+
+def test_size_tilt_renormalizes_quality_momentum_and_sums_to_one() -> None:
+    params = CnAttackParameters(
+        factor_variant=FACTOR_VARIANT_QUALITY_MOMENTUM,
+        momentum_weight=0.5,
+        quality_weight=0.5,
+        size_tilt_weight=0.2,
+    )
+    mapping = params.factor_weight_mapping()
+    # base weights scaled by (1 - 0.2)=0.8 + size=0.2 → still sums to 1.0.
+    assert mapping == pytest.approx({"momentum": 0.4, "quality": 0.4, SIZE_FACTOR_KEY: 0.2})
+    assert sum(mapping.values()) == pytest.approx(1.0)
+
+
+def test_size_tilt_renormalizes_pure_momentum_and_sums_to_one() -> None:
+    params = CnAttackParameters(
+        factor_variant=FACTOR_VARIANT_PURE_MOMENTUM, size_tilt_weight=0.3
+    )
+    mapping = params.factor_weight_mapping()
+    assert mapping == pytest.approx({"momentum": 0.7, SIZE_FACTOR_KEY: 0.3})
+    assert sum(mapping.values()) == pytest.approx(1.0)
+
+
+def test_size_tilt_out_of_range_rejected() -> None:
+    with pytest.raises(CnAttackParameterError, match="size_tilt_weight"):
+        CnAttackParameters(size_tilt_weight=1.0)  # pure size is degenerate
+    with pytest.raises(CnAttackParameterError, match="size_tilt_weight"):
+        CnAttackParameters(size_tilt_weight=-0.1)
+
+
+def test_size_tilt_zero_hash_is_byte_identical_to_default() -> None:
+    # Explicit 0 == default (the recorded identifier never churns when the knob is off).
+    assert (
+        CnAttackParameters(size_tilt_weight=0.0).parameter_hash()
+        == CnAttackParameters().parameter_hash()
+    )
+
+
+def test_parameter_hash_is_size_tilt_sensitive() -> None:
+    tilted = CnAttackParameters(size_tilt_weight=0.2)
+    assert tilted.parameter_hash() != CnAttackParameters().parameter_hash()
+    assert len(tilted.parameter_hash()) == 64
+    # Two different tilt levels get two different identifiers.
+    assert (
+        CnAttackParameters(size_tilt_weight=0.2).parameter_hash()
+        != CnAttackParameters(size_tilt_weight=0.4).parameter_hash()
+    )

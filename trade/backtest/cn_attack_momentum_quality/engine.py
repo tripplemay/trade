@@ -35,8 +35,12 @@ from trade.backtest.us_quality_momentum.metrics import (
 )
 from trade.data.cn_attack_universe import load_cn_universe_history, resolve_pit_members
 from trade.data.us_quality_universe import load_fundamentals, load_prices
-from trade.strategies.cn_attack_momentum_quality.parameters import CnAttackParameters
+from trade.strategies.cn_attack_momentum_quality.parameters import (
+    SIZE_FACTOR_KEY,
+    CnAttackParameters,
+)
 from trade.strategies.cn_attack_momentum_quality.signal import generate_cn_attack_signal
+from trade.strategies.cn_attack_momentum_quality.size import DATE_COLUMN as _MCAP_DATE_COLUMN
 
 DEFAULT_STARTING_CAPITAL = 100_000.0
 DEFAULT_NO_TRADE_BAND = 0.20  # L1 would-be turnover (sum|Δw|) that triggers a rebalance
@@ -337,13 +341,16 @@ def run_cn_attack_backtest(
     *,
     prices: pd.DataFrame | None = None,
     fundamentals: pd.DataFrame | None = None,
+    marketcap: pd.DataFrame | None = None,
     universe_history: Mapping[date, tuple[str, ...]] | None = None,
 ) -> CnAttackBacktestResult:
     """Run the daily-monitor / no-trade-band backtest over ``[start, end]``.
 
-    ``prices`` / ``fundamentals`` / ``universe_history`` default to disk loads
-    (the unified CSVs + cn_pit_universe.csv); the daily loop resolves point-in-time
-    membership in memory. Decisions at each close execute at the next open (T+1).
+    ``prices`` / ``fundamentals`` / ``marketcap`` / ``universe_history`` default to disk
+    loads (the unified CSVs + cn_pit_universe.csv); the daily loop resolves
+    point-in-time membership in memory. Decisions at each close execute at the next
+    open (T+1). ``marketcap`` (B076 F001) is required only when ``size_tilt_weight > 0``
+    activates the size factor; the daily signal reads its latest PIT cap per name.
     """
 
     if config is None:
@@ -352,9 +359,22 @@ def run_cn_attack_backtest(
         prices = load_prices()
     if prices.empty:
         raise CnBacktestError("prices frame is empty")
-    needs_quality = "quality" in parameters.factor_weight_mapping()
+    weight_mapping = parameters.factor_weight_mapping()
+    needs_quality = "quality" in weight_mapping
     if needs_quality and fundamentals is None:
         fundamentals = load_fundamentals()
+    # Size factor (size_tilt_weight > 0): the market-cap frame must be injected — there
+    # is no production disk loader yet (F002, GO-gated). Fail fast at entry rather than
+    # raise per-day deep in the loop. Pre-convert the date column once so the per-day
+    # PIT lookup does not re-parse date strings on every trading day.
+    if SIZE_FACTOR_KEY in weight_mapping:
+        if marketcap is None:
+            raise CnBacktestError(
+                "size_tilt_weight > 0 requires a marketcap frame (inject `marketcap=`)"
+            )
+        if not marketcap.empty:
+            marketcap = marketcap.copy()
+            marketcap[_MCAP_DATE_COLUMN] = pd.to_datetime(marketcap[_MCAP_DATE_COLUMN])
     if universe_history is None:
         universe_history = load_cn_universe_history()
 
@@ -418,6 +438,7 @@ def run_cn_attack_backtest(
                     day,
                     prices=prices,
                     fundamentals=fundamentals,
+                    marketcap=marketcap,
                     universe_members=members,
                 )
                 forced_exits = _forced_exits(

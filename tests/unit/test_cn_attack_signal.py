@@ -19,10 +19,14 @@ import pytest
 from trade.strategies.cn_attack_momentum_quality.parameters import (
     FACTOR_VARIANT_PURE_MOMENTUM,
     FACTOR_VARIANT_QUALITY_MOMENTUM,
+    SIZE_FACTOR_KEY,
     WEIGHTING_SCHEME_INVERSE_VOL,
     CnAttackParameters,
 )
-from trade.strategies.cn_attack_momentum_quality.signal import generate_cn_attack_signal
+from trade.strategies.cn_attack_momentum_quality.signal import (
+    CnSignalError,
+    generate_cn_attack_signal,
+)
 
 _AS_OF = date(2025, 6, 2)
 _MEMBERS = ("600519.SH", "000858.SZ", "600036.SH", "300750.SZ", "002594.SZ")
@@ -265,6 +269,111 @@ def _synth_prices_varied_vol() -> pd.DataFrame:
                 }
             )
     return pd.DataFrame(rows)
+
+
+# --------------------------------------------------------------------------- #
+# B076 F001 — size-tilt selection end-to-end (signal scores small-cap from market cap)
+# --------------------------------------------------------------------------- #
+
+# Market cap is INVERSELY aligned with momentum: the two lowest-momentum names
+# (300750, 002594) are the smallest caps, so a strong size tilt pulls them in.
+_MARKET_CAPS = {
+    "600519.SH": 2.0e12,  # biggest, top momentum
+    "000858.SZ": 1.0e12,
+    "600036.SH": 8.0e11,
+    "300750.SZ": 1.0e9,  # tiny, low momentum
+    "002594.SZ": 5.0e8,  # tiniest, lowest momentum
+}
+
+
+def _synth_marketcap() -> pd.DataFrame:
+    rows = [
+        {"data_date": pd.Timestamp("2025-03-31"), "ticker": ticker, "market_cap": cap}
+        for ticker, cap in _MARKET_CAPS.items()
+    ]
+    return pd.DataFrame(rows)
+
+
+def test_size_tilt_zero_is_identical_to_no_marketcap(prices: pd.DataFrame) -> None:
+    # Zero-regression: size_tilt_weight=0 selects exactly the momentum basket and does
+    # not even need a market-cap frame (the size factor is never scored).
+    params = CnAttackParameters(
+        factor_variant=FACTOR_VARIANT_PURE_MOMENTUM, top_n=3, max_position_weight=0.5
+    )
+    baseline = generate_cn_attack_signal(
+        params, _AS_OF, prices=prices, universe_members=_MEMBERS
+    )
+    with_mcap = generate_cn_attack_signal(
+        params,
+        _AS_OF,
+        prices=prices,
+        marketcap=_synth_marketcap(),
+        universe_members=_MEMBERS,
+    )
+    assert set(baseline.tickers()) == {"600519.SH", "000858.SZ", "600036.SH"}
+    assert baseline.weights_dict() == with_mcap.weights_dict()
+
+
+def test_strong_size_tilt_pulls_in_small_caps(prices: pd.DataFrame) -> None:
+    params = CnAttackParameters(
+        factor_variant=FACTOR_VARIANT_PURE_MOMENTUM,
+        top_n=3,
+        max_position_weight=0.5,
+        size_tilt_weight=0.6,
+    )
+    result = generate_cn_attack_signal(
+        params,
+        _AS_OF,
+        prices=prices,
+        marketcap=_synth_marketcap(),
+        universe_members=_MEMBERS,
+    )
+    selected = set(result.tickers())
+    # The two smallest caps are pulled in; the biggest (lowest size score) is displaced.
+    assert {"002594.SZ", "300750.SZ"} <= selected
+    assert "600519.SH" not in selected
+    # The size factor appears in every selection's contribution breakdown.
+    contributions = result.factor_contributions_dict()
+    for ticker in result.tickers():
+        assert SIZE_FACTOR_KEY in contributions[ticker]
+
+
+def test_size_tilt_active_without_marketcap_raises(prices: pd.DataFrame) -> None:
+    params = CnAttackParameters(
+        factor_variant=FACTOR_VARIANT_PURE_MOMENTUM,
+        top_n=3,
+        max_position_weight=0.5,
+        size_tilt_weight=0.3,
+    )
+    with pytest.raises(CnSignalError, match="requires a marketcap frame"):
+        generate_cn_attack_signal(
+            params, _AS_OF, prices=prices, universe_members=_MEMBERS
+        )
+
+
+def test_size_tilt_works_for_quality_momentum_variant(
+    prices: pd.DataFrame, fundamentals: pd.DataFrame
+) -> None:
+    # Both variants support the size factor (the mapping renormalises momentum+quality).
+    params = CnAttackParameters(
+        factor_variant=FACTOR_VARIANT_QUALITY_MOMENTUM,
+        top_n=3,
+        max_position_weight=0.5,
+        momentum_weight=0.5,
+        quality_weight=0.5,
+        size_tilt_weight=0.5,
+    )
+    result = generate_cn_attack_signal(
+        params,
+        _AS_OF,
+        prices=prices,
+        fundamentals=fundamentals,
+        marketcap=_synth_marketcap(),
+        universe_members=_MEMBERS,
+    )
+    contributions = result.factor_contributions_dict()
+    for ticker in result.tickers():
+        assert set(contributions[ticker]) == {"momentum", "quality", SIZE_FACTOR_KEY}
 
 
 def test_inverse_vol_signal_tilts_weights_toward_calm_names() -> None:

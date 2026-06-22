@@ -28,6 +28,18 @@ DEFAULT_MOMENTUM_WEIGHT = 0.5
 DEFAULT_QUALITY_WEIGHT = 0.5
 DEFAULT_REBALANCE_FREQUENCY = "monthly"
 
+# B076 F001 — size-tilt selection knob (the spec's third A/B dimension). A
+# percent-ranked **small-cap** factor (smaller market cap → higher score) is blended
+# into the composite with weight ``size_tilt_weight``; the active momentum/quality
+# factors are renormalised to ``(1 - size_tilt_weight)`` so the composite stays in
+# ``[0, 1]`` (factor_weight_mapping). ``0.0`` (the default) drops the size factor
+# entirely → byte-identical to B066-B075 (zero-regression: no size key in the mapping,
+# no market-cap load, no hash churn). Backtest sweeps ``> 0`` (light/medium/strong) to
+# test whether tilting toward small-caps captures breadth or only adds risk; production
+# stays ``0`` until a GO verdict (verdict-gated, B069 NO-SWITCH precedent).
+DEFAULT_SIZE_TILT_WEIGHT = 0.0
+SIZE_FACTOR_KEY = "size"
+
 # Factor variants (the spec's A/B test).
 FACTOR_VARIANT_QUALITY_MOMENTUM = "quality_momentum"
 FACTOR_VARIANT_PURE_MOMENTUM = "pure_momentum"
@@ -78,6 +90,7 @@ class CnAttackParameters:
     max_position_weight: float = DEFAULT_MAX_POSITION_WEIGHT
     rebalance_frequency: str = DEFAULT_REBALANCE_FREQUENCY
     weighting_scheme: str = DEFAULT_WEIGHTING_SCHEME
+    size_tilt_weight: float = DEFAULT_SIZE_TILT_WEIGHT
 
     def __post_init__(self) -> None:
         if not self.strategy_id:
@@ -102,6 +115,14 @@ class CnAttackParameters:
                 f"weighting_scheme must be one of {sorted(WEIGHTING_SCHEMES)}; "
                 f"got {self.weighting_scheme!r}"
             )
+        # size_tilt_weight is the size factor's blend weight; it must leave the active
+        # momentum/quality factors a positive share, so it lives in [0, 1). 1.0 (pure
+        # size) would zero out momentum/quality — a degenerate "buy the smallest names"
+        # rule the spec does not sweep.
+        if not 0.0 <= self.size_tilt_weight < 1.0:
+            raise CnAttackParameterError(
+                f"size_tilt_weight must be in [0, 1); got {self.size_tilt_weight}"
+            )
         # The blend weights only have to sum to 1.0 for the quality_momentum
         # variant; pure_momentum ignores them (the mapping forces momentum=1.0).
         if self.factor_variant == FACTOR_VARIANT_QUALITY_MOMENTUM:
@@ -125,11 +146,24 @@ class CnAttackParameters:
         ``pure_momentum`` collapses to ``{"momentum": 1.0}`` so no quality series
         is required and names without fundamentals stay eligible; the
         ``quality_momentum`` blend includes quality so they are filtered out.
+
+        B076 F001 — when ``size_tilt_weight > 0`` a ``"size"`` factor is appended and
+        the base factors are renormalised to ``(1 - size_tilt_weight)`` so the weights
+        still sum to 1.0 (the composite stays in ``[0, 1]``). ``size_tilt_weight == 0``
+        returns the exact pre-B076 mapping (no ``"size"`` key) → the production default
+        loads no market cap and behaves identically (zero-regression).
         """
 
         if self.factor_variant == FACTOR_VARIANT_PURE_MOMENTUM:
-            return {"momentum": 1.0}
-        return {"momentum": self.momentum_weight, "quality": self.quality_weight}
+            base = {"momentum": 1.0}
+        else:
+            base = {"momentum": self.momentum_weight, "quality": self.quality_weight}
+        if self.size_tilt_weight <= 0.0:
+            return base
+        keep = 1.0 - self.size_tilt_weight
+        scaled = {factor: weight * keep for factor, weight in base.items()}
+        scaled[SIZE_FACTOR_KEY] = self.size_tilt_weight
+        return scaled
 
     def parameter_hash(self) -> str:
         """Deterministic 64-char SHA-256 of the canonical JSON payload.
@@ -153,6 +187,11 @@ class CnAttackParameters:
         # identifier does not churn just because a new dimension was added).
         if self.weighting_scheme != DEFAULT_WEIGHTING_SCHEME:
             payload["weighting_scheme"] = self.weighting_scheme
+        # B076 F001 — same conditional-fold trick: the size-tilt knob only enters the
+        # payload when non-default, so the B066-B075 default (size_tilt_weight=0) hash
+        # stays byte-identical and the live advisory's recorded identifier never churns.
+        if self.size_tilt_weight != DEFAULT_SIZE_TILT_WEIGHT:
+            payload["size_tilt_weight"] = self.size_tilt_weight
         canonical = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode(
             "utf-8"
         )
@@ -160,10 +199,12 @@ class CnAttackParameters:
 
 
 __all__ = [
+    "DEFAULT_SIZE_TILT_WEIGHT",
     "DEFAULT_WEIGHTING_SCHEME",
     "FACTOR_VARIANTS",
     "FACTOR_VARIANT_PURE_MOMENTUM",
     "FACTOR_VARIANT_QUALITY_MOMENTUM",
+    "SIZE_FACTOR_KEY",
     "WEIGHTING_SCHEMES",
     "WEIGHTING_SCHEME_EQUAL",
     "WEIGHTING_SCHEME_INVERSE_VOL",

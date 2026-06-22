@@ -30,6 +30,26 @@ from trade.strategies.cn_attack_momentum_quality.parameters import (
     CnAttackParameters,
 )
 
+# B076 F001 — market cap inversely aligned with momentum: the smallest caps are the
+# lowest-momentum names, so a strong size tilt displaces the blue-chip leaders.
+_MARKET_CAPS = {
+    "600519.SH": 2.0e12,
+    "000858.SZ": 1.0e12,
+    "600036.SH": 8.0e11,
+    "300750.SZ": 5.0e9,
+    "002594.SZ": 2.0e9,
+    "000333.SZ": 1.0e9,
+}
+
+
+def _synth_marketcap() -> pd.DataFrame:
+    # One observation per name well before the window → covers every rebalance day.
+    rows = [
+        {"data_date": pd.Timestamp("2024-01-01"), "ticker": ticker, "market_cap": cap}
+        for ticker, cap in _MARKET_CAPS.items()
+    ]
+    return pd.DataFrame(rows)
+
 # Distinct daily growth → stable momentum ordering (top-4 = first 4 names).
 _GROWTH = {
     "600519.SH": 0.0024,
@@ -134,6 +154,55 @@ def test_momentum_decay_never_forces_an_exit(prices: pd.DataFrame) -> None:
     )
     assert result.exit_count == 0
     assert all(not r.forced_exits for r in result.daily_records)
+
+
+# --------------------------------------------------------------------------- #
+# B076 F001 — size-tilt selection through the backtest engine
+# --------------------------------------------------------------------------- #
+
+
+def test_size_tilt_active_without_marketcap_raises(prices: pd.DataFrame) -> None:
+    params = CnAttackParameters(
+        factor_variant=FACTOR_VARIANT_PURE_MOMENTUM,
+        top_n=4,
+        max_position_weight=0.4,
+        size_tilt_weight=0.3,
+    )
+    with pytest.raises(CnBacktestError, match="requires a marketcap frame"):
+        run_cn_attack_backtest(
+            params, None, _START, _END, prices=prices, universe_history=_universe_history()
+        )
+
+
+def test_strong_size_tilt_changes_the_selected_basket(prices: pd.DataFrame) -> None:
+    common = dict(start=_START, end=_END, prices=prices, universe_history=_universe_history())
+    baseline = run_cn_attack_backtest(_params(), None, **common)
+    tilted = run_cn_attack_backtest(
+        CnAttackParameters(
+            factor_variant=FACTOR_VARIANT_PURE_MOMENTUM,
+            top_n=4,
+            max_position_weight=0.4,
+            size_tilt_weight=0.6,
+        ),
+        None,
+        marketcap=_synth_marketcap(),
+        **common,
+    )
+
+    def _selected(result: object) -> set[str]:
+        names: set[str] = set()
+        for record in result.daily_records:  # type: ignore[attr-defined]
+            names.update(record.target_tickers)
+        return names
+
+    base_names = _selected(baseline)
+    tilt_names = _selected(tilted)
+    # Baseline = blue-chip momentum leaders; the smallest caps never enter.
+    assert "600519.SH" in base_names
+    assert "000333.SZ" not in base_names
+    # Strong size tilt pulls the two smallest caps in and drops the biggest leader.
+    assert {"000333.SZ", "002594.SZ"} <= tilt_names
+    assert tilt_names != base_names
 
 
 def test_trailing_stop_fires_on_the_dip(prices: pd.DataFrame) -> None:

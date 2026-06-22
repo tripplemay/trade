@@ -29,15 +29,22 @@ from trade.strategies.cn_attack_momentum_quality.construction import (
     build_cn_portfolio,
 )
 from trade.strategies.cn_attack_momentum_quality.parameters import (
+    SIZE_FACTOR_KEY,
     WEIGHTING_SCHEME_INVERSE_VOL,
     CnAttackParameters,
 )
+from trade.strategies.cn_attack_momentum_quality.size import small_cap_score
 from trade.strategies.us_quality_momentum.factors import (
     momentum_12_1,
     quality_score,
     trailing_volatility,
 )
 from trade.strategies.us_quality_momentum.ranking import percent_rank
+
+
+class CnSignalError(ValueError):
+    """Raised when CN attack signal inputs are inconsistent (e.g. size factor active
+    but no market-cap frame injected)."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -71,15 +78,22 @@ def _compute_factor_scores(
     weight_mapping: Mapping[str, float],
     cn_prices: pd.DataFrame,
     cn_fundamentals: pd.DataFrame,
+    cn_marketcap: pd.DataFrame,
     as_of_date: date,
 ) -> dict[str, pd.Series]:
-    """Score only the active factors (so pure_momentum needs no fundamentals)."""
+    """Score only the active factors (so pure_momentum needs no fundamentals).
+
+    The size factor is scored only when ``size_tilt_weight > 0`` puts ``"size"`` in
+    the mapping, so the production default (weight 0) never reads market cap (B076 F001).
+    """
 
     scores: dict[str, pd.Series] = {}
     if "momentum" in weight_mapping:
         scores["momentum"] = momentum_12_1(cn_prices, as_of_date)
     if "quality" in weight_mapping:
         scores["quality"] = quality_score(cn_fundamentals, as_of_date)
+    if SIZE_FACTOR_KEY in weight_mapping:
+        scores[SIZE_FACTOR_KEY] = small_cap_score(cn_marketcap, as_of_date)
     return scores
 
 
@@ -113,6 +127,7 @@ def generate_cn_attack_signal(
     *,
     prices: pd.DataFrame | None = None,
     fundamentals: pd.DataFrame | None = None,
+    marketcap: pd.DataFrame | None = None,
     universe_members: tuple[str, ...] | None = None,
 ) -> CnSignalResult:
     """Run the full A-share attack pipeline at ``as_of_date``.
@@ -123,12 +138,14 @@ def generate_cn_attack_signal(
     (no-trade band / exits); this single-date signal computes the unconditional
     target and does not itself apply a band.
 
-    ``prices`` / ``fundamentals`` / ``universe_members`` are optional injected
-    overrides. When omitted they are loaded from disk (the unified CSVs / CN
-    universe CSV). F002's daily driver injects the once-loaded frames so the
-    250-day backtest loop does not re-read the CSVs every day; tests inject
-    synthetic A-share frames. The factor functions re-filter by ``as_of_date``
-    defensively, so a full (all-dates) injected frame is point-in-time safe.
+    ``prices`` / ``fundamentals`` / ``marketcap`` / ``universe_members`` are optional
+    injected overrides. When omitted, prices / fundamentals / universe are loaded from
+    disk (the unified CSVs / CN universe CSV). F002's daily driver injects the
+    once-loaded frames so the 250-day backtest loop does not re-read the CSVs every day;
+    tests inject synthetic A-share frames. The factor functions re-filter by
+    ``as_of_date`` defensively, so a full (all-dates) injected frame is point-in-time
+    safe. ``marketcap`` is only consulted when ``size_tilt_weight > 0`` (B076 F001); with
+    the production default (weight 0) it is never read, so the default path is unchanged.
     """
 
     # F002 daily-driver hook: the unconditional target is band-agnostic here.
@@ -162,8 +179,21 @@ def generate_cn_attack_signal(
         cn_fundamentals = _filter_to_universe(raw_fundamentals, member_set)
     else:
         cn_fundamentals = pd.DataFrame()
+    if SIZE_FACTOR_KEY in weight_mapping:
+        # size_tilt_weight > 0 → the size factor is active and needs a market-cap frame.
+        # No production disk loader exists yet (the wiring is F002, GO-gated): the
+        # backtest injects ``cn_size.csv``, so a missing frame here is a wiring error,
+        # not a silent degrade (which would corrupt the cross-sectional size rank).
+        if marketcap is None:
+            raise CnSignalError(
+                "size_tilt_weight > 0 requires a marketcap frame "
+                "(inject `marketcap=`; production wiring is F002)"
+            )
+        cn_marketcap = _filter_to_universe(marketcap, member_set)
+    else:
+        cn_marketcap = pd.DataFrame()
     factor_scores = _compute_factor_scores(
-        weight_mapping, cn_prices, cn_fundamentals, as_of_date
+        weight_mapping, cn_prices, cn_fundamentals, cn_marketcap, as_of_date
     )
     # B068 F002 — inverse-vol weighting needs per-name trailing σ (point-in-time
     # safe; trailing_volatility re-filters to <= as_of). The equal scheme computes
@@ -189,4 +219,4 @@ def generate_cn_attack_signal(
     )
 
 
-__all__ = ["CnSignalResult", "generate_cn_attack_signal"]
+__all__ = ["CnSignalError", "CnSignalResult", "generate_cn_attack_signal"]
