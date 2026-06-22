@@ -14,12 +14,12 @@ import logging
 import os
 import sys
 from collections.abc import Callable, Sequence
+from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 from workbench_api.cli_clock import add_as_of_argument
 from workbench_api.data_refresh.cn_universe import (
-    DEFAULT_TOP_N,
     CnUniverseSummary,
     MarketCapLoader,
     build_cn_universe,
@@ -41,6 +41,25 @@ from workbench_api.data_refresh.window import DataWindow, compute_data_window
 # Disk impact is small (~2.7 MB unified CSV at 5 years).
 DEFAULT_LOOKBACK_DAYS = 1825
 DEFAULT_DATA_ROOT = "/var/lib/workbench/data"
+
+# B075 F001 — the wide A-share universe target N. The batch goal is top ~1500
+# liquid (市值 + 成交额, ST excluded). It is *feasibility-gated*: the VM probe
+# (scripts/research/b075_wide_universe_feasibility_probe.py) measured the prod VM
+# can refresh this N daily (prices ≈ 39min serial via the §23 VM-reachable sina
+# bulk endpoint; GO at N=1500, headroom to ~3400). If a future re-measure shows
+# 1500 no longer refreshable, lower this + the systemd unit args together (honest
+# fallback, never a silent cap — B070 precedent). The universe build (historical
+# market cap) + CAS fundamentals are far heavier (~2h each at this N) and so run
+# on a separate LOW-FREQUENCY timer, decoupled from the daily price refresh.
+WIDE_UNIVERSE_TARGET_N = 1500
+
+# B075 F001 — over a ~1500-name universe a tail of per-symbol fetch failures
+# (delisted / suspended / newly-listed names) is normal and must NOT fail the
+# timer (partial-failure 优雅, 不炸整轮 — the survivors are written). The wide
+# A-share blocks fail the job only when the failure RATE crosses this floor, which
+# signals a real outage (e.g. the bulk host down → most/all names fail) rather
+# than the expected long tail. US / CN_HK proxy failures stay strict (rate 0).
+WIDE_CN_MAX_FAILURE_RATE = 0.2
 
 LoaderFactory = Callable[[], tuple[object, object, object, object]]
 
@@ -77,14 +96,40 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     fetch.add_argument(
         "--cn-universe-top-n",
         type=int,
-        default=DEFAULT_TOP_N,
+        default=WIDE_UNIVERSE_TARGET_N,
         help="Members per rebalance in the A-share PIT universe (default: %(default)s).",
     )
     fetch.add_argument(
         "--cn-universe-max-superset",
         type=int,
-        default=300,
+        default=WIDE_UNIVERSE_TARGET_N,
         help="Cap on the discovered/seed A-share fetch superset (default: %(default)s).",
+    )
+    # B075 F001 — opt-in the §23 VM-reachable sina bulk endpoint so discovery
+    # widens to the full liquid market (top-N) instead of degrading to the curated
+    # ~43-name seed. Default OFF keeps the pre-B075 behaviour byte-identical (the
+    # eastmoney push host fails on the VM → seed), so this must be passed
+    # explicitly by the production wide-universe timers (F002).
+    fetch.add_argument(
+        "--cn-universe-sina-fallback",
+        action="store_true",
+        help="Enable the sina bulk-spot discovery fallback (wide universe).",
+    )
+    # B075 F001 — decouple the two HEAVY, low-churn cost centres from the daily
+    # price refresh. The historical-market-cap universe build (~2h at N=1500) only
+    # matters at quarterly rebalances, and CAS fundamentals change quarterly, so
+    # the daily timer skips both (--no-cn-universe-build --no-cn-fundamentals) and
+    # a separate weekly timer runs them. Default OFF = both run (pre-B075 + the
+    # weekly job's behaviour).
+    fetch.add_argument(
+        "--no-cn-universe-build",
+        action="store_true",
+        help="Skip the historical-mcap PIT universe build (prices still fetched).",
+    )
+    fetch.add_argument(
+        "--no-cn-fundamentals",
+        action="store_true",
+        help="Skip the A-share CAS fundamentals fetch (decoupled to a low-freq job).",
     )
     add_as_of_argument(fetch)
     return parser.parse_args(argv)
@@ -130,9 +175,19 @@ def fetch_main(
     # members' prices are fetched (the universe builder needs them for turnover).
     # ``cn_universe_loader is None`` (the default / tests) keeps the US+CN_HK
     # behaviour unchanged.
-    build_universe = cn_universe_loader is not None and not getattr(args, "no_cn_universe", False)
+    want_cn = cn_universe_loader is not None and not getattr(args, "no_cn_universe", False)
     superset: Sequence[str] = (
-        (superset_provider() if superset_provider is not None else ()) if build_universe else ()
+        (superset_provider() if superset_provider is not None else ()) if want_cn else ()
+    )
+    # B075 F001 — the two heavy cost centres are independently switchable so the
+    # daily price timer can stay light (~39min) while a weekly timer carries the
+    # historical-mcap universe build + CAS fundamentals (~2h each). Default-on
+    # (flag absent) preserves the pre-B075 single-job behaviour.
+    build_universe = want_cn and not getattr(args, "no_cn_universe_build", False)
+    fetch_cn_fundamentals = (
+        want_cn
+        and cn_fundamentals_loader is not None
+        and not getattr(args, "no_cn_fundamentals", False)
     )
 
     summary = run_refresh(
@@ -142,11 +197,14 @@ def fetch_main(
         prices_loader=prices_loader,  # type: ignore[arg-type]
         fundamentals_loader=fundamentals_loader,  # type: ignore[arg-type]
         cn_hk_prices_loader=cn_hk_prices_loader,  # type: ignore[arg-type]
+        # Wide A-share prices are the daily 命门 — fetched whenever the CN path is
+        # on, even when the universe build / fundamentals are skipped for the day.
         cn_extra_price_symbols=superset or None,
         # B065 F002 — CAS fundamentals for the same A-share superset (appended
-        # after the US SEC rows in fundamentals.csv).
-        cn_fundamentals_loader=cn_fundamentals_loader,
-        cn_fundamentals_symbols=superset or None,
+        # after the US SEC rows). B075 F001: decoupled to a low-freq job, so the
+        # loader is passed only when fundamentals are wanted this run.
+        cn_fundamentals_loader=cn_fundamentals_loader if fetch_cn_fundamentals else None,
+        cn_fundamentals_symbols=superset if fetch_cn_fundamentals else None,
     )
     # B063 F001 — also refresh the FX rates CSV (FRED CNY/USD + HKD/USD) the
     # backtest reads for USD conversion. Best-effort per series (logged inside).
@@ -230,6 +288,44 @@ def _persist_data_window(window: DataWindow) -> None:
         session.close()
 
 
+@dataclass(frozen=True, slots=True)
+class ExitDecision:
+    """B075 F001 — the refresh job's exit verdict with partial-failure tolerance."""
+
+    exit_code: int
+    core_errors: int  # US / CN_HK ("core") per-symbol failures — strict
+    wide_errors: int  # wide A-share price + CAS fundamentals failures — tolerated
+    wide_attempted: int
+    wide_failure_rate: float
+    wide_block_failed: bool  # wide rate crossed the floor (a real outage)
+
+
+def resolve_exit_decision(summary: RefreshSummary) -> ExitDecision:
+    """Job exit code: strict on core errors, tolerant of a bounded wide-block tail.
+
+    A handful of per-symbol failures over the ~1500-name wide A-share universe
+    (delisted / suspended / newly-listed) is expected and must not fail the timer
+    (partial-failure 优雅, 不炸整轮 — the survivors are written). US / CN_HK proxy
+    failures stay strict. The wide block fails the job only when its failure RATE
+    crosses :data:`WIDE_CN_MAX_FAILURE_RATE`, which signals a real outage (e.g. the
+    bulk host down → most names fail) rather than the expected long tail."""
+
+    wide_attempted = summary.cn_universe_price_symbols + summary.cn_fundamental_symbols
+    wide_errors = summary.cn_universe_price_errors + summary.cn_fundamental_errors
+    core_errors = summary.errors - wide_errors
+    wide_failure_rate = (wide_errors / wide_attempted) if wide_attempted else 0.0
+    wide_block_failed = wide_failure_rate > WIDE_CN_MAX_FAILURE_RATE
+    exit_code = 0 if (core_errors == 0 and not wide_block_failed) else 1
+    return ExitDecision(
+        exit_code=exit_code,
+        core_errors=core_errors,
+        wide_errors=wide_errors,
+        wide_attempted=wide_attempted,
+        wide_failure_rate=wide_failure_rate,
+        wide_block_failed=wide_block_failed,
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     logging.basicConfig(
         level=logging.INFO,
@@ -256,8 +352,12 @@ def main(argv: list[str] | None = None) -> int:
         )
 
         cn_universe_loader = CnMarketCapLoader()
+        # B075 F001 — ungate wide discovery: pass the sina-fallback flag through so
+        # the production timers can widen to the full liquid market (the §23
+        # VM-reachable bulk endpoint). Absent the flag this stays the curated seed.
         superset_provider = lambda: discover_ashare_superset(  # noqa: E731
-            top_n=args.cn_universe_max_superset
+            top_n=args.cn_universe_max_superset,
+            allow_sina_fallback=args.cn_universe_sina_fallback,
         )[0]
         # B065 F002 — CAS fundamentals for the superset → fundamentals.csv.
         cn_fundamentals_loader = CnFundamentalsLoader()
@@ -310,7 +410,30 @@ def main(argv: list[str] | None = None) -> int:
             f"data_end={window.data_end.isoformat()} "
             f"first_usable_signal_date={window.first_usable_signal_date.isoformat()}"
         )
-    return 0 if summary.errors == 0 else 1
+
+    # B075 F001 — partial-failure 优雅: the wide A-share blocks (price extension +
+    # CAS fundamentals) tolerate a bounded tail of per-symbol failures; only
+    # US / CN_HK ("core") failures, or a wide failure RATE over the floor (a real
+    # outage), fail the job. The survivors are always written (不炸整轮).
+    decision = resolve_exit_decision(summary)
+    if decision.wide_errors:
+        logging.getLogger(__name__).warning(
+            "data_refresh_wide_cn_partial_failure: %d/%d wide A-share fetches failed "
+            "(rate %.1f%%, floor %.0f%%) — survivors written; %s",
+            decision.wide_errors,
+            decision.wide_attempted,
+            decision.wide_failure_rate * 100,
+            WIDE_CN_MAX_FAILURE_RATE * 100,
+            "FAILING the job (rate over floor)"
+            if decision.wide_block_failed
+            else "tolerated (不炸整轮)",
+        )
+    print(
+        f"exit policy — core_errors={decision.core_errors} "
+        f"wide_errors={decision.wide_errors}/{decision.wide_attempted} "
+        f"wide_rate={decision.wide_failure_rate:.3f} floor={WIDE_CN_MAX_FAILURE_RATE}"
+    )
+    return decision.exit_code
 
 
 if __name__ == "__main__":

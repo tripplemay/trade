@@ -1,9 +1,9 @@
 {
   "status": "building",
   "total_features": 3,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-06-22",
   "user_goal": "B075 A股 生产股票池扩大到全市场流动(top ~1500,feasibility-first)。来源:2026-06-22 用户『希望把股票池扩大』→选『全市场流动(top ~1500+)』。**★范围+诚实约束**:目标 top ~1500(市值+成交额 current liquid,剔 ST),feasibility-gated——F001 VM 实测确定可行 N,1500 日刷不可靠则诚实退最大可行 N+报告(不静默 cap/不硬凑,B070 先例)。survivorship 对 live/forward 不是问题(当前可交易宽名单向前跑正确)。不改 cn_attack 策略本身(仍研究态/OOS 红卡/edge 微弱不可配资),只扩选股广度 43→~1500。**数据命门**:价格逐只 akshare(1500 次/天)重;基本面季度才变→低频刷(周/月)不日刷;partial-failure 优雅。§23:stock_zh_a_spot_em bulk 发现走 eastmoney push 主机(dev box SSL-fail)→可行性必须 VM 实测。**3 features 2g+1c**:F001 宽 universe 机制(ungate 生产)+VM 可行性闸(实测定可行 N);F002 接生产数据刷新(宽 prices daily+基本面低频)+price_snapshot 同步(复用 B074 cn_snapshot_sync)+cn_attack 宽池选股;F003 Codex L2 真机(宽宇宙真建+两策略宽池选股+GO/PARTIAL 诚实结论+零回归)。spec docs/specs/B075-ashare-wide-universe-production-spec.md(3 章)。",
   "reference_docs": [

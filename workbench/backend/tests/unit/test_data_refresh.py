@@ -556,3 +556,197 @@ def test_cli_fetch_main_writes_cn_fundamentals(tmp_path: Path) -> None:
     assert summary.cn_fundamental_rows == 4
     # US fundamentals untouched.
     assert summary.fundamental_rows == len(equity_universe())
+
+
+# --- B075 F001: wide-universe ungate + fundamentals decouple + partial-failure ---
+
+
+def test_b075_new_cli_flags_default_off_and_wide_target_n() -> None:
+    """The wide-universe / decouple flags default OFF (pre-B075 behaviour) and the
+    universe sizing defaults to the feasibility-gated target N (spec §2 F001)."""
+
+    args = refresh_cli.parse_args(["fetch"])
+    assert args.cn_universe_sina_fallback is False
+    assert args.no_cn_universe_build is False
+    assert args.no_cn_fundamentals is False
+    assert args.cn_universe_top_n == refresh_cli.WIDE_UNIVERSE_TARGET_N
+    assert args.cn_universe_max_superset == refresh_cli.WIDE_UNIVERSE_TARGET_N
+    assert refresh_cli.WIDE_UNIVERSE_TARGET_N == 1500
+
+    flagged = refresh_cli.parse_args(
+        ["fetch", "--cn-universe-sina-fallback", "--no-cn-universe-build", "--no-cn-fundamentals"]
+    )
+    assert flagged.cn_universe_sina_fallback is True
+    assert flagged.no_cn_universe_build is True
+    assert flagged.no_cn_fundamentals is True
+
+
+def test_b075_no_cn_universe_build_keeps_wide_prices_but_skips_build(tmp_path: Path) -> None:
+    """The daily timer path: wide A-share PRICES are still fetched (the 命门) but
+    the heavy historical-mcap universe build is skipped (decoupled to a low-freq
+    job). The PIT universe CSV is left untouched; prices are written."""
+
+    args = refresh_cli.parse_args(
+        ["fetch", "--data-root", str(tmp_path), "--lookback-days", "400", "--no-cn-universe-build"]
+    )
+    superset = ["600519.SH", "600999.SH", "000001.SZ"]  # 600519 in CN_HK → deduped
+    summary = refresh_cli.fetch_main(
+        args,
+        loader_factory=lambda: (_FakePrices(), _FakeFundamentals(), _FakeCnHk(), _FakeFx()),
+        today=date(2024, 12, 31),
+        cn_universe_loader=_FakeMcap(),
+        superset_provider=lambda: superset,
+        cn_fundamentals_loader=_FakeCnFundamentals(),
+    )
+    # Wide prices fetched for the two NEW names (600519 deduped against CN_HK).
+    assert summary.cn_universe_price_symbols == 2
+    assert summary.cn_universe_price_rows == 2
+    # The expensive PIT universe build was skipped — no membership artifact written.
+    assert not (tmp_path / "snapshots" / "universe" / "cn_pit_universe.csv").exists()
+    assert not (tmp_path / "snapshots" / "universe" / "cn_marketcap.csv").exists()
+
+
+def test_b075_no_cn_fundamentals_skips_fundamentals_but_builds_universe(tmp_path: Path) -> None:
+    """The fundamentals decouple: CAS fundamentals are skipped (low-freq job owns
+    them) while the universe build + wide prices still run."""
+
+    args = refresh_cli.parse_args(
+        ["fetch", "--data-root", str(tmp_path), "--lookback-days", "400", "--no-cn-fundamentals"]
+    )
+    summary = refresh_cli.fetch_main(
+        args,
+        loader_factory=lambda: (_FakePrices(), _FakeFundamentals(), _FakeCnHk(), _FakeFx()),
+        today=date(2024, 12, 31),
+        cn_universe_loader=_FakeMcap(),
+        superset_provider=lambda: ["600519.SH", "600999.SH"],
+        cn_fundamentals_loader=_FakeCnFundamentals(),
+    )
+    # CN fundamentals skipped this run.
+    assert summary.cn_fundamental_symbols == 0
+    assert summary.cn_fundamental_rows == 0
+    # US fundamentals untouched (decouple is CN-only).
+    assert summary.fundamental_rows == len(equity_universe())
+    # Universe build still ran (it is independently gated).
+    assert (tmp_path / "snapshots" / "universe" / "cn_pit_universe.csv").exists()
+
+
+def test_b075_daily_path_wide_prices_no_build_no_fundamentals(tmp_path: Path) -> None:
+    """Both decouple flags together = the production DAILY job shape: wide prices
+    only, no build, no CN fundamentals."""
+
+    args = refresh_cli.parse_args(
+        [
+            "fetch",
+            "--data-root",
+            str(tmp_path),
+            "--lookback-days",
+            "400",
+            "--no-cn-universe-build",
+            "--no-cn-fundamentals",
+        ]
+    )
+    summary = refresh_cli.fetch_main(
+        args,
+        loader_factory=lambda: (_FakePrices(), _FakeFundamentals(), _FakeCnHk(), _FakeFx()),
+        today=date(2024, 12, 31),
+        cn_universe_loader=_FakeMcap(),
+        superset_provider=lambda: ["600999.SH", "000001.SZ"],
+        cn_fundamentals_loader=_FakeCnFundamentals(),
+    )
+    assert summary.cn_universe_price_rows == 2  # wide prices fetched
+    assert summary.cn_fundamental_rows == 0  # no fundamentals
+    assert not (tmp_path / "snapshots" / "universe" / "cn_pit_universe.csv").exists()
+    # US refresh fully intact (zero-regression).
+    assert summary.price_rows == len(price_universe())
+    assert summary.fundamental_rows == len(equity_universe())
+
+
+def test_b075_wide_block_errors_tracked_separately_from_core(tmp_path: Path) -> None:
+    """Wide A-share price + fundamentals failures increment their own counters AND
+    the shared ``errors`` total (one error contract)."""
+
+    summary = run_refresh(
+        data_root=tmp_path,
+        from_date=_FROM,
+        to_date=_TO,
+        prices_loader=_FakePrices(),
+        fundamentals_loader=_FakeFundamentals(),
+        cn_hk_prices_loader=_FakeCnHk(fail={"600999.SH"}),
+        cn_extra_price_symbols=["600999.SH", "000001.SZ"],
+        cn_fundamentals_loader=_FakeCnFundamentals(fail={"000001.SZ"}),
+        cn_fundamentals_symbols=["600519.SH", "000001.SZ"],
+    )
+    assert summary.cn_universe_price_errors == 1
+    assert summary.cn_fundamental_errors == 1
+    # Both also counted in the shared total alongside any core errors (here 0 core).
+    assert summary.errors == 2
+    # Survivors still written (不炸整轮).
+    assert summary.cn_universe_price_rows == 1
+    assert summary.cn_fundamental_rows == 2
+
+
+def _summary(
+    *,
+    errors: int,
+    cn_price_symbols: int = 0,
+    cn_price_errors: int = 0,
+    cn_fund_symbols: int = 0,
+    cn_fund_errors: int = 0,
+) -> RefreshSummary:
+    return RefreshSummary(
+        price_symbols=10,
+        price_rows=10,
+        fundamental_symbols=5,
+        fundamental_rows=5,
+        errors=errors,
+        prices_path="p",
+        fundamentals_path="f",
+        cn_universe_price_symbols=cn_price_symbols,
+        cn_universe_price_errors=cn_price_errors,
+        cn_fundamental_symbols=cn_fund_symbols,
+        cn_fundamental_errors=cn_fund_errors,
+    )
+
+
+def test_b075_exit_decision_clean_run_is_zero() -> None:
+    decision = refresh_cli.resolve_exit_decision(_summary(errors=0))
+    assert decision.exit_code == 0
+
+
+def test_b075_exit_decision_core_error_is_strict() -> None:
+    # A US/CN_HK failure with no wide errors → core_errors=1 → fail.
+    decision = refresh_cli.resolve_exit_decision(_summary(errors=1))
+    assert decision.core_errors == 1
+    assert decision.exit_code == 1
+
+
+def test_b075_exit_decision_tolerates_bounded_wide_tail() -> None:
+    # 30 wide names attempted, 3 failed (10%) ≤ 20% floor, 0 core → tolerated.
+    decision = refresh_cli.resolve_exit_decision(
+        _summary(errors=3, cn_price_symbols=30, cn_price_errors=3)
+    )
+    assert decision.core_errors == 0
+    assert decision.wide_errors == 3
+    assert decision.wide_block_failed is False
+    assert decision.exit_code == 0
+
+
+def test_b075_exit_decision_fails_when_wide_rate_over_floor() -> None:
+    # 10 wide names, 5 failed (50%) > 20% floor → a real outage → fail.
+    decision = refresh_cli.resolve_exit_decision(
+        _summary(errors=5, cn_fund_symbols=10, cn_fund_errors=5)
+    )
+    assert decision.core_errors == 0
+    assert decision.wide_failure_rate == 0.5
+    assert decision.wide_block_failed is True
+    assert decision.exit_code == 1
+
+
+def test_b075_exit_decision_core_error_fails_even_if_wide_within_floor() -> None:
+    # 1 core error + a tolerable wide tail → still fail on the core error.
+    decision = refresh_cli.resolve_exit_decision(
+        _summary(errors=2, cn_price_symbols=30, cn_price_errors=1)
+    )
+    assert decision.core_errors == 1
+    assert decision.wide_block_failed is False
+    assert decision.exit_code == 1

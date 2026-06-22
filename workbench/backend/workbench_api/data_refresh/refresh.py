@@ -169,6 +169,14 @@ class RefreshSummary:
     # after the US SEC rows; US rows untouched).
     cn_fundamental_symbols: int = 0
     cn_fundamental_rows: int = 0
+    # B075 F001 — per-symbol failures isolated to the WIDE A-share blocks (price
+    # extension + CAS fundamentals). They are also summed into ``errors`` (one
+    # error contract), but tracked separately so the CLI can tolerate a bounded
+    # tail of failures over a ~1500-name universe (delisted / suspended names are
+    # expected) without failing the whole timer, while US/CN_HK failures stay
+    # strict. Partial-failure 优雅 (不炸整轮): the survivors are still written.
+    cn_universe_price_errors: int = 0
+    cn_fundamental_errors: int = 0
 
 
 def equity_universe() -> tuple[str, ...]:
@@ -307,6 +315,7 @@ def run_refresh(
     # CN_HK rows are byte-identical (US-zero-regression). Best-effort per symbol.
     cn_universe_rows: list[list[object]] = []
     cn_universe_price_symbols = 0
+    cn_universe_price_errors = 0
     if cn_extra_price_symbols and cn_hk_prices_loader is not None:
         already = set(symbols) | set(CN_HK_UNIVERSE)
         extra = [s for s in dict.fromkeys(cn_extra_price_symbols) if s not in already]
@@ -317,6 +326,7 @@ def run_refresh(
                 cn_universe_rows.extend(_prices_to_rows(bars))
             except Exception:  # noqa: BLE001 — best-effort; skip a failing symbol
                 errors += 1
+                cn_universe_price_errors += 1
                 logger.exception("data_refresh_cn_universe_fetch_failure", extra={"symbol": symbol})
 
     _write_csv(prices_path, PRICES_HEADER, price_rows + cn_hk_rows + cn_universe_rows)
@@ -360,6 +370,7 @@ def run_refresh(
     # work on A-shares with no change. Best-effort per symbol.
     cn_fundamental_rows: list[list[object]] = []
     cn_fundamental_symbols = 0
+    cn_fundamental_errors = 0
     if cn_fundamentals_loader is not None and cn_fundamentals_symbols:
         cn_fundamental_symbols = len(cn_fundamentals_symbols)
         for symbol in cn_fundamentals_symbols:
@@ -369,6 +380,7 @@ def run_refresh(
                 )
             except Exception:  # noqa: BLE001 — best-effort; skip a failing symbol
                 errors += 1
+                cn_fundamental_errors += 1
                 logger.exception(
                     "data_refresh_cn_fundamentals_fetch_failure", extra={"symbol": symbol}
                 )
@@ -393,6 +405,8 @@ def run_refresh(
         cn_universe_price_rows=len(cn_universe_rows),
         cn_fundamental_symbols=cn_fundamental_symbols,
         cn_fundamental_rows=len(cn_fundamental_rows),
+        cn_universe_price_errors=cn_universe_price_errors,
+        cn_fundamental_errors=cn_fundamental_errors,
     )
     logger.info(
         "data_refresh_done",

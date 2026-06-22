@@ -6,7 +6,7 @@
       "title": "宽 universe 机制(ungate 生产)+ VM 可行性闸(实测确定可行 N,目标 1500)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F001 + §0 约束】(1) ungate 宽宇宙发现:discover_ashare_superset 生产可用(top-N 可配,默认目标 1500,市值+成交额,剔 ST;VM bulk-spot snapshot 路径)。(2) ★VM 可行性探针(§23,generator 实施时 SSH VM 实跑):实测 (a) bulk discover top-1500 可达/耗时;(b) 日刷 ~1500 A股 价格的时长/成功率/rate-limit(命门);(c) 基本面低频(周/月)刷 ~1500 可行性。产出可行最大 N+GO/PARTIAL 结论(1500 不可靠→退最大可行 N 写 session_notes/handoff,不静默 cap)。(3) 优雅 partial-failure(逐只部分失败跳过/记数/不炸整轮;fundamentals 低频与 prices 解耦)。(4) 单测(宇宙构建/排名/partial-failure,确定性 fixture)。正面证据:宽宇宙发现生产可用(top-N 可配);VM 实测确定可行 N+GO/PARTIAL(贴真耗时/成功率);partial-failure 优雅;fundamentals 低频解耦。Gates:backend pytest/ruff 目录上下文/mypy CI-exact 0。",
       "design_decisions": [
         "★feasibility-first:目标 1500 但 VM 实测定可行 N,刷不动诚实退档不静默 cap(B070 先例)。",

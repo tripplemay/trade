@@ -1,0 +1,542 @@
+{
+  "probe": "b075_wide_universe_feasibility",
+  "run_label": "vm",
+  "params": {
+    "target_n": 1500,
+    "sample": 24,
+    "lookback_days": 1825,
+    "price_budget_min": 90.0,
+    "from_date": "2021-06-23",
+    "to_date": "2026-06-22"
+  },
+  "phase_a_discovery": {
+    "phase": "A_bulk_discovery",
+    "target_n": 1500,
+    "ok": true,
+    "provenance": "sina_spot",
+    "discovered": 1501,
+    "elapsed_s": 45.278,
+    "sample_head": [
+      "300308.SZ",
+      "603986.SH",
+      "300502.SZ",
+      "000725.SZ",
+      "002384.SZ",
+      "300750.SZ",
+      "601138.SH",
+      "688008.SH"
+    ],
+    "vm_reachable_bulk": true
+  },
+  "phase_b_prices_daily": {
+    "phase": "B_prices_daily",
+    "sample_n": 24,
+    "per_name": [
+      {
+        "ticker": "603011.SH",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 2.439
+      },
+      {
+        "ticker": "300229.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.307
+      },
+      {
+        "ticker": "002361.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.245
+      },
+      {
+        "ticker": "002518.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.396
+      },
+      {
+        "ticker": "301189.SZ",
+        "ok": true,
+        "rows": 1083,
+        "elapsed_s": 1.215
+      },
+      {
+        "ticker": "002131.SZ",
+        "ok": true,
+        "rows": 1207,
+        "elapsed_s": 1.357
+      },
+      {
+        "ticker": "600585.SH",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.252
+      },
+      {
+        "ticker": "601216.SH",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.255
+      },
+      {
+        "ticker": "000683.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.5
+      },
+      {
+        "ticker": "300868.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.149
+      },
+      {
+        "ticker": "600050.SH",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.413
+      },
+      {
+        "ticker": "300522.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.181
+      },
+      {
+        "ticker": "603306.SH",
+        "ok": true,
+        "rows": 1200,
+        "elapsed_s": 0.993
+      },
+      {
+        "ticker": "688692.SH",
+        "ok": true,
+        "rows": 491,
+        "elapsed_s": 1.166
+      },
+      {
+        "ticker": "601166.SH",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.3
+      },
+      {
+        "ticker": "603806.SH",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.644
+      },
+      {
+        "ticker": "002311.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.346
+      },
+      {
+        "ticker": "002787.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.014
+      },
+      {
+        "ticker": "603687.SH",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.089
+      },
+      {
+        "ticker": "300185.SZ",
+        "ok": true,
+        "rows": 1208,
+        "elapsed_s": 1.281
+      },
+      {
+        "ticker": "300568.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.657
+      },
+      {
+        "ticker": "301160.SZ",
+        "ok": true,
+        "rows": 981,
+        "elapsed_s": 1.123
+      },
+      {
+        "ticker": "600259.SH",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.328
+      },
+      {
+        "ticker": "002466.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.301
+      }
+    ],
+    "attempted": 24,
+    "ok": 24,
+    "empty": 0,
+    "errors": 0,
+    "success_rate": 1.0,
+    "mean_s_per_name": 1.331,
+    "rows_total": 27950,
+    "total_s": 31.95
+  },
+  "phase_c_marketcap_build": {
+    "phase": "C_marketcap_build",
+    "sample_n": 24,
+    "per_name": [
+      {
+        "ticker": "603011.SH",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 4.436
+      },
+      {
+        "ticker": "300229.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.546
+      },
+      {
+        "ticker": "002361.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 5.603
+      },
+      {
+        "ticker": "002518.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 4.987
+      },
+      {
+        "ticker": "301189.SZ",
+        "ok": true,
+        "rows": 1083,
+        "elapsed_s": 1.392
+      },
+      {
+        "ticker": "002131.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 7.235
+      },
+      {
+        "ticker": "600585.SH",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 6.662
+      },
+      {
+        "ticker": "601216.SH",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 5.806
+      },
+      {
+        "ticker": "000683.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.979
+      },
+      {
+        "ticker": "300868.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.134
+      },
+      {
+        "ticker": "600050.SH",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.568
+      },
+      {
+        "ticker": "300522.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 4.682
+      },
+      {
+        "ticker": "603306.SH",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 5.029
+      },
+      {
+        "ticker": "688692.SH",
+        "ok": true,
+        "rows": 491,
+        "elapsed_s": 3.512
+      },
+      {
+        "ticker": "601166.SH",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 3.35
+      },
+      {
+        "ticker": "603806.SH",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 3.6
+      },
+      {
+        "ticker": "002311.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 7.296
+      },
+      {
+        "ticker": "002787.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.329
+      },
+      {
+        "ticker": "603687.SH",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 2.37
+      },
+      {
+        "ticker": "300185.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 1.588
+      },
+      {
+        "ticker": "300568.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 5.451
+      },
+      {
+        "ticker": "301160.SZ",
+        "ok": true,
+        "rows": 981,
+        "elapsed_s": 6.39
+      },
+      {
+        "ticker": "600259.SH",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 8.643
+      },
+      {
+        "ticker": "002466.SZ",
+        "ok": true,
+        "rows": 1210,
+        "elapsed_s": 6.081
+      }
+    ],
+    "attempted": 24,
+    "ok": 24,
+    "empty": 0,
+    "errors": 0,
+    "success_rate": 1.0,
+    "mean_s_per_name": 4.236,
+    "rows_total": 27965,
+    "total_s": 101.67
+  },
+  "phase_d_fundamentals_lowfreq": {
+    "phase": "D_fundamentals_lowfreq",
+    "sample_n": 24,
+    "per_name": [
+      {
+        "ticker": "603011.SH",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 6.532
+      },
+      {
+        "ticker": "300229.SZ",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 4.171
+      },
+      {
+        "ticker": "002361.SZ",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 5.623
+      },
+      {
+        "ticker": "002518.SZ",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 3.76
+      },
+      {
+        "ticker": "301189.SZ",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 5.336
+      },
+      {
+        "ticker": "002131.SZ",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 6.593
+      },
+      {
+        "ticker": "600585.SH",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 9.525
+      },
+      {
+        "ticker": "601216.SH",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 5.019
+      },
+      {
+        "ticker": "000683.SZ",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 2.483
+      },
+      {
+        "ticker": "300868.SZ",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 4.433
+      },
+      {
+        "ticker": "600050.SH",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 5.806
+      },
+      {
+        "ticker": "300522.SZ",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 8.323
+      },
+      {
+        "ticker": "603306.SH",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 3.325
+      },
+      {
+        "ticker": "688692.SH",
+        "ok": true,
+        "rows": 17,
+        "elapsed_s": 1.133
+      },
+      {
+        "ticker": "601166.SH",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 3.393
+      },
+      {
+        "ticker": "603806.SH",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 1.784
+      },
+      {
+        "ticker": "002311.SZ",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 5.045
+      },
+      {
+        "ticker": "002787.SZ",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 5.702
+      },
+      {
+        "ticker": "603687.SH",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 5.001
+      },
+      {
+        "ticker": "300185.SZ",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 4.029
+      },
+      {
+        "ticker": "300568.SZ",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 4.147
+      },
+      {
+        "ticker": "301160.SZ",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 1.583
+      },
+      {
+        "ticker": "600259.SH",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 6.409
+      },
+      {
+        "ticker": "002466.SZ",
+        "ok": true,
+        "rows": 20,
+        "elapsed_s": 2.285
+      }
+    ],
+    "attempted": 24,
+    "ok": 24,
+    "empty": 0,
+    "errors": 0,
+    "success_rate": 1.0,
+    "mean_s_per_name": 4.643,
+    "rows_total": 477,
+    "total_s": 111.44
+  },
+  "judgment": {
+    "verdict": "GO",
+    "feasible_n": 1500,
+    "target_n": 1500,
+    "reason": "Bulk discovery reachable (sina_spot, 1501 names) AND daily price refresh of N=1500 fits the 90.0min budget (~33.3min, success 1.0).",
+    "signals": {
+      "bulk_discovery_ok": true,
+      "bulk_provenance": "sina_spot",
+      "bulk_discovered": 1501,
+      "daily_price_fits_budget": true,
+      "price_success_rate": 1.0,
+      "price_est_serial_min_at_target": 33.3,
+      "largest_feasible_n_by_price_budget": 4057,
+      "marketcap_est_serial_min_at_target": 105.9,
+      "fundamentals_est_serial_min_at_target": 116.1
+    },
+    "extrapolation": {
+      "prices_daily": {
+        "n": 1500,
+        "mean_s_per_name": 1.331,
+        "est_serial_s": 1996.5,
+        "est_serial_min": 33.3
+      },
+      "marketcap_build": {
+        "n": 1500,
+        "mean_s_per_name": 4.236,
+        "est_serial_s": 6354.0,
+        "est_serial_min": 105.9
+      },
+      "fundamentals_lowfreq": {
+        "n": 1500,
+        "mean_s_per_name": 4.643,
+        "est_serial_s": 6964.5,
+        "est_serial_min": 116.1
+      }
+    }
+  }
+}
