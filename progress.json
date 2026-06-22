@@ -1,46 +1,46 @@
 {
-  "status": "done",
+  "status": "building",
   "total_features": 3,
-  "completed_features": 3,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F003",
+  "current_sprint": "F001",
   "last_updated": "2026-06-23",
-  "user_goal": "B075 A股 生产股票池扩大到全市场流动(top ~1500,feasibility-first)。来源:2026-06-22 用户『希望把股票池扩大』→选『全市场流动(top ~1500+)』。**★范围+诚实约束**:目标 top ~1500(市值+成交额 current liquid,剔 ST),feasibility-gated——F001 VM 实测确定可行 N,1500 日刷不可靠则诚实退最大可行 N+报告(不静默 cap/不硬凑,B070 先例)。survivorship 对 live/forward 不是问题(当前可交易宽名单向前跑正确)。不改 cn_attack 策略本身(仍研究态/OOS 红卡/edge 微弱不可配资),只扩选股广度 43→~1500。**数据命门**:价格逐只 akshare(1500 次/天)重;基本面季度才变→低频刷(周/月)不日刷;partial-failure 优雅。§23:stock_zh_a_spot_em bulk 发现走 eastmoney push 主机(dev box SSL-fail)→可行性必须 VM 实测。**3 features 2g+1c**:F001 宽 universe 机制(ungate 生产)+VM 可行性闸(实测定可行 N);F002 接生产数据刷新(宽 prices daily+基本面低频)+price_snapshot 同步(复用 B074 cn_snapshot_sync)+cn_attack 宽池选股;F003 Codex L2 真机(宽宇宙真建+两策略宽池选股+GO/PARTIAL 诚实结论+零回归)。spec docs/specs/B075-ashare-wide-universe-production-spec.md(3 章)。",
+  "user_goal": "B076 cn_attack size-tilt 选股(让宽池真正改变选股,回测验证,条件上生产)。来源:用户扩股票池→B075 发现单纯扩宇宙不改选股(top-25 仍蓝筹与种子43重叠)→用户选 A 改选股让宽池生效。**★诚实约束(焊死)**:verdict-gated(同 B068/B069/B070)——size-tilt 是策略改动须回测验证,GO(某档风险调整后不劣+真带中小盘广度)才上生产,NO-GO(全更差/只加风险)=合法诚实结论不改生产照实报告(B069 inverse-vol NO-SWITCH 先例)。size_tilt_weight 默认 0=现状零回归。★回测必须用 B070 去偏 PIT 宽宇宙(中小盘幸存者偏差最重),不得用 B075 当前 1490。研究态不改不可配资定性;中小盘更激进更可能暴雷。cn_attack-only,US/Master/regime/hk 零回归。**机制**:composite 加 percent-ranked size 因子(市值越小得分越高,_aggregate_composite_score 现成干净 US 零回归);市值线到选股层(cn_marketcap 有数据)。**3 features 2g+1c**:F001 size-tilt 机制+对照回测(sweep 0/light/medium/strong×两变体,去偏宇宙,真数字+中小盘广度+verdict);F002 条件接生产(GO→上 precompute/NO-GO→不改);F003 Codex(回测真数字复现+独立裁定 GO/NO-GO+零回归)。spec docs/specs/B076-cn-attack-size-tilt-selection-spec.md(3 章)。",
   "reference_docs": [
-    "docs/specs/B075-ashare-wide-universe-production-spec.md",
-    "workbench/backend/workbench_api/data_refresh/cn_universe.py",
+    "docs/specs/B076-cn-attack-size-tilt-selection-spec.md",
+    "trade/strategies/cn_attack_momentum_quality/construction.py",
+    "trade/strategies/cn_attack_momentum_quality/parameters.py",
+    "trade/strategies/cn_attack_momentum_quality/signal.py",
     "workbench/backend/workbench_api/data_refresh/cn_marketcap.py",
-    "workbench/backend/workbench_api/data_refresh/cn_hk_prices.py",
-    "workbench/backend/workbench_api/data_refresh/cli.py",
     "workbench/backend/workbench_api/strategy_modes/cn_attack_precompute.py"
   ],
   "docs": {
-    "spec": "docs/specs/B075-ashare-wide-universe-production-spec.md",
+    "spec": "docs/specs/B076-cn-attack-size-tilt-selection-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B075-ashare-wide-universe-signoff-2026-06-22.md",
-    "framework_reviewed": true
+    "signoff": null,
+    "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "B075 F003 L2 PASS — N=1501 A株价格+1490 PIT宇宙+1501基本面全建成功;zero_errors=0/2992;price_snapshot 1501 A株 cn_uncovered=0;precompute从1490选top-25(与种子43重叠=预期大盘偏差);paper-mtm rebalanced=0(账户已建仓);Master/regime零回归.",
-    "pass_count": 3,
+    "summary": null,
+    "pass_count": 0,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
   },
   "generator_handoff": {
-    "summary": "B075 F001+F002 done(generator)→verifying(交 Codex F003)。**可行性闸 GO@N=1500**(VM 实测 sample=24,100% 成功;证据 docs/test-reports/B075-F001-vm-feasibility-probe-2026-06-22.json):sina 发现 1501 名/45s;日刷 1500 价 ~33min;市值 build ~106min、CAS 基本面 ~116min(故两者必须低频)。WIDE_UNIVERSE_TARGET_N=1500(刷不动改此常量+systemd unit,不静默 cap)。**F001 代码**:data_refresh/cli.py 三 flag(--cn-universe-sina-fallback ungate 宽发现 / --no-cn-universe-build / --no-cn-fundamentals 解耦两重负载;默认 off=pre-B075 字节等价);refresh.py 宽块错误单列计数(cn_universe_price_errors/cn_fundamental_errors);resolve_exit_decision 容忍宽块尾部失败(rate≤20% floor),US/CN_HK core 严格→真停摆才红(partial-failure 优雅不炸整轮)。**F002 wiring**:① 日刷 workbench-data-refresh.service 改 ExecStart=宽 prices(--cn-universe-sina-fallback --top-n/max-superset 1500 --no-cn-universe-build --no-cn-fundamentals);timer 02:30→01:30(宽刷~40min,留 margin 在 recommendations 03:00 前完成,保 US 当日新鲜=零回归)。② 新 workbench-cn-universe.service+.timer(Sun 06:00,~4-5h:宽 prices 重取+市值 build+CAS 基本面;无 --no-* 解耦 flag)。deploy.sh 通配 loop+sudoers 通配自动装/启,无需改 sudoers。③ price_snapshot 同步宽集=复用 B074 cn_snapshot_sync 自动覆盖(读 CSV 全部 .SH/.SZ,无 cap);cn_attack 选股=引擎不变,从宽 universe_history 选 top-25(零逻辑改)。**★对 spec 的诚实偏离**:spec F002(1) 只说『基本面 low-freq』,我把『市值 universe build』也移到周job(probe 实测 build ~106min,日刷扛不住且会撞 03:00 下游 precompute)→日 job=宽 prices only。**生产现状基线**=43 种子(cn_pit_universe+prices CSV 均 43);F003 比对 43→宽。**★Codex F003 触发宽建命令(tripplezhou 有全 sudo NOPASSWD:ALL)**:部署后 `sudo systemctl start workbench-cn-universe.service`(~4-5h 真建),或直跑 `cd /srv/workbench/current/backend && sudo -u deploy env WORKBENCH_DATA_ROOT=/var/lib/workbench/data /opt/workbench/.venv/bin/python -m workbench_api.data_refresh.cli fetch --cn-universe-sina-fallback --cn-universe-top-n 1500 --cn-universe-max-superset 1500`;探针(轻量,免全建)`PYTHONPATH=/srv/workbench/current/backend /opt/workbench/.venv/bin/python /tmp/b075_probe.py --label vm`(脚本 scripts/research/b075_wide_universe_feasibility_probe.py)。建完再跑 prices.cli(同步宽集进 price_snapshot)+cn-attack precompute+paper-mtm 让宽选股生效。零回归:US/Master/regime/hk+US paper。Gates 全绿:backend ruff+mypy(448 files)=0;227 safety/acceptance/data_refresh + 16 root cn_attack 全过;root ruff+mypy trade=0。",
-    "status": "ready"
+    "summary": null,
+    "status": "pending"
   },
   "session_notes": {
-    "planner": "2026-06-23 B075 done 收尾(planner)。A股 生产股票池扩大=✅ done,0 fix-round。Codex F003 L2 真机:可行性 GO 满档 N=1501(cn-universe 真建 4h21min,zero errors 0/2992,100% 成功);1490 PIT 宇宙/1501 价格/1501 基本面;price_snapshot 宽集 cn_uncovered=0;每周日 06:00 自动重建;Master/regime 零回归。**★关键诚实发现(已记 soft-watch)**:宽池(1490)选出的 top-25 与种子 43 高度重叠(还是大盘蓝筹)——因为 ①宇宙按市值取 top-1500 偏大盘 + ②动量+质量综合分天然落大盘。paper-mtm rebalanced=0(选股没变)。**含义:单纯扩宇宙不改变选股,要宽池真正改选股需策略层改动(降市值偏向/加 size tilt),B075 故意未改策略逻辑。已向用户说明,待用户定后续。****framework v0.9.51 沉淀(3 条,用户批)**:environment.md(VM /tmp PYTHONPATH)+generator.md §33(可行性探针复用真 loader)+§34(宽集 partial-failure exit-code 容忍)。CHANGELOG+archive,队列清空。**done 收尾**:F003 status→done(Codex 漏翻);framework_reviewed=true;signoff 路径;project-status 已 done+Framework v0.9.51。**【续接=下一批待用户定】**:①(用户考虑中)宽池真正改选股的策略层后续(降市值偏向/size tilt,仍研究态);②测试基建 P3-P5;③hk_china 重测/2 因子去偏。**ops 提醒**:网关余额耗尽待充值(生产 AI)。prod=B075 系(宽宇宙已上,每周自动重建)。",
-    "generator": "2026-06-22 B075 F001+F002 done(generator)。可行性 GO@N=1500(VM sample=24 100% 成功)。code:cli.py 3 flag(sina-fallback ungate / no-cn-universe-build / no-cn-fundamentals 解耦)+refresh.py 宽块错误单列+resolve_exit_decision 宽块容忍(rate≤20%)。systemd:日刷宽 prices only(timer 02:30→01:30)+ 新周 job workbench-cn-universe(Sun 06:00,build+基本面)。price_snapshot 同步+cn_attack 宽选股 = 复用 B074 sync + 引擎不变(零逻辑改)。证据 JSON+probe 入库。诚实偏离:universe build 也移周job(probe build~106min 日刷扛不住)。**续接 Codex F003**:见 generator_handoff——部署后 `sudo systemctl start workbench-cn-universe.service` 真建宽宇宙(~4-5h)→验 N/选股/零回归/GO-PARTIAL;基线=43 种子。全 sudo 可用。Gates 全绿。",
-    "evaluator": "2026-06-22 B075 F003 L2 done(evaluator)。cn-universe真建4h21min完成(14:10→18:32 UTC),zero errors。N=1501 A株价格/1490 PIT宇宙/1501基本面。price_snapshot 1501 cn_uncovered=0。precompute从1490选top-25=与种子43重叠(大盘蓝筹偏差,预期行为,honest finding)。paper-mtm rebalanced=0。Master/regime零回归。signoff docs/test-reports/B075-ashare-wide-universe-signoff-2026-06-22.md。GO结论。"
+    "planner": "2026-06-23 B076 planning(planner)。cn_attack size-tilt 选股(让宽池真改选股,回测验证,条件上生产)。用户选 A(B075 后宽池没改选股→改选股层)。**★verdict-gated(B069 先例)**:size-tilt 策略改动须回测验证,GO 才上生产,NO-GO 合法不改生产。size_tilt_weight 默认 0 零回归。★回测必须用 B070 去偏 PIT 宇宙(中小盘幸存者偏差最重),不得用 B075 当前 1490。**机制核准**:_aggregate_composite_score 是 percent-rank 因子加权和,加 size 因子干净(US 零回归);市值 cn_marketcap 有,只需线到选股层。**3 features 2g+1c**:F001 size-tilt 机制+对照回测(sweep×两变体,去偏宇宙,真数字+★中小盘广度指标+verdict);F002 条件接生产;F003 Codex 独立裁定 GO/NO-GO。**【续接】**:status=building,Generator 接 F001(size-tilt 机制+去偏宇宙对照回测出真数字 verdict)→F002(条件接生产),再 Codex F003 独立裁定。**关键**:这批很可能 NO-GO(放开蓝筹偏向中小盘多半更差/更暴雷)——和 B069 一样,诚实结论比'强行用上宽池'重要。**ops**:网关余额耗尽待充值。prod=B075 系(宽宇宙已上)。",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",
     "F002",
     "F003"
   ],
-  "completed_date": "2026-06-22"
+  "completed_date": null
 }

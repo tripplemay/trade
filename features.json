@@ -1,39 +1,39 @@
 {
-  "sprint": "B075-ashare-wide-universe-production",
+  "sprint": "B076-cn-attack-size-tilt-selection",
   "features": [
     {
       "id": "F001",
-      "title": "宽 universe 机制(ungate 生产)+ VM 可行性闸(实测确定可行 N,目标 1500)",
+      "title": "size-tilt 机制(composite 加 percent-rank size 因子,默认 0 零回归)+ 对照回测(sweep,B070 去偏宇宙,真数字 verdict)",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §2 F001 + §0 约束】(1) ungate 宽宇宙发现:discover_ashare_superset 生产可用(top-N 可配,默认目标 1500,市值+成交额,剔 ST;VM bulk-spot snapshot 路径)。(2) ★VM 可行性探针(§23,generator 实施时 SSH VM 实跑):实测 (a) bulk discover top-1500 可达/耗时;(b) 日刷 ~1500 A股 价格的时长/成功率/rate-limit(命门);(c) 基本面低频(周/月)刷 ~1500 可行性。产出可行最大 N+GO/PARTIAL 结论(1500 不可靠→退最大可行 N 写 session_notes/handoff,不静默 cap)。(3) 优雅 partial-failure(逐只部分失败跳过/记数/不炸整轮;fundamentals 低频与 prices 解耦)。(4) 单测(宇宙构建/排名/partial-failure,确定性 fixture)。正面证据:宽宇宙发现生产可用(top-N 可配);VM 实测确定可行 N+GO/PARTIAL(贴真耗时/成功率);partial-failure 优雅;fundamentals 低频解耦。Gates:backend pytest/ruff 目录上下文/mypy CI-exact 0。",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F001 + §0 约束】(1) 机制:composite 加 percent-ranked size 因子(市值越小得分越高=small-tilt),参数 size_tilt_weight(默认 0;momentum/quality/size renormalize);两变体支持;市值线到选股层。(2) 对照回测(★B070 去偏 PIT 宽宇宙,非 B075 当前 1490,OOS):扫 size_tilt_weight(0=现状/light/medium/strong)×两变体,真成本(印花税仅卖+佣金+滑点)。(3) 真数字:CAGR/Sharpe/max DD/换手+★中小盘广度指标(选股市值分布/与种子43重叠度/中小盘占比)量化 tilt 真把中小盘选进来没。(4) verdict:GO(某档风险调整后不劣+真带广度)/NO-GO(全更差或只加风险);诚实 OOS caveat(2024Q4 窗口)。正面证据:size-tilt 机制(默认 0 零回归)+两变体;对照回测 sweep 真数字+GO/NO-GO verdict;用 B070 去偏宇宙。Gates:trade pytest+mypy trade+ruff 目录上下文。",
       "design_decisions": [
-        "★feasibility-first:目标 1500 但 VM 实测定可行 N,刷不动诚实退档不静默 cap(B070 先例)。",
-        "★§23:stock_zh_a_spot_em bulk 发现走 eastmoney push 主机(dev box SSL-fail)→可行性必须 VM 实测。",
-        "价格逐只 akshare(1500 次/天)=命门;基本面季度才变→低频刷(周/月)不日刷。"
+        "★verdict-gated(B069 先例):NO-GO 合法,不为用上宽池硬上更差策略。",
+        "★回测必须用 B070 去偏 PIT 宇宙(中小盘幸存者偏差最重),不得用 B075 当前 1490。",
+        "机制=composite 加 percent-rank size 因子(干净,_aggregate_composite_score 现成,US 零回归);默认 size_tilt_weight=0 零回归。",
+        "中小盘广度指标量化 tilt 是否真改变选股(不只看收益)。"
       ]
     },
     {
       "id": "F002",
-      "title": "接生产数据刷新(宽 prices daily+基本面低频)+ price_snapshot 同步宽集 + cn_attack 宽池选股(按可行 N)",
+      "title": "条件接生产(GO→size_tilt 上 cn_attack precompute;NO-GO→不改生产)+ 零回归不变量",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §2 F002】(1) 生产 data_refresh 覆盖宽集:prices daily(~可行 N)+fundamentals low-freq;cn_extra_price_symbols superset 扩到可行 N;统一 CSV 写宽集。(2) price_snapshot 同步宽集(复用 B074 cn_snapshot_sync):宽集/cn_attack 目标 A股 进 price_snapshot,模拟盘能估价宽选股。(3) cn_attack 两策略从宽 PIT 池(cn_pit_universe 可行 N)选 top-25;质量变体缺基本面名按现有 construction 剔除(NaN quality drop);advisory 推荐+模拟盘反映宽选股。(4) 边界研究态不改策略逻辑;US/Master/regime/hk 零回归。正面证据:生产 data_refresh 覆盖可行 N(prices daily+fundamentals low-freq);price_snapshot 含宽选股目标;cn_attack 两策略从宽池选 top-25(advisory+模拟盘);Master/regime/hk 零回归。Gates 同 F001+acceptance。",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F002】(1) GO 路径:F001 胜出 size_tilt_weight 接 cn_attack precompute 两变体→生产 advisory/模拟盘选股反映 size-tilt;price_snapshot 同步新选股目标(复用 B074 cn_snapshot_sync)。(2) NO-GO 路径:生产 size_tilt_weight 保持 0(现状蓝筹)不改生产,F001 verdict 写报告,本 feature 退化为确认默认 0 零回归+文档化 NO-GO。(3) acceptance 守门:size_tilt_weight=0 时选股==现状(零回归不变量,B071-B073 层)。(4) 边界 cn_attack-only;US/Master/regime/hk 零回归。正面证据:GO→生产 size_tilt 上 precompute(选股变化可见);NO-GO→生产默认 0 不变+报告;size_tilt_weight=0 零回归 acceptance。Gates 同 F001+backend pytest/mypy CI-exact+acceptance。",
       "design_decisions": [
-        "复用 B074 cn_snapshot_sync 把宽集 A股 价同步进 price_snapshot(模拟盘可估价)。",
-        "cn_attack 选股逻辑不变(仍 composite top-25 等权),只换更宽的 universe 输入。",
-        "质量变体缺基本面名 NaN quality drop(现有 construction 行为)=宽池里只有基本面齐的票进质量变体。"
+        "条件部署:GO/NO-GO 两路径都合法;NO-GO 不改生产(B069 NO-SWITCH 先例)。",
+        "size_tilt_weight=0 零回归 acceptance 守门(选股==现状)。"
       ]
     },
     {
       "id": "F003",
-      "title": "Codex:L2 真机验收(宽宇宙真建 N 只+两策略宽池选股+数据刷新稳定)+GO/PARTIAL 诚实结论+零回归+signoff",
+      "title": "Codex:验收(回测真数字复现+独立裁定 GO/NO-GO+条件真机验+零回归)+signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "【见 spec §2 F003。真机/真数据/可行性批次 signoff 含实测证据 §29+§23】L1 全门禁(verifying 可跳 L1 复跑 B071 §30)。L2 真机(VM,贴真返回):①宽宇宙真建(N 只,贴 discover 耗时/成功率)+独立复核 F001 可行 N 结论(1500 还是退档);②cn_attack 两策略从宽池选 top-25(贴 advisory 推荐+模拟盘建仓持仓,与 43 种子选股对比看变化);③数据刷新真覆盖宽集+稳定(多日/重跑成功率);④Master/regime/hk+US paper 零回归。★GO/PARTIAL 诚实结论:实测可行 N=?;1500 达成/退档;诚实记数据负载现实(日刷时长/失败率)。边界:research-only/no-broker/no 真金;不改策略逻辑;HEAD≡prod。signoff docs/test-reports/B075-...-signoff-*.md 实测证据逐条。",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F003。策略研究/条件部署批次 signoff 含真数字+诚实 verdict §29+B068-B070 范式】L1 全门禁(verifying 可跳 L1 复跑)。回测真数字复现:独立复跑 size-tilt sweep(B070 去偏宇宙)→复现 CAGR/Sharpe/DD/中小盘广度;★独立裁定 GO/NO-GO(不橡皮戳 generator)。若 GO:VM 真机验生产选股反映 size-tilt(贴新 top-25 vs 现状蓝筹对比+模拟盘);若 NO-GO:确认生产 size_tilt_weight=0 未动。零回归:size_tilt_weight=0 选股==现状;US/Master/regime/hk 不破。边界:research-only/no-broker/no 真金/不改不可配资定性;HEAD≡prod。signoff docs/test-reports/B076-...-signoff-*.md 真数字逐条+明确 GO/NO-GO+OOS caveat。",
       "design_decisions": []
     }
   ]
