@@ -1,0 +1,16 @@
+interactions:
+- request:
+    body: ''
+    headers: {}
+    method: GET
+    uri: https://api.tiingo.com/tiingo/daily/spy/prices?startDate=2026-05-22&endDate=2026-05-23&format=json
+  response:
+    body:
+      string: '[{"date":"2026-05-22T00:00:00.000Z","open":520.10,"high":522.50,"low":519.80,"close":521.30,"adjClose":521.30,"volume":42000000},{"date":"2026-05-23T00:00:00.000Z","open":521.55,"high":523.40,"low":520.10,"close":522.40,"adjClose":522.40,"volume":40100000}]'
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+version: 1

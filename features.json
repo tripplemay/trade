@@ -6,7 +6,7 @@
       "title": "VCR 录放外部 HTTP(Tiingo/SEC/LLM gateway)+ akshare/yfinance frame fixture → CI 离线确定性",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F001 + §1】(1) 引入 VCR 方案(vcrpy/pytest-recording 或 respx,选一记 dev-dep)+cassette 目录 tests/cassettes/(committed)。(2) 三 httpx loader(tiingo_loader.py:126/sec_edgar_loader.py:211/llm/gateway.py:182 的 httpx.Client 构造点)挂录放 transport;现有 in-process fake 测试保留(VCR 补充 catches API-shape drift=B031 教训)。(3) akshare/yfinance 走 frame fixture 录放(akshare_frames.frame_records 录 CSV 非 HTTP)。(4) CI 离线可复现:cassette 在,无 key/无网络也跑确定性结果。正面证据:VCR 接入;3 loader cassette 录放;断网/无 key 下 loader 测试用 cassette 跑过(确定性);现有 fake 测试不破。Gates:backend pytest/ruff 目录上下文/mypy CI-exact 0。",
       "design_decisions": [
         "VCR 挂在三 httpx loader 的真 client 构造点(client= seam 已有);akshare/yfinance 非 HTTP 走 frame fixture。",

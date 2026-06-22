@@ -33,6 +33,11 @@ logs/
 # Synthetic fixtures committed for offline CI (B025 etc.)
 !data/fixtures/**
 
+# B073 F001 — committed CSV frame fixtures for offline akshare/yfinance replay
+# (non-HTTP analog of the VCR cassettes); must escape the blanket *.csv ignore.
+!workbench/backend/tests/fixtures/frames/
+!workbench/backend/tests/fixtures/frames/*.csv
+
 # B028 F002 — snapshot layout: README + per-dir gitignore committed,
 # generated CSV / parquet payloads remain ignored via
 # data/snapshots/.gitignore (the dir's own ignore file).

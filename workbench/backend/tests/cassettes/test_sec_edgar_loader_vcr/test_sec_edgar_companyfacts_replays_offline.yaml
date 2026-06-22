@@ -1,0 +1,16 @@
+interactions:
+- request:
+    body: ''
+    headers: {}
+    method: GET
+    uri: https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json
+  response:
+    body:
+      string: '{"cik":320193,"entityName":"Apple Inc.","facts":{"us-gaap":{"Assets":{"label":"Assets","description":"Total assets","units":{"USD":[{"end":"2014-12-31","val":261894000000,"accn":"0000320193-15-000008","fy":2015,"fp":"Q1","form":"10-Q","filed":"2015-02-04","frame":"CY2014Q4I"}]}}}}}'
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+version: 1

@@ -1,0 +1,16 @@
+interactions:
+- request:
+    body: ''
+    headers: {}
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: '{"id":"chatcmpl-2026-05-27-daily-001","object":"chat.completion","created":1716796800,"model":"claude-haiku-4.5","choices":[{"index":0,"message":{"role":"assistant","content":"Today''s portfolio drift is within tolerance; no rebalance needed. Monitor SPY exposure as it approaches the upper sleeve band."},"finish_reason":"stop"}],"usage":{"prompt_tokens":84,"completion_tokens":31,"total_tokens":115},"cost_usd_est":0.000239}'
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+version: 1

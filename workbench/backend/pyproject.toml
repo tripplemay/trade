@@ -88,6 +88,13 @@ dev = [
   "pytest>=8.2",
   "ruff>=0.5",
   "types-python-jose>=3.3",
+  # B073 F001 — VCR record/replay of the three httpx loaders (Tiingo / SEC /
+  # LLM gateway) so CI replays committed cassettes fully offline (no key, no
+  # network) and a re-record catches API-shape drift. pytest-recording wires
+  # vcrpy into pytest via @pytest.mark.vcr + the vcr_config / vcr_cassette_dir
+  # fixtures in tests/conftest.py.
+  "vcrpy>=6",
+  "pytest-recording>=0.13",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -120,4 +127,11 @@ warn_redundant_casts = true
 # lazy-imported by the CN provider. Treat as untyped so strict mypy passes
 # whether or not the heavy libs are installed in the local env.
 module = ["akshare", "akshare.*", "baostock", "baostock.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# B073 F001 — vcrpy ships no type stubs. It is a dev-only test dependency
+# (pytest-recording drives it via @pytest.mark.vcr); the few tests that import
+# vcr.errors directly assert on CannotOverwriteExistingCassetteException.
+module = ["vcr", "vcr.*"]
 ignore_missing_imports = true
