@@ -64,9 +64,13 @@ SIZE_TILT_LEVELS: dict[str, float] = {
 }
 _IN_SAMPLE_FRACTION = 0.7  # walk-forward split (matches B070 comparison)
 
-# GO thresholds (deterministic verdict): a tilt must be OOS-Sharpe not-worse than current
-# (within tol) AND add real breadth (more small-caps AND a meaningfully smaller basket).
-_SHARPE_TOL = 0.05
+# GO thresholds (deterministic verdict). A tilt must be risk-adjusted not-worse than
+# current on BOTH the full-sample AND OOS Sharpe (tight tol) AND add real breadth.
+# ★ Full-sample Sharpe is the HONEST period-wide risk measure; the OOS window (2024Q4
+# 924 rally, B070 caveat) specifically FLATTERS small-caps, so an OOS-only tie must NOT
+# override a full-sample degradation — else a window-luck tie green-lights a strategy
+# that is worse over the whole period (the exact trap B069 NO-SWITCH guards against).
+_SHARPE_TOL = 0.02
 _SMALL_CAP_FRAC_GAIN = 0.15
 _CAP_PCTILE_DROP = 0.10
 
@@ -275,13 +279,16 @@ def judge_size_tilt(rows: list[dict[str, Any]]) -> dict[str, Any]:
     """GO only if a tilt is OOS-Sharpe not-worse than current AND adds real breadth.
 
     ``rows[0]`` is the current (tilt=0) baseline. For each tilt > 0:
-      * risk_adjusted_ok = oos_sharpe >= current.oos_sharpe - tol;
+      * risk_adjusted_ok = full_sharpe AND oos_sharpe both >= current - tol (★ full-sample
+        is the honest gate; OOS alone is flattered by the 2024Q4 small-cap window);
       * adds_breadth      = small_cap_frac >= current + gain AND cap_pctile <= current - drop.
-    GO → the qualifying tilt with the best OOS Sharpe. Otherwise NO-GO with a reason that
-    classifies WHY (all tilts risk-worse / no real breadth / breadth only at a Sharpe cost).
+    GO → the qualifying tilt with the best FULL-sample Sharpe. Otherwise NO-GO with a reason
+    that classifies WHY (no real breadth / breadth only at a full-sample-Sharpe cost / never
+    coincide). Breadth WITHOUT a risk-adjusted pass is the honest NO-GO (B069 NO-SWITCH).
     """
     current = rows[0]
-    cur_sharpe = current["oos_sharpe"]
+    cur_full = current["full_sharpe"]
+    cur_oos = current["oos_sharpe"]
     cur_small = current.get("small_cap_frac")
     cur_pctile = current.get("median_cap_pctile")
 
@@ -291,7 +298,12 @@ def judge_size_tilt(rows: list[dict[str, Any]]) -> dict[str, Any]:
     for row in rows[1:]:
         small = row.get("small_cap_frac")
         pctile = row.get("median_cap_pctile")
-        risk_ok = row["oos_sharpe"] >= cur_sharpe - _SHARPE_TOL
+        # BOTH gates: full-sample Sharpe (honest, period-wide) AND OOS Sharpe must hold —
+        # a window-flattered OOS tie cannot rescue a full-sample degradation.
+        risk_ok = (
+            row["full_sharpe"] >= cur_full - _SHARPE_TOL
+            and row["oos_sharpe"] >= cur_oos - _SHARPE_TOL
+        )
         breadth_ok = (
             small is not None
             and cur_small is not None
@@ -306,16 +318,17 @@ def judge_size_tilt(rows: list[dict[str, Any]]) -> dict[str, Any]:
             qualifying.append(row)
 
     if qualifying:
-        winner = max(qualifying, key=lambda r: r["oos_sharpe"])
+        winner = max(qualifying, key=lambda r: r["full_sharpe"])
         return {
             "verdict": "GO",
             "winning_level": winner["level"],
             "winning_size_tilt_weight": winner["size_tilt_weight"],
             "reason": (
-                f"size_tilt={winner['size_tilt_weight']} ({winner['level']}) is OOS-Sharpe "
-                f"not-worse than current ({winner['oos_sharpe']} vs {cur_sharpe}) AND genuinely "
-                f"adds small-cap breadth (small_cap_frac {winner['small_cap_frac']} vs "
-                f"{cur_small}; cap_pctile {winner['median_cap_pctile']} vs {cur_pctile})."
+                f"size_tilt={winner['size_tilt_weight']} ({winner['level']}) is risk-adjusted "
+                f"not-worse on BOTH full Sharpe ({winner['full_sharpe']} vs {cur_full}) and OOS "
+                f"Sharpe ({winner['oos_sharpe']} vs {cur_oos}) AND genuinely adds small-cap "
+                f"breadth (small_cap_frac {winner['small_cap_frac']} vs {cur_small}; "
+                f"cap_pctile {winner['median_cap_pctile']} vs {cur_pctile})."
             ),
         }
 
@@ -327,15 +340,17 @@ def judge_size_tilt(rows: list[dict[str, Any]]) -> dict[str, Any]:
         )
     elif not any_risk_ok:
         reason = (
-            "Every tilt that added breadth was OOS-Sharpe WORSE than current — leaning into "
-            "small-caps degraded risk-adjusted return (the expected outcome: small-caps are "
-            "more volatile / more blow-up prone)."
+            "Every tilt that added breadth DEGRADED full-sample risk-adjusted return "
+            f"(full Sharpe < current {cur_full}) — leaning into small-caps hurt the "
+            "period-wide Sharpe. Any OOS-Sharpe near-tie is the 2024Q4 small-cap-rally "
+            "window-luck (B070 caveat), NOT robustness. Don't ship a worse strategy to "
+            "'use' the wide pool (B069 NO-SWITCH)."
         )
     else:
         reason = (
             "Breadth and risk-adjusted-not-worse never coincided in one level: the levels that "
-            "added small-cap breadth hurt OOS Sharpe, and the levels that held Sharpe did not "
-            "add real breadth — no tilt clears both gates."
+            "added small-cap breadth hurt full-sample Sharpe, and the levels that held Sharpe "
+            "did not add real breadth — no tilt clears both gates."
         )
     return {
         "verdict": "NO-GO", "winning_level": None,
@@ -377,6 +392,25 @@ def render_markdown(
         "",
         f"**裁定（以去偏 primary 为准）：{overall}** — {primary['verdict']['reason']}",
         "",
+    ]
+    if secondary is not None:
+        sv = secondary["verdict"]["verdict"]
+        if overall == "NO-GO" and sv == "GO":
+            parts += [
+                "> **★关键对照（本批铁证）：去偏 primary = NO-GO，但 survivor secondary = GO。**"
+                "同一个 size-tilt，在**幸存者偏差宇宙里看起来更优**（中小盘亏损/退市名缺席被藏），"
+                "在**去偏宇宙里却拖累全样本风险调整后收益**。"
+                "若按 B075 当前/幸存者宇宙回测就会**误判 GO 上生产**——这正是 spec §0"
+                "『回测必须用 B070 去偏宇宙』的铁证，也是 verdict-gating 拦下一个更差策略的实例。",
+                "",
+            ]
+        else:
+            parts += [
+                f"> 去偏 primary={overall}；survivor secondary={sv}"
+                "（仅方向性，survivor 偏差美化中小盘，不作裁定）。",
+                "",
+            ]
+    parts += [
         "> **诚实边界：** verdict-gated（B069 NO-SWITCH 先例）——size-tilt 是策略改动，"
         "GO 才上生产；NO-GO 合法，不为『用上宽池』硬上一个更差的策略。回测用 **B070 去偏 PIT "
         "宽宇宙**（中小盘幸存者偏差最重，不得用 B075 当前 1490）。OOS 正收益部分落在 2024Q4『924』"

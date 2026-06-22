@@ -6,7 +6,7 @@
       "title": "size-tilt 机制(composite 加 percent-rank size 因子,默认 0 零回归)+ 对照回测(sweep,B070 去偏宇宙,真数字 verdict)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F001 + §0 约束】(1) 机制:composite 加 percent-ranked size 因子(市值越小得分越高=small-tilt),参数 size_tilt_weight(默认 0;momentum/quality/size renormalize);两变体支持;市值线到选股层。(2) 对照回测(★B070 去偏 PIT 宽宇宙,非 B075 当前 1490,OOS):扫 size_tilt_weight(0=现状/light/medium/strong)×两变体,真成本(印花税仅卖+佣金+滑点)。(3) 真数字:CAGR/Sharpe/max DD/换手+★中小盘广度指标(选股市值分布/与种子43重叠度/中小盘占比)量化 tilt 真把中小盘选进来没。(4) verdict:GO(某档风险调整后不劣+真带广度)/NO-GO(全更差或只加风险);诚实 OOS caveat(2024Q4 窗口)。正面证据:size-tilt 机制(默认 0 零回归)+两变体;对照回测 sweep 真数字+GO/NO-GO verdict;用 B070 去偏宇宙。Gates:trade pytest+mypy trade+ruff 目录上下文。",
       "design_decisions": [
         "★verdict-gated(B069 先例):NO-GO 合法,不为用上宽池硬上更差策略。",

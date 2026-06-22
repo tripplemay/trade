@@ -19,21 +19,30 @@ from scripts.research.b076_size_tilt_comparison import (
 )
 
 
-def _row(level: str, tilt: float, *, oos_sharpe: float, small: float, pctile: float) -> dict:
+def _row(
+    level: str,
+    tilt: float,
+    *,
+    full_sharpe: float,
+    oos_sharpe: float,
+    small: float,
+    pctile: float,
+) -> dict:
     return {
         "level": level,
         "size_tilt_weight": tilt,
+        "full_sharpe": full_sharpe,
         "oos_sharpe": oos_sharpe,
         "small_cap_frac": small,
         "median_cap_pctile": pctile,
     }
 
 
-def test_go_when_a_tilt_holds_sharpe_and_adds_breadth() -> None:
+def test_go_when_a_tilt_holds_both_sharpes_and_adds_breadth() -> None:
     rows = [
-        _row("current", 0.0, oos_sharpe=0.90, small=0.10, pctile=0.80),
-        _row("light", 0.15, oos_sharpe=0.88, small=0.20, pctile=0.74),
-        _row("strong", 0.50, oos_sharpe=0.92, small=0.50, pctile=0.40),
+        _row("current", 0.0, full_sharpe=0.56, oos_sharpe=0.90, small=0.10, pctile=0.80),
+        _row("light", 0.15, full_sharpe=0.55, oos_sharpe=0.88, small=0.20, pctile=0.74),
+        _row("strong", 0.50, full_sharpe=0.60, oos_sharpe=0.92, small=0.50, pctile=0.40),
     ]
     verdict = judge_size_tilt(rows)
     assert verdict["verdict"] == "GO"
@@ -44,33 +53,64 @@ def test_go_when_a_tilt_holds_sharpe_and_adds_breadth() -> None:
 def test_no_go_when_no_tilt_adds_real_breadth() -> None:
     # Selection barely moves (small names still rank too low) → size factor is inert.
     rows = [
-        _row("current", 0.0, oos_sharpe=0.90, small=0.10, pctile=0.80),
-        _row("light", 0.15, oos_sharpe=0.95, small=0.11, pctile=0.79),
-        _row("strong", 0.50, oos_sharpe=0.93, small=0.12, pctile=0.78),
+        _row("current", 0.0, full_sharpe=0.56, oos_sharpe=0.90, small=0.10, pctile=0.80),
+        _row("light", 0.15, full_sharpe=0.58, oos_sharpe=0.95, small=0.11, pctile=0.79),
+        _row("strong", 0.50, full_sharpe=0.57, oos_sharpe=0.93, small=0.12, pctile=0.78),
     ]
     verdict = judge_size_tilt(rows)
     assert verdict["verdict"] == "NO-GO"
     assert "does not meaningfully change selection" in verdict["reason"]
 
 
-def test_no_go_when_breadth_only_comes_with_worse_sharpe() -> None:
-    # Every tilt that adds breadth degrades OOS Sharpe (small-caps blow up).
+def test_no_go_when_breadth_only_comes_with_worse_full_sharpe() -> None:
+    # Every tilt that adds breadth degrades FULL-sample Sharpe (small-caps blow up).
     rows = [
-        _row("current", 0.0, oos_sharpe=0.90, small=0.10, pctile=0.80),
-        _row("light", 0.15, oos_sharpe=0.55, small=0.30, pctile=0.60),
-        _row("strong", 0.50, oos_sharpe=0.40, small=0.50, pctile=0.40),
+        _row("current", 0.0, full_sharpe=0.56, oos_sharpe=0.90, small=0.10, pctile=0.80),
+        _row("light", 0.15, full_sharpe=0.30, oos_sharpe=0.55, small=0.30, pctile=0.60),
+        _row("strong", 0.50, full_sharpe=0.42, oos_sharpe=0.40, small=0.50, pctile=0.40),
     ]
     verdict = judge_size_tilt(rows)
     assert verdict["verdict"] == "NO-GO"
-    assert "WORSE" in verdict["reason"]
+    assert "DEGRADED full-sample" in verdict["reason"]
+
+
+def test_no_go_when_oos_ties_but_full_sharpe_degrades() -> None:
+    # ★ The exact B070 de-biased primary scenario (locked as a regression): OOS Sharpe
+    # near-ties at strong (window-luck, 2024Q4 small-cap rally) but FULL Sharpe degrades
+    # at every level → must be NO-GO, NOT a false GO off the flattered OOS tie.
+    rows = [
+        _row("current", 0.0, full_sharpe=0.56, oos_sharpe=0.93, small=0.00, pctile=0.92),
+        _row("light", 0.15, full_sharpe=0.23, oos_sharpe=0.62, small=0.08, pctile=0.78),
+        _row("medium", 0.30, full_sharpe=0.35, oos_sharpe=0.84, small=0.28, pctile=0.64),
+        _row("strong", 0.50, full_sharpe=0.42, oos_sharpe=0.93, small=0.64, pctile=0.45),
+    ]
+    verdict = judge_size_tilt(rows)
+    assert verdict["verdict"] == "NO-GO"
+    assert "DEGRADED full-sample" in verdict["reason"]
+    assert "window-luck" in verdict["reason"]
+
+
+def test_go_for_survivor_cut_where_tilt_improves_full_sharpe() -> None:
+    # ★ The B068 survivor secondary scenario (locked): survivorship bias FLATTERS
+    # small-caps so the tilt improves full + OOS Sharpe → GO here. The report marks this
+    # the mirage (de-biased primary is the gating verdict), but the rule itself fires GO.
+    rows = [
+        _row("current", 0.0, full_sharpe=1.00, oos_sharpe=1.88, small=0.08, pctile=0.83),
+        _row("light", 0.15, full_sharpe=1.03, oos_sharpe=1.94, small=0.16, pctile=0.67),
+        _row("medium", 0.30, full_sharpe=1.14, oos_sharpe=1.97, small=0.36, pctile=0.58),
+        _row("strong", 0.50, full_sharpe=1.27, oos_sharpe=2.22, small=0.48, pctile=0.52),
+    ]
+    verdict = judge_size_tilt(rows)
+    assert verdict["verdict"] == "GO"
+    assert verdict["winning_level"] == "strong"  # best full Sharpe
 
 
 def test_no_go_when_breadth_and_risk_never_coincide() -> None:
-    # One tilt holds Sharpe but no breadth; another adds breadth but worse Sharpe.
+    # One tilt holds both Sharpes but no breadth; another adds breadth but worse full Sharpe.
     rows = [
-        _row("current", 0.0, oos_sharpe=0.90, small=0.10, pctile=0.80),
-        _row("light", 0.15, oos_sharpe=0.92, small=0.11, pctile=0.79),  # risk ok, no breadth
-        _row("strong", 0.50, oos_sharpe=0.50, small=0.50, pctile=0.40),  # breadth, risk worse
+        _row("current", 0.0, full_sharpe=0.56, oos_sharpe=0.90, small=0.10, pctile=0.80),
+        _row("light", 0.15, full_sharpe=0.57, oos_sharpe=0.92, small=0.11, pctile=0.79),
+        _row("strong", 0.50, full_sharpe=0.40, oos_sharpe=0.50, small=0.50, pctile=0.40),
     ]
     verdict = judge_size_tilt(rows)
     assert verdict["verdict"] == "NO-GO"
