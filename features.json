@@ -32,7 +32,7 @@
       "title": "Codex:安全相邻验收(★安全不削弱 mutation 核+VCR 离线+网关韧性)+signoff(明确安全门未削弱)",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F003 + §0。安全相邻批次 signoff 含实测证据+安全不削弱证明 §29】L1 全门禁(verifying 可跳 L1 复跑 B071 §30)。★安全不削弱 mutation 核:①改坏 advisor 返回不安全→VCR'd eval 必须红(确定性门有牙齿);②模拟网关 503/429→live eval skip-with-warning 非红(韧性生效);③网关可达但 advisor 不安全→硬红(不放松);④AI advisor 路径变更+网关不可达→阻断(不蒙混)。VCR 离线:断网/无 key 下 CI 全跑过(cassette 确定性)。零回归;research-only/no-AI 边界;HEAD≡prod。signoff docs/test-reports/B073-...-signoff-*.md 实测证据逐条+★明确『安全门未削弱』结论。",
       "design_decisions": []
     }
