@@ -1,7 +1,7 @@
 {
-  "status": "verifying",
+  "status": "done",
   "total_features": 3,
-  "completed_features": 2,
+  "completed_features": 3,
   "fix_rounds": 0,
   "current_sprint": "F003",
   "last_updated": "2026-06-22",
@@ -17,13 +17,13 @@
   "docs": {
     "spec": "docs/specs/B075-ashare-wide-universe-production-spec.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/B075-ashare-wide-universe-signoff-2026-06-22.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": null,
-    "pass_count": 0,
+    "summary": "B075 F003 L2 PASS — N=1501 A株价格+1490 PIT宇宙+1501基本面全建成功;zero_errors=0/2992;price_snapshot 1501 A株 cn_uncovered=0;precompute从1490选top-25(与种子43重叠=预期大盘偏差);paper-mtm rebalanced=0(账户已建仓);Master/regime零回归.",
+    "pass_count": 3,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
@@ -35,12 +35,12 @@
   "session_notes": {
     "planner": "2026-06-22 B075 planning(planner)。A股 生产股票池扩大到全市场流动 top ~1500(用户选最广档)。feasibility-first。**★命门=数据负载**:价格逐只 akshare(CnHkPricesLoader,1500 次/天)重;基本面逐只 CAS 更重但季度才变→低频刷(周/月)。§23:bulk 发现 stock_zh_a_spot_em 走 eastmoney push 主机 dev box SSL-fail→**可行性必须 VM 实测**。**★feasibility-gated**:目标 1500 但 F001 VM 实测定可行 N,刷不动诚实退最大可行 N(不静默 cap,B070 先例)。survivorship 对 live 不是问题。不改策略逻辑只扩广度。**3 features 2g+1c**:F001 宽 universe 机制+VM 可行性闸/F002 接生产数据刷新+price_snapshot 同步(复用 B074)+cn_attack 宽池选股/F003 Codex L2 真机+GO/PARTIAL 诚实结论。**【续接】**:status=building,Generator 接 F001(ungate 宽宇宙+VM SSH 实跑可行性探针定 N)→F002(接生产+宽池选股),再 Codex F003。**复用**:B068/B070 宽宇宙机制(discover_ashare_superset/point_in_time_top_n)已建只是 gated;B074 cn_snapshot_sync。**ops 提醒**:网关余额耗尽待充值(生产 AI,与本批无关)。prod=B074 系。",
     "generator": "2026-06-22 B075 F001+F002 done(generator)。可行性 GO@N=1500(VM sample=24 100% 成功)。code:cli.py 3 flag(sina-fallback ungate / no-cn-universe-build / no-cn-fundamentals 解耦)+refresh.py 宽块错误单列+resolve_exit_decision 宽块容忍(rate≤20%)。systemd:日刷宽 prices only(timer 02:30→01:30)+ 新周 job workbench-cn-universe(Sun 06:00,build+基本面)。price_snapshot 同步+cn_attack 宽选股 = 复用 B074 sync + 引擎不变(零逻辑改)。证据 JSON+probe 入库。诚实偏离:universe build 也移周job(probe build~106min 日刷扛不住)。**续接 Codex F003**:见 generator_handoff——部署后 `sudo systemctl start workbench-cn-universe.service` 真建宽宇宙(~4-5h)→验 N/选股/零回归/GO-PARTIAL;基线=43 种子。全 sudo 可用。Gates 全绿。",
-    "evaluator": null
+    "evaluator": "2026-06-22 B075 F003 L2 done(evaluator)。cn-universe真建4h21min完成(14:10→18:32 UTC),zero errors。N=1501 A株价格/1490 PIT宇宙/1501基本面。price_snapshot 1501 cn_uncovered=0。precompute从1490选top-25=与种子43重叠(大盘蓝筹偏差,预期行为,honest finding)。paper-mtm rebalanced=0。Master/regime零回归。signoff docs/test-reports/B075-ashare-wide-universe-signoff-2026-06-22.md。GO结论。"
   },
   "features": [
     "F001",
     "F002",
     "F003"
   ],
-  "completed_date": null
+  "completed_date": "2026-06-22"
 }
