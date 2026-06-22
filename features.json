@@ -1,39 +1,39 @@
 {
-  "sprint": "B074-cn-attack-paper-price-snapshot-fix",
+  "sprint": "B075-ashare-wide-universe-production",
   "features": [
     {
       "id": "F001",
-      "title": "A股 价从统一 CSV 同步进 price_snapshot(cn_attack universe 可估价,非 Tiingo)",
+      "title": "宽 universe 机制(ungate 生产)+ VM 可行性闸(实测确定可行 N,目标 1500)",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §2 F001 + §0 根因】(1) A股 价源=统一 CSV(非 Tiingo,US-only):A股 收盘从 prices_daily.csv(data_refresh 已写 akshare 来)读→写 price_snapshot(PriceSnapshotRepository idempotent);不给 prices/cli 加 akshare(保持其 read-only Tiingo+新增 CSV→snapshot 同步步骤,或 data_refresh/prices-cli 适当层)。(2) 覆盖 cn_attack A股 universe(seed-43/cn_pit_universe),两变体 25 目标全可估价;扩 price_universe() 或同步路径含之。(3) §17.1 对齐:paper mark 源(price_snapshot)与 A股 数据源(统一 CSV)同源;uncovered_targets 对 cn_attack 目标应空。(4) 边界 research-safe;A股 价来自既有 CSV(无新 fetch);US/Master/regime price_snapshot 行零回归。正面证据:price_snapshot 含 cn_attack 25 A股 目标 mark(从 CSV 同步可估价);US/Master/regime price_snapshot 不破;§12.10.2 守门。Gates:backend pytest/ruff 目录上下文/mypy CI-exact 0。",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F001 + §0 约束】(1) ungate 宽宇宙发现:discover_ashare_superset 生产可用(top-N 可配,默认目标 1500,市值+成交额,剔 ST;VM bulk-spot snapshot 路径)。(2) ★VM 可行性探针(§23,generator 实施时 SSH VM 实跑):实测 (a) bulk discover top-1500 可达/耗时;(b) 日刷 ~1500 A股 价格的时长/成功率/rate-limit(命门);(c) 基本面低频(周/月)刷 ~1500 可行性。产出可行最大 N+GO/PARTIAL 结论(1500 不可靠→退最大可行 N 写 session_notes/handoff,不静默 cap)。(3) 优雅 partial-failure(逐只部分失败跳过/记数/不炸整轮;fundamentals 低频与 prices 解耦)。(4) 单测(宇宙构建/排名/partial-failure,确定性 fixture)。正面证据:宽宇宙发现生产可用(top-N 可配);VM 实测确定可行 N+GO/PARTIAL(贴真耗时/成功率);partial-failure 优雅;fundamentals 低频解耦。Gates:backend pytest/ruff 目录上下文/mypy CI-exact 0。",
       "design_decisions": [
-        "★根因(planner VM 实测):prices/cli Tiingo(US-only)填 price_snapshot,price_universe=ETF∪equity(全美股)不含 A股;A股 价在统一 CSV 但从没进 price_snapshot→paper 估不了 A股→建不了仓。§17.1+B058 regime 同款。",
-        "A股 价从统一 CSV 同步(非 Tiingo,akshare 数据已在 CSV);不给 prices/cli 加 akshare(保 read-only)。"
+        "★feasibility-first:目标 1500 但 VM 实测定可行 N,刷不动诚实退档不静默 cap(B070 先例)。",
+        "★§23:stock_zh_a_spot_em bulk 发现走 eastmoney push 主机(dev box SSL-fail)→可行性必须 VM 实测。",
+        "价格逐只 akshare(1500 次/天)=命门;基本面季度才变→低频刷(周/月)不日刷。"
       ]
     },
     {
       "id": "F002",
-      "title": "paper 建仓路径确认 + acceptance 守门(复用测试基建,paper 目标可估价永不复发)",
+      "title": "接生产数据刷新(宽 prices daily+基本面低频)+ price_snapshot 同步宽集 + cn_attack 宽池选股(按可行 N)",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §2 F002】(1) acceptance 守门(B071-B073 层):永久回归断言『每个 active paper 账户的目标持仓在其价格源 price_snapshot 里都可估价(uncovered=空)』——此 bug 类(目标无 mark→搁浅现金)以后 CI 抓,用 golden/测试 fixture。(2) 建仓触发:确认价就位后 paper MTM rebalance-if-due/build 路径让 build_complete=0 的 cn_attack 账户初始建仓(B058 finish-only 重试);若需显式触发补之。(3) 单测:cn_attack paper 有价时 build 完成(持仓非空/cash 减少/build_complete=1)。正面证据:acceptance 守门『paper 目标可估价』永久回归(故意制造无 mark 目标→红=有牙齿);cn_attack paper 有价时 build 完成单测过。Gates 同 F001+acceptance CI step。",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F002】(1) 生产 data_refresh 覆盖宽集:prices daily(~可行 N)+fundamentals low-freq;cn_extra_price_symbols superset 扩到可行 N;统一 CSV 写宽集。(2) price_snapshot 同步宽集(复用 B074 cn_snapshot_sync):宽集/cn_attack 目标 A股 进 price_snapshot,模拟盘能估价宽选股。(3) cn_attack 两策略从宽 PIT 池(cn_pit_universe 可行 N)选 top-25;质量变体缺基本面名按现有 construction 剔除(NaN quality drop);advisory 推荐+模拟盘反映宽选股。(4) 边界研究态不改策略逻辑;US/Master/regime/hk 零回归。正面证据:生产 data_refresh 覆盖可行 N(prices daily+fundamentals low-freq);price_snapshot 含宽选股目标;cn_attack 两策略从宽池选 top-25(advisory+模拟盘);Master/regime/hk 零回归。Gates 同 F001+acceptance。",
       "design_decisions": [
-        "acceptance 守门复用 B071-B073 测试基建:把这个 bug 类(paper 目标无 mark)变永久 CI 回归(不复发)。",
-        "建仓由 paper MTM rebalance-if-due/build(B058 finish-only 重试)做,价就位后下次跑自动 build。",
-        "★generator 实测发现根因#2(planner VM 诊断未覆盖):cn_attack 发布的 target 含一行字面 CASH 缓冲(cash_weight>0,无 mark)→pure engine compute_rebalance 把 CASH 计入 skipped_symbols→_apply_rebalance fully_built=traded and not skipped=False→即便 A股 价已同步 build_complete 仍永远 False。单测实证(compute_rebalance):含 CASH skipped=('CASH',) build=False;剥离 CASH skipped=() build=True 且 ~20% 现金缓冲自然留存为残余现金、持仓不变。修=paper/targets.load_strategy_targets 剥离 CASH_SENTINEL_SYMBOLS(只影响含 CASH 的 cn_attack;Master/regime 无字面 CASH 用 SGOV 实ETF→零回归);target_key 保留 get_target 全目标指纹(cash 变动仍触发调仓)。属 F002『建仓路径确认+若需显式触发路径补之』范畴。",
-        "★F003 评收提醒:cn_attack 持意图现金缓冲→建仓后 cash≈cash_buffer×NAV(非字面≈0;spec F003『cash≈0』系沿用 Master/regime 全投满模板)。建仓成功信号=build_complete=1 + 持仓非空 + cash 从 100% 大幅降至 ≈buffer%。"
+        "复用 B074 cn_snapshot_sync 把宽集 A股 价同步进 price_snapshot(模拟盘可估价)。",
+        "cn_attack 选股逻辑不变(仍 composite top-25 等权),只换更宽的 universe 输入。",
+        "质量变体缺基本面名 NaN quality drop(现有 construction 行为)=宽池里只有基本面齐的票进质量变体。"
       ]
     },
     {
       "id": "F003",
-      "title": "Codex:L2 真机验收(两 cn_attack 模拟盘建仓 build_complete=1+持仓+cash≈0)+零回归+signoff",
+      "title": "Codex:L2 真机验收(宽宇宙真建 N 只+两策略宽池选股+数据刷新稳定)+GO/PARTIAL 诚实结论+零回归+signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "【见 spec §2 F003。真机/真数据批次 signoff 含实测证据 §29】L1 全门禁(verifying 可跳 L1 复跑 B071 §30)。L2 真机(VM 生产 DB,贴真返回):①prices-cli/同步真跑→price_snapshot 含 cn_attack 25 A股 目标 mark;②paper MTM 真跑→★两 cn_attack 模拟盘 build_complete=1+持仓非空+cash≈0(贴建仓后持仓+nav)=建仓成功;③acceptance 守门绿;④Master/regime/US paper 零回归(仍建仓/MTM 正常)。边界:research-only/no-broker/no 真金;HEAD≡prod;recent-errors=0。signoff docs/test-reports/B074-...-signoff-*.md 实测证据逐条(贴两账户建仓前后对比)。",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F003。真机/真数据/可行性批次 signoff 含实测证据 §29+§23】L1 全门禁(verifying 可跳 L1 复跑 B071 §30)。L2 真机(VM,贴真返回):①宽宇宙真建(N 只,贴 discover 耗时/成功率)+独立复核 F001 可行 N 结论(1500 还是退档);②cn_attack 两策略从宽池选 top-25(贴 advisory 推荐+模拟盘建仓持仓,与 43 种子选股对比看变化);③数据刷新真覆盖宽集+稳定(多日/重跑成功率);④Master/regime/hk+US paper 零回归。★GO/PARTIAL 诚实结论:实测可行 N=?;1500 达成/退档;诚实记数据负载现实(日刷时长/失败率)。边界:research-only/no-broker/no 真金;不改策略逻辑;HEAD≡prod。signoff docs/test-reports/B075-...-signoff-*.md 实测证据逐条。",
       "design_decisions": []
     }
   ]

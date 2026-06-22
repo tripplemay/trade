@@ -1,49 +1,46 @@
 {
-  "status": "done",
+  "status": "building",
   "total_features": 3,
-  "completed_features": 3,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F003",
+  "current_sprint": "F001",
   "last_updated": "2026-06-22",
-  "user_goal": "B074 cn_attack A股 模拟盘建仓修复(A股价同步进 price_snapshot)=生产缺陷修复(hotfix,研究态 paper 前向模拟)。来源:2026-06-22 用户报『两个 A股 模拟盘没建仓』→planner VM 生产 DB 诊断(铁律 9)→根因确认→用户确认方案 A 立批。**★根因(planner VM 实测,焊死)**:两 cn_attack paper 账户已激活有目标但 cash=初始全现金/last_rebalanced 空/build_complete=0(建仓 build 从没跑成)。price_snapshot(paper 经 DbPriceProvider 读的价格源)0 个 A股(只美股+proxy ETF),25 目标 0 可估价。A股 价确在统一 CSV(data_refresh 写 40 .SH/.SZ cn_attack 目标全在内)但从没进 price_snapshot。机制:prices/cli 用 Tiingo(US-only)填 price_snapshot,price_universe=ETF∪equity(全美股)不含 A股→A股 既不在 universe Tiingo 也取不了→paper 估不了 A股→建不了仓。Master/regime paper 没事(目标美股/proxy 有 mark)。§17.1+B058 F002 regime 同款。**修=方案 A**:把 cn_attack A股 universe 收盘从统一 CSV(已有 A股 价 akshare 来)同步进 price_snapshot(非 Tiingo),让 paper 能估价建仓。**3 features 2g+1c**:F001 A股 价 CSV→price_snapshot 同步(cn_attack universe 可估价);F002 acceptance 守门(paper 目标可估价永不复发,复用 B071-B073 测试基建)+建仓路径确认;F003 Codex L2 真机(两模拟盘 build_complete=1+持仓+cash≈0=建仓成功+零回归)。spec docs/specs/B074-cn-attack-paper-price-snapshot-fix-spec.md(3 章)。**边界**:研究态 paper 前向模拟(无真金);修『模拟盘能建仓』不改 cn_attack 策略本身(仍研究态/OOS 红卡/edge 微弱不可配资);US/Master/regime paper 零回归;A股 价来自既有 CSV(无新 fetch)。",
+  "user_goal": "B075 A股 生产股票池扩大到全市场流动(top ~1500,feasibility-first)。来源:2026-06-22 用户『希望把股票池扩大』→选『全市场流动(top ~1500+)』。**★范围+诚实约束**:目标 top ~1500(市值+成交额 current liquid,剔 ST),feasibility-gated——F001 VM 实测确定可行 N,1500 日刷不可靠则诚实退最大可行 N+报告(不静默 cap/不硬凑,B070 先例)。survivorship 对 live/forward 不是问题(当前可交易宽名单向前跑正确)。不改 cn_attack 策略本身(仍研究态/OOS 红卡/edge 微弱不可配资),只扩选股广度 43→~1500。**数据命门**:价格逐只 akshare(1500 次/天)重;基本面季度才变→低频刷(周/月)不日刷;partial-failure 优雅。§23:stock_zh_a_spot_em bulk 发现走 eastmoney push 主机(dev box SSL-fail)→可行性必须 VM 实测。**3 features 2g+1c**:F001 宽 universe 机制(ungate 生产)+VM 可行性闸(实测定可行 N);F002 接生产数据刷新(宽 prices daily+基本面低频)+price_snapshot 同步(复用 B074 cn_snapshot_sync)+cn_attack 宽池选股;F003 Codex L2 真机(宽宇宙真建+两策略宽池选股+GO/PARTIAL 诚实结论+零回归)。spec docs/specs/B075-ashare-wide-universe-production-spec.md(3 章)。",
   "reference_docs": [
-    "docs/specs/B074-cn-attack-paper-price-snapshot-fix-spec.md",
-    "workbench/backend/workbench_api/prices/cli.py",
-    "workbench/backend/workbench_api/data_refresh/refresh.py",
-    "workbench/backend/workbench_api/paper/mtm.py",
-    "workbench/backend/workbench_api/db/repositories/price_snapshot.py",
+    "docs/specs/B075-ashare-wide-universe-production-spec.md",
     "workbench/backend/workbench_api/data_refresh/cn_universe.py",
-    "docs/dev/workbench-testing-strategy.md"
+    "workbench/backend/workbench_api/data_refresh/cn_marketcap.py",
+    "workbench/backend/workbench_api/data_refresh/cn_hk_prices.py",
+    "workbench/backend/workbench_api/data_refresh/cli.py",
+    "workbench/backend/workbench_api/strategy_modes/cn_attack_precompute.py"
   ],
   "docs": {
-    "spec": "docs/specs/B074-cn-attack-paper-price-snapshot-fix-spec.md",
+    "spec": "docs/specs/B075-ashare-wide-universe-production-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B074-cn-attack-paper-build-signoff-2026-06-22.md",
-    "framework_reviewed": true
+    "signoff": null,
+    "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "B074 全 PASS。L2 真机(34.180.93.185):A股 43 symbols/86 rows/unified_csv 写入 price_snapshot(08:21 部署触发)。paper-mtm 手动触发(08:37)→rebalanced=2→两 cn_attack 账户 build_complete=1/25 持仓/cash=0/last_rebalanced=2026-06-22。双根因均修验证(#1 A股 价缺 mark/#2 CASH sentinel)。Master/regime 零回归。acceptance 守门 2/2。研究态无真金。→ done。",
-    "pass_count": 3,
+    "summary": null,
+    "pass_count": 0,
     "partial_count": 0,
     "fail_count": 0,
-    "issues": [
-      "运营:网关余额耗尽(B073已记录),需充值,与本批无关"
-    ]
+    "issues": []
   },
   "generator_handoff": {
-    "summary": "B074 F001+F002 done(generator),交 Codex F003 L2 真机验收。**F001(A股 价同步)**:新模块 workbench_api/prices/cn_snapshot_sync.py 从统一 CSV(<data_root>/snapshots/prices/unified/prices_daily.csv,data_refresh akshare 写)读 .SH/.SZ 行 → price_snapshot(idempotent,source='unified_csv',每 symbol 最近 2 收盘=可估价最小集);SymbolRef(.market=='CN')识别 A股;不动 price_universe()/不加 akshare 到 prices/cli(Tiingo 仍 US-only 零回归);wired 进 prices/cli.py fetch_main(新 cn_prices_path 参数,默认 WORKBENCH_DATA_ROOT;best-effort 缺文件 no-op);FetchSummary 加 cn_symbols/cn_saved/cn_uncovered(同 _is_markable 规则响亮报缺口);workbench-prices.service 显式加 Environment=WORKBENCH_DATA_ROOT=/var/lib/workbench/data。**F002(建仓路径+守门)**:★实测发现根因#2(planner VM 诊断未覆盖)——cn_attack target 含字面 CASH 缓冲行(无 mark)被 compute_rebalance 计入 skipped→build_complete 永 False(即便 A股 价已同步)。修=paper/targets.load_strategy_targets 剥离 CASH_SENTINEL_SYMBOLS={'CASH'}(只影响 cn_attack;Master/regime 用实 ETF SGOV→零回归;target_key 保留全目标指纹)。acceptance 守门 tests/acceptance/test_b074_paper_targets_markable.py(每 active paper 账户目标在 price_snapshot 可估价=不变量;含故意制造无 mark→红 teeth 测试)。**Gates 全绿(本机)**:ruff 目录上下文 0 / mypy workbench_api 265 文件 0 / 全 backend unit+acceptance+safety 1583 passed 17 skipped(零回归)。**F003 评收要点**:①prices-cli 真跑→price_snapshot 含 cn_attack A股 mark(看 cn_saved/cn_uncovered)②paper-mtm 真跑→两 cn_attack 账户 build_complete=1+持仓非空+cash≈cash_buffer(★非字面≈0:cn_attack 持意图现金缓冲,spec『cash≈0』系沿用 Master 全投满模板,成功信号=cash 从 100% 大幅降至 ≈buffer%)③守门绿 ④Master/regime/US 零回归。运维:部署后 prices-cli + paper-mtm timer 各跑一轮(F003 真机触发)。",
-    "status": "ready"
+    "summary": null,
+    "status": "pending"
   },
   "session_notes": {
-    "planner": "2026-06-22 B074 done 收尾(planner,生产 hotfix 闭环)。cn_attack A股 模拟盘建仓修复=✅ done,0 fix-round。Codex F003 VM 真机验:两 cn_attack 账户 build_complete=1/各 25 持仓/cash=0/last_rebalanced=2026-06-22(A股 43 symbols 同步进 price_snapshot source=unified_csv);Master/regime 零回归;acceptance 守门 2/2 绿(含 teeth)。**用户报的问题彻底解决**——astock.guangai.ai 两 A股 模拟盘现有持仓。**★双根因(诚实)**:#1 price_snapshot 缺 A股 价(planner VM 诊断焊死)+ #2 cn_attack target 含字面 CASH sentinel(无价)被 engine 计入 skipped→build_complete 永 False(planner 漏,Generator 实施时发现)。两根因都修才到 build_complete=1。修:#1 cn_snapshot_sync(A股 价从统一 CSV 进 price_snapshot,不碰 Tiingo);#2 paper/targets 剥离 cash sentinel(零回归)。**framework v0.9.50 沉淀(1 条)**:paper 搁浅现金诊断 family(双查证券 mark+cash sentinel)→generator.md §32+planner.md §根因诊断(含 planner 诊断完整性教训+spec cash≈0 模板对持现金缓冲策略不准)。CHANGELOG+archive,队列清空。**done 收尾**:F003 status→done(Codex 漏翻);framework_reviewed=true;signoff 路径;project-status→done。**【续接=下一批待用户定】**:测试基建 P3(prod synthetic+canary)/P4(LLM-judge)/P5(瘦身评审),或回策略(A股 进攻 P3 港股/hk_china 重测 Batch 2.5),或新产品方向。**ops 提醒**:网关余额耗尽待用户充值(生产 AI 功能:解释/新闻翻译/advisor)。prod=B074 系(A股 模拟盘建仓修复+B073 测试基建已部署)。",
-    "generator": "2026-06-22 B074 F001+F002 实现完(generator)。**最关键发现**:planner『焊死』根因(A股 价缺 mark)是必要但**不充分**——还有根因#2:cn_attack target 的字面 CASH 缓冲行被 pure engine 计入 skipped_symbols,build_complete 永远 False。我用 compute_rebalance 实跑实证(含 CASH→skipped=('CASH',) build=False;剥离→build=True 且 ~20% buffer 自然留存),修在 paper/targets.load_strategy_targets 剥离 CASH_SENTINEL_SYMBOLS(零回归:Master/regime 无字面 CASH)。两根因都修才到 build_complete=1。属 F002『若需显式触发路径补之』范畴,未越界,但**已在 generator_handoff/features.json F002 design_decisions/proposed-learnings 显著记录,并在对话向用户透明说明**(超出『方案 A』纯价同步)。F001 用新模块 cn_snapshot_sync(CSV→snapshot,SymbolRef 识别 A股,不碰 Tiingo/price_universe)。本机门禁全绿(1583 passed)。下一步=Codex F003 真机。注意 F003『cash≈0』表述对 cn_attack 不准(有 buffer),已在 handoff 提醒评收按 cash≈buffer 判。",
-    "evaluator": "2026-06-22 B074 F003 L2 真机验收(evaluator)。SSH 34.180.93.185(fd14c44,B074 F001+F002 已部署)。A股 43 symbols/86 rows/source=unified_csv/fetched_at=08:21:01(deploy 时 prices-cli 触发 cn_snapshot_sync)。paper-mtm 手动 start(08:37):rebalanced=2,无 WARN/ERROR。cn_attack_quality_momentum+cn_attack_pure_momentum 均 build_complete=1/25 持仓/cash=0.0/last_rebalanced=2026-06-22。双根因均修:#1 A股 价缺 mark→已进 price_snapshot;#2 CASH sentinel→build_complete 永 False→剥离后无此 skip。Master/regime build_complete=1 零回归。acceptance 守门 2/2 绿(含 teeth 测试)。→ status=done。"
+    "planner": "2026-06-22 B075 planning(planner)。A股 生产股票池扩大到全市场流动 top ~1500(用户选最广档)。feasibility-first。**★命门=数据负载**:价格逐只 akshare(CnHkPricesLoader,1500 次/天)重;基本面逐只 CAS 更重但季度才变→低频刷(周/月)。§23:bulk 发现 stock_zh_a_spot_em 走 eastmoney push 主机 dev box SSL-fail→**可行性必须 VM 实测**。**★feasibility-gated**:目标 1500 但 F001 VM 实测定可行 N,刷不动诚实退最大可行 N(不静默 cap,B070 先例)。survivorship 对 live 不是问题。不改策略逻辑只扩广度。**3 features 2g+1c**:F001 宽 universe 机制+VM 可行性闸/F002 接生产数据刷新+price_snapshot 同步(复用 B074)+cn_attack 宽池选股/F003 Codex L2 真机+GO/PARTIAL 诚实结论。**【续接】**:status=building,Generator 接 F001(ungate 宽宇宙+VM SSH 实跑可行性探针定 N)→F002(接生产+宽池选股),再 Codex F003。**复用**:B068/B070 宽宇宙机制(discover_ashare_superset/point_in_time_top_n)已建只是 gated;B074 cn_snapshot_sync。**ops 提醒**:网关余额耗尽待充值(生产 AI,与本批无关)。prod=B074 系。",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",
     "F002",
     "F003"
   ],
-  "completed_date": "2026-06-22"
+  "completed_date": null
 }
