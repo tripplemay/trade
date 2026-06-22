@@ -362,4 +362,8 @@
 
 **建议写入：** `.auto-memory/environment.md`(§ VM /tmp 脚本 PYTHONPATH) / `framework/harness/generator.md`(§宽集逐只刷 partial-failure exit-code 容忍 + 可行性探针复用真 loader)
 
-**状态：** 待确认（B075 done 阶段提请用户裁定）
+**状态：** ✅ 已沉淀 v0.9.51（environment.md + generator.md §33/§34;用户 2026-06-23 批 B075 done 收尾）
+
+<!-- 2026-06-23: v0.9.51 沉淀完成（B075 done 收尾,用户批）：3 条→environment.md(VM /tmp PYTHONPATH)+generator.md §33(探针复用真 loader)+§34(宽集 partial-failure exit-code 容忍)。归档 framework/archive/proposed-learnings-archive-v0.9.51.md。CHANGELOG v0.9.51。**活跃候选队列=空。** -->
+
+<!-- 当前活动候选（v0.9.51 后）：无。 -->

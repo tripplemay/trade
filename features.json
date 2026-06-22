@@ -32,7 +32,7 @@
       "title": "Codex:L2 真机验收(宽宇宙真建 N 只+两策略宽池选股+数据刷新稳定)+GO/PARTIAL 诚实结论+零回归+signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F003。真机/真数据/可行性批次 signoff 含实测证据 §29+§23】L1 全门禁(verifying 可跳 L1 复跑 B071 §30)。L2 真机(VM,贴真返回):①宽宇宙真建(N 只,贴 discover 耗时/成功率)+独立复核 F001 可行 N 结论(1500 还是退档);②cn_attack 两策略从宽池选 top-25(贴 advisory 推荐+模拟盘建仓持仓,与 43 种子选股对比看变化);③数据刷新真覆盖宽集+稳定(多日/重跑成功率);④Master/regime/hk+US paper 零回归。★GO/PARTIAL 诚实结论:实测可行 N=?;1500 达成/退档;诚实记数据负载现实(日刷时长/失败率)。边界:research-only/no-broker/no 真金;不改策略逻辑;HEAD≡prod。signoff docs/test-reports/B075-...-signoff-*.md 实测证据逐条。",
       "design_decisions": []
     }

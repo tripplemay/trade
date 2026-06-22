@@ -5,6 +5,19 @@
 
 ---
 
+## v0.9.51 — 2026-06-23（B075：宽集 fetch job 工程——可行性探针复用真 loader + 宽块 partial-failure exit-code 容忍 + VM /tmp PYTHONPATH）
+
+**来源批次：** B075 A股 生产股票池扩大到全市场流动 top ~1501（feasibility GO@1501,zero errors,0 fix-round done）。3 条 learning 用户 done 收尾批准。
+
+**沉淀内容（用户确认）：**
+- **VM 跑 `/tmp/*.py` 临时脚本 `cd` 无效,须前置 `PYTHONPATH=/srv/workbench/current/backend`** → `.auto-memory/environment.md`（refines 现有 import-check 行;`sys.path[0]=/tmp` 致 stale site-packages workbench_api 被优先 import）。
+- **feasibility-first 探针复用真生产 loader——既测可行性又验代码路径** → `generator.md §33`（B075 探针调真 discover/CnHkPrices/CnMarketCap/CnFundamentals loader,VM 实跑同时证可行性 + ungate 路径可跑;对比 b070 裸 baostock 只测数据源）。
+- **宽集逐只刷 job 的 partial-failure exit-code 容忍——尾部失败不炸整轮** → `generator.md §34`（宽块 error 单列计数 + `resolve_exit_decision` core-严格 / 宽块-rate-floor≤20%,只真停摆才红,免日 timer 假红）。§28 exit-code 层落地。
+
+归档 `framework/archive/proposed-learnings-archive-v0.9.51.md`。**活跃候选队列清空。**
+
+---
+
 ## v0.9.50 — 2026-06-22（B074：paper build「搁浅现金」诊断须双查证券 mark + cash sentinel）
 
 **来源批次：** B074 cn_attack A股 模拟盘建仓修复（生产 hotfix，0 fix-round done）。1 条 learning 用户 done 收尾批准。

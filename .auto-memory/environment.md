@@ -28,6 +28,7 @@ type: reference
 - **真 VM IP = `34.180.93.185`**。曾出现 agent 用**旧/猜的 IP**（如 `162.14.96.221`）连不上 → **误判为「SSH fail2ban 封锁」并把核心验收降级为 soft-watch**（B067 F004 evaluator + B065 各一次）。
 - **规约（evaluator §25 实例）：SSH/连接失败 → 先核对用的是不是上表 `34.180.93.185`**，再判封锁/超时；勿在用错 IP 时归因 fail2ban。
 - **timer/precompute job 运行机制**：`*.service` 设 `WorkingDirectory=/srv/workbench/current/backend` + `ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.<module>`。`workbench_api` 从 **WorkingDirectory 源树** import（`/opt/workbench/.venv` 的 site-packages 里 workbench_api 是 stale，缺 strategy_modes 等子包）→ **本地 import-check 必须先 `cd /srv/workbench/current/backend`**，否则误报 ModuleNotFoundError（B067 planner 自己也差点踩此 false alarm）。
+  - **VM 跑 `/tmp/*.py` 临时脚本时 `cd` 无效**（B075）：`sys.path[0]=/tmp`（脚本所在目录），cwd 不进 `sys.path` → stale site-packages 的 `workbench_api` 仍被优先 import → ModuleNotFoundError。**修法：前置 `PYTHONPATH=/srv/workbench/current/backend`** 让源树覆盖 stale site-packages（`-m` / cwd-import 走 `cd` 即可；`/tmp` 脚本必须 `PYTHONPATH`）。
 
 ## 测试账号（如有）
 
