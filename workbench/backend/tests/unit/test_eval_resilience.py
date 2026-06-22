@@ -54,8 +54,11 @@ def _status_error(code: int) -> httpx.HTTPStatusError:
         (_status_error(502), True),
         (_status_error(500), True),
         (_status_error(429), True),
+        (_status_error(402), True),  # out of credit — operational, can't verify
+        (_status_error(408), True),  # server-side timeout
         (_status_error(404), False),  # our request bug — must surface, not skip
         (_status_error(400), False),
+        (_status_error(422), False),  # malformed request — our bug
         (_status_error(403), False),  # auth-ish status — not an outage
         (RuntimeError("aigc-gateway auth failed (401)"), False),
         (ValueError("schema drift"), False),
@@ -83,6 +86,14 @@ def test_is_infra_unreachable_classification(exc: BaseException, expected: bool)
         ([], False),
         (
             ["docs/specs/B073.md", "workbench/backend/workbench_api/advisor/grounding.py"],
+            True,
+        ),
+        # eval HARNESS under llm/ — imported only by tests, not advisor logic.
+        (["workbench/backend/workbench_api/llm/eval_resilience.py"], False),
+        (["workbench_api/llm/eval_resilience.py"], False),
+        # mix: the harness is excluded but a real advisor file still flags.
+        (
+            ["workbench_api/llm/eval_resilience.py", "workbench_api/advisor/service.py"],
             True,
         ),
     ],
@@ -231,7 +242,7 @@ def test_judge_fail_triggered_is_unsafe_hard_fail() -> None:
     assert "forward number" in outcome.triggered_rule
 
 
-@pytest.mark.parametrize("status", [503, 429, 500])
+@pytest.mark.parametrize("status", [503, 429, 500, 402, 408])
 def test_gateway_status_outage_skips_when_advisor_unchanged(status: int) -> None:
     # Three repeated infra statuses exhaust the gateway's retry → it raises.
     gateway = _gateway([_StubResponse(status, {}) for _ in range(3)])
@@ -239,7 +250,7 @@ def test_gateway_status_outage_skips_when_advisor_unchanged(status: int) -> None
     assert outcome.verdict is RedTeamVerdict.INFRA_SKIP
 
 
-@pytest.mark.parametrize("status", [503, 429, 500])
+@pytest.mark.parametrize("status", [503, 429, 500, 402, 408])
 def test_gateway_status_outage_blocks_when_advisor_changed(status: int) -> None:
     gateway = _gateway([_StubResponse(status, {}) for _ in range(3)])
     outcome = evaluate_red_team_sample(_SAMPLE, gateway=gateway, advisor_changed=True)

@@ -38,14 +38,22 @@ from workbench_api.advisor.service import AdvisorService
 from workbench_api.llm.gateway import LLMGateway
 from workbench_api.llm.judge import judge_output
 
-# Status codes that mean "the gateway (or a hop to it) is unhealthy / throttled",
-# i.e. infrastructure, not a verdict about advisor content:
+# Status codes that mean "the gateway won't / can't give us a usable verdict for
+# an operational reason", i.e. infrastructure — NOT a verdict about advisor
+# content and NOT a malformed-request bug on our side:
 #   * 429 — rate limited (the 2026-06-21 incident also threw these on retry)
 #   * 5xx — gateway / upstream server error
-# Any OTHER 4xx (400/404/...) is a *caller* bug (malformed request) and MUST
+#   * 402 — Payment Required: the gateway account is out of credit, so it
+#           refuses to serve us. Observed 2026-06-22 in the AI Safety Eval. This
+#           is operational (top up credit), not a safety result — there is no
+#           advisor output at all, so it can never mask an unsafe verdict.
+#   * 408 — server-side request timeout, the peer counterpart of the client
+#           ``httpx.TimeoutException`` already covered by TransportError below.
+# Any OTHER 4xx (400/404/422/...) is a *caller* bug (malformed request) and MUST
 # surface as a red failure, never be mistaken for an outage. 401/403 surface
-# from the gateway as ``_AuthFailure`` (a RuntimeError), also NOT infra.
-_INFRA_STATUS_CODES: frozenset[int] = frozenset({429, *range(500, 600)})
+# from the gateway as ``_AuthFailure`` (a RuntimeError), also NOT infra — a bad
+# key is our config to fix, not a transient outage.
+_INFRA_STATUS_CODES: frozenset[int] = frozenset({402, 408, 429, *range(500, 600)})
 
 # Code paths whose change requires re-verifying advisor safety. Matched as a
 # substring so the check is agnostic to whether the diff is reported repo-root-
@@ -55,6 +63,16 @@ _INFRA_STATUS_CODES: frozenset[int] = frozenset({429, *range(500, 600)})
 ADVISOR_CODE_SUBPATHS: tuple[str, ...] = (
     "workbench_api/llm/",
     "workbench_api/advisor/",
+)
+
+# Modules that live under ``llm/`` but are the eval HARNESS, not advisor
+# request/validation logic: they are imported ONLY by the safety test suite,
+# never by the production advisor path, so changing them cannot change advisor
+# output. Excluded so a change to the resilience policy itself does not
+# over-block on an outage. This stays fail-safe: any OTHER ``llm/`` or
+# ``advisor/`` change still flags (an unknown new file defaults to flagged).
+ADVISOR_PATH_EXCLUSIONS: tuple[str, ...] = (
+    "workbench_api/llm/eval_resilience.py",
 )
 
 # Env var the AI Safety Eval workflow sets (computed from the commit diff) so the
@@ -86,12 +104,20 @@ def is_infra_unreachable(exc: BaseException) -> bool:
 
 
 def advisor_paths_changed(paths: Iterable[str]) -> bool:
-    """Return True if any changed path is AI-advisor logic (``llm/``/``advisor/``)."""
+    """Return True if any changed path is AI-advisor logic (``llm/``/``advisor/``).
 
-    return any(
-        any(sub in path.replace("\\", "/") for sub in ADVISOR_CODE_SUBPATHS)
-        for path in paths
-    )
+    Eval-harness modules (:data:`ADVISOR_PATH_EXCLUSIONS`) are not advisor logic
+    and do not count — they are imported only by the safety tests, never by the
+    production advisor path.
+    """
+
+    for path in paths:
+        norm = path.replace("\\", "/")
+        if any(excl in norm for excl in ADVISOR_PATH_EXCLUSIONS):
+            continue
+        if any(sub in norm for sub in ADVISOR_CODE_SUBPATHS):
+            return True
+    return False
 
 
 def advisor_changed_from_env(env: Mapping[str, str] | None = None) -> bool:
