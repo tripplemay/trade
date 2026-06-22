@@ -8,7 +8,9 @@ priced + markable, and that an uncovered target symbol is reported loudly.
 
 from __future__ import annotations
 
+import csv
 from datetime import date, datetime
+from pathlib import Path
 
 from sqlalchemy.orm import Session
 
@@ -181,3 +183,94 @@ def test_target_universe_includes_regime_etfs() -> None:
     missing marks caused S2)."""
 
     assert set(_REGIME_ETFS) <= target_universe()
+
+
+# --- B074 F001 — A-share unified-CSV → price_snapshot sync wired into fetch -----
+
+_CN_HEADER = ["date", "ticker", "open", "high", "low", "close", "adj_close", "volume"]
+
+
+def _write_cn_csv(path: Path, rows: list[tuple[str, str, float]]) -> Path:
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(_CN_HEADER)
+        for d, ticker, close in rows:
+            writer.writerow([d, ticker, close, close, close, close, close, 1000])
+    return path
+
+
+def test_fetch_main_syncs_cn_ashare_closes_from_csv(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """B074 F001 — the fetch run also syncs A-share closes from the unified CSV so
+    the cn_attack targets become markable through the paper mark source, while the
+    US Tiingo path (the whole target universe) is unchanged."""
+
+    cn_csv = _write_cn_csv(
+        tmp_path / "prices_daily.csv",
+        [
+            ("2026-06-03", "600519.SH", 1500.0),
+            ("2026-06-04", "600519.SH", 1520.0),
+            ("2026-06-03", "000858.SZ", 140.0),
+            ("2026-06-04", "000858.SZ", 142.0),
+        ],
+    )
+    args = parse_args(["fetch"])
+    summary = fetch_main(
+        args,
+        loader_factory=_UniverseLoader,
+        today=date(2026, 6, 5),
+        cn_prices_path=cn_csv,
+    )
+
+    # US universe unchanged (still fully covered), A-shares synced separately.
+    assert summary.uncovered_targets == ()
+    assert summary.cn_symbols == 2
+    assert summary.cn_saved == 4
+    assert summary.cn_uncovered == ()
+
+    with Session(get_engine()) as session:
+        marks = DbPriceProvider(session).get_marks(["600519.SH", "000858.SZ"])
+    assert set(marks) == {"600519.SH", "000858.SZ"}
+
+
+def test_fetch_main_reports_cn_uncovered_ashare(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """An A-share with a single close is synced but reported as cn_uncovered
+    (loud coverage gap), mirroring the US ``uncovered_targets`` behaviour."""
+
+    cn_csv = _write_cn_csv(
+        tmp_path / "prices_daily.csv",
+        [
+            ("2026-06-03", "600519.SH", 1500.0),
+            ("2026-06-04", "600519.SH", 1520.0),
+            ("2026-06-04", "000858.SZ", 142.0),  # only ONE close → not markable
+        ],
+    )
+    args = parse_args(["fetch"])
+    summary = fetch_main(
+        args,
+        loader_factory=_UniverseLoader,
+        today=date(2026, 6, 5),
+        cn_prices_path=cn_csv,
+    )
+    assert summary.cn_uncovered == ("000858.SZ",)
+
+
+def test_fetch_main_missing_cn_csv_is_noop(
+    initialised_db: str, tmp_path: Path
+) -> None:
+    """A missing unified CSV (local / CI) never fails the US prices job."""
+
+    args = parse_args(["fetch"])
+    summary = fetch_main(
+        args,
+        loader_factory=_UniverseLoader,
+        today=date(2026, 6, 5),
+        cn_prices_path=tmp_path / "absent.csv",
+    )
+    assert summary.cn_symbols == 0
+    assert summary.cn_saved == 0
+    assert summary.cn_uncovered == ()
+    assert summary.uncovered_targets == ()  # US path unaffected

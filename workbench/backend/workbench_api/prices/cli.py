@@ -49,6 +49,7 @@ import sys
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
+from pathlib import Path
 from typing import Protocol
 
 from sqlalchemy.orm import Session, sessionmaker
@@ -59,6 +60,10 @@ from workbench_api.db.engine import get_engine
 from workbench_api.db.models.price_snapshot import PriceSnapshot
 from workbench_api.db.repositories.account_snapshot import AccountSnapshotRepository
 from workbench_api.db.repositories.price_snapshot import PriceSnapshotRepository
+from workbench_api.prices.cn_snapshot_sync import (
+    default_prices_path,
+    sync_cn_closes_from_csv,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -89,6 +94,13 @@ class FetchSummary:
     # Target-universe symbols still NOT markable after this run (fewer than two
     # stored closes). Surfaced so a coverage gap is loud, never silent (B058 F002).
     uncovered_targets: tuple[str, ...] = ()
+    # B074 F001 — A-share closes synced from the unified prices CSV into
+    # price_snapshot (Tiingo can't reach A-shares; the data-refresh job already
+    # wrote them to the CSV). ``cn_uncovered`` lists synced A-shares still NOT
+    # markable, surfaced with the SAME rule as ``uncovered_targets``.
+    cn_symbols: int = 0
+    cn_saved: int = 0
+    cn_uncovered: tuple[str, ...] = ()
 
 
 def _build_loader() -> _Loader:
@@ -173,11 +185,15 @@ def fetch_main(
     *,
     loader_factory: LoaderFactory | None = None,
     today: date | None = None,
+    cn_prices_path: Path | None = None,
 ) -> FetchSummary:
     """Drive the fetch loop. Returns aggregated counts.
 
     ``loader_factory`` is injectable for tests (swap the real Tiingo
-    loader for a fake returning known bars); ``today`` pins the window."""
+    loader for a fake returning known bars); ``today`` pins the window.
+    ``cn_prices_path`` (B074 F001) overrides the unified prices CSV the A-share
+    closes are synced from (tests point it at a fixture; production resolves the
+    VM data root)."""
 
     run_date = today or datetime.now(UTC).date()
     from_date = run_date - timedelta(days=max(1, args.lookback_days))
@@ -187,6 +203,9 @@ def fetch_main(
     saved = 0
     errors = 0
     uncovered: tuple[str, ...] = ()
+    cn_symbols = 0
+    cn_saved = 0
+    cn_uncovered: tuple[str, ...] = ()
     try:
         repo = PriceSnapshotRepository(session)
         targets = symbols_to_fetch(session)
@@ -238,13 +257,51 @@ def fetch_main(
                 len(uncovered),
                 ",".join(uncovered),
             )
+
+        # B074 F001 — sync A-share closes from the unified prices CSV into
+        # price_snapshot so the cn_attack paper books (A-share targets, which
+        # Tiingo can't reach and price_universe() doesn't carry) become markable
+        # and can build instead of stranding in cash. Best-effort: a CSV read /
+        # parse failure (or a missing file on local / CI) never fails the US
+        # prices job — it logs and leaves the A-share marks absent.
+        try:
+            cn = sync_cn_closes_from_csv(
+                session, prices_path=cn_prices_path or default_prices_path()
+            )
+            cn_symbols = cn.symbols
+            cn_saved = cn.saved
+            # Same coverage rule as the US universe: an A-share with fewer than two
+            # stored closes (or a non-positive latest close) is NOT markable.
+            cn_uncovered = tuple(
+                sorted(
+                    symbol
+                    for symbol in cn.touched
+                    if not _is_markable(repo.latest_two_by_symbol(symbol))
+                )
+            )
+            if cn_uncovered:
+                logger.warning(
+                    "price_cli_cn_uncovered_target_symbols: %d A-share symbol(s) "
+                    "synced from the unified CSV are still NOT markable (%s) — "
+                    "cn_attack paper books targeting them cannot build until priced.",
+                    len(cn_uncovered),
+                    ",".join(cn_uncovered),
+                )
+        except Exception:
+            logger.exception("price_cli_cn_snapshot_sync_failed")
     except Exception:
         session.rollback()
         raise
     finally:
         session.close()
     return FetchSummary(
-        symbols=symbols, saved=saved, errors=errors, uncovered_targets=uncovered
+        symbols=symbols,
+        saved=saved,
+        errors=errors,
+        uncovered_targets=uncovered,
+        cn_symbols=cn_symbols,
+        cn_saved=cn_saved,
+        cn_uncovered=cn_uncovered,
     )
 
 
@@ -261,7 +318,9 @@ def main(argv: list[str] | None = None) -> int:
     print(
         f"price-snapshot ingest done — symbols={summary.symbols} "
         f"saved={summary.saved} errors={summary.errors} "
-        f"uncovered_targets={len(summary.uncovered_targets)}"
+        f"uncovered_targets={len(summary.uncovered_targets)} "
+        f"cn_symbols={summary.cn_symbols} cn_saved={summary.cn_saved} "
+        f"cn_uncovered={len(summary.cn_uncovered)}"
     )
     return 0 if summary.errors == 0 else 1
 

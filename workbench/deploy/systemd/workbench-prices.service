@@ -14,6 +14,12 @@ WorkingDirectory=/srv/workbench/current/backend
 # /etc/workbench/workbench.env (chmod 600 root:deploy). Never committed.
 EnvironmentFile=/etc/workbench/workbench.env
 
+# B074 F001 — the unified prices CSV root (same dir the data-refresh job writes).
+# The CLI also defaults to this path, but set it explicitly so the A-share
+# CSV→price_snapshot sync reads exactly where the refresh wrote. Read-only data
+# concern (boundary (r)); names no broker / order-ticket / execution surface.
+Environment=WORKBENCH_DATA_ROOT=/var/lib/workbench/data
+
 # Permanent product boundary (r) (B035 spec §3, B036 revision): this timer
 # does READ-ONLY price-data fetch ONLY. ExecStart invokes the price-snapshot
 # CLI and nothing else — it never runs broker / order-ticket / execution /
