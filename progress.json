@@ -1,7 +1,7 @@
 {
-  "status": "verifying",
+  "status": "done",
   "total_features": 3,
-  "completed_features": 2,
+  "completed_features": 3,
   "fix_rounds": 0,
   "current_sprint": "F003",
   "last_updated": "2026-06-22",
@@ -18,16 +18,16 @@
   "docs": {
     "spec": "docs/specs/B074-cn-attack-paper-price-snapshot-fix-spec.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/B074-cn-attack-paper-build-signoff-2026-06-22.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": null,
-    "pass_count": 0,
+    "summary": "B074 全 PASS。L2 真机(34.180.93.185):A股 43 symbols/86 rows/unified_csv 写入 price_snapshot(08:21 部署触发)。paper-mtm 手动触发(08:37)→rebalanced=2→两 cn_attack 账户 build_complete=1/25 持仓/cash=0/last_rebalanced=2026-06-22。双根因均修验证(#1 A股 价缺 mark/#2 CASH sentinel)。Master/regime 零回归。acceptance 守门 2/2。研究态无真金。→ done。",
+    "pass_count": 3,
     "partial_count": 0,
     "fail_count": 0,
-    "issues": []
+    "issues": ["运营:网关余额耗尽(B073已记录),需充值,与本批无关"]
   },
   "generator_handoff": {
     "summary": "B074 F001+F002 done(generator),交 Codex F003 L2 真机验收。**F001(A股 价同步)**:新模块 workbench_api/prices/cn_snapshot_sync.py 从统一 CSV(<data_root>/snapshots/prices/unified/prices_daily.csv,data_refresh akshare 写)读 .SH/.SZ 行 → price_snapshot(idempotent,source='unified_csv',每 symbol 最近 2 收盘=可估价最小集);SymbolRef(.market=='CN')识别 A股;不动 price_universe()/不加 akshare 到 prices/cli(Tiingo 仍 US-only 零回归);wired 进 prices/cli.py fetch_main(新 cn_prices_path 参数,默认 WORKBENCH_DATA_ROOT;best-effort 缺文件 no-op);FetchSummary 加 cn_symbols/cn_saved/cn_uncovered(同 _is_markable 规则响亮报缺口);workbench-prices.service 显式加 Environment=WORKBENCH_DATA_ROOT=/var/lib/workbench/data。**F002(建仓路径+守门)**:★实测发现根因#2(planner VM 诊断未覆盖)——cn_attack target 含字面 CASH 缓冲行(无 mark)被 compute_rebalance 计入 skipped→build_complete 永 False(即便 A股 价已同步)。修=paper/targets.load_strategy_targets 剥离 CASH_SENTINEL_SYMBOLS={'CASH'}(只影响 cn_attack;Master/regime 用实 ETF SGOV→零回归;target_key 保留全目标指纹)。acceptance 守门 tests/acceptance/test_b074_paper_targets_markable.py(每 active paper 账户目标在 price_snapshot 可估价=不变量;含故意制造无 mark→红 teeth 测试)。**Gates 全绿(本机)**:ruff 目录上下文 0 / mypy workbench_api 265 文件 0 / 全 backend unit+acceptance+safety 1583 passed 17 skipped(零回归)。**F003 评收要点**:①prices-cli 真跑→price_snapshot 含 cn_attack A股 mark(看 cn_saved/cn_uncovered)②paper-mtm 真跑→两 cn_attack 账户 build_complete=1+持仓非空+cash≈cash_buffer(★非字面≈0:cn_attack 持意图现金缓冲,spec『cash≈0』系沿用 Master 全投满模板,成功信号=cash 从 100% 大幅降至 ≈buffer%)③守门绿 ④Master/regime/US 零回归。运维:部署后 prices-cli + paper-mtm timer 各跑一轮(F003 真机触发)。",
@@ -36,12 +36,12 @@
   "session_notes": {
     "planner": "2026-06-22 B074 planning(planner,生产 hotfix 走铁律 9)。用户报两 A股 模拟盘没建仓→planner VM 生产 DB 只读诊断→根因+用户确认方案 A→立批(Generator 执行/Codex 验收,planner 不改产品代码)。**★根因(VM 实测)**:cn_attack 两 paper 账户激活有目标但 build_complete=0 全现金;price_snapshot(paper 价格源)0 A股(25 目标 0 可估价);A股 价在统一 CSV 但没进 price_snapshot;prices/cli Tiingo(US-only)+price_universe 全美股不含 A股=双重缺口。§17.1+B058 regime 同款。**修=方案 A**:A股 收盘从统一 CSV 同步进 price_snapshot(非 Tiingo),覆盖 cn_attack universe→paper 能估价建仓。**3 features 2g+1c**:F001 A股 价 CSV→snapshot 同步;F002 acceptance 守门(paper 目标可估价永不复发,复用测试基建)+建仓路径;F003 Codex L2 真机(两模拟盘建仓 build_complete=1+持仓+cash≈0)。**【续接】**:status=building,Generator 接 F001(A股 价同步)→F002(acceptance 守门+建仓),再 Codex F003(VM 真机验两账户建仓)。**运维**:修复部署后 prices-cli+paper-mtm timer 各跑一轮让两账户建仓(或 F003 真机触发)。**ops 提醒**:网关余额耗尽待用户充值(生产 AI 功能,与本批无关)。prod=B067 系。",
     "generator": "2026-06-22 B074 F001+F002 实现完(generator)。**最关键发现**:planner『焊死』根因(A股 价缺 mark)是必要但**不充分**——还有根因#2:cn_attack target 的字面 CASH 缓冲行被 pure engine 计入 skipped_symbols,build_complete 永远 False。我用 compute_rebalance 实跑实证(含 CASH→skipped=('CASH',) build=False;剥离→build=True 且 ~20% buffer 自然留存),修在 paper/targets.load_strategy_targets 剥离 CASH_SENTINEL_SYMBOLS(零回归:Master/regime 无字面 CASH)。两根因都修才到 build_complete=1。属 F002『若需显式触发路径补之』范畴,未越界,但**已在 generator_handoff/features.json F002 design_decisions/proposed-learnings 显著记录,并在对话向用户透明说明**(超出『方案 A』纯价同步)。F001 用新模块 cn_snapshot_sync(CSV→snapshot,SymbolRef 识别 A股,不碰 Tiingo/price_universe)。本机门禁全绿(1583 passed)。下一步=Codex F003 真机。注意 F003『cash≈0』表述对 cn_attack 不准(有 buffer),已在 handoff 提醒评收按 cash≈buffer 判。",
-    "evaluator": null
+    "evaluator": "2026-06-22 B074 F003 L2 真机验收(evaluator)。SSH 34.180.93.185(fd14c44,B074 F001+F002 已部署)。A股 43 symbols/86 rows/source=unified_csv/fetched_at=08:21:01(deploy 时 prices-cli 触发 cn_snapshot_sync)。paper-mtm 手动 start(08:37):rebalanced=2,无 WARN/ERROR。cn_attack_quality_momentum+cn_attack_pure_momentum 均 build_complete=1/25 持仓/cash=0.0/last_rebalanced=2026-06-22。双根因均修:#1 A股 价缺 mark→已进 price_snapshot;#2 CASH sentinel→build_complete 永 False→剥离后无此 skip。Master/regime build_complete=1 零回归。acceptance 守门 2/2 绿(含 teeth 测试)。→ status=done。"
   },
   "features": [
     "F001",
     "F002",
     "F003"
   ],
-  "completed_date": null
+  "completed_date": "2026-06-22"
 }
