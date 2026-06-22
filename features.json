@@ -6,7 +6,7 @@
       "title": "A股 价从统一 CSV 同步进 price_snapshot(cn_attack universe 可估价,非 Tiingo)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F001 + §0 根因】(1) A股 价源=统一 CSV(非 Tiingo,US-only):A股 收盘从 prices_daily.csv(data_refresh 已写 akshare 来)读→写 price_snapshot(PriceSnapshotRepository idempotent);不给 prices/cli 加 akshare(保持其 read-only Tiingo+新增 CSV→snapshot 同步步骤,或 data_refresh/prices-cli 适当层)。(2) 覆盖 cn_attack A股 universe(seed-43/cn_pit_universe),两变体 25 目标全可估价;扩 price_universe() 或同步路径含之。(3) §17.1 对齐:paper mark 源(price_snapshot)与 A股 数据源(统一 CSV)同源;uncovered_targets 对 cn_attack 目标应空。(4) 边界 research-safe;A股 价来自既有 CSV(无新 fetch);US/Master/regime price_snapshot 行零回归。正面证据:price_snapshot 含 cn_attack 25 A股 目标 mark(从 CSV 同步可估价);US/Master/regime price_snapshot 不破;§12.10.2 守门。Gates:backend pytest/ruff 目录上下文/mypy CI-exact 0。",
       "design_decisions": [
         "★根因(planner VM 实测):prices/cli Tiingo(US-only)填 price_snapshot,price_universe=ETF∪equity(全美股)不含 A股;A股 价在统一 CSV 但从没进 price_snapshot→paper 估不了 A股→建不了仓。§17.1+B058 regime 同款。",
@@ -18,11 +18,13 @@
       "title": "paper 建仓路径确认 + acceptance 守门(复用测试基建,paper 目标可估价永不复发)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F002】(1) acceptance 守门(B071-B073 层):永久回归断言『每个 active paper 账户的目标持仓在其价格源 price_snapshot 里都可估价(uncovered=空)』——此 bug 类(目标无 mark→搁浅现金)以后 CI 抓,用 golden/测试 fixture。(2) 建仓触发:确认价就位后 paper MTM rebalance-if-due/build 路径让 build_complete=0 的 cn_attack 账户初始建仓(B058 finish-only 重试);若需显式触发补之。(3) 单测:cn_attack paper 有价时 build 完成(持仓非空/cash 减少/build_complete=1)。正面证据:acceptance 守门『paper 目标可估价』永久回归(故意制造无 mark 目标→红=有牙齿);cn_attack paper 有价时 build 完成单测过。Gates 同 F001+acceptance CI step。",
       "design_decisions": [
         "acceptance 守门复用 B071-B073 测试基建:把这个 bug 类(paper 目标无 mark)变永久 CI 回归(不复发)。",
-        "建仓由 paper MTM rebalance-if-due/build(B058 finish-only 重试)做,价就位后下次跑自动 build。"
+        "建仓由 paper MTM rebalance-if-due/build(B058 finish-only 重试)做,价就位后下次跑自动 build。",
+        "★generator 实测发现根因#2(planner VM 诊断未覆盖):cn_attack 发布的 target 含一行字面 CASH 缓冲(cash_weight>0,无 mark)→pure engine compute_rebalance 把 CASH 计入 skipped_symbols→_apply_rebalance fully_built=traded and not skipped=False→即便 A股 价已同步 build_complete 仍永远 False。单测实证(compute_rebalance):含 CASH skipped=('CASH',) build=False;剥离 CASH skipped=() build=True 且 ~20% 现金缓冲自然留存为残余现金、持仓不变。修=paper/targets.load_strategy_targets 剥离 CASH_SENTINEL_SYMBOLS(只影响含 CASH 的 cn_attack;Master/regime 无字面 CASH 用 SGOV 实ETF→零回归);target_key 保留 get_target 全目标指纹(cash 变动仍触发调仓)。属 F002『建仓路径确认+若需显式触发路径补之』范畴。",
+        "★F003 评收提醒:cn_attack 持意图现金缓冲→建仓后 cash≈cash_buffer×NAV(非字面≈0;spec F003『cash≈0』系沿用 Master/regime 全投满模板)。建仓成功信号=build_complete=1 + 持仓非空 + cash 从 100% 大幅降至 ≈buffer%。"
       ]
     },
     {

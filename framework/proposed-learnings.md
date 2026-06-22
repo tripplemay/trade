@@ -336,3 +336,13 @@
 <!-- 2026-06-21: v0.9.49 沉淀完成（B071 done 收尾,用户批）：3 条→①回测复权口径一致(raw-open 买/adj-close 估值混用=bug,合成 adj==close 系统性掩盖)generator.md §30+②records 引擎轻微失真折入 §30.1 已知非阻断限制;③验收即代码常态化+evaluator verifying 跳 L1=generator.md §31+evaluator.md §30+role-context 两文件。归档 framework/archive/proposed-learnings-archive-v0.9.49.md。CHANGELOG v0.9.49。**活跃候选队列=空。** -->
 
 <!-- 当前活动候选（v0.9.49 后）：无。 -->
+
+## [2026-06-22] Claude CLI — 来源：B074 F002 实现(cn_attack A股 模拟盘建仓 hotfix)
+
+**类型：** 新坑 / 规律
+
+**内容：** 「target 含字面现金 sentinel(CASH)行 → pure paper engine 当作无 mark 的 skipped target → build_complete 永 False」是 §17.1/B058『目标无 mark→搁浅现金』family 的**隐形变体**。planner VM 诊断只焊死了 A股 价缺 mark(根因#1),漏了根因#2:cn_attack precompute 在 cash_weight>0 时追加一行 CASH(weight>0、无价),compute_rebalance 把它计入 skipped_symbols,_apply_rebalance `fully_built = traded and not skipped` 因 CASH 永为 False——即便 A股 价同步到位也建不了仓。Master/regime 没事是因为它们的现金用实 ETF(SGOV)有 mark,不写字面 CASH。教训:**诊断 paper 搁浅现金类 bug 时,必须同时核对(a)目标证券 mark 是否齐 + (b)目标里是否有无 mark 的 sentinel/cash 伪符号被 engine 误判 skipped**。修法:paper/targets.load_strategy_targets 剥离 cash sentinel(只影响发布字面 CASH 的策略,零回归),target_key 保留全目标指纹。validate 用 compute_rebalance 直接实跑(含/剥 CASH 对照)最快锁死。另:spec 的『建仓成功=cash≈0』模板对持现金缓冲的策略(cn_attack)不准,应为 cash≈buffer。
+
+**建议写入：** `framework/harness/generator.md`（§ paper/建仓诊断 family：搁浅现金双查 mark+sentinel）/ `framework/harness/planner.md`（根因诊断:paper build 失败需查 sentinel 行,勿只查证券 mark）
+
+**状态：** 待确认
