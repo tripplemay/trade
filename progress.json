@@ -1,51 +1,47 @@
 {
-  "status": "done",
-  "total_features": 4,
-  "completed_features": 4,
+  "status": "building",
+  "total_features": 3,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F004",
+  "current_sprint": "F001",
   "last_updated": "2026-06-22",
-  "user_goal": "B072 测试自动化基建 Phase 2 核心(golden 全栈 CI+e2e 交易闭环+可注入时钟)=接 B071 golden 地基。来源:2026-06-21 用户 B071 done 后选 Phase 2。**★范围裁定(Explore 现实校正,焊死)**:全仓 0 docker(无 compose/Dockerfile)+DB=sqlite(Postgres 排除)+生产 systemd→roadmap『docker-compose 全栈』理想化,引 docker+Postgres=架构冲突大 scope creep。本批走务实:复用现有 sqlite+进程编排半栈(workbench-frontend.yml 已 CI 起 uvicorn sqlite backend+Playwright)扩成全栈,不引 docker/Postgres。VCR 录放(P2-F3)ROI 最低(golden 已给确定性)→延后 Phase 2.1。**核心价值**:①e2e 交易闭环=BL-B023-S1 Codex 反复手动冒烟自动化(推荐→diff→ticket→fills→reconcile→journal,现 0 闭环 e2e);②可注入时钟=CI 快进验证 timer 定时行为(服务层 seam 已全齐,缺口只在 timer CLI 顶层硬 datetime.now→加 --as-of 贯穿);③golden 全栈 DB 播种=确定性全系统测试。**4 features 3g+1c**:F001 golden 全栈 CI 编排+golden→DB 播种;F002 e2e 交易闭环;F003 可注入时钟(timer CLI --as-of 默认 now 零回归);F004 Codex 验收(★e2e 闭环 6 步绿+时钟快进+mutation 核有牙齿+零回归)。spec docs/specs/B072-test-automation-fullstack-e2e-clock-spec.md(4 章)。复用 workbench-frontend.yml 半栈+B071 golden+执行链 API/页(全齐)+服务层时钟 seam(全齐)。",
+  "user_goal": "B073 测试自动化基建 Phase 2.1(VCR 录放+AI Safety Eval 网关韧性)=B072 延后的 VCR+本次外部故障暴露的 gate 韧性。来源:2026-06-22 用户 B072 done 后『直接下一批』(采纳 planner 推荐 Phase 2.1)。**核心动机**:一个外部 LLM 网关宕机(2026-06-21 aigc.guangai.ai 503/429)不应能拖红 CI/阻断不相关代码部署(B072 期间 AI Safety Eval 因网关宕变红阻断 deploy gate,F003 时钟与 AI 无关=活证)。两件:①VCR 录放外部 HTTP→CI 离线确定性;②AI Safety Eval 网关韧性=区分网关不可达(infra,不硬阻断)vs advisor 真不安全(硬阻断不变)。**★安全约束(焊死,F002 不削弱安全门)**:真 advisor 不安全仍硬阻断(不放松);只对网关不可达放松(503/429/超时=infra≠安全结论);网关不可达≠安全 pass;变更触及 AI advisor 逻辑+网关不可达→仍阻断(不让未验证 AI 变更蒙混)。Codex F003 重点审此约束。**3 features 2g+1c**:F001 VCR 录放(3 httpx loader+akshare frame fixture,CI 离线);F002 网关韧性(VCR'd 确定性 red-team 硬门+live eval 区分 infra vs unsafe);F003 Codex 安全相邻验收(★安全不削弱 mutation 核)。spec docs/specs/B073-test-automation-vcr-eval-resilience-spec.md(3 章)。复用 3 loader client= seam+test_ai_advisor_red_team.py+ai-safety-eval.yml。",
   "reference_docs": [
-    "docs/specs/B072-test-automation-fullstack-e2e-clock-spec.md",
+    "docs/specs/B073-test-automation-vcr-eval-resilience-spec.md",
     "docs/dev/test-automation-roadmap.md",
-    ".github/workflows/workbench-frontend.yml",
-    "workbench/backend/workbench_api/routes/execution.py",
-    "workbench/frontend/playwright.config.ts",
-    "workbench/backend/workbench_api/backtests/worker.py",
-    "workbench/backend/scripts/seed_e2e_reports.py"
+    "workbench/backend/tests/safety/test_ai_advisor_red_team.py",
+    "workbench/backend/workbench_api/llm/gateway.py",
+    "workbench/backend/workbench_api/data/tiingo_loader.py",
+    "workbench/backend/workbench_api/data/sec_edgar_loader.py",
+    ".github/workflows/ai-safety-eval.yml"
   ],
   "docs": {
-    "spec": "docs/specs/B072-test-automation-fullstack-e2e-clock-spec.md",
+    "spec": "docs/specs/B073-test-automation-vcr-eval-resilience-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B072-test-automation-fullstack-e2e-clock-signoff-2026-06-21.md",
-    "framework_reviewed": true
+    "signoff": null,
+    "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "B072 全 PASS。acceptance 13/13(backend)+5/5(trade)全绿。Playwright e2e 2 passed(6 步 recommend→reconcile→journal 闭环)。mutation K/L/M 全 3 变红验证有牙齿。时钟快进真验(不同 as_of → 不同 signal_date → 不同目标)。零回归(B071 13+5 全在)。AI Safety Eval 红=外部 aigc-gateway 503/429(网关宕机,与 F003 无关,须恢复后单次重跑)。→ done。",
-    "pass_count": 4,
+    "summary": null,
+    "pass_count": 0,
     "partial_count": 0,
     "fail_count": 0,
-    "issues": [
-      "AI Safety Eval 红(外部 aigc-gateway 宕机,网关恢复后手动单次重跑,非代码问题,不阻断签收)"
-    ]
+    "issues": []
   },
   "generator_handoff": {
-    "summary": "F001+F002+F003 done (generator,building 完结→verifying 交 Codex F004). **F003**:可注入时钟 timer CLI --as-of(默认 now 零回归)。共享 helper cli_clock.py;8 timer 接旗标(recommendations+regime 深 plumb as_of→价格 cutoff 真快进;advisor/prices/data_refresh/canonical/paper-mtm/news 现有 run-date seam 直穿);cn_attack(as-of 数据派生)+worker(daemon)出范围(cli_clock 文档说明)。acceptance test_b072_clock_injection.py ≥3 timer 快进有牙齿(recommendations golden 2021-12-31→2023-12-31 目标确定性不同/canonical 报告日期/news lookback 锚)+unit test_b072_clock_cli.py 全 8 CLI 贯穿+默认 now。本机全绿 ruff+mypy(435)+acceptance 13+safety 164+unit 1319。 **F002**:e2e 交易闭环 spec `workbench/frontend/tests/e2e/b072-closed-loop.spec.ts`(6 步 recommend→diff→ticket→fills→reconcile→journal,reconcile 经鉴权 page.request 调用=无 UI;CSV 内联 buffer 避 gitignore;账户由 F001 golden seed 提供)+ playwright.config authed testMatch;本机 Playwright 全栈实跑 2 passed + tsc/eslint/vitest 343 绿。**F001**:golden→DB 全栈 seed `workbench/backend/scripts/seed_golden_e2e.py` 推 4 表(price_snapshot 38×2 marks / recommendation_snapshot 真 Master golden 评分 7 行 sum=1.0 as_of=2023-09-29 / account_snapshot 闭环账户 1M cash+SPY10+AAPL5 / investment_report 复用 seed_e2e_reports b040 slug);确定性(同 golden→同 DB 内容)。全栈 CI 编排扩 workbench-frontend.yml:装 root trade(../..)+跑 golden seed(替原 seed_e2e_reports 单跑,golden seed 内含)+起 backtest worker daemon(同 e2e db,3s 存活检查)。acceptance `tests/acceptance/test_b072_golden_fullstack_seed.py` 3 测(确定性 fingerprint/recommendations 端点全 marked golden 目标/position-diff equity>cash+买单+0 unmatched)。Gates 本机全绿:ruff+mypy(432)+acceptance 8+safety 164。F002/F003 待续。",
-    "status": "ready",
-    "ci_note": "F003 Backend CI 绿 + Frontend CI 重跑后绿(首跑 1 旧 flaky risk-banner,重跑过,F003 零前端改动)。AI Safety Eval 红=外部 aigc-gateway 503/429 网关宕机/限流(test_ai_advisor_red_team 15 样本全 httpx 网关错;F003=定时器时钟与 AI advisor 无关)→阻断自动部署直到网关恢复;须待网关恢复后单次重跑(429 限流勿连发)。"
+    "summary": null,
+    "status": "pending"
   },
   "session_notes": {
-    "planner": "2026-06-22 B072 done 收尾(planner)。测试基建 Phase 2 核心=✅ done,0 fix-round,0 新 learnings。Codex F004 干净(e2e 闭环 6 步全绿+mutation K/L/M 有牙齿+acceptance 18/18+时钟快进真验)。**成果**:F001 golden→DB 全栈 seed(4 表确定性,扩 workbench-frontend.yml 全栈+worker)+F002 e2e 交易闭环(recommend→diff→ticket→fills→reconcile→journal=BL-B023-S1 手动冒烟自动化)+F003 可注入时钟(8 timer CLI --as-of 贯穿现有 seam,默认 now 零回归,CI 快进验证定时)。★范围裁定守住(不引 docker/Postgres,复用 sqlite+进程编排)。**B072 无 prod-affecting 改动**(纯测试/CI 基建+时钟默认 now)。**⚠️ 外部故障(非 B072 代码)**:AI Safety Eval CI 红=LLM 网关 aigc.guangai.ai 503/429 宕机/限流(test_ai_advisor_red_team 15 样本全挂;F003=时钟与 AI advisor 无关)。**影响**:①阻断自动部署 gate(CI+safety eval 双门禁)——但 B072 无 prod 改动故不急;②**生产 AI 功能(B043 推荐解释/B054 新闻翻译/B036 advisor)运行时调此网关→网关宕则降级**(应优雅降级非崩,需确认)。**429 警示**:连续重跑触发限流,勿连发,等网关恢复后单次重跑 eval→绿→deploy gate 解。**【续接=下一批待用户定 + 网关 ops】**:①网关恢复监控(外部,可能自愈或需查 provider;勿连发重跑);②下一批候选:测试基建 Phase 2.1(VCR 录放)/P3(prod synthetic+canary)/P4(LLM-judge)/A股 进攻 P3/hk_china 重测。prod=B067 系(B072 无 prod 改动)。",
-    "generator": "2026-06-22 B072 building 完结(generator)→status=verifying 交 Codex F004。**F001+F002+F003 全 done,本机全绿(ruff+mypy 435+acceptance 13+safety 164+unit 1319+前端 Playwright 实跑);F001 CI 双绿、F002 Frontend CI 绿、F003 CI 跑中(推送时)。** 给 Codex(F004 验收)的要点:①golden 全栈 seed=`scripts/seed_golden_e2e.py`(已入 workbench-frontend.yml,装 trade+seed+worker daemon);确定性 acceptance=`tests/acceptance/test_b072_golden_fullstack_seed.py`。②e2e 闭环=`tests/e2e/b072-closed-loop.spec.ts`(reconcile 无 UI→page.request 鉴权调;CSV 内联 buffer)。③时钟=`cli_clock.py`+8 CLI;快进 acceptance=`tests/acceptance/test_b072_clock_injection.py`(recommendations golden 真快进有牙齿)。④mutation 核建议:破坏闭环一环(fills 数量/CSV symbol)→e2e 红;改 as_of plumb→快进 signal date 错→红;破 golden seed→acceptance 红。⑤诚实边界:cn_attack/worker 时钟出范围(已文档)。**F003 done**:可注入时钟 timer CLI --as-of。**F002 done**:e2e 交易闭环 `workbench/frontend/tests/e2e/b072-closed-loop.spec.ts`(加入 playwright.config authed testMatch)。6 步:recommend(/recommendations 断 positions-card+disclaimer)→diff(/execution/position-diff 断 export-csv enabled+非空)→ticket(/execution/ticket 点 ticket-generate→preview+history,经 GET /tickets 取 ticketId)→fills(/execution/fills selectOption(ticketId)+check allow-unmatched+setInputFiles({buffer})上传 generic CSV+submit→preview)→reconcile(无 UI 控件,经 page.request.post /api/execution/reconcile/{id} 鉴权调用,=BL-B023-S1 手动冒烟)→journal(/execution/journal-history 断 journal-history-link-{id})。**坑/决策**:①reconcile 无前端按钮(仅 backend endpoint)→e2e 用 page.request 鉴权调(storageState cookie 随行);②fills CSV 文件被 .gitignore `*.csv` 忽略(仅 data/fixtures/** 反忽略)→改 setInputFiles({name,mimeType,buffer}) 内联 CSV 避 fixture 文件;③fixture 账户已由 F001 golden seed 提供(1M cash 不超卖)。本机验证:chain(generate→submit_csv→reconcile→journal status=executed)+ Playwright 全栈实跑 2 passed(golden seed→uvicorn 8723→next dev 3000→spec 3.4s)+ tsc+eslint+vitest 343 全绿。**续接 F003**:可注入时钟。clean seam(加 --as-of 即可):paper/mtm.py(main now=datetime.now(UTC)→on_date/now,run_daily_mtm 已全 thread)、advisor/cli.py(run_daily today=)、prices/cli.py(fetch_main today=)、data_refresh/cli.py(fetch_main today=)、canonical.py(generate_canonical_reports as_of=)。深 seam(需 plumb):recommendations/cli.py→run_precompute,但 score_master_target/_load_scoring_records 价格 cutoff 硬 datetime.now(UTC).date()(precompute.py:248/262)→须加 as_of 参数才能真 golden 快进(flagship 验证:golden as of 不同日→不同确定性目标)。regime/cn_attack 类似。worker 是 daemon 无 run-date 语义/market 纯网络→文档说明不在本批。≥3 timer 快进:recommendations(golden 深)+ paper MTM(seed paper account+注入 as_of)+ canonical/advisor(--as-of 线程注入)。",
-    "evaluator": "2026-06-22 B072 F004 元验收(evaluator)。acceptance 13/13 backend(B071×5+B072 clock×5+seed×3)+5/5 trade 全绿。Playwright e2e 2 passed(6 步闭环+reconcile page.request 鉴权调)。mutation K(忽略 as_of→早晚信号相同→RED)/L(不播种 price_snapshot→has_mark=False→RED)/M(填报 shares=-999→fills-preview-card 不可见→RED)全 3 红后还原,接收全绿。时钟快进真验:early as_of=2021-12-31→signal=2021-09-30,late=2023-12-31→signal=2023-09-29,目标权重真不同。测试设施坑:uvicorn 须携 NEXTAUTH_SECRET=ci-playwright-secret-do-not-use-in-prod;漏设→auth token 解码失败→API 返空(非 401)。AI Safety Eval 红=外部 aigc-gateway 503/429,F003 无关,网关恢复后手动重跑解除阻断。→ status=done。"
+    "planner": "2026-06-22 B073 planning(planner)。测试基建 Phase 2.1(VCR+AI Safety Eval 网关韧性)。用户 B072 后『直接下一批』=采纳 planner 推荐。动机=B072 期间外部 LLM 网关宕机拖红 AI Safety Eval 阻断 deploy gate(活证:外部故障不应阻断不相关部署)。网关现已恢复(planner get_balance 实测余额 $31.15 API 通)。**核心核**:red-team eval 用 live LLMGateway(skipif 无 key),deploy gate 设 key 跑 live→网关宕则 httpx 错误冒泡红。三 httpx loader 有 client= seam(VCR 挂点)。**★安全约束焊死(F002 不削弱安全门)**:真 advisor 不安全仍硬阻断;只对网关不可达放松(infra≠安全);网关不可达≠安全 pass;AI advisor 路径变更+网关不可达仍阻断。Codex F003 重点审。**3 features 2g+1c**:F001 VCR 录放(CI 离线确定性);F002 网关韧性(VCR'd 确定性硬门+live 区分 infra/unsafe);F003 Codex 安全相邻验收(mutation 核安全不削弱)。**【续接】**:status=building,Generator 接 F001(VCR 录放 3 loader)→F002(网关韧性,谨慎守安全),再 Codex F003(★安全不削弱 mutation 核)。**后续**:P3(prod synthetic+canary)/P4(LLM-judge)/P5(瘦身评审)/A股 进攻 P3/hk_china 重测。prod=B067 系。**网关 ops**:已恢复,AI Safety Eval 陈旧红可单次重跑清(勿连发);本批 F002 让未来网关宕不再拖红 gate。",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",
     "F002",
-    "F003",
-    "F004"
+    "F003"
   ],
-  "completed_date": "2026-06-21"
+  "completed_date": null
 }
