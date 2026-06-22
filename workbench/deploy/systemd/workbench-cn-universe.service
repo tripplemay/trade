@@ -1,0 +1,47 @@
+[Unit]
+Description=Workbench WIDE A-share PIT universe build + CAS fundamentals (B075, weekly, read-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B075-ashare-wide-universe-production-spec.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=deploy
+Group=deploy
+WorkingDirectory=/srv/workbench/current/backend
+
+# Secrets (TIINGO_API_KEY, SEC_EDGAR_CONTACT_EMAIL, WORKBENCH_DB_URL, ...) live in
+# /etc/workbench/workbench.env (chmod 600 root:deploy). Never committed. This job
+# re-runs the full fetch (US prices/fundamentals too) so it needs the same keys.
+EnvironmentFile=/etc/workbench/workbench.env
+
+# The VM data store the unified CSVs land under (same root the daily refresh and
+# the trade loaders use). Persists across release swaps.
+Environment=WORKBENCH_DATA_ROOT=/var/lib/workbench/data
+
+# Permanent product boundary (r) (B045 spec §3 / B075 spec §3): READ-ONLY
+# market-data fetch ONLY. ExecStart invokes the SAME data-refresh CLI as the
+# daily job — it never runs broker / order-ticket / execution / fills / reconcile
+# code. tests/safety/test_market_scheduler_scope.py greps this ExecStart line and
+# scans the data_refresh package to enforce that.
+#
+# B075 F002 — the WEEKLY job carries the two heavy, low-churn cost centres the
+# daily price timer decouples away: the historical-mcap PIT universe build
+# (~106min @ N=1500) + the CAS fundamentals (~116min). It re-fetches the wide
+# prices first (the universe build ranks on turnover from the same CSV it writes,
+# keeping the artifact internally consistent), so the whole run is ~4-5h — hence
+# its own off-peak weekly slot rather than the daily chain. --cn-universe-sina-
+# fallback ungates the wide §23 sina discovery (top ~1500 liquid, ST excluded);
+# build + fundamentals run by default (no --no-* flags). research-state advisory,
+# advisory-only, never trade execution.
+ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.data_refresh.cli fetch --cn-universe-sina-fallback --cn-universe-top-n 1500 --cn-universe-max-superset 1500
+
+# Standard hardening (mirrors workbench-data-refresh.service).
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/workbench /var/log/workbench /tmp
+
+# No [Install] section — this oneshot is pulled by workbench-cn-universe.timer,
+# never enabled / started directly.

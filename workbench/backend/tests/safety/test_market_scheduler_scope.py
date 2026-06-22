@@ -72,6 +72,8 @@ RECO_SERVICE_UNIT = SYSTEMD_DIR / "workbench-recommendations.service"
 RECO_TIMER_UNIT = SYSTEMD_DIR / "workbench-recommendations.timer"
 REFRESH_SERVICE_UNIT = SYSTEMD_DIR / "workbench-data-refresh.service"
 REFRESH_TIMER_UNIT = SYSTEMD_DIR / "workbench-data-refresh.timer"
+CN_UNIVERSE_SERVICE_UNIT = SYSTEMD_DIR / "workbench-cn-universe.service"
+CN_UNIVERSE_TIMER_UNIT = SYSTEMD_DIR / "workbench-cn-universe.timer"
 RISK_EXPL_SERVICE_UNIT = SYSTEMD_DIR / "workbench-risk-explanation.service"
 RISK_EXPL_TIMER_UNIT = SYSTEMD_DIR / "workbench-risk-explanation.timer"
 NEWS_TRANSLATE_SERVICE_UNIT = SYSTEMD_DIR / "workbench-news-translate.service"
@@ -472,6 +474,48 @@ def test_data_refresh_timer_wired_by_dry_loop() -> None:
     text = DEPLOY_SH.read_text(encoding="utf-8")
     assert "enable --now workbench-data-refresh.timer" not in text
     assert REFRESH_TIMER_UNIT.is_file()
+
+
+# --- B075 weekly wide A-share universe build (boundary (r): read-only) --------
+
+
+def test_cn_universe_service_execstart_runs_refresh_cli() -> None:
+    assert CN_UNIVERSE_SERVICE_UNIT.is_file(), f"missing {CN_UNIVERSE_SERVICE_UNIT}"
+    text = CN_UNIVERSE_SERVICE_UNIT.read_text(encoding="utf-8")
+    execstart = [ln for ln in text.splitlines() if ln.strip().startswith("ExecStart=")]
+    assert len(execstart) == 1
+    # Same read-only data-refresh CLI as the daily job — never a broker surface.
+    assert "workbench_api.data_refresh.cli" in execstart[0]
+    assert "EnvironmentFile=/etc/workbench/workbench.env" in text
+
+
+def test_cn_universe_service_references_no_trade_execution() -> None:
+    directives = "\n".join(
+        ln
+        for ln in CN_UNIVERSE_SERVICE_UNIT.read_text(encoding="utf-8").splitlines()
+        if not ln.strip().startswith("#")
+    ).lower()
+    for frag in ("broker", "order_ticket", "fills", "reconcile"):
+        assert frag not in directives, (
+            f"cn-universe .service directive references trade-execution {frag!r} "
+            "(boundary (r))"
+        )
+
+
+def test_cn_universe_timer_runs_weekly_and_pulls_service() -> None:
+    assert CN_UNIVERSE_TIMER_UNIT.is_file(), f"missing {CN_UNIVERSE_TIMER_UNIT}"
+    text = CN_UNIVERSE_TIMER_UNIT.read_text(encoding="utf-8")
+    assert "OnCalendar=" in text
+    assert "Unit=workbench-cn-universe.service" in text
+    assert "WantedBy=timers.target" in text
+
+
+def test_cn_universe_timer_wired_by_dry_loop() -> None:
+    """B075 weekly timer installs via the B037-OPS1 workbench-*.timer loop — no
+    hardcoded enable literal in deploy.sh."""
+    text = DEPLOY_SH.read_text(encoding="utf-8")
+    assert "enable --now workbench-cn-universe.timer" not in text
+    assert CN_UNIVERSE_TIMER_UNIT.is_file()
 
 
 # --- B043 F003 risk-explanation timer (boundary (r) + §12.10.2: read-only

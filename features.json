@@ -19,7 +19,7 @@
       "title": "接生产数据刷新(宽 prices daily+基本面低频)+ price_snapshot 同步宽集 + cn_attack 宽池选股(按可行 N)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F002】(1) 生产 data_refresh 覆盖宽集:prices daily(~可行 N)+fundamentals low-freq;cn_extra_price_symbols superset 扩到可行 N;统一 CSV 写宽集。(2) price_snapshot 同步宽集(复用 B074 cn_snapshot_sync):宽集/cn_attack 目标 A股 进 price_snapshot,模拟盘能估价宽选股。(3) cn_attack 两策略从宽 PIT 池(cn_pit_universe 可行 N)选 top-25;质量变体缺基本面名按现有 construction 剔除(NaN quality drop);advisory 推荐+模拟盘反映宽选股。(4) 边界研究态不改策略逻辑;US/Master/regime/hk 零回归。正面证据:生产 data_refresh 覆盖可行 N(prices daily+fundamentals low-freq);price_snapshot 含宽选股目标;cn_attack 两策略从宽池选 top-25(advisory+模拟盘);Master/regime/hk 零回归。Gates 同 F001+acceptance。",
       "design_decisions": [
         "复用 B074 cn_snapshot_sync 把宽集 A股 价同步进 price_snapshot(模拟盘可估价)。",

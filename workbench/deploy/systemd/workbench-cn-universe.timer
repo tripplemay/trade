@@ -1,0 +1,20 @@
+[Unit]
+Description=Weekly timer for the WIDE A-share PIT universe build + CAS fundamentals (B075, read-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B075-ashare-wide-universe-production-spec.md
+
+[Timer]
+# Sundays 06:00 UTC — a quiet weekly off-peak slot. The whole daily chain
+# (prices 00:30 → … → cn-attack 03:40 → paper-mtm 03:45 → canonical-backtest
+# 04:00) has finished, so this ~4-5h job (wide prices re-fetch + ~106min mcap
+# universe build + ~116min CAS fundamentals @ N=1500) never overlaps a reader of
+# the unified CSV / universe. Weekly is ample: the PIT universe rebalances
+# QUARTERLY and CAS fundamentals change quarterly, so a weekly rebuild keeps the
+# wide membership + fundamentals fresh without the daily cost. Persistent=true
+# catches up a missed run after a VM reboot; the build overwrites its CSVs each
+# run (idempotent).
+OnCalendar=Sun *-*-* 06:00:00
+Persistent=true
+Unit=workbench-cn-universe.service
+
+[Install]
+WantedBy=timers.target

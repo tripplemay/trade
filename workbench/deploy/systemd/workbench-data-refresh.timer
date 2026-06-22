@@ -3,12 +3,16 @@ Description=Daily timer for workbench real-data refresh (boundary (r): read-only
 Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B045-real-data-refresh-pipeline-spec.md
 
 [Timer]
-# 02:30 UTC — before the recommendations precompute (03:00) so the unified
-# prices/fundamentals are fresh when the Master scoring reads them. After the
-# market-context (00:00) / prices (00:30) / advisor (01:00) / news (02:00)
-# fetches. Persistent=true catches up a missed run after a VM reboot; the
-# refresh overwrites the unified CSVs each run (idempotent).
-OnCalendar=*-*-* 02:30:00
+# 01:30 UTC — before the recommendations precompute (03:00) so the unified
+# prices/fundamentals are fresh when the Master scoring reads them. B075 F002
+# moved this earlier (was 02:30): the daily job now also fetches ~1500 wide
+# A-share prices (~33min, VM-measured), so an 02:30 start could finish after
+# 03:00 and leave the US recommendations reading a stale CSV — a Master
+# regression. Starting 01:30 keeps a comfortable margin (done ~02:10) so the
+# US scoring stays same-day fresh (zero-regression). After the advisor (01:00)
+# fetch. Persistent=true catches up a missed run after a VM reboot; the refresh
+# overwrites the unified CSVs each run (idempotent).
+OnCalendar=*-*-* 01:30:00
 Persistent=true
 Unit=workbench-data-refresh.service
 

@@ -25,7 +25,16 @@ Environment=WORKBENCH_DATA_ROOT=/var/lib/workbench/data
 # and nothing else — it never runs broker / order-ticket / execution / fills /
 # reconcile code. tests/safety/test_market_scheduler_scope.py greps this
 # ExecStart line and scans the data_refresh package to enforce that.
-ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.data_refresh.cli fetch
+#
+# B075 F002 — the DAILY job carries the wide A-share universe PRICES (~1500
+# liquid names, the §23 VM-reachable sina bulk discovery; the daily 命门 the
+# cn_attack momentum scoring reads), but DECOUPLES the two heavy, low-churn cost
+# centres: the historical-mcap PIT universe build (~106min @ N=1500) and the CAS
+# fundamentals (~116min) run on the separate weekly workbench-cn-universe timer
+# (--no-cn-universe-build --no-cn-fundamentals here). VM feasibility GO @ N=1500
+# (docs/test-reports/B075-F001-vm-feasibility-probe-2026-06-22.json): daily wide
+# prices ~33min, 100% success.
+ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.data_refresh.cli fetch --cn-universe-sina-fallback --cn-universe-top-n 1500 --cn-universe-max-superset 1500 --no-cn-universe-build --no-cn-fundamentals
 
 # Standard hardening (mirrors workbench-market-context.service).
 NoNewPrivileges=true
