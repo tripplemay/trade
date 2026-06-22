@@ -20,7 +20,7 @@
       "title": "条件接生产(GO→size_tilt 上 cn_attack precompute;NO-GO→不改生产)+ 零回归不变量",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F002】(1) GO 路径:F001 胜出 size_tilt_weight 接 cn_attack precompute 两变体→生产 advisory/模拟盘选股反映 size-tilt;price_snapshot 同步新选股目标(复用 B074 cn_snapshot_sync)。(2) NO-GO 路径:生产 size_tilt_weight 保持 0(现状蓝筹)不改生产,F001 verdict 写报告,本 feature 退化为确认默认 0 零回归+文档化 NO-GO。(3) acceptance 守门:size_tilt_weight=0 时选股==现状(零回归不变量,B071-B073 层)。(4) 边界 cn_attack-only;US/Master/regime/hk 零回归。正面证据:GO→生产 size_tilt 上 precompute(选股变化可见);NO-GO→生产默认 0 不变+报告;size_tilt_weight=0 零回归 acceptance。Gates 同 F001+backend pytest/mypy CI-exact+acceptance。",
       "design_decisions": [
         "条件部署:GO/NO-GO 两路径都合法;NO-GO 不改生产(B069 NO-SWITCH 先例)。",

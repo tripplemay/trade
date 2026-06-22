@@ -367,3 +367,18 @@
 <!-- 2026-06-23: v0.9.51 沉淀完成（B075 done 收尾,用户批）：3 条→environment.md(VM /tmp PYTHONPATH)+generator.md §33(探针复用真 loader)+§34(宽集 partial-failure exit-code 容忍)。归档 framework/archive/proposed-learnings-archive-v0.9.51.md。CHANGELOG v0.9.51。**活跃候选队列=空。** -->
 
 <!-- 当前活动候选（v0.9.51 后）：无。 -->
+
+## [2026-06-23] Claude CLI — 来源：B076 F001 cn_attack size-tilt 去偏回测
+
+**类型：** 新坑（验收范式）/ 新规律（数据补法）/ 新坑（verdict 规则）（3 条同源）
+
+**内容：**
+1. **【去偏 size/估值因子补数据法，refines B070】** 去偏 PIT 回测(含退市名)若要加市值/估值类因子,`stock_value_em`(eastmoney) 只覆盖**当前上市**名 → 退市名缺市值 → 因子静默丢名=重引入幸存者偏差。**修法:用 baostock k-data 的 `turn`(换手率%)反推流通市值** `circ_mv = close_raw × volume × 100 / turn`(adjustflag=3 未复权;turn=volume/流通股本×100)。baostock 对所有有 k-data 的名(含退市)都给 turn → 覆盖率 100%(B076: 1310/1310)。通用于任何需退市名历史市值/估值的去偏研究。
+2. **【策略改动 verdict 的 OOS-窗口诚实坑，refines B069/B070 OOS-caveat】** walk-forward OOS 指标当 verdict 的 risk gate 时,若 OOS 窗口恰系统性偏向被测因子(B076: 2024Q4『924』小盘反弹 favor size-tilt),OOS 会被**窗口美化** → 误判 GO(B076 首版规则只看 OOS Sharpe,strong 档 0.931 vs 0.930 险平→假 GO,而全样本 Sharpe 每档恶化 0.56→0.42)。**修法:risk gate 用全样本(period-wide)指标 + OOS 双门禁,不让窗口幸运的 OOS 平局 override 全样本恶化。** 是 OOS-caveat 在 verdict-rule 层的落地。
+3. **【策略改动验收双 cut 范式】** 同一策略改动在 survivor 宇宙=GO、去偏宇宙=NO-GO 的对照(B076: survivor B068 quality_momentum Sharpe 1.00→1.27 vs 去偏 B070 pure_momentum 0.56→0.42),是『回测必须去偏』最强铁证 + verdict-gating 价值实例。可作未来策略-改动批次标准双 cut:primary 去偏 gating + secondary survivor 仅方向性(显式标注 survivor GO 不足为凭、NO-GO 更具说服力)。
+
+**建议写入：** `framework/harness/generator.md`（§去偏 size/估值因子补数据法 + §策略改动双 cut 验收范式）/ `framework/harness/planner.md`（§ verdict risk gate 用全样本+OOS 双门禁防 OOS-窗口美化，扩 B068-B070 verdict-gated 范式）
+
+**状态：** 待确认
+
+<!-- 当前活动候选（v0.9.51 后）：B076 3 条（去偏因子补数据 baostock turn / verdict OOS-窗口诚实坑 / 策略改动双 cut 范式），待 done 阶段 Planner 提交用户。 -->
