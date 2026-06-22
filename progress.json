@@ -1,49 +1,47 @@
 {
-  "status": "done",
+  "status": "building",
   "total_features": 3,
-  "completed_features": 3,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F003",
+  "current_sprint": "F001",
   "last_updated": "2026-06-22",
-  "user_goal": "B073 测试自动化基建 Phase 2.1(VCR 录放+AI Safety Eval 网关韧性)=B072 延后的 VCR+本次外部故障暴露的 gate 韧性。来源:2026-06-22 用户 B072 done 后『直接下一批』(采纳 planner 推荐 Phase 2.1)。**核心动机**:一个外部 LLM 网关宕机(2026-06-21 aigc.guangai.ai 503/429)不应能拖红 CI/阻断不相关代码部署(B072 期间 AI Safety Eval 因网关宕变红阻断 deploy gate,F003 时钟与 AI 无关=活证)。两件:①VCR 录放外部 HTTP→CI 离线确定性;②AI Safety Eval 网关韧性=区分网关不可达(infra,不硬阻断)vs advisor 真不安全(硬阻断不变)。**★安全约束(焊死,F002 不削弱安全门)**:真 advisor 不安全仍硬阻断(不放松);只对网关不可达放松(503/429/超时=infra≠安全结论);网关不可达≠安全 pass;变更触及 AI advisor 逻辑+网关不可达→仍阻断(不让未验证 AI 变更蒙混)。Codex F003 重点审此约束。**3 features 2g+1c**:F001 VCR 录放(3 httpx loader+akshare frame fixture,CI 离线);F002 网关韧性(VCR'd 确定性 red-team 硬门+live eval 区分 infra vs unsafe);F003 Codex 安全相邻验收(★安全不削弱 mutation 核)。spec docs/specs/B073-test-automation-vcr-eval-resilience-spec.md(3 章)。复用 3 loader client= seam+test_ai_advisor_red_team.py+ai-safety-eval.yml。",
+  "user_goal": "B074 cn_attack A股 模拟盘建仓修复(A股价同步进 price_snapshot)=生产缺陷修复(hotfix,研究态 paper 前向模拟)。来源:2026-06-22 用户报『两个 A股 模拟盘没建仓』→planner VM 生产 DB 诊断(铁律 9)→根因确认→用户确认方案 A 立批。**★根因(planner VM 实测,焊死)**:两 cn_attack paper 账户已激活有目标但 cash=初始全现金/last_rebalanced 空/build_complete=0(建仓 build 从没跑成)。price_snapshot(paper 经 DbPriceProvider 读的价格源)0 个 A股(只美股+proxy ETF),25 目标 0 可估价。A股 价确在统一 CSV(data_refresh 写 40 .SH/.SZ cn_attack 目标全在内)但从没进 price_snapshot。机制:prices/cli 用 Tiingo(US-only)填 price_snapshot,price_universe=ETF∪equity(全美股)不含 A股→A股 既不在 universe Tiingo 也取不了→paper 估不了 A股→建不了仓。Master/regime paper 没事(目标美股/proxy 有 mark)。§17.1+B058 F002 regime 同款。**修=方案 A**:把 cn_attack A股 universe 收盘从统一 CSV(已有 A股 价 akshare 来)同步进 price_snapshot(非 Tiingo),让 paper 能估价建仓。**3 features 2g+1c**:F001 A股 价 CSV→price_snapshot 同步(cn_attack universe 可估价);F002 acceptance 守门(paper 目标可估价永不复发,复用 B071-B073 测试基建)+建仓路径确认;F003 Codex L2 真机(两模拟盘 build_complete=1+持仓+cash≈0=建仓成功+零回归)。spec docs/specs/B074-cn-attack-paper-price-snapshot-fix-spec.md(3 章)。**边界**:研究态 paper 前向模拟(无真金);修『模拟盘能建仓』不改 cn_attack 策略本身(仍研究态/OOS 红卡/edge 微弱不可配资);US/Master/regime paper 零回归;A股 价来自既有 CSV(无新 fetch)。",
   "reference_docs": [
-    "docs/specs/B073-test-automation-vcr-eval-resilience-spec.md",
-    "docs/dev/test-automation-roadmap.md",
-    "workbench/backend/tests/safety/test_ai_advisor_red_team.py",
-    "workbench/backend/workbench_api/llm/gateway.py",
-    "workbench/backend/workbench_api/data/tiingo_loader.py",
-    "workbench/backend/workbench_api/data/sec_edgar_loader.py",
-    ".github/workflows/ai-safety-eval.yml"
+    "docs/specs/B074-cn-attack-paper-price-snapshot-fix-spec.md",
+    "workbench/backend/workbench_api/prices/cli.py",
+    "workbench/backend/workbench_api/data_refresh/refresh.py",
+    "workbench/backend/workbench_api/paper/mtm.py",
+    "workbench/backend/workbench_api/db/repositories/price_snapshot.py",
+    "workbench/backend/workbench_api/data_refresh/cn_universe.py",
+    "docs/dev/workbench-testing-strategy.md"
   ],
   "docs": {
-    "spec": "docs/specs/B073-test-automation-vcr-eval-resilience-spec.md",
+    "spec": "docs/specs/B074-cn-attack-paper-price-snapshot-fix-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B073-vcr-eval-resilience-signoff-2026-06-22.md",
-    "framework_reviewed": true
+    "signoff": null,
+    "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "B073 全 PASS。eval_resilience + VCR safety 56/56 绿(断网)。safety suite 222 passed/15 skipped。mutation N/O/P/Q 全 4 次变异有牙齿(§0 UNSAFE 硬红/非 infra 不泄漏/advisor 变更阻断/VCR 结构守门)。F002 真机验证(402→INFRA_SKIP,AI Safety Eval CI 绿)。★安全门未削弱。运营:网关余额耗尽需充值。→ done。",
-    "pass_count": 3,
+    "summary": null,
+    "pass_count": 0,
     "partial_count": 0,
     "fail_count": 0,
-    "issues": [
-      "运营:aigc-gateway 余额耗尽,充值后 live eval 恢复真实安全验证(非代码问题,不阻断签收)"
-    ]
+    "issues": []
   },
   "generator_handoff": {
-    "summary": "F001+F002 done(generator)。VCR 方案=vcrpy+pytest-recording(dev-dep),tests/cassettes/<module>/ 集中 committed,record_mode=none 离线重放,match_on 排 body(httpx 紧凑 JSON→body 逐字不可手维护)→同URL多POST靠录制顺序消歧,filter_headers scrub Authorization。本机无 live key→cassette 手 authored(README 含 re-record runbook)。**F001**:3 httpx loader(tiingo fetch_daily_bars / sec fetch_raw_companyfacts+health_check(避 parsed_ratios synthesized 路径,用真 SEC shape) / gateway advise)真 client 经 cassette 重放;akshare(中文表头)+yfinance(Adj Close≠Close)committed CSV frame fixture 经 akshare_module=/ticker_factory= seam 重放;现有 in-process fake 全留。**F002 核**:①新增 always-on 确定性 VCR'd red-team eval(test_ai_advisor_red_team_vcr.py,无 key/--block-network,dataset 15 样本全 refuse cassette + 结构守门 teeth:advisor cassette 返回 out-of-set ref JSON→references_valid 必须 refuse→SAFE,改坏 references_valid→judge cassette fail_triggered=true→红);②live eval 韧性(改 test_ai_advisor_red_team.py)经 workbench_api/llm/eval_resilience.py(纯函数 mutation 面):is_infra_unreachable(仅 429/5xx/TransportError=infra;404/4xx/auth 非 infra 须红)+advisor_paths_changed(llm/+advisor/ 子路径,非 test/dataset/yml)+evaluate_red_team_sample(注真 LLMGateway+client= stub 模拟故障)。verdict→pytest:UNSAFE 硬红(§0 不放松)/INFRA_SKIP(503+advisor未变→skip非红)/INFRA_BLOCK(503+advisor变→红,unreachable≠safe pass)/非infra→raise。ai-safety-eval.yml:fetch-depth:0+AI_ADVISOR_PATHS_CHANGED detect step(fail-closed=true)+确定性 eval 步骤(always-on)+保留 live。test_safety_eval_workflow.py 加 3 不变量(vcr eval invoked/--block-network/AI_ADVISOR_PATHS_CHANGED+fetch-depth)。**门禁全绿**:backend 1537 passed/17 skipped(--block-network)+ruff 目录上下文+mypy CI-exact 0。eval_resilience 单元 test_eval_resilience.py 覆盖全 verdict+分类(F003 mutation 面)。",
-    "status": "ready"
+    "summary": null,
+    "status": "pending"
   },
   "session_notes": {
-    "planner": "2026-06-22 B073 done 收尾(planner)。测试基建 Phase 2.1(VCR+AI Safety Eval 网关韧性)=✅ done,0 fix-round,0 新 learnings。Codex F003 安全相邻验收干净:mutation N/O/P/Q 全红(安全门有牙齿)+§0 安全门未削弱核实(真 unsafe 硬红/非 infra 不泄漏/advisor 路径变更+不可达仍阻断/VCR 非橡皮戳)+断网 56/56 绿。**🎯韧性被真实故障当场验证**:CI 实测网关 402 Payment Required(余额耗尽)→F002 正确判 infra→live red-team eval INFRA_SKIP(绿,advisor 逻辑未变)→deploy gate 不再被外部网关故障拖红。VCR(vcrpy 8.2.1)3 httpx loader+akshare/yfinance frame fixture→CI 离线确定性。**⚠️ ops:网关余额耗尽(402 out-of-credit)**:生产 AI 功能(解释/新闻翻译/advisor)当前不可用,**需用户充值 aigc-gateway**;充值后 live eval+生产 AI 自动恢复。(注:planner 早先 get_balance 见 $31.15=user-level 共享余额,但 CI key/推理 402=该 key out-of-credit,口径不同。)**done 收尾**:F003 status→done(Codex 漏翻);framework_reviewed=true;signoff 路径;project-status→done。**【续接=下一批待用户定 + ops】**:①★充值 aigc-gateway(生产 AI 功能恢复,用户动作);②下一批候选:测试基建 P3(prod synthetic+canary)/P4(LLM-judge)/P5(瘦身评审),或回策略(A股 进攻 P3 港股/hk_china 重测 Batch 2.5)。**planner 观察:测试基建 B071-B073 三批地基已厚,P3-P5 边际价值递减,可考虑回产品/策略方向。** prod=B067 系(B073 无 prod 改动)。",
-    "generator": "2026-06-22 B073 building→verifying(generator)。F001+F002 实现完毕,交 Codex F003 安全相邻验收。**架构关键决策**:VCR=vcrpy 8.2.1+pytest-recording(非 respx)——spec 要 file-based committed cassette『录放』,vcrpy 是文件 cassette 工具。本机无 live key,cassette 手 authored(已 spike 验证 record→replay+order-based serving+extra-call raises=teeth)。**SEC 坑**:parse_companyfacts 拒真 SEC shape(要 synthesized parsed_ratios),故 VCR 测 fetch_raw_companyfacts(返原始 dict)非 parse 路径。**F002 mechanism 核**:deploy gate=workflow_run.conclusion=='success';pytest skip→exit0→绿→部署放行;assert/未捕获异常→exit1→红→阻断。原 bug=网关宕 httpx 错冒泡→红→阻断不相关部署。修=只 catch infra-unreachable→pytest.skip,advisor-unsafe assert 仍红。**F003 给 Codex 的 mutation 面**:test_eval_resilience.py(is_infra_unreachable 503/429/connect=True,404/auth=False;evaluate_red_team_sample 注 client= stub 模拟 503→SKIP,+advisor_changed→BLOCK,judge fail_triggered→UNSAFE,404→raise)+test_ai_advisor_red_team_vcr.py 结构守门 teeth。**安全焊死**:advisor_paths_changed 保守过近似(eval_resilience.py 在 llm/ 也算 advisor 变,fail-safe)。**坑**:tests/fixtures/frames/*.csv 被 .gitignore *.csv 忽略,已加反忽略。**待 Codex**:L1 全门禁+§0 mutation 核(改坏 advisor 安全→VCR'd 必红 / 模拟 503→skip非红 / advisor不安全→硬红 / advisor路径变+不可达→阻断)+断网全跑过+signoff 明确『安全门未削弱』。**CI 实证(2026-06-22)**:首推 AI Safety Eval 红=网关返 402 Payment Required(余额耗尽),原 is_infra_unreachable 只认 429/5xx 漏 402→冒泡红。修(commit 8850223):①402+408 加入 infra(运营 can't-verify,非 4xx 我方 bug);②advisor_paths_changed 排除 eval_resilience.py(eval harness 仅测试 import,改它不改 advisor 输出)。复推后 AI Safety Eval ✅ 绿:detect→AI_ADVISOR_PATHS_CHANGED=false,15 live 样本全 SKIP(402→INFRA_SKIP),确定性 eval+wiring 全过——F002 真机验证成立(外部网关运营故障不再拖红/阻断不相关部署)。★运营:网关余额耗尽,生产 AI 当前不可用需充值。",
-    "evaluator": "2026-06-22 B073 F003 安全相邻验收(evaluator)。eval_resilience+VCR safety 56/56 全绿(断网)。mutation N(UNSAFE 判决弱化→RED)/O(404 伪装 infra→RED)/P(advisor_changed 检查弱化→RED)/Q(references_valid 弱化→cassette judge 触发→RED)全 4 红后还原,接收全绿。§0 安全约束核实:真 unsafe 硬红/非 infra 不泄漏/advisor 路径变更+不可达仍阻断/VCR 结构守门非橡皮戳。F002 真机验证:CI 402→INFRA_SKIP,deploy gate 不再被外部故障拖红。运营:网关余额耗尽,充值后恢复 live eval 真实安全验证。→ status=done。"
+    "planner": "2026-06-22 B074 planning(planner,生产 hotfix 走铁律 9)。用户报两 A股 模拟盘没建仓→planner VM 生产 DB 只读诊断→根因+用户确认方案 A→立批(Generator 执行/Codex 验收,planner 不改产品代码)。**★根因(VM 实测)**:cn_attack 两 paper 账户激活有目标但 build_complete=0 全现金;price_snapshot(paper 价格源)0 A股(25 目标 0 可估价);A股 价在统一 CSV 但没进 price_snapshot;prices/cli Tiingo(US-only)+price_universe 全美股不含 A股=双重缺口。§17.1+B058 regime 同款。**修=方案 A**:A股 收盘从统一 CSV 同步进 price_snapshot(非 Tiingo),覆盖 cn_attack universe→paper 能估价建仓。**3 features 2g+1c**:F001 A股 价 CSV→snapshot 同步;F002 acceptance 守门(paper 目标可估价永不复发,复用测试基建)+建仓路径;F003 Codex L2 真机(两模拟盘建仓 build_complete=1+持仓+cash≈0)。**【续接】**:status=building,Generator 接 F001(A股 价同步)→F002(acceptance 守门+建仓),再 Codex F003(VM 真机验两账户建仓)。**运维**:修复部署后 prices-cli+paper-mtm timer 各跑一轮让两账户建仓(或 F003 真机触发)。**ops 提醒**:网关余额耗尽待用户充值(生产 AI 功能,与本批无关)。prod=B067 系。",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",
     "F002",
     "F003"
   ],
-  "completed_date": "2026-06-22"
+  "completed_date": null
 }
