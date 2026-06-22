@@ -32,7 +32,7 @@
       "title": "Codex:L2 真机验收(两 cn_attack 模拟盘建仓 build_complete=1+持仓+cash≈0)+零回归+signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F003。真机/真数据批次 signoff 含实测证据 §29】L1 全门禁(verifying 可跳 L1 复跑 B071 §30)。L2 真机(VM 生产 DB,贴真返回):①prices-cli/同步真跑→price_snapshot 含 cn_attack 25 A股 目标 mark;②paper MTM 真跑→★两 cn_attack 模拟盘 build_complete=1+持仓非空+cash≈0(贴建仓后持仓+nav)=建仓成功;③acceptance 守门绿;④Master/regime/US paper 零回归(仍建仓/MTM 正常)。边界:research-only/no-broker/no 真金;HEAD≡prod;recent-errors=0。signoff docs/test-reports/B074-...-signoff-*.md 实测证据逐条(贴两账户建仓前后对比)。",
       "design_decisions": []
     }

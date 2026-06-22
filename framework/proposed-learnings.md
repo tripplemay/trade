@@ -345,4 +345,8 @@
 
 **建议写入：** `framework/harness/generator.md`（§ paper/建仓诊断 family：搁浅现金双查 mark+sentinel）/ `framework/harness/planner.md`（根因诊断:paper build 失败需查 sentinel 行,勿只查证券 mark）
 
-**状态：** 待确认
+**状态：** ✅ 已沉淀 v0.9.50（generator.md §32 + planner.md §根因诊断;用户 2026-06-22 批 B074 done 收尾）
+
+<!-- 2026-06-22: v0.9.50 沉淀完成（B074 done 收尾,用户批）：1 条 paper 搁浅现金诊断 family(双查证券 mark+cash sentinel)→generator.md §32+planner.md §根因诊断。归档 framework/archive/proposed-learnings-archive-v0.9.50.md。CHANGELOG v0.9.50。**活跃候选队列=空。** -->
+
+<!-- 当前活动候选（v0.9.50 后）：无。 -->

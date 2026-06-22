@@ -5,6 +5,17 @@
 
 ---
 
+## v0.9.50 — 2026-06-22（B074：paper build「搁浅现金」诊断须双查证券 mark + cash sentinel）
+
+**来源批次：** B074 cn_attack A股 模拟盘建仓修复（生产 hotfix，0 fix-round done）。1 条 learning 用户 done 收尾批准。
+
+**沉淀内容（用户确认）：**
+- **paper「搁浅现金 / build_complete 永 False」诊断 family——双查证券 mark + 无 mark 的 cash sentinel** → `generator.md §32` + `planner.md §根因诊断`。B074 双根因:#1 A股 价缺 mark(planner VM 诊断焊死)+ #2 cn_attack target 含字面 CASH sentinel(无价)被 `compute_rebalance` 计入 skipped → `fully_built` 永 False(planner 漏,Generator 实施时发现)。两根因都修才 build_complete=1。修法:#1 A股 价从统一 CSV 同步进 price_snapshot(`cn_snapshot_sync`,不碰 Tiingo/price_universe);#2 `paper/targets` 剥离 cash sentinel(只影响发布字面 CASH 的策略,Master/regime 用实 ETF SGOV 零回归)。**附**:spec「建仓成功=cash≈0」Master 模板对持现金缓冲策略不准(应 cash≈buffer)。
+
+同族 §17.1/§28/B058 F002（合成/默认/缺目标掩盖真实数据行为)。归档 `framework/archive/proposed-learnings-archive-v0.9.50.md`。**活跃候选队列清空。**
+
+---
+
 ## v0.9.49 — 2026-06-21（B071：回测复权口径一致 + 验收即代码常态化 + evaluator verifying 跳 L1）
 
 **来源批次：** B071 测试自动化基建 Phase 0+1（门禁确权 + golden 真数据 + 验收即代码，0 fix-round done）。3 条 learnings 用户 done 收尾批准。

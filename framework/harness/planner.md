@@ -413,6 +413,14 @@ master sleeve 子策略 `generate_signal().weights_dict()` 必须返回 **sleeve
 
 **来源：** BL-B011-S2 F002（按权威设计 §8.2 裁定 sleeve-relative，`max_position_weight` 默认 1.0 + 文档详注）。
 
+### 根因诊断：paper build 失败须查 sentinel 行（勿只查证券 mark）；建仓成功模板对持现金缓冲策略 cash≠0（v0.9.50 — B074 沉淀）
+
+**(诊断完整性)** 诊断 paper「搁浅现金 / build_complete 永 False」时，planner 易**只焊死「目标证券缺 mark」**（B058 family），漏掉**「目标含无 mark 的 cash sentinel 行被 engine 误判 skipped → build_complete 永 False」**。B074 planner VM 诊断正中此坑（只报根因 #1 A股 价缺,Generator 实施时才发现 #2 CASH sentinel,两根因都修才 build_complete=1）。**规约：诊断 paper build 失败必同时核 (a) 真证券 mark 齐 + (b) target 有无无 mark 的 sentinel/cash 伪符号**（详见 generator.md §32）。
+
+**(spec 模板)** 「建仓成功 = cash≈0」是 Master 模板,对**持现金缓冲的策略**（如 cn_attack `cash_buffer`）**不准**——应为 `cash≈buffer`（或剥离 sentinel 后才 ≈0）。写 paper/建仓 acceptance 时按策略是否持现金缓冲区分,勿照搬 cash≈0。
+
+**来源：** B074（planner VM 诊断漏根因 #2 CASH sentinel + spec cash≈0 模板对 cn_attack 不准）。
+
 ---
 
 ## status = "done" 时的收尾流程
