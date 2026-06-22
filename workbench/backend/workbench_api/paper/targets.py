@@ -28,6 +28,7 @@ from workbench_api.strategy_modes.registry import MASTER_STRATEGY_ID, list_modes
 from workbench_api.strategy_modes.targets import compute_target_key, get_target
 
 __all__ = [
+    "CASH_SENTINEL_SYMBOLS",
     "MASTER_STRATEGY_ID",
     "PAPER_STRATEGIES",
     "StrategyTargets",
@@ -35,6 +36,23 @@ __all__ = [
     "load_strategy_targets",
     "paper_strategy_name",
 ]
+
+# B074 F002 — cash-sentinel pseudo-symbols a precompute publishes to represent a
+# strategy's INTENTIONALLY uninvested cash buffer (cn_attack's
+# ``CN_ATTACK_CASH_SYMBOL = "CASH"``, written when the A-share book holds a cash
+# buffer with no tradeable cash proxy). The published snapshot carries a real
+# ``target_weight`` on this row so the allocation sums to 1.0, but it is NOT a
+# security the paper engine builds: it has no price mark, so the engine would skip
+# it for want of a mark and leave ``build_complete`` False forever (B074 root cause
+# #2 — even after the A-share marks land, the cn_attack books never reached
+# build_complete because "CASH" counted as an unbuildable skipped target). Stripping
+# it here lets the engine invest only the security weights and leave the cash weight
+# as residual cash (the buffer is realised naturally). ``target_key`` stays the
+# FULL-target fingerprint (``get_target`` hashes every row incl. cash), so a change
+# in the cash buffer still flips the key (a real rebalance). Master / regime publish
+# no such pseudo-symbol (their cash proxy is a real, marked ETF — SGOV), so this is a
+# no-op for them (US/Master/regime zero-regression).
+CASH_SENTINEL_SYMBOLS: frozenset[str] = frozenset({"CASH"})
 
 # Strategies surfaced in the paper engine selector, derived from the B057 mode
 # registry (selector order, Master flagship first). Every mode is paper-enabled
@@ -78,8 +96,17 @@ def load_strategy_targets(
     target = get_target(session, strategy_id)
     if target is None:
         return None
+    # Drop cash-sentinel pseudo-symbols (B074 F002): the paper engine builds only
+    # securities — the cash weight stays as residual cash. ``target_key`` keeps the
+    # FULL-target fingerprint from ``get_target`` (incl. the cash row) so a buffer
+    # change still counts as a new allocation.
+    weights = {
+        symbol: weight
+        for symbol, weight in target.weights.items()
+        if symbol.upper() not in CASH_SENTINEL_SYMBOLS
+    }
     return StrategyTargets(
         strategy_id=target.strategy_id,
-        weights=target.weights,
+        weights=weights,
         target_key=target.target_key,
     )
