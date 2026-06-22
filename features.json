@@ -42,7 +42,7 @@
       "title": "Codex:验收(golden 全栈起得来+★e2e 闭环 6 步绿+时钟快进真验+★mutation 核有牙齿+零回归)+signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §3 F004。真机/全栈批次 signoff 含实测证据 §29】L1 全门禁(B071 起 verifying 可跳 L1 复跑,确认 CI 绿即可 evaluator §30)。L2 实测(贴真返回):①golden 全栈 CI 起得来+golden→DB seed 确定性(同 golden→同 DB);②★e2e 交易闭环 6 步全绿(trace/截图+journal 真记录)=BL-B023-S1 自动化达成;③时钟快进真验(--as-of 跑 timer→按注入日期产出正确,贴对比);④零回归(生产 timer 默认 now 不变/B067/B071 不破)。★mutation 核(沿 B071 §31):故意破坏闭环一环(fills 数量错)→e2e 红(有牙齿)。research-only/no-execution/no-broker 边界守;HEAD≡prod。signoff docs/test-reports/B072-...-signoff-*.md 实测证据逐条。",
       "design_decisions": []
     }
