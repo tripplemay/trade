@@ -368,13 +368,13 @@ def run_cn_attack_backtest(
     # raise per-day deep in the loop. Pre-convert the date column once so the per-day
     # PIT lookup does not re-parse date strings on every trading day.
     if SIZE_FACTOR_KEY in weight_mapping:
-        if marketcap is None:
+        if marketcap is None or marketcap.empty:
             raise CnBacktestError(
-                "size_tilt_weight > 0 requires a marketcap frame (inject `marketcap=`)"
+                "size_tilt_weight > 0 requires a non-empty marketcap frame "
+                "(inject `marketcap=`)"
             )
-        if not marketcap.empty:
-            marketcap = marketcap.copy()
-            marketcap[_MCAP_DATE_COLUMN] = pd.to_datetime(marketcap[_MCAP_DATE_COLUMN])
+        marketcap = marketcap.copy()
+        marketcap[_MCAP_DATE_COLUMN] = pd.to_datetime(marketcap[_MCAP_DATE_COLUMN])
     if universe_history is None:
         universe_history = load_cn_universe_history()
 

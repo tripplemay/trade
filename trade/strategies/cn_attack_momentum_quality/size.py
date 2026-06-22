@@ -55,10 +55,15 @@ def small_cap_score(marketcap: pd.DataFrame, as_of: date) -> pd.Series:
     if marketcap.empty:
         return pd.Series(dtype="float64")
 
-    frame = marketcap.loc[:, list(_REQUIRED_COLUMNS)].copy()
-    frame[DATE_COLUMN] = pd.to_datetime(frame[DATE_COLUMN])
-    cutoff = pd.Timestamp(as_of)
-    visible = frame.loc[frame[DATE_COLUMN] <= cutoff]
+    # Build the cutoff mask without copying the whole frame every call (the daily
+    # backtest loop calls this ~once per trading day). ISO ``YYYY-MM-DD`` strings sort
+    # chronologically, so an unconverted date column still groups correctly; convert
+    # only a view when needed for the comparison.
+    date_series = marketcap[DATE_COLUMN]
+    if not pd.api.types.is_datetime64_any_dtype(date_series):
+        date_series = pd.to_datetime(date_series)
+    mask = (date_series <= pd.Timestamp(as_of)).to_numpy()
+    visible = marketcap.loc[mask, list(_REQUIRED_COLUMNS)]
     if visible.empty:
         return pd.Series(dtype="float64")
 
@@ -73,10 +78,31 @@ def small_cap_score(marketcap: pd.DataFrame, as_of: date) -> pd.Series:
     return score
 
 
+def impute_neutral_size(size: pd.Series, candidates: pd.Index) -> pd.Series:
+    """Reindex ``size`` to ``candidates``, filling a missing cap with the median score.
+
+    A candidate (a name already scored on the primary factors, e.g. momentum) that
+    lacks a market-cap row must NOT be dropped merely for a missing size — that would
+    re-introduce the small-cap survivorship bias the de-biased universe removes (B076
+    F001) and, in production, silently drop names ``stock_value_em`` does not cover. It
+    keeps its place with a **neutral** (cross-sectional median) size score, so the size
+    factor can neither promote nor demote it; momentum/quality still rank it. Mirrors
+    B068 inverse-vol's median-σ impute (keep the name, neutral risk). If NOT ONE
+    candidate has a cap, the reindexed series is all-NaN and the composite drops them —
+    an honest "no size data at all", surfaced by the empty-frame guard upstream.
+    """
+
+    aligned = size.reindex(candidates)
+    if aligned.notna().any():
+        aligned = aligned.fillna(aligned.median())
+    return aligned
+
+
 __all__ = [
     "DATE_COLUMN",
     "MARKET_CAP_COLUMN",
     "TICKER_COLUMN",
     "SizeFactorError",
+    "impute_neutral_size",
     "small_cap_score",
 ]

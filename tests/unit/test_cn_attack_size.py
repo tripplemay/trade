@@ -10,6 +10,7 @@ import pytest
 
 from trade.strategies.cn_attack_momentum_quality.size import (
     SizeFactorError,
+    impute_neutral_size,
     small_cap_score,
 )
 
@@ -82,3 +83,20 @@ def test_all_observations_after_as_of_returns_empty() -> None:
     frame = _frame([("2026-01-31", "T1", 1.0e10), ("2026-02-28", "T2", 2.0e10)])
     score = small_cap_score(frame, date(2025, 6, 1))
     assert score.empty
+
+
+def test_impute_neutral_size_fills_missing_candidate_with_median() -> None:
+    # B076: a candidate (C) with no cap must keep its place at the NEUTRAL median score,
+    # not be dropped — dropping would re-introduce survivorship bias / shrink the universe.
+    size = pd.Series({"A": -np.log(1.0e9), "B": -np.log(1.0e12)})
+    out = impute_neutral_size(size, pd.Index(["A", "B", "C"]))
+    assert set(out.index) == {"A", "B", "C"}
+    assert out["A"] == pytest.approx(-np.log(1.0e9))  # real caps preserved
+    assert out["C"] == pytest.approx(size.median())  # missing → neutral median
+    assert not out.isna().any()
+
+
+def test_impute_neutral_size_all_missing_stays_nan() -> None:
+    # No candidate has a cap → all-NaN (the composite then drops them; honest "no data").
+    out = impute_neutral_size(pd.Series(dtype="float64"), pd.Index(["A", "B"]))
+    assert out.isna().all()

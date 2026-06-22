@@ -168,9 +168,16 @@ def test_size_tilt_active_without_marketcap_raises(prices: pd.DataFrame) -> None
         max_position_weight=0.4,
         size_tilt_weight=0.3,
     )
-    with pytest.raises(CnBacktestError, match="requires a marketcap frame"):
+    with pytest.raises(CnBacktestError, match="non-empty marketcap"):
         run_cn_attack_backtest(
             params, None, _START, _END, prices=prices, universe_history=_universe_history()
+        )
+    # An empty-but-non-None frame is equally fatal (would silently yield all-cash).
+    empty = pd.DataFrame(columns=["data_date", "ticker", "market_cap"])
+    with pytest.raises(CnBacktestError, match="non-empty marketcap"):
+        run_cn_attack_backtest(
+            params, None, _START, _END, prices=prices,
+            marketcap=empty, universe_history=_universe_history(),
         )
 
 

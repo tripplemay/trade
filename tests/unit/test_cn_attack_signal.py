@@ -338,6 +338,27 @@ def test_strong_size_tilt_pulls_in_small_caps(prices: pd.DataFrame) -> None:
         assert SIZE_FACTOR_KEY in contributions[ticker]
 
 
+def test_size_tilt_keeps_name_without_marketcap_via_neutral_impute(
+    prices: pd.DataFrame,
+) -> None:
+    # 600519 has momentum but NO market-cap row → it must stay eligible (neutral size),
+    # NOT be dropped. top_n=5 over 5 members: all 5 selected proves no drop (without the
+    # impute, 600519 would drop on a NaN size → only 4 selected).
+    caps = _synth_marketcap()
+    caps = caps[caps["ticker"] != "600519.SH"].reset_index(drop=True)
+    params = CnAttackParameters(
+        factor_variant=FACTOR_VARIANT_PURE_MOMENTUM,
+        top_n=5,
+        max_position_weight=0.5,
+        size_tilt_weight=0.5,
+    )
+    result = generate_cn_attack_signal(
+        params, _AS_OF, prices=prices, marketcap=caps, universe_members=_MEMBERS
+    )
+    assert len(result.tickers()) == 5
+    assert "600519.SH" in result.tickers()
+
+
 def test_size_tilt_active_without_marketcap_raises(prices: pd.DataFrame) -> None:
     params = CnAttackParameters(
         factor_variant=FACTOR_VARIANT_PURE_MOMENTUM,
@@ -345,9 +366,15 @@ def test_size_tilt_active_without_marketcap_raises(prices: pd.DataFrame) -> None
         max_position_weight=0.5,
         size_tilt_weight=0.3,
     )
-    with pytest.raises(CnSignalError, match="requires a marketcap frame"):
+    with pytest.raises(CnSignalError, match="non-empty marketcap"):
         generate_cn_attack_signal(
             params, _AS_OF, prices=prices, universe_members=_MEMBERS
+        )
+    # An empty-but-non-None frame is just as fatal (would silently yield all-cash).
+    empty = pd.DataFrame(columns=["data_date", "ticker", "market_cap"])
+    with pytest.raises(CnSignalError, match="non-empty marketcap"):
+        generate_cn_attack_signal(
+            params, _AS_OF, prices=prices, marketcap=empty, universe_members=_MEMBERS
         )
 
 

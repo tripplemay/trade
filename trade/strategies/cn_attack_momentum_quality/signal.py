@@ -33,7 +33,10 @@ from trade.strategies.cn_attack_momentum_quality.parameters import (
     WEIGHTING_SCHEME_INVERSE_VOL,
     CnAttackParameters,
 )
-from trade.strategies.cn_attack_momentum_quality.size import small_cap_score
+from trade.strategies.cn_attack_momentum_quality.size import (
+    impute_neutral_size,
+    small_cap_score,
+)
 from trade.strategies.us_quality_momentum.factors import (
     momentum_12_1,
     quality_score,
@@ -93,7 +96,15 @@ def _compute_factor_scores(
     if "quality" in weight_mapping:
         scores["quality"] = quality_score(cn_fundamentals, as_of_date)
     if SIZE_FACTOR_KEY in weight_mapping:
-        scores[SIZE_FACTOR_KEY] = small_cap_score(cn_marketcap, as_of_date)
+        size = small_cap_score(cn_marketcap, as_of_date)
+        # Neutralise (not drop) a candidate missing a market-cap row: reindex to the
+        # momentum cross-section (the primary signal every candidate must have) and
+        # median-fill, so a coverage gap cannot silently shrink the universe / re-add
+        # survivorship bias (B076 F001). momentum is always active when size is.
+        momentum = scores.get("momentum")
+        if momentum is not None:
+            size = impute_neutral_size(size, momentum.dropna().index)
+        scores[SIZE_FACTOR_KEY] = size
     return scores
 
 
@@ -184,9 +195,9 @@ def generate_cn_attack_signal(
         # No production disk loader exists yet (the wiring is F002, GO-gated): the
         # backtest injects ``cn_size.csv``, so a missing frame here is a wiring error,
         # not a silent degrade (which would corrupt the cross-sectional size rank).
-        if marketcap is None:
+        if marketcap is None or marketcap.empty:
             raise CnSignalError(
-                "size_tilt_weight > 0 requires a marketcap frame "
+                "size_tilt_weight > 0 requires a non-empty marketcap frame "
                 "(inject `marketcap=`; production wiring is F002)"
             )
         cn_marketcap = _filter_to_universe(marketcap, member_set)
