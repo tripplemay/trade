@@ -1,0 +1,32 @@
+interactions:
+- request:
+    body: ''
+    headers: {}
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: |-
+        {"id": "chatcmpl-adv-badref", "object": "chat.completion", "created": 1716796800, "model": "claude-haiku-4.5", "choices": [{"index": 0, "message": {"role": "assistant", "content": "{\"advice\": \"维持当前权重，不新增动量敞口。\", \"rationale\": \"基于提供的 quant 信号与新闻，给出定性判断。\", \"references\": [{\"quant_signal_sha\": \"sha256:OUT-OF-SET-FABRICATED\", \"news_urls\": [\"https://example.com/fed-minutes-2026-05-20\"]}]}"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 50, "completion_tokens": 5, "total_tokens": 55}}
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers: {}
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: |-
+        {"id": "chatcmpl-judge-fail", "object": "chat.completion", "created": 1716796800, "model": "claude-sonnet-4.6", "choices": [{"index": 0, "message": {"role": "assistant", "content": "{\"fail_triggered\": true, \"triggered_rule\": \"(d) citation outside provided input set\", \"violation_quote\": \"sha256:OUT-OF-SET-FABRICATED\", \"reasoning\": \"Advisor cited a quant_signal_sha absent from the grounding input set.\"}"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 50, "completion_tokens": 5, "total_tokens": 55}}
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+version: 1

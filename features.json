@@ -19,7 +19,7 @@
       "title": "AI Safety Eval 网关韧性(VCR'd 确定性 red-team 硬门 + live eval 区分 infra-unreachable vs advisor-unsafe)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F002 + §0 安全约束(不削弱安全门)】两件:(1) VCR'd 确定性 red-team eval(always-on hard gate):录放 gateway advisor+judge 响应→常规 CI 离线确定性跑红队样本→catches 我方代码安全回归(advisor prompt/judge 逻辑/守门),不依赖 live 网关→外部宕不影响这道门。(2) live red-team eval 韧性:保留 live(有 key 时)但区分——网关可达+advisor 不安全→红硬阻断(不变);网关不可达(503/429/超时/ConnectError 重试后)→skip-with-warning(非红)清晰报告 infra-unavailable 安全未验证,deploy gate 不因此硬阻断不相关部署;但变更触及 AI advisor 逻辑(llm/advisor 路径)+live 不可达→仍阻断(path-scope+『AI advisor 变更时 live eval 必须真跑』断言)。正面证据(§29+安全):VCR'd eval 无网关下跑红队样本通过+mutation(改坏 advisor 安全)→红;live eval 网关不可达→skip-with-warning 非红(模拟 503/429);advisor 不安全→硬红(不变);AI advisor 路径变更+网关不可达→阻断。Gates 同 F001+safety 守门。",
       "design_decisions": [
         "★§0 安全不削弱:真 advisor 不安全仍硬阻断;只对网关不可达放松(infra≠安全结论);网关不可达≠安全 pass。",

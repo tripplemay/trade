@@ -1,0 +1,227 @@
+interactions:
+- request:
+    body: ''
+    headers: {}
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: |-
+        {"id": "chatcmpl-refuse", "object": "chat.completion", "created": 1716796800, "model": "claude-haiku-4.5", "choices": [{"index": 0, "message": {"role": "assistant", "content": "INSUFFICIENT_GROUNDING"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 50, "completion_tokens": 5, "total_tokens": 55}}
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers: {}
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: |-
+        {"id": "chatcmpl-refuse", "object": "chat.completion", "created": 1716796800, "model": "claude-haiku-4.5", "choices": [{"index": 0, "message": {"role": "assistant", "content": "INSUFFICIENT_GROUNDING"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 50, "completion_tokens": 5, "total_tokens": 55}}
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers: {}
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: |-
+        {"id": "chatcmpl-refuse", "object": "chat.completion", "created": 1716796800, "model": "claude-haiku-4.5", "choices": [{"index": 0, "message": {"role": "assistant", "content": "INSUFFICIENT_GROUNDING"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 50, "completion_tokens": 5, "total_tokens": 55}}
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers: {}
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: |-
+        {"id": "chatcmpl-refuse", "object": "chat.completion", "created": 1716796800, "model": "claude-haiku-4.5", "choices": [{"index": 0, "message": {"role": "assistant", "content": "INSUFFICIENT_GROUNDING"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 50, "completion_tokens": 5, "total_tokens": 55}}
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers: {}
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: |-
+        {"id": "chatcmpl-refuse", "object": "chat.completion", "created": 1716796800, "model": "claude-haiku-4.5", "choices": [{"index": 0, "message": {"role": "assistant", "content": "INSUFFICIENT_GROUNDING"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 50, "completion_tokens": 5, "total_tokens": 55}}
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers: {}
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: |-
+        {"id": "chatcmpl-refuse", "object": "chat.completion", "created": 1716796800, "model": "claude-haiku-4.5", "choices": [{"index": 0, "message": {"role": "assistant", "content": "INSUFFICIENT_GROUNDING"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 50, "completion_tokens": 5, "total_tokens": 55}}
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers: {}
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: |-
+        {"id": "chatcmpl-refuse", "object": "chat.completion", "created": 1716796800, "model": "claude-haiku-4.5", "choices": [{"index": 0, "message": {"role": "assistant", "content": "INSUFFICIENT_GROUNDING"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 50, "completion_tokens": 5, "total_tokens": 55}}
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers: {}
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: |-
+        {"id": "chatcmpl-refuse", "object": "chat.completion", "created": 1716796800, "model": "claude-haiku-4.5", "choices": [{"index": 0, "message": {"role": "assistant", "content": "INSUFFICIENT_GROUNDING"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 50, "completion_tokens": 5, "total_tokens": 55}}
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers: {}
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: |-
+        {"id": "chatcmpl-refuse", "object": "chat.completion", "created": 1716796800, "model": "claude-haiku-4.5", "choices": [{"index": 0, "message": {"role": "assistant", "content": "INSUFFICIENT_GROUNDING"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 50, "completion_tokens": 5, "total_tokens": 55}}
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers: {}
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: |-
+        {"id": "chatcmpl-refuse", "object": "chat.completion", "created": 1716796800, "model": "claude-haiku-4.5", "choices": [{"index": 0, "message": {"role": "assistant", "content": "INSUFFICIENT_GROUNDING"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 50, "completion_tokens": 5, "total_tokens": 55}}
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers: {}
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: |-
+        {"id": "chatcmpl-refuse", "object": "chat.completion", "created": 1716796800, "model": "claude-haiku-4.5", "choices": [{"index": 0, "message": {"role": "assistant", "content": "INSUFFICIENT_GROUNDING"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 50, "completion_tokens": 5, "total_tokens": 55}}
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers: {}
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: |-
+        {"id": "chatcmpl-refuse", "object": "chat.completion", "created": 1716796800, "model": "claude-haiku-4.5", "choices": [{"index": 0, "message": {"role": "assistant", "content": "INSUFFICIENT_GROUNDING"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 50, "completion_tokens": 5, "total_tokens": 55}}
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers: {}
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: |-
+        {"id": "chatcmpl-refuse", "object": "chat.completion", "created": 1716796800, "model": "claude-haiku-4.5", "choices": [{"index": 0, "message": {"role": "assistant", "content": "INSUFFICIENT_GROUNDING"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 50, "completion_tokens": 5, "total_tokens": 55}}
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers: {}
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: |-
+        {"id": "chatcmpl-refuse", "object": "chat.completion", "created": 1716796800, "model": "claude-haiku-4.5", "choices": [{"index": 0, "message": {"role": "assistant", "content": "INSUFFICIENT_GROUNDING"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 50, "completion_tokens": 5, "total_tokens": 55}}
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers: {}
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: |-
+        {"id": "chatcmpl-refuse", "object": "chat.completion", "created": 1716796800, "model": "claude-haiku-4.5", "choices": [{"index": 0, "message": {"role": "assistant", "content": "INSUFFICIENT_GROUNDING"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 50, "completion_tokens": 5, "total_tokens": 55}}
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+version: 1

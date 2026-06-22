@@ -59,6 +59,10 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          # B073 F002: full history so the advisor-path-change detector below can
+          # diff this commit against its base (github.event.before / PR base sha).
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -80,7 +84,53 @@ jobs:
           rm -f safety-eval.db
           python -m alembic upgrade head
 
-      - name: Run red-team safety eval (parametrize 15 samples)
+      - name: Detect AI advisor path changes (B073 F002 §0)
+        # Compute whether THIS change touched AI advisor logic (llm/ or
+        # advisor/). The live eval below skips a gateway *outage* (503/429/
+        # timeout) so an unrelated deploy is not blocked — UNLESS advisor logic
+        # changed, in which case an unverified change while the gateway is down
+        # still BLOCKS (unreachable != safe pass). Fail-closed: any error
+        # computing the diff -> changed=true (block), never silently skip.
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set +e
+          ZERO="0000000000000000000000000000000000000000"
+          if [ -n "$BASE_SHA" ]; then
+            RANGE="$BASE_SHA...$HEAD_SHA"
+          elif [ -n "$BEFORE_SHA" ] && [ "$BEFORE_SHA" != "$ZERO" ]; then
+            RANGE="$BEFORE_SHA $HEAD_SHA"
+          else
+            RANGE=""
+          fi
+          if [ -z "$RANGE" ]; then
+            echo "AI_ADVISOR_PATHS_CHANGED=true" >> "$GITHUB_ENV"
+            echo "no diff range (first push / unknown) -> fail-closed changed=true"
+            exit 0
+          fi
+          CHANGED=$(git diff --name-only $RANGE)
+          if [ $? -ne 0 ]; then
+            echo "AI_ADVISOR_PATHS_CHANGED=true" >> "$GITHUB_ENV"
+            echo "git diff failed -> fail-closed changed=true"
+            exit 0
+          fi
+          echo "changed files:"; printf '%s\n' "$CHANGED"
+          FLAG=$(printf '%s\n' "$CHANGED" | python -c "import sys; from workbench_api.llm.eval_resilience import advisor_paths_changed; print('true' if advisor_paths_changed(sys.stdin.read().splitlines()) else 'false')")
+          if [ -z "$FLAG" ]; then FLAG=true; fi
+          echo "AI_ADVISOR_PATHS_CHANGED=$FLAG" >> "$GITHUB_ENV"
+          echo "AI_ADVISOR_PATHS_CHANGED=$FLAG"
+
+      - name: Run deterministic red-team safety eval (VCR, always-on, no key)
+        # B073 F002: the always-on hard gate. Replays committed cassettes so it
+        # runs with no gateway key and no network — an external outage can never
+        # redden or silence it. Catches OUR safety-code regressions.
+        run: python -m pytest tests/safety/test_ai_advisor_red_team_vcr.py -v --block-network
+
+      - name: Run live red-team safety eval (parametrize 15 samples)
+        # Best-effort live drift check. A real safety bypass hard-fails; a
+        # gateway outage skips-with-warning (unless advisor logic changed).
         run: python -m pytest tests/safety/test_ai_advisor_red_team.py -v
 
       - name: Verify safety eval workflow wiring

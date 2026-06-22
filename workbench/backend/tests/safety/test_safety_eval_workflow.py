@@ -132,6 +132,42 @@ def test_safety_eval_workflow_force_node24_flag_set() -> None:
     assert 'FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"' in text
 
 
+def test_safety_eval_workflow_runs_deterministic_vcr_gate() -> None:
+    """B073 F002: the always-on deterministic (cassette-replayed) red-team gate
+    must run so an external gateway outage can never silence the safety check.
+    It runs with ``--block-network`` (no key, no network) and is the hard gate."""
+
+    text = _read(SAFETY_EVAL_WORKFLOW)
+    assert "tests/safety/test_ai_advisor_red_team_vcr.py" in text, (
+        "ai-safety-eval.yml must run the deterministic VCR'd red-team gate "
+        "(test_ai_advisor_red_team_vcr.py) so the safety check survives a "
+        "gateway outage (B073 F002)."
+    )
+    assert "--block-network" in text, (
+        "the deterministic VCR gate must run with --block-network so it provably "
+        "uses no live gateway / network."
+    )
+
+
+def test_safety_eval_workflow_detects_advisor_path_changes() -> None:
+    """B073 F002 §0: the live eval only skips a gateway outage when advisor logic
+    is unchanged. The workflow must compute that signal (AI_ADVISOR_PATHS_CHANGED)
+    from the commit diff, which needs full git history (fetch-depth: 0). Without
+    this, an unverified advisor change during an outage could wrongly skip
+    (unreachable != safe pass)."""
+
+    text = _read(SAFETY_EVAL_WORKFLOW)
+    assert "AI_ADVISOR_PATHS_CHANGED" in text, (
+        "ai-safety-eval.yml must export AI_ADVISOR_PATHS_CHANGED so the live "
+        "eval blocks (not skips) when advisor logic changed and the gateway is "
+        "unreachable (B073 §0)."
+    )
+    assert "fetch-depth: 0" in text, (
+        "the advisor-path-change detector needs full history to diff against the "
+        "commit base; checkout must set fetch-depth: 0."
+    )
+
+
 # ---------------------------------------------------------------------------
 # workbench-deploy.yml — gate inclusion
 # ---------------------------------------------------------------------------
