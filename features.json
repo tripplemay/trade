@@ -32,7 +32,7 @@
       "title": "Codex:验收(回测真数字复现+独立裁定 GO/NO-GO+条件真机验+零回归)+signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F003。策略研究/条件部署批次 signoff 含真数字+诚实 verdict §29+B068-B070 范式】L1 全门禁(verifying 可跳 L1 复跑)。回测真数字复现:独立复跑 size-tilt sweep(B070 去偏宇宙)→复现 CAGR/Sharpe/DD/中小盘广度;★独立裁定 GO/NO-GO(不橡皮戳 generator)。若 GO:VM 真机验生产选股反映 size-tilt(贴新 top-25 vs 现状蓝筹对比+模拟盘);若 NO-GO:确认生产 size_tilt_weight=0 未动。零回归:size_tilt_weight=0 选股==现状;US/Master/regime/hk 不破。边界:research-only/no-broker/no 真金/不改不可配资定性;HEAD≡prod。signoff docs/test-reports/B076-...-signoff-*.md 真数字逐条+明确 GO/NO-GO+OOS caveat。",
       "design_decisions": []
     }

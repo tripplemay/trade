@@ -4,7 +4,7 @@
   "completed_features": 3,
   "fix_rounds": 0,
   "current_sprint": "F003",
-  "last_updated": "2026-06-24",
+  "last_updated": "2026-06-25",
   "user_goal": "B076 cn_attack size-tilt 选股(让宽池真正改变选股,回测验证,条件上生产)。来源:用户扩股票池→B075 发现单纯扩宇宙不改选股(top-25 仍蓝筹与种子43重叠)→用户选 A 改选股让宽池生效。**★诚实约束(焊死)**:verdict-gated(同 B068/B069/B070)——size-tilt 是策略改动须回测验证,GO(某档风险调整后不劣+真带中小盘广度)才上生产,NO-GO(全更差/只加风险)=合法诚实结论不改生产照实报告(B069 inverse-vol NO-SWITCH 先例)。size_tilt_weight 默认 0=现状零回归。★回测必须用 B070 去偏 PIT 宽宇宙(中小盘幸存者偏差最重),不得用 B075 当前 1490。研究态不改不可配资定性;中小盘更激进更可能暴雷。cn_attack-only,US/Master/regime/hk 零回归。**机制**:composite 加 percent-ranked size 因子(市值越小得分越高,_aggregate_composite_score 现成干净 US 零回归);市值线到选股层(cn_marketcap 有数据)。**3 features 2g+1c**:F001 size-tilt 机制+对照回测(sweep 0/light/medium/strong×两变体,去偏宇宙,真数字+中小盘广度+verdict);F002 条件接生产(GO→上 precompute/NO-GO→不改);F003 Codex(回测真数字复现+独立裁定 GO/NO-GO+零回归)。spec docs/specs/B076-cn-attack-size-tilt-selection-spec.md(3 章)。",
   "reference_docs": [
     "docs/specs/B076-cn-attack-size-tilt-selection-spec.md",
@@ -18,7 +18,7 @@
     "spec": "docs/specs/B076-cn-attack-size-tilt-selection-spec.md",
     "test_cases": null,
     "signoff": "docs/test-reports/B076-cn-attack-size-tilt-signoff-2026-06-24.md",
-    "framework_reviewed": false
+    "framework_reviewed": true
   },
   "role_assignments": null,
   "evaluator_feedback": {
@@ -33,7 +33,7 @@
     "status": "ready"
   },
   "session_notes": {
-    "planner": "2026-06-23 B076 planning(planner)。cn_attack size-tilt 选股(让宽池真改选股,回测验证,条件上生产)。用户选 A(B075 后宽池没改选股→改选股层)。**★verdict-gated(B069 先例)**:size-tilt 策略改动须回测验证,GO 才上生产,NO-GO 合法不改生产。size_tilt_weight 默认 0 零回归。★回测必须用 B070 去偏 PIT 宇宙(中小盘幸存者偏差最重),不得用 B075 当前 1490。**机制核准**:_aggregate_composite_score 是 percent-rank 因子加权和,加 size 因子干净(US 零回归);市值 cn_marketcap 有,只需线到选股层。**3 features 2g+1c**:F001 size-tilt 机制+对照回测(sweep×两变体,去偏宇宙,真数字+★中小盘广度指标+verdict);F002 条件接生产;F003 Codex 独立裁定 GO/NO-GO。**【续接】**:status=building,Generator 接 F001(size-tilt 机制+去偏宇宙对照回测出真数字 verdict)→F002(条件接生产),再 Codex F003 独立裁定。**关键**:这批很可能 NO-GO(放开蓝筹偏向中小盘多半更差/更暴雷)——和 B069 一样,诚实结论比'强行用上宽池'重要。**ops**:网关余额耗尽待充值。prod=B075 系(宽宇宙已上)。",
+    "planner": "2026-06-25 B076 done 收尾(planner)。cn_attack size-tilt 选股=✅ done,0 fix-round,裁定 NO-GO。Codex F003 独立复跑 bit-identical→独立裁定 NO-GO(去偏 B070 PIT 1310/1310=100% 覆盖;全档全样本 Sharpe 恶化 0.56→max 0.42;strong OOS 险平=2024Q4 窗口幸运非稳健;零回归 acceptance 4/4;CI 全绿)。生产 size_tilt_weight=0 不动(字节级零回归)。**★最值钱发现**:同一 size-tilt survivor 宇宙=GO(Sharpe 1.00→1.27)vs 去偏宇宙=NO-GO(0.56→0.42)=『回测必须去偏』铁证;若用 B075 当前/幸存宇宙就误判 GO 上生产。机制真生效(市值分位 0.92→0.45/中小盘 0→64%)但赔本→不上。**framework v0.9.52 沉淀(3 条,用户批)**:generator.md §35(baostock turn 反推退市名流通市值补数据 + survivor/去偏双 cut)+planner.md §策略-改动 verdict 设计(全样本+OOS 双门禁防 OOS-窗口美化 + 双 cut)。CHANGELOG+archive,队列清空。**done 收尾**:F003 status→done(Codex 漏翻);framework_reviewed=true;signoff 路径;project-status→done+Framework v0.9.52。**【续接=下一批待用户定,关键决策点】**:cn_attack 这条线连吃 4 个诚实 NO-GO/NO-SWITCH(B068 质量/B069 波动率倒数/B070 幸存者/B076 size-tilt)——每次都指向『简单版(蓝筹+等权+动量质量)才站得住』。**到了该退一步定方向的时候:①继续投 cn_attack(还能试啥?edge 微弱)②冻结 cn_attack 维持现状当研究展示③换全新方向(美股策略/产品功能/测试基建 P3-P5)。** 已向用户提议聊这个。**ops**:网关余额耗尽待充值。prod=B075 系(宽宇宙基础设施;B076 生产未改)。",
     "generator": "2026-06-23 B076 F001+F002 done(generator)→verifying。**裁定 NO-GO**(去偏 B070 PIT 1310,覆盖100%):size-tilt 真生效(市值分位0.92→0.45/中小盘占比0→0.64)但全样本 Sharpe 恶化 0.56→0.42、CAGR 13.1%→7.5%;strong OOS Sharpe 险平(0.931vs0.930)=2024Q4小盘窗口幸运非稳健→不上生产(B069)。★survivor B068=GO 是幸存者偏差镜像(去偏必要铁证)。【关键修正】verdict 规则曾误判 GO(只看被小盘窗口美化的 OOS Sharpe)→改全样本+OOS 双门禁 tol0.02,回归测试锁真场景。机制(commit e6cc2c4+047c49f):size_tilt_weight 默认0 byte-identical+small_cap_score(-log circ_mv PIT)+impute_neutral_size(缺市值中性插补保去偏 integrity)+空帧守门;adversarial review 0 defects/11 dismissed。F002 NO-GO 路径=生产默认0不动+acceptance 守门(test_b076_size_tilt_zero_regression.py 4 测)+doc;无生产代码改。【F003 待 Codex】独立复跑 sweep 复现+独立裁定 GO/NO-GO+零回归+HEAD≡prod。cn_size.csv 本机有但 gitignored,F003 须自 fetch(b076_fetch_pit_marketcap.py ~37min)。framework 候选(queued proposed-learnings):baostock turn 反推 PIT circ_mv 覆盖退市名。",
     "evaluator": "2026-06-24 B076 F003 done(evaluator，CLI代执行)。独立复跑 bit-identical，独立裁定 NO-GO（去偏 B070 PIT，1310/1310=100%覆盖，全档位全样本 Sharpe 劣化 0.56→max 0.42，strong OOS 险平=2024Q4窗口幸运非稳健）。★幸存者偏差镜像：survivor=GO vs 去偏=NO-GO，spec §0铁证。零回归 acceptance 4/4 PASS。生产 size_tilt_weight=0 代码确认。CI全绿（Python CI+Backend CI+Deploy）。signoff docs/test-reports/B076-cn-attack-size-tilt-signoff-2026-06-24.md。"
   },

@@ -5,6 +5,19 @@
 
 ---
 
+## v0.9.52 — 2026-06-25（B076：去偏策略-改动研究——退市名市值补数据 + verdict 全样本+OOS 双门禁 + survivor/去偏双 cut）
+
+**来源批次：** B076 cn_attack size-tilt 选股（verdict-gated,裁定 NO-GO,0 fix-round done）。3 条同源 learning 用户 done 收尾批准。
+
+**沉淀内容（用户确认）：**
+- **退市名市值/估值因子补数据法——baostock `turn` 反推流通市值** → `generator.md §35(a)`。去偏 PIT 回测加 size/value 因子时,`stock_value_em` 只覆盖当前上市名→退市名缺市值静默丢名=重引入幸存者偏差;修法 `circ_mv = close×volume×100/turn`(adjustflag=3),baostock 含退市名 100% 覆盖(B076 1310/1310)。
+- **survivor/去偏双 cut 验收范式** → `generator.md §35(b)` + `planner.md §策略-改动 verdict 设计`。primary 去偏 gating + secondary survivor 仅方向性(survivor GO 不足为凭、NO-GO 更可信);B076 同 tilt survivor=GO/去偏=NO-GO 镜像=「回测必须去偏」铁证。
+- **verdict risk gate 用全样本+OOS 双门禁,防 OOS-窗口美化** → `planner.md §策略-改动 verdict 设计`。WF-OOS 窗口若系统偏向被测因子(2024Q4 小盘反弹)→仅看 OOS 误判 GO;risk gate=全样本恶化即 NO-GO+OOS 仅辅助。扩 B068-B070 verdict-gated 范式。
+
+归档 `framework/archive/proposed-learnings-archive-v0.9.52.md`。**活跃候选队列清空。**
+
+---
+
 ## v0.9.51 — 2026-06-23（B075：宽集 fetch job 工程——可行性探针复用真 loader + 宽块 partial-failure exit-code 容忍 + VM /tmp PYTHONPATH）
 
 **来源批次：** B075 A股 生产股票池扩大到全市场流动 top ~1501（feasibility GO@1501,zero errors,0 fix-round done）。3 条 learning 用户 done 收尾批准。

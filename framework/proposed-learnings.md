@@ -379,6 +379,10 @@
 
 **建议写入：** `framework/harness/generator.md`（§去偏 size/估值因子补数据法 + §策略改动双 cut 验收范式）/ `framework/harness/planner.md`（§ verdict risk gate 用全样本+OOS 双门禁防 OOS-窗口美化，扩 B068-B070 verdict-gated 范式）
 
-**状态：** 待确认
+**状态：** ✅ 已沉淀 v0.9.52（generator.md §35 + planner.md §策略-改动 verdict 设计;用户 2026-06-25 批 B076 done 收尾）
+
+<!-- 2026-06-25: v0.9.52 沉淀完成（B076 done 收尾,用户批）：3 条→generator.md §35(baostock turn 补数据 + survivor/去偏双 cut)+planner.md §策略-改动 verdict 设计(全样本+OOS 双门禁 + 双 cut)。归档 framework/archive/proposed-learnings-archive-v0.9.52.md。CHANGELOG v0.9.52。**活跃候选队列=空。** -->
+
+<!-- 当前活动候选（v0.9.52 后）：无。 -->
 
 <!-- 当前活动候选（v0.9.51 后）：B076 3 条（去偏因子补数据 baostock turn / verdict OOS-窗口诚实坑 / 策略改动双 cut 范式），待 done 阶段 Planner 提交用户。 -->

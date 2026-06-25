@@ -421,6 +421,16 @@ master sleeve 子策略 `generate_signal().weights_dict()` 必须返回 **sleeve
 
 **来源：** B074（planner VM 诊断漏根因 #2 CASH sentinel + spec cash≈0 模板对 cn_attack 不准）。
 
+### 策略-改动批次 verdict 设计：risk gate 用全样本+OOS 双门禁 + survivor/去偏双 cut（v0.9.52 — B076 沉淀，扩 B068-B070 verdict-gated 范式）
+
+策略-改动批次（换因子/加 tilt/改权重）的 acceptance 须 **verdict-gated**（GO 才上生产,NO-GO 合法不改生产,B069 NO-SWITCH 先例）。本次 B076 把 verdict 规则细化两点：
+
+**(1) risk gate 用全样本(period-wide)+OOS 双门禁,不让 OOS-窗口幸运盖过全样本恶化。** 若 WF-OOS 窗口恰系统性偏向被测因子（B076: 2024Q4『924』小盘反弹 favor size-tilt）,OOS 指标会被**窗口美化** → 仅看 OOS 会误判 GO（B076 strong 档 OOS Sharpe 0.931 vs 0.930 险平=假 GO,而全样本 Sharpe 每档恶化 0.56→0.42）。**spec acceptance 须写明：risk gate = 全样本指标恶化即 NO-GO + OOS 仅作辅助,OOS 平局不 override 全样本恶化。** 是 B069/B070 OOS-caveat 在 verdict-rule 层的落地。
+
+**(2) survivor/去偏双 cut：primary 去偏宇宙做 gating，secondary survivor 仅方向性。** 同一改动可能 survivor=GO、去偏=NO-GO（退市输家在 survivor 缺席,美化 size/value tilt）。spec 须焊死「回测用去偏 PIT 宇宙做裁定」,survivor cut 显式标注「GO 不足为凭、NO-GO 更可信」。配套 generator.md §35。
+
+**来源：** B076（cn_attack size-tilt NO-GO;OOS-窗口险平假 GO + survivor=GO/去偏=NO-GO 镜像;Codex 独立复跑 bit-identical 裁定 NO-GO）。
+
 ---
 
 ## status = "done" 时的收尾流程
