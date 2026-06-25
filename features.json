@@ -6,7 +6,7 @@
       "title": "聪明钱数据可得性 VM 实测(北向/龙虎榜机构席位/主力资金流 三源数据现实)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F001 + §0 约束】(1) 建探针 loader(照 cn_*.py 范式 lazy akshare best-effort):北向持股/龙虎榜机构席位/主力资金流各一。(2) VM §23 实跑,每源出数据现实:字段(有无机构净买入/超大单净流入/北向持股变化可用列)、时效(日级?延迟?)、★历史深度(回溯几年=能否回测)、覆盖/稀疏度(全市场?仅异动?仅 Connect?)、稳定性(成功率/限流)。(3) ★北向 2024.8 取消盘中实时披露现实:实测现在 akshare 北向给延迟/持股级什么。(4) 单测(探针解析/空帧守门,确定性 fixture)。正面证据:三源探针+VM 实测数据现实报告(字段/时效/历史深度/覆盖/稳定性 per 源+北向2024现实);明确每源能否支撑回测。Gates:backend pytest/ruff 目录上下文/mypy CI-exact 0。",
       "design_decisions": [
         "★§23:北向 2024.8 取消盘中实时披露→经典玩法弱化,必须 VM 实测现在到底能拿什么,不假设。",

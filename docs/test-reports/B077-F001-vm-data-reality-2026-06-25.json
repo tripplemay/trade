@@ -1,0 +1,338 @@
+{
+  "probe": "b077_smart_money_data_reality",
+  "run_label": "vm",
+  "run_date": "2026-06-25",
+  "sample": [
+    "600519.SH",
+    "601318.SH",
+    "600036.SH",
+    "000858.SZ",
+    "000333.SZ",
+    "300750.SZ"
+  ],
+  "sources": {
+    "northbound_hold": {
+      "source": "northbound_hold",
+      "per_stock": [
+        {
+          "ticker": "600519.SH",
+          "ok": true,
+          "rows": 1683,
+          "elapsed_s": 13.55,
+          "span": {
+            "earliest": "2017-03-16",
+            "latest": "2024-08-16",
+            "n_obs": 1683,
+            "years": 7.42
+          }
+        },
+        {
+          "ticker": "601318.SH",
+          "ok": true,
+          "rows": 1698,
+          "elapsed_s": 6.7,
+          "span": {
+            "earliest": "2017-03-16",
+            "latest": "2024-08-16",
+            "n_obs": 1698,
+            "years": 7.42
+          }
+        },
+        {
+          "ticker": "600036.SH",
+          "ok": true,
+          "rows": 1692,
+          "elapsed_s": 6.91,
+          "span": {
+            "earliest": "2017-03-16",
+            "latest": "2024-08-16",
+            "n_obs": 1692,
+            "years": 7.42
+          }
+        },
+        {
+          "ticker": "000858.SZ",
+          "ok": true,
+          "rows": 1693,
+          "elapsed_s": 12.19,
+          "span": {
+            "earliest": "2017-03-16",
+            "latest": "2024-08-16",
+            "n_obs": 1693,
+            "years": 7.42
+          }
+        },
+        {
+          "ticker": "000333.SZ",
+          "ok": true,
+          "rows": 1649,
+          "elapsed_s": 10.51,
+          "span": {
+            "earliest": "2017-03-16",
+            "latest": "2024-08-16",
+            "n_obs": 1649,
+            "years": 7.42
+          }
+        },
+        {
+          "ticker": "300750.SZ",
+          "ok": true,
+          "rows": 1249,
+          "elapsed_s": 4.06,
+          "span": {
+            "earliest": "2019-01-02",
+            "latest": "2024-08-16",
+            "n_obs": 1249,
+            "years": 5.62
+          }
+        }
+      ],
+      "aggregate": {
+        "ok": true,
+        "rows": 2695,
+        "elapsed_s": 26.37,
+        "net_buy_column": "当日成交净买额",
+        "row_index_latest": "2026-06-24",
+        "net_buy_last_disclosed": "2024-08-16",
+        "net_buy_disclosure_lag_days": 678
+      },
+      "summary": {
+        "reachable": true,
+        "signal_column_found": true,
+        "signal_columns": [
+          "今日增持资金"
+        ],
+        "columns_seen": [
+          "持股日期",
+          "当日收盘价",
+          "当日涨跌幅",
+          "持股数量",
+          "持股市值",
+          "持股数量占A股百分比",
+          "今日增持股数",
+          "今日增持资金",
+          "今日持股市值变化"
+        ],
+        "coverage": "per_stock_connect",
+        "earliest_date": "2017-03-16",
+        "latest_date": "2024-08-16",
+        "lag_days": 678,
+        "success_rate": 1.0,
+        "attempted": 6,
+        "empty": 0,
+        "errors": 0,
+        "agg_net_buy_last_disclosed": "2024-08-16"
+      }
+    },
+    "dragon_tiger_inst": {
+      "source": "dragon_tiger_inst",
+      "windows": [
+        {
+          "window": "20200727..20200825",
+          "ok": true,
+          "inst_events": 772,
+          "distinct_codes": 408,
+          "inst_net_buy_col": "机构买入净额",
+          "elapsed_s": 4.77
+        },
+        {
+          "window": "20230712..20230810",
+          "ok": true,
+          "inst_events": 745,
+          "distinct_codes": 346,
+          "inst_net_buy_col": "机构买入净额",
+          "elapsed_s": 6.74
+        },
+        {
+          "window": "20250701..20250730",
+          "ok": true,
+          "inst_events": 944,
+          "distinct_codes": 466,
+          "inst_net_buy_col": "机构买入净额",
+          "elapsed_s": 8.89
+        },
+        {
+          "window": "20260520..20260618",
+          "ok": true,
+          "inst_events": 1322,
+          "distinct_codes": 584,
+          "inst_net_buy_col": "机构买入净额",
+          "elapsed_s": 29.13
+        }
+      ],
+      "detail_reachability": {
+        "ok": true,
+        "window": "20260520..20260618",
+        "rows": 2206,
+        "has_fwd_returns": true,
+        "fwd_return_col": "上榜后1日",
+        "elapsed_s": 9.22
+      },
+      "summary": {
+        "reachable": true,
+        "signal_column_found": true,
+        "signal_columns": [
+          "机构买入净额",
+          "买方机构数"
+        ],
+        "columns_seen": [
+          "序号",
+          "代码",
+          "名称",
+          "收盘价",
+          "涨跌幅",
+          "买方机构数",
+          "卖方机构数",
+          "机构买入总额",
+          "机构卖出总额",
+          "机构买入净额",
+          "市场总成交额",
+          "机构净买额占总成交额比",
+          "换手率",
+          "流通市值",
+          "上榜原因",
+          "上榜日期"
+        ],
+        "coverage": "sparse_event",
+        "earliest_date": "2020-07-27",
+        "latest_date": "2026-06-18",
+        "lag_days": 7,
+        "recent_events": 1322,
+        "broad_lhb_reachable": true,
+        "broad_lhb_has_fwd_returns": true,
+        "windows_reachable": 4,
+        "windows_tried": 4
+      }
+    },
+    "main_fund_flow": {
+      "source": "main_fund_flow",
+      "per_stock": [
+        {
+          "ticker": "600519.SH",
+          "ok": true,
+          "rows": 120,
+          "elapsed_s": 0.68,
+          "span": {
+            "earliest": "2025-12-22",
+            "latest": "2026-06-24",
+            "n_obs": 120,
+            "years": 0.5
+          }
+        },
+        {
+          "ticker": "601318.SH",
+          "ok": true,
+          "rows": 120,
+          "elapsed_s": 0.52,
+          "span": {
+            "earliest": "2025-12-22",
+            "latest": "2026-06-24",
+            "n_obs": 120,
+            "years": 0.5
+          }
+        },
+        {
+          "ticker": "600036.SH",
+          "ok": true,
+          "rows": 120,
+          "elapsed_s": 0.51,
+          "span": {
+            "earliest": "2025-12-22",
+            "latest": "2026-06-24",
+            "n_obs": 120,
+            "years": 0.5
+          }
+        },
+        {
+          "ticker": "000858.SZ",
+          "ok": true,
+          "rows": 120,
+          "elapsed_s": 0.56,
+          "span": {
+            "earliest": "2025-12-22",
+            "latest": "2026-06-24",
+            "n_obs": 120,
+            "years": 0.5
+          }
+        },
+        {
+          "ticker": "000333.SZ",
+          "ok": false,
+          "rows": 0,
+          "elapsed_s": 0.32
+        },
+        {
+          "ticker": "300750.SZ",
+          "ok": false,
+          "rows": 0,
+          "elapsed_s": 0.48
+        }
+      ],
+      "cross_section": {
+        "ok": false,
+        "rows": 0,
+        "columns": [],
+        "elapsed_s": 0.76
+      },
+      "summary": {
+        "reachable": true,
+        "signal_column_found": true,
+        "signal_columns": [
+          "超大单净流入-净额",
+          "超大单净流入",
+          "主力净流入-净额",
+          "主力净流入"
+        ],
+        "columns_seen": [
+          "日期",
+          "收盘价",
+          "涨跌幅",
+          "主力净流入-净额",
+          "主力净流入-净占比",
+          "超大单净流入-净额",
+          "超大单净流入-净占比",
+          "大单净流入-净额",
+          "大单净流入-净占比",
+          "中单净流入-净额",
+          "中单净流入-净占比",
+          "小单净流入-净额",
+          "小单净流入-净占比"
+        ],
+        "coverage": "full_market",
+        "cross_section_breadth": 0,
+        "cross_section_snapshot_ok": false,
+        "earliest_date": "2025-12-22",
+        "latest_date": "2026-06-24",
+        "lag_days": 1,
+        "success_rate": 0.667,
+        "attempted": 6,
+        "empty": 2,
+        "errors": 0
+      }
+    }
+  },
+  "verdicts": {
+    "northbound_hold": {
+      "verdict": "BACKTEST_ONLY_FROZEN",
+      "can_support_backtest": true,
+      "live_tradeable": false,
+      "reason": "Signal present with history but the feed is frozen (latest obs 2024-08-16, 678d stale ≥ 120d) — backtestable on the historical era, NOT live-tradeable on free data. Matches the 北向 2024.8 disclosure cut.",
+      "history_years": 7.42
+    },
+    "dragon_tiger_inst": {
+      "verdict": "USABLE_SPARSE",
+      "can_support_backtest": true,
+      "live_tradeable": true,
+      "reason": "Live signal (2026-06-18, lag 7d) with sparse 异动-only coverage. First-look only; tradeable edge is F002+, never claimed here.",
+      "history_years": 5.89
+    },
+    "main_fund_flow": {
+      "verdict": "USABLE_FULL",
+      "can_support_backtest": false,
+      "live_tradeable": true,
+      "reason": "Live signal (2026-06-24, lag 1d) with broad coverage (per-stock addressable; bulk cross-section snapshot endpoint unreachable this run — breadth confirmed per-stock, not by snapshot) (shallow history ~0.5y < 2.0y — live but too shallow for a backtest, so can_support_backtest=False). First-look only; tradeable edge is F002+, never claimed here.",
+      "history_years": 0.5
+    }
+  },
+  "honesty": "§23 measured-not-assumed; first-look data-availability only — NO tradeable edge claimed (that is F002+). research-only / no-broker / no real money / read-only public disclosure."
+}
