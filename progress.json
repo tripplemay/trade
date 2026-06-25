@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 3,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
-  "current_sprint": "F002",
+  "current_sprint": "F003",
   "last_updated": "2026-06-25",
   "user_goal": "B077 A股 聪明钱数据可行性摸底(机构/大资金流→能不能支撑跟随策略)=新方向第一步。来源:2026-06-25 用户澄清真实目标(跟踪机构/大资金、摸其建仓动向、跟随获利的实战策略,不同于 cn_attack 价格+财务因子,是信息流/聪明钱族)→选先做可行性摸底。**本批不搭策略**,先摸地基:VM 实测 A股 聪明钱数据现在能拿到什么/够不够用 + 初步看有没有 edge 苗头→出可用信号清单+数据现实+推荐先搭哪个。**★诚实约束**:§23 数据现实必须 VM 实测(北向 2024.8 取消盘中实时披露→经典玩法弱化,实测现在 akshare 给什么);first-look≠可交易 edge(IC/分组 spread 只看苗头,全回测是下批,不承诺赚钱);去偏 B070 宇宙做信号探查(聪明钱常涌小盘);龙虎榜稀疏/资金流全市场/北向仅 Connect 覆盖差异如实记;纯研究 no-broker/no 真金/无生产改动。**3 features 2g+1c**:F001 三源数据可得性 VM 实测(北向/龙虎榜机构席位/主力资金流,字段/时效/历史深度/覆盖/稳定性);F002 初步信号质量探查(first-look IC/分组 forward-return,去偏宇宙,推荐先搭哪个);F003 Codex 独立复核+诚实推荐裁定。spec docs/specs/B077-ashare-smart-money-data-feasibility-spec.md(3 章)。仓里 0 现成聪明钱代码=全新建,照 cn_*.py loader 范式。",
   "reference_docs": [
@@ -16,6 +16,10 @@
     "spec": "docs/specs/B077-ashare-smart-money-data-feasibility-spec.md",
     "test_cases": null,
     "signoff": null,
+    "f001_report": "docs/test-reports/B077-F001-smart-money-data-reality.md",
+    "f001_vm_json": "docs/test-reports/B077-F001-vm-data-reality-2026-06-25.json",
+    "f002_report": "docs/test-reports/B077-F002-first-look-ic.md",
+    "f002_json": "docs/test-reports/B077-F002-first-look-ic.json",
     "framework_reviewed": false
   },
   "role_assignments": null,
@@ -27,12 +31,12 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B077 F001+F002 (2 generator features) DONE → verifying. F001=三源数据可得性 §23 VM 实测(34.180.93.185):北向 BACKTEST_ONLY_FROZEN(冻结 2024-08-16)/龙虎榜机构席位 USABLE_SPARSE(live,5.89y)→F002 首选/主力资金流 USABLE_FULL 但 0.5y 太浅 can_support_backtest=False。F002=龙虎榜机构席位 first-look IC(59090 事件 2019-2026 × B070 去偏价格):裁定 INCONCLUSIVE_COVERAGE_LIMITED——rank-IC 仅 0.018-0.023(<0.03)且分组均值驼峰非单调(中性分位最高、极端均值回归),更关键 80.8% 机构 LHB 事件(小盘)落 B070 宇宙外未覆盖→既不 GO 也不直接劝退,决定性检验=补小盘价格重跑。证据:docs/test-reports/B077-F001-* + B077-F002-*。code:scripts/research/b077_{smart_money_feasibility_probe,fetch_lhb_events,signal_first_look}.py;tests/unit/test_b077_{smart_money_sources,signal_first_look}.py(38 测试)。zero 生产改动(grep0)。gates 全绿(ruff/mypy/1108 root pytest)。两轮 adversarial review workflow(F001 15 findings + F002 2 findings)全修。**另:本会话修了一个与 B077 无关的预存 date-bomb**(get_quote 用真实 today + 固定 fixture→CI 红,用户确认后 fix commit 6f54e35,Backend CI 已绿)。Codex F003:L1 全门禁 + VM 抽样独立复跑三源可得性(尤其北向 2024 冻结)+ 独立复跑 F002 IC 真数字 + 诚实推荐裁定(哪源 GO/全 NO-GO,不橡皮戳)。",
+    "status": "complete"
   },
   "session_notes": {
     "planner": "2026-06-25 B077 planning(planner)。新方向第一步=A股 聪明钱数据可行性摸底。用户澄清真实目标:跟踪机构/大资金建仓动向、跟随获利的实战策略(信息流族,非 cn_attack 因子族)→cn_attack 4 连 NO-GO 后换真正不同的方向。用户选先做可行性摸底再定信号。**本批不搭策略**,摸地基:VM 实测三源聪明钱数据现实(北向/龙虎榜机构席位/主力资金流)+初步信号苗头(去偏宇宙 IC)→推荐先搭哪个。**★诚实约束焊死**:§23 北向 2024.8 取消盘中实时披露必须 VM 实测现状;first-look≠可交易(不承诺赚钱);去偏 B070 宇宙;覆盖差异(龙虎榜稀疏/资金流全/北向仅Connect)如实记;纯研究无生产改动。**3 features 2g+1c**:F001 数据可得性 VM 实测/F002 信号质量探查 first-look/F003 Codex 独立复核+推荐裁定。仓里 0 现成代码=全新建照 cn_*.py 范式。**【续接】**:status=building,Generator 接 F001(建三源探针+VM §23 实测数据现实)→F002(去偏宇宙信号 IC 探查+推荐),再 Codex F003。**关键**:这是用户真实目标的第一步,要的是诚实地基(数据够不够+有没有苗头),GO→下批搭策略全回测,NO-GO→数据不支撑诚实劝退。**对用户更严**(要拿真钱)。**ops**:网关余额耗尽待充值。prod=B075 系。",
-    "generator": "2026-06-25 B077 F001 done(generator)。建 scripts/research/b077_smart_money_feasibility_probe.py(自包含 spike,3 schema-discovering 探针+per-source judge,照 cn_*.py 范式 lazy akshare best-effort,zero 生产改动 grep0)+ tests/unit/test_b077_smart_money_sources.py(23 测试,fake-akshare 锁纯逻辑/2024.8 freeze 检测/canonical→code 修复/判定分支)。**§23 VM 实测裁定(34.180.93.185)**:北向=BACKTEST_ONLY_FROZEN(per-stock 两机可达但冻结 2024-08-16/678d,聚合净买额亦冻 2024-08-16=2024.8 披露断点实测,7.42y 仅历史不可 live);龙虎榜机构席位=USABLE_SPARSE(LIVE lag7,实测 2020-07→2026-06=5.89y,机构买入净额+买方机构数,broad-LHB stock_lhb_detail_em 含上榜后N日,稀疏=仅异动每月772→1322事件)→**F002 首选**;主力资金流=USABLE_FULL 但 can_support_backtest=False(LIVE lag1 全覆盖,但仅0.5y 太浅<2y,push host VM 0.667 flaky,bulk rank 端点死)→F002 近窗辅助。报告 docs/test-reports/B077-F001-smart-money-data-reality.md + VM JSON。**踩坑**:northbound 初版传 canonical 而非 bare code→VM 误报 UNREACHABLE(live-run 抓到+修+测锁)。**审查**:20-agent workflow 抓 15 in-scope 发现(coverage/lag/backtest-flag 应实测非 hardcode)全修(judge 按实测深度门控 backtest,DT lag/depth 从真 上榜日期 派生,breadth 反映实测 snapshot)。**续接**:F002=对龙虎榜机构席位在 B070 去偏宇宙做 first-look IC/分组 forward-return(资金流近窗辅助),只看苗头不全回测。gates 全绿(ruff/mypy trade/1093 pytest)。",
+    "generator": "2026-06-25 B077 F001+F002 done → verifying(generator)。**F001**=三源数据可得性 §23 VM 实测(b077_smart_money_feasibility_probe.py):北向 BACKTEST_ONLY_FROZEN(冻结 2024-08-16/678d)/龙虎榜机构席位 USABLE_SPARSE(live lag7,5.89y,机构买入净额)→首选/主力资金流 USABLE_FULL 但 0.5y 太浅 can_support_backtest=False。**F002**=龙虎榜机构席位 first-look IC(b077_fetch_lhb_events.py 取 59090 事件 2019-2026 → b077_signal_first_look.py × B070 去偏价格,entry t+1 无前视):**INCONCLUSIVE_COVERAGE_LIMITED**——rank-IC 0.018-0.023(<0.03)+ **分组均值驼峰非单调**(Q3 中性分位 N20+8.7% 最高,极端买 Q5+1.3% 均值回归;F002 review 抓到此点已写入报告)+ **80.8% 机构 LHB 事件(小盘)落 B070 宇宙外未覆盖** → 不 GO/覆盖子集无单调 edge 偏否/但不直接断言全无信号,决定性检验=补小盘价格重跑。38 测试全绿(fake-akshare/IC纯逻辑/judge三档/no-lookahead)。两轮 review workflow(F001 15 + F002 2 findings)全修。**重要:本会话另修了与 B077 无关的预存 date-bomb**(cn/hk/yfinance get_quote 用真实 datetime.now()+固定 fixture 日期→2026-06-23 起 Backend CI 红,与当前 commit 无关;用户确认后 clock-injectable fix commit 6f54e35,Backend CI 已绿,deploy 链已跑)。**续接(verifying)**:Codex F003 接——L1 全门禁 + VM 抽样独立复跑三源(尤其北向 2024 冻结)+ 独立复跑 F002 IC 真数字 + 诚实推荐裁定(不橡皮戳)。zero 生产改动(B077 研究码全在 scripts/research grep0;hotfix 是独立 fix 非 B077 feature)。gates 全绿(ruff/mypy trade+backend/1108 root+1410 backend pytest)。",
     "evaluator": null
   },
   "features": [

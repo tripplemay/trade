@@ -19,7 +19,7 @@
       "title": "初步信号质量探查(first-look IC/分组 forward-return,去偏宇宙,推荐先搭哪个)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F002 + §0】(1) 信号构造(对 F001 判定可用源):聪明钱数据转 per-stock 横截面信号(机构净买入额/分位、超大单净流入、北向持股增幅)。(2) first-look IC/分组 forward-return(★B070 去偏宇宙):信号当日 vs 未来 N 日收益 IC/分组 spread——只看有没有相关性苗头非全回测;处理稀疏(龙虎榜仅异动日)。(3) 推荐:哪个源信号苗头最强+数据最扎实→下批搭策略首选;或都没苗头诚实劝退。(4) 诚实 caveat(first-look≠可交易、信号拥挤/滞后、去偏残余偏差)。正面证据:可用源 first-look IC/分组 spread 真数字(去偏宇宙)+推荐(或劝退)+诚实 caveat。Gates 同 F001。",
       "design_decisions": [
         "★first-look≠可交易 edge:IC/分组 spread 只看苗头,全回测是下批;不承诺赚钱。",

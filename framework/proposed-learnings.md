@@ -386,3 +386,18 @@
 <!-- 当前活动候选（v0.9.52 后）：无。 -->
 
 <!-- 当前活动候选（v0.9.51 后）：B076 3 条（去偏因子补数据 baostock turn / verdict OOS-窗口诚实坑 / 策略改动双 cut 范式），待 done 阶段 Planner 提交用户。 -->
+
+## [2026-06-25] Claude CLI — 来源：B077 F001/F002 聪明钱数据可行性 + 预存 date-bomb
+
+**类型：** 新坑（test-hygiene）/ 新规律（§23 measured-not-assumed 审查）/ 新规律（覆盖-门控裁定档）（3 条）
+
+**内容：**
+1. **【date-bomb 坑：生产用真实时钟 + 固定 fixture = 时间相关 CI flake】** 生产代码用真实 `datetime.now()` 算"近 N 日"窗口（如 provider `get_quote` 的 `[today-N, today]`），而单测用**固定假帧日期** → fixture 日期随日历推进**滑出窗口** → 某个 commit 还绿、N 天后**与代码无关地变红**（B077: cn/hk/yfinance get_quote，HS test 2026-06-22 绿、06-25 红）。**修法：生产时钟可注入**（加可选 `today` 参数，default `now()`，ABC 不动→更宽 override LSP 安全），单测 pin `today=_TODAY`→确定性。诊断要点：CI 红但 diff 与红测试模块无关 + 上个 commit 绿 → 先查日期相关 fixture，勿误判为本次改动。
+2. **【§23 measured-not-assumed 要贯彻到每个派生字段，非仅数据本身】** 可行性探针即便数据是 VM 实测的，若 data-reality 的**派生标签/裁定字段被 hardcode**（B077 F001: coverage="full_market" 常量 / lag_days=0 写死 / can_support_backtest=True 不门控），仍违反 §23。20-agent review 抓到 15 处此类。**规约：探针每个 reality 字段(coverage/lag/depth/backtest-supportability)必须从实测派生**(lag 由真实日期算、coverage 由实测 snapshot 反映、backtest 由实测深度门控)；review 应设专门 lens 查"标签是否真实测而非假设"。
+3. **【first-look IC 覆盖-门控裁定档 INCONCLUSIVE_COVERAGE_LIMITED】** 去偏宇宙做信号探查时，若信号总体大部分落在去偏宇宙外（B077: 龙虎榜机构席位 80.8% 事件是小盘异动，B070 流动宇宙小盘天花板未覆盖）→ first-look IC 只测到子集，据此断"无信号"是误劝退。**修法：裁定加第三档**——faint 一致方向(|IC|≥0.015,多 horizon 同号) + 覆盖率<50% → INCONCLUSIVE_COVERAGE_LIMITED(既不 GO 也不直接劝退,决定性检验=补覆盖重跑)。配套：分组均值须查**单调性**(B077 驼峰:极端净买均值回归,正 top-bottom 非单调梯度)，勿据 top-bottom 同号即称"方向真实"。
+
+**建议写入：** `framework/harness/generator.md`（§探针 measured-not-assumed 派生字段铁律 + §first-look 覆盖-门控裁定档 + 分组单调性查）/ `framework/harness/evaluator.md` 或新 test-hygiene 节（§date-bomb：真实时钟+固定 fixture 坑 + 时钟注入修法 + CI-红诊断要点）。
+
+**状态：** 待确认
+
+<!-- 当前活动候选（v0.9.52 后）：B077 3 条（date-bomb 时钟注入 / §23 派生字段 measured-not-assumed / first-look 覆盖-门控裁定档），待 done 阶段 Planner 提交用户。 -->
