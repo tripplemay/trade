@@ -150,7 +150,9 @@ class TestAksharePrimary:
 
     def test_get_quote_returns_latest_close(self) -> None:
         provider = CnSymbolProvider(akshare_module=_FakeAkshare(_ak_frame()))
-        quote = provider.get_quote("600519.SH")
+        # Pin the clock so the fixed fixture stays inside the quote window — keeps the
+        # akshare tier authoritative (no flaky sina/baostock fallback to the network).
+        quote = provider.get_quote("600519.SH", today=_TODAY)
         assert quote.close == 1630.0
         assert quote.as_of == date(2026, 6, 12)
         assert quote.source == "akshare"

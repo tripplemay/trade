@@ -128,10 +128,12 @@ class CnSymbolProvider(SymbolDataProvider):
             return bars
         raise SymbolNotFoundError(symbol)
 
-    def get_quote(self, symbol: str) -> ProviderQuote:
-        today = datetime.now(UTC).date()
+    def get_quote(self, symbol: str, *, today: date | None = None) -> ProviderQuote:
+        # Clock-injectable so unit tests pin the window deterministically — a fixed
+        # fake-frame fixture must not age out of [today-N, today] as the calendar moves.
+        anchor = today or datetime.now(UTC).date()
         bars = self.get_price_history(
-            symbol, today - timedelta(days=_QUOTE_WINDOW_DAYS), today
+            symbol, anchor - timedelta(days=_QUOTE_WINDOW_DAYS), anchor
         )
         if not bars:
             raise SymbolNotFoundError(symbol)

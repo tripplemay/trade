@@ -99,7 +99,9 @@ class TestAksharePrimary:
 
     def test_get_quote_returns_latest_close(self) -> None:
         provider = HkSymbolProvider(akshare_module=_FakeAkshare(_hk_frame()))
-        quote = provider.get_quote("0700.HK")
+        # Pin the clock so the fixed fixture stays inside the quote window (else the
+        # test ages out as real today advances past the fixture dates).
+        quote = provider.get_quote("0700.HK", today=_TODAY)
         assert quote.close == 375.0
         assert quote.as_of == date(2026, 6, 12)
         assert quote.source == "akshare"
