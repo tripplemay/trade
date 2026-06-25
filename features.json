@@ -1,39 +1,39 @@
 {
-  "sprint": "B076-cn-attack-size-tilt-selection",
+  "sprint": "B077-ashare-smart-money-data-feasibility",
   "features": [
     {
       "id": "F001",
-      "title": "size-tilt 机制(composite 加 percent-rank size 因子,默认 0 零回归)+ 对照回测(sweep,B070 去偏宇宙,真数字 verdict)",
+      "title": "聪明钱数据可得性 VM 实测(北向/龙虎榜机构席位/主力资金流 三源数据现实)",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §2 F001 + §0 约束】(1) 机制:composite 加 percent-ranked size 因子(市值越小得分越高=small-tilt),参数 size_tilt_weight(默认 0;momentum/quality/size renormalize);两变体支持;市值线到选股层。(2) 对照回测(★B070 去偏 PIT 宽宇宙,非 B075 当前 1490,OOS):扫 size_tilt_weight(0=现状/light/medium/strong)×两变体,真成本(印花税仅卖+佣金+滑点)。(3) 真数字:CAGR/Sharpe/max DD/换手+★中小盘广度指标(选股市值分布/与种子43重叠度/中小盘占比)量化 tilt 真把中小盘选进来没。(4) verdict:GO(某档风险调整后不劣+真带广度)/NO-GO(全更差或只加风险);诚实 OOS caveat(2024Q4 窗口)。正面证据:size-tilt 机制(默认 0 零回归)+两变体;对照回测 sweep 真数字+GO/NO-GO verdict;用 B070 去偏宇宙。Gates:trade pytest+mypy trade+ruff 目录上下文。",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F001 + §0 约束】(1) 建探针 loader(照 cn_*.py 范式 lazy akshare best-effort):北向持股/龙虎榜机构席位/主力资金流各一。(2) VM §23 实跑,每源出数据现实:字段(有无机构净买入/超大单净流入/北向持股变化可用列)、时效(日级?延迟?)、★历史深度(回溯几年=能否回测)、覆盖/稀疏度(全市场?仅异动?仅 Connect?)、稳定性(成功率/限流)。(3) ★北向 2024.8 取消盘中实时披露现实:实测现在 akshare 北向给延迟/持股级什么。(4) 单测(探针解析/空帧守门,确定性 fixture)。正面证据:三源探针+VM 实测数据现实报告(字段/时效/历史深度/覆盖/稳定性 per 源+北向2024现实);明确每源能否支撑回测。Gates:backend pytest/ruff 目录上下文/mypy CI-exact 0。",
       "design_decisions": [
-        "★verdict-gated(B069 先例):NO-GO 合法,不为用上宽池硬上更差策略。",
-        "★回测必须用 B070 去偏 PIT 宇宙(中小盘幸存者偏差最重),不得用 B075 当前 1490。",
-        "机制=composite 加 percent-rank size 因子(干净,_aggregate_composite_score 现成,US 零回归);默认 size_tilt_weight=0 零回归。",
-        "中小盘广度指标量化 tilt 是否真改变选股(不只看收益)。"
+        "★§23:北向 2024.8 取消盘中实时披露→经典玩法弱化,必须 VM 实测现在到底能拿什么,不假设。",
+        "信号稀疏/覆盖差异如实记:龙虎榜仅异动股(稀疏)/资金流全市场(日级)/北向仅 Connect(偏大盘)。",
+        "照现有 cn_*.py loader 范式(lazy akshare/best-effort);仓里 0 现成聪明钱代码=全新建。"
       ]
     },
     {
       "id": "F002",
-      "title": "条件接生产(GO→size_tilt 上 cn_attack precompute;NO-GO→不改生产)+ 零回归不变量",
+      "title": "初步信号质量探查(first-look IC/分组 forward-return,去偏宇宙,推荐先搭哪个)",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §2 F002】(1) GO 路径:F001 胜出 size_tilt_weight 接 cn_attack precompute 两变体→生产 advisory/模拟盘选股反映 size-tilt;price_snapshot 同步新选股目标(复用 B074 cn_snapshot_sync)。(2) NO-GO 路径:生产 size_tilt_weight 保持 0(现状蓝筹)不改生产,F001 verdict 写报告,本 feature 退化为确认默认 0 零回归+文档化 NO-GO。(3) acceptance 守门:size_tilt_weight=0 时选股==现状(零回归不变量,B071-B073 层)。(4) 边界 cn_attack-only;US/Master/regime/hk 零回归。正面证据:GO→生产 size_tilt 上 precompute(选股变化可见);NO-GO→生产默认 0 不变+报告;size_tilt_weight=0 零回归 acceptance。Gates 同 F001+backend pytest/mypy CI-exact+acceptance。",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F002 + §0】(1) 信号构造(对 F001 判定可用源):聪明钱数据转 per-stock 横截面信号(机构净买入额/分位、超大单净流入、北向持股增幅)。(2) first-look IC/分组 forward-return(★B070 去偏宇宙):信号当日 vs 未来 N 日收益 IC/分组 spread——只看有没有相关性苗头非全回测;处理稀疏(龙虎榜仅异动日)。(3) 推荐:哪个源信号苗头最强+数据最扎实→下批搭策略首选;或都没苗头诚实劝退。(4) 诚实 caveat(first-look≠可交易、信号拥挤/滞后、去偏残余偏差)。正面证据:可用源 first-look IC/分组 spread 真数字(去偏宇宙)+推荐(或劝退)+诚实 caveat。Gates 同 F001。",
       "design_decisions": [
-        "条件部署:GO/NO-GO 两路径都合法;NO-GO 不改生产(B069 NO-SWITCH 先例)。",
-        "size_tilt_weight=0 零回归 acceptance 守门(选股==现状)。"
+        "★first-look≠可交易 edge:IC/分组 spread 只看苗头,全回测是下批;不承诺赚钱。",
+        "去偏宇宙(B070):聪明钱常涌入小盘,小盘幸存者偏差最重。",
+        "处理信号稀疏(龙虎榜仅异动日横截面不全)。"
       ]
     },
     {
       "id": "F003",
-      "title": "Codex:验收(回测真数字复现+独立裁定 GO/NO-GO+条件真机验+零回归)+signoff",
+      "title": "Codex:验收(独立复核数据可得性+信号探查真数字+诚实推荐裁定)+signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "【见 spec §2 F003。策略研究/条件部署批次 signoff 含真数字+诚实 verdict §29+B068-B070 范式】L1 全门禁(verifying 可跳 L1 复跑)。回测真数字复现:独立复跑 size-tilt sweep(B070 去偏宇宙)→复现 CAGR/Sharpe/DD/中小盘广度;★独立裁定 GO/NO-GO(不橡皮戳 generator)。若 GO:VM 真机验生产选股反映 size-tilt(贴新 top-25 vs 现状蓝筹对比+模拟盘);若 NO-GO:确认生产 size_tilt_weight=0 未动。零回归:size_tilt_weight=0 选股==现状;US/Master/regime/hk 不破。边界:research-only/no-broker/no 真金/不改不可配资定性;HEAD≡prod。signoff docs/test-reports/B076-...-signoff-*.md 真数字逐条+明确 GO/NO-GO+OOS caveat。",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F003。研究/可行性批次 signoff 含实测证据 §29+§23】L1 全门禁(verifying 可跳 L1 复跑)。VM 独立复核:抽样复跑三源数据可得性(确认 F001 数据现实非夸大,尤其北向 2024 现实);独立复跑信号 IC/spread(确认 F002 苗头真数字)。★诚实推荐裁定:哪个源 GO(值得下批搭策略)/全 NO-GO(都没苗头/数据不够)——不橡皮戳 generator。边界:research-only/no-broker/no 真金/no 自动下单/只读披露数据;无生产改动。signoff docs/test-reports/B077-...-signoff-*.md 实测证据逐条+明确推荐+caveat。",
       "design_decisions": []
     }
   ]
