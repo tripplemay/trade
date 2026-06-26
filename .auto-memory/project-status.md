@@ -13,7 +13,8 @@ type: project
 - **⚠️ ops: 网关 402 out-of-credit（2026-06-22）**：生产 AI 功能（推荐解释/新闻翻译/advisor）不可用，需充值 aigc-gateway。
 
 ## 遗留 / soft-watch
-- **聪明钱方向决定性下一步**：补小盘价格覆盖（B070 宇宙外 47654 事件个股），含小盘去偏样本重跑 first-look LHB 机构席位 IC。GO→下批搭策略+全回测；仍 NO-GO→诚实劝退。
+- **★聪明钱方向(用户真实目标,已存 backlog `B0XX-ashare-smart-money-following`,2026-06-26 用户决定保存结论后续再深入)**：付费数据源调研(2 轮)结论存 `docs/research/ashare-smart-money-paid-data-sources-2026-06.md`——标杆=Tushare Pro ¥200(top_inst 龙虎榜机构 2005+全市场+全市场历史价含退市,补小盘覆盖);★主力资金流=Level-1 推算劣质代理(降级);Level-2 真但不实用(年费上万+订阅10只);北向监管死;★真实性核查:top_inst 是真官方披露但'机构专用'是噪/可马甲信号(私募/游资可弄马甲诱多/匿名/仅异动股/拥挤)→期望放低。决定性下一步(待用户启动)=B078 上 Tushare 全覆盖去偏样本重跑 LHB 机构席位低期望一测;NO-GO 完全可能且诚实。结构性洞察:A股 聪明钱'及时+干净+可得'不可兼得。
+- **B077 done 收尾未竟**：3 条 framework 候选(date-bomb 时钟注入/§23 派生字段 measured-not-assumed/first-look 覆盖-门控裁定档)待沉淀 + F003 features.json 一致性(Codex 漏翻)。下次 done 收尾处理。
 - **cn_attack 宽池 top-25 与种子 43 重叠**：大盘蓝筹偏差，预期行为，B075 诚实标注。
 - **B070 follow-on**：2 因子去偏 baostock；港股 P3（backlog B055）。
 
