@@ -12,11 +12,18 @@ gross notional ``Σ |Δshares_i| × close_i``; the real cost is
 happen at the day's close (we measure the *strategy*, not the user's execution
 quality — that is what the real journal measures, spec §1).
 
-Why allocate on ``equity × (1 − cost_rate)`` instead of full equity: a fully
-invested target set (weights summing to 1.0) would leave nothing to pay the
-cost, driving cash negative. Holding back ``cost_rate`` reserves exactly enough
-for the cost, so cash lands at ≈0 (a tiny positive residual) — fully invested
-minus the honest cost. The drag on NAV is the cost itself.
+Why reserve cash for cost instead of investing full equity: a fully invested
+target set (weights summing to 1.0) would leave nothing to pay the cost, driving
+cash negative. The reservation must cover the FULL round-trip — a rebalance pays
+cost on the SELLS as well as the buys (gross = |Σ Δshares| × close summed over
+both legs). Reserving only the buy-side cost (``equity × (1 − cost_rate)``, the
+pre-B078 formula) overdrew cash by ≈ the sell-side cost on a high-turnover
+rebalance: cn_attack's monthly small-cap churn, fully invested after B074
+stripped its CASH buffer, hit ``cash`` −102 / −103 in production (2026-06).
+Additionally subtracting ``held_marked_value × cost_rate`` reserves the sell-side
+cost (sells can never exceed the held value), so cash lands ≥ 0 at any turnover.
+A from-cash build holds nothing (held value 0), so the formula collapses to
+``equity × (1 − cost_rate)`` — activation is byte-identical (zero-regression).
 """
 
 from __future__ import annotations
@@ -119,7 +126,15 @@ def compute_rebalance(
             traded=False,
         )
 
-    investable = equity * (1.0 - cost_rate)
+    # B078 F002 — reserve cost for the FULL round-trip, not just the buy side.
+    # ``equity × (1 − cost_rate)`` only covers the cost of buying ``investable``;
+    # a rebalance also pays cost on the sells, so subtract ``held_marked_value ×
+    # cost_rate`` (the sell-side bound — sells ≤ held value) so cash lands ≥ 0 on
+    # any turnover. ``max(0.0, …)`` is defensive: an account already overdrawn by
+    # the old bug (cash < 0 → equity < held value) self-heals by selling toward
+    # all-cash rather than computing a negative target. From-cash builds (held
+    # value 0) are unaffected — investable stays ``equity × (1 − cost_rate)``.
+    investable = max(0.0, equity * (1.0 - cost_rate) - held_marked_value * cost_rate)
 
     # Desired shares per markable target.
     desired: dict[str, float] = {}

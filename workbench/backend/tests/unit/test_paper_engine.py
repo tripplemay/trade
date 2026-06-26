@@ -104,7 +104,7 @@ def test_rebalance_sells_dropped_symbol_to_zero_and_preserves_avg_cost() -> None
 
 
 def test_cost_is_charged_on_gross_traded_notional() -> None:
-    # Pure sell of half a single holding; cost applies to traded notional only.
+    # Single holding rebalanced to 100% of itself; cost applies to traded notional.
     plan = compute_rebalance(
         cash=0.0,
         current_positions={"AAA": (100.0, 50.0)},
@@ -113,7 +113,39 @@ def test_cost_is_charged_on_gross_traded_notional() -> None:
         fee_bps=10.0,
         slippage_bps=0.0,
     )
-    # equity = 10000; investable = 10000*(1-0.001)=9990; desired=99.9 sh.
-    # delta = -0.1 sh → gross traded = 0.1*100 = 10 → cost = 10*0.001 = 0.01.
-    assert plan.traded_notional == pytest.approx(10.0)
-    assert plan.cost == pytest.approx(0.01)
+    # equity = 10000; cost_rate = 0.001; held_marked_value = 10000.
+    # B078 F002 round-trip reservation: investable = 10000*(1-0.001) - 10000*0.001
+    #   = 9990 - 10 = 9980 → desired = 99.8 sh.
+    # delta = -0.2 sh → gross traded = 0.2*100 = 20 → cost = 20*0.001 = 0.02.
+    # cash = 0 + (0.2*100 sell proceeds) - 0.02 cost = 20 - 0.02 = 19.98 ≥ 0.
+    assert plan.traded_notional == pytest.approx(20.0)
+    assert plan.cost == pytest.approx(0.02)
+    assert plan.cash == pytest.approx(19.98)
+    assert plan.cash >= 0.0
+
+
+def test_full_turnover_rebalance_does_not_overdraw_cash_b078() -> None:
+    """B078 F002 regression — a fully-invested book rebalanced into a completely
+    new basket pays round-trip cost (sells + buys). The pre-B078 one-way
+    reservation drove cash negative (prod cn_attack −102 / −103); the round-trip
+    reservation must keep cash ≥ 0."""
+
+    # Fully invested in OLD with cash ≈ 0 (no slack), new target is 100% NEW.
+    plan = compute_rebalance(
+        cash=0.0,
+        current_positions={"OLD": (1000.0, 100.0)},  # 1000 * 100 = 100_000 held
+        target_weights={"NEW": 1.0},
+        marks={"OLD": 100.0, "NEW": 50.0},
+        fee_bps=5.0,
+        slippage_bps=5.0,
+    )
+    # equity = 100_000; cost_rate = 0.001; held = 100_000.
+    # investable = 100000*(1-0.001) - 100000*0.001 = 99900 - 100 = 99800.
+    # sell 100_000 OLD + buy 99_800 NEW → gross = 199_800 → cost = 199.8.
+    # cash = 0 + (100000 - 99800) - 199.8 = 200 - 199.8 = 0.2 (was −99.9 pre-fix).
+    assert plan.traded is True
+    assert plan.cash == pytest.approx(0.2)
+    assert plan.cash >= 0.0
+    by = {p.symbol: p for p in plan.positions}
+    assert set(by) == {"NEW"}  # OLD fully sold
+    assert by["NEW"].shares == pytest.approx(99_800.0 / 50.0)
