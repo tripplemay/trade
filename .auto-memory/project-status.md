@@ -5,7 +5,7 @@ type: project
 ---
 
 ## 当前状态
-- **当前：B078 fixing（fix_rounds=1，F004-fix）** = quality_momentum CN基本面覆写 bug。**F003 L2 signoff done（CLI代Codex）**：data-refresh卡死修复✅(02:34 UTC 6m54s)/pure_momentum全链路✅(as_of 2026-06-26, cash+178)/freshness gate已部署✅。★BLOCKER=I001: refresh.py line 419 `--no-cn-fundamentals`时以US-only数据覆写fundamentals.csv→抹去29482 CN基本面行→quality_score空→all-cash→service失败。这是pre-existing bug，B078 F001修复卡死后data-refresh首次完成即触发（freeze期间从未完成故未触发）。**F004-fix需修：** refresh.py保留现有CN行。signoff docs/test-reports/B078-ashare-data-refresh-hang-fix-signoff-2026-06-26.md。commit 4e70e48。
+- **当前：B078 reverifying（fix_rounds=1，F004-fix done，待 Codex 复验）** = quality_momentum CN基本面覆写 bug。**F004-fix done（commit c121621）**：refresh.py 当 --no-cn-fundamentals 时 `_read_existing_cn_fundamental_rows` 读现有 .SH/.SZ 行保留, 只刷 US, 不再全覆盖; 回归测试修复前红/后绿; gates 全绿 1629 passed。**★Codex 复验关键 ops**：代码只防 FUTURE 覆写, 生产 fundamentals.csv 06-26 已被抹成 US-only(CN 行丢)→ quality_momentum 恢复须先**手动触发 workbench-cn-universe.service(或等周日)REPOPULATE CN 基本面**, 再验 quality_momentum 非空 target + paper 调仓 cash≥0 + 之后日刷不再抹(真验收)。**F003 L2 已 PASS 部分**：data-refresh 卡死修复✅(02:34 UTC 6m54s)/pure_momentum 全链路✅(as_of 06-26 cash+178)/freshness gate✅/美股 Master regime 零回归✅。signoff docs/test-reports/B078-...-signoff-2026-06-26.md。
 - **B077 ✅ done（2026-06-25，CLI代Codex）** = A股 聪明钱数据可行性摸底。整体 NOT-GO。signoff docs/test-reports/B077-cn-attack-smart-money-signoff-2026-06-25.md。
 - **⚠️ B077 date-bomb已修（2026-06-23,commit 6f54e35）**：cn/hk/yfinance get_quote clock-injectable fix。
 - **B076 ✅ done（2026-06-24）**。B075 ✅ done（2026-06-22）。
