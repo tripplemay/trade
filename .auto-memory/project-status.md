@@ -5,24 +5,22 @@ type: project
 ---
 
 ## 当前状态
-- **当前：B078 reverifying（fix_rounds=1，F004-fix done，待 Codex 复验）** = quality_momentum CN基本面覆写 bug。**F004-fix done（commit c121621）**：refresh.py 当 --no-cn-fundamentals 时 `_read_existing_cn_fundamental_rows` 读现有 .SH/.SZ 行保留, 只刷 US, 不再全覆盖; 回归测试修复前红/后绿; gates 全绿 1629 passed。**★Codex 复验关键 ops**：代码只防 FUTURE 覆写, 生产 fundamentals.csv 06-26 已被抹成 US-only(CN 行丢)→ quality_momentum 恢复须先**手动触发 workbench-cn-universe.service(或等周日)REPOPULATE CN 基本面**, 再验 quality_momentum 非空 target + paper 调仓 cash≥0 + 之后日刷不再抹(真验收)。**F003 L2 已 PASS 部分**：data-refresh 卡死修复✅(02:34 UTC 6m54s)/pure_momentum 全链路✅(as_of 06-26 cash+178)/freshness gate✅/美股 Master regime 零回归✅。signoff docs/test-reports/B078-...-signoff-2026-06-26.md。
-- **B077 ✅ done（2026-06-25，CLI代Codex）** = A股 聪明钱数据可行性摸底。整体 NOT-GO。signoff docs/test-reports/B077-cn-attack-smart-money-signoff-2026-06-25.md。
-- **⚠️ B077 date-bomb已修（2026-06-23,commit 6f54e35）**：cn/hk/yfinance get_quote clock-injectable fix。
+- **B078 ✅ done（2026-06-26，CLI代Codex）** = A股 data-refresh 卡死修复(B075 宽宇宙回归)。全批次 PASS：F001(per-call 超时+watchdog)/F002(round-trip cost buffer+freshness gate)/F003(L2 pure_momentum全链路)/F004-fix(CN基本面覆写bug)。★F004-fix 真验收：data-refresh(--no-cn-fundamentals)跑完后 fundamentals.csv 仍 29,893行(CN 行保留, cn_fundamental_rows=29316 preserved)；quality_momentum cash +187.52(从 -102.49转正)。signoff docs/test-reports/B078-ashare-data-refresh-hang-fix-signoff-2026-06-26.md。
+- **B077 ✅ done（2026-06-25，CLI代Codex）** = A股 聪明钱数据可行性摸底。整体 NOT-GO（北向ELIMINATED/资金流浅/龙虎榜INCONCLUSIVE_COVERAGE_LIMITED 80.8%小盘未覆盖）。signoff docs/test-reports/B077-cn-attack-smart-money-signoff-2026-06-25.md。
 - **B076 ✅ done（2026-06-24）**。B075 ✅ done（2026-06-22）。
 - **⚠️ ops: 网关 402 out-of-credit（2026-06-22）**：AI功能不可用，需充值 aigc-gateway。
+- **⚠️ cn-universe 今日手动触发（07:27 UTC）仍在运行**：reverify需要REPOPULATE，watchdog 8h(~15:27 UTC截止)；周日06:00 UTC正常自动跑不受影响。
 
 ## 遗留 / soft-watch
-- **★CN基本面覆写bug(F004-fix焦点)**：refresh.py --no-cn-fundamentals覆写fundamentals.csv→quality_momentum失败。修复=读取现有CN行保留写入。
 - **★聪明钱方向**：backlog `B0XX-ashare-smart-money-following`，结论存docs/research/，下次深入。
-- **B077 done 收尾未竟**：3条framework候选待沉淀+F003 features.json一致性。下次done处理。
-- **cn_attack宽池top-25与种子43重叠**：大盘蓝筹偏差，预期行为。
+- **B077 done 收尾未竟**：3条framework候选(date-bomb时钟注入/§23派生字段measured-not-assumed/first-look覆盖-门控裁定档)待沉淀+F003 features.json一致性。下次done处理。
+- **B078 proposed learnings（4条，commit 21efe41）**：oneshot无超时卡死/宽集刷包裹ALL网络调用含bulk discovery/round-trip成本预留/静默冻结守门。done收尾时沉淀。
 - **B070 follow-on**：2因子去偏baostock；港股P3（backlog B055）。
-- **DB时序artifact**：CN price_snapshot DB 2026-06-22，明日prices.service(2026-06-27 00:30 UTC)运行后自愈至2026-06-25。
 
 ## 永久硬边界
 - B045 market data refresh (r) 只读+§12.10.2 AST 守门；research-safe / no-broker / no-AI 预测 / no 自动下单；hk_china 仍 ETF proxy。
 - golden 只进测试 fixture seam（fixture_dir / 测试 DB seed），不碰生产 data_root/unified 真数据路径。
-- cn_attack 仍研究态/OOS 红卡/edge 微弱不可配资（B075 未改策略）。
+- cn_attack 仍研究态/OOS 红卡/edge 微弱不可配资（B078 不改策略）。
 
 ## Framework 状态（最新 4 版）
 - **v0.9.52**（B076）：generator.md §35 baostock turn 补退市名市值 + survivor/去偏双 cut / planner.md §策略-改动 verdict 设计(全样本+OOS 双门禁)。

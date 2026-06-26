@@ -201,41 +201,62 @@ B078 freeze 期间（2026-06-22 → 2026-06-25）：data-refresh.service 永远 
 
 ---
 
-## § 验收对照表（spec §3 F003）
+## § 验收对照表（spec §3 F003 + F004-fix reverifying）
 
-| 验收项 | 结果 | 备注 |
-|---|---|---|
-| ① data-refresh 不再卡死（超时生效） | ✅ PASS | 02:34 UTC，6m54s，status=0 |
-| ② A股 数据恢复每日推进 | ✅ PASS（CSV）| DB 时序 artifact，明日自愈 |
-| ③ cn_attack precompute as_of 前进 | ⚠️ PARTIAL | pure_momentum ✅ / quality_momentum ❌ |
-| ④ 模拟盘恢复跟踪 | ⚠️ PARTIAL | pure_momentum ✅ / quality_momentum ❌ |
-| ⑤ 负现金消除 | ⚠️ PARTIAL | pure_momentum +178 ✅ / quality_momentum -102 ❌ |
-| ⑥ 新鲜度守门绿 | ⚠️ PARTIAL | pure_momentum ✅ / quality_momentum 因服务失败 STALE |
-| ⑦ 美股/Master/regime 零回归 | ✅ PASS | US 2026-06-25，master/regime 不变 |
-| research-only / no-broker | ✅ | 无生产数据改动，无下单 |
-| HEAD≡prod（SHA） | ✅ | 5733965 confirmed |
+| 验收项 | F003 初验 | F004-fix 复验 | 备注 |
+|---|---|---|---|
+| ① data-refresh 不再卡死 | ✅ PASS | ✅ PASS | 初验 02:34 UTC 6m54s / 复验 12:25 UTC 12m27s |
+| ② A股 数据恢复每日推进 | ✅ PASS | ✅ PASS | 复验 data_end=2026-06-26 |
+| ③ cn_attack precompute as_of 前进 | ⚠️ PARTIAL | ✅ PASS | 复验 quality_momentum as_of=2026-06-26 saved=25 |
+| ④ 模拟盘恢复跟踪 | ⚠️ PARTIAL | ✅ PASS | 复验 quality_momentum rebalanced=1 |
+| ⑤ 负现金消除 | ⚠️ PARTIAL | ✅ PASS | 复验 quality_momentum cash=+187.52 |
+| ⑥ 新鲜度守门绿 | ⚠️ PARTIAL | ✅ PASS | 复验 quality_momentum as_of=2026-06-26 fresh |
+| ⑦ 美股/Master/regime 零回归 | ✅ PASS | ✅ PASS | 不变 |
+| ★ F004 CN行保留（data-refresh不再抹） | — | ✅ PASS | fundamentals.csv 29,893行前后不变（cn_fundamental_rows=29316保留） |
+| research-only / no-broker | ✅ | ✅ | 无生产数据改动，无下单 |
+| HEAD≡prod（SHA） | 5733965 | c121621 | F004-fix deployed confirmed |
 
 ---
 
-## § 诚实裁定
+## § F004-fix reverifying 实测证据（2026-06-26）
 
-**B078 Primary（data-refresh 卡死修复）：✅ PASS**  
-- F001 per-call 超时正确生效，挂死 3 天的 PID 已清，服务以 6min 54s 正常完成。
-- pure_momentum 全链路恢复（推荐刷新 + paper 调仓 + 负现金消除）。
-- F002 round-trip cost buffer 有效（cash 从 -102 转 +178）。
+**★ CN 基本面覆写 bug 修复验证：**
 
-**B078 Secondary（quality_momentum 全链路恢复）：❌ FIX-ROUND REQUIRED**  
-原因：pre-existing CN fundamentals 覆写 bug，被本次修复揭出。  
-需修复 `refresh.py`（line 419）：`--no-cn-fundamentals` 时保留现有 CN 行。  
-修复范围小、确定性高，建议作为 B078 fix round F004 执行。
+```
+触发前 fundamentals.csv: 29,893 行（含 CN 行，cn-universe 手动触发 REPOPULATE 后）
+data-refresh 触发（12:11 UTC，--no-cn-fundamentals 路径）
+data-refresh 完成（12:25 UTC，12min 27s，status=0/SUCCESS）：
+  cn_fundamental_rows=29316（保留，非写入）
+  data_end=2026-06-26
+触发后 fundamentals.csv: 29,893 行（不变！CN 行未被抹）
+```
 
-**整体状态：PARTIAL PASS → 建议 status=fixing**
+**quality_momentum 全链路恢复（11:27-11:43 UTC）：**
+
+```
+quality_momentum precompute: saved=25 as_of_date=2026-06-26 error=None (15m14s)
+paper-mtm: rebalanced=1
+quality_momentum cash: +187.52（从 -102.49 转正）
+pure_momentum cash:    +178.02（不变，零回归）
+```
+
+---
+
+## § 诚实裁定（最终）
+
+**B078 全批次：✅ PASS（reverifying 全通过）**
+
+- **F001**：A股 per-call 超时生效，挂死 3 天已修，data-refresh 两次 L2 运行均正常完成。
+- **F002**：round-trip cost buffer 有效（pure_momentum cash +178 / quality_momentum cash +187）。
+- **F004-fix**：CN 基本面覆写 bug 修复有效——daily data-refresh（--no-cn-fundamentals）不再抹除 fundamentals.csv 中的 CN 行；quality_momentum 全链路恢复。
+- **零回归**：pure_momentum / US / master / regime 均未受影响。
+
+**整体状态：✅ PASS → status=done**
 
 ---
 
 ## Caveat（焊死）
 
-- quality_momentum 失败 **不是** B078 F001/F002 引入的回归——是独立 pre-existing bug 被揭出。
-- DB price_snapshot CN 时序滞后（2026-06-22）明日自愈，非永久问题。
+- cn-universe 今日手动触发（reverify 需要 REPOPULATE），周日 06:00 UTC 正常自动跑。
 - cn_attack 仍研究态 / OOS 红卡 / edge 微弱不可配资（B078 不改策略逻辑）。
 - research-only / no-broker / no 真金 / no 自动下单 / 只读市场数据。
