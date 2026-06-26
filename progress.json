@@ -1,9 +1,9 @@
 {
-  "status": "verifying",
+  "status": "fixing",
   "total_features": 3,
   "completed_features": 2,
-  "fix_rounds": 0,
-  "current_sprint": "F003",
+  "fix_rounds": 1,
+  "current_sprint": "F004-fix",
   "last_updated": "2026-06-26",
   "user_goal": "B078 A股 data-refresh 卡死修复(生产 hotfix,B075 宽宇宙回归)。来源:2026-06-26 用户报 A股 两策略推荐页每天有新股票但模拟盘不调仓→planner VM 生产诊断(铁律 9)→根因确认→用户确认立批。**★根因(planner VM 实测,焊死)**:现象纠正——A股 推荐没每天变是冻在 06-22(price_snapshot A股/CSV/cn_pit_universe 最新都 06-22);模拟盘已正确跟到(06-23 调仓现持 06-22 推荐 25 只小盘)。铁证:data-refresh.service 自 06-22 拉 A股 挂死 3 天(activating/Main PID 649789/CPU 仅 18s 阻塞,最后日志拉完美股 Tiingo 卡在 A股),服务一直 activating→systemd 无法触发新刷新(timer Trigger=n/a)→A股 冻 06-22→precompute 每天重吐同快照→paper 无新可跟。美股走另一 timer(prices.timer Tiingo)不受影响故只 A股 冻。定位=B075 宽宇宙(1490)后每日 A股 逐只 akshare 拉取无 per-call 超时→某只挂住→整 service 死等。次要:paper cash 负(-102/-103)=B074 剥 CASH sentinel 满仓副作用,调仓成本无缓冲。**修**:F001 A股 拉取 per-call 超时(挂住→fail-fast→§34 容忍→完成推进)+watchdog 兜底+部署杀卡死进程;F002 paper 留成本缓冲消负现金+数据新鲜度守门(静默冻结被抓);F003 Codex L2 真机(data-refresh 不卡死+A股 数据恢复每日+模拟盘恢复跟踪+负现金消除+零回归)。spec docs/specs/B078-ashare-data-refresh-hang-fix-spec.md(3 章)。",
   "reference_docs": [
@@ -17,16 +17,25 @@
   "docs": {
     "spec": "docs/specs/B078-ashare-data-refresh-hang-fix-spec.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/B078-ashare-data-refresh-hang-fix-signoff-2026-06-26.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": null,
-    "pass_count": 0,
-    "partial_count": 0,
-    "fail_count": 0,
-    "issues": []
+    "summary": "PARTIAL PASS → fix-round required. F001(data-refresh hang fix)+F002(pure_momentum cash+freshness gate): PASS. quality_momentum失败：pre-existing CN fundamentals overwrite bug in refresh.py line 419被B078揭出：--no-cn-fundamentals时cn_fundamental_rows=[]覆写整个fundamentals.csv→CN基本面全消→quality_score空→all-cash→service失败。需F004-fix：refresh.py保留现有CN行。",
+    "pass_count": 2,
+    "partial_count": 4,
+    "fail_count": 1,
+    "issues": [
+      {
+        "id": "I001",
+        "severity": "BLOCKER",
+        "item": "quality_momentum service失败（data_not_covered）",
+        "root_cause": "refresh.py line 419: --no-cn-fundamentals时以US-only数据覆写fundamentals.csv，抹去29482条CN基本面行（pre-existing bug，B078 F001修复卡死后首次触发）",
+        "fix": "refresh.py: --no-cn-fundamentals时读取现有fundamentals.csv中CN行并保留到新写入",
+        "evidence": "journalctl 04:44:38 cn_attack_precompute_data_not_covered; fundamentals.csv wc-l=578(US only); cn-universe 2026-06-22 log cn_fundamental_rows=29482"
+      }
+    ]
   },
   "generator_handoff": {
     "summary": "F001+F002 done(commits 8d618b9 F001 / 5733965 F002, pushed main de89fec..5733965)。F001=A股 拉取 per-call 超时(call_timeout.call_with_timeout, daemon 线程+join 截止, 0/None=inline 零回归)包裹 run_refresh 3 个 CN 块 + build_cn_universe marketcap + ★discover_ashare_superset bulk(eastmoney+sina 各自上限, 日刷 run_refresh 前唯一未设限网络调用, 超时→seed) + cn_benchmark CSI300; cli DEFAULT_CN_FETCH_TIMEOUT_SECONDS=60(+env+--flag); systemd watchdog data-refresh TimeoutStartSec=5400 / cn-universe 28800(Type=oneshot 默认 infinity 正是 3 天卡死根因)。F002=compute_rebalance investable 再减 held_marked_value*cost_rate 预留卖出腿 round-trip 成本→任意换手 cash≥0(from-cash 建仓 held=0 逐字节零回归, 仅高换手调仓变); freshness.py 业务日新鲜度守门(reco/A股 price as_of + service stuck-activating)+ teeth 测 pin 默认抓 4 业务日 B078 冻。对抗式自审(22 agents/1.48M tok)确认 2 处补强已并入(discovery/benchmark 设限 + 新鲜度默认 pin)。Gates 全绿: ruff/mypy(453)0, unit 1627 passed(除 1 既有真网络测试 test_cli_main_persists_window, 见下), acceptance+safety 全绿。",
@@ -35,7 +44,7 @@
   "session_notes": {
     "planner": "2026-06-26 B078 planning(planner,生产 hotfix 铁律 9)。用户报 A股 推荐每天新股票但模拟盘不调仓→planner VM 只读诊断→根因+用户确认→立批。**★根因铁证**:data-refresh.service 自 06-22 拉 A股 挂死 3 天(activating/CPU 18s 阻塞)→堵所有日刷→A股 冻 06-22→推荐每天重吐同 06-22 快照→paper 06-23 跟完(现持 06-22 小盘)无新可跟。现象纠正:推荐没在变是冻住,paper 其实跟了。美股走另一 timer 不受影响故只 A股 冻。B075 宽宇宙(1490)无 per-call 超时回归。次要:paper 负现金=B074 满仓副作用。**3 features 2g+1c**:F001 A股 拉取超时+watchdog(纳入 §34 partial-failure)/F002 paper 留成本缓冲+数据新鲜度守门/F003 Codex L2 真机。**【续接】**:status=building,Generator 接 F001(A股 fetch per-call 超时+watchdog,部署须先杀卡死 PID 649789→否则旧进程不退新码不生效)→F002(负现金+新鲜度守门),再 Codex F003 真机验 data-refresh 不卡死+A股 数据恢复每日+模拟盘恢复跟踪。**关键 ops**:卡死进程必须先 systemctl stop+kill。若 1490 日刷本就太重→F001 收口宽集日刷策略(呼应 B075 feasibility)。**待办**:B077 done 收尾(3 学习+F003 一致性)+聪明钱方向 backlog(已存)。prod=B078 修后系。",
     "generator": "2026-06-26 B078 building→verifying(generator)。F001+F002 实现完成并推 main(8d618b9 / 5733965)。【F001 设计要点】per-call 超时用 daemon 线程+join(timeout_seconds)(非 SIGALRM, 跨平台/可嵌套); 挂死线程 leak 但 daemon 不阻塞退出, systemd TimeoutStartSec 兜底。包裹了 ALL 真 akshare 网络调用: run_refresh 3 块 + universe marketcap + discover bulk(eastmoney+sina) + benchmark。0/None=inline 故所有既有调用零回归。【F002 设计要点】负现金根因=单边成本预留, round-trip(买+卖)成本下满仓调仓透支; 修=investable 减 held*cost_rate, 数学证 new_cash≥r²(equity+held)≥0; from-cash held=0 → 公式不变 → 建仓零回归(仅 1 个既有 engine 测试因 round-trip 改值)。【★Codex 验收必读 ops】L2 真机部署: 部署新码后必须 systemctl stop workbench-data-refresh + 杀卡死 PID 649789(旧进程不自退, 新码不生效) 再重启 timer; 否则永 activating 不变。【★本机已知坑】full unit suite 本机会卡在 tests/unit/test_backtest_data_window.py::test_cli_main_persists_window — 该测试调 refresh_cli.main() 不带 --no-cn-universe, 用真 akshare(本机 SSL 19s/次 ×~130 调用)。CI 上这些端点秒拒→快过; 本机我用临时 sitecustomize socket.setdefaulttimeout(2) + deselect 该测试跑通 1627 passed。该测试 rc=0 不受我改动影响(真 loader best-effort 降级, 60s 超时永不触发因 <2s 即失败)。【遗留/给 Codex】F003 L2 真机 7 条逐验; 若 1490 日刷实测仍太慢→F001 spec §诚实边界①收口宽集日刷策略。",
-    "evaluator": null
+    "evaluator": "2026-06-26 B078 F003 L2 真机验收(evaluator, CLI代Codex)。★主要发现: quality_momentum service失败(cn_attack_precompute_data_not_covered),根因=refresh.py--no-cn-fundamentals时覆写fundamentals.csv抹去CN基本面(pre-existing bug被B078揭出,freeze期间data-refresh从未完成故未触发)。pure_momentum全链路✅(推荐2026-06-26/cash+178/rebalanced)。data-refresh卡死修复✅(02:34 UTC 6m54s status=0)。A股CSV前进到2026-06-25✅,DB时序artifact明日自愈。freshness gate已部署(5733965),CI acceptance绿,production pure_momentum新鲜✅。★需F004-fix: refresh.py保留CN基本面行。signoff docs/test-reports/B078-...-signoff-2026-06-26.md"
   },
   "features": [
     "F001",
