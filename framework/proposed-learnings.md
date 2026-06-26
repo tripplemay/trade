@@ -401,3 +401,19 @@
 **状态：** 待确认
 
 <!-- 当前活动候选（v0.9.52 后）：B077 3 条（date-bomb 时钟注入 / §23 派生字段 measured-not-assumed / first-look 覆盖-门控裁定档），待 done 阶段 Planner 提交用户。 -->
+
+## [2026-06-26] Claude CLI — 来源：B078 F001/F002 A股 data-refresh 卡死修复(生产 hotfix)
+
+**类型：** 新坑(systemd oneshot 默认无超时)/ 新规律(宽集刷 job 防挂死要包裹 ALL 网络调用含 bulk discovery)/ 新规律(round-trip 成本预留)/ 新规律(静默冻结守门)(4 条)
+
+**内容：**
+1. **【systemd Type=oneshot 默认 TimeoutStartSec=infinity = 永 activating 卡死根因】** oneshot service 的 `TimeoutStartSec` **默认禁用(infinity)**，与普通 service(默认 90s)不同。一旦 ExecStart 内有无超时的阻塞网络读 → 服务永 "activating"、timer Trigger=n/a、堵所有后续刷新(B078: data-refresh 卡 3 天冻 A股)。**规约：每个 oneshot 数据刷新 service 必须显式设 `TimeoutStartSec=<正常耗时×~2.5>`(watchdog 兜底)；这是 §34「宽集逐只刷」的 OS 层补充。** 诊断卡死先看 `systemctl show -p ActiveState,SubState,ActiveEnterTimestamp`，activating 超 X 时即 stuck。
+2. **【宽集刷防挂死要包裹 ALL 真网络调用，bulk discovery 最易漏】** per-call 超时只包"逐只"fetch 不够：**bulk 发现/快照调用(`stock_zh_a_spot_em`/`stock_zh_a_spot`)常在逐只循环 BEFORE 跑，且无超时**——挂死则 0 数据写入、命门再冻(对抗式自审抓到, spec §1 清单只列逐只漏了 bulk)。**规约：宽集 job 的超时清单要含 (a) 逐只 fetch (b) bulk discovery (c) benchmark/单次 index 等所有真网络调用；用 daemon-线程+join(timeout) 原语(跨平台/可嵌套, leak 线程 daemon 不阻塞退出), 0/None=inline 保证既有调用零回归。** 写完用 grep 核 "无 timeout 的网络调用" 残留。
+3. **【paper 调仓成本要预留 round-trip(买+卖), 单边预留满仓必透支】** `investable=equity*(1-cost_rate)` 只够付**买入**腿成本; 调仓在 gross=买+卖 全程收费, 高换手(全换)按卖出腿透支 ≈ held*cost_rate(B078: B074 剥 CASH buffer 满仓后 cash -102/-103)。**修法：investable 再减 `held_marked_value*cost_rate`(卖出腿上界=持仓市值)→ 任意换手 cash≥0(证 new_cash≥r²(equity+held)); from-cash 建仓 held=0 → 公式不变 → 建仓零回归(仅高换手调仓变)。** 通用于任何"满仓+成本"的再平衡引擎。
+4. **【静默冻结守门：数据 as_of 业务日新鲜度 + service stuck-activating 双断言】** 数据管道挂死最毒的是**无人报错**(B078 冻 4 天 precompute 每天重吐同快照、paper 照"跟"冻结目标)。**规约：把"快照 as_of 业务日年龄 ≤ N" + "service 不 stuck-activating > X 时"做成纯函数 + acceptance 守门(有牙齿: 故意造陈旧→红); 业务日计数免疫周末(长假残留 WARNING 可接受); teeth 测必须 pin SHIPPED 默认阈在真实冻幅(否则默认回归静默重开 bug)。**
+
+**建议写入：** `framework/harness/generator.md`(§宽集刷防挂死 per-call 超时含 bulk discovery + daemon-线程原语 / §paper round-trip 成本预留 / §静默冻结新鲜度守门 teeth-pin-默认) / `framework/harness/evaluator.md`(§systemd oneshot 无超时卡死诊断 systemctl show + L2 部署须杀卡死 PID 旧进程不自退)。
+
+**状态：** 待确认
+
+<!-- 当前活动候选（v0.9.52 后）：B077 3 条 + B078 4 条(oneshot 无超时卡死 / 宽集刷包裹 ALL 网络调用 / round-trip 成本预留 / 静默冻结守门)，待 done 阶段 Planner 提交用户。 -->
