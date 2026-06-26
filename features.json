@@ -6,7 +6,7 @@
       "title": "A股 拉取 per-call 超时 + watchdog(杜绝挂死,日刷恢复推进)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F001 + §0 根因】(1) ★per-call 超时:A股 逐只 akshare 拉取(CnHkPrices/cn_marketcap/cn_universe)加 per-call timeout→单只挂住即超时 fail→计入 §34 partial-failure→整轮完成并推进日期(不再死等)。(2) 整体 watchdog 兜底:service 加 TimeoutStartSec(或 job 级 deadline)→即便逻辑漏网 systemd 也 X 时间后杀掉,杜绝再 activating 卡 3 天。(3) 日刷窗口可行性:实测加超时后 1490 只日刷在合理窗口内完成+成功率;若仍太慢/大量超时→收口(分批/降日刷 universe/宽集 prices 解耦到周级)。(4) 部署 ops:部署前 systemctl stop+杀卡死 PID 649789(旧进程不自退,新码不生效)。(5) 单测(超时→partial-failure 计数→refresh 完成,确定性 fixture)。正面证据:A股 拉取有 per-call 超时(挂住→超时→§34 容忍→完成推进)+watchdog 兜底;实测日刷合理窗口完成+A股 数据日期推进到当日;杀重启卡死进程。Gates:backend pytest/ruff 目录上下文/mypy CI-exact 0。",
       "design_decisions": [
         "★根因(planner VM 实测):data-refresh.service 自 06-22 拉 A股 挂死 3 天(activating/CPU 18s 阻塞),堵住所有日刷→A股 冻 06-22→推荐每天重吐同快照→paper 06-23 跟完无新可跟。B075 宽宇宙(1490)回归。",
@@ -19,7 +19,7 @@
       "title": "paper 负现金修复(留交易成本缓冲)+ 数据新鲜度守门(静默冻结被抓)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F002 + §0 次要 bug】(1) 负现金修复:paper 调仓为交易成本预留现金缓冲(不满仓到 cash=0;或调仓时扣留成本额)→cash≥0;修正 B074 剥 CASH sentinel 满仓副作用。(2) ★数据新鲜度守门(acceptance/监控,复用测试基建):断言/告警 recommendation_snapshot as_of 距今≤N 交易日+A股 price_snapshot 新鲜度+data-refresh service 不处于 stuck-activating>X 小时——让静默冻结被 CI/监控抓(本次冻 4 天无人知=正该守)。(3) 单测(负现金消除+新鲜度断言有牙齿)。正面证据:paper 调仓后 cash≥0(留成本缓冲);数据新鲜度守门(as_of 超期/service 卡住→红/告警,故意造陈旧→触发)。Gates 同 F001+acceptance。",
       "design_decisions": [
         "paper 负现金=B074 剥 CASH sentinel 满仓 cash≈0 副作用,06-23 调仓成本 206 无缓冲可扣→透支;修=留交易成本缓冲。",
