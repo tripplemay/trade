@@ -24,6 +24,8 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Protocol
 
+from workbench_api.data_refresh.call_timeout import call_with_timeout
+
 logger = logging.getLogger(__name__)
 
 # Mirrors trade.data.data_root.UNIFIED_CN_BENCHMARK_RELPATH (drift = trade reads a
@@ -119,15 +121,23 @@ def run_cn_benchmark_refresh(
     data_root: Path,
     loader: IndexDailyLoader,
     symbol: str = CSI300_SINA_SYMBOL,
+    fetch_timeout_seconds: float | None = None,
 ) -> int:
     """Fetch the CSI 300 daily close and write ``cn_csi300.csv`` under ``data_root``.
 
     Best-effort: a fetch failure (logged) leaves the file unwritten (the report
-    degrades). Returns the number of rows written (0 on failure)."""
+    degrades). Returns the number of rows written (0 on failure).
 
+    B078 F001: the single akshare index fetch is bounded by
+    ``fetch_timeout_seconds`` (0 / None = inline). It runs after the prices are
+    written but before the data-window persist, so a silent hang here would block
+    those downstream steps until the systemd watchdog; the timeout degrades a hang
+    to the same best-effort "benchmark unavailable" as any other fetch failure."""
+
+    timeout = fetch_timeout_seconds or 0.0
     try:
-        pairs = loader.fetch_index_close(symbol)
-    except Exception:  # noqa: BLE001 — best-effort; never abort the refresh
+        pairs = call_with_timeout(timeout, loader.fetch_index_close, symbol)
+    except Exception:  # noqa: BLE001 — best-effort (incl. FetchTimeoutError); never abort
         logger.exception("cn_benchmark_fetch_failure", extra={"symbol": symbol})
         return 0
     if not pairs:

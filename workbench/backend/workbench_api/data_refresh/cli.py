@@ -61,6 +61,27 @@ WIDE_UNIVERSE_TARGET_N = 1500
 # than the expected long tail. US / CN_HK proxy failures stay strict (rate 0).
 WIDE_CN_MAX_FAILURE_RATE = 0.2
 
+# B078 F001 — per-call wall-clock deadline (seconds) for each A-share akshare
+# fetch. The daily wide refresh averages ~1.3s/symbol (~33min over ~1500 names,
+# B075 VM-measured), so 60s is ~46× the norm: a slow-but-working fetch is never
+# false-tripped, while a network HANG (the 2026-06-22 root cause — a blocking
+# read with no timeout that wedged the loop for 3 days) fails fast and the loop
+# advances. A hung symbol is counted as a §34 partial-failure. Override via the
+# WORKBENCH_CN_FETCH_TIMEOUT_SECONDS env var or the --cn-fetch-timeout-seconds
+# flag; 0 disables the bound (the systemd TimeoutStartSec watchdog is the
+# ultimate backstop either way).
+DEFAULT_CN_FETCH_TIMEOUT_SECONDS = 60.0
+
+
+def _default_cn_fetch_timeout() -> float:
+    raw = os.environ.get("WORKBENCH_CN_FETCH_TIMEOUT_SECONDS")
+    if raw is None:
+        return DEFAULT_CN_FETCH_TIMEOUT_SECONDS
+    try:
+        return float(raw)
+    except ValueError:
+        return DEFAULT_CN_FETCH_TIMEOUT_SECONDS
+
 LoaderFactory = Callable[[], tuple[object, object, object, object]]
 
 
@@ -131,6 +152,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Skip the A-share CAS fundamentals fetch (decoupled to a low-freq job).",
     )
+    # B078 F001 — per-call wall-clock deadline for each A-share akshare fetch
+    # (杜绝挂死). Default from WORKBENCH_CN_FETCH_TIMEOUT_SECONDS or the constant;
+    # 0 disables the bound.
+    fetch.add_argument(
+        "--cn-fetch-timeout-seconds",
+        type=float,
+        default=_default_cn_fetch_timeout(),
+        help="Per-call timeout (s) for each A-share fetch; 0 disables (default: %(default)s).",
+    )
     add_as_of_argument(fetch)
     return parser.parse_args(argv)
 
@@ -167,6 +197,9 @@ def fetch_main(
 ) -> RefreshSummary:
     run_date = today or datetime.now(UTC).date()
     from_date = run_date - timedelta(days=max(1, args.lookback_days))
+    # B078 F001 — per-call A-share fetch deadline; absent on a hand-built test
+    # Namespace → None (inline, byte-identical to pre-B078).
+    cn_fetch_timeout = getattr(args, "cn_fetch_timeout_seconds", None)
     prices_loader, fundamentals_loader, cn_hk_prices_loader, fx_loader = (
         loader_factory or _build_loaders
     )()
@@ -205,6 +238,8 @@ def fetch_main(
         # loader is passed only when fundamentals are wanted this run.
         cn_fundamentals_loader=cn_fundamentals_loader if fetch_cn_fundamentals else None,
         cn_fundamentals_symbols=superset if fetch_cn_fundamentals else None,
+        # B078 F001 — bound each A-share per-symbol fetch (杜绝挂死).
+        cn_fetch_timeout_seconds=cn_fetch_timeout,
     )
     # B063 F001 — also refresh the FX rates CSV (FRED CNY/USD + HKD/USD) the
     # backtest reads for USD conversion. Best-effort per series (logged inside).
@@ -220,6 +255,8 @@ def fetch_main(
         run_cn_benchmark_refresh(
             data_root=args.data_root,
             loader=cn_benchmark_loader,  # type: ignore[arg-type]
+            # B078 F001 — bound the single index fetch (杜绝挂死).
+            fetch_timeout_seconds=cn_fetch_timeout,
         )
 
     # B065 F001 — build the A-share point-in-time universe membership artifact
@@ -233,6 +270,7 @@ def fetch_main(
             superset=superset,
             from_date=from_date,
             to_date=run_date,
+            fetch_timeout_seconds=cn_fetch_timeout,
         )
     return summary
 
@@ -245,6 +283,7 @@ def _build_cn_universe(
     superset: Sequence[str],
     from_date: date,
     to_date: date,
+    fetch_timeout_seconds: float | None = None,
 ) -> CnUniverseSummary | None:
     rebalances = quarterly_rebalance_dates(from_date, to_date)
     try:
@@ -257,6 +296,7 @@ def _build_cn_universe(
             from_date=from_date,
             to_date=to_date,
             top_n=args.cn_universe_top_n,
+            fetch_timeout_seconds=fetch_timeout_seconds,
         )
     except Exception:  # noqa: BLE001 — best-effort; never fail the US refresh
         logging.getLogger(__name__).exception("cn_universe_build_failed")
@@ -355,9 +395,13 @@ def main(argv: list[str] | None = None) -> int:
         # B075 F001 — ungate wide discovery: pass the sina-fallback flag through so
         # the production timers can widen to the full liquid market (the §23
         # VM-reachable bulk endpoint). Absent the flag this stays the curated seed.
+        # B078 F001 — bound the bulk discovery fetch too (杜绝挂死): it is the last
+        # unbounded A-share network call and runs BEFORE the price refresh, so a
+        # hang here would re-freeze the daily 命门. A timeout degrades to the seed.
         superset_provider = lambda: discover_ashare_superset(  # noqa: E731
             top_n=args.cn_universe_max_superset,
             allow_sina_fallback=args.cn_universe_sina_fallback,
+            fetch_timeout_seconds=getattr(args, "cn_fetch_timeout_seconds", None),
         )[0]
         # B065 F002 — CAS fundamentals for the superset → fundamentals.csv.
         cn_fundamentals_loader = CnFundamentalsLoader()

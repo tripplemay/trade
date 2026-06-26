@@ -10,6 +10,17 @@ User=deploy
 Group=deploy
 WorkingDirectory=/srv/workbench/current/backend
 
+# B078 F001 — hard wall-clock watchdog. Type=oneshot DISABLES TimeoutStartSec by
+# default (it defaults to infinity for oneshot), which is exactly why a single
+# hung akshare A-share fetch left this service stuck "activating" for 3 days
+# (2026-06-22 → -25), freezing every downstream daily refresh (A-share prices /
+# universe / recommendations all stalled on 06-22). Bound the whole run: a normal
+# wide refresh is ~33min (B075 VM-measured) plus the per-call fetch timeouts, so
+# 90min sits comfortably above the healthy path yet kills a true hang, letting
+# systemd fire the next day's run. Paired with --cn-fetch-timeout-seconds below
+# (the per-symbol bound) — belt and braces.
+TimeoutStartSec=5400
+
 # Secrets (TIINGO_API_KEY, SEC_EDGAR_CONTACT_EMAIL, ...) live in
 # /etc/workbench/workbench.env (chmod 600 root:deploy). Never committed.
 EnvironmentFile=/etc/workbench/workbench.env
@@ -34,7 +45,7 @@ Environment=WORKBENCH_DATA_ROOT=/var/lib/workbench/data
 # (--no-cn-universe-build --no-cn-fundamentals here). VM feasibility GO @ N=1500
 # (docs/test-reports/B075-F001-vm-feasibility-probe-2026-06-22.json): daily wide
 # prices ~33min, 100% success.
-ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.data_refresh.cli fetch --cn-universe-sina-fallback --cn-universe-top-n 1500 --cn-universe-max-superset 1500 --no-cn-universe-build --no-cn-fundamentals
+ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.data_refresh.cli fetch --cn-universe-sina-fallback --cn-universe-top-n 1500 --cn-universe-max-superset 1500 --no-cn-universe-build --no-cn-fundamentals --cn-fetch-timeout-seconds 60
 
 # Standard hardening (mirrors workbench-market-context.service).
 NoNewPrivileges=true

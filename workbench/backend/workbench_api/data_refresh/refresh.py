@@ -38,6 +38,7 @@ from workbench_api.data.fundamentals_sync import (
     raw_companyfacts_to_parsed_ratios,
 )
 from workbench_api.data.snapshot_loader import PriceBar
+from workbench_api.data_refresh.call_timeout import call_with_timeout
 from workbench_api.symbols.symbol_ref import SymbolRef
 
 logger = logging.getLogger(__name__)
@@ -255,6 +256,7 @@ def run_refresh(
     cn_extra_price_symbols: Sequence[str] | None = None,
     cn_fundamentals_loader: _CnFundamentalsLoader | None = None,
     cn_fundamentals_symbols: Sequence[str] | None = None,
+    cn_fetch_timeout_seconds: float | None = None,
 ) -> RefreshSummary:
     """Fetch prices + fundamentals for the Master universe and write the two
     unified CSVs under ``data_root``. Per-symbol failures are logged + counted
@@ -276,10 +278,20 @@ def run_refresh(
     (B065 F002), CAS quarterly fundamentals for those A-shares are mapped to the
     unified schema and **appended after the US SEC rows** in fundamentals.csv (the
     US rows are produced by the unchanged loop above, so they are byte-identical —
-    US-zero-regression). ``None`` keeps the US-only fundamentals behaviour."""
+    US-zero-regression). ``None`` keeps the US-only fundamentals behaviour.
+
+    ``cn_fetch_timeout_seconds`` (B078 F001) bounds each per-symbol A-share fetch
+    (CN_HK prices + universe price extension + CAS fundamentals) to a wall-clock
+    deadline so a single hung ``akshare`` call cannot wedge the whole loop (the
+    2026-06-22 3-day stuck-``activating`` hang). A timeout fails just that symbol
+    (counted as a §34 partial-failure) and the loop advances. ``None`` / 0 runs
+    each fetch inline (byte-identical to pre-B078), so the US loop and every
+    existing caller are unaffected — the US Tiingo loop is never wrapped."""
 
     prices_path = data_root.joinpath(*PRICES_RELPATH)
     fundamentals_path = data_root.joinpath(*FUNDAMENTALS_RELPATH)
+    # B078 F001 — 0 / None disables the bound (call_with_timeout runs inline).
+    cn_timeout = cn_fetch_timeout_seconds or 0.0
 
     errors = 0
 
@@ -303,9 +315,15 @@ def run_refresh(
         cn_hk_symbols = len(CN_HK_UNIVERSE)
         for symbol in CN_HK_UNIVERSE:
             try:
-                bars = cn_hk_prices_loader.fetch_daily_bars(symbol, from_date, to_date)
+                bars = call_with_timeout(
+                    cn_timeout,
+                    cn_hk_prices_loader.fetch_daily_bars,
+                    symbol,
+                    from_date,
+                    to_date,
+                )
                 cn_hk_rows.extend(_prices_to_rows(bars))
-            except Exception:  # noqa: BLE001 — best-effort; skip a failing symbol
+            except Exception:  # noqa: BLE001 — best-effort; skip a failing/hung symbol
                 errors += 1
                 logger.exception("data_refresh_cn_hk_fetch_failure", extra={"symbol": symbol})
 
@@ -322,9 +340,15 @@ def run_refresh(
         cn_universe_price_symbols = len(extra)
         for symbol in extra:
             try:
-                bars = cn_hk_prices_loader.fetch_daily_bars(symbol, from_date, to_date)
+                bars = call_with_timeout(
+                    cn_timeout,
+                    cn_hk_prices_loader.fetch_daily_bars,
+                    symbol,
+                    from_date,
+                    to_date,
+                )
                 cn_universe_rows.extend(_prices_to_rows(bars))
-            except Exception:  # noqa: BLE001 — best-effort; skip a failing symbol
+            except Exception:  # noqa: BLE001 — best-effort; skip a failing/hung symbol
                 errors += 1
                 cn_universe_price_errors += 1
                 logger.exception("data_refresh_cn_universe_fetch_failure", extra={"symbol": symbol})
@@ -375,10 +399,14 @@ def run_refresh(
         cn_fundamental_symbols = len(cn_fundamentals_symbols)
         for symbol in cn_fundamentals_symbols:
             try:
-                cn_rows = cn_fundamentals_loader.fetch_fundamentals_rows(
-                    symbol, from_date, to_date
+                cn_rows = call_with_timeout(
+                    cn_timeout,
+                    cn_fundamentals_loader.fetch_fundamentals_rows,
+                    symbol,
+                    from_date,
+                    to_date,
                 )
-            except Exception:  # noqa: BLE001 — best-effort; skip a failing symbol
+            except Exception:  # noqa: BLE001 — best-effort; skip a failing/hung symbol
                 errors += 1
                 cn_fundamental_errors += 1
                 logger.exception(

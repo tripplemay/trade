@@ -10,6 +10,14 @@ User=deploy
 Group=deploy
 WorkingDirectory=/srv/workbench/current/backend
 
+# B078 F001 — hard wall-clock watchdog (same hang class as the daily refresh:
+# Type=oneshot disables TimeoutStartSec by default → a hung akshare fetch could
+# wedge this service indefinitely). The weekly run is ~4-5h (wide prices +
+# ~106min universe build + ~116min CAS fundamentals, B075 VM-measured), so 8h
+# leaves generous headroom for the per-call timeouts yet kills a true multi-day
+# hang. Paired with --cn-fetch-timeout-seconds below.
+TimeoutStartSec=28800
+
 # Secrets (TIINGO_API_KEY, SEC_EDGAR_CONTACT_EMAIL, WORKBENCH_DB_URL, ...) live in
 # /etc/workbench/workbench.env (chmod 600 root:deploy). Never committed. This job
 # re-runs the full fetch (US prices/fundamentals too) so it needs the same keys.
@@ -34,7 +42,7 @@ Environment=WORKBENCH_DATA_ROOT=/var/lib/workbench/data
 # fallback ungates the wide §23 sina discovery (top ~1500 liquid, ST excluded);
 # build + fundamentals run by default (no --no-* flags). research-state advisory,
 # advisory-only, never trade execution.
-ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.data_refresh.cli fetch --cn-universe-sina-fallback --cn-universe-top-n 1500 --cn-universe-max-superset 1500
+ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.data_refresh.cli fetch --cn-universe-sina-fallback --cn-universe-top-n 1500 --cn-universe-max-superset 1500 --cn-fetch-timeout-seconds 60
 
 # Standard hardening (mirrors workbench-data-refresh.service).
 NoNewPrivileges=true

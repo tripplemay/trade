@@ -52,6 +52,8 @@ from datetime import date
 from pathlib import Path
 from typing import Protocol
 
+from workbench_api.data_refresh.call_timeout import call_with_timeout
+
 logger = logging.getLogger(__name__)
 
 # --- the curated wide fetch superset (residual survivorship bias: current-listed
@@ -374,6 +376,7 @@ def build_cn_universe(
     to_date: date,
     top_n: int = DEFAULT_TOP_N,
     turnover_window_days: int = DEFAULT_TURNOVER_WINDOW,
+    fetch_timeout_seconds: float | None = None,
 ) -> CnUniverseSummary:
     """Fetch historical market caps for ``superset`` (best-effort per symbol),
     compute point-in-time top-N membership for each rebalance date, and write
@@ -381,10 +384,18 @@ def build_cn_universe(
 
     Budget/duration aware: one ``stock_value_em`` call per superset symbol — the
     caller bounds ``superset`` size (the seed is ~40; a VM bulk-spot snapshot is
-    capped). A per-symbol fetch failure is logged + counted, never fatal."""
+    capped). A per-symbol fetch failure is logged + counted, never fatal.
+
+    ``fetch_timeout_seconds`` (B078 F001) bounds each per-symbol ``akshare``
+    market-cap fetch to a wall-clock deadline so a single hung call cannot wedge
+    the whole build (the weekly cn-universe job runs ~106min over ~1500 names —
+    same hang exposure as the daily price refresh). A timeout fails just that
+    symbol (logged + counted), never the build. ``None`` / 0 runs inline."""
 
     marketcap_path = data_root.joinpath(*MARKETCAP_RELPATH)
     universe_path = data_root.joinpath(*UNIVERSE_RELPATH)
+    # B078 F001 — 0 / None disables the bound (call_with_timeout runs inline).
+    fetch_timeout = fetch_timeout_seconds or 0.0
     logger.info(
         "cn_universe_build_start",
         extra={"superset": len(superset), "rebalances": len(rebalance_dates), "top_n": top_n},
@@ -395,8 +406,14 @@ def build_cn_universe(
     errors = 0
     for ticker in superset:
         try:
-            bars = marketcap_loader.fetch_market_cap_history(ticker, from_date, to_date)
-        except Exception:  # noqa: BLE001 — best-effort; a bad symbol never aborts
+            bars = call_with_timeout(
+                fetch_timeout,
+                marketcap_loader.fetch_market_cap_history,
+                ticker,
+                from_date,
+                to_date,
+            )
+        except Exception:  # noqa: BLE001 — best-effort; a bad/hung symbol never aborts
             errors += 1
             logger.exception("cn_universe_marketcap_fetch_failure", extra={"ticker": ticker})
             continue

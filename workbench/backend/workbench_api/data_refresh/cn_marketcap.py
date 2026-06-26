@@ -27,6 +27,7 @@ from collections.abc import Sequence
 from datetime import date
 from typing import Any
 
+from workbench_api.data_refresh.call_timeout import FetchTimeoutError, call_with_timeout
 from workbench_api.data_refresh.cn_universe import (
     CN_UNIVERSE_SEED,
     MarketCapBar,
@@ -161,14 +162,26 @@ def _union_with_seed(discovered: Sequence[str]) -> tuple[str, ...]:
     return tuple(dict.fromkeys([*discovered, *CN_UNIVERSE_SEED]))
 
 
-def _discover_from_eastmoney(akshare: Any, top_n: int) -> list[str] | None:
+def _discover_from_eastmoney(
+    akshare: Any, top_n: int, *, timeout_seconds: float = 0.0
+) -> list[str] | None:
     """eastmoney ``stock_zh_a_spot_em`` ranked by 总市值 (market cap).
 
     Returns the top-``top_n`` canonical symbols, or ``None`` when the endpoint is
-    unreachable / unparseable (so the caller can try the next source). ST / 退市
-    names are filtered out (B065 F001)."""
+    unreachable / unparseable / times out (so the caller can try the next source).
+    ST / 退市 names are filtered out (B065 F001). B078 F001: the bulk fetch is
+    bounded by ``timeout_seconds`` (0 = inline) so a silent network hang on this
+    eastmoney push host — documented unreliable off-box and on the VM — degrades
+    to the next source / seed instead of wedging the daily refresh before any
+    prices are written."""
 
-    records, columns = frame_records(akshare, "stock_zh_a_spot_em")
+    try:
+        records, columns = call_with_timeout(
+            timeout_seconds, frame_records, akshare, "stock_zh_a_spot_em"
+        )
+    except FetchTimeoutError:
+        logger.warning("cn_universe_superset_eastmoney_timed_out")
+        return None
     if not records or _SPOT_COL_CODE not in columns or _SPOT_COL_TOTAL_MV not in columns:
         return None
     ranked: list[tuple[float, str]] = []
@@ -184,16 +197,26 @@ def _discover_from_eastmoney(akshare: Any, top_n: int) -> list[str] | None:
     return [canonical for _, canonical in ranked[:top_n]]
 
 
-def _discover_from_sina(akshare: Any, top_n: int) -> list[str] | None:
+def _discover_from_sina(
+    akshare: Any, top_n: int, *, timeout_seconds: float = 0.0
+) -> list[str] | None:
     """sina ``stock_zh_a_spot`` ranked by 成交额 (today's turnover).
 
     Returns the top-``top_n`` canonical symbols, or ``None`` when unreachable /
-    unparseable. The sina snapshot carries no 总市值, so turnover is the liquidity
-    proxy that bounds the candidate pool; the point-in-time builder re-ranks on
-    historical market cap afterwards, so this only decides *which* names are ever
-    fetched. ST / 退市 and 北交所 (``bj``) names are filtered out (B068 F001)."""
+    unparseable / times out. The sina snapshot carries no 总市值, so turnover is the
+    liquidity proxy that bounds the candidate pool; the point-in-time builder
+    re-ranks on historical market cap afterwards, so this only decides *which*
+    names are ever fetched. ST / 退市 and 北交所 (``bj``) names are filtered out
+    (B068 F001). B078 F001: bounded by ``timeout_seconds`` (0 = inline) so a hang
+    on the bulk fetch degrades to the curated seed rather than wedging the refresh."""
 
-    records, columns = frame_records(akshare, "stock_zh_a_spot")
+    try:
+        records, columns = call_with_timeout(
+            timeout_seconds, frame_records, akshare, "stock_zh_a_spot"
+        )
+    except FetchTimeoutError:
+        logger.warning("cn_universe_superset_sina_timed_out")
+        return None
     if not records or _SINA_COL_CODE not in columns or _SINA_COL_AMOUNT not in columns:
         return None
     ranked: list[tuple[float, str]] = []
@@ -214,6 +237,7 @@ def discover_ashare_superset(
     *,
     top_n: int = 300,
     allow_sina_fallback: bool = False,
+    fetch_timeout_seconds: float | None = None,
 ) -> tuple[tuple[str, ...], str]:
     """Best-effort current top-``top_n`` A-share names by liquidity.
 
@@ -244,6 +268,12 @@ def discover_ashare_superset(
     :func:`~workbench_api.data_refresh.cn_universe.build_cn_universe` then re-ranks
     this candidate pool point-in-time."""
 
+    # B078 F001 — bound each bulk akshare discovery call (0 / None = inline). This
+    # is the LAST unbounded A-share network op on the daily critical path, and it
+    # runs BEFORE the price refresh, so a silent hang here would re-freeze the daily
+    # 命门 (no prices written) until the systemd watchdog. Per-source bound so a
+    # hung eastmoney push host still lets the VM-reachable sina source run.
+    timeout = fetch_timeout_seconds or 0.0
     akshare = akshare_module
     if akshare is None:
         try:
@@ -251,7 +281,7 @@ def discover_ashare_superset(
         except Exception:
             return CN_UNIVERSE_SEED, "seed"
 
-    discovered = _discover_from_eastmoney(akshare, top_n)
+    discovered = _discover_from_eastmoney(akshare, top_n, timeout_seconds=timeout)
     if discovered is not None:
         union = _union_with_seed(discovered)
         logger.info(
@@ -261,7 +291,7 @@ def discover_ashare_superset(
         return union, "bulk_spot"
 
     if allow_sina_fallback:
-        discovered = _discover_from_sina(akshare, top_n)
+        discovered = _discover_from_sina(akshare, top_n, timeout_seconds=timeout)
         if discovered is not None:
             union = _union_with_seed(discovered)
             logger.info(
