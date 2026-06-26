@@ -1,39 +1,38 @@
 {
-  "sprint": "B077-ashare-smart-money-data-feasibility",
+  "sprint": "B078-ashare-data-refresh-hang-fix",
   "features": [
     {
       "id": "F001",
-      "title": "聪明钱数据可得性 VM 实测(北向/龙虎榜机构席位/主力资金流 三源数据现实)",
+      "title": "A股 拉取 per-call 超时 + watchdog(杜绝挂死,日刷恢复推进)",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §2 F001 + §0 约束】(1) 建探针 loader(照 cn_*.py 范式 lazy akshare best-effort):北向持股/龙虎榜机构席位/主力资金流各一。(2) VM §23 实跑,每源出数据现实:字段(有无机构净买入/超大单净流入/北向持股变化可用列)、时效(日级?延迟?)、★历史深度(回溯几年=能否回测)、覆盖/稀疏度(全市场?仅异动?仅 Connect?)、稳定性(成功率/限流)。(3) ★北向 2024.8 取消盘中实时披露现实:实测现在 akshare 北向给延迟/持股级什么。(4) 单测(探针解析/空帧守门,确定性 fixture)。正面证据:三源探针+VM 实测数据现实报告(字段/时效/历史深度/覆盖/稳定性 per 源+北向2024现实);明确每源能否支撑回测。Gates:backend pytest/ruff 目录上下文/mypy CI-exact 0。",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F001 + §0 根因】(1) ★per-call 超时:A股 逐只 akshare 拉取(CnHkPrices/cn_marketcap/cn_universe)加 per-call timeout→单只挂住即超时 fail→计入 §34 partial-failure→整轮完成并推进日期(不再死等)。(2) 整体 watchdog 兜底:service 加 TimeoutStartSec(或 job 级 deadline)→即便逻辑漏网 systemd 也 X 时间后杀掉,杜绝再 activating 卡 3 天。(3) 日刷窗口可行性:实测加超时后 1490 只日刷在合理窗口内完成+成功率;若仍太慢/大量超时→收口(分批/降日刷 universe/宽集 prices 解耦到周级)。(4) 部署 ops:部署前 systemctl stop+杀卡死 PID 649789(旧进程不自退,新码不生效)。(5) 单测(超时→partial-failure 计数→refresh 完成,确定性 fixture)。正面证据:A股 拉取有 per-call 超时(挂住→超时→§34 容忍→完成推进)+watchdog 兜底;实测日刷合理窗口完成+A股 数据日期推进到当日;杀重启卡死进程。Gates:backend pytest/ruff 目录上下文/mypy CI-exact 0。",
       "design_decisions": [
-        "★§23:北向 2024.8 取消盘中实时披露→经典玩法弱化,必须 VM 实测现在到底能拿什么,不假设。",
-        "信号稀疏/覆盖差异如实记:龙虎榜仅异动股(稀疏)/资金流全市场(日级)/北向仅 Connect(偏大盘)。",
-        "照现有 cn_*.py loader 范式(lazy akshare/best-effort);仓里 0 现成聪明钱代码=全新建。"
+        "★根因(planner VM 实测):data-refresh.service 自 06-22 拉 A股 挂死 3 天(activating/CPU 18s 阻塞),堵住所有日刷→A股 冻 06-22→推荐每天重吐同快照→paper 06-23 跟完无新可跟。B075 宽宇宙(1490)回归。",
+        "超时纳入 B075 §34 partial-failure:单只超时→fail-fast→§34 容忍→整轮完成推进日期(数据正确性不变,超时仅防挂死)。",
+        "watchdog(TimeoutStartSec)兜底杜绝再卡 3 天;若 1490 日刷本就太重→收口宽集日刷策略(呼应 B075 feasibility)。"
       ]
     },
     {
       "id": "F002",
-      "title": "初步信号质量探查(first-look IC/分组 forward-return,去偏宇宙,推荐先搭哪个)",
+      "title": "paper 负现金修复(留交易成本缓冲)+ 数据新鲜度守门(静默冻结被抓)",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §2 F002 + §0】(1) 信号构造(对 F001 判定可用源):聪明钱数据转 per-stock 横截面信号(机构净买入额/分位、超大单净流入、北向持股增幅)。(2) first-look IC/分组 forward-return(★B070 去偏宇宙):信号当日 vs 未来 N 日收益 IC/分组 spread——只看有没有相关性苗头非全回测;处理稀疏(龙虎榜仅异动日)。(3) 推荐:哪个源信号苗头最强+数据最扎实→下批搭策略首选;或都没苗头诚实劝退。(4) 诚实 caveat(first-look≠可交易、信号拥挤/滞后、去偏残余偏差)。正面证据:可用源 first-look IC/分组 spread 真数字(去偏宇宙)+推荐(或劝退)+诚实 caveat。Gates 同 F001。",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F002 + §0 次要 bug】(1) 负现金修复:paper 调仓为交易成本预留现金缓冲(不满仓到 cash=0;或调仓时扣留成本额)→cash≥0;修正 B074 剥 CASH sentinel 满仓副作用。(2) ★数据新鲜度守门(acceptance/监控,复用测试基建):断言/告警 recommendation_snapshot as_of 距今≤N 交易日+A股 price_snapshot 新鲜度+data-refresh service 不处于 stuck-activating>X 小时——让静默冻结被 CI/监控抓(本次冻 4 天无人知=正该守)。(3) 单测(负现金消除+新鲜度断言有牙齿)。正面证据:paper 调仓后 cash≥0(留成本缓冲);数据新鲜度守门(as_of 超期/service 卡住→红/告警,故意造陈旧→触发)。Gates 同 F001+acceptance。",
       "design_decisions": [
-        "★first-look≠可交易 edge:IC/分组 spread 只看苗头,全回测是下批;不承诺赚钱。",
-        "去偏宇宙(B070):聪明钱常涌入小盘,小盘幸存者偏差最重。",
-        "处理信号稀疏(龙虎榜仅异动日横截面不全)。"
+        "paper 负现金=B074 剥 CASH sentinel 满仓 cash≈0 副作用,06-23 调仓成本 206 无缓冲可扣→透支;修=留交易成本缓冲。",
+        "★数据新鲜度守门:本次 A股 冻 4 天无人发现,正是测试基建该抓的静默冻结;as_of/价格新鲜度/service stuck 三断言。"
       ]
     },
     {
       "id": "F003",
-      "title": "Codex:验收(独立复核数据可得性+信号探查真数字+诚实推荐裁定)+signoff",
+      "title": "Codex:L2 真机验收(data-refresh 不再卡死+A股 数据恢复每日+模拟盘恢复跟踪+负现金消除)+零回归+signoff",
       "priority": "high",
       "executor": "codex",
       "status": "pending",
-      "acceptance": "【见 spec §2 F003。研究/可行性批次 signoff 含实测证据 §29+§23】L1 全门禁(verifying 可跳 L1 复跑)。VM 独立复核:抽样复跑三源数据可得性(确认 F001 数据现实非夸大,尤其北向 2024 现实);独立复跑信号 IC/spread(确认 F002 苗头真数字)。★诚实推荐裁定:哪个源 GO(值得下批搭策略)/全 NO-GO(都没苗头/数据不够)——不橡皮戳 generator。边界:research-only/no-broker/no 真金/no 自动下单/只读披露数据;无生产改动。signoff docs/test-reports/B077-...-signoff-*.md 实测证据逐条+明确推荐+caveat。",
+      "acceptance": "【见 spec §2 F003。真机/生产回归批次 signoff 含实测证据 §29】L1 全门禁(verifying 可跳 L1 复跑)。L2 真机(VM,贴真返回):①部署修复+杀重启卡死进程→data-refresh.service 不再卡死(超时生效,贴日刷耗时/成功率,正常 Deactivated 非永 activating);②A股 数据恢复每日推进(price_snapshot/CSV/universe as_of 前进到当日非冻 06-22);③cn_attack precompute as_of 前进+推荐刷新;④模拟盘恢复跟踪(新推荐→paper-mtm 调仓);⑤负现金消除(cash≥0);⑥新鲜度守门绿;⑦美股/Master/regime 零回归。边界:research-only/no-broker/no 真金;HEAD≡prod;recent-errors=0。signoff docs/test-reports/B078-...-signoff-*.md 实测证据逐条(贴 service 状态前后+数据日期推进+paper cash)。",
       "design_decisions": []
     }
   ]
