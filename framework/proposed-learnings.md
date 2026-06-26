@@ -398,9 +398,7 @@
 
 **建议写入：** `framework/harness/generator.md`（§探针 measured-not-assumed 派生字段铁律 + §first-look 覆盖-门控裁定档 + 分组单调性查）/ `framework/harness/evaluator.md` 或新 test-hygiene 节（§date-bomb：真实时钟+固定 fixture 坑 + 时钟注入修法 + CI-红诊断要点）。
 
-**状态：** 待确认
-
-<!-- 当前活动候选（v0.9.52 后）：B077 3 条（date-bomb 时钟注入 / §23 派生字段 measured-not-assumed / first-look 覆盖-门控裁定档），待 done 阶段 Planner 提交用户。 -->
+**状态：** ✅ 已沉淀 v0.9.53（generator.md §36/§37 + evaluator.md §31;用户 2026-06-26 批 B078 done 收尾合并处理）
 
 ## [2026-06-26] Claude CLI — 来源：B078 F001/F002 A股 data-refresh 卡死修复(生产 hotfix)
 
@@ -414,6 +412,8 @@
 
 **建议写入：** `framework/harness/generator.md`(§宽集刷防挂死 per-call 超时含 bulk discovery + daemon-线程原语 / §paper round-trip 成本预留 / §静默冻结新鲜度守门 teeth-pin-默认) / `framework/harness/evaluator.md`(§systemd oneshot 无超时卡死诊断 systemctl show + L2 部署须杀卡死 PID 旧进程不自退)。
 
-**状态：** 待确认
+**状态：** ✅ 已沉淀 v0.9.54（generator.md §38/§39/§40 + evaluator.md §32;用户 2026-06-26 批 B078 done 收尾）
 
-<!-- 当前活动候选（v0.9.52 后）：B077 3 条 + B078 4 条(oneshot 无超时卡死 / 宽集刷包裹 ALL 网络调用 / round-trip 成本预留 / 静默冻结守门)，待 done 阶段 Planner 提交用户。 -->
+<!-- 2026-06-26: v0.9.53+v0.9.54 沉淀完成（B077+B078 合并 done 收尾,用户批）：B077 3 条→generator.md §36/§37+evaluator.md §31(v0.9.53);B078 4 条→generator.md §38/§39/§40+evaluator.md §32(v0.9.54)。归档 archive v0.9.53/v0.9.54。CHANGELOG 双版。**活跃候选队列=空。** -->
+
+<!-- 当前活动候选（v0.9.54 后）：无。 -->

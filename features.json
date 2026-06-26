@@ -31,9 +31,20 @@
       "title": "Codex:L2 真机验收(data-refresh 不再卡死+A股 数据恢复每日+模拟盘恢复跟踪+负现金消除)+零回归+signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F003。真机/生产回归批次 signoff 含实测证据 §29】L1 全门禁(verifying 可跳 L1 复跑)。L2 真机(VM,贴真返回):①部署修复+杀重启卡死进程→data-refresh.service 不再卡死(超时生效,贴日刷耗时/成功率,正常 Deactivated 非永 activating);②A股 数据恢复每日推进(price_snapshot/CSV/universe as_of 前进到当日非冻 06-22);③cn_attack precompute as_of 前进+推荐刷新;④模拟盘恢复跟踪(新推荐→paper-mtm 调仓);⑤负现金消除(cash≥0);⑥新鲜度守门绿;⑦美股/Master/regime 零回归。边界:research-only/no-broker/no 真金;HEAD≡prod;recent-errors=0。signoff docs/test-reports/B078-...-signoff-*.md 实测证据逐条(贴 service 状态前后+数据日期推进+paper cash)。",
       "design_decisions": []
+    },
+    {
+      "id": "F004",
+      "title": "修 CN 基本面被日刷覆写 bug(refresh.py 保留现有 CN fundamentals 行)",
+      "priority": "high",
+      "executor": "generator",
+      "status": "done",
+      "acceptance": "reverify 真验收:data-refresh(--no-cn-fundamentals)跑完后 fundamentals.csv 仍含 CN 行(29316 cn_fundamental_rows preserved/总 29893 行),不再被抹。Codex L2 reverify PASS。",
+      "design_decisions": [
+        "fix-round 1 期间 Codex L2 抓出:日刷会覆写 fundamentals.csv 丢 CN 行;修=refresh.py 保留现有 CN 基本面行。"
+      ]
     }
   ]
 }

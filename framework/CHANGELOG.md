@@ -5,6 +5,33 @@
 
 ---
 
+## v0.9.54 — 2026-06-26（B078：A股 data-refresh 卡死生产事故——oneshot 超时/宽集刷含 bulk discovery/round-trip 成本/静默冻结守门）
+
+**来源批次：** B078 A股 data-refresh 卡死修复（生产 hotfix,B075 宽宇宙回归,fix_rounds=1 done）。4 条 learning 用户 done 收尾批准。
+
+**沉淀内容（用户确认）：**
+- **systemd `Type=oneshot` 默认 TimeoutStartSec=infinity = 永 activating 卡死诊断** → `evaluator.md §32`（`systemctl show` 诊断 + L2 部署须杀卡死旧 PID）。data-refresh 卡 3 天堵所有日刷=A股 数据/推荐/模拟盘冻 4 天根因。
+- **宽集刷防挂死的超时要包裹 ALL 真网络调用——bulk discovery 最易漏** → `generator.md §38`（per-call 漏了 bulk `stock_zh_a_spot_em`;daemon-线程+join(timeout) 原语;0/None=inline 零回归）。扩 §34。
+- **paper 再平衡成本要预留 round-trip(买+卖)** → `generator.md §39`（单边预留满仓必透支;`investable -= held*cost_rate`;建仓零回归）。修 B074 满仓副作用,cash +187.52 转正。
+- **静默冻结守门——as_of 业务日新鲜度 + service stuck-activating 双断言** → `generator.md §40`（挂死无人报错最毒;teeth 测须 pin SHIPPED 默认阈在真实冻幅）。扩 §31 验收即代码。
+
+归档 `framework/archive/proposed-learnings-archive-v0.9.54.md`。
+
+---
+
+## v0.9.53 — 2026-06-26（B077：聪明钱数据可行性——§23 派生字段 measured-not-assumed + first-look 覆盖-门控裁定档 + date-bomb 诊断）
+
+**来源批次：** B077 A股 聪明钱数据可行性摸底（NOT-GO,0 fix-round done）。3 条 learning 用户 done 收尾批准（B078 done 时合并处理）。
+
+**沉淀内容（用户确认）：**
+- **§23 measured-not-assumed 要贯彻到每个派生字段（coverage/lag/depth/backtest-supportability）,非仅数据本身** → `generator.md §36`（B077 探针 coverage/lag/can_backtest 曾 hardcode,20-agent review 抓 15 处）。
+- **first-look IC 覆盖-门控裁定档 `INCONCLUSIVE_COVERAGE_LIMITED`** → `generator.md §37`（信号大部分落去偏宇宙外时据子集断「无信号」=误劝退;第三档+分组单调性查）。
+- **date-bomb 诊断——CI 红但 diff 与红测试无关+上个 commit 绿→先查日期 fixture** → `evaluator.md §31`（真实时钟+固定 fixture 滑出窗口;时钟注入修法）。
+
+归档 `framework/archive/proposed-learnings-archive-v0.9.53.md`。
+
+---
+
 ## v0.9.52 — 2026-06-25（B076：去偏策略-改动研究——退市名市值补数据 + verdict 全样本+OOS 双门禁 + survivor/去偏双 cut）
 
 **来源批次：** B076 cn_attack size-tilt 选股（verdict-gated,裁定 NO-GO,0 fix-round done）。3 条同源 learning 用户 done 收尾批准。

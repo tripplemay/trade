@@ -13,8 +13,7 @@ type: project
 
 ## 遗留 / soft-watch
 - **★聪明钱方向**：backlog `B0XX-ashare-smart-money-following`，结论存docs/research/，下次深入。
-- **B077 done 收尾未竟**：3条framework候选(date-bomb时钟注入/§23派生字段measured-not-assumed/first-look覆盖-门控裁定档)待沉淀+F003 features.json一致性。下次done处理。
-- **B078 proposed learnings（4条，commit 21efe41）**：oneshot无超时卡死/宽集刷包裹ALL网络调用含bulk discovery/round-trip成本预留/静默冻结守门。done收尾时沉淀。
+- **B077+B078 done 收尾已闭合**：7 条 learnings 沉淀 v0.9.53+v0.9.54，F003/F004 一致性修。**B075 宽宇宙(1490)引入的两回归(B078 data-refresh 卡死 / B074 满仓负现金)均已闭合。**
 - **B070 follow-on**：2因子去偏baostock；港股P3（backlog B055）。
 
 ## 永久硬边界
@@ -23,6 +22,8 @@ type: project
 - cn_attack 仍研究态/OOS 红卡/edge 微弱不可配资（B078 不改策略）。
 
 ## Framework 状态（最新 4 版）
+- **v0.9.54**（B078）：generator.md §38 宽集刷超时含 bulk discovery / §39 paper round-trip 成本预留 / §40 静默冻结守门 / evaluator.md §32 systemd oneshot 卡死诊断。
+- **v0.9.53**（B077）：generator.md §36 §23 派生字段 measured-not-assumed / §37 first-look 覆盖-门控裁定档 / evaluator.md §31 date-bomb 诊断。
 - **v0.9.52**（B076）：generator.md §35 baostock turn 补退市名市值 + survivor/去偏双 cut / planner.md §策略-改动 verdict 设计(全样本+OOS 双门禁)。
 - **v0.9.51**（B075）：environment.md VM /tmp PYTHONPATH / generator.md §33 可行性探针复用真 loader / §34 宽集 partial-failure exit-code 容忍。
 - **v0.9.50**（B074）：generator.md §32 paper 搁浅现金诊断 / planner.md §根因诊断。

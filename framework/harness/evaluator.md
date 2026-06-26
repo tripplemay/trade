@@ -630,3 +630,15 @@ nvm use                          # 不一致时切换；无 nvm 装 Node 20 LTS
 4. **决策级/真数据核心**：仍按 §25.1 / §29 必须实际执行 + 贴实测证据（acceptance 只守「复发」不变量，新颖真数据交付物仍须真验）。
 
 **来源：** B071（门禁确权 `docs/dev/B071-gate-authority-audit.md` + acceptance 层）。配套 generator.md §31（验收即代码常态化）。目标=把 evaluator 从「复跑机械门禁」解放出来,只做机器做不了的判断。
+
+## 31. date-bomb 诊断——CI 红但 diff 与红测试无关 + 上个 commit 绿 → 先查日期 fixture（v0.9.53 — B077 沉淀）
+
+**坑：** 生产代码用真实 `datetime.now()` 算「近 N 日」窗口（如 provider `get_quote` 的 `[today-N, today]`）,而单测用**固定假帧日期** → fixture 日期随日历推进**滑出窗口** → 某 commit 还绿、N 天后**与代码无关地变红**（B077: cn/hk/yfinance get_quote,HS test 2026-06-22 绿、06-25 红）。**诊断要点：CI 红但 diff 与红测试模块无关 + 上个 commit 绿 → 先查日期相关 fixture,勿误判为本次改动。** 修法（generator 侧）：生产时钟可注入（加可选 `today` 参数,default `now()`,ABC 不动→更宽 override LSP 安全）,单测 pin `today=_TODAY`→确定性。
+
+**来源：** B077 本会话预存 date-bomb（commit `6f54e35` 时钟注入修复）。
+
+## 32. systemd `Type=oneshot` 无超时卡死诊断——`systemctl show` + L2 部署须杀卡死旧 PID（v0.9.54 — B078 沉淀）
+
+**坑：** oneshot service 的 `TimeoutStartSec` **默认禁用（infinity）**,与普通 service（默认 90s）不同。ExecStart 内有无超时的阻塞网络读 → 服务**永「activating」**、timer `Trigger=n/a`、堵所有后续刷新（B078: data-refresh 卡 3 天冻 A股 数据/推荐/模拟盘）。**诊断：`systemctl show -p ActiveState,SubState,ActiveEnterTimestamp <svc>`,activating 超 X 时即 stuck**（`list-timers` 见 `Trigger: n/a` 是堵塞信号）。**L2 部署要点：修复部署须先 `systemctl stop` + 杀卡死旧 PID**（旧阻塞进程不自退,新码不生效）。配套 generator.md §38（超时含 bulk discovery）+ §40（静默冻结守门）。
+
+**来源：** B078（data-refresh.service `activating (start) since ...; 3 days ago` / Main PID 阻塞 / CPU 18s;planner VM 诊断 + Codex L2 杀重启验收）。
