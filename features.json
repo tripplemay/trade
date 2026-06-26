@@ -1,50 +1,50 @@
 {
-  "sprint": "B078-ashare-data-refresh-hang-fix",
+  "sprint": "B079-symbol-name-display",
   "features": [
     {
       "id": "F001",
-      "title": "A股 拉取 per-call 超时 + watchdog(杜绝挂死,日刷恢复推进)",
+      "title": "名称数据落库(symbol→name lookup)+ 批量解析 get_names(纯 DB)",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §2 F001 + §0 根因】(1) ★per-call 超时:A股 逐只 akshare 拉取(CnHkPrices/cn_marketcap/cn_universe)加 per-call timeout→单只挂住即超时 fail→计入 §34 partial-failure→整轮完成并推进日期(不再死等)。(2) 整体 watchdog 兜底:service 加 TimeoutStartSec(或 job 级 deadline)→即便逻辑漏网 systemd 也 X 时间后杀掉,杜绝再 activating 卡 3 天。(3) 日刷窗口可行性:实测加超时后 1490 只日刷在合理窗口内完成+成功率;若仍太慢/大量超时→收口(分批/降日刷 universe/宽集 prices 解耦到周级)。(4) 部署 ops:部署前 systemctl stop+杀卡死 PID 649789(旧进程不自退,新码不生效)。(5) 单测(超时→partial-failure 计数→refresh 完成,确定性 fixture)。正面证据:A股 拉取有 per-call 超时(挂住→超时→§34 容忍→完成推进)+watchdog 兜底;实测日刷合理窗口完成+A股 数据日期推进到当日;杀重启卡死进程。Gates:backend pytest/ruff 目录上下文/mypy CI-exact 0。",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F001 + §0】(1) 轻量名称 store:新建 symbol_name 表(symbol PK/name/source/updated_at 持久非 TTL)或扩 fundamentals cache;批量读 get_names(symbols)->dict(纯 DB 不触发外部 fetch,缺失省略)。(2) A股 名称落库:universe build/data-refresh 顺带把 cn_marketcap akshare spot 已抓的『名称』(现丢弃,cn_marketcap.py:52/63)写进 name store(零额外抓取)。(3) 美股/ETF/港股 proxy 静态 curated ticker→name 常量(ETF_UNIVERSE+equity_universe+CN_HK_UNIVERSE 有界稳定)seed。(4) 边界 read-only 名称元数据(§12.10.2 r);缺失 fallback code 不报错。正面证据:name store+批量 get_names(纯 DB);A股 名称从 akshare spot 落库+美股静态映射 seed;覆盖 cn_attack universe+Master/US;缺失优雅省略。Gates:backend pytest/ruff 目录上下文/mypy CI-exact 0。",
       "design_decisions": [
-        "★根因(planner VM 实测):data-refresh.service 自 06-22 拉 A股 挂死 3 天(activating/CPU 18s 阻塞),堵住所有日刷→A股 冻 06-22→推荐每天重吐同快照→paper 06-23 跟完无新可跟。B075 宽宇宙(1490)回归。",
-        "超时纳入 B075 §34 partial-failure:单只超时→fail-fast→§34 容忍→整轮完成推进日期(数据正确性不变,超时仅防挂死)。",
-        "watchdog(TimeoutStartSec)兜底杜绝再卡 3 天;若 1490 日刷本就太重→收口宽集日刷策略(呼应 B075 feasibility)。"
+        "★Explore:名称源已存在统一(ProviderStats.long_name US/CN/HK)+落库 symbol_fundamentals_cache.long_name 但稀疏;A股 名称每天已在 akshare spot 拉却被丢弃(只 ST 过滤)→捕获近乎零成本。",
+        "不走 data_refresh/CSV(名称没落库+改日刷关键路径);建轻量 name store+后端 enrich;美股静态映射(universe 有界~40-50 稳定)。",
+        "batch get_names 纯 DB 不触发外部 fetch(前端逐个查=N 次请求+昂贵 akshare/yfinance)。"
       ]
     },
     {
       "id": "F002",
-      "title": "paper 负现金修复(留交易成本缓冲)+ 数据新鲜度守门(静默冻结被抓)",
+      "title": "后端 enrich response model(8 处加可选 name 字段,batch 解析)",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §2 F002 + §0 次要 bug】(1) 负现金修复:paper 调仓为交易成本预留现金缓冲(不满仓到 cash=0;或调仓时扣留成本额)→cash≥0;修正 B074 剥 CASH sentinel 满仓副作用。(2) ★数据新鲜度守门(acceptance/监控,复用测试基建):断言/告警 recommendation_snapshot as_of 距今≤N 交易日+A股 price_snapshot 新鲜度+data-refresh service 不处于 stuck-activating>X 小时——让静默冻结被 CI/监控抓(本次冻 4 天无人知=正该守)。(3) 单测(负现金消除+新鲜度断言有牙齿)。正面证据:paper 调仓后 cash≥0(留成本缓冲);数据新鲜度守门(as_of 超期/service 卡住→红/告警,故意造陈旧→触发)。Gates 同 F001+acceptance。",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F002】(1) 给 8 个 response model 加可选 name 字段(TargetPosition/WashSaleFlag/PositionDiffEntry/PositionEntry/FillRowOut/PaperPositionPnl/PaperDriftEntry/FillSlippage)+SymbolPriceDetail。(2) 组装响应时用 batch get_names 一次性给每行附 name(不逐个查);缺失 name=null。(3) 边界纯加字段,既有 code 字段/契约零回归;research-only/no-broker 不破。正面证据:8 model 带 name(batch 解析 1 次 DB 非 N 次);A股 中文名+美股名出现在 recommendations/position-diff/fills/paper 等响应;缺失 name=null;既有契约零回归。Gates 同 F001+acceptance(响应含 name 不破既有断言)。",
       "design_decisions": [
-        "paper 负现金=B074 剥 CASH sentinel 满仓 cash≈0 副作用,06-23 调仓成本 206 无缓冲可扣→透支;修=留交易成本缓冲。",
-        "★数据新鲜度守门:本次 A股 冻 4 天无人发现,正是测试基建该抓的静默冻结;as_of/价格新鲜度/service stuck 三断言。"
+        "纯加可选字段,既有 code 契约零回归;batch get_names 1 次 DB enrich N 行(非逐个查)。"
       ]
     },
     {
       "id": "F003",
-      "title": "Codex:L2 真机验收(data-refresh 不再卡死+A股 数据恢复每日+模拟盘恢复跟踪+负现金消除)+零回归+signoff",
+      "title": "前端显示(SymbolLink 名称为主代码次之 + 详情页头部 + 9 复用点)",
       "priority": "high",
-      "executor": "codex",
-      "status": "done",
-      "acceptance": "【见 spec §2 F003。真机/生产回归批次 signoff 含实测证据 §29】L1 全门禁(verifying 可跳 L1 复跑)。L2 真机(VM,贴真返回):①部署修复+杀重启卡死进程→data-refresh.service 不再卡死(超时生效,贴日刷耗时/成功率,正常 Deactivated 非永 activating);②A股 数据恢复每日推进(price_snapshot/CSV/universe as_of 前进到当日非冻 06-22);③cn_attack precompute as_of 前进+推荐刷新;④模拟盘恢复跟踪(新推荐→paper-mtm 调仓);⑤负现金消除(cash≥0);⑥新鲜度守门绿;⑦美股/Master/regime 零回归。边界:research-only/no-broker/no 真金;HEAD≡prod;recent-errors=0。signoff docs/test-reports/B078-...-signoff-*.md 实测证据逐条(贴 service 状态前后+数据日期推进+paper cash)。",
-      "design_decisions": []
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F003 + 用户选『名称为主代码次之』】(1) <SymbolLink> 加可选 name prop:渲染名称为主、代码灰色次之(贵州茅台  600519.SH);name 缺失→纯 code(现有兜底)。一处改覆盖 9 复用点(recommendations/position-diff/fills/ticket/paper/backtest/news/risk)。(2) 详情页头部 symbols/page.tsx:233 显示名称(该页已有 name)。(3) 各复用点把后端 enrich 的 name 传进 <SymbolLink name=...>。(4) ag-grid ColDef cellRenderer 内 name+code 不溢出,dense table 可读。(5) vitest/e2e 更新(含 B072 闭环 e2e 名称显示不破 safety 守门)。正面证据:<SymbolLink> 名称为主代码次之+9 复用点显示名称+详情页头部名称;缺失纯 code 兜底;ag-grid 排版正常。Gates:vitest/tsc/eslint+Playwright e2e(含闭环+no-execution safety 守门不破)。",
+      "design_decisions": [
+        "用户选名称为主、代码灰色次之(贵州茅台  600519.SH);改 <SymbolLink> 一处覆盖 9 复用点;缺失纯 code 兜底。",
+        "详情页头部 symbols/page.tsx:233 单独加(不走 SymbolLink,该页已有 name);account/fills 录入控件不动。"
+      ]
     },
     {
       "id": "F004",
-      "title": "修 CN 基本面被日刷覆写 bug(refresh.py 保留现有 CN fundamentals 行)",
+      "title": "Codex:验收(名称在所有位置显示 A股中文名+美股名+缺失优雅 fallback+零回归)+signoff",
       "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "reverify 真验收:data-refresh(--no-cn-fundamentals)跑完后 fundamentals.csv 仍含 CN 行(29316 cn_fundamental_rows preserved/总 29893 行),不再被抹。Codex L2 reverify PASS。",
-      "design_decisions": [
-        "fix-round 1 期间 Codex L2 抓出:日刷会覆写 fundamentals.csv 丢 CN 行;修=refresh.py 保留现有 CN 基本面行。"
-      ]
+      "executor": "codex",
+      "status": "pending",
+      "acceptance": "【见 spec §2 F004】L1 全门禁(verifying 可跳 L1 复跑)。L2 真机/截图:名称在所有显示位置出现(recommendations/position-diff/fills/paper/backtest/详情页,贴 A股 中文名+美股名截图/真返回);缺失优雅 fallback 纯 code(造一个无 name 标的);batch 解析(非 N 次请求,贴证据)。零回归:执行链闭环+no-execution/disclaimer safety 守门不破;既有 code 契约不变。边界:research-only/no-broker;HEAD≡prod。signoff docs/test-reports/B079-...-signoff-*.md 实测证据逐条+截图。",
+      "design_decisions": []
     }
   ]
 }

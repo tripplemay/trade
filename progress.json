@@ -1,56 +1,48 @@
 {
-  "status": "done",
+  "status": "building",
   "total_features": 4,
-  "completed_features": 4,
-  "fix_rounds": 1,
-  "current_sprint": null,
+  "completed_features": 0,
+  "fix_rounds": 0,
+  "current_sprint": "F001",
   "last_updated": "2026-06-26",
-  "completed_date": "2026-06-26",
-  "user_goal": "B078 A股 data-refresh 卡死修复(生产 hotfix,B075 宽宇宙回归)。来源:2026-06-26 用户报 A股 两策略推荐页每天有新股票但模拟盘不调仓→planner VM 生产诊断(铁律 9)→根因确认→用户确认立批。**★根因(planner VM 实测,焊死)**:现象纠正——A股 推荐没每天变是冻在 06-22(price_snapshot A股/CSV/cn_pit_universe 最新都 06-22);模拟盘已正确跟到(06-23 调仓现持 06-22 推荐 25 只小盘)。铁证:data-refresh.service 自 06-22 拉 A股 挂死 3 天(activating/Main PID 649789/CPU 仅 18s 阻塞,最后日志拉完美股 Tiingo 卡在 A股),服务一直 activating→systemd 无法触发新刷新(timer Trigger=n/a)→A股 冻 06-22→precompute 每天重吐同快照→paper 无新可跟。美股走另一 timer(prices.timer Tiingo)不受影响故只 A股 冻。定位=B075 宽宇宙(1490)后每日 A股 逐只 akshare 拉取无 per-call 超时→某只挂住→整 service 死等。次要:paper cash 负(-102/-103)=B074 剥 CASH sentinel 满仓副作用,调仓成本无缓冲。**修**:F001 A股 拉取 per-call 超时(挂住→fail-fast→§34 容忍→完成推进)+watchdog 兜底+部署杀卡死进程;F002 paper 留成本缓冲消负现金+数据新鲜度守门(静默冻结被抓);F003 Codex L2 真机(data-refresh 不卡死+A股 数据恢复每日+模拟盘恢复跟踪+负现金消除+零回归)。spec docs/specs/B078-ashare-data-refresh-hang-fix-spec.md(3 章)。",
+  "user_goal": "B079 标的名称显示(所有显示标的代码处加显名称)。来源:2026-06-26 用户『优化标的显示逻辑,所有显示代码处显示名称』+选『名称为主、代码次之』(贵州茅台  600519.SH,代码灰色小字)。**★设计(Explore 已核)**:名称源已存在统一(ProviderStats.long_name US yfinance/CN akshare 证券简称/HK)+落库 symbol_fundamentals_cache.long_name 但稀疏;A股 名称每天已在 akshare spot 拉却被丢弃(cn_marketcap.py:52/63 只 ST 过滤)→捕获零成本;美股无静态 name 映射。前端共享 <SymbolLink>(9 复用点)改一处覆盖大多数。后端 8 response model 带 code 不带 name。**决策**:不走 data_refresh/CSV;建轻量 name store(A股 从 akshare spot 落库+美股静态映射有界)+batch get_names 纯 DB+后端 enrich(优于前端逐个查 N 次请求触发昂贵 fetch)。覆盖率补全才能『所有地方』,缺失优雅 fallback 纯 code。**4 features 3g+1c**:F001 名称 store+batch get_names;F002 后端 enrich 8 model;F003 前端 <SymbolLink> 名称为主+详情页头部+9 复用点;F004 Codex 验收(名称全显+缺失 fallback+零回归)。spec docs/specs/B079-symbol-name-display-spec.md(3 章)。纯展示层不改执行/策略逻辑。",
   "reference_docs": [
-    "docs/specs/B078-ashare-data-refresh-hang-fix-spec.md",
-    "workbench/backend/workbench_api/data_refresh/cn_hk_prices.py",
-    "workbench/backend/workbench_api/data_refresh/cli.py",
-    "workbench/backend/workbench_api/data_refresh/refresh.py",
-    "workbench/backend/workbench_api/paper/mtm.py",
-    "workbench/backend/workbench_api/paper/targets.py"
+    "docs/specs/B079-symbol-name-display-spec.md",
+    "workbench/backend/workbench_api/symbols/provider.py",
+    "workbench/backend/workbench_api/data_refresh/cn_marketcap.py",
+    "workbench/backend/workbench_api/db/models/symbol_fundamentals_cache.py",
+    "workbench/frontend/src/components/symbol/SymbolLink.tsx",
+    "workbench/backend/workbench_api/schemas/recommendations.py",
+    "workbench/backend/workbench_api/schemas/execution.py"
   ],
   "docs": {
-    "spec": "docs/specs/B078-ashare-data-refresh-hang-fix-spec.md",
+    "spec": "docs/specs/B079-symbol-name-display-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B078-ashare-data-refresh-hang-fix-signoff-2026-06-26.md",
-    "framework_reviewed": true
+    "signoff": null,
+    "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "PARTIAL PASS → fix-round required. F001(data-refresh hang fix)+F002(pure_momentum cash+freshness gate): PASS. quality_momentum失败：pre-existing CN fundamentals overwrite bug in refresh.py line 419被B078揭出：--no-cn-fundamentals时cn_fundamental_rows=[]覆写整个fundamentals.csv→CN基本面全消→quality_score空→all-cash→service失败。需F004-fix：refresh.py保留现有CN行。",
-    "pass_count": 2,
-    "partial_count": 4,
-    "fail_count": 1,
-    "issues": [
-      {
-        "id": "I001",
-        "severity": "BLOCKER",
-        "item": "quality_momentum service失败（data_not_covered）",
-        "root_cause": "refresh.py line 419: --no-cn-fundamentals时以US-only数据覆写fundamentals.csv，抹去29482条CN基本面行（pre-existing bug，B078 F001修复卡死后首次触发）",
-        "fix": "refresh.py: --no-cn-fundamentals时读取现有fundamentals.csv中CN行并保留到新写入",
-        "evidence": "journalctl 04:44:38 cn_attack_precompute_data_not_covered; fundamentals.csv wc-l=578(US only); cn-universe 2026-06-22 log cn_fundamental_rows=29482"
-      }
-    ]
+    "summary": null,
+    "pass_count": 0,
+    "partial_count": 0,
+    "fail_count": 0,
+    "issues": []
   },
   "generator_handoff": {
-    "summary": "F004-fix done(commit c121621, pushed dd61900..c121621)。修 I001 BLOCKER: refresh.py fundamentals.csv 写入无条件全覆盖, 日刷 --no-cn-fundamentals 时 cn_fundamental_rows=[] → US-only 覆盖抹去周级 ~29482 CN 基本面行 → quality_momentum all-cash 失败(pre-existing, F001 修好挂死后首次完成即触发)。修=不抓 CN 时 _read_existing_cn_fundamental_rows 读现有 .SH/.SZ 行保留, 只刷 US(周级 cn-universe job 仍 CN 权威)。回归测试修复前红/后绿。Gates: ruff/mypy(453)0, unit+acceptance+safety 1629 passed/17 skipped(除既有真网络测试 test_cli_main_persists_window)。【★Codex reverify L2 必读 ops】代码修只防 FUTURE 覆写; 生产 fundamentals.csv 06-26 日刷已被覆写成 US-only(CN 行已丢)→ quality_momentum 要恢复必须先 REPOPULATE CN 基本面: (1)手动触发 workbench-cn-universe.service(重抓 CN CAS 写全量 fundamentals.csv, ~4-5h) 或等周日 06:00 自动跑; (2)验 fundamentals.csv 恢复含 CN 行(wc-l ~30k); (3)触发 quality_momentum precompute → as_of 前进/非空 target; (4)paper-mtm → quality_momentum 调仓+cash≥0; (5)★关键验证: 之后再跑一次日 data-refresh 确认 CN 行不再被抹(这才是本 fix 的真验收)。前序 F001+F002(8d618b9/5733965)已 L2 PASS(data-refresh 不卡死/pure_momentum 全链路/cash -102→+178/freshness gate)。",
-    "status": "ready"
+    "summary": null,
+    "status": "pending"
   },
   "session_notes": {
-    "planner": "2026-06-26 B078 done 收尾(planner,合并 B077+B078 沉淀)。A股 data-refresh 卡死修复=✅ done,fix_rounds=1。**成果**:A股 数据恢复(price_snapshot 06-26)+paper 负现金转正(cash +187.52)+F004(CN 基本面覆写 bug Codex L2 抓出)修。生产恢复。**★合并沉淀 7 条(用户批) v0.9.53+v0.9.54**:B077 3 条→generator.md §36(§23 派生字段 measured-not-assumed)/§37(first-look 覆盖-门控裁定档)+evaluator.md §31(date-bomb 诊断)=v0.9.53;B078 4 条→generator.md §38(宽集刷超时含 bulk discovery)/§39(paper round-trip 成本预留)/§40(静默冻结守门)+evaluator.md §32(systemd oneshot 卡死诊断)=v0.9.54。CHANGELOG 双版+archive 双份,队列清空。**done 收尾**:F003 status→done(Codex 漏翻)+加 F004 条目(commit fix(B078-F004)归属,铁律 10)使 4/4 一致;framework_reviewed=true;signoff 路径;project-status Framework v0.9.53/54。**【续接=下一批待用户定】**:聪明钱方向(backlog B0XX-ashare-smart-money-following,用户保存结论后续深入)/B070 follow-on/或新方向。**ops**:网关余额耗尽待充值;cn-universe REPOPULATE 今日手动触发(watchdog 8h)。prod=B078 修后系。**经验**:B075 宽宇宙(1490)引入的两个回归(B078 卡死/B074 满仓负现金)都已闭合。",
-    "generator": "2026-06-26 B078 fixing→reverifying(generator, F004-fix)。修 Codex F003 揭出的 I001 BLOCKER(CN 基本面覆写)。【根因】refresh.py fundamentals.csv 写入是无条件全覆盖(prices 不同: prices 是 daily 重抓 US+CN_HK+wide 故无损; cn_pit_universe/marketcap daily 用 --no-cn-universe-build 跳过故无损; 唯 fundamentals.csv 总被 run_refresh 写, daily --no-cn-fundamentals → cn_rows=[] → 抹 CN)。【修】不抓 CN 时读现有 .SH/.SZ 行保留(_read_existing_cn_fundamental_rows), 只刷 US; US 行不保留(daily fresh fetch 避重复); 无文件/异常 header→空(首跑零回归)。回归测试 2 个(保留+首跑)。Gates 全绿 1629 passed。【★Codex reverify 关键 ops, 见 generator_handoff】代码只防 FUTURE 覆写, 生产 CN 行已被 06-26 日刷抹掉→必须先手动触发 workbench-cn-universe.service(或等周日)REPOPULATE, 再验 quality_momentum 恢复 + 之后日刷不再抹(真验收)。【本机坑续】full unit 仍会卡 test_cli_main_persists_window(真 akshare), 本机用 PYTHONPATH sitecustomize socket.setdefaulttimeout(2)+deselect 跑通; CI 秒拒不受影响。【给 Codex】reverify 全 7 条 + F004 专项(CN 行保留+日刷不再抹)。",
-    "evaluator": "2026-06-26 B078 reverifying PASS(evaluator, CLI代Codex)。F004-fix真验收✅: cn-universe手动触发REPOPULATE(07:27 UTC, fundamentals.csv→29893行含CN); quality_momentum precompute saved=25 as_of=2026-06-26✅; paper-mtm rebalanced=1, quality_momentum cash+187.52(从-102.49转正)✅; ★data-refresh(12:11 UTC,12m27s,status=0)跑完后fundamentals.csv仍29893行(cn_fundamental_rows=29316保留,不再被抹)✅。全批次PASS→done。"
+    "planner": "2026-06-26 B079 planning(planner)。标的名称显示(所有代码处加显名称,名称为主代码次之)。用户 UX 改进需求。Explore 摸清全面。**★名称源已存在**:ProviderStats.long_name(US yfinance/CN akshare 证券简称/HK)落库 symbol_fundamentals_cache 但稀疏;A股 名称每天 akshare spot 已拉却丢弃(cn_marketcap.py:52/63)→捕获零成本;美股无静态映射。前端 <SymbolLink>(9 复用点)改一处覆盖大多数;后端 8 model 加 name。**决策**:轻量 name store(A股 akshare spot 落库+美股静态映射)+batch get_names 纯 DB+后端 enrich(非前端逐个查);缺失优雅 fallback 纯 code。**4 features 3g+1c**:F001 name store+get_names/F002 后端 enrich 8 model/F003 前端 SymbolLink 名称为主+详情页头部/F004 Codex 验收。**【续接】**:status=building,Generator 接 F001(name store+A股 spot 名称落库+美股静态映射+batch get_names)→F002(enrich 8 model)→F003(SymbolLink 名称为主+9 复用点+详情页),再 Codex F004(名称全显+缺失 fallback+零回归+截图)。纯展示层不改执行/策略;no-execution safety 守门不破。**ops**:网关余额耗尽待充值。prod=B078 系。",
+    "generator": null,
+    "evaluator": null
   },
   "features": [
     "F001",
     "F002",
     "F003",
-    "F004-fix"
-  ]
+    "F004"
+  ],
+  "completed_date": null
 }

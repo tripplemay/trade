@@ -5,7 +5,8 @@ type: project
 ---
 
 ## 当前状态
-- **B078 ✅ done（2026-06-26，CLI代Codex）** = A股 data-refresh 卡死修复(B075 宽宇宙回归)。全批次 PASS：F001(per-call 超时+watchdog)/F002(round-trip cost buffer+freshness gate)/F003(L2 pure_momentum全链路)/F004-fix(CN基本面覆写bug)。★F004-fix 真验收：data-refresh(--no-cn-fundamentals)跑完后 fundamentals.csv 仍 29,893行(CN 行保留, cn_fundamental_rows=29316 preserved)；quality_momentum cash +187.52(从 -102.49转正)。signoff docs/test-reports/B078-ashare-data-refresh-hang-fix-signoff-2026-06-26.md。
+- **当前：B079 building** = 标的名称显示(所有显示代码处加显名称,名称为主代码次之 `贵州茅台 600519.SH`)。用户 UX 改进。**★Explore 摸清**:名称源已存在统一(ProviderStats.long_name US yfinance/CN akshare 证券简称/HK)落库 symbol_fundamentals_cache 但稀疏;A股 名称每天 akshare spot 已拉却被丢弃(cn_marketcap.py:52/63 只 ST 过滤)→捕获零成本;美股无静态映射;前端共享 <SymbolLink>(9 复用点)改一处覆盖大多数;后端 8 model 加 name。决策=轻量 name store(A股 spot 落库+美股静态映射)+batch get_names 纯 DB+后端 enrich(非前端逐个查),缺失优雅 fallback 纯 code。4 features 3g+1c:F001 name store/F002 enrich 8 model/F003 前端 SymbolLink 名称为主+详情页/F004 Codex。纯展示层不改执行/策略;no-execution safety 守门不破。spec docs/specs/B079-...-spec.md。
+- **B078 ✅ done（2026-06-26）** = A股 data-refresh 卡死修复(B075 宽宇宙回归)。F001 超时+watchdog/F002 round-trip cost+freshness gate/F004 CN 基本面覆写 bug。A股 数据恢复(06-26)+paper cash +187.52 转正。signoff docs/test-reports/B078-ashare-data-refresh-hang-fix-signoff-2026-06-26.md。
 - **B077 ✅ done（2026-06-25，CLI代Codex）** = A股 聪明钱数据可行性摸底。整体 NOT-GO（北向ELIMINATED/资金流浅/龙虎榜INCONCLUSIVE_COVERAGE_LIMITED 80.8%小盘未覆盖）。signoff docs/test-reports/B077-cn-attack-smart-money-signoff-2026-06-25.md。
 - **B076 ✅ done（2026-06-24）**。B075 ✅ done（2026-06-22）。
 - **⚠️ ops: 网关 402 out-of-credit（2026-06-22）**：AI功能不可用，需充值 aigc-gateway。
