@@ -25,6 +25,7 @@ from workbench_api.data_refresh.refresh import (
     CN_HK_UNIVERSE,
     ETF_UNIVERSE,
     FUNDAMENTALS_HEADER,
+    FUNDAMENTALS_RELPATH,
     PRICES_HEADER,
     RefreshSummary,
     currency_for_symbol,
@@ -750,3 +751,67 @@ def test_b075_exit_decision_core_error_fails_even_if_wide_within_floor() -> None
     assert decision.core_errors == 1
     assert decision.wide_block_failed is False
     assert decision.exit_code == 1
+
+
+# --- B078 F004: daily refresh must not clobber the weekly CN fundamentals ---
+
+
+def test_daily_refresh_preserves_existing_cn_fundamentals_b078(tmp_path: Path) -> None:
+    """B078 F004 regression — the daily refresh (no cn_fundamentals_loader, i.e.
+    --no-cn-fundamentals) must PRESERVE the CN CAS rows the weekly cn-universe job
+    wrote, not overwrite the file to US-only. The pre-existing bug (exposed once
+    F001 let the daily job complete again) wiped ~29k CN rows → quality_momentum's
+    quality_score emptied → all-cash → service failure."""
+
+    def _fund_row(ticker: str) -> list[object]:
+        # report_date, ticker, fq, fq_end, then the 8 ratio columns.
+        return ["2024-09-30", ticker, "2024Q3", "2024-09-30", 0.2, 0.7, 0.04, 0.15, 30, 8, 18, 0.05]
+
+    fpath = tmp_path.joinpath(*FUNDAMENTALS_RELPATH)
+    fpath.parent.mkdir(parents=True, exist_ok=True)
+    # The weekly job's prior write: a US row + two CN CAS rows (.SH / .SZ).
+    with fpath.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(FUNDAMENTALS_HEADER)
+        writer.writerow(_fund_row("ZSTALE"))
+        writer.writerow(_fund_row("600519.SH"))
+        writer.writerow(_fund_row("000858.SZ"))
+
+    # Daily refresh: US fundamentals fetched fresh; NO cn_fundamentals_loader.
+    summary = run_refresh(
+        data_root=tmp_path,
+        from_date=_FROM,
+        to_date=_TO,
+        prices_loader=_FakePrices(),
+        fundamentals_loader=_FakeFundamentals(),
+        cn_hk_prices_loader=_FakeCnHk(),
+    )
+
+    with fpath.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.reader(handle))
+    tickers = [r[1] for r in rows[1:]]
+    # The CN rows survive (the bug wiped them); no duplication.
+    assert tickers.count("600519.SH") == 1
+    assert tickers.count("000858.SZ") == 1
+    # Fresh US rows are present (the daily fetch ran); the stale non-universe US
+    # row is dropped (US rows are authoritative from the fresh fetch, not preserved).
+    assert any(not t.endswith((".SH", ".SZ")) for t in tickers)
+    assert "ZSTALE" not in tickers
+    # Summary reflects the preserved CN rows.
+    assert summary.cn_fundamental_rows == 2
+    assert summary.cn_fundamental_symbols == 0  # none FETCHED this run (preserved)
+
+
+def test_daily_refresh_no_existing_file_preserves_nothing(tmp_path: Path) -> None:
+    """First-ever daily run (no fundamentals.csv yet): preserve nothing, US-only —
+    byte-identical to pre-B078 (the else branch reads an absent file → [])."""
+
+    summary = run_refresh(
+        data_root=tmp_path,
+        from_date=_FROM,
+        to_date=_TO,
+        prices_loader=_FakePrices(),
+        fundamentals_loader=_FakeFundamentals(),
+        cn_hk_prices_loader=_FakeCnHk(),
+    )
+    assert summary.cn_fundamental_rows == 0

@@ -245,6 +245,44 @@ def _write_csv(path: Path, header: list[str], rows: list[list[object]]) -> None:
         writer.writerows(rows)
 
 
+# A-share canonical tickers carry a .SH / .SZ suffix; the unified fundamentals
+# CSV's only non-US rows are these CN CAS rows (HK carries no fundamentals).
+_CN_FUNDAMENTAL_TICKER_SUFFIXES: tuple[str, ...] = (".SH", ".SZ")
+
+
+def _read_existing_cn_fundamental_rows(path: Path) -> list[list[object]]:
+    """Existing A-share (.SH / .SZ) fundamental rows from ``path`` (``[]`` if absent).
+
+    B078 F004 — the daily refresh runs with ``--no-cn-fundamentals`` (the heavy CN
+    CAS fetch is decoupled to the weekly cn-universe job, B075 F002), yet the
+    fundamentals.csv write is UNCONDITIONAL. Without preserving them, the daily run
+    would overwrite the file with US-only rows and WIPE the ~29k CN rows the weekly
+    job wrote → quality_momentum's quality_score empties → all-cash → service
+    failure (the pre-existing bug B078 F001 exposed once the daily job started
+    completing again). Re-reading the file lets the daily write refresh US while
+    leaving CN untouched until the weekly job refetches it.
+
+    US rows are intentionally dropped here (they are re-fetched fresh every run, so
+    re-adding them would duplicate). An unexpected/legacy header preserves nothing
+    (the weekly job rewrites the whole file) rather than risk mis-parsing. Rows are
+    returned in :data:`FUNDAMENTALS_HEADER` column order, ready to append."""
+
+    if not path.is_file():
+        return []
+    ticker_idx = FUNDAMENTALS_HEADER.index("ticker")
+    preserved: list[list[object]] = []
+    with path.open(encoding="utf-8", newline="") as handle:
+        reader = csv.reader(handle)
+        if next(reader, None) != FUNDAMENTALS_HEADER:
+            return []
+        for row in reader:
+            if len(row) > ticker_idx and row[ticker_idx].endswith(
+                _CN_FUNDAMENTAL_TICKER_SUFFIXES
+            ):
+                preserved.append(list(row))
+    return preserved
+
+
 def run_refresh(
     *,
     data_root: Path,
@@ -414,6 +452,13 @@ def run_refresh(
                 )
                 continue
             cn_fundamental_rows.extend(_fundamentals_dict_to_row(row) for row in cn_rows)
+    else:
+        # B078 F004 — not fetching CN fundamentals this run (the daily refresh's
+        # --no-cn-fundamentals). The write below is unconditional, so preserve the
+        # existing CN rows rather than clobber the file to US-only (which emptied
+        # quality_momentum → all-cash → service failure). The weekly cn-universe
+        # job is the authoritative CN refresh; the daily job just must not wipe it.
+        cn_fundamental_rows = _read_existing_cn_fundamental_rows(fundamentals_path)
 
     _write_csv(
         fundamentals_path, FUNDAMENTALS_HEADER, fundamental_rows + cn_fundamental_rows
