@@ -16,8 +16,12 @@ from pathlib import Path
 from workbench_api.cli.bootstrap import run
 from workbench_api.db.repositories import AccountRepository, BacklogRepository
 from workbench_api.db.repositories.account_snapshot import AccountSnapshotRepository
+from workbench_api.db.repositories.symbol_name import SymbolNameRepository
 from workbench_api.db.session import get_session
 from workbench_api.services.nav import aggregate_account_state
+from workbench_api.symbols.names import CURATED_SYMBOL_NAMES
+
+_N_CURATED = len(CURATED_SYMBOL_NAMES)
 
 
 def _seed_repo_root(repo_root: Path) -> None:
@@ -65,7 +69,7 @@ def test_bootstrap_imports_repo_root_files(initialised_db: str, tmp_path: Path) 
     _seed_repo_root(repo_root)
 
     counts = run(repo_root)
-    assert counts == {"accounts": 1, "backlog": 2}
+    assert counts == {"accounts": 1, "backlog": 2, "symbol_names": _N_CURATED}
 
     gen = get_session()
     session = next(gen)
@@ -97,11 +101,13 @@ def test_bootstrap_is_idempotent(initialised_db: str, tmp_path: Path) -> None:
 
     run(repo_root)
     counts = run(repo_root)
-    assert counts == {"accounts": 1, "backlog": 2}
+    assert counts == {"accounts": 1, "backlog": 2, "symbol_names": _N_CURATED}
 
     gen = get_session()
     session = next(gen)
     assert AccountRepository(session).count() == 1
+    # B079 F001: the curated seed upserts in place — re-running does not stack rows.
+    assert SymbolNameRepository(session).count() == _N_CURATED
     # B051: the deterministic snapshot id upserts in place — re-running the
     # seed must not stack a second snapshot row.
     assert AccountSnapshotRepository(session).count() == 1
@@ -208,4 +214,14 @@ def test_bootstrap_handles_missing_files(initialised_db: str, tmp_path: Path) ->
     repo_root = tmp_path / "empty-repo"
     repo_root.mkdir()
     counts = run(repo_root)
-    assert counts == {"accounts": 0, "backlog": 0}
+    # B079 F001: the curated symbol-name seed is code-resident (not a repo file),
+    # so it lands even on a bare clone with no accounts/backlog files.
+    assert counts == {"accounts": 0, "backlog": 0, "symbol_names": _N_CURATED}
+
+    gen = get_session()
+    session = next(gen)
+    names = SymbolNameRepository(session).get_names(["AAPL", "0700.HK", "600519.SH"])
+    assert names["AAPL"] == "Apple Inc."
+    assert names["0700.HK"] == "Tencent"
+    with contextlib.suppress(StopIteration):
+        next(gen)

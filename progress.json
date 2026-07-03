@@ -1,10 +1,10 @@
 {
   "status": "building",
   "total_features": 4,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
-  "last_updated": "2026-06-26",
+  "current_sprint": "F002",
+  "last_updated": "2026-07-03",
   "user_goal": "B079 标的名称显示(所有显示标的代码处加显名称)。来源:2026-06-26 用户『优化标的显示逻辑,所有显示代码处显示名称』+选『名称为主、代码次之』(贵州茅台  600519.SH,代码灰色小字)。**★设计(Explore 已核)**:名称源已存在统一(ProviderStats.long_name US yfinance/CN akshare 证券简称/HK)+落库 symbol_fundamentals_cache.long_name 但稀疏;A股 名称每天已在 akshare spot 拉却被丢弃(cn_marketcap.py:52/63 只 ST 过滤)→捕获零成本;美股无静态 name 映射。前端共享 <SymbolLink>(9 复用点)改一处覆盖大多数。后端 8 response model 带 code 不带 name。**决策**:不走 data_refresh/CSV;建轻量 name store(A股 从 akshare spot 落库+美股静态映射有界)+batch get_names 纯 DB+后端 enrich(优于前端逐个查 N 次请求触发昂贵 fetch)。覆盖率补全才能『所有地方』,缺失优雅 fallback 纯 code。**4 features 3g+1c**:F001 名称 store+batch get_names;F002 后端 enrich 8 model;F003 前端 <SymbolLink> 名称为主+详情页头部+9 复用点;F004 Codex 验收(名称全显+缺失 fallback+零回归)。spec docs/specs/B079-symbol-name-display-spec.md(3 章)。纯展示层不改执行/策略逻辑。",
   "reference_docs": [
     "docs/specs/B079-symbol-name-display-spec.md",
@@ -35,7 +35,7 @@
   },
   "session_notes": {
     "planner": "2026-06-26 B079 planning(planner)。标的名称显示(所有代码处加显名称,名称为主代码次之)。用户 UX 改进需求。Explore 摸清全面。**★名称源已存在**:ProviderStats.long_name(US yfinance/CN akshare 证券简称/HK)落库 symbol_fundamentals_cache 但稀疏;A股 名称每天 akshare spot 已拉却丢弃(cn_marketcap.py:52/63)→捕获零成本;美股无静态映射。前端 <SymbolLink>(9 复用点)改一处覆盖大多数;后端 8 model 加 name。**决策**:轻量 name store(A股 akshare spot 落库+美股静态映射)+batch get_names 纯 DB+后端 enrich(非前端逐个查);缺失优雅 fallback 纯 code。**4 features 3g+1c**:F001 name store+get_names/F002 后端 enrich 8 model/F003 前端 SymbolLink 名称为主+详情页头部/F004 Codex 验收。**【续接】**:status=building,Generator 接 F001(name store+A股 spot 名称落库+美股静态映射+batch get_names)→F002(enrich 8 model)→F003(SymbolLink 名称为主+9 复用点+详情页),再 Codex F004(名称全显+缺失 fallback+零回归+截图)。纯展示层不改执行/策略;no-execution safety 守门不破。**ops**:网关余额耗尽待充值。prod=B078 系。",
-    "generator": null,
+    "generator": "2026-07-03 B079 building(generator). F001 DONE+pushed: 轻量 symbol_name 表(symbol PK/name/source/updated_at 持久非TTL)+SymbolNameRepository.get_names(纯DB batch)/upsert_names;symbols/names.py CURATED_SYMBOL_NAMES(68=US27+ETF15+CN/HK26 英文,CN/HK 硬编码本地+drift-guard 测 REAL_HK_CHINA_UNIVERSE 避免拉 trade/pandas 重依赖入热路径)+resolve_symbol_names(curated∪DB,DB/live 赢→A股中文覆盖英文);bootstrap seed_symbol_names(idempotent);A股 zero-fetch capture=cn_marketcap._discover_from_sina/eastmoney 加 names_out out-param(含 ST 名,ranking 字节不变→6 测+CLI 2-tuple 契约零回归)+cli.py _persist_symbol_names(require_production_db guard 内)。gates 全绿:mypy 459 clean/ruff/单测 68+全 1447 passed。**续接 F002**:10 schema 加 name(6 已加:TargetPosition/WashSaleFlag/PositionEntry/PositionDiffEntry/FillRowOut/PaperPositionPnl,余 PaperDriftEntry/FillSlippage/SymbolPriceDetail/BacktestTrade)+各 service assembly site resolve_symbol_names enrich(session 已在 scope,_snapshot_to_payload 需 threaded names dict)。★scope 裁定:F002 加 BacktestTrade(F004 验收列 backtest)+SymbolPriceDetail;degraded_symbols/matched_tickers 是 string[]→改 shape 破契约→pure-code fallback(诚实边界)。F003 前端 SymbolLink name-prop+13 site+详情页 233+api.ts regen。",
     "evaluator": null
   },
   "features": [

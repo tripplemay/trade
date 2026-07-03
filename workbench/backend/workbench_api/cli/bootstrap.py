@@ -43,8 +43,10 @@ from workbench_api.db.models.account_snapshot import (
 )
 from workbench_api.db.repositories import AccountRepository, BacklogRepository
 from workbench_api.db.repositories.account_snapshot import AccountSnapshotRepository
+from workbench_api.db.repositories.symbol_name import SymbolNameRepository
 from workbench_api.db.session import get_session
 from workbench_api.settings import get_settings
+from workbench_api.symbols.names import CURATED_SYMBOL_NAMES
 
 
 def _coerce_account(payload: dict[str, Any]) -> Account:
@@ -156,6 +158,19 @@ def _import_backlog(session: Session, backlog_path: Path) -> int:
     return len(raw)
 
 
+def _import_symbol_names(session: Session) -> int:
+    """B079 F001 — seed the curated static symbol → display-name rows.
+
+    Idempotent (batch upsert keyed on symbol): re-runs replace in place. The
+    live A-share akshare capture (``source="akshare_spot"``) later overrides the
+    static English CN fallback for the tickers it covers.
+    """
+
+    return SymbolNameRepository(session).upsert_names(
+        CURATED_SYMBOL_NAMES, source="curated"
+    )
+
+
 def run(repo_root: Path) -> dict[str, int]:
     """Programmatic entry point used by tests."""
 
@@ -170,10 +185,15 @@ def run(repo_root: Path) -> dict[str, int]:
     try:
         n_accounts = _import_accounts(session, accounts_path)
         n_backlog = _import_backlog(session, backlog_path)
+        n_symbol_names = _import_symbol_names(session)
         # Trigger the generator's commit on a clean close.
         with contextlib.suppress(StopIteration):
             next(session_gen)
-        return {"accounts": n_accounts, "backlog": n_backlog}
+        return {
+            "accounts": n_accounts,
+            "backlog": n_backlog,
+            "symbol_names": n_symbol_names,
+        }
     except Exception:
         session_gen.throw(SystemExit("rollback"))
         raise
@@ -216,7 +236,7 @@ def main(argv: list[str] | None = None) -> int:
 
     print(
         f"workbench-bootstrap: imported accounts={counts['accounts']} "
-        f"backlog={counts['backlog']}",
+        f"backlog={counts['backlog']} symbol_names={counts['symbol_names']}",
         file=sys.stderr,
     )
     return 0

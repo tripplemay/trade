@@ -6,7 +6,7 @@
       "title": "名称数据落库(symbol→name lookup)+ 批量解析 get_names(纯 DB)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F001 + §0】(1) 轻量名称 store:新建 symbol_name 表(symbol PK/name/source/updated_at 持久非 TTL)或扩 fundamentals cache;批量读 get_names(symbols)->dict(纯 DB 不触发外部 fetch,缺失省略)。(2) A股 名称落库:universe build/data-refresh 顺带把 cn_marketcap akshare spot 已抓的『名称』(现丢弃,cn_marketcap.py:52/63)写进 name store(零额外抓取)。(3) 美股/ETF/港股 proxy 静态 curated ticker→name 常量(ETF_UNIVERSE+equity_universe+CN_HK_UNIVERSE 有界稳定)seed。(4) 边界 read-only 名称元数据(§12.10.2 r);缺失 fallback code 不报错。正面证据:name store+批量 get_names(纯 DB);A股 名称从 akshare spot 落库+美股静态映射 seed;覆盖 cn_attack universe+Master/US;缺失优雅省略。Gates:backend pytest/ruff 目录上下文/mypy CI-exact 0。",
       "design_decisions": [
         "★Explore:名称源已存在统一(ProviderStats.long_name US/CN/HK)+落库 symbol_fundamentals_cache.long_name 但稀疏;A股 名称每天已在 akshare spot 拉却被丢弃(只 ST 过滤)→捕获近乎零成本。",

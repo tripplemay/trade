@@ -34,6 +34,7 @@ from workbench_api.db.models.recommendation_snapshot import RecommendationSnapsh
 from workbench_api.db.models.risk_explanation_snapshot import RiskExplanationSnapshot
 from workbench_api.db.models.snapshot_meta import SnapshotMeta
 from workbench_api.db.models.symbol_fundamentals_cache import SymbolFundamentalsCache
+from workbench_api.db.models.symbol_name import SymbolName
 from workbench_api.db.models.symbol_price_cache import SymbolPriceCache
 from workbench_api.db.models.target_refresh_job import TargetRefreshJob
 from workbench_api.db.models.tiingo_budget_log import TiingoBudgetLog
@@ -63,6 +64,7 @@ __all__ = [
     "RiskExplanationSnapshot",
     "SnapshotMeta",
     "SymbolFundamentalsCache",
+    "SymbolName",
     "SymbolPriceCache",
     "TargetRefreshJob",
     "TiingoBudgetLog",

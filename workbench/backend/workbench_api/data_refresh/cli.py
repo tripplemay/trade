@@ -328,6 +328,35 @@ def _persist_data_window(window: DataWindow) -> None:
         session.close()
 
 
+def _persist_symbol_names(names: dict[str, str]) -> int:
+    """B079 F001 — upsert the A-share display names captured for free from the
+    akshare spot 名称 column into the ``symbol_name`` store (zero extra fetch).
+
+    Mirrors :func:`_persist_data_window` (lazy DB import, own session, commit +
+    close). ``source="akshare_spot"`` so a fresh Chinese name knowingly overrides
+    the curated static English CN fallback the bootstrap seeds. A no-op on an
+    empty mapping (discovery degraded to the seed → nothing captured)."""
+
+    if not names:
+        return 0
+
+    from sqlalchemy.orm import sessionmaker
+
+    from workbench_api.db.engine import get_engine
+    from workbench_api.db.repositories.symbol_name import SymbolNameRepository
+
+    factory = sessionmaker(bind=get_engine(), autoflush=False, future=True)
+    session = factory()
+    try:
+        written = SymbolNameRepository(session).upsert_names(
+            names, source="akshare_spot"
+        )
+        session.commit()
+        return written
+    finally:
+        session.close()
+
+
 @dataclass(frozen=True, slots=True)
 class ExitDecision:
     """B075 F001 — the refresh job's exit verdict with partial-failure tolerance."""
@@ -383,6 +412,10 @@ def main(argv: list[str] | None = None) -> int:
     superset_provider: Callable[[], Sequence[str]] | None = None
     cn_fundamentals_loader: _CnFundamentalsLoader | None = None
     cn_benchmark_loader: object | None = None
+    # B079 F001 — collect A-share display names captured (zero extra fetch) during
+    # the superset discovery inside fetch_main; persisted after the price write,
+    # under the same production-DB guard as the data window.
+    captured_cn_names: dict[str, str] = {}
     if not args.no_cn_universe:
         from workbench_api.data_refresh.cn_benchmark import AkshareCsiLoader
         from workbench_api.data_refresh.cn_fundamentals import CnFundamentalsLoader
@@ -402,6 +435,8 @@ def main(argv: list[str] | None = None) -> int:
             top_n=args.cn_universe_max_superset,
             allow_sina_fallback=args.cn_universe_sina_fallback,
             fetch_timeout_seconds=getattr(args, "cn_fetch_timeout_seconds", None),
+            # B079 F001 — harvest {canonical: 名称} from the same spot frame.
+            capture_names=captured_cn_names,
         )[0]
         # B065 F002 — CAS fundamentals for the superset → fundamentals.csv.
         cn_fundamentals_loader = CnFundamentalsLoader()
@@ -441,19 +476,26 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     window = compute_data_window(Path(summary.prices_path))
-    if window is not None:
+    if window is not None or captured_cn_names:
         try:
             require_production_db(entrypoint="data-refresh")
         except ScratchDatabaseError as exc:
             print(str(exc), file=sys.stderr)
             return 1
-        _persist_data_window(window)
-        print(
-            "data window — "
-            f"data_start={window.data_start.isoformat()} "
-            f"data_end={window.data_end.isoformat()} "
-            f"first_usable_signal_date={window.first_usable_signal_date.isoformat()}"
-        )
+        if window is not None:
+            _persist_data_window(window)
+            print(
+                "data window — "
+                f"data_start={window.data_start.isoformat()} "
+                f"data_end={window.data_end.isoformat()} "
+                f"first_usable_signal_date={window.first_usable_signal_date.isoformat()}"
+            )
+        # B079 F001 — persist the zero-fetch A-share display names alongside.
+        if captured_cn_names:
+            written = _persist_symbol_names(captured_cn_names)
+            print(
+                f"symbol names — captured={len(captured_cn_names)} written={written}"
+            )
 
     # B075 F001 — partial-failure 优雅: the wide A-share blocks (price extension +
     # CAS fundamentals) tolerate a bounded tail of per-symbol failures; only

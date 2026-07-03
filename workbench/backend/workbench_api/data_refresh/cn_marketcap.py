@@ -163,7 +163,11 @@ def _union_with_seed(discovered: Sequence[str]) -> tuple[str, ...]:
 
 
 def _discover_from_eastmoney(
-    akshare: Any, top_n: int, *, timeout_seconds: float = 0.0
+    akshare: Any,
+    top_n: int,
+    *,
+    timeout_seconds: float = 0.0,
+    names_out: dict[str, str] | None = None,
 ) -> list[str] | None:
     """eastmoney ``stock_zh_a_spot_em`` ranked by 总市值 (market cap).
 
@@ -173,7 +177,12 @@ def _discover_from_eastmoney(
     bounded by ``timeout_seconds`` (0 = inline) so a silent network hang on this
     eastmoney push host — documented unreliable off-box and on the VM — degrades
     to the next source / seed instead of wedging the daily refresh before any
-    prices are written."""
+    prices are written.
+
+    B079 F001: when ``names_out`` is provided, every record's ``{canonical: 名称}``
+    is captured into it (Chinese display names, including ST — a held risk-warning
+    ticker still deserves its name), for free from the frame already fetched. The
+    ranking output is unchanged, so callers that omit ``names_out`` are byte-identical."""
 
     try:
         records, columns = call_with_timeout(
@@ -186,9 +195,12 @@ def _discover_from_eastmoney(
         return None
     ranked: list[tuple[float, str]] = []
     for record in records:
-        if is_st_name(str(record.get(_SPOT_COL_NAME, ""))):
-            continue
+        raw_name = str(record.get(_SPOT_COL_NAME, "")).strip()
         canonical = _spot_code_to_canonical(record.get(_SPOT_COL_CODE, ""))
+        if names_out is not None and canonical is not None and raw_name:
+            names_out[canonical] = raw_name
+        if is_st_name(raw_name):
+            continue
         total_mv = coerce_float(record.get(_SPOT_COL_TOTAL_MV))
         if canonical is None or total_mv is None or total_mv <= 0:
             continue
@@ -198,7 +210,11 @@ def _discover_from_eastmoney(
 
 
 def _discover_from_sina(
-    akshare: Any, top_n: int, *, timeout_seconds: float = 0.0
+    akshare: Any,
+    top_n: int,
+    *,
+    timeout_seconds: float = 0.0,
+    names_out: dict[str, str] | None = None,
 ) -> list[str] | None:
     """sina ``stock_zh_a_spot`` ranked by 成交额 (today's turnover).
 
@@ -208,7 +224,12 @@ def _discover_from_sina(
     re-ranks on historical market cap afterwards, so this only decides *which*
     names are ever fetched. ST / 退市 and 北交所 (``bj``) names are filtered out
     (B068 F001). B078 F001: bounded by ``timeout_seconds`` (0 = inline) so a hang
-    on the bulk fetch degrades to the curated seed rather than wedging the refresh."""
+    on the bulk fetch degrades to the curated seed rather than wedging the refresh.
+
+    B079 F001: when ``names_out`` is provided, every record's ``{canonical: 名称}``
+    is captured into it (Chinese display names, including ST) for free from the
+    frame already fetched — this is the VM-reachable daily capture path. The
+    ranking output is unchanged, so callers that omit ``names_out`` are byte-identical."""
 
     try:
         records, columns = call_with_timeout(
@@ -221,9 +242,12 @@ def _discover_from_sina(
         return None
     ranked: list[tuple[float, str]] = []
     for record in records:
-        if is_st_name(str(record.get(_SINA_COL_NAME, ""))):
-            continue
+        raw_name = str(record.get(_SINA_COL_NAME, "")).strip()
         canonical = _sina_code_to_canonical(record.get(_SINA_COL_CODE, ""))
+        if names_out is not None and canonical is not None and raw_name:
+            names_out[canonical] = raw_name
+        if is_st_name(raw_name):
+            continue
         turnover = coerce_float(record.get(_SINA_COL_AMOUNT))
         if canonical is None or turnover is None or turnover <= 0:
             continue
@@ -238,6 +262,7 @@ def discover_ashare_superset(
     top_n: int = 300,
     allow_sina_fallback: bool = False,
     fetch_timeout_seconds: float | None = None,
+    capture_names: dict[str, str] | None = None,
 ) -> tuple[tuple[str, ...], str]:
     """Best-effort current top-``top_n`` A-share names by liquidity.
 
@@ -266,7 +291,14 @@ def discover_ashare_superset(
     The seed is always unioned in (curated non-ST) so discovery never drops a
     curated name. The per-symbol historical-mcap fetch in
     :func:`~workbench_api.data_refresh.cn_universe.build_cn_universe` then re-ranks
-    this candidate pool point-in-time."""
+    this candidate pool point-in-time.
+
+    B079 F001: an optional ``capture_names`` dict, when supplied, is populated with
+    ``{canonical: 名称}`` for every record on the branch that answers (the akshare
+    spot 名称 column already fetched for ST filtering + ranking) — the zero-extra-fetch
+    A-share display-name capture. It stays untouched when discovery degrades to the
+    seed, and defaults to ``None`` so every existing caller's ``(symbols, provenance)``
+    contract is byte-identical."""
 
     # B078 F001 — bound each bulk akshare discovery call (0 / None = inline). This
     # is the LAST unbounded A-share network op on the daily critical path, and it
@@ -281,7 +313,9 @@ def discover_ashare_superset(
         except Exception:
             return CN_UNIVERSE_SEED, "seed"
 
-    discovered = _discover_from_eastmoney(akshare, top_n, timeout_seconds=timeout)
+    discovered = _discover_from_eastmoney(
+        akshare, top_n, timeout_seconds=timeout, names_out=capture_names
+    )
     if discovered is not None:
         union = _union_with_seed(discovered)
         logger.info(
@@ -291,7 +325,9 @@ def discover_ashare_superset(
         return union, "bulk_spot"
 
     if allow_sina_fallback:
-        discovered = _discover_from_sina(akshare, top_n, timeout_seconds=timeout)
+        discovered = _discover_from_sina(
+            akshare, top_n, timeout_seconds=timeout, names_out=capture_names
+        )
         if discovered is not None:
             union = _union_with_seed(discovered)
             logger.info(
