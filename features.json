@@ -1,50 +1,67 @@
 {
-  "sprint": "B079-symbol-name-display",
-  "features": [
-    {
-      "id": "F001",
-      "title": "名称数据落库(symbol→name lookup)+ 批量解析 get_names(纯 DB)",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §2 F001 + §0】(1) 轻量名称 store:新建 symbol_name 表(symbol PK/name/source/updated_at 持久非 TTL)或扩 fundamentals cache;批量读 get_names(symbols)->dict(纯 DB 不触发外部 fetch,缺失省略)。(2) A股 名称落库:universe build/data-refresh 顺带把 cn_marketcap akshare spot 已抓的『名称』(现丢弃,cn_marketcap.py:52/63)写进 name store(零额外抓取)。(3) 美股/ETF/港股 proxy 静态 curated ticker→name 常量(ETF_UNIVERSE+equity_universe+CN_HK_UNIVERSE 有界稳定)seed。(4) 边界 read-only 名称元数据(§12.10.2 r);缺失 fallback code 不报错。正面证据:name store+批量 get_names(纯 DB);A股 名称从 akshare spot 落库+美股静态映射 seed;覆盖 cn_attack universe+Master/US;缺失优雅省略。Gates:backend pytest/ruff 目录上下文/mypy CI-exact 0。",
-      "design_decisions": [
-        "★Explore:名称源已存在统一(ProviderStats.long_name US/CN/HK)+落库 symbol_fundamentals_cache.long_name 但稀疏;A股 名称每天已在 akshare spot 拉却被丢弃(只 ST 过滤)→捕获近乎零成本。",
-        "不走 data_refresh/CSV(名称没落库+改日刷关键路径);建轻量 name store+后端 enrich;美股静态映射(universe 有界~40-50 稳定)。",
-        "batch get_names 纯 DB 不触发外部 fetch(前端逐个查=N 次请求+昂贵 akshare/yfinance)。"
-      ]
-    },
-    {
-      "id": "F002",
-      "title": "后端 enrich response model(8 处加可选 name 字段,batch 解析)",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §2 F002】(1) 给 8 个 response model 加可选 name 字段(TargetPosition/WashSaleFlag/PositionDiffEntry/PositionEntry/FillRowOut/PaperPositionPnl/PaperDriftEntry/FillSlippage)+SymbolPriceDetail。(2) 组装响应时用 batch get_names 一次性给每行附 name(不逐个查);缺失 name=null。(3) 边界纯加字段,既有 code 字段/契约零回归;research-only/no-broker 不破。正面证据:8 model 带 name(batch 解析 1 次 DB 非 N 次);A股 中文名+美股名出现在 recommendations/position-diff/fills/paper 等响应;缺失 name=null;既有契约零回归。Gates 同 F001+acceptance(响应含 name 不破既有断言)。",
-      "design_decisions": [
-        "纯加可选字段,既有 code 契约零回归;batch get_names 1 次 DB enrich N 行(非逐个查)。"
-      ]
-    },
-    {
-      "id": "F003",
-      "title": "前端显示(SymbolLink 名称为主代码次之 + 详情页头部 + 9 复用点)",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "【见 spec §2 F003 + 用户选『名称为主代码次之』】(1) <SymbolLink> 加可选 name prop:渲染名称为主、代码灰色次之(贵州茅台  600519.SH);name 缺失→纯 code(现有兜底)。一处改覆盖 9 复用点(recommendations/position-diff/fills/ticket/paper/backtest/news/risk)。(2) 详情页头部 symbols/page.tsx:233 显示名称(该页已有 name)。(3) 各复用点把后端 enrich 的 name 传进 <SymbolLink name=...>。(4) ag-grid ColDef cellRenderer 内 name+code 不溢出,dense table 可读。(5) vitest/e2e 更新(含 B072 闭环 e2e 名称显示不破 safety 守门)。正面证据:<SymbolLink> 名称为主代码次之+9 复用点显示名称+详情页头部名称;缺失纯 code 兜底;ag-grid 排版正常。Gates:vitest/tsc/eslint+Playwright e2e(含闭环+no-execution safety 守门不破)。",
-      "design_decisions": [
-        "用户选名称为主、代码灰色次之(贵州茅台  600519.SH);改 <SymbolLink> 一处覆盖 9 复用点;缺失纯 code 兜底。",
-        "详情页头部 symbols/page.tsx:233 单独加(不走 SymbolLink,该页已有 name);account/fills 录入控件不动。"
-      ]
-    },
-    {
-      "id": "F004",
-      "title": "Codex:验收(名称在所有位置显示 A股中文名+美股名+缺失优雅 fallback+零回归)+signoff",
-      "priority": "high",
-      "executor": "codex",
-      "status": "done",
-      "acceptance": "【见 spec §2 F004】L1 全门禁(verifying 可跳 L1 复跑)。L2 真机/截图:名称在所有显示位置出现(recommendations/position-diff/fills/paper/backtest/详情页,贴 A股 中文名+美股名截图/真返回);缺失优雅 fallback 纯 code(造一个无 name 标的);batch 解析(非 N 次请求,贴证据)。零回归:执行链闭环+no-execution/disclaimer safety 守门不破;既有 code 契约不变。边界:research-only/no-broker;HEAD≡prod。signoff docs/test-reports/B079-...-signoff-*.md 实测证据逐条+截图。",
-      "design_decisions": []
-    }
-  ]
+ "sprint": "B080-strategy-lifecycle-monitoring",
+ "features": [
+  {
+   "id": "F001",
+   "title": "DB 层:trial_registry 表+历史回填 + oos_verification_card 红卡 DB 化",
+   "priority": "high",
+   "executor": "generator",
+   "status": "pending",
+   "acceptance": "【见 spec §2 F001 + §0】(1) trial_registry 表(id/created_at/batch/strategy_id/parameter_hash/params/universe/window_start/window_end/oos_split/metrics/verdict/source_ref/notes)+repo+只读 API(列表/按 strategy 计数=DSR 的 N);B050 worker 完成 run 自动登记(verdict=NA,含 parameter_hash)。(2) 幂等 seed 回填 >=15 条历史试验(B066/B068/B069/B070/B075/B076/B077 signoffs,source_ref 指向报告,数字照抄原文,抽 3 条对照精确一致)。(3) oos_verification_card 表(strategy_id PK/validated/oos_result/oos_cagr_range/headline+detail zh_en/backtest_ref/updated_at/source)+seed 迁移写现红卡值。(4) cn_attack_precompute._build_target_result 改读 DB 卡片,无行 fallback 现硬编码 dict(byte-identical 守门单测);registry.py description 去具体数字。Gates:backend pytest>=baseline/ruff 目录上下文/mypy CI-exact 0/alembic head。",
+   "design_decisions": [
+    "backtest_run 不当 trial registry:无 parameter_hash/universe/verdict 一等字段,语义是队列非登记簿(Explore 已核)→新表。",
+    "红卡双处硬编码(cn_attack_precompute.py:80-95 + registry.py:126-153)→DB 单一数据源;无行 fallback 保零回归零停机。",
+    "历史回填让 DSR 的 N 起点诚实——没有 N 永远算不出 Deflated Sharpe(评审报告 §2.3 L0)。"
+   ]
+  },
+  {
+   "id": "F002",
+   "title": "监控指标计算 job + API(L0:滚动持仓 IC/score 落库/跟踪差/暴露拥挤度/换手)",
+   "priority": "high",
+   "executor": "generator",
+   "status": "pending",
+   "acceptance": "【见 spec §2 F002 + §0 保真度陷阱】(1) workbench_api/monitoring/ 新包:持仓级滚动 rank-IC(cn_attack 两模式,t 日 target_weight 排名 vs N∈{5,10,20} 日远期收益(price_history.closes_by_symbol_since),12 个月滚动窗+滚动 t-stat,历史不足标 partial 不报错;IC 纯函数迁自 scripts/research/b077_signal_first_look.py);cn_attack precompute 顺带落库当日原始 score 进 master_meta.signal_scores(纯加键零回归);paper vs 基准跟踪差(per-strategy 基准映射常量);暴露/拥挤度(paper 持仓×cn_size PIT 帧→市值分位/小盘占比/HHI,照 size.py 口径);换手/不动区触发率(paper_rebalance)。(2) monitoring_metric 表(strategy_id+as_of+metric 唯一)+GET /monitoring/metrics。(3) 周频 timer workbench-monitoring(Mon 05:00 UTC,显式 TimeoutStartSec v0.9.54 §38)+CLI。正面证据:两模式全指标真数据;IC 标注『持仓保真非纯信号』;Master 不做 IC 只做跟踪差(快照仅季度粒度)。Gates 同 F001+§12.10.2 新模块注册(B079 教训)。",
+   "design_decisions": [
+    "★保真度陷阱:recommendation_snapshot 存的是过不动区后持仓目标非原始 score→先做持仓级 IC(诚实标注)+score 落库前向积累(>=12 个月后有完整滚动窗)。",
+    "阈值(IC 0.05-0.10/t<2)标注为业界经验法则仅提示,不触发任何动作——advisory-only。",
+    "行业暴露本批不做(fundamentals_cache 隔离红线);市值维度用 cn_size 研究帧接线。"
+   ]
+  },
+  {
+   "id": "F003",
+   "title": "冻结式再验证 pipeline(L1:数据追加+CPCV-lite 重跑+卡片/registry/报告三落地)",
+   "priority": "high",
+   "executor": "generator",
+   "status": "pending",
+   "acceptance": "【见 spec §2 F003】两段式:(1) 数据追加 job(季频周末窗口):baostock 拉 B070 宇宙增量价格写 data/research/reverify/<date>/ 新副本(b070 原快照不动);长任务 watchdog+逐只/bulk fetch 全超时(v0.9.54 §38/§39)。(2) 重验证 job:参数完全冻结(代码层不接受参数输入,只读冻结 config)重跑 b070 对照+CPCV-lite(K=4 交错 IS/OOS split 季度错开+1 个月 purge gap,报告各 split OOS 分布)→三落地:oos_verification_card 更新(代码路径不存在 validated=False→True 赋值,摘红卡永远人工批次)/trial_registry 登记/md 报告落 docs/test-reports/auto/。(3) 状态表(照 target_refresh_job 范式)+手动触发 API(POST+轮询)+季频 timer。正面证据:手动触发端到端真数据跑通;参数冻结守门单测(注入参数→拒绝);无 validated 翻真路径(守门断言);CPCV-lite 标注非全 CPCV。Gates 同 F001+触 trade/ 则 mypy trade。",
+   "design_decisions": [
+    "『再验证』非『再训练』:流水线无参数修改路径是本批最硬的不变量(评审 §2.3 L1)。",
+    "CPCV-lite(K=4 交错 split+purge)是 Planner 默认决策:全 CPCV 工程量大,lite 版诚实标注,未来可另立批次。",
+    "数据追加写新副本不动 b070 冻结快照——可复现性优先。"
+   ]
+  },
+  {
+   "id": "F004",
+   "title": "前端 /monitoring 面板 + paper 三口径修复(基准/币种/首日成交价)",
+   "priority": "high",
+   "executor": "generator",
+   "status": "pending",
+   "acceptance": "【见 spec §2 F004】(1) /monitoring 页(nav+zh/en i18n):每策略健康卡(滚动 IC 曲线含 partial 标注/跟踪差/暴露拥挤度/红卡状态)+trial registry DataTable+再验证历史与手动触发按钮(注明触发研究 pipeline 非交易);仿 paper 多段 Card;标的显示走 B079 SymbolLink name。(2) paper 三口径修复:BENCHMARK per-strategy 映射(cn_attack→CSI300,master/regime→SPY 不变);cn_attack paper 账户 base_currency→CNY(迁移+前端格式化);建仓成交价改 activation 当日可得价格(前向逻辑);历史首日假象不重算,paper view API meta+面板标注。正面证据:面板真数据渲染截图;CN 基准曲线=CSI300 且注明;Master paper 视图零回归(SPY/USD 不变)。Gates:vitest/tsc/eslint+Playwright e2e(含 monitoring 页无交易 affordance 的 no-execution 守门断言)。",
+   "design_decisions": [
+    "paper 首日口径 Planner 默认决策:修前向不改历史 NAV 行,历史假象(+2.6~3.1pp)meta 标注——最小干预可审计。",
+    "per-strategy 基准修复评审报告 §1.2 发现的三口径问题(SPY 基准/USD 标签/首日时序假象)。"
+   ]
+  },
+  {
+   "id": "F005",
+   "title": "Codex:独立验收(timer 装载/指标合理性/pipeline 跑通/红卡零回归/回填抽查/面板截图)+signoff",
+   "priority": "high",
+   "executor": "codex",
+   "status": "pending",
+   "acceptance": "【见 spec §2 F005】L1 全门禁(CI 绿可跳全量,safety+新单测本地抽查)。L2 真机:VM timer 装载(systemctl list-timers);监控指标真数据合理性(对照手工计算一个 IC 点);再验证 pipeline 手动触发跑通(长任务窗口未跑则如实标注);红卡 DB 化零回归(无行 fallback byte-identical 实测);trial registry 回填抽 3 条对照 signoff 原文;paper 口径修复实测(CN 基准/CNY/首日标注);/monitoring 截图;no-execution 守门。边界:research-only/no-broker;HEAD≡prod;signoff 逐条证据落 docs/test-reports/。",
+   "design_decisions": [
+    "验收主体:独立无实现上下文 agent 代 Codex(B079 先例,用户 /goal 授权),铁律 4 实质独立。"
+   ]
+  }
+ ]
 }
