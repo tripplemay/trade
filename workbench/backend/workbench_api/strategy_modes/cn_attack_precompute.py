@@ -47,6 +47,9 @@ from typing import TYPE_CHECKING, Any, Protocol
 
 from sqlalchemy.orm import Session
 
+from workbench_api.db.repositories.oos_verification_card import (
+    OosVerificationCardRepository,
+)
 from workbench_api.db.repositories.recommendation_snapshot import (
     RecommendationSnapshotRepository,
 )
@@ -157,7 +160,10 @@ def _classify_data_source() -> str:
 
 
 def score_cn_attack_target(
-    *, strategy_id: str, factor_variant: str
+    *,
+    strategy_id: str,
+    factor_variant: str,
+    caveat: dict[str, Any] | None = None,
 ) -> CnAttackTargetResult:
     """Load the A-share data and compute the CN attack mode's current target.
 
@@ -167,6 +173,10 @@ def score_cn_attack_target(
     ★OOS honesty caveat into the meta. Raises :class:`CnAttackPrecomputeError`
     (→ ``data_not_covered``) when the data cannot cover the universe — never
     publishes an all-cash degenerate target (B066 §29 no-silent-degenerate).
+
+    B080 F001: ``caveat`` (the DB ``oos_verification_card`` row resolved by the
+    caller) overrides the in-code fallback when supplied; ``None`` → byte-identical
+    to the pre-B080 ``CN_ATTACK_RESEARCH_CAVEAT``.
     """
 
     from trade.backtest.cn_attack_momentum_quality.engine import (  # type: ignore[import-untyped]
@@ -201,7 +211,7 @@ def score_cn_attack_target(
             "A-share data refresh."
         )
 
-    return _build_target_result(strategy_id, factor_variant, data_source, live)
+    return _build_target_result(strategy_id, factor_variant, data_source, live, caveat)
 
 
 def _build_target_result(
@@ -209,6 +219,7 @@ def _build_target_result(
     factor_variant: str,
     data_source: str,
     live: CnAttackLiveTarget,
+    caveat: dict[str, Any] | None = None,
 ) -> CnAttackTargetResult:
     target_weights: dict[str, float] = dict(live.target_weights)
     symbol_sleeve = {symbol: CN_ATTACK_SLEEVE for symbol in target_weights}
@@ -232,8 +243,12 @@ def _build_target_result(
         "profit_take": list(live.profit_take),
         "cash_weight": live.cash_weight,
         # ★ Spec §0 honesty (non-negotiable) — the surface renders this.
+        # B080 F001: prefer the DB card (caveat) when the caller resolved one;
+        # no card → byte-identical fallback to the in-code constant.
         "research_only": True,
-        "research_caveat": dict(CN_ATTACK_RESEARCH_CAVEAT),
+        "research_caveat": dict(
+            caveat if caveat is not None else CN_ATTACK_RESEARCH_CAVEAT
+        ),
     }
     return CnAttackTargetResult(
         as_of_date=live.as_of_date,
@@ -260,9 +275,13 @@ def run_cn_attack_precompute(
     is scoped by strategy_id).
     """
 
+    # B080 F001 — resolve the DB-ized OOS red card here (the session owner); a
+    # missing row → None → byte-identical fallback to CN_ATTACK_RESEARCH_CAVEAT.
+    # An injected ``score_fn`` (tests) bypasses this and never hits the DB.
+    card = OosVerificationCardRepository(session).get_card(strategy_id)
     fn = score_fn or (
         lambda: score_cn_attack_target(
-            strategy_id=strategy_id, factor_variant=factor_variant
+            strategy_id=strategy_id, factor_variant=factor_variant, caveat=card
         )
     )
     try:

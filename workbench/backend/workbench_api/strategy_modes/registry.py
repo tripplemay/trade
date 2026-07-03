@@ -135,7 +135,8 @@ _MODES: tuple[StrategyMode, ...] = (
         funding_state=FUNDING_RESEARCH,
         description=(
             "A股 进攻型选股：质量过滤 + 12-1 动量，每日监控 / 不动区。研究态：未经样本外验证，"
-            "B066 样本外为动量逆转期（CAGR −9~−11%）；advisory-only，不自动下单，非收益预测。"
+            "B066 样本外为动量逆转期（样本外表现以验证卡片为准 / see verification card）；"
+            "advisory-only，不自动下单，非收益预测。"
         ),
     ),
     StrategyMode(
@@ -148,7 +149,8 @@ _MODES: tuple[StrategyMode, ...] = (
         funding_state=FUNDING_RESEARCH,
         description=(
             "A股 进攻型选股：纯 12-1 动量（无质量过滤），每日监控 / 不动区。研究态：未验证，"
-            "B066 样本外为动量逆转期（CAGR −9~−11%）；advisory-only，不自动下单，非收益预测。"
+            "B066 样本外为动量逆转期（样本外表现以验证卡片为准 / see verification card）；"
+            "advisory-only，不自动下单，非收益预测。"
         ),
     ),
 )

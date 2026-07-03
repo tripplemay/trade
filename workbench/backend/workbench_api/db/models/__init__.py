@@ -21,6 +21,7 @@ from workbench_api.db.models.llm_budget_log import LLMBudgetLog
 from workbench_api.db.models.market_context import MarketContextObservation
 from workbench_api.db.models.news import News
 from workbench_api.db.models.news_embedding import NewsEmbedding
+from workbench_api.db.models.oos_verification_card import OosVerificationCard
 from workbench_api.db.models.order_ticket import OrderTicket
 from workbench_api.db.models.paper_account import (
     PaperAccount,
@@ -53,6 +54,7 @@ __all__ = [
     "MarketContextObservation",
     "News",
     "NewsEmbedding",
+    "OosVerificationCard",
     "OrderTicket",
     "PaperAccount",
     "PaperNavHistory",
