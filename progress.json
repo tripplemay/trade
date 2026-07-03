@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 4,
-  "completed_features": 2,
+  "completed_features": 3,
   "fix_rounds": 0,
-  "current_sprint": "F003",
+  "current_sprint": "F004",
   "last_updated": "2026-07-03",
   "user_goal": "B079 标的名称显示(所有显示标的代码处加显名称)。来源:2026-06-26 用户『优化标的显示逻辑,所有显示代码处显示名称』+选『名称为主、代码次之』(贵州茅台  600519.SH,代码灰色小字)。**★设计(Explore 已核)**:名称源已存在统一(ProviderStats.long_name US yfinance/CN akshare 证券简称/HK)+落库 symbol_fundamentals_cache.long_name 但稀疏;A股 名称每天已在 akshare spot 拉却被丢弃(cn_marketcap.py:52/63 只 ST 过滤)→捕获零成本;美股无静态 name 映射。前端共享 <SymbolLink>(9 复用点)改一处覆盖大多数。后端 8 response model 带 code 不带 name。**决策**:不走 data_refresh/CSV;建轻量 name store(A股 从 akshare spot 落库+美股静态映射有界)+batch get_names 纯 DB+后端 enrich(优于前端逐个查 N 次请求触发昂贵 fetch)。覆盖率补全才能『所有地方』,缺失优雅 fallback 纯 code。**4 features 3g+1c**:F001 名称 store+batch get_names;F002 后端 enrich 8 model;F003 前端 <SymbolLink> 名称为主+详情页头部+9 复用点;F004 Codex 验收(名称全显+缺失 fallback+零回归)。spec docs/specs/B079-symbol-name-display-spec.md(3 章)。纯展示层不改执行/策略逻辑。",
   "reference_docs": [
@@ -30,12 +30,12 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B079 building 完成(F001-F003 全 generator done)→ verifying(F004 Codex)。**F001** 名称 store:symbol_name 表+SymbolNameRepository.get_names(纯DB)/upsert_names+symbols/names.py CURATED_SYMBOL_NAMES(US27+ETF15+CN/HK26)+resolve_symbol_names(curated∪DB,live A股中文覆盖英文)+bootstrap seed+cn_marketcap zero-fetch A股名捕获(names_out,含ST,ranking字节不变)+cli _persist_symbol_names。**F002** 10 response model 加可选 name(TargetPosition/WashSaleFlag/PositionEntry/PositionDiffEntry/FillRowOut/PaperPositionPnl/PaperDriftEntry/FillSlippage/SymbolPriceDetail/BacktestTrade)+各 service assembly batch enrich。api.ts regen。**F003** SymbolLink 加 name prop(名称为主 text-sky/代码 muted text-xs,缺失纯 code 兜底)+10 site 传 name(3 ag-grid params.data?.name+列宽 110→190)+详情页头部 symbols/page.tsx name-primary。**F004 Codex 验收要点**:(1)L1 全门禁复跑;(2)L2 真机名称显示——recommendations/position-diff/fills/paper/backtest/详情页贴 A股中文名(需 data-refresh 日跑捕获或手触发,或看 curated 英文)+美股名截图;(3)造无名标的验缺失优雅纯 code fallback;(4)batch 解析(1 DB query 非 N,可看代码);(5)零回归=执行链闭环+no-execution/disclaimer safety 守门不破(vitest safety 41 已过)+既有 code 契约不变。**★诚实边界**:ticket(DefensivePosition)/risk-banner(degraded_symbols string[])/news-panel(matched_tickers string[])未 enrich→保持纯 code(改 shape 破契约,F004 不在验收位置列)。本机门禁全绿:后端 mypy 460/ruff/full suite 1644 passed;前端 tsc/vitest 346/eslint。",
+    "status": "ready"
   },
   "session_notes": {
     "planner": "2026-07-03 Planner(监控会话)协调注记: F001 提交 d188096 的 Workbench Backend CI 红 — tests/safety/test_symbols_request_self_contained.py 要求把 names.py 注册进 REQUEST_PATH_MODULES(§12.10.2 守门, 新 symbols/ 模块须接受 AST 扫描)。names.py 纯 DB 只读, 注册后应过。请 Generator 在 F002 提交前一并修复(CI 守门铁律: 红 CI 不得继续新功能)。另: B080(P0 监控批次)+B081(P0.5 引擎修真) spec 草稿已由 Planner 预研备好, B079 done 后启动。",
-    "generator": "2026-07-03 B079 building(generator). F001 DONE(d188096)+F002 DONE. **F001 CI 修**:names.py 未注册 §12.10.2 REQUEST_PATH_MODULES→backend CI 红,已补注册 push(585d30a),safety 172 passed。**F002 DONE**:10 response model 全加可选 name(TargetPosition/WashSaleFlag/PositionEntry/PositionDiffEntry/FillRowOut/PaperPositionPnl/PaperDriftEntry/FillSlippage/SymbolPriceDetail/BacktestTrade)+各 service assembly site batch resolve_symbol_names enrich(recommendations/execution[_snapshot_to_payload+get_latest_account+update_account+get_position_diff 双loop+target_payload]/fills[submit+list]/paper[_build_positions+_build_drift]/reconcile/wash_sale[model_copy]/symbols.service[单]/backtests[_to_response threaded names])。api.ts 已 regen(10 name? 字段,tsc clean,CI generate-types diff 会绿)。新增 test_symbol_name_enrich(curated fallback+live A股中文覆盖+synthetic→None 端到端)。gates:mypy 460 clean/ruff/affected 服务测全过/full suite 跑中。★scope 裁定:F002 加 BacktestTrade(F004 验收列 backtest)+SymbolPriceDetail;degraded_symbols/matched_tickers 是 string[]→改 shape 破契约→pure-code fallback(诚实边界,前端 risk-banner/news-panel 保持纯 code)。**续接 F003**:SymbolLink 加 name? prop(名称为主 text-sky/代码次之 muted-foreground text-xs,name 缺失→纯 code)+13 site 传 name(3 ag-grid cellRenderer 需 params.data?.name)+详情页 symbols/page.tsx:233(data.name,SymbolPriceDetail 已有 name)+vitest(SymbolLink.spec textContent 断言会变)+e2e 不破 no-execution safety。前端 map 见 workflow wf_468a6539-4b1。",
+    "generator": "2026-07-03 B079 building 全部完成(generator F001-F003 done)→已置 verifying 交 Codex F004。commits:d188096(F001)+585d30a(F001 CI修 names.py §12.10.2 注册)+157cb21(F002)+本次(F003)。**F001** 名称 store+纯DB get_names+curated seed+A股 zero-fetch capture(names_out 含 ST,ranking 字节不变;CLI 2-tuple 契约零回归)。**F002** 10 response model 加 name+各 service assembly batch resolve_symbol_names enrich+api.ts regen+test_symbol_name_enrich。**F003** SymbolLink name-prop(名称为主 link色/代码 muted text-xs,缺失纯 code)+10 site 传 name(paper2/position-diff2[含1 ag-grid]/backtest1 ag-grid/recommendations2[含1 ag-grid]/fills2/PositionCards1)+3 ag-grid 列宽 110→190+详情页头部 name-primary+SymbolLink.spec 加 name-present 测。★诚实边界(F003 未做,守零回归)=ticket DefensivePosition/risk-banner degraded_symbols[]/news-panel matched_tickers[] 保持纯 code(string[] 改 shape 破契约;F004 验收位置列不含这三)。门禁全绿:后端 mypy 460/ruff/full 1644 passed;前端 tsc/vitest 346(no-execution safety 41 过)/eslint。**F003 push 后须核 CI 绿(前端 CI 含 Playwright e2e;e2e 无精确 symbol-text 断言→应安全)**。B079 generator 侧已尽,等 Codex 验收 F004。前端 map=workflow wf_468a6539-4b1。",
     "evaluator": null
   },
   "features": [

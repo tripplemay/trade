@@ -37,9 +37,11 @@ function buildDiffColumns(
     {
       field: "symbol",
       headerName: t("symbol"),
-      width: 110,
+      width: 190,
       pinned: "left",
-      cellRenderer: (params: { value?: string }) => <SymbolLink symbol={params.value ?? ""} />,
+      cellRenderer: (params: { value?: string; data?: PositionDiffEntry }) => (
+        <SymbolLink symbol={params.value ?? ""} name={params.data?.name} />
+      ),
     },
     {
       field: "current_shares",
@@ -256,7 +258,7 @@ export default function PositionDiffPage() {
                   className="rounded-md border border-amber-700/40 bg-amber-950/20 px-3 py-2"
                 >
                   <strong>
-                    <SymbolLink symbol={row.symbol} />
+                    <SymbolLink symbol={row.symbol} name={row.name} />
                   </strong>
                   <span className="ml-2 text-xs text-muted-foreground">
                     {t("unmatchedLabel", { weight: (row.target_weight * 100).toFixed(2) })}

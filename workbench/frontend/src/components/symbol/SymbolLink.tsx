@@ -26,11 +26,17 @@ import { cn } from "@/lib/utils";
 export interface SymbolLinkProps {
   /** The ticker to display + deep-link to (case-insensitive). */
   symbol: string;
+  /**
+   * B079 — optional display name. When present it renders name-primary with the
+   * code as a muted, smaller suffix (`贵州茅台 600519.SH`); when absent/null the
+   * link shows the raw code exactly as before (graceful fallback — 缺失纯 code).
+   */
+  name?: string | null;
   /** Extra classes merged onto the link (e.g. to preserve bold / mono context). */
   className?: string;
 }
 
-export function SymbolLink({ symbol, className }: SymbolLinkProps) {
+export function SymbolLink({ symbol, name, className }: SymbolLinkProps) {
   const t = useTranslations("symbolLink");
   // Normalise for the deep link only; the visible text stays verbatim so the
   // surrounding table/card appearance is unchanged.
@@ -42,6 +48,7 @@ export function SymbolLink({ symbol, className }: SymbolLinkProps) {
   }
 
   const label = t("viewQuote", { symbol: normalized });
+  const displayName = name?.trim();
 
   return (
     <Link
@@ -55,7 +62,14 @@ export function SymbolLink({ symbol, className }: SymbolLinkProps) {
         className,
       )}
     >
-      {symbol}
+      {displayName ? (
+        <>
+          {displayName}
+          <span className="ml-1 text-xs text-muted-foreground">{symbol}</span>
+        </>
+      ) : (
+        symbol
+      )}
     </Link>
   );
 }

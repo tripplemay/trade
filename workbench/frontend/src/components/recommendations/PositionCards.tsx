@@ -92,7 +92,7 @@ export function PositionCards({ positions }: { positions: TargetPosition[] }) {
           <Card key={p.symbol} data-testid={`position-card-${p.symbol}`}>
             <CardHeader className="pb-2">
               <CardTitle className="text-base">
-                <SymbolLink symbol={p.symbol} />
+                <SymbolLink symbol={p.symbol} name={p.name} />
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">

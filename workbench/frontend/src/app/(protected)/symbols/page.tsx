@@ -230,7 +230,15 @@ function SymbolDetail({
       <Card>
         <CardHeader>
           <CardTitle className="flex flex-wrap items-baseline gap-3">
-            <span className="text-lg">{data.symbol}</span>
+            <span className="text-lg" data-testid="symbols-name">
+              {data.name ? (
+                <>
+                  {data.name} <span className="text-base text-muted-foreground">{data.symbol}</span>
+                </>
+              ) : (
+                data.symbol
+              )}
+            </span>
             <span className="text-2xl font-semibold" data-testid="symbols-close">
               {formatMoney(data.close, data.currency)}
             </span>

@@ -70,4 +70,24 @@ describe("SymbolLink", () => {
     expect(queryByTestId("symbol-link")).toBeNull();
     expect(container.textContent).toBe("   ");
   });
+
+  // B079 — name-primary / code-secondary display (名称为主，代码次之).
+  it("renders name-primary with the code as a secondary suffix when name is given", () => {
+    const { getByTestId } = renderWithIntl(<SymbolLink symbol="600519.SH" name="贵州茅台" />);
+    const link = getByTestId("symbol-link");
+    // Both the name and the raw code are shown; the deep link stays code-based.
+    expect(link.textContent).toContain("贵州茅台");
+    expect(link.textContent).toContain("600519.SH");
+    expect(link.getAttribute("href")).toBe("/symbols?symbol=600519.SH");
+  });
+
+  it("falls back to the raw code when name is null (graceful 缺失兜底)", () => {
+    const { getByTestId } = renderWithIntl(<SymbolLink symbol="AAPL" name={null} />);
+    expect(getByTestId("symbol-link").textContent).toBe("AAPL");
+  });
+
+  it("falls back to the raw code when name is blank whitespace", () => {
+    const { getByTestId } = renderWithIntl(<SymbolLink symbol="AAPL" name="   " />);
+    expect(getByTestId("symbol-link").textContent).toBe("AAPL");
+  });
 });

@@ -390,7 +390,7 @@ function ActiveView({
                     className="border-t border-border"
                   >
                     <td className="py-1 font-medium">
-                      <SymbolLink symbol={p.symbol} />
+                      <SymbolLink symbol={p.symbol} name={p.name} />
                     </td>
                     <td className="py-1 text-right">{num(p.shares, 4)}</td>
                     <td className="py-1 text-right">{num(p.avg_cost)}</td>
@@ -447,7 +447,7 @@ function ActiveView({
                     className="border-t border-border"
                   >
                     <td className="py-1 font-medium">
-                      <SymbolLink symbol={d.symbol} />
+                      <SymbolLink symbol={d.symbol} name={d.name} />
                     </td>
                     <td className="py-1 text-right">{pct(d.current_weight)}</td>
                     <td className="py-1 text-right">{pct(d.target_weight)}</td>

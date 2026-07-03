@@ -46,8 +46,10 @@ function buildPositionColumns(
     {
       field: "symbol",
       headerName: t("columnSymbol"),
-      width: 110,
-      cellRenderer: (params: { value?: string }) => <SymbolLink symbol={params.value ?? ""} />,
+      width: 190,
+      cellRenderer: (params: { value?: string; data?: TargetPosition }) => (
+        <SymbolLink symbol={params.value ?? ""} name={params.data?.name} />
+      ),
     },
     weightColumn<TargetPosition>({
       field: "target_weight",
@@ -384,7 +386,7 @@ export default function RecommendationsPage() {
                 {(data.wash_sale_flags ?? []).map((flag) => (
                   <li key={flag.symbol}>
                     <strong>
-                      <SymbolLink symbol={flag.symbol} />
+                      <SymbolLink symbol={flag.symbol} name={flag.name} />
                     </strong>
                     {" — "}
                     {tWash("lastBuy", { date: flag.last_buy_date, days: flag.days_since })}

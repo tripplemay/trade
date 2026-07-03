@@ -83,8 +83,10 @@ function buildTradeColumns(
     {
       field: "symbol",
       headerName: t("columnSymbol"),
-      width: 110,
-      cellRenderer: (params: { value?: string }) => <SymbolLink symbol={params.value ?? ""} />,
+      width: 190,
+      cellRenderer: (params: { value?: string; data?: BacktestTrade }) => (
+        <SymbolLink symbol={params.value ?? ""} name={params.data?.name} />
+      ),
     },
     { field: "side", headerName: t("columnSide"), width: 90 },
     percentColumn<BacktestTrade>({ field: "quantity", headerName: t("columnQty"), digits: 2 }),

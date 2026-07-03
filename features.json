@@ -30,7 +30,7 @@
       "title": "前端显示(SymbolLink 名称为主代码次之 + 详情页头部 + 9 复用点)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F003 + 用户选『名称为主代码次之』】(1) <SymbolLink> 加可选 name prop:渲染名称为主、代码灰色次之(贵州茅台  600519.SH);name 缺失→纯 code(现有兜底)。一处改覆盖 9 复用点(recommendations/position-diff/fills/ticket/paper/backtest/news/risk)。(2) 详情页头部 symbols/page.tsx:233 显示名称(该页已有 name)。(3) 各复用点把后端 enrich 的 name 传进 <SymbolLink name=...>。(4) ag-grid ColDef cellRenderer 内 name+code 不溢出,dense table 可读。(5) vitest/e2e 更新(含 B072 闭环 e2e 名称显示不破 safety 守门)。正面证据:<SymbolLink> 名称为主代码次之+9 复用点显示名称+详情页头部名称;缺失纯 code 兜底;ag-grid 排版正常。Gates:vitest/tsc/eslint+Playwright e2e(含闭环+no-execution safety 守门不破)。",
       "design_decisions": [
         "用户选名称为主、代码灰色次之(贵州茅台  600519.SH);改 <SymbolLink> 一处覆盖 9 复用点;缺失纯 code 兜底。",

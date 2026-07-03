@@ -476,8 +476,8 @@ export default function FillsPage() {
                   data-testid={`fills-preview-row-${row.id}`}
                   className="rounded-md border border-border/60 px-2 py-1 font-mono text-xs"
                 >
-                  <SymbolLink symbol={row.symbol} /> {row.side} {row.shares} @ {row.fill_price} ·{" "}
-                  {row.matched ? t("matchedLabel") : t("unmatchedLabel")}
+                  <SymbolLink symbol={row.symbol} name={row.name} /> {row.side} {row.shares} @{" "}
+                  {row.fill_price} · {row.matched ? t("matchedLabel") : t("unmatchedLabel")}
                 </li>
               ))}
             </ul>
@@ -513,7 +513,7 @@ export default function FillsPage() {
                   <TableRow key={row.id} data-testid={`fills-history-row-${row.id}`}>
                     <TableCell>{row.order_seq ?? "—"}</TableCell>
                     <TableCell className="font-mono">
-                      <SymbolLink symbol={row.symbol} />
+                      <SymbolLink symbol={row.symbol} name={row.name} />
                     </TableCell>
                     <TableCell>{row.side}</TableCell>
                     <TableCell className="text-right">{row.shares}</TableCell>
