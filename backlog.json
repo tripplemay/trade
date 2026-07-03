@@ -308,5 +308,98 @@
     "milestone": "Phase 4 — 新方向:A股 聪明钱跟随(用户真实目标)",
     "source": "2026-06-25 用户澄清真实目标 + B077 可行性摸底 + 2026-06-25/26 付费数据源深入调研",
     "sequence_note": "2026-06-25 B077(聪明钱数据可行性摸底)done=整体 NOT-GO 但收窄到龙虎榜机构席位+决定性下一步(补小盘覆盖)。2026-06-25/26 付费数据源调研(2 轮含真实性核查)=Tushare ¥200 标杆但 LHB 机构席位是噪/可马甲信号、期望放低。用户决定保存结论后续再深入。下一步候选=B078(Tushare 全覆盖去偏 LHB 机构席位低期望决定性一测)或重新评估这条路值不值得。研究文档 docs/research/ashare-smart-money-paid-data-sources-2026-06.md。"
+  },
+  {
+    "id": "B0XX-strategy-lifecycle-monitoring",
+    "title": "策略生命周期监控 + 试验登记簿 + 冻结式再验证流水线（评审 P0，L0+L1）",
+    "description": "评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §2.3 的 L0+L1 层。**L0 监控（纯观测不改策略）**：①两个 cn_attack 模式的 12 个月滚动 rank-IC 与滚动 t-stat（参考阈值 IC 0.05-0.10 可用、t<2 视为噪音，业界经验法则）；②paper vs 回测跟踪误差（成交价差/成本/滞后）；③换手与不动区触发率；④组合小盘暴露度+拥挤度指标（2024-02 微盘踩踏教训，paper 持仓几乎全是创业板/科创板小盘却无暴露监控）。**L0 试验登记簿（trial registry）**：结构化登记每次回测配置（参数/宇宙/区间/结果/决策），作为未来 Deflated Sharpe Ratio 的尝试次数 N——没有 N 永远算不出 DSR。**L1 冻结式再验证流水线**：每季度参数完全冻结、仅追加新数据重跑去偏宇宙全回测+CPCV，自动产出 OOS 红黄绿卡并更新到 advisory 快照（把 B066/B070 一次性动作固化为 pipeline）；流水线不允许改任何参数（是再验证不是再训练）。顺带修 paper 平台三个口径问题：首日成交价时序假象、nav 基准 SPY 应为 A 股指数、base_currency 标签。基建复用：每日 timer(B067)/回测引擎(B066-B068)/去偏宇宙(B070)/paper NAV(B074)。",
+    "decisions": [
+      "2026-07-03 用户确认立项（评审报告三问之二的结论：不建自动进化训练闭环，建监控+再验证+门禁）",
+      "L2（人工审批参数再估计）/L3（Qlib 因子研究）不在本批：门禁未过（需 L1 连续两季不恶化 + OOS/IS>0.5 + DSR>0；L3 另需 paper 满 ≥12 个月 PSR 显著 + 数据升级）",
+      "明确不做：任何『近期表现自动触发重训/自动改参/自动上线』的闭环；无登记的参数扫描；幸存者宇宙分数为适应度的搜索",
+      "advisory-only/research-only 边界不变；监控输出只提示不执行"
+    ],
+    "confirmed_at": "2026-07-03",
+    "priority": "high",
+    "milestone": "Phase 5 — 策略研究体系化 + 新策略族（2026-07-03 评审路线图 P0-P2）",
+    "source": "2026-07-03 用户立项 P0-P2（评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §4 路线图）",
+    "sequence_note": "评审路线图 P0——所有后续策略决策的传感器，建议最先做（混合批次，含 Codex 验收）。"
+  },
+  {
+    "id": "B0XX-backtest-engine-fidelity",
+    "title": "回测引擎修真：停牌/退市/涨跌停/手数/成本/band（评审 P0.5）",
+    "description": "评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §1.4B 的 6 项引擎级高估源修复，任何新策略（尤其小盘暴露策略）的回测可信度前置：①停牌/退市处理（当前 ffill 最后价且可按旧价成交、退市持仓永不减记，engine.py:163-173 自注 P1 简化→退市按末价减记或阶梯折价清仓、停牌禁成交）；②涨跌停可执行性（动量策略系统性买刚大涨的票，_execute_open 当前无条件按开盘价成交→涨/跌停日禁止或部分成交）；③100 股手数取整（当前浮点份额，10万×4% 仓位高价股一手买不起）；④印花税更新为卖出 5bp（2023-08-28 起实际减半，当前 10bp 偏保守）；⑤live 持久账簿替代每日从头重放回测（qfq 前复权下除权日可能无决策跳变）；⑥band 触发后只调超阈值部分而非全簿拉回目标（当前全量 rebalance 实际换手大于触发所需最小换手+路径依赖）。修完后重跑 B070 去偏基线，确认各项修复对历史结论的影响量并更新红卡数字。",
+    "decisions": [
+      "2026-07-03 用户确认立项（作为 P2 信号升级与任何小盘策略的前置）",
+      "修复后必须重跑 B070 去偏基线对照，量化各修复项对结论的影响（预期方向：更保守）",
+      "rebalance_frequency 死参数一并清理或接线（当前进 hash 但无消费点）"
+    ],
+    "confirmed_at": "2026-07-03",
+    "priority": "high",
+    "milestone": "Phase 5 — 策略研究体系化 + 新策略族（2026-07-03 评审路线图 P0-P2）",
+    "source": "2026-07-03 用户立项 P0-P2（评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §4 路线图）",
+    "sequence_note": "评审路线图 P0.5——P2 信号升级批次的硬前置；与 P0 监控批次无依赖可并行或紧随。"
+  },
+  {
+    "id": "B0XX-dividend-lowvol-defense",
+    "title": "红利低波防守腿（评审 P1，个人可实施策略排序第 1）",
+    "description": "评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §3.4 排序第 1。证据：2022-2024 三年调整市全收益 +42.6%；2024 初踩踏期最大回撤仅 5.4%（同期 HS300 -11.2%）；自 2013-12 指数发布以来年化约 12.9%。风险：2025 年 AI 牛中大幅跑输（全收益约 +6%）、被动资金 2022→24 增 20 倍拥挤度升；2025Q4 股息率回升 5%+ vs 十年国债 1.66%。形态：直接持有红利低波 ETF（如 512890 类）或对指数成分做轻度增强，年/半年调仓，advisory-only；spec 须写明拥挤度/股息率监控指标（股息率-国债利差 <2% 时降配提示）。与 cn_attack 进攻腿构成杠铃，解决『OOS 红卡期无可配置策略』。数据 akshare 免费全覆盖。",
+    "decisions": [
+      "2026-07-03 用户确认立项",
+      "定位=防守腿/杠铃另一端，非全仓信仰；须带股息率-利差与拥挤度监控",
+      "沿用现行验收纪律：OOS 披露 + advisory-only + 不动区机制不变"
+    ],
+    "confirmed_at": "2026-07-03",
+    "priority": "high",
+    "milestone": "Phase 5 — 策略研究体系化 + 新策略族（2026-07-03 评审路线图 P0-P2）",
+    "source": "2026-07-03 用户立项 P0-P2（评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §4 路线图）",
+    "sequence_note": "评审路线图 P1；实施成本最低（ETF 层面），可与 PEAD first-look 同批或相邻批次。"
+  },
+  {
+    "id": "B0XX-pead-first-look",
+    "title": "PEAD/业绩预告事件策略 first-look（评审 P1，新信号族）",
+    "description": "评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §3.4 排序第 2。学术证据：A 股 PEAD 多篇一致确认（EMFT 2022/IRFA 2024）；SUE 对冲组合 IR 量级 ≈2（西部证券口径 HS300 内 1.97/ZZ500 内 2.02）；Li et al 2024 复制 469 异象中盈余动量是 A 股动量类唯一大范围显著者（Sue1 月均 0.93-1.17%，t>3）；A 股强制业绩预告制度是相对美股的结构优势。数据零成本：akshare stock_yjyg_em（业绩预告）/stock_yysj_em、stock_report_disclosure（预约披露日期），三接口已实测存在。形态：first-look 先行——在宽宇宙（优先去偏口径）上测『预告惊喜多头、公告次日入场（无前视）、持有 20-60 交易日』的 IC 与分组单调性，沿用 B077 的 first-look 纪律（IC≥0.03 门槛+单调性检查）与 B066 式红黄绿卡；苗头成立再立全回测批次。纯多头事件驱动天然低频，与日频监控+不动区架构契合。",
+    "decisions": [
+      "2026-07-03 用户确认立项",
+      "first-look 先行（复用 B077 探针纪律），不直接搭全策略；IC 门槛与单调性检查照搬 B077 标准",
+      "entry 必须公告次一交易日（预告盘后披露，当日入场=前视）",
+      "卖方研报数字（IR≈2）视为样本内乐观值，预期打折"
+    ],
+    "confirmed_at": "2026-07-03",
+    "priority": "high",
+    "milestone": "Phase 5 — 策略研究体系化 + 新策略族（2026-07-03 评审路线图 P0-P2）",
+    "source": "2026-07-03 用户立项 P0-P2（评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §4 路线图）",
+    "sequence_note": "评审路线图 P1；数据零成本、证据最一致的新信号族；若将来买 Tushare（¥200 档 disclosure_date/forecast）可加深，但 akshare 免费即可起步。"
+  },
+  {
+    "id": "B0XX-cn-attack-signal-upgrade",
+    "title": "cn_attack 信号升级 A/B：残差动量/SUE 叠加/剔涨停/2月规避（评审 P2）",
+    "description": "评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §1.4A。背景：12-1 原始价格动量在 A 股长期溢价≈0 或为负（Hsu 2018 约 -1%/年；LSY CH-4 无动量因子；Li et al 2024 传统价格动量不显著），B066 OOS 红卡是结构性现象非 bug——升级方向是换信号构造非调参。候选（文献证据从强到弱）：①残差动量（对 CH-3/FF-3 残差算 12-1；A 股 VW 0.59%/月且 3 年不反转）；②盈余动量 SUE 作第二信号/过滤器（与 PEAD 批次共享数据）；③多尺度价量趋势因子（Liu-Zhou-Zhu：月均 1.43%/月 Sharpe 0.48/MDD 13%）；④剔涨停修正动量（形成期剔除涨停日贡献）；⑤2 月规避（春节月强反转掩盖全年动量，George-Hwang-Li 2023）；⑥因子动量（TSFM 年化 9.91%/Sharpe 1.15，吞噬个股动量——若成立则 12-1 应让位）；⑦regime 门控（换手率分位/大小盘相对强弱作开关）。验收：沿用 B076 verdict-gating——去偏 B070 宇宙 primary 定裁、全样本+OOS 双门禁、NO-GO 合法；每个变体记入 trial registry。",
+    "decisions": [
+      "2026-07-03 用户确认立项",
+      "硬前置：①回测引擎修真批次完成（B0XX-backtest-engine-fidelity）；②quality 变体去偏缺口须先补齐或在 spec 显式声明局限（B070/B076 去偏只跑过 pure，quality 全部正面数字来自幸存者宇宙）",
+      "裁定纪律照搬 B076：去偏宇宙 primary、verdict-gated、不为『用上新构造』硬上更差策略；纯动量降级为对照基准",
+      "每次配置试验登记入 trial registry（P0 批次产物）以支撑 DSR 计算"
+    ],
+    "confirmed_at": "2026-07-03",
+    "priority": "medium",
+    "milestone": "Phase 5 — 策略研究体系化 + 新策略族（2026-07-03 评审路线图 P0-P2）",
+    "source": "2026-07-03 用户立项 P0-P2（评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §4 路线图）",
+    "sequence_note": "评审路线图 P2；依赖引擎修真（硬）与 P0 trial registry（软）；建议 P0/P0.5/P1 之后执行。"
+  },
+  {
+    "id": "B0XX-etf-trend-ashare",
+    "title": "A股 ETF 时序趋势轮动（global_etf_momentum 改造，评审 P2）",
+    "description": "评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §3.4 排序第 3。证据：A 股指数层时序动量短期存在、长期反转（Physica A 2017）；横截面行业动量弱且快速均值回归→以时序动量/趋势过滤（择时）为主、横截面为辅。研报年化 18-24% 一律视为样本内上限打折（部分口径 2022 震荡市约 -5%，该数字未独立核验）。形态：宽基（300/500/1000/微盘代理）+红利+少量行业 ETF，趋势过滤/时序动量主信号，复用 global_etf_momentum.py 引擎+不动区，工作量最小。验收重点：2022 与 2024-02 型震荡/切换期的假信号损耗必须单独出数。",
+    "decisions": [
+      "2026-07-03 用户确认立项",
+      "以时序趋势（择时）为主信号，不做纯横截面行业动量（A 股证据弱）",
+      "震荡期（2022/2024-02 窗口）假信号损耗单列验收项；研报数字按样本内乐观值打折管理预期"
+    ],
+    "confirmed_at": "2026-07-03",
+    "priority": "medium",
+    "milestone": "Phase 5 — 策略研究体系化 + 新策略族（2026-07-03 评审路线图 P0-P2）",
+    "source": "2026-07-03 用户立项 P0-P2（评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §4 路线图）",
+    "sequence_note": "评审路线图 P2；与信号升级批次无依赖，可并行；基建契合度最高（改现有引擎）。"
   }
 ]
