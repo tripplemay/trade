@@ -18,10 +18,12 @@ from workbench_api.db.repositories import AccountRepository, BacklogRepository
 from workbench_api.db.repositories.account_snapshot import AccountSnapshotRepository
 from workbench_api.db.repositories.symbol_name import SymbolNameRepository
 from workbench_api.db.session import get_session
+from workbench_api.monitoring.trial_backfill import HISTORICAL_TRIALS
 from workbench_api.services.nav import aggregate_account_state
 from workbench_api.symbols.names import CURATED_SYMBOL_NAMES
 
 _N_CURATED = len(CURATED_SYMBOL_NAMES)
+_N_TRIALS = len(HISTORICAL_TRIALS)
 
 
 def _seed_repo_root(repo_root: Path) -> None:
@@ -69,7 +71,7 @@ def test_bootstrap_imports_repo_root_files(initialised_db: str, tmp_path: Path) 
     _seed_repo_root(repo_root)
 
     counts = run(repo_root)
-    assert counts == {"accounts": 1, "backlog": 2, "symbol_names": _N_CURATED}
+    assert counts == {"accounts": 1, "backlog": 2, "symbol_names": _N_CURATED, "trials": _N_TRIALS}
 
     gen = get_session()
     session = next(gen)
@@ -101,7 +103,7 @@ def test_bootstrap_is_idempotent(initialised_db: str, tmp_path: Path) -> None:
 
     run(repo_root)
     counts = run(repo_root)
-    assert counts == {"accounts": 1, "backlog": 2, "symbol_names": _N_CURATED}
+    assert counts == {"accounts": 1, "backlog": 2, "symbol_names": _N_CURATED, "trials": _N_TRIALS}
 
     gen = get_session()
     session = next(gen)
@@ -216,7 +218,7 @@ def test_bootstrap_handles_missing_files(initialised_db: str, tmp_path: Path) ->
     counts = run(repo_root)
     # B079 F001: the curated symbol-name seed is code-resident (not a repo file),
     # so it lands even on a bare clone with no accounts/backlog files.
-    assert counts == {"accounts": 0, "backlog": 0, "symbol_names": _N_CURATED}
+    assert counts == {"accounts": 0, "backlog": 0, "symbol_names": _N_CURATED, "trials": _N_TRIALS}
 
     gen = get_session()
     session = next(gen)

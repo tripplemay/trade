@@ -44,9 +44,14 @@ from workbench_api.db.models.account_snapshot import (
 from workbench_api.db.repositories import AccountRepository, BacklogRepository
 from workbench_api.db.repositories.account_snapshot import AccountSnapshotRepository
 from workbench_api.db.repositories.symbol_name import SymbolNameRepository
+from workbench_api.db.repositories.trial_registry import TrialRegistryRepository
 from workbench_api.db.session import get_session
+from workbench_api.monitoring.trial_backfill import HISTORICAL_TRIALS
 from workbench_api.settings import get_settings
 from workbench_api.symbols.names import CURATED_SYMBOL_NAMES
+
+# Fixed backfill stamp so the idempotent trial seed re-runs byte-identically.
+_TRIAL_BACKFILL_STAMP = datetime(2026, 7, 3, tzinfo=UTC)
 
 
 def _coerce_account(payload: dict[str, Any]) -> Account:
@@ -171,6 +176,19 @@ def _import_symbol_names(session: Session) -> int:
     )
 
 
+def _import_trials(session: Session) -> int:
+    """B080 F001 — backfill the historical B063–B077 trials into trial_registry.
+
+    Idempotent: each trial has a deterministic content id, so re-runs upsert in
+    place (no duplicate N inflation). Fixed ``created_at`` keeps re-runs stable.
+    """
+
+    repo = TrialRegistryRepository(session)
+    for trial in HISTORICAL_TRIALS:
+        repo.register(created_at=_TRIAL_BACKFILL_STAMP, **trial)
+    return len(HISTORICAL_TRIALS)
+
+
 def run(repo_root: Path) -> dict[str, int]:
     """Programmatic entry point used by tests."""
 
@@ -186,6 +204,7 @@ def run(repo_root: Path) -> dict[str, int]:
         n_accounts = _import_accounts(session, accounts_path)
         n_backlog = _import_backlog(session, backlog_path)
         n_symbol_names = _import_symbol_names(session)
+        n_trials = _import_trials(session)
         # Trigger the generator's commit on a clean close.
         with contextlib.suppress(StopIteration):
             next(session_gen)
@@ -193,6 +212,7 @@ def run(repo_root: Path) -> dict[str, int]:
             "accounts": n_accounts,
             "backlog": n_backlog,
             "symbol_names": n_symbol_names,
+            "trials": n_trials,
         }
     except Exception:
         session_gen.throw(SystemExit("rollback"))
@@ -236,7 +256,8 @@ def main(argv: list[str] | None = None) -> int:
 
     print(
         f"workbench-bootstrap: imported accounts={counts['accounts']} "
-        f"backlog={counts['backlog']} symbol_names={counts['symbol_names']}",
+        f"backlog={counts['backlog']} symbol_names={counts['symbol_names']} "
+        f"trials={counts['trials']}",
         file=sys.stderr,
     )
     return 0

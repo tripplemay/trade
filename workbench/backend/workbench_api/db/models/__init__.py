@@ -39,6 +39,7 @@ from workbench_api.db.models.symbol_name import SymbolName
 from workbench_api.db.models.symbol_price_cache import SymbolPriceCache
 from workbench_api.db.models.target_refresh_job import TargetRefreshJob
 from workbench_api.db.models.tiingo_budget_log import TiingoBudgetLog
+from workbench_api.db.models.trial_registry import TrialRegistry
 
 __all__ = [
     "Account",
@@ -70,4 +71,5 @@ __all__ = [
     "SymbolPriceCache",
     "TargetRefreshJob",
     "TiingoBudgetLog",
+    "TrialRegistry",
 ]

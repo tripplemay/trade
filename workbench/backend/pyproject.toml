@@ -111,6 +111,12 @@ target-version = "py311"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
 
+[tool.ruff.lint.per-file-ignores]
+# B080 F001 — verbatim historical trial data: the long metric strings are copied
+# exactly from signoff reports; reflowing them to satisfy E501 would risk altering
+# the numbers, so the line-length rule is waived for this pure-data module.
+"workbench_api/monitoring/trial_backfill.py" = ["E501"]
+
 [tool.mypy]
 python_version = "3.11"
 # Test files run in CI and were also scanned by Codex F006; including
