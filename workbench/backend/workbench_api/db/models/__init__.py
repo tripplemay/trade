@@ -19,6 +19,7 @@ from workbench_api.db.models.fill_journal_entry import FillJournalEntry
 from workbench_api.db.models.investment_report import InvestmentReport
 from workbench_api.db.models.llm_budget_log import LLMBudgetLog
 from workbench_api.db.models.market_context import MarketContextObservation
+from workbench_api.db.models.monitoring_metric import MonitoringMetric
 from workbench_api.db.models.news import News
 from workbench_api.db.models.news_embedding import NewsEmbedding
 from workbench_api.db.models.oos_verification_card import OosVerificationCard
@@ -53,6 +54,7 @@ __all__ = [
     "InvestmentReport",
     "LLMBudgetLog",
     "MarketContextObservation",
+    "MonitoringMetric",
     "News",
     "NewsEmbedding",
     "OosVerificationCard",
