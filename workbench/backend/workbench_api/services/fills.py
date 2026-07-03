@@ -40,6 +40,7 @@ from workbench_api.schemas.fills import (
     FillSubmitRequest,
     FillSubmitResponse,
 )
+from workbench_api.symbols.names import resolve_symbol_names
 
 _logger = logging.getLogger("workbench.fills")
 
@@ -249,6 +250,8 @@ def submit_fills(
 
     repo = FillJournalEntryRepository(session)
     inserted: list[FillRowOut] = []
+    # B079 — batch-resolve display names for the submitted symbols (name-primary).
+    names = resolve_symbol_names(session, [str(r.symbol) for r in body.fills])
     insert_plan: list[tuple[FillRowIn, bool]] = [
         *((row, True) for row in matched_rows),
         *((row, False) for row in unmatched_rows),
@@ -278,6 +281,7 @@ def submit_fills(
                 ticket_id=body.ticket_id,
                 order_seq=row.order_seq,
                 symbol=orm_row.symbol,
+                name=names.get(orm_row.symbol),
                 side=row.side,
                 shares=float(orm_row.shares),
                 fill_price=float(orm_row.fill_price),
@@ -325,6 +329,8 @@ def submit_csv(
 def list_fills(session: Session, ticket_id: str) -> FillsListResponse:
     repo = FillJournalEntryRepository(session)
     rows = repo.list_by_ticket(ticket_id)
+    # B079 — batch-resolve display names for the listed symbols (name-primary).
+    names = resolve_symbol_names(session, [str(r.symbol) for r in rows])
     return FillsListResponse(
         ticket_id=ticket_id,
         items=[
@@ -333,6 +339,7 @@ def list_fills(session: Session, ticket_id: str) -> FillsListResponse:
                 ticket_id=row.ticket_id,
                 order_seq=row.order_seq,
                 symbol=row.symbol,
+                name=names.get(str(row.symbol).upper()),
                 side=row.side,  # type: ignore[arg-type]
                 shares=float(row.shares),
                 fill_price=float(row.fill_price),

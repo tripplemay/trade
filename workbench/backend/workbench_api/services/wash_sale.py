@@ -32,6 +32,7 @@ from sqlalchemy.orm import Session
 from workbench_api.db.models.account_snapshot import AccountSnapshot
 from workbench_api.db.repositories.fill_journal_entry import FillJournalEntryRepository
 from workbench_api.schemas.recommendations import WashSaleFlag
+from workbench_api.symbols.names import resolve_symbol_names
 
 # IRS-style window: a repurchase within 30 days of a loss sale taints it.
 WASH_SALE_WINDOW_DAYS: int = 30
@@ -132,4 +133,9 @@ def detect_wash_sales(
                 last_buy_date=last_buy.isoformat(),
                 days_since=max(0, (as_of - last_buy).days),
             )
-    return [flags[symbol] for symbol in sorted(flags)]
+    # B079 — batch-resolve display names for the flagged symbols (name-primary).
+    names = resolve_symbol_names(session, list(flags))
+    return [
+        flags[symbol].model_copy(update={"name": names.get(symbol)})
+        for symbol in sorted(flags)
+    ]

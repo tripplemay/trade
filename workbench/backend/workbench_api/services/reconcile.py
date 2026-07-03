@@ -50,6 +50,7 @@ from workbench_api.schemas.reconcile import (
     SlippageTrendPoint,
 )
 from workbench_api.strategy_modes.registry import MASTER_STRATEGY_ID
+from workbench_api.symbols.names import resolve_symbol_names
 
 _logger = logging.getLogger("workbench.reconcile")
 
@@ -264,6 +265,8 @@ def reconcile_ticket(
     )
     reference_prices = _reference_prices_from_snapshot(prior_snapshot)
 
+    # B079 — batch-resolve display names for the reconciled symbols (name-primary).
+    names = resolve_symbol_names(session, [str(f.symbol) for f in fills])
     fill_slippages: list[FillSlippage] = []
     valid_bps: list[float] = []
     total_dollar = 0.0
@@ -282,6 +285,7 @@ def reconcile_ticket(
             FillSlippage(
                 fill_id=fill.id,
                 symbol=fill.symbol,
+                name=names.get(str(fill.symbol).upper()),
                 side=fill.side,  # type: ignore[arg-type]
                 shares=float(fill.shares),
                 fill_price=float(fill.fill_price),

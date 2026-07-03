@@ -56,6 +56,7 @@ class PaperNavPoint(BaseModel):
 
 class PaperPositionPnl(BaseModel):
     symbol: str
+    name: str | None = None  # B079 — display name; null → frontend shows raw code
     shares: float
     avg_cost: float
     close: float | None = None
@@ -67,6 +68,7 @@ class PaperPositionPnl(BaseModel):
 
 class PaperDriftEntry(BaseModel):
     symbol: str
+    name: str | None = None  # B079 — display name; null → frontend shows raw code
     current_weight: float
     target_weight: float
     drift: float = Field(description="current_weight - target_weight.")

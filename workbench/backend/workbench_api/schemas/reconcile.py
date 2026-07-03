@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field
 class FillSlippage(BaseModel):
     fill_id: str
     symbol: str
+    name: str | None = None  # B079 — display name; null → frontend shows raw code
     side: Literal["buy", "sell"]
     shares: float
     fill_price: float

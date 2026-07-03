@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import logging
 import uuid
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from decimal import Decimal
 
@@ -43,6 +44,7 @@ from workbench_api.services.mark_to_market import (
 )
 from workbench_api.services.prices_provider import DbPriceProvider, PriceProvider
 from workbench_api.strategy_modes.registry import MASTER_STRATEGY_ID
+from workbench_api.symbols.names import resolve_symbol_names
 
 _logger = logging.getLogger("workbench.execution")
 
@@ -64,12 +66,20 @@ def _position_to_json(p: PositionEntry) -> dict[str, object]:
     return entry
 
 
-def _snapshot_to_payload(row: AccountSnapshot) -> AccountSnapshotPayload:
-    """Convert an ORM row to the wire-shape payload, normalising types."""
+def _snapshot_to_payload(
+    row: AccountSnapshot, names: Mapping[str, str] | None = None
+) -> AccountSnapshotPayload:
+    """Convert an ORM row to the wire-shape payload, normalising types.
 
+    B079 — when ``names`` (a symbol → display-name map) is supplied, each
+    position carries its display name; a symbol absent from the map keeps
+    ``name=None`` so the frontend falls back to the raw code."""
+
+    name_map = names or {}
     positions = [
         PositionEntry(
             symbol=str(entry.get("symbol", "")),
+            name=name_map.get(str(entry.get("symbol", "")).upper()),
             shares=float(entry.get("shares", 0.0)),
             avg_cost=float(entry.get("avg_cost", 0.0)),
             # B048 F002: carry the sleeve tag through the read path. A
@@ -114,7 +124,11 @@ def get_latest_account(
         return None
     if row is None:
         return None
-    return _snapshot_to_payload(row)
+    # B079 — enrich each held position with its display name (name-primary).
+    names = resolve_symbol_names(
+        session, [str(e.get("symbol", "")) for e in (row.positions or [])]
+    )
+    return _snapshot_to_payload(row, names)
 
 
 def update_account(
@@ -147,7 +161,11 @@ def update_account(
     repo = AccountSnapshotRepository(session)
     repo.upsert(row)
     session.commit()
-    return _snapshot_to_payload(row)
+    # B079 — the write-response mirrors the read shape, names included.
+    names = resolve_symbol_names(
+        session, [str(e.get("symbol", "")) for e in (row.positions or [])]
+    )
+    return _snapshot_to_payload(row, names)
 
 
 def get_position_diff(
@@ -198,6 +216,9 @@ def get_position_diff(
     # and the per-target reference price (target-only symbols are priced too).
     target_symbols = {str(row.symbol).upper() for row in target_rows}
     marks = marks_for(provider, set(current_by_symbol) | target_symbols)
+    # B079 — one batch name resolve over the same held ∪ target union (name-primary
+    # display); keyed uppercased like the symbols below.
+    names = resolve_symbol_names(session, set(current_by_symbol) | target_symbols)
     cash = snapshot.cash if snapshot is not None else 0.0
     mtm = compute_mark_to_market(
         [(p.symbol, p.shares) for p in snapshot.positions] if snapshot is not None else [],
@@ -232,6 +253,7 @@ def get_position_diff(
 
         entry = PositionDiffEntry(
             symbol=symbol,
+            name=names.get(symbol),
             current_shares=current_shares,
             target_shares=target_shares,
             delta_shares=delta_shares,
@@ -249,6 +271,7 @@ def get_position_diff(
         target_payload.append(
             PositionEntry(
                 symbol=symbol,
+                name=names.get(symbol),
                 shares=target_shares,
                 avg_cost=reference_price or 0.0,
             )
@@ -277,6 +300,7 @@ def get_position_diff(
         delta_dollar = delta_shares * (reference_price or 0.0)
         entry = PositionDiffEntry(
             symbol=symbol,
+            name=names.get(symbol),
             current_shares=current.shares,
             target_shares=0.0,
             delta_shares=delta_shares,

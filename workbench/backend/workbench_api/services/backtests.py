@@ -11,6 +11,7 @@ Replaces the B022 F008 ``_compute_synthetic_backtest`` deterministic stub.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -30,6 +31,7 @@ from workbench_api.schemas.backtests import (
     EquitySample,
 )
 from workbench_api.services.strategies import get_strategy
+from workbench_api.symbols.names import resolve_symbol_names
 
 
 class UnknownStrategyError(LookupError):
@@ -66,7 +68,11 @@ def get_backtest(session: Session, run_id: str) -> BacktestRunResponse | None:
     row = BacktestRunRepository(session).get_by_run_id(run_id)
     if row is None:
         return None
-    return _to_response(row)
+    # B079 — resolve display names for the trade symbols (name-primary AG-Grid).
+    names = resolve_symbol_names(
+        session, [str(t.get("symbol", "")) for t in (row.trades or [])]
+    )
+    return _to_response(row, names)
 
 
 def get_data_range(session: Session) -> BacktestDataRangeResponse:
@@ -86,7 +92,10 @@ def get_data_range(session: Session) -> BacktestDataRangeResponse:
     )
 
 
-def _to_response(row: BacktestRun) -> BacktestRunResponse:
+def _to_response(
+    row: BacktestRun, names: Mapping[str, str] | None = None
+) -> BacktestRunResponse:
+    name_map = names or {}
     metrics = BacktestMetrics(**row.metrics) if row.metrics else None
     return BacktestRunResponse(
         run_id=row.run_id,
@@ -94,7 +103,10 @@ def _to_response(row: BacktestRun) -> BacktestRunResponse:
         metrics=metrics,
         equity=[EquitySample(**s) for s in (row.equity or [])],
         allocations=[AllocationBar(**a) for a in (row.allocations or [])],
-        trades=[BacktestTrade(**t) for t in (row.trades or [])],
+        trades=[
+            BacktestTrade(**{**t, "name": name_map.get(str(t.get("symbol", "")).upper())})
+            for t in (row.trades or [])
+        ],
         report_markdown=row.report_markdown,
         explanation=row.explanation,
         error=row.error,

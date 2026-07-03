@@ -46,6 +46,7 @@ from workbench_api.schemas.symbols import (
 )
 from workbench_api.symbols.cn_provider import CnSymbolProvider
 from workbench_api.symbols.hk_provider import HkSymbolProvider
+from workbench_api.symbols.names import resolve_symbol_names
 from workbench_api.symbols.provider import (
     SymbolDataProvider,
     SymbolNotFoundError,
@@ -173,8 +174,11 @@ def get_symbol_price_detail(
     # predates now_day, and the windows must agree with the as_of we report.
     stats = compute_price_stats(bars)
     latest = bars[-1]
+    # B079 — resolve the display name for the header (name-primary, code secondary).
+    detail_names = resolve_symbol_names(session, [symbol])
     return SymbolPriceDetail(
         symbol=symbol,
+        name=detail_names.get(symbol.upper()),
         as_of=latest.bar_date,
         close=latest.close,
         source=cached[-1].source,

@@ -1197,6 +1197,8 @@ export interface components {
             date: string;
             /** Symbol */
             symbol: string;
+            /** Name */
+            name?: string | null;
             /**
              * Side
              * @description 'buy' or 'sell'.
@@ -1374,6 +1376,8 @@ export interface components {
             order_seq?: number | null;
             /** Symbol */
             symbol: string;
+            /** Name */
+            name?: string | null;
             /**
              * Side
              * @enum {string}
@@ -1418,6 +1422,8 @@ export interface components {
             fill_id: string;
             /** Symbol */
             symbol: string;
+            /** Name */
+            name?: string | null;
             /**
              * Side
              * @enum {string}
@@ -1724,6 +1730,8 @@ export interface components {
         PaperDriftEntry: {
             /** Symbol */
             symbol: string;
+            /** Name */
+            name?: string | null;
             /** Current Weight */
             current_weight: number;
             /** Target Weight */
@@ -1750,6 +1758,8 @@ export interface components {
         PaperPositionPnl: {
             /** Symbol */
             symbol: string;
+            /** Name */
+            name?: string | null;
             /** Shares */
             shares: number;
             /** Avg Cost */
@@ -1885,6 +1895,8 @@ export interface components {
         PositionDiffEntry: {
             /** Symbol */
             symbol: string;
+            /** Name */
+            name?: string | null;
             /** Current Shares */
             current_shares: number;
             /** Target Shares */
@@ -1942,6 +1954,8 @@ export interface components {
         PositionEntry: {
             /** Symbol */
             symbol: string;
+            /** Name */
+            name?: string | null;
             /** Shares */
             shares: number;
             /** Avg Cost */
@@ -2786,6 +2800,11 @@ export interface components {
              */
             symbol: string;
             /**
+             * Name
+             * @description B079 — display name (名称为主，代码次之); null → header shows raw code.
+             */
+            name?: string | null;
+            /**
              * As Of
              * Format: date
              * @description Latest EOD observation date (close-of-day, not live).
@@ -2835,6 +2854,11 @@ export interface components {
         TargetPosition: {
             /** Symbol */
             symbol: string;
+            /**
+             * Name
+             * @description B079 — human-readable display name (名称为主，代码次之). Null when the symbol has no name in the store; the frontend then shows the raw code.
+             */
+            name?: string | null;
             /** Target Weight */
             target_weight: number;
             /** Current Weight */
@@ -3037,6 +3061,8 @@ export interface components {
         WashSaleFlag: {
             /** Symbol */
             symbol: string;
+            /** Name */
+            name?: string | null;
             /**
              * Last Buy Date
              * @description ISO-8601 date of the prior buy.

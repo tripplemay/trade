@@ -47,6 +47,10 @@ class SymbolPriceDetail(BaseModel):
     """EOD price detail for one symbol."""
 
     symbol: str = Field(description="Normalised ticker, e.g. 'AAPL'.")
+    name: str | None = Field(
+        default=None,
+        description="B079 — display name (名称为主，代码次之); null → header shows raw code.",
+    )
     as_of: date = Field(description="Latest EOD observation date (close-of-day, not live).")
     close: float = Field(description="Latest EOD closing price.")
     source: str = Field(description="Data source label, e.g. 'yfinance' / 'akshare'.")

@@ -48,6 +48,7 @@ class BacktestTrade(BaseModel):
 
     date: str
     symbol: str
+    name: str | None = None  # B079 — display name; null → frontend shows raw code
     side: str = Field(description="'buy' or 'sell'.")
     quantity: float
     price: float

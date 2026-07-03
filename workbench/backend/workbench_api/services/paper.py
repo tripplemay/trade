@@ -11,6 +11,7 @@ All forward NAV / P&L values are REAL already-computed mark-to-market numbers
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import date, datetime, timedelta
 
 from sqlalchemy.orm import Session
@@ -52,6 +53,7 @@ from workbench_api.services.prices_provider import (
     PriceProvider,
 )
 from workbench_api.strategy_modes.registry import CADENCE_MONTHLY, mode_for_strategy
+from workbench_api.symbols.names import resolve_symbol_names
 
 BENCHMARK_SYMBOL = "SPY"
 
@@ -129,14 +131,16 @@ def build_paper_view(
         symbols |= set(targets.weights)
     marks = marks_for(provider, symbols)
     close_marks = {sym: m.latest_close for sym, m in marks.items()}
+    # B079 — one batch name resolve over the same symbol union (name-primary).
+    names = resolve_symbol_names(session, symbols)
 
     mtm = compute_mark_to_market(
         ((p.symbol, float(p.shares)) for p in positions), float(account.cash), marks
     )
     summary = _build_summary(account, mtm.nav, positions, marks, history)
-    positions_out = _build_positions(positions, close_marks, mtm)
+    positions_out = _build_positions(positions, close_marks, mtm, names)
     nav_curve = _build_nav_curve(account, history)
-    drift = _build_drift(mtm, targets)
+    drift = _build_drift(mtm, targets, names)
     rebalances = _build_rebalances(session, account.id)
 
     return PaperView(
@@ -210,7 +214,9 @@ def _build_positions(
     positions: list[PaperPosition],
     close_marks: dict[str, float],
     mtm: MarkToMarket,
+    names: Mapping[str, str] | None = None,
 ) -> list[PaperPositionPnl]:
+    name_map = names or {}
     pnl = compute_position_pnl(
         ((p.symbol, float(p.shares), float(p.avg_cost)) for p in positions),
         close_marks,
@@ -218,6 +224,7 @@ def _build_positions(
     return [
         PaperPositionPnl(
             symbol=item.symbol,
+            name=name_map.get(str(item.symbol).upper()),
             shares=item.shares,
             avg_cost=item.avg_cost,
             close=item.close,
@@ -251,10 +258,13 @@ def _build_nav_curve(
 
 
 def _build_drift(
-    mtm: MarkToMarket, targets: StrategyTargets | None
+    mtm: MarkToMarket,
+    targets: StrategyTargets | None,
+    names: Mapping[str, str] | None = None,
 ) -> list[PaperDriftEntry]:
     if targets is None:
         return []
+    name_map = names or {}
     symbols = sorted(set(targets.weights) | set(mtm.by_symbol))
     drift: list[PaperDriftEntry] = []
     for symbol in symbols:
@@ -263,6 +273,7 @@ def _build_drift(
         drift.append(
             PaperDriftEntry(
                 symbol=symbol,
+                name=name_map.get(str(symbol).upper()),
                 current_weight=current,
                 target_weight=target,
                 drift=current - target,

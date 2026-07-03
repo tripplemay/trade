@@ -25,6 +25,7 @@ class PositionEntry(BaseModel):
     """
 
     symbol: str = Field(min_length=1, max_length=16)
+    name: str | None = None  # B079 — display name; null → frontend shows raw code
     shares: float = Field(ge=0.0)
     avg_cost: float = Field(ge=0.0)
     sleeve: str | None = Field(
@@ -91,6 +92,7 @@ class PositionDiffEntry(BaseModel):
     """
 
     symbol: str
+    name: str | None = None  # B079 — display name; null → frontend shows raw code
     current_shares: float
     target_shares: float
     delta_shares: float

@@ -67,6 +67,7 @@ class FillRowOut(BaseModel):
     ticket_id: str
     order_seq: int | None = None
     symbol: str
+    name: str | None = None  # B079 — display name; null → frontend shows raw code
     side: Literal["buy", "sell"]
     shares: float
     fill_price: float

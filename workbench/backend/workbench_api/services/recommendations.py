@@ -58,6 +58,7 @@ from workbench_api.services.nav_history import (
 from workbench_api.services.prices_provider import DbPriceProvider, PriceProvider
 from workbench_api.services.wash_sale import detect_wash_sales
 from workbench_api.strategy_modes.registry import MASTER_STRATEGY_ID
+from workbench_api.symbols.names import resolve_symbol_names
 
 DISCLAIMER_LITERAL: str = (
     "research-only; this is a manual review checklist, not a trading instruction"
@@ -194,6 +195,8 @@ def _build_target_positions(
     target_symbols = {str(row.symbol).upper() for row in rows}
     marks = marks_for(provider, target_symbols | {sym for sym, _ in held})
     mtm = compute_mark_to_market(held, cash, marks)
+    # B079 — batch-resolve display names for the target symbols (name-primary).
+    names = resolve_symbol_names(session, target_symbols)
 
     out: list[TargetPosition] = []
     for row in rows:
@@ -213,6 +216,7 @@ def _build_target_positions(
         out.append(
             TargetPosition(
                 symbol=row.symbol,
+                name=names.get(symbol_u),
                 target_weight=target,
                 current_weight=round(current, 6),
                 diff=round(target - current, 6),

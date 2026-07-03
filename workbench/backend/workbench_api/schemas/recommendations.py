@@ -9,6 +9,13 @@ class TargetPosition(BaseModel):
     """One target-weight entry in the recommended portfolio."""
 
     symbol: str
+    name: str | None = Field(
+        default=None,
+        description=(
+            "B079 — human-readable display name (名称为主，代码次之). Null when the "
+            "symbol has no name in the store; the frontend then shows the raw code."
+        ),
+    )
     target_weight: float = Field(ge=0.0, le=1.0)
     current_weight: float = Field(ge=0.0, le=1.0)
     diff: float = Field(description="target_weight - current_weight (can be negative).")
@@ -37,6 +44,7 @@ class WashSaleFlag(BaseModel):
     """Heuristic flag: same symbol bought within 30 days surfaces a warning."""
 
     symbol: str
+    name: str | None = None  # B079 — display name; null → frontend shows raw code
     last_buy_date: str = Field(description="ISO-8601 date of the prior buy.")
     days_since: int = Field(ge=0)
 
