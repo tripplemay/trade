@@ -57,6 +57,7 @@ from workbench_api.backtests.mapping import (
 )
 from workbench_api.db.engine import get_engine
 from workbench_api.db.repositories.backtest_run import BacktestRunRepository
+from workbench_api.db.repositories.trial_registry import TrialRegistryRepository
 from workbench_api.db.require_production_db import (
     ScratchDatabaseError,
     require_production_db,
@@ -291,6 +292,7 @@ def _run_master(snapshot: Any, run: BacktestRunLike) -> dict[str, Any]:
         "equity": map_equity(result),
         "allocations": map_allocations(result),
         "trades": map_trades(result),
+        "parameter_hash": payload.get("parameters", {}).get("parameter_hash"),
         "report_markdown": render_master_portfolio_markdown(payload),
     }
 
@@ -329,6 +331,7 @@ def _run_momentum(snapshot: Any, run: BacktestRunLike) -> dict[str, Any]:
     return {
         "metrics": map_metrics(payload),
         **adapt_momentum(result),
+        "parameter_hash": payload.get("parameters", {}).get("parameter_hash"),
         "report_markdown": render_markdown_report(payload),
     }
 
@@ -372,6 +375,7 @@ def _run_risk_parity(snapshot: Any, run: BacktestRunLike) -> dict[str, Any]:
     return {
         "metrics": map_metrics(payload),
         **adapt_risk_parity(result),
+        "parameter_hash": payload.get("parameters", {}).get("parameter_hash"),
         "report_markdown": render_risk_parity_markdown(payload),
     }
 
@@ -408,6 +412,7 @@ def _run_us_quality(snapshot: Any, run: BacktestRunLike) -> dict[str, Any]:
     return {
         "metrics": map_metrics(payload),
         **adapt_us_quality(result),
+        "parameter_hash": payload.get("parameters", {}).get("parameter_hash"),
         "report_markdown": render_us_quality_markdown(payload),
     }
 
@@ -453,6 +458,7 @@ def _run_hk_china(snapshot: Any, run: BacktestRunLike) -> dict[str, Any]:
     return {
         "metrics": map_metrics(payload),
         **adapt_risk_parity(result),
+        "parameter_hash": payload.get("parameters", {}).get("parameter_hash"),
         "report_markdown": render_hk_china_markdown(payload),
     }
 
@@ -521,6 +527,7 @@ def _run_regime(snapshot: Any, run: BacktestRunLike) -> dict[str, Any]:
     return {
         "metrics": map_metrics(payload),
         **adapt_regime(result),
+        "parameter_hash": payload.get("parameters", {}).get("parameter_hash"),
         "report_markdown": render_regime_adaptive_markdown(payload),
     }
 
@@ -576,6 +583,50 @@ def run_backtest_job(
     return mapped
 
 
+def _equity_span(equity: list[dict[str, Any]]) -> tuple[date | None, date | None]:
+    """First / last realized backtest date from the equity curve (uniform across
+    all runners), or (None, None) when empty."""
+
+    def _d(point: dict[str, Any]) -> date | None:
+        raw = str(point.get("date", ""))[:10]
+        try:
+            return date.fromisoformat(raw)
+        except ValueError:
+            return None
+
+    if not equity:
+        return None, None
+    return _d(equity[0]), _d(equity[-1])
+
+
+def _register_trial(session: Session, run: BacktestRunLike, mapped: dict[str, Any]) -> None:
+    """B080 F001 — log a completed backtest run as a trial (verdict=NA).
+
+    Registered in the SAME transaction as the ``done`` state (both land or
+    neither), so the DSR trial count ``N`` never under-counts a finished run. The
+    deterministic ``run-<run_id>`` id makes a re-process idempotent. Best-effort:
+    a registration hiccup must not fail the (already-saved) result — the caller
+    commits regardless, so any error here is swallowed with a warning."""
+
+    try:
+        strategy_id = getattr(run, "strategy_id", None) or MASTER_STRATEGY_ID
+        window_start, window_end = _equity_span(mapped.get("equity") or [])
+        TrialRegistryRepository(session).register(
+            id=f"run-{run.run_id}",
+            batch="live",
+            strategy_id=strategy_id,
+            verdict="NA",
+            params=dict(run.params or {}),
+            metrics=dict(mapped.get("metrics") or {}),
+            parameter_hash=mapped.get("parameter_hash"),
+            window_start=window_start,
+            window_end=window_end,
+            source_ref=f"backtest_run:{run.run_id}",
+        )
+    except Exception:  # noqa: BLE001 — trial logging is advisory; never fail a run
+        logger.warning("trial_registry_register_failed", extra={"run_id": run.run_id})
+
+
 def process_next(session: Session, explainer: ExplanationService | None = None) -> bool:
     """Claim + process one queued run. Returns ``True`` if a run was handled
     (so the caller skips the idle sleep), ``False`` when the queue was empty.
@@ -611,6 +662,9 @@ def process_next(session: Session, explainer: ExplanationService | None = None) 
         report_markdown=mapped["report_markdown"],
         explanation=mapped.get("explanation"),
     )
+    # B080 F001 — auto-log this completed run as a trial (verdict=NA) in the same
+    # transaction as the done-state, so the DSR trial count never misses a run.
+    _register_trial(session, run, mapped)
     session.commit()
     logger.info("backtest_worker_run_done", extra={"run_id": run_id})
     return True

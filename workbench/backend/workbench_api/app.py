@@ -47,6 +47,7 @@ from workbench_api.routes import backtests as backtests_routes
 from workbench_api.routes import execution as execution_routes
 from workbench_api.routes import home as home_routes
 from workbench_api.routes import market_context as market_context_routes
+from workbench_api.routes import monitoring as monitoring_routes
 from workbench_api.routes import news as news_routes
 from workbench_api.routes import paper as paper_routes
 from workbench_api.routes import recommendations as recommendations_routes
@@ -274,6 +275,7 @@ def create_app() -> FastAPI:
     api.include_router(reports_routes.router)
     api.include_router(recommendations_routes.router)
     api.include_router(market_context_routes.router)
+    api.include_router(monitoring_routes.router)
     api.include_router(news_routes.router)
     api.include_router(paper_routes.router)
     api.include_router(advisor_routes.router)

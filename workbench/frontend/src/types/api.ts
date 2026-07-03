@@ -366,6 +366,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/monitoring/trials": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Trials Route
+         * @description The registered trial log + the per-strategy trial count (DSR ``N``).
+         */
+        get: operations["list_trials_route_api_monitoring_trials_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/news/latest": {
         parameters: {
             query?: never;
@@ -3025,6 +3045,63 @@ export interface components {
             executed_at?: string | null;
         };
         /**
+         * TrialRow
+         * @description One registered strategy trial (backfilled history or an auto-logged run).
+         */
+        TrialRow: {
+            /** Id */
+            id: string;
+            /** Batch */
+            batch: string;
+            /** Strategy Id */
+            strategy_id: string;
+            /** Parameter Hash */
+            parameter_hash?: string | null;
+            /** Params */
+            params?: {
+                [key: string]: unknown;
+            };
+            /** Universe */
+            universe?: string | null;
+            /** Window Start */
+            window_start?: string | null;
+            /** Window End */
+            window_end?: string | null;
+            /** Oos Split */
+            oos_split?: string | null;
+            /** Metrics */
+            metrics?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Verdict
+             * @description GO / NO_GO / INCONCLUSIVE / NA.
+             */
+            verdict: string;
+            /** Source Ref */
+            source_ref: string;
+            /** Notes */
+            notes?: string | null;
+        };
+        /**
+         * TrialsResponse
+         * @description GET /api/monitoring/trials — the trial log + the per-strategy count that
+         *     is the Deflated-Sharpe-Ratio denominator ``N`` (advisory/research only).
+         */
+        TrialsResponse: {
+            /** Trials */
+            trials: components["schemas"]["TrialRow"][];
+            /**
+             * Counts By Strategy
+             * @description strategy_id → trial count (the DSR N per strategy).
+             */
+            counts_by_strategy: {
+                [key: string]: number;
+            };
+            /** Total */
+            total: number;
+        };
+        /**
          * TurnoverCell
          * @description One cell on the strategy's turnover heatmap (week × month).
          */
@@ -3580,6 +3657,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MarketContextResponse"];
+                };
+            };
+        };
+    };
+    list_trials_route_api_monitoring_trials_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrialsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
