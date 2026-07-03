@@ -42,7 +42,7 @@
       "title": "Codex:验收(名称在所有位置显示 A股中文名+美股名+缺失优雅 fallback+零回归)+signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F004】L1 全门禁(verifying 可跳 L1 复跑)。L2 真机/截图:名称在所有显示位置出现(recommendations/position-diff/fills/paper/backtest/详情页,贴 A股 中文名+美股名截图/真返回);缺失优雅 fallback 纯 code(造一个无 name 标的);batch 解析(非 N 次请求,贴证据)。零回归:执行链闭环+no-execution/disclaimer safety 守门不破;既有 code 契约不变。边界:research-only/no-broker;HEAD≡prod。signoff docs/test-reports/B079-...-signoff-*.md 实测证据逐条+截图。",
       "design_decisions": []
     }

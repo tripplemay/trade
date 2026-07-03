@@ -5,12 +5,12 @@ type: project
 ---
 
 ## 当前状态
-- **当前：B079 verifying**(标的名称显示,名称为主代码次之 `贵州茅台 600519.SH`)= **generator F001-F003 全 done+pushed(ef30cc9),交 Codex F004**。F001 轻量 symbol_name store+纯DB get_names+curated seed(US27+ETF15+CN/HK26)+A股 zero-fetch 捕获(cn_marketcap names_out,含ST,ranking字节不变)+resolve_symbol_names(curated∪DB,live A股中文覆盖英文);F002 10 response model 加 name+各 service batch enrich+api.ts regen;F003 SymbolLink name-prop(名称为主/代码 muted,缺失纯 code)+10 site+3 ag-grid 列宽 110→190+详情页头部。诚实边界:ticket/risk-banner degraded_symbols[]/news matched_tickers[] 保持纯 code(string[] 改 shape 破契约)。门禁全绿:后端 mypy460/ruff/full1644;前端 tsc/vitest346(safety41)/eslint。**待 Codex F004 L2 真机名称显示验收+缺失兜底+零回归 signoff**。commits d188096/585d30a(CI修 names.py §12.10.2)/157cb21/ef30cc9。
+- **B079 ✅ done（2026-07-03）**(标的名称显示,名称为主代码次之 `贵州茅台 600519.SH`)= F001-F003 generator+F004 独立 Evaluator(代 Codex,用户 /goal 授权)**真机验收 PASS**。F001 轻量 symbol_name store+纯DB get_names+curated seed(US27+ETF15+CN/HK26,进程内不依赖 seed job)+A股 zero-fetch 捕获(cn_marketcap sina names_out,含ST);F002 10 response model 加 name+各 service 一次 batch resolve_symbol_names enrich;F003 SymbolLink name-prop+10 site+详情页头部。**真机实证**:master/regime recommendations·position-diff·paper·symbols 详情 US/ETF/大盘名正确(CAT→Caterpillar Inc./600519.SH→Kweichow Moutai);cn_attack 50 条 A股 name=null 优雅纯 code 兜底。**A股 中文名待下次日刷(01:30 UTC 07-04)落库**——F001 捕获码 16:20-18:35 部署晚于今日 01:30 日刷,系 spec 诚实边界①「待日刷」非 FAIL;wiring 已核实(生产 ExecStart 传 --cn-universe-sina-fallback,sina VM-可达)。零回归全守(safety172/research disclaimer/read-only 落库)。signoff docs/test-reports/B079-symbol-name-display-signoff-2026-07-03.md。commits d188096/585d30a/157cb21/ef30cc9。
+- **B079 soft-watch**：下次日刷后抽查 `symbol names — captured=N written=M` 日志行 + `SELECT source,COUNT(*) FROM symbol_name` 确认 akshare_spot 落库、cn_attack 面出现中文简称（首次捕获未观测,非阻断）。
+- **接续**：planner 已备 B080(P0 监控)+B081(P0.5 引擎修真) spec 草稿，B079 done 后可启动。
 - **B078 ✅ done（2026-06-26）** = A股 data-refresh 卡死修复(B075 宽宇宙回归)。F001 超时+watchdog/F002 round-trip cost+freshness gate/F004 CN 基本面覆写 bug。A股 数据恢复(06-26)+paper cash +187.52 转正。signoff docs/test-reports/B078-ashare-data-refresh-hang-fix-signoff-2026-06-26.md。
 - **B077 ✅ done（2026-06-25，CLI代Codex）** = A股 聪明钱数据可行性摸底。整体 NOT-GO（北向ELIMINATED/资金流浅/龙虎榜INCONCLUSIVE_COVERAGE_LIMITED 80.8%小盘未覆盖）。signoff docs/test-reports/B077-cn-attack-smart-money-signoff-2026-06-25.md。
 - **B076 ✅ done（2026-06-24）**。B075 ✅ done（2026-06-22）。
-- **⚠️ ops: 网关 402 out-of-credit（2026-06-22）**：AI功能不可用，需充值 aigc-gateway。
-- **⚠️ cn-universe 今日手动触发（07:27 UTC）仍在运行**：reverify需要REPOPULATE，watchdog 8h(~15:27 UTC截止)；周日06:00 UTC正常自动跑不受影响。
 
 ## 遗留 / soft-watch
 - **★聪明钱方向**：backlog `B0XX-ashare-smart-money-following`，结论存docs/research/，下次深入。
