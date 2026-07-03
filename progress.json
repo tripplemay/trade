@@ -1,9 +1,9 @@
 {
   "status": "building",
   "total_features": 5,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-07-03",
   "user_goal": "B080 策略生命周期监控+试验登记簿+冻结式再验证流水线(评审 P0,L0+L1)。来源:2026-07-03 用户立项(评审报告 §2.3 落地——建监控+再验证+门禁,不建自动进化训练闭环)。**Planner 默认决策**:不拆批 5 features/CPCV-lite(K=4 交错 split+1 个月 purge,标注非全 CPCV)/paper 首日口径修前向不改历史。**核心不变量**:不改策略逻辑参数;pipeline 无参数注入路径;不得自动摘红卡(无 validated→True 路径);红卡 DB 化无行 fallback byte-identical;monitoring 页无交易 affordance。**关键设计**:持仓级 IC(诚实标注非纯信号)+score 落库前向积累;Master 不做 IC(快照季度粒度);trial_registry 新表+>=15 条历史回填(DSR 的 N);红卡 oos_verification_card 单一数据源;两段式再验证(数据追加新副本+冻结重跑)。spec docs/specs/B080-strategy-lifecycle-monitoring-spec.md(含 §0 Explore 焊死事实+复用清单)。5 features 4g+1c:F001 DB 层/F002 监控 job/F003 再验证 pipeline/F004 面板+paper 口径/F005 独立验收。",
   "reference_docs": [
@@ -43,7 +43,7 @@
   "completed_date": null,
   "session_notes": {
     "planner": "2026-07-03 B080 planning(planner,监控会话)。B079 done(独立 Evaluator 真机 PASS,signoff 已落)后启动。评审 P0 落地。Explore 预研焊死:IC 保真度陷阱(快照=过 band 持仓目标非原始 score→持仓级 IC+score 落库前向积累;Master 季度粒度不做 IC)/backtest_run 不当 registry(新表+历史回填)/红卡双处硬编码(precompute:80-95+registry:126-153→DB 化 fallback byte-identical)/b070 重跑 CLI 可复用但无 timer(两段式 pipeline,数据追加写新副本)/timer 基建零缺口(TimeoutStartSec v0.9.54)。**【续接】**:status=building,Generator 接 F001(DB 层)→F002(监控 job)→F003(pipeline)→F004(面板+paper 口径),F005 独立 agent 代 Codex 验收。B081(P0.5 引擎修真)草稿已备(scratchpad,含 6 修复项代码位置),B080 done 后启动。B079 soft-watch:07-04 日刷后查 symbol_name 落库。",
-    "generator": null,
+    "generator": "2026-07-03 B080 building(generator). **F001 DONE**(3 commits efb7326/ec8b955/01368ed). (1) oos_verification_card 表+repo+迁移0028(import CN_ATTACK_RESEARCH_CAVEAT seed 保 byte-identity U+2212/U+2014/全角)+precompute 读DB卡片(run_cn_attack_precompute 解析,threaded caveat down,无行 byte-identical fallback,注入 score_fn 绕过DB)+registry 去数字→『以验证卡片为准』。(2) trial_registry 表+迁移0029+repo(count_by_strategy=DSR N)+monitoring/trial_backfill.py 27 条历史试验(B063-B077 verbatim,内容hash id 幂等)+bootstrap seed。(3) worker 6 runner surface parameter_hash+process_next 完成时 auto-register trial(verdict=NA,同事务原子,run-<id> 幂等,best-effort)+GET /api/monitoring/trials(auth,只读,trade-free)+schemas+api.ts regen。门禁全绿:mypy 474/ruff(trial_backfill E501 per-file waiver)/safety 203/frontend tsc。pyproject 加 per-file-ignores。**续接 F002**:monitoring/ 包 IC 计算(持仓级滚动 rank-IC 两 cn_attack 模式,标注『持仓保真』+partial 降级)+原始 score 落库 master_meta.signal_scores+paper 跟踪差+暴露拥挤度(cn_size PIT)+换手+monitoring_metric 表+GET /monitoring/metrics+周频 timer(TimeoutStartSec)。IC 纯函数迁 scripts/research/b077_signal_first_look.py。",
     "evaluator": "2026-07-03 独立 Evaluator(代 Codex,用户 /goal 授权,无实现上下文隔离)完成 B079 F004 首轮验收→PASS。签收报告 docs/test-reports/B079-symbol-name-display-signoff-2026-07-03.md。**HEAD≡prod**:生产 release=ef30cc9(F003,最后代码提交);HEAD 1056b33 是 progress chore(paths-ignore 不部署)。**真机实测(ssh tripplezhou@34.180.93.185:8723,VM 就地铸只读 HS256 会话 token,secret 不出 VM;严格只读 GET+sqlite mode=ro)**:recommendations master 7 仓全带名(CAT→Caterpillar Inc./SPY→SPDR S&P 500 ETF Trust)、position-diff(diff+target)、paper(master/regime 仓+drift)、symbols 详情(600519.SH→Kweichow Moutai 走 curated/AAPL→Apple Inc.)——名称正确。cn_attack ×2 共 50 条 A股 name=null 优雅兜底无错。fills/backtest 生产无数据(1 voided ticket/无完成 run)→空态,code+L1 覆盖。**batch**:各 service 每响应仅 1 次 resolve_symbol_names(1 curated dict+1 .in_() 查询),paper 一次喂 positions+drift。**read-only**:upsert_names 仅 data_refresh/cli.py:351+bootstrap.py:169(离线),请求路径零写,names.py 已注册 §12.10.2。**零回归**:symbol 契约不变;safety 172 passed;cn_attack research_caveat(OOS -9%~-11% 警示)完整。**L1 抽查**:name 单测 15 passed+safety 172 passed。**symbol_name 表当前 0 行**(US/ETF 名走进程内 curated 不受影响);A股 中文名待下次日刷(01:30 UTC 2026-07-04)落库——捕获 wiring 已核实正确,列为 soft-watch(首次捕获日志行+表行数未观测,非阻断)。已置 done。**接续**:planner session_notes 提及 B080(P0 监控)+B081(P0.5 引擎修真)spec 草稿已备,B079 done 后可启动。"
   }
 }
