@@ -50,6 +50,11 @@ REQUEST_PATH_MODULES = (
     # B064 F002 — on-demand CN/HK news ingest (lazy akshare stock_news_em →
     # news table). Imports the news repo + NewsItem; no trade, akshare lazy.
     SYMBOLS / "cn_hk_news.py",
+    # B079 F001 — curated symbol → display-name seed + resolver. Pure DB (reads
+    # the symbol_name store) + stdlib; CN/HK names are copied locally (a guard
+    # test pins them to the trade authority) precisely so this request-path
+    # module never imports trade / pandas.
+    SYMBOLS / "names.py",
 )
 
 
