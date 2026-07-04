@@ -5,13 +5,14 @@ type: project
 ---
 
 ## 当前状态
-- **B080 ✅ done（2026-07-04）**(策略生命周期监控 L0+L1) = 全 5 特性验收 PASS(两轮闭环)。F001 trial_registry+27 回填+oos 红卡 DB 化/F002 监控指标(rolling-IC 持仓保真/tracking/exposure/turnover)+周 timer+signal_scores 前向积累/F003 冻结再验证 pipeline(参数冻结+CPCV-lite+三落地 no-validated→True+季 timer)/F004 paper 三口径(cn_attack CNY+CSI300/master USD·SPY 零回归/首日 annotation)+/monitoring 页/F005 独立 L2 真机验收。**F005 关键**: r1 发现生产 trial_registry=0(回填只在手动 bootstrap 不入部署链)→ generator 治本 data-migration 0033(与红卡 0028 同款自动落地)→ r2 生产实测 trial_registry=27 + 3 条对 signoff 逐字一致 + 幂等 + HEAD≡prod(0858b44)。migration head 0033。signoff docs/test-reports/B080-...-signoff-2026-07-04.md(+r1)。monitoring_metric 周 job 首跑 07-06 自愈。
-- **B079 ✅ done（2026-07-03）**(标的名称显示,名主码次)= F001-F004 PASS。**soft-watch 关闭(2026-07-04)**: 07-04 日刷落库 symbol_name 5203 行(akshare_spot), cn_attack 快照 25/26 解析中文名。signoff docs/test-reports/B079-...-2026-07-03.md。
-- **B078 ✅ done（2026-06-26）** A股 data-refresh 卡死修复。**B077 NOT-GO（2026-06-25）** 聪明钱摸底。B076/B075/B074 done。
-- **接续**：B080 done 后 backlog 20 项(B081 引擎修真 P0.5 spec 草稿已备 / B048 安全风控 / B0XX-ashare 数据源等)。
+- **B081 ✅ done（2026-07-04）**(cn_attack 回测引擎修真 P0.5) = 全 5 特性 PASS(两轮闭环)。6 高估源修复各带独立开关(停牌/退市/涨跌停/手数/印花税5bp/band部分调仓+死参清理)，旧口径 bit 级复现 B070。**F005 独立验收关键**: r1 研究员级 A/B 数字审计坐实 2 HIGH → fixing(planner 实施 4e1feed) → r2 复验 PASS。**四疑点裁定**: ①lot_rounding 灾难=**10万本金容量下限**(lot@100k OOS-16%→1M+23.5%→10M+28.2% 单调恢复,探针10万本金~9/25买不起一手)非"分数股假象"; ②停牌/退市=合法no-op(0事件); ③partial_rebalance=收益改善型策略变动(绕no-trade-band,OOS+28.4%→32.7%)→默认改False留独立verdict; ④红卡改**资本条件化**(-16.0%@10万/+27.1%@100万纯保真,删"分数股假象",validated恒False)。生产 alembic=0036/trial_registry B081=14/红卡 source=b081_f005_capital_conditioned。signoff docs/test-reports/B081-...-signoff-2026-07-04.md(+verifying-r1)。
+- **B080 ✅ done（2026-07-04）**(策略生命周期监控 L0+L1)=全5 PASS。trial_registry 27 回填 data-migration 0033/监控指标+周timer/冻结再验证 pipeline/paper 三口径。signoff docs/test-reports/B080-...-signoff-2026-07-04.md。
+- **B079 ✅ done（2026-07-03）** 标的名称显示(soft-watch 已关)。**B078 done** data-refresh 卡死修复。**B077 NOT-GO** 聪明钱摸底。B076/B075/B074 done。
+- **接续**：backlog ~19 项(partial_rebalance 策略变体独立 A/B verdict 批次[B081衍生] / B048 安全风控 / B0XX-ashare 数据源等)。
 
 ## 遗留 / soft-watch
-- **B080 F004 坑**：api.ts 加带默认值字段仍 TS-required → 前端 fixture tsc 红；api.ts 与 fixture 须**同 commit**(本批 dd9f703 红→46ba83b 绿,见 proposed-learnings)。
+- **B081 快照自愈**：cn_attack advisory 快照 daily timer 07-05 03:40 UTC 重算入新纯保真口径(部署不触发 timer)；权威红卡表已更正，建议 07-05 后 spot-check 快照 caveat==卡片表。partial_rebalance=True 策略变体留独立 verdict 批次。
+- **B080 F004 坑**：api.ts 加带默认值字段仍 TS-required → 前端 fixture tsc 红；api.ts 与 fixture 须**同 commit**(见 proposed-learnings)。
 - **★聪明钱方向**：backlog `B0XX-ashare-smart-money-following`，结论存docs/research/。
 - **B070 follow-on**：2因子去偏baostock；港股P3（backlog B055）。
 
@@ -24,7 +25,6 @@ type: project
 - **v0.9.54**（B078）：generator.md §38 宽集刷超时含 bulk discovery / §39 paper round-trip 成本 / §40 静默冻结守门 / evaluator.md §32 systemd oneshot 卡死诊断。
 - **v0.9.53**（B077）：§36 §23 派生字段 measured-not-assumed / §37 first-look 覆盖-门控裁定 / evaluator.md §31 date-bomb。
 - **v0.9.52**（B076）：§35 baostock 补退市名市值 + 双 cut / planner.md 策略改动双门禁 verdict。
-- **v0.9.51**（B075）：environment VM /tmp PYTHONPATH / §33 探针复用真 loader / §34 宽集 partial-failure exit-code。
 
 ## 已知 gap
 - 本机 python3=3.9.6，用 `.venv/bin/python`；ruff 本地须 `python -m ruff check .`。backend 测试跑前需 `cd workbench/backend && .venv/bin/python -m pip install ../..`（装 trade；改 trade/ 后须重装）。
