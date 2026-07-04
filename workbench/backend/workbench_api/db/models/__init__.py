@@ -33,6 +33,7 @@ from workbench_api.db.models.paper_nav_history import PaperNavHistory
 from workbench_api.db.models.price_history import PriceHistory
 from workbench_api.db.models.price_snapshot import PriceSnapshot
 from workbench_api.db.models.recommendation_snapshot import RecommendationSnapshot
+from workbench_api.db.models.reverify_job import ReverifyJob
 from workbench_api.db.models.risk_explanation_snapshot import RiskExplanationSnapshot
 from workbench_api.db.models.snapshot_meta import SnapshotMeta
 from workbench_api.db.models.symbol_fundamentals_cache import SymbolFundamentalsCache
@@ -66,6 +67,7 @@ __all__ = [
     "PriceHistory",
     "PriceSnapshot",
     "RecommendationSnapshot",
+    "ReverifyJob",
     "RiskExplanationSnapshot",
     "SnapshotMeta",
     "SymbolFundamentalsCache",
