@@ -408,6 +408,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/monitoring/reverify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Enqueue Reverify Route
+         * @description Enqueue a frozen re-validation (deduped). The worker runs the long fetch +
+         *     backtest off the request path; poll GET /reverify/{job_id} for the result.
+         */
+        post: operations["enqueue_reverify_route_api_monitoring_reverify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/monitoring/reverify/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Reverify Route
+         * @description Poll a re-validation job's status + terminal result (report ref / verdict).
+         */
+        get: operations["get_reverify_route_api_monitoring_reverify__job_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/news/latest": {
         parameters: {
             query?: never;
@@ -2371,6 +2412,53 @@ export interface components {
              */
             backtest_ref?: string | null;
         };
+        /**
+         * ReverifyJobStatus
+         * @description GET /api/monitoring/reverify/{job_id} — poll status + terminal result.
+         */
+        ReverifyJobStatus: {
+            /** Job Id */
+            job_id: string;
+            /** Strategy Id */
+            strategy_id: string;
+            /** Status */
+            status: string;
+            /** As Of */
+            as_of?: string | null;
+            /** Report Ref */
+            report_ref?: string | null;
+            /** Verdict */
+            verdict?: string | null;
+            /** Error */
+            error?: string | null;
+            /** Error Kind */
+            error_kind?: string | null;
+        };
+        /**
+         * ReverifyRequest
+         * @description POST /api/monitoring/reverify — enqueue a frozen re-validation run.
+         */
+        ReverifyRequest: {
+            /** Strategy Id */
+            strategy_id: string;
+            /**
+             * As Of
+             * @description Re-validation window end (None → data end).
+             */
+            as_of?: string | null;
+        };
+        /**
+         * ReverifyResponse
+         * @description 202 body for an enqueued (or deduped) re-validation job.
+         */
+        ReverifyResponse: {
+            /** Job Id */
+            job_id: string;
+            /** Strategy Id */
+            strategy_id: string;
+            /** Status */
+            status: string;
+        };
         /** RiskPanelResponse */
         RiskPanelResponse: {
             /**
@@ -3766,6 +3854,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MetricsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    enqueue_reverify_route_api_monitoring_reverify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReverifyRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReverifyResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_reverify_route_api_monitoring_reverify__job_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReverifyJobStatus"];
                 };
             };
             /** @description Validation Error */

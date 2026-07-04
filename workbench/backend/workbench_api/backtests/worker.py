@@ -62,6 +62,10 @@ from workbench_api.db.require_production_db import (
     ScratchDatabaseError,
     require_production_db,
 )
+from workbench_api.monitoring.reverify_worker import (
+    process_next_reverify,
+    recover_orphaned_reverify,
+)
 from workbench_api.services.explanation import (
     ExplanationService,
     build_default_explainer,
@@ -723,6 +727,15 @@ def main(*, poll_seconds: float = POLL_SECONDS, max_iterations: int | None = Non
         refresh_recovery_session.rollback()
     finally:
         refresh_recovery_session.close()
+    # B080 F003 — same one-shot reclaim for orphaned frozen re-validation jobs.
+    reverify_recovery_session = factory()
+    try:
+        recover_orphaned_reverify(reverify_recovery_session)
+    except Exception:  # noqa: BLE001 — never let recovery block daemon startup
+        logger.exception("reverify_orphan_recovery_failed")
+        reverify_recovery_session.rollback()
+    finally:
+        reverify_recovery_session.close()
     # B043 F002: build the LLM explainer once (None on a host without the gateway
     # key → backtests run with explanation=None, no LLM call).
     explainer = build_default_explainer()
@@ -737,7 +750,10 @@ def main(*, poll_seconds: float = POLL_SECONDS, max_iterations: int | None = Non
             # try/except inside process_next_refresh marks a failing job `error`
             # and never raises, so the backtest path is unaffected).
             handled_refresh = process_next_refresh(session)
-            handled = handled_backtest or handled_refresh
+            # B080 F003 — drain one frozen re-validation job too (same isolation:
+            # its own try/except marks a failing job `error` and never raises).
+            handled_reverify = process_next_reverify(session)
+            handled = handled_backtest or handled_refresh or handled_reverify
         except Exception:  # noqa: BLE001 — never let the daemon die on a DB blip
             logger.exception("backtest_worker_loop_error")
             session.rollback()

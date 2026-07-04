@@ -99,6 +99,29 @@ def test_metrics_route_returns_stored_metrics(initialised_db: str) -> None:
     assert m["meta"]["fidelity"] == "holdings"
 
 
+def test_reverify_enqueue_dedup_and_poll(initialised_db: str) -> None:
+    client = _authed_client()
+    r1 = client.post(
+        "/api/monitoring/reverify", json={"strategy_id": "cn_attack_pure_momentum"}
+    )
+    assert r1.status_code == 202
+    job_id = r1.json()["job_id"]
+    assert job_id.startswith("rvf-")
+    assert r1.json()["status"] == "queued"
+    # Dedup: a second enqueue while still queued returns the same job.
+    r2 = client.post(
+        "/api/monitoring/reverify", json={"strategy_id": "cn_attack_pure_momentum"}
+    )
+    assert r2.json()["job_id"] == job_id
+    # Poll.
+    poll = client.get(f"/api/monitoring/reverify/{job_id}")
+    assert poll.status_code == 200
+    assert poll.json()["strategy_id"] == "cn_attack_pure_momentum"
+    # Unknown strategy → 404; unknown job → 404.
+    assert client.post("/api/monitoring/reverify", json={"strategy_id": "nope"}).status_code == 404
+    assert client.get("/api/monitoring/reverify/rvf-missing").status_code == 404
+
+
 def test_worker_registers_completed_run_as_trial(initialised_db: str) -> None:
     run = SimpleNamespace(
         run_id="run-xyz",

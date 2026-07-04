@@ -10,16 +10,24 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from workbench_api.auth.dependency import require_authenticated_user
 from workbench_api.auth.jwt_validator import AuthenticatedUser
 from workbench_api.db.repositories.monitoring_metric import MonitoringMetricRepository
 from workbench_api.db.repositories.trial_registry import TrialRegistryRepository
 from workbench_api.db.session import SessionDep
+from workbench_api.monitoring.reverify_service import (
+    UnknownStrategyError,
+    enqueue_reverify,
+    get_reverify_job,
+)
 from workbench_api.schemas.monitoring import (
     MetricRow,
     MetricsResponse,
+    ReverifyJobStatus,
+    ReverifyRequest,
+    ReverifyResponse,
     TrialRow,
     TrialsResponse,
 )
@@ -86,3 +94,52 @@ def list_metrics_route(
         for r in rows
     ]
     return MetricsResponse(metrics=metrics, total=len(metrics))
+
+
+@router.post(
+    "/reverify", response_model=ReverifyResponse, status_code=status.HTTP_202_ACCEPTED
+)
+def enqueue_reverify_route(
+    payload: ReverifyRequest,
+    session: SessionDep,
+    _user: AuthenticatedUserDep,
+) -> ReverifyResponse:
+    """Enqueue a frozen re-validation (deduped). The worker runs the long fetch +
+    backtest off the request path; poll GET /reverify/{job_id} for the result."""
+
+    try:
+        job = enqueue_reverify(
+            session, strategy_id=payload.strategy_id, as_of=payload.as_of
+        )
+    except UnknownStrategyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"unknown reverify strategy: {exc}",
+        ) from exc
+    session.commit()
+    return ReverifyResponse(
+        job_id=job.job_id, strategy_id=job.strategy_id, status=job.status
+    )
+
+
+@router.get("/reverify/{job_id}", response_model=ReverifyJobStatus)
+def get_reverify_route(
+    job_id: str,
+    session: SessionDep,
+    _user: AuthenticatedUserDep,
+) -> ReverifyJobStatus:
+    """Poll a re-validation job's status + terminal result (report ref / verdict)."""
+
+    job = get_reverify_job(session, job_id)
+    if job is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="job not found")
+    return ReverifyJobStatus(
+        job_id=job.job_id,
+        strategy_id=job.strategy_id,
+        status=job.status,
+        as_of=job.as_of,
+        report_ref=job.report_ref,
+        verdict=job.verdict,
+        error=job.error,
+        error_kind=job.error_kind,
+    )

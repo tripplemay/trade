@@ -55,3 +55,33 @@ class MetricsResponse(BaseModel):
 
     metrics: list[MetricRow]
     total: int
+
+
+class ReverifyRequest(BaseModel):
+    """POST /api/monitoring/reverify — enqueue a frozen re-validation run."""
+
+    strategy_id: str
+    as_of: date | None = Field(
+        default=None, description="Re-validation window end (None → data end)."
+    )
+
+
+class ReverifyResponse(BaseModel):
+    """202 body for an enqueued (or deduped) re-validation job."""
+
+    job_id: str
+    strategy_id: str
+    status: str
+
+
+class ReverifyJobStatus(BaseModel):
+    """GET /api/monitoring/reverify/{job_id} — poll status + terminal result."""
+
+    job_id: str
+    strategy_id: str
+    status: str
+    as_of: str | None = None
+    report_ref: str | None = None
+    verdict: str | None = None
+    error: str | None = None
+    error_kind: str | None = None

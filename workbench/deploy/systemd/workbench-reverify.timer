@@ -1,0 +1,15 @@
+[Unit]
+Description=Quarterly timer for workbench frozen re-validation enqueue (B080 F003, read-only, advisory-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B080-strategy-lifecycle-monitoring-spec.md
+
+[Timer]
+# 06:00 UTC on the first of each quarter (Jan/Apr/Jul/Oct) — a quarterly cadence
+# for the (expensive) survivorship-free re-validation, clear of the weekly monitoring
+# run (Mon 05:00). Persistent=true catches up a missed run after a VM reboot; the
+# enqueue is deduped (latest_queued), so a catch-up never double-queues a strategy.
+OnCalendar=*-01,04,07,10-01 06:00:00
+Persistent=true
+Unit=workbench-reverify.service
+
+[Install]
+WantedBy=timers.target

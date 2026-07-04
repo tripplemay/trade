@@ -1,0 +1,41 @@
+[Unit]
+Description=Workbench frozen re-validation enqueue (B080 F003, research-only, advisory-only, read-only enqueue)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B080-strategy-lifecycle-monitoring-spec.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=deploy
+Group=deploy
+WorkingDirectory=/srv/workbench/current/backend
+
+# Secrets (WORKBENCH_DB_URL, ...) live in /etc/workbench/workbench.env
+# (chmod 600 root:deploy). Never committed.
+EnvironmentFile=/etc/workbench/workbench.env
+
+# v0.9.54 §38 — a Type=oneshot service has TimeoutStartSec DISABLED by default.
+# This entrypoint only ENQUEUES (a couple of DB rows) — the long baostock fetch +
+# frozen backtest run on the backtest-worker daemon, not here — so a short cap is
+# right; a hung enqueue is killed, not left hanging.
+TimeoutStartSec=300
+
+# Permanent product boundary (spec §3 invariant ④): this timer ENQUEUES frozen
+# re-validation jobs ONLY (deduped, deterministic quant, read-only DB write). The
+# actual data-append + frozen backtest + card/trial landings execute on the
+# workbench-backtest-worker daemon (the §12.10.2 allowed trade importer). This
+# service imports no trade / broker / execution code — it writes queued rows and
+# exits. It never places an order, never auto-trades, never predicts returns.
+# tests/safety/test_market_scheduler_scope.py greps this ExecStart line + scans the
+# reverify enqueue package to enforce that.
+ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.monitoring.reverify_cli
+
+# Standard hardening (mirrors workbench-recommendations.service).
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/workbench /var/log/workbench /tmp
+
+# No [Install] section — this oneshot is pulled by
+# workbench-reverify.timer, never enabled / started directly.
