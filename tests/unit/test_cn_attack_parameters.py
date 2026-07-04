@@ -107,20 +107,22 @@ def test_unknown_weighting_scheme_rejected() -> None:
 
 
 def test_equal_default_hash_is_byte_identical_to_pre_b068() -> None:
-    # Zero-regression proof: the equal-default hash equals the hash of the
-    # pre-B068 payload (which had NO weighting_scheme key). The conditional payload
-    # in parameter_hash() guarantees B066/B067's recorded identifier never churns.
+    # B081 F001 — rebalance_frequency was removed as a dead param (never consumed by
+    # the cn_attack engine, only validated + serialized). Per spec §2 F001(4) this
+    # INTENTIONALLY churns parameter_hash from the B066/B067 era (covered in F004's
+    # A/B double-run + signoff). This test now pins the post-B081 deterministic hash:
+    # the canonical payload no longer carries rebalance_frequency (nor weighting_scheme,
+    # which stays conditional — the equal default is elided to keep the pre-B068 shape).
     params = CnAttackParameters()
-    pre_b068_payload = {
+    payload = {
         "factor_variant": params.factor_variant,
         "max_position_weight": params.max_position_weight,
         "momentum_weight": params.momentum_weight,
         "quality_weight": params.quality_weight,
-        "rebalance_frequency": params.rebalance_frequency,
         "strategy_id": params.strategy_id,
         "top_n": params.top_n,
     }
-    canonical = json.dumps(pre_b068_payload, sort_keys=True, separators=(",", ":"))
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
     expected = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
     assert params.parameter_hash() == expected
 

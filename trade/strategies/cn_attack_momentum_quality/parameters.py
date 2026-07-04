@@ -26,7 +26,6 @@ DEFAULT_TOP_N = 25
 DEFAULT_MAX_POSITION_WEIGHT = 0.08
 DEFAULT_MOMENTUM_WEIGHT = 0.5
 DEFAULT_QUALITY_WEIGHT = 0.5
-DEFAULT_REBALANCE_FREQUENCY = "monthly"
 
 # B076 F001 — size-tilt selection knob (the spec's third A/B dimension). A
 # percent-ranked **small-cap** factor (smaller market cap → higher score) is blended
@@ -60,8 +59,6 @@ WEIGHTING_SCHEMES: frozenset[str] = frozenset(
 )
 DEFAULT_WEIGHTING_SCHEME = WEIGHTING_SCHEME_EQUAL
 
-REBALANCE_FREQUENCIES: frozenset[str] = frozenset({"daily", "weekly", "monthly", "quarterly"})
-
 WEIGHT_SUM_TOLERANCE = 1e-8
 
 
@@ -88,7 +85,6 @@ class CnAttackParameters:
     momentum_weight: float = DEFAULT_MOMENTUM_WEIGHT
     quality_weight: float = DEFAULT_QUALITY_WEIGHT
     max_position_weight: float = DEFAULT_MAX_POSITION_WEIGHT
-    rebalance_frequency: str = DEFAULT_REBALANCE_FREQUENCY
     weighting_scheme: str = DEFAULT_WEIGHTING_SCHEME
     size_tilt_weight: float = DEFAULT_SIZE_TILT_WEIGHT
 
@@ -106,10 +102,6 @@ class CnAttackParameters:
             raise CnAttackParameterError("factor weights must be >= 0")
         if not 0.0 < self.max_position_weight <= 1.0:
             raise CnAttackParameterError("max_position_weight must be in (0, 1]")
-        if self.rebalance_frequency not in REBALANCE_FREQUENCIES:
-            raise CnAttackParameterError(
-                f"rebalance_frequency must be one of {sorted(REBALANCE_FREQUENCIES)}"
-            )
         if self.weighting_scheme not in WEIGHTING_SCHEMES:
             raise CnAttackParameterError(
                 f"weighting_scheme must be one of {sorted(WEIGHTING_SCHEMES)}; "
@@ -177,7 +169,6 @@ class CnAttackParameters:
             "max_position_weight": self.max_position_weight,
             "momentum_weight": self.momentum_weight,
             "quality_weight": self.quality_weight,
-            "rebalance_frequency": self.rebalance_frequency,
             "strategy_id": self.strategy_id,
             "top_n": self.top_n,
         }
