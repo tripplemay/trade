@@ -13,8 +13,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-# Defaults match the spec §1 cost row ("印花税 0.1% 仅卖出 + 佣金 ~0.025% + 滑点").
-DEFAULT_STAMP_DUTY_BPS = 10.0  # 0.1%, SELL side only (印花税)
+# B081 F001 — 印花税 was halved 0.1%→0.05% on 2023-08-28 (口径更正; the backtest
+# window crosses that date but the spec takes a single flat 5bp default, with the
+# old 10bp口径 reproducible via an explicit CnCostModel(stamp_duty_bps=10.0) for the
+# F004 A/B bit-level comparison). Commission + slippage unchanged.
+DEFAULT_STAMP_DUTY_BPS = 5.0  # 0.05%, SELL side only (印花税, post-2023-08-28)
 DEFAULT_COMMISSION_BPS = 2.5  # ~0.025%, both sides (佣金)
 DEFAULT_SLIPPAGE_BPS = 5.0  # both sides
 

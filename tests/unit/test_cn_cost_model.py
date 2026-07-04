@@ -33,7 +33,9 @@ def test_pure_sell_pays_stamp_duty_pure_buy_does_not() -> None:
 
 def test_defaults_match_spec_cost_row() -> None:
     model = CnCostModel()
-    assert model.stamp_duty_bps == 10.0  # 0.1% sell-only
+    # B081 F001 — 印花税 default is now 5bp (0.05%, halved 2023-08-28); the old 10bp
+    # 口径 is reproduced by an explicit CnCostModel(stamp_duty_bps=10.0) for F004's A/B.
+    assert model.stamp_duty_bps == 5.0  # 0.05% sell-only (post-2023-08-28)
     assert model.commission_bps == 2.5
     assert model.slippage_bps == 5.0
 
