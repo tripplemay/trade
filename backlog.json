@@ -310,21 +310,6 @@
     "sequence_note": "2026-06-25 B077(聪明钱数据可行性摸底)done=整体 NOT-GO 但收窄到龙虎榜机构席位+决定性下一步(补小盘覆盖)。2026-06-25/26 付费数据源调研(2 轮含真实性核查)=Tushare ¥200 标杆但 LHB 机构席位是噪/可马甲信号、期望放低。用户决定保存结论后续再深入。下一步候选=B078(Tushare 全覆盖去偏 LHB 机构席位低期望决定性一测)或重新评估这条路值不值得。研究文档 docs/research/ashare-smart-money-paid-data-sources-2026-06.md。"
   },
   {
-    "id": "B0XX-backtest-engine-fidelity",
-    "title": "回测引擎修真：停牌/退市/涨跌停/手数/成本/band（评审 P0.5）",
-    "description": "评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §1.4B 的 6 项引擎级高估源修复，任何新策略（尤其小盘暴露策略）的回测可信度前置：①停牌/退市处理（当前 ffill 最后价且可按旧价成交、退市持仓永不减记，engine.py:163-173 自注 P1 简化→退市按末价减记或阶梯折价清仓、停牌禁成交）；②涨跌停可执行性（动量策略系统性买刚大涨的票，_execute_open 当前无条件按开盘价成交→涨/跌停日禁止或部分成交）；③100 股手数取整（当前浮点份额，10万×4% 仓位高价股一手买不起）；④印花税更新为卖出 5bp（2023-08-28 起实际减半，当前 10bp 偏保守）；⑤live 持久账簿替代每日从头重放回测（qfq 前复权下除权日可能无决策跳变）；⑥band 触发后只调超阈值部分而非全簿拉回目标（当前全量 rebalance 实际换手大于触发所需最小换手+路径依赖）。修完后重跑 B070 去偏基线，确认各项修复对历史结论的影响量并更新红卡数字。",
-    "decisions": [
-      "2026-07-03 用户确认立项（作为 P2 信号升级与任何小盘策略的前置）",
-      "修复后必须重跑 B070 去偏基线对照，量化各修复项对结论的影响（预期方向：更保守）",
-      "rebalance_frequency 死参数一并清理或接线（当前进 hash 但无消费点）"
-    ],
-    "confirmed_at": "2026-07-03",
-    "priority": "high",
-    "milestone": "Phase 5 — 策略研究体系化 + 新策略族（2026-07-03 评审路线图 P0-P2）",
-    "source": "2026-07-03 用户立项 P0-P2（评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §4 路线图）",
-    "sequence_note": "评审路线图 P0.5——P2 信号升级批次的硬前置；与 P0 监控批次无依赖可并行或紧随。"
-  },
-  {
     "id": "B0XX-dividend-lowvol-defense",
     "title": "红利低波防守腿（评审 P1，个人可实施策略排序第 1）",
     "description": "评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §3.4 排序第 1。证据：2022-2024 三年调整市全收益 +42.6%；2024 初踩踏期最大回撤仅 5.4%（同期 HS300 -11.2%）；自 2013-12 指数发布以来年化约 12.9%。风险：2025 年 AI 牛中大幅跑输（全收益约 +6%）、被动资金 2022→24 增 20 倍拥挤度升；2025Q4 股息率回升 5%+ vs 十年国债 1.66%。形态：直接持有红利低波 ETF（如 512890 类）或对指数成分做轻度增强，年/半年调仓，advisory-only；spec 须写明拥挤度/股息率监控指标（股息率-国债利差 <2% 时降配提示）。与 cn_attack 进攻腿构成杠铃，解决『OOS 红卡期无可配置策略』。数据 akshare 免费全覆盖。",
@@ -385,5 +370,17 @@
     "milestone": "Phase 5 — 策略研究体系化 + 新策略族（2026-07-03 评审路线图 P0-P2）",
     "source": "2026-07-03 用户立项 P0-P2（评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §4 路线图）",
     "sequence_note": "评审路线图 P2；与信号升级批次无依赖，可并行；基建契合度最高（改现有引擎）。"
+  },
+  {
+    "id": "B0XX-bootstrap-seed-deploy-chain",
+    "title": "bootstrap 种子数据全面接入部署链(curated symbol_name 生产=0 治本)",
+    "description": "B080 F005 发现的系统性坑:workbench-bootstrap CLI 的幂等 seed 只手动跑,不在 deploy.sh/workflow → 生产静默缺数据无告警不自愈(B080 trial_registry=0 已由 migration 0033 根治;B079 curated symbol_name 生产=0 仍未修——akshare_spot 日刷 5203 行已覆盖显示故非阻断)。治本:把 bootstrap 其余种子(curated 名等)改 data-migration 或显式接入部署链;顺带审计 bootstrap 全部 seed 面找同类。来源:B080-evaluator r1/r2 + proposed-learning 2026-07-04。",
+    "decisions": [
+      "与 proposed-learning『种子数据须走 data-migration/部署链』配套的代码治本(learning 是规则沉淀,本条是代码工作)"
+    ],
+    "confirmed_at": "2026-07-04",
+    "priority": "low",
+    "milestone": "运维治本",
+    "source": "B080 F005 独立验收 r1 发现 + evaluator 建议"
   }
 ]
