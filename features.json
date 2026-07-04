@@ -32,7 +32,7 @@
       "title": "冻结式再验证 pipeline(L1:数据追加+CPCV-lite 重跑+卡片/registry/报告三落地)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F003】两段式:(1) 数据追加 job(季频周末窗口):baostock 拉 B070 宇宙增量价格写 data/research/reverify/<date>/ 新副本(b070 原快照不动);长任务 watchdog+逐只/bulk fetch 全超时(v0.9.54 §38/§39)。(2) 重验证 job:参数完全冻结(代码层不接受参数输入,只读冻结 config)重跑 b070 对照+CPCV-lite(K=4 交错 IS/OOS split 季度错开+1 个月 purge gap,报告各 split OOS 分布)→三落地:oos_verification_card 更新(代码路径不存在 validated=False→True 赋值,摘红卡永远人工批次)/trial_registry 登记/md 报告落 docs/test-reports/auto/。(3) 状态表(照 target_refresh_job 范式)+手动触发 API(POST+轮询)+季频 timer。正面证据:手动触发端到端真数据跑通;参数冻结守门单测(注入参数→拒绝);无 validated 翻真路径(守门断言);CPCV-lite 标注非全 CPCV。Gates 同 F001+触 trade/ 则 mypy trade。",
       "design_decisions": [
         "『再验证』非『再训练』:流水线无参数修改路径是本批最硬的不变量(评审 §2.3 L1)。",
