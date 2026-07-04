@@ -1,5 +1,5 @@
 {
-  "status": "verifying",
+  "status": "fixing",
   "total_features": 5,
   "completed_features": 4,
   "fix_rounds": 0,
@@ -19,15 +19,44 @@
     "spec": "docs/specs/B081-backtest-engine-fidelity-spec.md",
     "test_cases": null,
     "signoff": null,
+    "verifying_r1": "docs/test-reports/B081-backtest-engine-fidelity-verifying-r1-2026-07-04.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": null,
-    "pass_count": 0,
+    "summary": "FIXING. 常规项全 PASS + 旧口径 bit 级复现 B070(忠实 replay 243406/194/639 matches_old=true) + 生产 alembic=0035/trial_registry B081=8/红卡 validated=False 守不变量④ + 新口径 live precompute 不报错。但数字审计(本批核心)坐实 2 项 HIGH: (疑点3) partial_rebalance Option A 绕过 no-trade-band=未 verdict 的收益改善型策略 cadence 变动(rebs 639→1517/换手 194→236↑/CAGR 13.1%→20.7%↑)被当保真修复默认 True 上线并混入基线, 违反 B069/B076 verdict-gating + spec §0#5 原意(band 保持触发); (疑点1+4) 红卡 headline '原 B070 +28.4% 大半是分数股假象/策略样本外亏损' 被决定性对照证伪=10 万本金容量下限假象非策略真相(lot@100k -8.6%/OOS-16% vs lot@1M +10.5%/OOS+23.5% 恢复; 可买性探针 10 万本金 ~9/25 名买不起一手, 100 万归零), 红卡方向安全(validated 恒 False)但因果叙事误 attribute+过度概括, 且 new_all_on 混入 partial 策略变动非纯保真。疑点2(停牌/退市零影响)=合法 no-op(单测证开关已接; 反事实计数 suspension 0 咬中/delist 宇宙 52 次确认但持仓簿 0 咬中/price_limit 23 咬中), 须补'空验证'标注(recovery0.5==1.0)。",
+    "pass_count": 2,
     "partial_count": 0,
-    "fail_count": 0,
-    "issues": []
+    "fail_count": 2,
+    "issues": [
+      {
+        "id": "ISSUE-1",
+        "severity": "HIGH",
+        "title": "partial_rebalance Option A = 未 verdict 的策略 cadence 变动混入保真基线(疑点3)",
+        "file": "trade/backtest/cn_attack_momentum_quality/engine.py (partial_rebalance 默认 True + _partial_would_be_turnover band-bypass:715-728)",
+        "repro": "only_partial_rebalance A/B: rebs 639→1517(×2.4)/turnover 194→236↑/full CAGR 13.1%→20.7%↑/OOS 28.4%→32.7%↑。Option A 绕过 no_trade_band(策略核心不动区), 触发从'聚合 turnover>20%'改为'任一名进出/漂移>0.5%'。commit 7a063c7 亲述 'trade MORE than old band' 却标'更保守/数字变差'(与实测收益变好相反)。spec §0#5 原意 band 仍作触发。",
+        "fix": "二选一(交 Planner→用户裁定): (A) partial_rebalance 默认改 False(作需独立 verdict 的策略维度 opt-in), new_all_on 基线回归纯保真; 或 (B) 按 spec §0#5 原意重做(band 保持触发+触发后部分执行, 预期换手↓)。任一都须把 partial 从'引擎修真基线'剥离, new_all_on/红卡口径重算。",
+        "reverify": "new_all_on(不含 partial 策略变动)A/B 重跑 + 红卡口径基于 fidelity-only; 或 partial 单独走策略 verdict 批次。"
+      },
+      {
+        "id": "ISSUE-2",
+        "severity": "HIGH",
+        "title": "红卡 headline 误 attribute 10 万本金容量下限为'分数股假象/edge 消失'(疑点1+4)",
+        "file": "workbench/backend/workbench_api/strategy_modes/cn_attack_precompute.py(CN_ATTACK_RESEARCH_CAVEAT.headline_zh/en) + docs/test-reports/B081-engine-fidelity-ab.md + workbench_api/monitoring/trial_backfill_b081.py(_AB_METRICS) + 生产红卡(migration 0035 已部署→须补更正 migration)",
+        "repro": "evaluator 决定性对照(scripts/research/b081_audit_evaluator.py): lot@100k full-8.6%/OOS-16.0%/turnover1160 vs lot@1M full+10.5%/OOS+23.5%/turnover249(恢复)。可买性探针: 10 万本金 25 等权中均值~9(峰值16)只买不起一手, 100 万 0-1 只, 1000 万 0 只。→ -14.7% 是 10 万本金容量下限, 非'edge 是分数股假象'; 100 万本金 OOS 仍 23.5% 保留~83% edge。",
+        "fix": "红卡/报告/registry 改资本条件化表述(如'10 万零售本金下 25 名等权触及容量下限~9/25 整手买不起→OOS 转负; ≥100 万本金 lot_rounding 仅使 OOS 28.4%→23.5% edge 保留')。移除'largely a fractional-share artifact/策略样本外亏损(无条件)'措辞。红卡数字若保留更保守值须注明'10 万本金容量下限口径'。",
+        "reverify": "红卡 headline 不再无条件宣称'策略样本外亏损/分数股假象', 改容量条件化; 与 ISSUE-1 联动重算 new_all_on 口径。"
+      },
+      {
+        "id": "ISSUE-3",
+        "severity": "SOFT-WATCH",
+        "title": "快照未在新口径重算(自愈) + parameter_hash 字段缺 + recovery0.5 空验证标注",
+        "file": "生产快照 recommendation_snapshot(daily timer) + master_meta + docs/test-reports/B081-engine-fidelity-ab.md",
+        "repro": "(a) 生产快照 computed_at 07-04 03:40/03:56 UTC 早于部署 17:27 → 内嵌 caveat 仍旧-9~-11% 而红卡表已-14.7% 瞬态不一致, 待 07-05 timer 自愈(live smoke 已证新口径不报错: old would_be 0.19 HOLD vs new 1.0 恒 rebalance, 发布仍干净 25 等权无破损)。(b) master_meta 无 parameter_hash 字段→spec F005 该项字面不可核。(c) recovery0.5==1.0(delist 0 触发)。",
+        "fix": "(a) 07-05 后复核快照 caveat==红卡表(ISSUE-2 修复后一并); (b) 校正 spec 措辞或改核 trial_registry.parameter_hash; (c) 报告/敏感列标'空验证(0 退市清仓触发)'。",
+        "reverify": "非 blocking; ISSUE-2 修复上线后随下一次 timer 复核快照一致性。"
+      }
+    ]
   },
   "generator_handoff": {
     "summary": null,
@@ -44,6 +73,6 @@
   "session_notes": {
     "planner": "2026-07-04 B081 planning(planner,监控会话)。B080 done(r1 独立验收抓生产 trial_registry=0 部署链缺口→r2 data-migration 0033 治本闭环 PASS)后启动。引擎修真 6 项(评审工作流 code-reader 精读定位):停牌退市 ffill(engine:163-173)/涨跌停(:246-326)/手数(:292)/印花税(costs:16-19)/band 全量(:277-299)/死参数(parameters:29)。**关键验收=旧口径 bit 级复现 B070 signoff(13.1%/0.56/-58.3%/OOS 28.4%/0.93)**。3 条 proposed-learnings 待用户确认(trade-edit gates/api.ts fixture 原子提交/种子数据走 data-migration)。**【续接】**:status=building,Generator 接 F001(成本手数band死参数)→F002(停牌退市)→F003(涨跌停)→F004(A/B 8 组+登记+红卡),F005 独立 agent 验收。backlog 新增 bootstrap-seed-deploy-chain 治本小条目。",
     "generator": "2026-07-04 B081 **generator 工作全部完成 F001-F004 done(4/5), status→verifying 交独立 evaluator(Codex)**. F001(死参/印花税/手数取整/band部分调仓OptionA) / F002(停牌loop-freeze+退市清仓) / F003(涨跌停禁买卖) / F004(A/B对照+登记+红卡). 全部有独立开关默认True=更保守; False=旧口径bit级. ★F004 A/B关键结论(docs/test-reports/B081-engine-fidelity-ab.md, 8组B070 PIT): old_all_off bit级==B070(0.1312/243406/OOS28.4%/Sharpe0.93 ✓复现证明未污染旧路径); **new_all_on 转负(OOS +28.4%→-14.7%)——真实100股/手取整揭示B070边际大半是分数股假象**; lot_rounding主导(OOS-16%,6x换手); partial数字变好(+32.7%); 停牌/退市NO-OP(流动动量票不停不退); 涨跌停~no-op. 登记: migration 0034 seed 8组入trial_registry(27+8) + bootstrap同步; 红卡 migration 0035+constant更新到-14.7%修真口径(validated恒False更保守). 门禁: backend mypy510/ruff/full backend pytest 1694 passed/root ruff. 无trade/改动(backend+script). **F005 = Codex独立验收(executor:codex)**: 复核A/B数字/旧口径bit级/registry 27+8/红卡更新/live快照正常. 用户明示 generator 不做验收. prices cache: data/research/b070/b081_prices_cache.pkl(161MB, gitignored) 加速A/B重跑. **backlog 还有 ~11项**(B081完成后 planner 排下一批).",
-    "evaluator": "2026-07-04 独立 Evaluator(代 Codex,用户 /goal 授权,无实现上下文隔离)完成 B080 F005 两轮 L2 真机验收→**PASS/done**。signoff docs/test-reports/B080-strategy-lifecycle-monitoring-signoff-2026-07-04.md(+r1 docs/test-reports/...-verifying-r1-2026-07-04.md)。**r1**: 实跑前轮 signoff(8507e32, 无 VM 密钥全部 L2 defer)盲区里的真机检查, 发现 1 BLOCKING: 生产 trial_registry=0(回填只在手动 workbench-bootstrap CLI 不入部署链 deploy.sh 只跑 alembic, 无调度器自愈; 同源缺口静默影响 B079 curated symbol_name=0)。→FIXING。**r2**: generator 0858b44 治本(27 条回填改 data-migration 0033 随 alembic 自动落地, 与红卡迁移 0028 同款; TRIAL_BACKFILL_STAMP 提单一源 CLI/迁移 byte-identical; 幂等 insert-only-missing)。生产实测: alembic head=0033 / trial_registry=27 行(batch B063x3/B066x6/B068x4/B070x2/B075x2/B076x8/B077x2) / 抽 3 条对 signoff 逐字一致(B070 pure PIT 639·13.1%·0.56·-58.3%·28.4%·0.93·-27.8% || B077 net-buy IC N1 0.0201·N5 0.0232·N10 0.0176·N20 0.0181 || B066 quality decay 10.20%·0.896·-12.4%·0.80·20.7%·-10.8%·1.64·-1.00) / HEAD≡prod(release 0858b44, 后续 e0d1cd3·4f709de paths-ignore) / 修复面仅迁移+bootstrap 去重+stamp, 本地 test_bootstrap_cli+test_trial_registry 10 passed 无回归。**其余 8 PASS(r1 已验, 修复面未触及)**: 两 timer 装载带显式 TimeoutStartSec/红卡 DB 化生产零回归(oos card 2 行+快照 caveat 逐字)/paper 三口径(CNY+USD 0032/benchmark/首日)/signal_scores 前向积累生产实测/no-validated→True 三重守门/参数冻结/no-execution/L1 223 passed。**诚实边界**: monitoring_metric=0(周 job 首跑 07-06 自愈)/长任务 reverify 未在生产触发(故意)。**B079 soft-watch 关闭**(symbol_name 5203 akshare_spot 行, cn_attack 快照 25/26 解析中文名)。**治本遗留(proposed-learning 已录)**: bootstrap-only seed 不入部署链是系统性坑, 建议后续 backlog 把 bootstrap 其余种子(curated 名)一并接部署链/迁移。B080 done, completed_features=5。**接续**: backlog B081 引擎修真 P0.5 spec 草稿已备。"
+    "evaluator": "2026-07-04 B081 F005 独立验收→**FIXING(verifying-r1)**。研究员级 A/B 数字审计, 4 疑点逐一决定性实证(scripts/research/b081_audit_evaluator.py + b081_live_smoke.py; 数据 data/research/b070/b081_audit_evaluator.json)。**常规全 PASS**: 旧口径 bit 级复现(忠实 replay 243406/194/639 matches_old=true)/signal·construction 未动/印花税 10→5bp/死参移除/生产 alembic=0035·trial_registry B081=8·红卡 validated=0 守不变量④/新口径 live precompute 不报错。**坐实 2 HIGH**: (疑点3=ISSUE-1) partial_rebalance Option A 绕 no-trade-band=收益改善型策略 cadence 变动(rebs639→1517/换手194→236↑/CAGR13.1%→20.7%↑)被当保真修复默认 True 混入基线, 违 verdict-gating+spec§0#5(band 应作触发); (疑点1+4=ISSUE-2) 红卡'原B070+28.4%大半分数股假象/策略样本外亏损'被决定性对照证伪=**10万本金容量下限**(lot@100k-8.6%/OOS-16% vs lot@1M+10.5%/OOS+23.5%恢复; 探针10万本金~9/25买不起一手·100万归零), 方向安全(validated恒False)但因果误attribute+过度概括。**疑点2=合法no-op**: 单测证开关接上; 反事实计数 suspension0咬中/delist宇宙52次确认但持仓簿0咬中(动量退市前换出)/price_limit23咬中; 须补空验证标注(recovery0.5==1.0)。ISSUE-3 soft-watch(快照07-05 timer自愈+parameter_hash字段缺+recovery空验证)。报告 docs/test-reports/B081-backtest-engine-fidelity-verifying-r1-2026-07-04.md。**接续**: generator 接 ISSUE-1/2 修复→reverifying。后台 followup(new_all_on@1M/fidelity_only 隔离)佐证跑中不改裁定。 || (前批)完成 B080 F005 两轮 L2 真机验收→**PASS/done**。signoff docs/test-reports/B080-strategy-lifecycle-monitoring-signoff-2026-07-04.md(+r1 docs/test-reports/...-verifying-r1-2026-07-04.md)。**r1**: 实跑前轮 signoff(8507e32, 无 VM 密钥全部 L2 defer)盲区里的真机检查, 发现 1 BLOCKING: 生产 trial_registry=0(回填只在手动 workbench-bootstrap CLI 不入部署链 deploy.sh 只跑 alembic, 无调度器自愈; 同源缺口静默影响 B079 curated symbol_name=0)。→FIXING。**r2**: generator 0858b44 治本(27 条回填改 data-migration 0033 随 alembic 自动落地, 与红卡迁移 0028 同款; TRIAL_BACKFILL_STAMP 提单一源 CLI/迁移 byte-identical; 幂等 insert-only-missing)。生产实测: alembic head=0033 / trial_registry=27 行(batch B063x3/B066x6/B068x4/B070x2/B075x2/B076x8/B077x2) / 抽 3 条对 signoff 逐字一致(B070 pure PIT 639·13.1%·0.56·-58.3%·28.4%·0.93·-27.8% || B077 net-buy IC N1 0.0201·N5 0.0232·N10 0.0176·N20 0.0181 || B066 quality decay 10.20%·0.896·-12.4%·0.80·20.7%·-10.8%·1.64·-1.00) / HEAD≡prod(release 0858b44, 后续 e0d1cd3·4f709de paths-ignore) / 修复面仅迁移+bootstrap 去重+stamp, 本地 test_bootstrap_cli+test_trial_registry 10 passed 无回归。**其余 8 PASS(r1 已验, 修复面未触及)**: 两 timer 装载带显式 TimeoutStartSec/红卡 DB 化生产零回归(oos card 2 行+快照 caveat 逐字)/paper 三口径(CNY+USD 0032/benchmark/首日)/signal_scores 前向积累生产实测/no-validated→True 三重守门/参数冻结/no-execution/L1 223 passed。**诚实边界**: monitoring_metric=0(周 job 首跑 07-06 自愈)/长任务 reverify 未在生产触发(故意)。**B079 soft-watch 关闭**(symbol_name 5203 akshare_spot 行, cn_attack 快照 25/26 解析中文名)。**治本遗留(proposed-learning 已录)**: bootstrap-only seed 不入部署链是系统性坑, 建议后续 backlog 把 bootstrap 其余种子(curated 名)一并接部署链/迁移。B080 done, completed_features=5。**接续**: backlog B081 引擎修真 P0.5 spec 草稿已备。"
   }
 }
