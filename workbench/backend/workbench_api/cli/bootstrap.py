@@ -46,12 +46,12 @@ from workbench_api.db.repositories.account_snapshot import AccountSnapshotReposi
 from workbench_api.db.repositories.symbol_name import SymbolNameRepository
 from workbench_api.db.repositories.trial_registry import TrialRegistryRepository
 from workbench_api.db.session import get_session
-from workbench_api.monitoring.trial_backfill import HISTORICAL_TRIALS
+from workbench_api.monitoring.trial_backfill import (
+    HISTORICAL_TRIALS,
+    TRIAL_BACKFILL_STAMP,
+)
 from workbench_api.settings import get_settings
 from workbench_api.symbols.names import CURATED_SYMBOL_NAMES
-
-# Fixed backfill stamp so the idempotent trial seed re-runs byte-identically.
-_TRIAL_BACKFILL_STAMP = datetime(2026, 7, 3, tzinfo=UTC)
 
 
 def _coerce_account(payload: dict[str, Any]) -> Account:
@@ -185,7 +185,7 @@ def _import_trials(session: Session) -> int:
 
     repo = TrialRegistryRepository(session)
     for trial in HISTORICAL_TRIALS:
-        repo.register(created_at=_TRIAL_BACKFILL_STAMP, **trial)
+        repo.register(created_at=TRIAL_BACKFILL_STAMP, **trial)
     return len(HISTORICAL_TRIALS)
 
 

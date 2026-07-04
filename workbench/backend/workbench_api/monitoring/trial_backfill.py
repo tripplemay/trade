@@ -22,10 +22,15 @@ from __future__ import annotations
 
 import hashlib
 import re
-from datetime import date
+from datetime import UTC, date, datetime
 from typing import Any
 
 _ISO = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+# Fixed created_at for the backfill so re-runs (bootstrap CLI upsert + the
+# auto-deploy data-migration) are byte-identical — same id + same timestamp →
+# a true no-op on re-apply. B080 F005 fix: the migration imports this too.
+TRIAL_BACKFILL_STAMP = datetime(2026, 7, 3, tzinfo=UTC)
 
 
 def _window_dates(window: str) -> tuple[date | None, date | None]:
