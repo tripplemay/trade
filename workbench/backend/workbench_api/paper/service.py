@@ -45,6 +45,21 @@ DEFAULT_BASE_CURRENCY = "USD"
 DEFAULT_FEE_BPS = 5.0
 DEFAULT_SLIPPAGE_BPS = 5.0
 
+# B080 F004 fix ② — per-strategy base currency. The A-share attack modes trade
+# CNY-denominated names, so their paper book is kept in CNY; everything else
+# (Master / regime / USD ETFs) stays USD. Master zero-regression: any strategy
+# not in this map falls through to DEFAULT_BASE_CURRENCY (USD) unchanged.
+_STRATEGY_BASE_CURRENCY = {
+    "cn_attack_pure_momentum": "CNY",
+    "cn_attack_quality_momentum": "CNY",
+}
+
+
+def resolve_base_currency(strategy_id: str) -> str:
+    """The paper book currency for ``strategy_id`` (CNY for cn_attack, else USD)."""
+
+    return _STRATEGY_BASE_CURRENCY.get(strategy_id, DEFAULT_BASE_CURRENCY)
+
 # Equity at/below this is "nothing to invest" (matches engine._EPSILON).
 _EPSILON = 1e-9
 
@@ -151,7 +166,7 @@ def activate_paper_account(
     on_date: date,
     now: datetime,
     initial_capital: float = DEFAULT_INITIAL_CAPITAL,
-    base_currency: str = DEFAULT_BASE_CURRENCY,
+    base_currency: str | None = None,
     fee_bps: float = DEFAULT_FEE_BPS,
     slippage_bps: float = DEFAULT_SLIPPAGE_BPS,
     provider: PriceProvider | None = None,
@@ -167,12 +182,17 @@ def activate_paper_account(
     if acc_repo.get_by_strategy(strategy_id) is not None:
         raise PaperAccountExistsError(strategy_id)
 
+    # None → resolve per strategy (cn_attack → CNY, else USD); an explicit
+    # override (the CLI's --base-currency) still wins.
+    currency = base_currency if base_currency is not None else resolve_base_currency(
+        strategy_id
+    )
     account = PaperAccount(
         id=uuid.uuid4().hex,
         strategy_id=strategy_id,
         initial_capital=initial_capital,
         cash=initial_capital,
-        base_currency=base_currency,
+        base_currency=currency,
         fee_bps=fee_bps,
         slippage_bps=slippage_bps,
         activated_on=on_date,

@@ -21,7 +21,6 @@ from sqlalchemy.orm import sessionmaker
 
 from workbench_api.db.engine import get_engine
 from workbench_api.paper.service import (
-    DEFAULT_BASE_CURRENCY,
     DEFAULT_FEE_BPS,
     DEFAULT_INITIAL_CAPITAL,
     DEFAULT_SLIPPAGE_BPS,
@@ -49,8 +48,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Virtual initial capital (default: %(default)s).",
     )
     activate.add_argument(
-        "--base-currency", type=str, default=DEFAULT_BASE_CURRENCY,
-        help="Base currency (default: %(default)s).",
+        "--base-currency", type=str, default=None,
+        help="Base currency (default: per-strategy — CNY for cn_attack, else USD).",
     )
     activate.add_argument(
         "--fee-bps", type=float, default=DEFAULT_FEE_BPS,
