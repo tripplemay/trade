@@ -33,7 +33,7 @@ imports this lazily off the request path (§12.10.2).
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 
 import pandas as pd
@@ -69,6 +69,13 @@ class CnAttackLiveTarget:
     would_be_turnover: float
     no_trade_band: float
     top_n: int
+    # B080 F002 — the raw composite factor score per selected name (momentum +
+    # quality contributions summed), for forward accumulation into the snapshot's
+    # ``master_meta.signal_scores`` so the monitoring rolling-IC can key off the
+    # true signal (not just the equal-weight holdings). Empty on a hold-day / when
+    # the signal produced no contributions. Defaulted so pre-B080 constructors
+    # (tests / fixtures) stay valid.
+    signal_scores: dict[str, float] = field(default_factory=dict)
 
 
 def compute_cn_attack_live_target(
@@ -119,6 +126,12 @@ def compute_cn_attack_live_target(
         universe_members=members,
     )
     signal_target = signal.weights_dict()
+    # B080 F002 — composite factor score per selected name (sum of factor
+    # contributions); forward-accumulated into master_meta by the producer.
+    signal_scores = {
+        ticker: round(sum(contrib.values()), _WEIGHT_ROUND_DIGITS)
+        for ticker, contrib in signal.factor_contributions_dict().items()
+    }
 
     would_be = _would_be_turnover(held, signal_target)
     rebalanced = would_be > config.no_trade_band
@@ -151,6 +164,7 @@ def compute_cn_attack_live_target(
         would_be_turnover=would_be,
         no_trade_band=config.no_trade_band,
         top_n=parameters.top_n,
+        signal_scores=signal_scores,
     )
 
 

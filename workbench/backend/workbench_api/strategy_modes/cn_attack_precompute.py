@@ -242,6 +242,12 @@ def _build_target_result(
         # "卖到零" list reads this to explain why a name leaves).
         "profit_take": list(live.profit_take),
         "cash_weight": live.cash_weight,
+        # B080 F002 — raw composite factor score per selected name (top-N by score),
+        # forward-accumulated so the monitoring rolling-IC can key off the true
+        # signal. Pure added meta key (zero regression; empty on a hold-day).
+        "signal_scores": dict(
+            sorted(live.signal_scores.items(), key=lambda kv: -kv[1])[: live.top_n]
+        ),
         # ★ Spec §0 honesty (non-negotiable) — the surface renders this.
         # B080 F001: prefer the DB card (caveat) when the caller resolved one;
         # no card → byte-identical fallback to the in-code constant.
