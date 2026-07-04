@@ -41,7 +41,10 @@ _TICKERS: tuple[str, ...] = tuple(f"{600000 + i}.SH" for i in range(_N))
 _GROWTH: dict[str, float] = {t: 0.0030 - 0.00018 * i for i, t in enumerate(_TICKERS)}
 # INVERSE market cap: name 0 biggest … name 11 smallest, so a size tilt pulls the tail in.
 _CAPS: dict[str, float] = {t: 2.0e12 / (1.0 + i) for i, t in enumerate(_TICKERS)}
-_NO_BAND = CnAttackBacktestConfig(no_trade_band=0.0)  # force rebalance to today's signal
+# force rebalance to today's signal; lot_rounding=False keeps the OLD口径 so this
+# SELECTION zero-regression test is unaffected by B081 F001(2) round-lot skipping
+# (the small synthetic capital would otherwise floor every sub-lot name to zero).
+_NO_BAND = CnAttackBacktestConfig(no_trade_band=0.0, lot_rounding=False)
 
 
 def _prices() -> pd.DataFrame:

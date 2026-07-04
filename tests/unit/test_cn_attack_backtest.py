@@ -288,6 +288,45 @@ def test_directional_cost_is_charged(prices: pd.DataFrame) -> None:
     assert first_exec.executed_cost < sell_cost  # stamp duty NOT charged on the buy
 
 
+def test_lot_rounding_conserves_equity_and_skips_sublot() -> None:
+    # B081 F001(2) — round-lot realism: buys floor to whole 100-share lots, the
+    # rounding remainder returns to cash (余额守恒), and a name too small for one lot
+    # is skipped (跳过留现金). White-box on _execute_open (the fill site).
+    import pandas as pd
+
+    from trade.backtest.cn_attack_momentum_quality.costs import CnCostModel
+    from trade.backtest.cn_attack_momentum_quality.engine import _execute_open, _Pending
+
+    open_row = pd.Series({"AAA": 30.0, "BBB": 70.0, "TINY": 1000.0})
+    pending = _Pending(kind="rebalance", target={"AAA": 0.5, "BBB": 0.49, "TINY": 0.01})
+    new_shares, new_cash, _turnover, cost = _execute_open(
+        {}, 100_000.0, open_row, pending, CnCostModel(), {}, {}, lot_rounding=True
+    )
+    # Every held quantity is a whole 100-lot.
+    assert new_shares and all(qty % 100.0 == 0.0 for qty in new_shares.values())
+    # TINY's target (~1 share) can't afford one lot → skipped, its notional is cash.
+    assert "TINY" not in new_shares and {"AAA", "BBB"} <= set(new_shares)
+    # 余额守恒: invested + cash == investable (== equity_open - cost).
+    invested = sum(qty * open_row[t] for t, qty in new_shares.items())
+    assert invested + new_cash == pytest.approx(100_000.0 - cost, rel=1e-12)
+
+
+def test_lot_rounding_off_is_fractional_old_kou_jing() -> None:
+    # With the switch off (old口径), shares stay fractional — the pre-B081 behavior
+    # the zero-regression tests pin for bit-level reproduction.
+    import pandas as pd
+
+    from trade.backtest.cn_attack_momentum_quality.costs import CnCostModel
+    from trade.backtest.cn_attack_momentum_quality.engine import _execute_open, _Pending
+
+    open_row = pd.Series({"AAA": 30.0, "BBB": 70.0})
+    pending = _Pending(kind="rebalance", target={"AAA": 0.5, "BBB": 0.5})
+    new_shares, _cash, _turnover, _cost = _execute_open(
+        {}, 100_000.0, open_row, pending, CnCostModel(), {}, {}, lot_rounding=False
+    )
+    assert any(qty % 100.0 != 0.0 for qty in new_shares.values())
+
+
 def test_halted_holding_carries_value_no_nan_no_leak() -> None:
     # A-share 停牌 (halt): a held top name has NO price rows for a mid-window window.
     # The pivot yields NaN there; the engine must forward-fill (carry last price) so

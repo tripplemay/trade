@@ -86,9 +86,13 @@ def prices() -> pd.DataFrame:
 
 
 def test_final_holdings_decomposes_equity_to_one(prices: pd.DataFrame) -> None:
+    # lot_rounding=False (old口径): the small synthetic capital would otherwise floor
+    # every name to zero lots and shrink the book, defeating this full-book equity
+    # decomposition check. B081 F001(2)'s 余额守恒 under rounding is covered separately
+    # (test_lot_rounding_conserves_equity_and_skips_sublot).
     result = run_cn_attack_backtest(
         _params(),
-        CnAttackBacktestConfig(),
+        CnAttackBacktestConfig(lot_rounding=False),
         _START,
         _END,
         prices=prices,

@@ -22,6 +22,7 @@ Pure pandas / numpy; no US-engine import (US zero-regression).
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import date
@@ -70,6 +71,11 @@ class CnAttackBacktestConfig:
     exit_variant: str = EXIT_MOMENTUM_DECAY
     trailing_stop_pct: float = DEFAULT_TRAILING_STOP_PCT
     profit_target_pct: float = DEFAULT_PROFIT_TARGET_PCT
+    # B081 F001(2) — A-share round-lot (100 股/手) realism: buy quantities are floored
+    # to whole lots, the rounding remainder returns to cash, and a name whose target
+    # cannot afford even one lot is skipped (its notional stays cash). Default True
+    # (the honest/更保守口径); set False to bit-level reproduce the pre-B081 engine.
+    lot_rounding: bool = True
 
     def __post_init__(self) -> None:
         if self.starting_capital <= 0:
@@ -251,6 +257,7 @@ def _execute_open(
     cost_model: CnCostModel,
     entry_price: dict[str, float],
     peak_price: dict[str, float],
+    lot_rounding: bool = False,
 ) -> tuple[dict[str, float], float, float, float]:
     """Apply a pending T+1 instruction at the open. Returns (shares, cash, turnover, cost).
 
@@ -287,10 +294,24 @@ def _execute_open(
         cost = cost_model.trade_cost(buy_notional, sell_notional)
         investable = max(0.0, equity_open - cost)
         invested_fraction = sum(priced_target.values())
-        for ticker, weight in priced_target.items():
-            if weight > 0:
-                new_shares[ticker] = investable * weight / price(ticker)
-        new_cash = investable * max(0.0, 1.0 - invested_fraction)
+        if lot_rounding:
+            # Floor each buy to whole 100-share lots; the rounding remainder (and any
+            # name too small to afford one lot) stays in cash. 余额守恒: invested +
+            # cash == investable, so equity is conserved exactly as in the else branch.
+            invested = 0.0
+            for ticker, weight in priced_target.items():
+                if weight > 0:
+                    lots = math.floor(investable * weight / price(ticker) / 100.0) * 100.0
+                    if lots >= 100.0:
+                        new_shares[ticker] = lots
+                        invested += lots * price(ticker)
+            new_cash = investable - invested
+        else:
+            # Pre-B081 path — fractional shares. Byte-identical to reproduce old口径.
+            for ticker, weight in priced_target.items():
+                if weight > 0:
+                    new_shares[ticker] = investable * weight / price(ticker)
+            new_cash = investable * max(0.0, 1.0 - invested_fraction)
         # Defensive invariant (belt-and-suspenders to the ffill in _wide): never let
         # a held name silently vanish. One unpriced even after forward-fill (a
         # never-listed edge) cannot be sold this open, so carry its shares forward.
@@ -412,7 +433,8 @@ def run_cn_attack_backtest(
         executed_cost = 0.0
         if pending is not None:
             shares, cash, executed_turnover, executed_cost = _execute_open(
-                shares, cash, open_row, pending, config.cost_model, entry_price, peak_price
+                shares, cash, open_row, pending, config.cost_model, entry_price,
+                peak_price, config.lot_rounding,
             )
             total_turnover += executed_turnover
             total_cost += executed_cost
