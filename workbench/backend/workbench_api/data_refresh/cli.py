@@ -161,6 +161,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=_default_cn_fetch_timeout(),
         help="Per-call timeout (s) for each A-share fetch; 0 disables (default: %(default)s).",
     )
+    # B082 F001 — the 红利低波 (dividend low-volatility) defensive-sleeve series
+    # (512890 ETF + H30269/H20269 indices + 10Y yield + market 股息率). Independent
+    # of the A-share universe path (own hosts: sina/csindex/chinabond/legulegu),
+    # default-on so the daily timer picks it up; each fetch is timeout-bounded +
+    # best-effort (不炸整轮).
+    fetch.add_argument(
+        "--no-dividend-lowvol",
+        action="store_true",
+        help="Skip the B082 红利低波 defensive-sleeve series refresh.",
+    )
     add_as_of_argument(fetch)
     return parser.parse_args(argv)
 
@@ -194,6 +204,7 @@ def fetch_main(
     superset_provider: Callable[[], Sequence[str]] | None = None,
     cn_fundamentals_loader: _CnFundamentalsLoader | None = None,
     cn_benchmark_loader: object | None = None,
+    dividend_lowvol_loader: object | None = None,
 ) -> RefreshSummary:
     run_date = today or datetime.now(UTC).date()
     from_date = run_date - timedelta(days=max(1, args.lookback_days))
@@ -257,6 +268,24 @@ def fetch_main(
             loader=cn_benchmark_loader,  # type: ignore[arg-type]
             # B078 F001 — bound the single index fetch (杜绝挂死).
             fetch_timeout_seconds=cn_fetch_timeout,
+        )
+
+    # B082 F001 — refresh the 红利低波 defensive-sleeve series (512890 ETF +
+    # H30269/H20269 indices + 10Y yield + market 股息率) into
+    # snapshots/dividend_lowvol/. Best-effort per series (每 fetch timeout-bounded,
+    # 单序列失败不炸整轮). Only the real job injects the loader (tests pass None).
+    if dividend_lowvol_loader is not None:
+        from workbench_api.data_refresh.cn_dividend_lowvol import (
+            run_dividend_lowvol_refresh,
+        )
+
+        run_dividend_lowvol_refresh(
+            data_root=args.data_root,
+            loader=dividend_lowvol_loader,  # type: ignore[arg-type]
+            # B078 F001 — bound each series fetch (杜绝挂死).
+            fetch_timeout_seconds=cn_fetch_timeout,
+            # csindex end_date window pinned to the refresh run date.
+            today=run_date,
         )
 
     # B065 F001 — build the A-share point-in-time universe membership artifact
@@ -443,6 +472,18 @@ def main(argv: list[str] | None = None) -> int:
         # B066 F003 — CSI 300 benchmark for the CN attack comparison report.
         cn_benchmark_loader = AkshareCsiLoader()
 
+    # B082 F001 — the 红利低波 defensive-sleeve loader is INDEPENDENT of the A-share
+    # universe path (its own sina/csindex/chinabond/legulegu hosts), so it is gated
+    # only by --no-dividend-lowvol. Lazy + key-free to construct (akshare imported
+    # per fetch). Tests call fetch_main with dividend_lowvol_loader=None → skipped.
+    dividend_lowvol_loader: object | None = None
+    if not args.no_dividend_lowvol:
+        from workbench_api.data_refresh.cn_dividend_lowvol import (
+            AkshareDividendLowvolLoader,
+        )
+
+        dividend_lowvol_loader = AkshareDividendLowvolLoader()
+
     summary = fetch_main(
         args,
         # B072 F003 — --as-of pins the refresh window's run date; omitted → today (UTC).
@@ -451,6 +492,7 @@ def main(argv: list[str] | None = None) -> int:
         superset_provider=superset_provider,
         cn_fundamentals_loader=cn_fundamentals_loader,
         cn_benchmark_loader=cn_benchmark_loader,
+        dividend_lowvol_loader=dividend_lowvol_loader,
     )
     print(
         "data refresh done — "
