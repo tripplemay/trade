@@ -20,9 +20,7 @@ vi.mock("@/components/chart", () => ({
 import PaperPage from "@/app/(protected)/paper/page";
 
 const STRATEGIES: components["schemas"]["PaperStrategiesResponse"] = {
-  strategies: [
-    { strategy_id: "master_portfolio", name: "旗舰组合", has_account: true },
-  ],
+  strategies: [{ strategy_id: "master_portfolio", name: "旗舰组合", has_account: true }],
 };
 
 const ACTIVE_VIEW: components["schemas"]["PaperView"] = {
@@ -44,6 +42,8 @@ const ACTIVE_VIEW: components["schemas"]["PaperView"] = {
     next_rebalance: "2026-06-30",
     fee_bps: 5,
     slippage_bps: 5,
+    benchmark_symbol: "SPY",
+    first_day_caveat: false,
   },
   cash: 100,
   nav_curve: [],

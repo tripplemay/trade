@@ -53,7 +53,8 @@
     "account": "账户",
     "snapshots": "快照",
     "backlog": "需求池",
-    "paper": "模拟盘"
+    "paper": "模拟盘",
+    "monitoring": "监控"
   },
   "topbar": {
     "snapshotIndicator": "快照：—",
@@ -802,6 +803,37 @@
     "alignDone": "已对齐到当前目标({positions} 个持仓)。",
     "alignSkipped": "{count} 个目标缺市价未建仓:{symbols}(补齐行情后每日任务会自动重试)。",
     "alignNoTarget": "当前模式暂无目标可对齐——请先在推荐页『立即刷新目标』。",
-    "alignError": "对齐失败:{error}"
+    "alignError": "对齐失败:{error}",
+    "firstDayCaveat": "CN 账本：首日建仓采用 activation 当日收盘价（受 A股数据延迟，该价可能早于建仓日 → 首日 NAV 为定价假象，非真实收益）；基准 SPY→CSI300 中途切换。"
+  },
+  "monitoring": {
+    "title": "策略监控",
+    "subtitle": "advisory-only 生命周期监控——滚动 IC、跟踪差、暴露度、冻结再验证。仅观测，非交易信号。",
+    "researchOnly": "research-only",
+    "metricsTitle": "健康指标",
+    "rollingIc": "滚动 IC",
+    "trackingError": "跟踪误差",
+    "exposure": "暴露度 / 拥挤度",
+    "turnover": "换手",
+    "partial": "部分（历史<12月）",
+    "holdingsFidelity": "持仓保真",
+    "noData": "暂无指标",
+    "oosTitle": "样本外验证",
+    "trialsTitle": "试验登记表",
+    "trialCount": "试验数（DSR N）",
+    "reverifyTitle": "冻结再验证",
+    "reverifyButton": "运行再验证",
+    "reverifyNote": "研究 pipeline——非交易。对追加数据跑一次参数冻结的去幸存者偏差回测。",
+    "reverifyRunning": "再验证已排队——这是一个长研究任务（约 30 分钟）……",
+    "reverifyDone": "再验证完成",
+    "reverifyError": "再验证失败",
+    "colStrategy": "策略",
+    "colVerdict": "结论",
+    "colBatch": "批次",
+    "colWindow": "窗口",
+    "colOosSplit": "OOS 切分",
+    "colNotes": "备注",
+    "benchmarkLabel": "基准",
+    "firstDayCaveat": "CN 账本标注：首日建仓采用 activation 当日收盘价（受 A股数据延迟，该价可能早于建仓日 → 首日 NAV 为定价假象，非真实收益）；基准 SPY→CSI300 中途切换。"
   }
 }

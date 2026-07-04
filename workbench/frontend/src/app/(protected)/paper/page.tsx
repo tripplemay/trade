@@ -165,7 +165,10 @@ export default function PaperPage() {
       .filter((p) => p.benchmark_nav !== null && p.benchmark_nav !== undefined)
       .map((p) => ({ time: p.date, value: p.benchmark_nav as number }));
     if (spy.length) {
-      series.push({ id: "spy", name: t("benchmarkSeries"), color: "#9ca3af", data: spy });
+      // B080 F004 — label the benchmark with the book's actual benchmark
+      // (SPY for master / regime, CSI300 for cn_attack) rather than a fixed "SPY".
+      const benchName = view.summary?.benchmark_symbol ?? t("benchmarkSeries");
+      series.push({ id: "benchmark", name: benchName, color: "#9ca3af", data: spy });
     }
     return series;
   }, [view, t]);
@@ -347,6 +350,16 @@ function ActiveView({
           <Stat label={t("daysRunning")} value={`${s.days_running} ${t("daysUnit")}`} />
           <Stat label={t("nextRebalance")} value={s.next_rebalance ?? "—"} />
         </CardContent>
+        {s.first_day_caveat ? (
+          <CardContent className="pt-0">
+            <p
+              data-testid="paper-first-day-caveat"
+              className="rounded-md border border-amber-700/40 bg-amber-950/20 p-2 text-xs text-amber-200/90"
+            >
+              {t("firstDayCaveat")}
+            </p>
+          </CardContent>
+        ) : null}
       </Card>
 
       {/* ② NAV curve + SPY overlay */}

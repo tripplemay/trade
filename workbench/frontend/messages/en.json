@@ -53,7 +53,8 @@
     "account": "Account",
     "snapshots": "Snapshots",
     "backlog": "Backlog",
-    "paper": "Paper"
+    "paper": "Paper",
+    "monitoring": "Monitoring"
   },
   "topbar": {
     "snapshotIndicator": "Snapshot: —",
@@ -802,6 +803,37 @@
     "alignDone": "Aligned to current target ({positions} positions).",
     "alignSkipped": "{count} target(s) lacked a price mark and were not built: {symbols} (the daily job retries automatically once priced).",
     "alignNoTarget": "No target to align to yet — refresh the target first on the recommendations page.",
-    "alignError": "Align failed: {error}"
+    "alignError": "Align failed: {error}",
+    "firstDayCaveat": "CN book: the first-day fill used the activation-day close (may predate activation given A-share data latency → the first-day NAV is a pricing artifact, not real alpha); the benchmark switched SPY→CSI300 mid-history."
+  },
+  "monitoring": {
+    "title": "Strategy Monitoring",
+    "subtitle": "Advisory-only lifecycle monitoring — rolling IC, tracking, exposure & frozen re-validation. Observation, not a trade signal.",
+    "researchOnly": "research-only",
+    "metricsTitle": "Health metrics",
+    "rollingIc": "Rolling IC",
+    "trackingError": "Tracking error",
+    "exposure": "Exposure / crowding",
+    "turnover": "Turnover",
+    "partial": "partial (<12mo history)",
+    "holdingsFidelity": "holdings-fidelity",
+    "noData": "No metrics yet",
+    "oosTitle": "OOS verification",
+    "trialsTitle": "Trial registry",
+    "trialCount": "Trials (DSR N)",
+    "reverifyTitle": "Frozen re-validation",
+    "reverifyButton": "Run re-validation",
+    "reverifyNote": "Research pipeline — NOT a trade. Runs a frozen, survivorship-free backtest on appended data.",
+    "reverifyRunning": "Re-validation queued — this is a long (~30 min) research job…",
+    "reverifyDone": "Re-validation complete",
+    "reverifyError": "Re-validation failed",
+    "colStrategy": "Strategy",
+    "colVerdict": "Verdict",
+    "colBatch": "Batch",
+    "colWindow": "Window",
+    "colOosSplit": "OOS split",
+    "colNotes": "Notes",
+    "benchmarkLabel": "Benchmark",
+    "firstDayCaveat": "CN book caveat: the first-day fill used the activation-day close (which may predate activation given A-share data latency → the first-day NAV is a pricing artifact, not real alpha); the benchmark switched SPY→CSI300 mid-history."
   }
 }

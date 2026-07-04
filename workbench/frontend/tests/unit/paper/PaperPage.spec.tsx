@@ -18,9 +18,7 @@ import PaperPage from "@/app/(protected)/paper/page";
 type PaperView = components["schemas"]["PaperView"];
 
 const STRATEGIES = {
-  strategies: [
-    { strategy_id: "master_portfolio", name: "旗舰组合", has_account: true },
-  ],
+  strategies: [{ strategy_id: "master_portfolio", name: "旗舰组合", has_account: true }],
 };
 
 const ACTIVE_VIEW: PaperView = {
@@ -43,30 +41,42 @@ const ACTIVE_VIEW: PaperView = {
     next_rebalance: "2026-06-30",
     fee_bps: 5,
     slippage_bps: 5,
+    benchmark_symbol: "SPY",
+    first_day_caveat: false,
   },
   nav_curve: [], // empty → curveEmpty text, no chart mount
   positions: [
     {
-      symbol: "AAA", shares: 599.4, avg_cost: 100, close: 110, market_value: 65934,
-      weight: 0.62, unrealized_pnl: 5994, unrealized_pnl_pct: 0.1,
+      symbol: "AAA",
+      shares: 599.4,
+      avg_cost: 100,
+      close: 110,
+      market_value: 65934,
+      weight: 0.62,
+      unrealized_pnl: 5994,
+      unrealized_pnl_pct: 0.1,
     },
     {
-      symbol: "BBB", shares: 799.2, avg_cost: 50, close: 50, market_value: 39960,
-      weight: 0.38, unrealized_pnl: 0, unrealized_pnl_pct: 0,
+      symbol: "BBB",
+      shares: 799.2,
+      avg_cost: 50,
+      close: 50,
+      market_value: 39960,
+      weight: 0.38,
+      unrealized_pnl: 0,
+      unrealized_pnl_pct: 0,
     },
   ],
   drift: [
     { symbol: "AAA", current_weight: 0.62, target_weight: 0.6, drift: 0.02 },
     { symbol: "BBB", current_weight: 0.38, target_weight: 0.4, drift: -0.02 },
   ],
-  rebalances: [
-    { date: "2026-06-12", cost: 99.9, cumulative_cost: 99.9 },
-  ],
+  rebalances: [{ date: "2026-06-12", cost: 99.9, cumulative_cost: 99.9 }],
 };
 
 function mockFetch(routes: Record<string, unknown>): typeof fetch {
   return vi.fn(async (input: RequestInfo | URL) => {
-    const url = typeof input === "string" ? input : (input as Request).url ?? String(input);
+    const url = typeof input === "string" ? input : ((input as Request).url ?? String(input));
     const key = Object.keys(routes).find((k) => url.includes(k));
     return new Response(JSON.stringify(key ? routes[key] : {}), {
       status: 200,
@@ -122,9 +132,7 @@ describe("PaperPage (B056 F003)", () => {
       "fetch",
       mockFetch({
         "/api/paper/strategies": {
-          strategies: [
-            { strategy_id: "master_portfolio", name: "旗舰组合", has_account: false },
-          ],
+          strategies: [{ strategy_id: "master_portfolio", name: "旗舰组合", has_account: false }],
         },
         "/api/paper/master_portfolio": inactive,
       }),

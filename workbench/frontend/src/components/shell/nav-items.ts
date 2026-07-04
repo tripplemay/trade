@@ -1,4 +1,5 @@
 import {
+  Activity,
   BookOpen,
   ClipboardList,
   Compass,
@@ -31,6 +32,7 @@ export type NavKey =
   | "recommendations"
   | "risk"
   | "paper"
+  | "monitoring"
   | "positionDiff"
   | "ticket"
   | "fills"
@@ -67,6 +69,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   },
   { href: "/risk", labelKey: "risk", icon: ShieldAlert, testId: "nav-risk" },
   { href: "/paper", labelKey: "paper", icon: FlaskConical, testId: "nav-paper" },
+  { href: "/monitoring", labelKey: "monitoring", icon: Activity, testId: "nav-monitoring" },
   {
     href: "/execution/position-diff",
     labelKey: "positionDiff",
