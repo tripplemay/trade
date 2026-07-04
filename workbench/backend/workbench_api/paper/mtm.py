@@ -18,11 +18,14 @@ reads the stored strategy target + price snapshots only — never imports
 from __future__ import annotations
 
 import argparse
+import csv
 import logging
+import os
 import sys
 import uuid
 from dataclasses import dataclass
 from datetime import date, datetime
+from pathlib import Path
 
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -33,6 +36,7 @@ from workbench_api.db.repositories.paper_account import (
     PaperNavHistoryRepository,
     PaperPositionRepository,
 )
+from workbench_api.monitoring.tracking import STRATEGY_BENCHMARK
 from workbench_api.paper.pnl import compute_position_pnl
 from workbench_api.paper.service import rebalance_if_due
 from workbench_api.services.mark_to_market import compute_mark_to_market, marks_for
@@ -40,7 +44,46 @@ from workbench_api.services.prices_provider import DbPriceProvider, PriceProvide
 
 logger = logging.getLogger(__name__)
 
+# Default benchmark (master / regime / USD strategies). B080 F004 fix ① — the
+# per-strategy benchmark comes from STRATEGY_BENCHMARK; cn_attack resolves to CSI300
+# (read from cn_csi300.csv, since it is not in the price table). Anything not mapped
+# stays "SPY" → the byte-identical pre-B080 path (Master zero-regression).
 BENCHMARK_SYMBOL = "SPY"
+_CSI300_RELPATH = ("snapshots", "benchmark", "cn_csi300.csv")
+
+
+def _load_csi300_series() -> dict[date, float]:
+    """Parse cn_csi300.csv (``date,close``) → {date: close}; {} when unavailable.
+
+    Best-effort under ``WORKBENCH_DATA_ROOT`` (with a repo-relative fallback) — the
+    daily job must not fail when the benchmark CSV is missing (cn_attack accounts
+    then simply record a null benchmark_close for that day)."""
+
+    data_root = os.environ.get("WORKBENCH_DATA_ROOT")
+    candidates = []
+    if data_root:
+        candidates.append(Path(data_root).joinpath(*_CSI300_RELPATH))
+    candidates.append(
+        Path(__file__).resolve().parents[3].joinpath("data", *_CSI300_RELPATH)
+    )
+    path = next((p for p in candidates if p.is_file()), None)
+    if path is None:
+        return {}
+    series: dict[date, float] = {}
+    with path.open(encoding="utf-8", newline="") as handle:
+        for row in csv.DictReader(handle):
+            try:
+                series[date.fromisoformat(str(row["date"])[:10])] = float(row["close"])
+            except (KeyError, ValueError):
+                continue
+    return series
+
+
+def _csi300_close_on_or_before(series: dict[date, float], on_date: date) -> float | None:
+    """The most recent CSI300 close on/before ``on_date`` (None if none / empty)."""
+
+    eligible = [d for d in series if d <= on_date]
+    return series[max(eligible)] if eligible else None
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,6 +108,8 @@ def run_daily_mtm(
     nav_repo = PaperNavHistoryRepository(session)
 
     accounts = acc_repo.list_active()
+    # Loaded once — cn_attack accounts read their CSI300 benchmark from it.
+    csi300 = _load_csi300_series()
     points = 0
     rebalanced = 0
     for account in accounts:
@@ -73,8 +118,14 @@ def run_daily_mtm(
         ) is not None:
             rebalanced += 1
 
+        benchmark = STRATEGY_BENCHMARK.get(account.strategy_id, BENCHMARK_SYMBOL)
         positions = pos_repo.list_by_account(account.id)
-        symbols = {p.symbol.upper() for p in positions} | {BENCHMARK_SYMBOL}
+        symbols = {p.symbol.upper() for p in positions}
+        # Only union SPY when this account benchmarks against it (master / regime).
+        # cn_attack reads CSI300 from the CSV instead — SPY isn't in the price table
+        # on a CN-only host, and fetching it would be wasted.
+        if benchmark == BENCHMARK_SYMBOL:
+            symbols = symbols | {BENCHMARK_SYMBOL}
         marks = marks_for(provider, symbols)
         close_marks = {sym: mark.latest_close for sym, mark in marks.items()}
 
@@ -99,6 +150,13 @@ def run_daily_mtm(
             }
             for item in pnl
         ]
+        # SPY strategies read the fetched mark (byte-identical to pre-B080); cn_attack
+        # reads the CSI300 close on/before today from the CSV.
+        benchmark_close = (
+            close_marks.get(BENCHMARK_SYMBOL)
+            if benchmark == BENCHMARK_SYMBOL
+            else _csi300_close_on_or_before(csi300, on_date)
+        )
         nav_repo.record_point(
             point_id=uuid.uuid4().hex,
             account_id=account.id,
@@ -106,7 +164,7 @@ def run_daily_mtm(
             nav=mtm.nav,
             cash=float(account.cash),
             positions=breakdown,
-            benchmark_close=close_marks.get(BENCHMARK_SYMBOL),
+            benchmark_close=benchmark_close,
             created_at=now,
         )
         points += 1

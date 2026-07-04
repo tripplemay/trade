@@ -44,6 +44,15 @@ class PaperSummary(BaseModel):
     )
     fee_bps: float
     slippage_bps: float
+    # B080 F004 — the benchmark this book is measured against (SPY / CSI300), so the
+    # panel labels the benchmark curve correctly (CN books note CSI300).
+    benchmark_symbol: str = "SPY"
+    # B080 F004 fix ③ — true when the book carries CN-data-caliber caveats: the
+    # first-day fill used the activation-day available close, which given A-share data
+    # latency may predate the activation day → a first-day NAV pricing artifact (not
+    # real alpha); AND the benchmark switched SPY→CSI300 mid-history (older nav points
+    # benchmark against SPY). Advisory annotation only — not recomputed. master → False.
+    first_day_caveat: bool = False
 
 
 class PaperNavPoint(BaseModel):

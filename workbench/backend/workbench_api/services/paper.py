@@ -24,6 +24,7 @@ from workbench_api.db.repositories.paper_account import (
     PaperPositionRepository,
     PaperRebalanceRepository,
 )
+from workbench_api.monitoring.tracking import STRATEGY_BENCHMARK
 from workbench_api.paper.pnl import compute_position_pnl
 from workbench_api.paper.targets import (
     PAPER_STRATEGIES,
@@ -177,11 +178,22 @@ def _build_summary(
             for p in marked
         )
 
-    # SPY benchmark return since activation (first nav point's SPY close).
+    # Benchmark return since activation (first nav point's stored benchmark close).
+    # B080 F004 fix ① — per-strategy benchmark: master / regime use the live SPY mark
+    # (byte-identical to pre-B080); cn_attack benchmarks against CSI300, which is not
+    # in the price table, so its latest close is read from the last stored nav point.
     activation_spy = next(
         (h.benchmark_close for h in history if h.benchmark_close), None
     )
-    latest_spy = marks[BENCHMARK_SYMBOL].latest_close if BENCHMARK_SYMBOL in marks else None
+    benchmark = STRATEGY_BENCHMARK.get(account.strategy_id, BENCHMARK_SYMBOL)
+    if benchmark == BENCHMARK_SYMBOL:
+        latest_spy = (
+            marks[BENCHMARK_SYMBOL].latest_close if BENCHMARK_SYMBOL in marks else None
+        )
+    else:
+        latest_spy = next(
+            (h.benchmark_close for h in reversed(history) if h.benchmark_close), None
+        )
     benchmark_pct: float | None = None
     if activation_spy and latest_spy:
         benchmark_pct = (latest_spy / activation_spy) - 1.0
@@ -207,6 +219,10 @@ def _build_summary(
         next_rebalance=_next_rebalance_hint(ref_date, account.strategy_id).isoformat(),
         fee_bps=float(account.fee_bps),
         slippage_bps=float(account.slippage_bps),
+        benchmark_symbol=benchmark,
+        # A non-SPY benchmark (cn_attack) marks the CN-data-caliber book: first-day
+        # fill artifact + the SPY→CSI300 mid-history switch (annotation only).
+        first_day_caveat=benchmark != BENCHMARK_SYMBOL,
     )
 
 

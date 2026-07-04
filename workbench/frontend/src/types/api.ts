@@ -1957,6 +1957,16 @@ export interface components {
             fee_bps: number;
             /** Slippage Bps */
             slippage_bps: number;
+            /**
+             * Benchmark Symbol
+             * @default SPY
+             */
+            benchmark_symbol: string;
+            /**
+             * First Day Caveat
+             * @default false
+             */
+            first_day_caveat: boolean;
         };
         /**
          * PaperView
