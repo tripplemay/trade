@@ -386,6 +386,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/monitoring/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Metrics Route
+         * @description L0 monitoring metrics (rolling IC / tracking / exposure / turnover). Optional
+         *     ``strategy_id`` filter. Advisory-only — thresholds in ``meta`` are hints, not
+         *     a trade signal.
+         */
+        get: operations["list_metrics_route_api_monitoring_metrics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/news/latest": {
         parameters: {
             query?: never;
@@ -1745,6 +1767,40 @@ export interface components {
              * @description ISO-8601 date of the latest observation, or null.
              */
             latest_date?: string | null;
+        };
+        /**
+         * MetricRow
+         * @description One L0 monitoring metric point (F002). ``value`` is null for a partial /
+         *     degraded metric — the honesty flag then rides in ``meta`` (partial / fidelity).
+         */
+        MetricRow: {
+            /** Strategy Id */
+            strategy_id: string;
+            /**
+             * As Of
+             * Format: date
+             */
+            as_of: string;
+            /** Metric */
+            metric: string;
+            /** Value */
+            value?: number | null;
+            /** Meta */
+            meta?: {
+                [key: string]: unknown;
+            };
+        };
+        /**
+         * MetricsResponse
+         * @description GET /api/monitoring/metrics — the latest L0 monitoring metrics per strategy
+         *     (rolling IC / tracking error / exposure / turnover). Advisory-only observation;
+         *     thresholds in ``meta`` are experience-rule hints, never a trade signal.
+         */
+        MetricsResponse: {
+            /** Metrics */
+            metrics: components["schemas"]["MetricRow"][];
+            /** Total */
+            total: number;
         };
         /** PaperDriftEntry */
         PaperDriftEntry: {
@@ -3679,6 +3735,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TrialsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_metrics_route_api_monitoring_metrics_get: {
+        parameters: {
+            query?: {
+                strategy_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MetricsResponse"];
                 };
             };
             /** @description Validation Error */

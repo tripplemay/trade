@@ -35,3 +35,23 @@ class TrialsResponse(BaseModel):
         description="strategy_id → trial count (the DSR N per strategy)."
     )
     total: int
+
+
+class MetricRow(BaseModel):
+    """One L0 monitoring metric point (F002). ``value`` is null for a partial /
+    degraded metric — the honesty flag then rides in ``meta`` (partial / fidelity)."""
+
+    strategy_id: str
+    as_of: date
+    metric: str
+    value: float | None = None
+    meta: dict[str, Any] = Field(default_factory=dict)
+
+
+class MetricsResponse(BaseModel):
+    """GET /api/monitoring/metrics — the latest L0 monitoring metrics per strategy
+    (rolling IC / tracking error / exposure / turnover). Advisory-only observation;
+    thresholds in ``meta`` are experience-rule hints, never a trade signal."""
+
+    metrics: list[MetricRow]
+    total: int

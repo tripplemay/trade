@@ -14,9 +14,15 @@ from fastapi import APIRouter, Depends, Query
 
 from workbench_api.auth.dependency import require_authenticated_user
 from workbench_api.auth.jwt_validator import AuthenticatedUser
+from workbench_api.db.repositories.monitoring_metric import MonitoringMetricRepository
 from workbench_api.db.repositories.trial_registry import TrialRegistryRepository
 from workbench_api.db.session import SessionDep
-from workbench_api.schemas.monitoring import TrialRow, TrialsResponse
+from workbench_api.schemas.monitoring import (
+    MetricRow,
+    MetricsResponse,
+    TrialRow,
+    TrialsResponse,
+)
 
 router = APIRouter(prefix="/monitoring", tags=["monitoring"])
 
@@ -55,3 +61,28 @@ def list_trials_route(
     return TrialsResponse(
         trials=trials, counts_by_strategy=counts, total=sum(counts.values())
     )
+
+
+@router.get("/metrics", response_model=MetricsResponse)
+def list_metrics_route(
+    session: SessionDep,
+    _user: AuthenticatedUserDep,
+    strategy_id: Annotated[str | None, Query()] = None,
+) -> MetricsResponse:
+    """L0 monitoring metrics (rolling IC / tracking / exposure / turnover). Optional
+    ``strategy_id`` filter. Advisory-only — thresholds in ``meta`` are hints, not
+    a trade signal."""
+
+    repo = MonitoringMetricRepository(session)
+    rows = repo.list_by_strategy(strategy_id) if strategy_id else repo.list_all()
+    metrics = [
+        MetricRow(
+            strategy_id=r.strategy_id,
+            as_of=r.as_of,
+            metric=r.metric,
+            value=r.value,
+            meta=r.meta,
+        )
+        for r in rows
+    ]
+    return MetricsResponse(metrics=metrics, total=len(metrics))

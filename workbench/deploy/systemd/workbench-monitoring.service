@@ -1,0 +1,45 @@
+[Unit]
+Description=Workbench strategy-lifecycle monitoring metrics (B080, research-only, advisory-only, read-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B080-strategy-lifecycle-monitoring-spec.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=deploy
+Group=deploy
+WorkingDirectory=/srv/workbench/current/backend
+
+# Secrets (WORKBENCH_DB_URL, ...) live in /etc/workbench/workbench.env
+# (chmod 600 root:deploy). Never committed.
+EnvironmentFile=/etc/workbench/workbench.env
+
+# B080 F002 — the monitoring job reads the VM data root the data-refresh job
+# writes (cn_csi300.csv benchmark + cn_size.csv PIT market caps) to compute
+# exposure / tracking metrics. Not a secret — a fixed path. Local / CI leave unset.
+Environment=WORKBENCH_DATA_ROOT=/var/lib/workbench/data
+
+# v0.9.54 §38 (B078) — a Type=oneshot service has TimeoutStartSec DISABLED by
+# default, so a hung read (e.g. a stuck CSV/DB read) would run forever. Set it
+# explicitly so a wedged monitoring run is killed, not left hanging.
+TimeoutStartSec=1800
+
+# Permanent product boundary (spec §3 invariant ④): this timer runs the L0
+# monitoring metrics job ONLY. It reads recommendation_snapshot / paper_* / price
+# history + the cn_size + cn_csi300 CSVs, computes rolling IC / tracking error /
+# exposure / turnover, and writes the monitoring_metric table. It is pure
+# OBSERVATION — advisory-only, never places an order, never runs
+# broker / order-ticket / execution / fills / reconcile code, never auto-trades,
+# never predicts returns. tests/safety/test_market_scheduler_scope.py greps this
+# ExecStart line + scans the monitoring package to enforce that.
+ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.monitoring.cli
+
+# Standard hardening (mirrors workbench-recommendations.service).
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/workbench /var/log/workbench /tmp
+
+# No [Install] section — this oneshot is pulled by
+# workbench-monitoring.timer, never enabled / started directly.

@@ -32,6 +32,12 @@ requires-python = ">=3.11"
 dependencies = [
   "alembic>=1.13,<2",
   "fastapi>=0.115,<0.116",
+  # B080 F002: ``numpy`` is imported at module top-level by
+  # ``workbench_api/monitoring/ic.py`` (rank-IC / forward-return math migrated
+  # from the b077 first-look script). It is already present transitively via
+  # pandas, but the runtime-deps-pinned safety guard requires it declared here
+  # so the production wheel resolves it.
+  "numpy>=2,<3",
   # B027 F002 fix-round 1: `httpx` was previously only a `dev` extra
   # because the test suite uses it via TestClient. B027's
   # `workbench_api/data/tiingo_loader.py` now imports `httpx` at

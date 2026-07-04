@@ -127,3 +127,21 @@ class RecommendationSnapshotRepository(Repository[RecommendationSnapshot, UUID])
             .order_by(RecommendationSnapshot.target_weight.desc())
         )
         return list(self._session.execute(stmt).scalars().all())
+
+    def history_by_strategy(
+        self, strategy_id: str, *, since: date | None = None
+    ) -> list[RecommendationSnapshot]:
+        """B080 F002 — all snapshot rows for ``strategy_id`` (optionally on/after
+        ``since``), ordered by ``(as_of_date, symbol)``. Feeds the holdings-level
+        rolling-IC calculator (the monitoring job reads the full daily history).
+        Pure DB — uses the ``(strategy_id, as_of_date)`` index."""
+
+        stmt = select(RecommendationSnapshot).where(
+            RecommendationSnapshot.strategy_id == strategy_id
+        )
+        if since is not None:
+            stmt = stmt.where(RecommendationSnapshot.as_of_date >= since)
+        stmt = stmt.order_by(
+            RecommendationSnapshot.as_of_date, RecommendationSnapshot.symbol
+        )
+        return list(self._session.execute(stmt).scalars().all())

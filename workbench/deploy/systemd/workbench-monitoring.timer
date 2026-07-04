@@ -1,0 +1,16 @@
+[Unit]
+Description=Weekly timer for workbench strategy-lifecycle monitoring metrics (B080, read-only, advisory-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B080-strategy-lifecycle-monitoring-spec.md
+
+[Timer]
+# Mon 05:00 UTC — weekly, clear of the busy 03:00-04:00 daily band
+# (recommendations 03:00, cn-attack 03:30/03:40, risk 03:30, paper-mtm 03:45,
+# canonical 04:00). Persistent=true catches up a missed run after a VM reboot;
+# the job is idempotent (MonitoringMetricRepository.upsert_metric overwrites the
+# (strategy_id, as_of, metric) key).
+OnCalendar=Mon *-*-* 05:00:00
+Persistent=true
+Unit=workbench-monitoring.service
+
+[Install]
+WantedBy=timers.target

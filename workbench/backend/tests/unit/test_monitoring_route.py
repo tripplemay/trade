@@ -72,6 +72,33 @@ def test_trials_route_returns_registry_and_dsr_counts(initialised_db: str) -> No
     assert verdicts["t2"] == "GO"
 
 
+def test_metrics_route_returns_stored_metrics(initialised_db: str) -> None:
+    from datetime import date
+
+    from workbench_api.db.repositories.monitoring_metric import (
+        MonitoringMetricRepository,
+    )
+
+    with Session(get_engine()) as session:
+        MonitoringMetricRepository(session).upsert_metric(
+            strategy_id="cn_attack_pure_momentum",
+            as_of=date(2026, 6, 30),
+            metric="rolling_ic_5",
+            value=0.07,
+            meta={"partial": True, "fidelity": "holdings"},
+        )
+        session.commit()
+
+    resp = _authed_client().get("/api/monitoring/metrics?strategy_id=cn_attack_pure_momentum")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["total"] == 1
+    m = body["metrics"][0]
+    assert m["metric"] == "rolling_ic_5"
+    assert m["value"] == 0.07
+    assert m["meta"]["fidelity"] == "holdings"
+
+
 def test_worker_registers_completed_run_as_trial(initialised_db: str) -> None:
     run = SimpleNamespace(
         run_id="run-xyz",
