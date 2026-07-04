@@ -6,7 +6,8 @@
       "title": "DB 层:trial_registry 表+历史回填 + oos_verification_card 红卡 DB 化",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
+      "status": "fixing",
+      "evaluator_note": "2026-07-04 F005 L2 真机: 代码正确(HISTORICAL_TRIALS==27)+oos card 迁移 0028 生产已 seed(2 行 validated=0 -9%~-11%), 但 trial_registry 历史回填在生产=0 行 — 回填只在手动 workbench-bootstrap CLI, 不在自动部署链, B080 部署后未在生产跑, 无调度器自愈。BLOCKING(见 progress.evaluator_feedback.issues[0])。修复: 生产落库 27 条 + 治本接部署链或改 data-migration。",
       "acceptance": "【见 spec §2 F001 + §0】(1) trial_registry 表(id/created_at/batch/strategy_id/parameter_hash/params/universe/window_start/window_end/oos_split/metrics/verdict/source_ref/notes)+repo+只读 API(列表/按 strategy 计数=DSR 的 N);B050 worker 完成 run 自动登记(verdict=NA,含 parameter_hash)。(2) 幂等 seed 回填 >=15 条历史试验(B066/B068/B069/B070/B075/B076/B077 signoffs,source_ref 指向报告,数字照抄原文,抽 3 条对照精确一致)。(3) oos_verification_card 表(strategy_id PK/validated/oos_result/oos_cagr_range/headline+detail zh_en/backtest_ref/updated_at/source)+seed 迁移写现红卡值。(4) cn_attack_precompute._build_target_result 改读 DB 卡片,无行 fallback 现硬编码 dict(byte-identical 守门单测);registry.py description 去具体数字。Gates:backend pytest>=baseline/ruff 目录上下文/mypy CI-exact 0/alembic head。",
       "design_decisions": [
         "backtest_run 不当 trial registry:无 parameter_hash/universe/verdict 一等字段,语义是队列非登记簿(Explore 已核)→新表。",
@@ -57,7 +58,8 @@
       "title": "Codex:独立验收(timer 装载/指标合理性/pipeline 跑通/红卡零回归/回填抽查/面板截图)+signoff",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "verifying",
+      "evaluator_note": "2026-07-04 首轮 L2 真机验收完成→FIXING(1 BLOCKING: F001 trial_registry 生产回填=0)。其余 8 项 PASS+1 项诚实 defer(monitoring_metric 周 job 首跑 07-06)。报告 docs/test-reports/B080-strategy-lifecycle-monitoring-verifying-r1-2026-07-04.md。待 generator 修复 F001 后复验。",
       "acceptance": "【见 spec §2 F005】L1 全门禁(CI 绿可跳全量,safety+新单测本地抽查)。L2 真机:VM timer 装载(systemctl list-timers);监控指标真数据合理性(对照手工计算一个 IC 点);再验证 pipeline 手动触发跑通(长任务窗口未跑则如实标注);红卡 DB 化零回归(无行 fallback byte-identical 实测);trial registry 回填抽 3 条对照 signoff 原文;paper 口径修复实测(CN 基准/CNY/首日标注);/monitoring 截图;no-execution 守门。边界:research-only/no-broker;HEAD≡prod;signoff 逐条证据落 docs/test-reports/。",
       "design_decisions": [
         "验收主体:独立无实现上下文 agent 代 Codex(B079 先例,用户 /goal 授权),铁律 4 实质独立。"

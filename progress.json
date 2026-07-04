@@ -1,10 +1,10 @@
 {
-  "status": "verifying",
+  "status": "fixing",
   "total_features": 5,
   "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "F005",
-  "last_updated": "2026-07-03",
+  "last_updated": "2026-07-04",
   "user_goal": "B080 策略生命周期监控+试验登记簿+冻结式再验证流水线(评审 P0,L0+L1)。来源:2026-07-03 用户立项(评审报告 §2.3 落地——建监控+再验证+门禁,不建自动进化训练闭环)。**Planner 默认决策**:不拆批 5 features/CPCV-lite(K=4 交错 split+1 个月 purge,标注非全 CPCV)/paper 首日口径修前向不改历史。**核心不变量**:不改策略逻辑参数;pipeline 无参数注入路径;不得自动摘红卡(无 validated→True 路径);红卡 DB 化无行 fallback byte-identical;monitoring 页无交易 affordance。**关键设计**:持仓级 IC(诚实标注非纯信号)+score 落库前向积累;Master 不做 IC(快照季度粒度);trial_registry 新表+>=15 条历史回填(DSR 的 N);红卡 oos_verification_card 单一数据源;两段式再验证(数据追加新副本+冻结重跑)。spec docs/specs/B080-strategy-lifecycle-monitoring-spec.md(含 §0 Explore 焊死事实+复用清单)。5 features 4g+1c:F001 DB 层/F002 监控 job/F003 再验证 pipeline/F004 面板+paper 口径/F005 独立验收。",
   "reference_docs": [
     "docs/specs/B080-strategy-lifecycle-monitoring-spec.md",
@@ -23,11 +23,29 @@
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": null,
-    "pass_count": 0,
-    "partial_count": 0,
-    "fail_count": 0,
-    "issues": []
+    "summary": "F005 独立 L2 真机验收(2026-07-04, ssh tripplezhou@34.180.93.185 严格只读)发现 1 项实质阻断: F001 trial_registry 历史回填在生产=0 行(spec 要求 >=15, 团队 L2 清单要求 >=27)。根因: 回填仅由手动 workbench-bootstrap CLI 落库(迁移 0029 只建表, B021/B022 spec 证 bootstrap 是 one-off 手动), 不在自动部署链(deploy.sh 只跑 alembic; workbench-deploy.yml 无 seed 步骤), B080 部署后从未在生产重跑 bootstrap → 回填未落库, 且无任何调度器会填它(不同于 monitoring_metric 周 timer 07-06 自愈 / reverify 季 timer)。同源缺口已静默影响 B079(生产 symbol_name curated source!=akshare_spot = 0 行)。代码本身正确(本地实证 HISTORICAL_TRIALS==27)。其余全部 PASS: HEAD≡prod(release 46ba83b)/两 timer 装载带显式 TimeoutStartSec/红卡 DB 化生产零回归(oos card 2 行 validated=0 -9%~-11% + 07-03 快照 research_caveat 语义逐字一致)/paper 三口径(cn_attack CNY+master USD 迁移 0032, benchmark 映射, 首日 annotation-only)/signal_scores 前向积累生产实测(07-03 PRESENT 07-02 及更早 NULL)/no-validated→True 三重守门(grep+AST+运行时)/参数冻结/no-execution/L1 safety+B080 子集 223 passed。B079 soft-watch 关闭(symbol_name 现 5203 akshare_spot 行, cn_attack 快照 25/26 解析中文名)。长任务 reverify 未在生产触发(故意, 避免干扰生产数据目录)。详见 docs/test-reports/B080-strategy-lifecycle-monitoring-verifying-r1-2026-07-04.md。",
+    "pass_count": 8,
+    "partial_count": 1,
+    "fail_count": 1,
+    "issues": [
+      {
+        "id": "B080-F005-ISSUE-1",
+        "feature": "F001",
+        "severity": "blocking",
+        "title": "trial_registry 历史回填(27 条)在生产缺失且无自动填充路径",
+        "files": [
+          "workbench/backend/workbench_api/cli/bootstrap.py (_import_trials)",
+          "workbench/backend/workbench_api/monitoring/trial_backfill.py (HISTORICAL_TRIALS, 27 条)",
+          "workbench/backend/workbench_api/db/migrations/versions/0029_b080_trial_registry.py (仅建表, docstring 明写回填不在迁移)",
+          "workbench/deploy/scripts/deploy.sh (只跑 alembic, 无 bootstrap 调用)",
+          ".github/workflows/workbench-deploy.yml (无 seed 步骤)"
+        ],
+        "repro": "生产 VM 只读: sudo sqlite3 'file:/var/lib/workbench/db/workbench.db?mode=ro' 'SELECT COUNT(*) FROM trial_registry;' → 0 (期望 >=27)。对比 oos_verification_card=2 行(走迁移 0028 op.bulk_insert 自动落地)。alembic 已到 head 0032, 但回填只在 workbench-bootstrap CLI, 部署链从不调用。",
+        "impact": "F001 spec acceptance(回填 >=15)与团队 L2 清单第 6 项(生产 >=27)双双不满足; DSR 的 N 起点在生产=0, /monitoring/trials 显示 0(27 个真实 config 试过却显示从未试验, 比无登记簿更误导); 不会自愈(无调度器填充)。",
+        "fix_suggestion": "即时: 生产幂等执行 workbench-bootstrap(_import_trials 用确定性内容 id upsert, re-run no-op, 安全)落库 27 条。治本(防复发, 强烈建议): 把 bootstrap 幂等 seed 接入 deploy.sh/部署 workflow(一并修复 B079 curated symbol_name 同源缺口), 或将 trial 回填改为 data-migration 随 alembic 自动部署(与 oos card 同款自动落地)。",
+        "reverify_criteria": "生产 SELECT COUNT(*) FROM trial_registry >= 27, 且抽 3 条对 signoff 原文精确一致。"
+      }
+    ]
   },
   "generator_handoff": {
     "summary": null,
@@ -44,6 +62,6 @@
   "session_notes": {
     "planner": "2026-07-04 Planner(监控会话)协调注记#3: F004 paper 修复①③提交(dd9f703)的 Frontend CI 红 — tsc: paper summary 类型新增必填 benchmark_symbol/first_day_caveat 后, tests/unit/page/paper.spec.tsx:32 与 tests/unit/paper/PaperPage.spec.tsx:31 两处 fixture 未补这两个字段。监控页提交前一并修(两 fixture 各加两字段即可)。Backend CI 绿。此前注记#1#2 均已闭环, 谢配合。",
     "generator": "2026-07-03 B080 building 全部 generator 特性(F001-F004)DONE → status=verifying(交 Codex F005 独立验收+signoff). F004 4 commits: 31cca51 paper fix② base_currency cn_attack→CNY(migration 0032 data UPDATE,master 保 USD 守门) / dd9f703 paper fix①③(① benchmark SPY→CSI300 cn_attack: paper/mtm.py 写侧+services/paper.py 读侧 per-strategy 复用 monitoring STRATEGY_BENCHMARK, CSI300 读 cn_csi300.csv(WORKBENCH_DATA_ROOT best-effort,null 不崩); master SPY 路径 byte-identical; nav 曲线本就基准无关. ③ 首日 annotation-only(不重算 fill→master book 零回归): PaperSummary+benchmark_symbol/first_day_caveat, cn_attack=True) / 46ba83b 前端 /monitoring 页(nav Activity+monitoring i18n namespace 28key parity / 每策略健康卡: metrics rolling_ic/tracking/exposure/turnover+partial标 / OOS CnAttackOosDisclosure(读 recommendations/current research_caveat) / trial DataTable(DSR N) / reverify 触发钮 runReverify '研究非交易' / 免责) + paper 页基准 label+first_day_caveat 注 + b080-monitoring e2e(双语 no-execution 守门) + 2 paper fixture 补新字段. ★坑: api.ts 加带默认值字段仍 required → 前端 fixture tsc 红; api.ts(dd9f703)与 fixture(46ba83b)分提交致 Frontend CI 瞬红(见 proposed-learnings). 守门: 后端 mypy 505/ruff/paper+safety 220; migration 0032 apply; 前端 tsc/eslint/vitest 354(i18n parity). 全 CI 绿+deploy. **F005=Codex L2 真机**: VM timer 装载/监控指标真数据抽查/reverify pipeline 手动触发(或标注长任务未跑)/红卡零回归/trial 回填抽查/paper 口径实测(CN 基准曲线/CNY/首日标注)/monitoring 截图/no-execution. 我(generator)B080 工作到此结束,不自评(铁律#4).",
-    "evaluator": "2026-07-03 独立 Evaluator(代 Codex,用户 /goal 授权,无实现上下文隔离)完成 B079 F004 首轮验收→PASS。签收报告 docs/test-reports/B079-symbol-name-display-signoff-2026-07-03.md。**HEAD≡prod**:生产 release=ef30cc9(F003,最后代码提交);HEAD 1056b33 是 progress chore(paths-ignore 不部署)。**真机实测(ssh tripplezhou@34.180.93.185:8723,VM 就地铸只读 HS256 会话 token,secret 不出 VM;严格只读 GET+sqlite mode=ro)**:recommendations master 7 仓全带名(CAT→Caterpillar Inc./SPY→SPDR S&P 500 ETF Trust)、position-diff(diff+target)、paper(master/regime 仓+drift)、symbols 详情(600519.SH→Kweichow Moutai 走 curated/AAPL→Apple Inc.)——名称正确。cn_attack ×2 共 50 条 A股 name=null 优雅兜底无错。fills/backtest 生产无数据(1 voided ticket/无完成 run)→空态,code+L1 覆盖。**batch**:各 service 每响应仅 1 次 resolve_symbol_names(1 curated dict+1 .in_() 查询),paper 一次喂 positions+drift。**read-only**:upsert_names 仅 data_refresh/cli.py:351+bootstrap.py:169(离线),请求路径零写,names.py 已注册 §12.10.2。**零回归**:symbol 契约不变;safety 172 passed;cn_attack research_caveat(OOS -9%~-11% 警示)完整。**L1 抽查**:name 单测 15 passed+safety 172 passed。**symbol_name 表当前 0 行**(US/ETF 名走进程内 curated 不受影响);A股 中文名待下次日刷(01:30 UTC 2026-07-04)落库——捕获 wiring 已核实正确,列为 soft-watch(首次捕获日志行+表行数未观测,非阻断)。已置 done。**接续**:planner session_notes 提及 B080(P0 监控)+B081(P0.5 引擎修真)spec 草稿已备,B079 done 后可启动。"
+    "evaluator": "2026-07-04 独立 Evaluator(代 Codex,用户 /goal 授权,无实现上下文隔离)完成 B080 F005 首轮 L2 真机验收→**FIXING(1 BLOCKING)**。报告 docs/test-reports/B080-strategy-lifecycle-monitoring-verifying-r1-2026-07-04.md。**关键背景**:前轮 signoff(提交 8507e32, 2026-07-03)因无 VM 密钥把全部 L2 真机检查显式 defer, 仅凭 L1+代码走查给 PASS 建议; 本轮我具 VM 访问权, 实跑被 defer 的真机检查, 发现前轮盲区里的生产落地缺口。**BLOCKING**: 生产 trial_registry=0 行(spec F001 要求>=15/团队清单要求>=27)。根因: 回填只在手动 workbench-bootstrap CLI(迁移 0029 只建表), 不在自动部署链(deploy.sh 只跑 alembic), B080 部署后从未在生产重跑 → 未落库, 且无调度器会填它(不自愈, 与 monitoring_metric 周 timer/reverify 季 timer 不同)。同源缺口静默影响 B079(生产 symbol_name curated=0)。代码本身正确(HISTORICAL_TRIALS==27 本地实证)。**其余全 PASS(VM 只读实测)**: HEAD≡prod(release 46ba83b, 后 3 提交 paths-ignore)/monitoring+reverify 两 timer 装载带显式 TimeoutStartSec(1800/300)+systemd 硬化/红卡 DB 化零回归(oos card 2 行 validated=0 -9%~-11% seed + 07-03 快照 research_caveat 语义逐字一致)/paper 三口径(paper_account cn_attack=CNY master·regime=USD 迁移 0032, benchmark 映射, 首日 annotation-only)/F002 signal_scores 前向积累生产实测(07-03 PRESENT 519chars, 07-02 及更早 NULL)/no-validated→True 三重守门(grep+AST+运行时)/参数冻结/no-execution(/monitoring 页无交易 affordance+e2e)/L1 safety+B080 子集 223 passed 15 skipped。**monitoring_metric=0(周 job 首跑 07-06, 计算路径 L1 已证, 诚实 defer 手工 IC 对照——无 API 值可比)**。**长任务 reverify 未在生产触发(故意, 避免干扰生产数据目录), 控制面+内核+守门已验**。**B079 soft-watch 关闭**: 07-04 01:30 日刷落库 symbol_name 5203 行(akshare_spot), 最新 cn_attack pure 快照 25/26 解析中文名(德明利/东山精密/中际旭创…), B080 未破 B079 enrich。**下一步**: generator 修 BLOCKING(生产落库 27 条 + 治本接部署链/改 data-migration)→ reverifying。"
   }
 }
