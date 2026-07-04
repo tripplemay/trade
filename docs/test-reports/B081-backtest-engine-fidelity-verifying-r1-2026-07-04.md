@@ -82,6 +82,7 @@
 ### 疑点 4 — new_all_on 红卡语义 → **误 attribute 容量下限 + 混入策略变动（坐实 → FIXING ISSUE 2）**
 
 - new_all_on(−6.6% / OOS −14.7%) = lot_rounding@10万容量假象（疑点 1，主导）+ partial_rebalance 策略变动（疑点 3，+7.6pp 被 lot thrash 掩盖）+ suspension/delist（0）+ price_limit（~0）+ stamp5（微）。
+- **决定性直接证伪（evaluator followup）：红卡所依据的完整 shipped 配置 new_all_on 在 100 万本金 = full +11.6% / OOS +24.8% / rebs 1704**（vs new_all_on@100k −6.6% / OOS −14.7%）。→ **同一新口径配置在充足本金下 OOS 为正**，红卡"修真后策略样本外亏损"在 ≥100 万本金**成立不了**，−14.7% 纯粹是 10 万零售容量下限。
 - **红卡（生产已部署）headline**：「原 B070 +28.4% 大半是分数股假象，修真后策略样本外亏损。」
 - **被 lot@1M/lot@10M 证伪**：100 万本金 OOS **+23.5%**（保留 ~83% edge）、**1000 万本金 OOS +28.2%（保留 99% edge，≈ off 28.4%）**；edge **未消失**，转负**只**发生在 10 万零售容量下限。"分数股假象（fractional-share artifact）"+"策略样本外亏损（无条件）"= **误 attribute + 过度概括**。
 - **方向安全但叙事错误**：validated 恒 False、更保守（不变量④守住），但**因果叙事错误**（容量下限 ≠ edge 是假象），且 new_all_on 基线**混入 partial 策略变动**（非纯保真）。
