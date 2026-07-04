@@ -83,18 +83,22 @@ ERROR_KIND_SCORING = "scoring_error"
 CN_ATTACK_RESEARCH_CAVEAT: dict[str, Any] = {
     "validated": False,
     "oos_result": "negative",
-    "oos_cagr_range": "-9% ~ -11%",
-    "headline_zh": "未经样本外验证：B066 样本外（2025H2 起）CAGR −9%~−11%（动量逆转期会亏）。",
+    "oos_cagr_range": "-14.7% (B081 引擎修真后 PIT)",
+    "headline_zh": (
+        "未经样本外验证：B081 引擎修真后（真实 100 股/手取整），去偏 PIT 样本外 "
+        "CAGR −14.7%——原 B070 +28.4% 大半是分数股假象，修真后策略样本外亏损。"
+    ),
     "headline_en": (
-        "Unvalidated out-of-sample: B066 found the OOS window (from 2025H2) a "
-        "momentum reversal, CAGR −9%~−11% — this strategy lost money out of sample."
+        "Unvalidated out-of-sample: after B081 engine-fidelity fixes (realistic "
+        "100-share lots), de-biased PIT OOS CAGR is −14.7% — the apparent B070 "
+        "+28.4% was largely a fractional-share artifact; the strategy loses OOS."
     ),
     "detail_zh": "advisory-only：系统只给建议，不自动下单、不预测收益；按它交易风险自负。",
     "detail_en": (
         "Advisory-only: the system only suggests; it does not auto-trade or predict "
         "returns. Trading on it is at your own risk."
     ),
-    "backtest_ref": "docs/specs/B066-ashare-attack-momentum-quality-spec.md",
+    "backtest_ref": "docs/test-reports/B081-engine-fidelity-ab.md",
 }
 
 

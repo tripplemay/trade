@@ -122,6 +122,9 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 # exactly from signoff reports; reflowing them to satisfy E501 would risk altering
 # the numbers, so the line-length rule is waived for this pure-data module.
 "workbench_api/monitoring/trial_backfill.py" = ["E501"]
+# B081 F004 — same rationale: the A/B metric strings are transcribed verbatim from the
+# engine-fidelity report; reflowing risks altering the numbers.
+"workbench_api/monitoring/trial_backfill_b081.py" = ["E501"]
 
 [tool.mypy]
 python_version = "3.11"

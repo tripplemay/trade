@@ -50,6 +50,10 @@ from workbench_api.monitoring.trial_backfill import (
     HISTORICAL_TRIALS,
     TRIAL_BACKFILL_STAMP,
 )
+from workbench_api.monitoring.trial_backfill_b081 import (
+    B081_AB_TRIALS,
+    B081_TRIAL_STAMP,
+)
 from workbench_api.settings import get_settings
 from workbench_api.symbols.names import CURATED_SYMBOL_NAMES
 
@@ -186,7 +190,11 @@ def _import_trials(session: Session) -> int:
     repo = TrialRegistryRepository(session)
     for trial in HISTORICAL_TRIALS:
         repo.register(created_at=TRIAL_BACKFILL_STAMP, **trial)
-    return len(HISTORICAL_TRIALS)
+    # B081 F004 — the 8 engine-fidelity A/B groups (migration 0034 lands these on
+    # deploy; bootstrap keeps local dev in lockstep).
+    for trial in B081_AB_TRIALS:
+        repo.register(created_at=B081_TRIAL_STAMP, **trial)
+    return len(HISTORICAL_TRIALS) + len(B081_AB_TRIALS)
 
 
 def run(repo_root: Path) -> dict[str, int]:

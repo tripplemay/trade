@@ -19,11 +19,12 @@ from workbench_api.db.repositories.account_snapshot import AccountSnapshotReposi
 from workbench_api.db.repositories.symbol_name import SymbolNameRepository
 from workbench_api.db.session import get_session
 from workbench_api.monitoring.trial_backfill import HISTORICAL_TRIALS
+from workbench_api.monitoring.trial_backfill_b081 import B081_AB_TRIALS
 from workbench_api.services.nav import aggregate_account_state
 from workbench_api.symbols.names import CURATED_SYMBOL_NAMES
 
 _N_CURATED = len(CURATED_SYMBOL_NAMES)
-_N_TRIALS = len(HISTORICAL_TRIALS)
+_N_TRIALS = len(HISTORICAL_TRIALS) + len(B081_AB_TRIALS)  # B080 27 + B081 F004 8
 
 
 def _seed_repo_root(repo_root: Path) -> None:
