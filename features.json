@@ -18,7 +18,7 @@
       "title": "停牌/退市处理(修复 #1,最重高估源)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【spec §2 F002】停牌=当日无真实 bar:禁买禁卖,mark 最后有效价+stale 计数;退市=序列终止(末日前 N=10 交易日无 bar 且非全市场停牌):确认日按 close×delist_recovery_rate(默认 1.0)强制清仓收卖出成本。开关 suspension_halt/delist_liquidation 默认 True,关闭 bit 级复现旧口径(engine.py:163-173 ffill)。单测:停牌期成交拒绝/恢复可交易/退市清仓入现金/recovery_rate=0.5 方向正确。Gates(通用段,吸收 B080 F002 教训): 本地 .venv/bin/mypy trade + 根 python -m ruff check . + 根 pytest 相关子集; backend 侧涉及时先 cd workbench/backend && .venv/bin/python -m pip install ../.. 重装 trade; CI 三条全绿(Python CI+Backend+Frontend)。",
       "design_decisions": [
         "退市口径 Planner 默认决策:末价清仓+recovery_rate 敏感性列(默认 1.0 不引入拍脑袋折价,报告附 0.5 敏感性)——不做无实证依据的阶梯折价。",
