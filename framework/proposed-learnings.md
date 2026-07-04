@@ -417,3 +417,13 @@
 <!-- 2026-06-26: v0.9.53+v0.9.54 沉淀完成（B077+B078 合并 done 收尾,用户批）：B077 3 条→generator.md §36/§37+evaluator.md §31(v0.9.53);B078 4 条→generator.md §38/§39/§40+evaluator.md §32(v0.9.54)。归档 archive v0.9.53/v0.9.54。CHANGELOG 双版。**活跃候选队列=空。** -->
 
 <!-- 当前活动候选（v0.9.54 后）：无。 -->
+
+## [2026-07-03] Claude CLI — 来源：B080 F002 Family 2（signal_scores 落库需编辑 trade/）
+
+**类型：** 新坑 / 模板修订
+
+**内容：** F002 的「原始 score 落库」把 cn_attack 复合因子分从 `CnSignalResult.factor_contributions_dict()` 提到 `CnAttackLiveTarget` 数据类上，这是一处 `trade/` 编辑——因而触发 spec 未列的额外门禁：`mypy trade`（Python CI）+ 根 `ruff check .` + 根 pytest（cn_attack live/b075/b076 acceptance）+ **改 trade/ 后必须 `.venv/bin/python -m pip install ../..` 重装 trade 到 backend venv**（否则 backend 测试导入的是 stale 已装副本，报 `no attribute signal_scores`）。spec 的「gates 同 F001」漏了这些。**建议：planner 起草 spec 时，凡涉及从 trade/ 源对象取新字段的 feature，acceptance 的 Gates 段应显式列 `mypy trade` + 重装 trade + 根 pytest 子集；generator 规约补一条「编辑 trade/ 后先 pip install ../.. 重装」提醒。**
+
+**建议写入：** `framework/harness/planner.md`（spec Gates 段模板：trade/-edit feature 加门禁）+ `framework/harness/generator.md`（trade/ 编辑后重装 backend venv 的坑，或 environment.md）
+
+**状态：** 待确认

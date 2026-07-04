@@ -19,7 +19,7 @@
       "title": "监控指标计算 job + API(L0:滚动持仓 IC/score 落库/跟踪差/暴露拥挤度/换手)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F002 + §0 保真度陷阱】(1) workbench_api/monitoring/ 新包:持仓级滚动 rank-IC(cn_attack 两模式,t 日 target_weight 排名 vs N∈{5,10,20} 日远期收益(price_history.closes_by_symbol_since),12 个月滚动窗+滚动 t-stat,历史不足标 partial 不报错;IC 纯函数迁自 scripts/research/b077_signal_first_look.py);cn_attack precompute 顺带落库当日原始 score 进 master_meta.signal_scores(纯加键零回归);paper vs 基准跟踪差(per-strategy 基准映射常量);暴露/拥挤度(paper 持仓×cn_size PIT 帧→市值分位/小盘占比/HHI,照 size.py 口径);换手/不动区触发率(paper_rebalance)。(2) monitoring_metric 表(strategy_id+as_of+metric 唯一)+GET /monitoring/metrics。(3) 周频 timer workbench-monitoring(Mon 05:00 UTC,显式 TimeoutStartSec v0.9.54 §38)+CLI。正面证据:两模式全指标真数据;IC 标注『持仓保真非纯信号』;Master 不做 IC 只做跟踪差(快照仅季度粒度)。Gates 同 F001+§12.10.2 新模块注册(B079 教训)。",
       "design_decisions": [
         "★保真度陷阱:recommendation_snapshot 存的是过不动区后持仓目标非原始 score→先做持仓级 IC(诚实标注)+score 落库前向积累(>=12 个月后有完整滚动窗)。",
