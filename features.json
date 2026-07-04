@@ -45,7 +45,7 @@
       "title": "前端 /monitoring 面板 + paper 三口径修复(基准/币种/首日成交价)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【见 spec §2 F004】(1) /monitoring 页(nav+zh/en i18n):每策略健康卡(滚动 IC 曲线含 partial 标注/跟踪差/暴露拥挤度/红卡状态)+trial registry DataTable+再验证历史与手动触发按钮(注明触发研究 pipeline 非交易);仿 paper 多段 Card;标的显示走 B079 SymbolLink name。(2) paper 三口径修复:BENCHMARK per-strategy 映射(cn_attack→CSI300,master/regime→SPY 不变);cn_attack paper 账户 base_currency→CNY(迁移+前端格式化);建仓成交价改 activation 当日可得价格(前向逻辑);历史首日假象不重算,paper view API meta+面板标注。正面证据:面板真数据渲染截图;CN 基准曲线=CSI300 且注明;Master paper 视图零回归(SPY/USD 不变)。Gates:vitest/tsc/eslint+Playwright e2e(含 monitoring 页无交易 affordance 的 no-execution 守门断言)。",
       "design_decisions": [
         "paper 首日口径 Planner 默认决策:修前向不改历史 NAV 行,历史假象(+2.6~3.1pp)meta 标注——最小干预可审计。",

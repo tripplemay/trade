@@ -427,3 +427,13 @@
 **建议写入：** `framework/harness/planner.md`（spec Gates 段模板：trade/-edit feature 加门禁）+ `framework/harness/generator.md`（trade/ 编辑后重装 backend venv 的坑，或 environment.md）
 
 **状态：** 待确认
+
+## [2026-07-03] Claude CLI — 来源：B080 F004（api.ts 新 required 字段致 Frontend CI 瞬红）
+
+**类型：** 新坑
+
+**内容：** 给 pydantic response schema 加**带默认值**的字段（如 `PaperSummary.benchmark_symbol="SPY"` / `first_day_caveat=False`）时，`openapi-typescript` 生成的 TS 类型仍标为 **required**（响应恒含该字段 → 无 `?`）。因此所有用字面量构造该类型的前端 fixture（`tests/unit/**/paper.spec.tsx`、`PaperPage.spec.tsx`）会立即 `tsc` 失败。若把 api.ts regen（后端 commit）与 fixture 修复（前端 commit）**分两个 commit**（api.ts 先落），中间那个 commit 的 Frontend CI **必红**（本批 dd9f703 红 → 46ba83b 绿，planner 留了协调注记#3）。**建议：** 后端加 schema 字段并 regen api.ts 后，**立即** `grep` 该 schema 名的前端 fixture，同一 commit（或前端先）补齐新字段，避免 main 上出现瞬时红 Frontend CI。
+
+**建议写入：** `framework/harness/generator.md`（api.ts 契约规则：schema 加字段 → 同步前端 fixture）
+
+**状态：** 待确认
