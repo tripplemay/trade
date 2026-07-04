@@ -1,64 +1,64 @@
 {
- "sprint": "B081-backtest-engine-fidelity",
- "features": [
-  {
-   "id": "F001",
-   "title": "成本 5bp+手数取整+band 部分调仓+死参数清理(修复 #3#4#5#6)",
-   "priority": "high",
-   "executor": "generator",
-   "status": "pending",
-   "acceptance": "【spec §2 F001 + §0 表】(1) stamp_duty_bps 默认 10→5(2023-08-28 减半口径更正,A/B 标注);(2) 买入向下取整 100 股整数倍余额进现金,一手买不起跳过留现金;(3) band 触发后只交易进出名单+|Δw|>per-name 阈值(默认 0.5%)的名;(4) parameters.rebalance_frequency 移除(死参数,无消费点),parameter_hash 变更在 A/B 双跑覆盖+signoff 说明。每项独立开关(lot_rounding/partial_rebalance 默认 True),关闭 bit 级复现旧口径。单测:取整余额/跳过留现金/部分调仓换手<全量/hash 变更断言。Gates(通用段,吸收 B080 F002 教训): 本地 .venv/bin/mypy trade + 根 python -m ruff check . + 根 pytest 相关子集; backend 侧涉及时先 cd workbench/backend && .venv/bin/python -m pip install ../.. 重装 trade; CI 三条全绿(Python CI+Backend+Frontend)。",
-   "design_decisions": [
-    "每项修复独立开关=可审计可回退,A/B 对照的基础设施。",
-    "印花税是口径更正(数字变好方向)须在报告显式标注,与其他修复(变差方向)区分。"
-   ]
-  },
-  {
-   "id": "F002",
-   "title": "停牌/退市处理(修复 #1,最重高估源)",
-   "priority": "high",
-   "executor": "generator",
-   "status": "pending",
-   "acceptance": "【spec §2 F002】停牌=当日无真实 bar:禁买禁卖,mark 最后有效价+stale 计数;退市=序列终止(末日前 N=10 交易日无 bar 且非全市场停牌):确认日按 close×delist_recovery_rate(默认 1.0)强制清仓收卖出成本。开关 suspension_halt/delist_liquidation 默认 True,关闭 bit 级复现旧口径(engine.py:163-173 ffill)。单测:停牌期成交拒绝/恢复可交易/退市清仓入现金/recovery_rate=0.5 方向正确。Gates(通用段,吸收 B080 F002 教训): 本地 .venv/bin/mypy trade + 根 python -m ruff check . + 根 pytest 相关子集; backend 侧涉及时先 cd workbench/backend && .venv/bin/python -m pip install ../.. 重装 trade; CI 三条全绿(Python CI+Backend+Frontend)。",
-   "design_decisions": [
-    "退市口径 Planner 默认决策:末价清仓+recovery_rate 敏感性列(默认 1.0 不引入拍脑袋折价,报告附 0.5 敏感性)——不做无实证依据的阶梯折价。",
-    "B070 曾实测 ffill-vs-计0 对大中盘结论 Δ≈0,但小盘策略前必须修——本批是 P2 信号升级前置。"
-   ]
-  },
-  {
-   "id": "F003",
-   "title": "涨跌停可执行性(修复 #2)",
-   "priority": "high",
-   "executor": "generator",
-   "status": "pending",
-   "acceptance": "【spec §2 F003】触板判定纯价格推断(开盘 vs 前收 ±9.9%/19.9%,板幅按代码前缀 300/688=20% 其余 10%),涨停禁买/跌停禁卖,当日放弃留现金,下一调仓日重评。开关 price_limit_gating 默认 True,关闭 bit 级复现旧口径(_execute_open 无条件成交)。单测:触板买拒/卖拒/两档板幅判定/9.9% 边界/放弃后重评。诚实边界:日频开盘价近似为下界(盘中触板更严)。Gates(通用段,吸收 B080 F002 教训): 本地 .venv/bin/mypy trade + 根 python -m ruff check . + 根 pytest 相关子集; backend 侧涉及时先 cd workbench/backend && .venv/bin/python -m pip install ../.. 重装 trade; CI 三条全绿(Python CI+Backend+Frontend)。",
-   "design_decisions": [
-    "动量策略系统性买刚大涨的票→涨跌停不可执行是 A 股动量回测的经典乐观偏差(评审 §1.4)。",
-    "纯价格推断零新数据依赖。"
-   ]
-  },
-  {
-   "id": "F004",
-   "title": "A/B 对照基线重跑(8 组)+trial_registry 登记+红卡更新",
-   "priority": "high",
-   "executor": "generator",
-   "status": "pending",
-   "acceptance": "【spec §2 F004】runner scripts/research/b081_engine_fidelity_ab.py(模板照 b076):B070 去偏 PIT 宇宙(冻结快照)pure_momentum+equal 跑 8 组=旧口径(全 off)/5 项单独 on/全 on(新基线)/全 on+recovery_rate=0.5,产对照表(CAGR/Sharpe/MaxDD/OOS 逐项 delta)落 docs/test-reports/B081-engine-fidelity-ab.md。★旧口径组必须与 B070 signoff 数字 bit 级一致(13.1%/0.56/-58.3%/OOS 28.4%/0.93——复现性证明修复未污染旧路径)。8 组登记 trial_registry(幂等,source_ref 指向对照报告);新基线数字变化→oos_verification_card 更保守方向更新(validated 恒 False,headline 注明 B081 口径)。Gates(通用段,吸收 B080 F002 教训): 本地 .venv/bin/mypy trade + 根 python -m ruff check . + 根 pytest 相关子集; backend 侧涉及时先 cd workbench/backend && .venv/bin/python -m pip install ../.. 重装 trade; CI 三条全绿(Python CI+Backend+Frontend)。 + backend 登记路径测试。",
-   "design_decisions": [
-    "旧口径 bit 级复现是本批最硬验收——证明所有开关 off 时引擎行为零变化。",
-    "红卡更新走 B080 oos_verification_card 单一数据源;validated 恒 False 不变量延续(B080 §3②)。"
-   ]
-  },
-  {
-   "id": "F005",
-   "title": "Codex:独立验收(A/B 数字复核/旧口径 bit 级复现/registry+卡片/live 快照正常)+signoff",
-   "priority": "high",
-   "executor": "codex",
-   "status": "pending",
-   "acceptance": "【spec §2 F005】L1:CI 全绿+新单测子集抽查(开关回退 bit 级断言重点)。L2:A/B 对照表抽 2 组手工重跑对照;旧口径 vs B070 signoff bit 级一致实测;生产 trial_registry 新增 8 条+卡片 validated 仍 False;live advisory 快照新默认口径正常产出(VM 只读)+parameter_hash 变更在 meta 体现 surface 无报错;diff 审计断言 signal.py/construction.py 未动(不改策略信号逻辑)。边界:research-only/no-broker;HEAD≡prod;signoff 逐条证据。",
-   "design_decisions": [
-    "验收主体:独立无实现上下文 agent 代 Codex(B079/B080 先例,用户 /goal 授权)。"
-   ]
-  }
- ]
+  "sprint": "B081-backtest-engine-fidelity",
+  "features": [
+    {
+      "id": "F001",
+      "title": "成本 5bp+手数取整+band 部分调仓+死参数清理(修复 #3#4#5#6)",
+      "priority": "high",
+      "executor": "generator",
+      "status": "done",
+      "acceptance": "【spec §2 F001 + §0 表】(1) stamp_duty_bps 默认 10→5(2023-08-28 减半口径更正,A/B 标注);(2) 买入向下取整 100 股整数倍余额进现金,一手买不起跳过留现金;(3) band 触发后只交易进出名单+|Δw|>per-name 阈值(默认 0.5%)的名;(4) parameters.rebalance_frequency 移除(死参数,无消费点),parameter_hash 变更在 A/B 双跑覆盖+signoff 说明。每项独立开关(lot_rounding/partial_rebalance 默认 True),关闭 bit 级复现旧口径。单测:取整余额/跳过留现金/部分调仓换手<全量/hash 变更断言。Gates(通用段,吸收 B080 F002 教训): 本地 .venv/bin/mypy trade + 根 python -m ruff check . + 根 pytest 相关子集; backend 侧涉及时先 cd workbench/backend && .venv/bin/python -m pip install ../.. 重装 trade; CI 三条全绿(Python CI+Backend+Frontend)。",
+      "design_decisions": [
+        "每项修复独立开关=可审计可回退,A/B 对照的基础设施。",
+        "印花税是口径更正(数字变好方向)须在报告显式标注,与其他修复(变差方向)区分。"
+      ]
+    },
+    {
+      "id": "F002",
+      "title": "停牌/退市处理(修复 #1,最重高估源)",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "【spec §2 F002】停牌=当日无真实 bar:禁买禁卖,mark 最后有效价+stale 计数;退市=序列终止(末日前 N=10 交易日无 bar 且非全市场停牌):确认日按 close×delist_recovery_rate(默认 1.0)强制清仓收卖出成本。开关 suspension_halt/delist_liquidation 默认 True,关闭 bit 级复现旧口径(engine.py:163-173 ffill)。单测:停牌期成交拒绝/恢复可交易/退市清仓入现金/recovery_rate=0.5 方向正确。Gates(通用段,吸收 B080 F002 教训): 本地 .venv/bin/mypy trade + 根 python -m ruff check . + 根 pytest 相关子集; backend 侧涉及时先 cd workbench/backend && .venv/bin/python -m pip install ../.. 重装 trade; CI 三条全绿(Python CI+Backend+Frontend)。",
+      "design_decisions": [
+        "退市口径 Planner 默认决策:末价清仓+recovery_rate 敏感性列(默认 1.0 不引入拍脑袋折价,报告附 0.5 敏感性)——不做无实证依据的阶梯折价。",
+        "B070 曾实测 ffill-vs-计0 对大中盘结论 Δ≈0,但小盘策略前必须修——本批是 P2 信号升级前置。"
+      ]
+    },
+    {
+      "id": "F003",
+      "title": "涨跌停可执行性(修复 #2)",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "【spec §2 F003】触板判定纯价格推断(开盘 vs 前收 ±9.9%/19.9%,板幅按代码前缀 300/688=20% 其余 10%),涨停禁买/跌停禁卖,当日放弃留现金,下一调仓日重评。开关 price_limit_gating 默认 True,关闭 bit 级复现旧口径(_execute_open 无条件成交)。单测:触板买拒/卖拒/两档板幅判定/9.9% 边界/放弃后重评。诚实边界:日频开盘价近似为下界(盘中触板更严)。Gates(通用段,吸收 B080 F002 教训): 本地 .venv/bin/mypy trade + 根 python -m ruff check . + 根 pytest 相关子集; backend 侧涉及时先 cd workbench/backend && .venv/bin/python -m pip install ../.. 重装 trade; CI 三条全绿(Python CI+Backend+Frontend)。",
+      "design_decisions": [
+        "动量策略系统性买刚大涨的票→涨跌停不可执行是 A 股动量回测的经典乐观偏差(评审 §1.4)。",
+        "纯价格推断零新数据依赖。"
+      ]
+    },
+    {
+      "id": "F004",
+      "title": "A/B 对照基线重跑(8 组)+trial_registry 登记+红卡更新",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "【spec §2 F004】runner scripts/research/b081_engine_fidelity_ab.py(模板照 b076):B070 去偏 PIT 宇宙(冻结快照)pure_momentum+equal 跑 8 组=旧口径(全 off)/5 项单独 on/全 on(新基线)/全 on+recovery_rate=0.5,产对照表(CAGR/Sharpe/MaxDD/OOS 逐项 delta)落 docs/test-reports/B081-engine-fidelity-ab.md。★旧口径组必须与 B070 signoff 数字 bit 级一致(13.1%/0.56/-58.3%/OOS 28.4%/0.93——复现性证明修复未污染旧路径)。8 组登记 trial_registry(幂等,source_ref 指向对照报告);新基线数字变化→oos_verification_card 更保守方向更新(validated 恒 False,headline 注明 B081 口径)。Gates(通用段,吸收 B080 F002 教训): 本地 .venv/bin/mypy trade + 根 python -m ruff check . + 根 pytest 相关子集; backend 侧涉及时先 cd workbench/backend && .venv/bin/python -m pip install ../.. 重装 trade; CI 三条全绿(Python CI+Backend+Frontend)。 + backend 登记路径测试。",
+      "design_decisions": [
+        "旧口径 bit 级复现是本批最硬验收——证明所有开关 off 时引擎行为零变化。",
+        "红卡更新走 B080 oos_verification_card 单一数据源;validated 恒 False 不变量延续(B080 §3②)。"
+      ]
+    },
+    {
+      "id": "F005",
+      "title": "Codex:独立验收(A/B 数字复核/旧口径 bit 级复现/registry+卡片/live 快照正常)+signoff",
+      "priority": "high",
+      "executor": "codex",
+      "status": "pending",
+      "acceptance": "【spec §2 F005】L1:CI 全绿+新单测子集抽查(开关回退 bit 级断言重点)。L2:A/B 对照表抽 2 组手工重跑对照;旧口径 vs B070 signoff bit 级一致实测;生产 trial_registry 新增 8 条+卡片 validated 仍 False;live advisory 快照新默认口径正常产出(VM 只读)+parameter_hash 变更在 meta 体现 surface 无报错;diff 审计断言 signal.py/construction.py 未动(不改策略信号逻辑)。边界:research-only/no-broker;HEAD≡prod;signoff 逐条证据。",
+      "design_decisions": [
+        "验收主体:独立无实现上下文 agent 代 Codex(B079/B080 先例,用户 /goal 授权)。"
+      ]
+    }
+  ]
 }
