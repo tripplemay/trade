@@ -361,6 +361,30 @@ def test_partial_rebalance_preserves_kept_shares_trades_significant() -> None:
     assert invested + new_cash == pytest.approx(100_000.0 - cost, rel=1e-12)
 
 
+def test_delist_confirmation_detection() -> None:
+    # B081 F002 — delist detection: a name whose bars STOP is confirmed delisted
+    # exactly delist_confirm_days trading days after its FINAL real bar; a name trading
+    # throughout never confirms. Uses the pre-ffill pivot to see real bars vs carries.
+    import pandas as pd
+
+    from trade.backtest.cn_attack_momentum_quality.engine import _delist_confirmations
+
+    dates = [date(2025, 1, d) for d in range(1, 11)]  # 10 consecutive "trading" days
+    rows: list[dict[str, object]] = []
+    for i, d in enumerate(dates):
+        rows.append({"date": pd.Timestamp(d), "ticker": "STAYS", "adj_close": 100.0})
+        if i <= 2:  # DELIST has a real bar only through position 2, then stops
+            rows.append({"date": pd.Timestamp(d), "ticker": "DELIST", "adj_close": 50.0})
+    conf = _delist_confirmations(pd.DataFrame(rows), dates, confirm_days=3)
+    # Last real bar at position 2 → confirmation at position 2 + 3 = 5 (date Jan 6).
+    assert conf.get(date(2025, 1, 6)) == {"DELIST"}
+    # STAYS trades throughout → never confirmed delisted.
+    assert all("STAYS" not in names for names in conf.values())
+    # A shorter/longer confirm window shifts the date deterministically.
+    conf2 = _delist_confirmations(pd.DataFrame(rows), dates, confirm_days=5)
+    assert conf2.get(date(2025, 1, 8)) == {"DELIST"}  # position 2 + 5 = 7 (Jan 8)
+
+
 def test_partial_rebalance_threshold_controls_churn(prices: pd.DataFrame) -> None:
     # Option A: the per-name threshold is the sole churn filter — a wider threshold
     # trades fewer names → strictly lower cumulative turnover.

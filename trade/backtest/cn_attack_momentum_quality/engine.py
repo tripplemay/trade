@@ -84,6 +84,15 @@ class CnAttackBacktestConfig:
     # reproduces the pre-B081 full-band engine.
     partial_rebalance: bool = True
     per_name_rebalance_threshold: float = 0.005  # 0.5% |Δw|
+    # B081 F002 — 停牌/退市 realism (修复 #1, the heaviest overestimation source).
+    # delist_liquidation: a name with no real bar for delist_confirm_days trading days
+    # (past its final bar) is force-liquidated at close × delist_recovery_rate. Default
+    # True (更保守/honest); False bit-level reproduces the pre-B081 ffill口径 (which lets
+    # a delisted name keep marking + trading at its stale last price — overestimation).
+    # (suspension_halt handling — no-trade on halt days — lands in a follow-up increment.)
+    delist_liquidation: bool = True
+    delist_recovery_rate: float = 1.0  # liquidation haircut; 0.5 sensitivity per spec
+    delist_confirm_days: int = 10
 
     def __post_init__(self) -> None:
         if self.starting_capital <= 0:
@@ -103,6 +112,10 @@ class CnAttackBacktestConfig:
             raise CnBacktestError("trailing_stop_pct must be in (0, 1)")
         if self.per_name_rebalance_threshold < 0.0:
             raise CnBacktestError("per_name_rebalance_threshold must be >= 0")
+        if not 0.0 <= self.delist_recovery_rate <= 1.0:
+            raise CnBacktestError("delist_recovery_rate must be in [0, 1]")
+        if self.delist_confirm_days < 1:
+            raise CnBacktestError("delist_confirm_days must be >= 1")
         if self.profit_target_pct <= 0.0:
             raise CnBacktestError("profit_target_pct must be > 0")
 
@@ -187,6 +200,34 @@ def _wide(prices: pd.DataFrame, value_col: str) -> pd.DataFrame:
         .sort_index()
         .ffill()
     )
+
+
+def _delist_confirmations(
+    prices: pd.DataFrame, trading_dates: list[date], confirm_days: int
+) -> dict[date, set[str]]:
+    """B081 F002 — the delist-confirmation date for each name: ``confirm_days`` trading
+    days after its FINAL real bar (a name with no bar for that long, and never
+    recovering, is treated as delisted). Returns {date: names to force-liquidate that
+    day}. A name still trading near the data end never confirms (its window runs off
+    the end) → not delisted. Uses the pre-ffill pivot so a real bar is distinguished
+    from an ffill-carried mark."""
+
+    real = (
+        prices.pivot_table(index="date", columns="ticker", values="adj_close", aggfunc="last")
+        .sort_index()
+        .notna()
+    )
+    date_pos = {d: i for i, d in enumerate(trading_dates)}
+    out: dict[date, set[str]] = {}
+    for name in real.columns:
+        col = real[name]
+        positions = [date_pos[ts.date()] for ts, v in col.items() if v and ts.date() in date_pos]
+        if not positions:
+            continue
+        confirm_pos = max(positions) + confirm_days
+        if confirm_pos < len(trading_dates):
+            out.setdefault(trading_dates[confirm_pos], set()).add(name)
+    return out
 
 
 def _price(row: pd.Series, ticker: str) -> float:
@@ -497,6 +538,11 @@ def run_cn_attack_backtest(
     wide_close = _wide(prices, "adj_close")
     wide_open = _wide(prices, "open")
     trading_dates = [ts.date() for ts in wide_close.index]
+    delist_confirmations = (
+        _delist_confirmations(prices, trading_dates, config.delist_confirm_days)
+        if config.delist_liquidation
+        else {}
+    )
 
     if start is None or end is None:
         default_start, default_end = _default_window(prices)
@@ -535,6 +581,24 @@ def run_cn_attack_backtest(
             total_turnover += executed_turnover
             total_cost += executed_cost
             pending = None
+
+        # B081 F002 — force-liquidate any name confirmed delisted today at
+        # close × recovery_rate (else the ffill would keep marking it forever at its
+        # stale last price — the overestimation this fixes). Charges the sell cost.
+        delist_today = delist_confirmations.get(day)
+        if delist_today:
+            equity_before = cash + _mark_to_market(shares, close_row)
+            for name in [n for n in shares if n in delist_today]:
+                gross = shares[name] * _price(close_row, name)
+                proceeds = gross * config.delist_recovery_rate
+                liq_cost = config.cost_model.trade_cost(0.0, proceeds)
+                cash += proceeds - liq_cost
+                total_cost += liq_cost
+                if equity_before > 0:
+                    total_turnover += gross / equity_before
+                del shares[name]
+                entry_price.pop(name, None)
+                peak_price.pop(name, None)
 
         # Daily close mark-to-market + peak update.
         for ticker in list(peak_price):
