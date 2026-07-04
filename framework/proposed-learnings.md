@@ -447,3 +447,13 @@
 **建议写入：** `framework/harness/generator.md` §部署种子数据规则 + `framework/harness/planner.md` spec acceptance（种子数据落地路径）
 
 **状态：** 待确认
+
+## [2026-07-04] Claude CLI — 来源：B081 F001（改 backtest 默认口径的 trade/ edit 须跑全 root pytest）
+
+**类型：** 新坑 / 铁律补充
+
+**内容：** 改变 backtest **默认口径**的 `trade/` edit（config 默认值翻转，如 `lot_rounding: bool = True`）不能只跑 cn_attack 测试子集就 push——full root pytest 里有其他测试消费默认 backtest（comparison / reporting / **overfitting detector**）。本批 lot_rounding commit `e94955f` 我只本地跑了 cn_attack 子集（65 测绿），push 后 Python CI 在 `test_implausible_sharpe_flagged` 红：round-lot cash-drag 把小合成账本的 Sharpe 压到 implausible 阈值以下，检测器不再触发。修复=`build_cn_attack_comparison` 透传 `base.lot_rounding`（之前 per-variant cfg 丢弃它）+ 该测 pin 旧口径。**规则：** 改 backtest 默认口径/默认 config 值的 `trade/` edit，push 前必须本地跑 **full root pytest**（或至少 grep 所有 `run_cn_attack_backtest` / `build_cn_attack_comparison` 消费点的测试文件全跑）。子集绿 ≠ 全绿。**另一坑（同批）：** A/B comparison / 多变体构造器（`build_cn_attack_comparison` per-variant cfg）新增 config switch 时容易漏透传 `base.<switch>` → 比较静默忽略 caller 的口径；加 engine switch 时须同步透传所有多变体构造点。
+
+**建议写入：** `framework/harness/generator.md` §trade/-edit 门禁（默认口径变更 → full root pytest + 多变体构造器透传 switch）
+
+**状态：** 待确认
