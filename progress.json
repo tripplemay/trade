@@ -1,63 +1,32 @@
 {
-  "status": "done",
-  "total_features": 5,
-  "completed_features": 5,
-  "fix_rounds": 1,
-  "current_sprint": "F005",
+  "status": "building",
+  "total_features": 4,
+  "completed_features": 0,
+  "fix_rounds": 0,
+  "current_sprint": "F001",
   "last_updated": "2026-07-04",
-  "user_goal": "B081 cn_attack 回测引擎修真(评审 P0.5):停牌/退市 ffill(最重)/涨跌停可执行性/手数取整/印花税 5bp/band 部分调仓/死参数清理——6 项回测高估源修复。**修复方向全部更保守,数字变差=诚实非回归**。每项独立开关+B070 去偏基线 A/B 对照 8 组(旧口径必须 bit 级复现 B070 signoff 数字)。Planner 默认决策:退市=末价清仓+recovery_rate 敏感性(默认 1.0+0.5 敏感列)/live 持久账簿降 follow-up/红卡更新走 B080 oos_verification_card(validated 恒 False)。不改策略信号逻辑(signal/construction 不动)。主战场 trade/,Gates 含 mypy trade+根 ruff/pytest+backend venv 重装(B080 F002 教训显式化)。spec docs/specs/B081-backtest-engine-fidelity-spec.md。5 features 4g+1c。",
+  "user_goal": "B082 红利低波防守腿(评审 P1 排序1)。解决 cn_attack 红卡期无可配置策略空档。**Planner 默认决策(预研 4 开放问题)**:纯 ETF 持有先行(成分增强 follow-up)/A股 优先/独立研究态模式(B057 框架注册 cn_dividend_lowvol)/数据地基本批自带 spike(不可得→NO-GO 停批合法)。**核心不变量**:利差三档阈值(≥2.5% 满配/1.5-2.5% 半配/<1.5% 低配)spec 先验定死禁止扫参;validated=False 起步;ETF 成本口径区分个股(无印花税);B081 修真开关默认开(partial False 不变量);双本金(10万/100万)显式容量口径。**验收重点=回撤控制**(2022/2024-02 窗口 DD vs HS300)非绝对收益。spec docs/specs/B082-dividend-lowvol-defense-spec.md;预研 docs/research/next-batch-prep-dividend-lowvol-defense.md。4 features 3g+1c。",
   "reference_docs": [
-    "docs/specs/B081-backtest-engine-fidelity-spec.md",
+    "docs/specs/B082-dividend-lowvol-defense-spec.md",
+    "docs/research/next-batch-prep-dividend-lowvol-defense.md",
     "docs/research/ashare-strategy-deep-review-2026-07-03.md",
+    "workbench/backend/workbench_api/strategy_modes/registry.py",
     "trade/backtest/cn_attack_momentum_quality/engine.py",
-    "trade/backtest/cn_attack_momentum_quality/costs.py",
-    "trade/strategies/cn_attack_momentum_quality/parameters.py",
-    "scripts/research/b076_size_tilt_comparison.py",
-    "docs/test-reports/B070-survivorship-comparison.md"
+    "docs/test-reports/B077-F001-smart-money-data-reality.md"
   ],
   "docs": {
-    "spec": "docs/specs/B081-backtest-engine-fidelity-spec.md",
+    "spec": "docs/specs/B082-dividend-lowvol-defense-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B081-backtest-engine-fidelity-signoff-2026-07-04.md",
-    "verifying_r1": "docs/test-reports/B081-backtest-engine-fidelity-verifying-r1-2026-07-04.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "DONE(reverifying PASS, round 1 闭环). r1 坐实 2 HIGH → planner fixing(4e1feed) → 独立复验全 PASS. ISSUE-1: partial_rebalance 默认 True→False + 守门单测(变异检查确认有牙,翻回True则红); live 默认现=fidelity_only 纯保真; 33 cn_attack 单测+bit级回归全绿(A/B各组显式传参不受默认翻转影响). ISSUE-2: 红卡资本条件化重写(range'-16.0%@10万/+27.1%@100万', 删'分数股假象', validated恒False, oos_result negative=10万零售口径)+migration 0036 上生产. 生产L2实测: alembic=0036/trial_registry B081=14(8+6审计)/红卡2条 source=b081_f005_capital_conditioned·validated=0·headline含容量下限不含分数股假象·含2024Q4顺风caveat. 6审计trial数字与我r1实测逐条一致. ab.md F005附录§1-4忠实(含§4空验证标注). ISSUE-3 carried soft-watch(快照07-05 03:40 timer自愈,权威卡片表已更正/parameter_hash字段spec措辞/空验证已补). 疑点2停牌退市=合法no-op(0事件). **独立性(铁律4)**: 本轮fixing由planner实施,evaluator以最高怀疑度独立审查planner代码(变异检查+自跑测试+生产查询+数字比对),不采信转述.",
-    "pass_count": 5,
+    "summary": null,
+    "pass_count": 0,
     "partial_count": 0,
     "fail_count": 0,
-    "resolved_issues": "ISSUE-1(partial默认False+守门,变异检查有牙)/ISSUE-2(红卡资本条件化+0036上生产,6审计trial忠实)已复验PASS; ISSUE-3 carried soft-watch(快照自愈07-05/parameter_hash spec措辞/空验证已补)",
-    "issues": [
-      {
-        "id": "ISSUE-1",
-        "severity": "HIGH",
-        "title": "partial_rebalance Option A = 未 verdict 的策略 cadence 变动混入保真基线(疑点3)",
-        "file": "trade/backtest/cn_attack_momentum_quality/engine.py (partial_rebalance 默认 True + _partial_would_be_turnover band-bypass:715-728)",
-        "repro": "only_partial_rebalance A/B: rebs 639→1517(×2.4)/turnover 194→236↑/full CAGR 13.1%→20.7%↑/OOS 28.4%→32.7%↑。Option A 绕过 no_trade_band(策略核心不动区), 触发从'聚合 turnover>20%'改为'任一名进出/漂移>0.5%'。commit 7a063c7 亲述 'trade MORE than old band' 却标'更保守/数字变差'(与实测收益变好相反)。spec §0#5 原意 band 仍作触发。",
-        "fix": "二选一(交 Planner→用户裁定): (A) partial_rebalance 默认改 False(作需独立 verdict 的策略维度 opt-in), new_all_on 基线回归纯保真; 或 (B) 按 spec §0#5 原意重做(band 保持触发+触发后部分执行, 预期换手↓)。任一都须把 partial 从'引擎修真基线'剥离, new_all_on/红卡口径重算。",
-        "reverify": "new_all_on(不含 partial 策略变动)A/B 重跑 + 红卡口径基于 fidelity-only; 或 partial 单独走策略 verdict 批次。"
-      },
-      {
-        "id": "ISSUE-2",
-        "severity": "HIGH",
-        "title": "红卡 headline 误 attribute 10 万本金容量下限为'分数股假象/edge 消失'(疑点1+4)",
-        "file": "workbench/backend/workbench_api/strategy_modes/cn_attack_precompute.py(CN_ATTACK_RESEARCH_CAVEAT.headline_zh/en) + docs/test-reports/B081-engine-fidelity-ab.md + workbench_api/monitoring/trial_backfill_b081.py(_AB_METRICS) + 生产红卡(migration 0035 已部署→须补更正 migration)",
-        "repro": "evaluator 决定性对照(scripts/research/b081_audit_evaluator.py): lot@100k full-8.6%/OOS-16.0%/turnover1160 vs lot@1M full+10.5%/OOS+23.5%/turnover249(恢复)。可买性探针: 10 万本金 25 等权中均值~9(峰值16)只买不起一手, 100 万 0-1 只, 1000 万 0 只。→ -14.7% 是 10 万本金容量下限, 非'edge 是分数股假象'; 100 万本金 OOS 仍 23.5% 保留~83% edge。",
-        "fix": "红卡/报告/registry 改资本条件化表述(如'10 万零售本金下 25 名等权触及容量下限~9/25 整手买不起→OOS 转负; ≥100 万本金 lot_rounding 仅使 OOS 28.4%→23.5% edge 保留')。移除'largely a fractional-share artifact/策略样本外亏损(无条件)'措辞。红卡数字若保留更保守值须注明'10 万本金容量下限口径'。",
-        "reverify": "红卡 headline 不再无条件宣称'策略样本外亏损/分数股假象', 改容量条件化; 与 ISSUE-1 联动重算 new_all_on 口径。"
-      },
-      {
-        "id": "ISSUE-3",
-        "severity": "SOFT-WATCH",
-        "title": "快照未在新口径重算(自愈) + parameter_hash 字段缺 + recovery0.5 空验证标注",
-        "file": "生产快照 recommendation_snapshot(daily timer) + master_meta + docs/test-reports/B081-engine-fidelity-ab.md",
-        "repro": "(a) 生产快照 computed_at 07-04 03:40/03:56 UTC 早于部署 17:27 → 内嵌 caveat 仍旧-9~-11% 而红卡表已-14.7% 瞬态不一致, 待 07-05 timer 自愈(live smoke 已证新口径不报错: old would_be 0.19 HOLD vs new 1.0 恒 rebalance, 发布仍干净 25 等权无破损)。(b) master_meta 无 parameter_hash 字段→spec F005 该项字面不可核。(c) recovery0.5==1.0(delist 0 触发)。",
-        "fix": "(a) 07-05 后复核快照 caveat==红卡表(ISSUE-2 修复后一并); (b) 校正 spec 措辞或改核 trial_registry.parameter_hash; (c) 报告/敏感列标'空验证(0 退市清仓触发)'。",
-        "reverify": "非 blocking; ISSUE-2 修复上线后随下一次 timer 复核快照一致性。"
-      }
-    ]
+    "issues": []
   },
   "generator_handoff": {
     "summary": null,
@@ -67,13 +36,12 @@
     "F001",
     "F002",
     "F003",
-    "F004",
-    "F005"
+    "F004"
   ],
-  "completed_date": "2026-07-04",
+  "completed_date": null,
   "session_notes": {
-    "planner": "2026-07-04 Planner 裁定(B081 fixing, 应 evaluator r1 请求): **ISSUE-1 修法=选项A**: partial_rebalance 默认改 False, 保留开关作『需独立 verdict 的策略维度』(B069/B076 先例——收益改善型改动必须走 A/B verdict 批次, spec §0#5 band-触发+部分执行的重做可作未来该批次实现基础, 本批不做); new_all_on 新基线与红卡口径剥离 partial 重算(fidelity_only=lot+suspension+delist+price_limit+stamp5bp)。**ISSUE-2 修法=资本条件化**: 红卡/报告/registry 措辞改『10万零售本金为容量下限(lot 约束致 OOS 负); ≥100万本金 lot 仅使 OOS 28.4%→23.5%, edge 保留~83%』, 删『分数股假象/无条件亏损』因果叙事, 补更正 migration(红卡走 oos_verification_card, validated 恒 False 不变)。**ISSUE-3 soft-watch 随手带**: recovery 空验证标注(0 次退市清仓触发)+spec 措辞校正。复验判据: fidelity_only@100k 与 @1M 两组数字落对照表; 红卡资本条件化上生产; partial 默认 False 且守门单测。",
-    "generator": "2026-07-04 B081 fixing 轮(generator=监控会话接手, 并行会话休眠, 树静默+默认映射)。按 planner 裁定 c772c72 修 ISSUE-1/2(commit 4e1feed): ①partial_rebalance 默认 False+守门单测(test_partial_rebalance_defaults_false_b081_issue1), True 留作待独立 verdict 研究选项; ②红卡资本条件化(CN_ATTACK_RESEARCH_CAVEAT 重写+migration 0036 同步生产, '分数股假象'叙事删除, oos_result 保持 negative 以 10 万零售本金口径渲染, validated 恒 False); ③6 条 evaluator 审计 trial 入 registry(0036+bootstrap 同源, B080 部署链教训); ④A/B 报告补 r1 更正附录(容量扫描/纯保真基线/空验证标注); ⑤trial_backfill_b081 编辑性注释更正。Gates 全绿: mypy trade 0/根 ruff/root pytest 1128/backend mypy 511 clean/safety 177/CI 三条 success。复验判据(r1): fidelity_only 对照表已在 ab.md 附录; 红卡 0036 随链式部署上生产; partial 默认 False 守门单测。",
+    "planner": "2026-07-04 B082 planning(planner,监控会话)。B081 done(fix_rounds=1:F005 审计抓 partial 策略变动误标+红卡误 attribute,监控会话代 generator 修,独立复验 PASS)后启动。B082=评审 P1 排序1 红利低波防守腿,预研文档(5c5a1e2 并行会话产出)直接复用。4 个开放问题已按 /goal 拍默认决策(纯 ETF/A股/独立模式/自带数据 spike)。**【续接】**:status=building,Generator 接 F001(数据探针+接入,NO-GO 停批合法)→F002(策略+回测+卡片,阈值先验死规则)→F003(模式注册+paper+监控),F004 独立 agent 验收(重点:回测数字研究员级审计)。learnings 队列 8 条待用户确认(含 B081 分数股假象条目的 F005 更正注记——沉淀时以更正为准)。快照 07-05 03:40 UTC timer 自愈后 spot-check(B081 soft-watch)。",
+    "generator": null,
     "evaluator": "2026-07-04 B081 F005 独立验收→**DONE(reverifying PASS,round1闭环)**。**r2复验(planner 亲写代码,evaluator最高怀疑度独立审查)**: ISSUE-1 partial默认True→False+守门单测(**变异检查确认有牙**:翻回True则红)+live默认=fidelity_only纯保真+33单测/bit级回归全绿(A/B各组显式传参不受翻转影响); ISSUE-2 红卡资本条件化(range'-16.0%@10万/+27.1%@100万',删'分数股假象',validated恒False,oos_result negative=10万零售口径)+migration 0036. **生产L2实测**: alembic=0036/trial_registry B081=14(8+6审计)/红卡2条 source=b081_f005_capital_conditioned·validated=0·含容量下限不含分数股假象·含2024Q4顺风caveat/6审计trial数字与我r1逐条一致/backend registration+bootstrap+cn_attack单测全绿/CI三绿+部署success. ISSUE-3 carried soft-watch(快照07-05 03:40 timer自愈,权威卡片表已更正/parameter_hash spec措辞/空验证ab.md§4已补). signoff docs/test-reports/B081-backtest-engine-fidelity-signoff-2026-07-04.md. **接续**: partial=True 策略变体留独立verdict批次(backlog); live持久账簿spec§4 follow-up; 快照07-05 spot-check. || (r1原始)研究员级 A/B 数字审计, 4 疑点逐一决定性实证(scripts/research/b081_audit_evaluator.py + b081_live_smoke.py; 数据 data/research/b070/b081_audit_evaluator.json)。**常规全 PASS**: 旧口径 bit 级复现(忠实 replay 243406/194/639 matches_old=true)/signal·construction 未动/印花税 10→5bp/死参移除/生产 alembic=0035·trial_registry B081=8·红卡 validated=0 守不变量④/新口径 live precompute 不报错。**坐实 2 HIGH**: (疑点3=ISSUE-1) partial_rebalance Option A 绕 no-trade-band=收益改善型策略 cadence 变动(rebs639→1517/换手194→236↑/CAGR13.1%→20.7%↑)被当保真修复默认 True 混入基线, 违 verdict-gating+spec§0#5(band 应作触发); (疑点1+4=ISSUE-2) 红卡'原B070+28.4%大半分数股假象/策略样本外亏损'被决定性对照证伪=**10万本金容量下限**(lot@100k-8.6%/OOS-16% vs lot@1M+10.5%/OOS+23.5%恢复; 探针10万本金~9/25买不起一手·100万归零), 方向安全(validated恒False)但因果误attribute+过度概括。**疑点2=合法no-op**: 单测证开关接上; 反事实计数 suspension0咬中/delist宇宙52次确认但持仓簿0咬中(动量退市前换出)/price_limit23咬中; 须补空验证标注(recovery0.5==1.0)。ISSUE-3 soft-watch(快照07-05 timer自愈+parameter_hash字段缺+recovery空验证)。报告 docs/test-reports/B081-backtest-engine-fidelity-verifying-r1-2026-07-04.md。**接续**: generator 接 ISSUE-1/2 修复→reverifying。后台 followup(new_all_on@1M/fidelity_only 隔离)佐证跑中不改裁定。 || (前批)完成 B080 F005 两轮 L2 真机验收→**PASS/done**。signoff docs/test-reports/B080-strategy-lifecycle-monitoring-signoff-2026-07-04.md(+r1 docs/test-reports/...-verifying-r1-2026-07-04.md)。**r1**: 实跑前轮 signoff(8507e32, 无 VM 密钥全部 L2 defer)盲区里的真机检查, 发现 1 BLOCKING: 生产 trial_registry=0(回填只在手动 workbench-bootstrap CLI 不入部署链 deploy.sh 只跑 alembic, 无调度器自愈; 同源缺口静默影响 B079 curated symbol_name=0)。→FIXING。**r2**: generator 0858b44 治本(27 条回填改 data-migration 0033 随 alembic 自动落地, 与红卡迁移 0028 同款; TRIAL_BACKFILL_STAMP 提单一源 CLI/迁移 byte-identical; 幂等 insert-only-missing)。生产实测: alembic head=0033 / trial_registry=27 行(batch B063x3/B066x6/B068x4/B070x2/B075x2/B076x8/B077x2) / 抽 3 条对 signoff 逐字一致(B070 pure PIT 639·13.1%·0.56·-58.3%·28.4%·0.93·-27.8% || B077 net-buy IC N1 0.0201·N5 0.0232·N10 0.0176·N20 0.0181 || B066 quality decay 10.20%·0.896·-12.4%·0.80·20.7%·-10.8%·1.64·-1.00) / HEAD≡prod(release 0858b44, 后续 e0d1cd3·4f709de paths-ignore) / 修复面仅迁移+bootstrap 去重+stamp, 本地 test_bootstrap_cli+test_trial_registry 10 passed 无回归。**其余 8 PASS(r1 已验, 修复面未触及)**: 两 timer 装载带显式 TimeoutStartSec/红卡 DB 化生产零回归(oos card 2 行+快照 caveat 逐字)/paper 三口径(CNY+USD 0032/benchmark/首日)/signal_scores 前向积累生产实测/no-validated→True 三重守门/参数冻结/no-execution/L1 223 passed。**诚实边界**: monitoring_metric=0(周 job 首跑 07-06 自愈)/长任务 reverify 未在生产触发(故意)。**B079 soft-watch 关闭**(symbol_name 5203 akshare_spot 行, cn_attack 快照 25/26 解析中文名)。**治本遗留(proposed-learning 已录)**: bootstrap-only seed 不入部署链是系统性坑, 建议后续 backlog 把 bootstrap 其余种子(curated 名)一并接部署链/迁移。B080 done, completed_features=5。**接续**: backlog B081 引擎修真 P0.5 spec 草稿已备。"
   }
 }
