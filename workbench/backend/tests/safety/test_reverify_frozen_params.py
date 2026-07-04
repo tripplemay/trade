@@ -60,11 +60,11 @@ def test_frozen_params_built_only_from_module_constants() -> None:
     assert kw == {"factor_variant", "weighting_scheme"}
 
 
-def test_kernel_module_has_no_validated_true() -> None:
-    # Belt-and-suspenders: the frozen kernel never sets an OOS card validated=True
-    # (that only the manual un-watch batch may do — spec §3 invariant ②).
-    src = Path(reverify_kernel.__file__).read_text(encoding="utf-8")
-    tree = ast.parse(src)
+def _asserts_no_validated_true(module_file: str) -> None:
+    """AST-assert a module never sets an OOS card ``validated`` truthy — not as a
+    keyword arg, an assignment, nor a dict-literal ``"validated": True`` pair."""
+
+    tree = ast.parse(Path(module_file).read_text(encoding="utf-8"))
     for node in ast.walk(tree):
         if isinstance(node, ast.keyword) and node.arg == "validated":
             assert not (isinstance(node.value, ast.Constant) and node.value.value is True)
@@ -74,3 +74,20 @@ def test_kernel_module_has_no_validated_true() -> None:
                     assert not (
                         isinstance(node.value, ast.Constant) and node.value.value is True
                     )
+        if isinstance(node, ast.Dict):
+            for key, value in zip(node.keys, node.values, strict=False):
+                if (
+                    isinstance(key, ast.Constant)
+                    and key.value == "validated"
+                    and isinstance(value, ast.Constant)
+                ):
+                    assert value.value is False, "reverify pipeline set validated truthy"
+
+
+def test_reverify_modules_never_set_validated_true() -> None:
+    # The frozen kernel + the three-landings module can only make an OOS card more
+    # conservative or record it as-is — never validate it (spec §3 invariant ②).
+    from workbench_api.monitoring import reverify_landings
+
+    _asserts_no_validated_true(reverify_kernel.__file__)
+    _asserts_no_validated_true(reverify_landings.__file__)
