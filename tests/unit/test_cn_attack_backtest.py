@@ -385,6 +385,32 @@ def test_delist_confirmation_detection() -> None:
     assert conf2.get(date(2025, 1, 8)) == {"DELIST"}  # position 2 + 5 = 7 (Jan 8)
 
 
+def test_suspension_halt_freezes_a_held_name() -> None:
+    # B081 F002 停牌 — a held name with NO real bar on a trading day is halted: frozen
+    # (not traded) that day. Dropping several mid-window bars for a held name makes the
+    # halt-on口径 diverge from the pre-B081 ffill口径 (which trades it at the stale mark).
+    full = _synth_prices()
+    hole = (full["ticker"] == "000333.SZ") & full["date"].between(
+        pd.Timestamp("2025-10-06"), pd.Timestamp("2025-10-17")
+    )
+    halted = full[~hole]
+    hold_all = CnAttackParameters(
+        factor_variant=FACTOR_VARIANT_PURE_MOMENTUM, top_n=6, max_position_weight=0.4
+    )
+
+    def run(on: bool) -> object:
+        return run_cn_attack_backtest(
+            hold_all,
+            CnAttackBacktestConfig(
+                suspension_halt=on, partial_rebalance=True, delist_liquidation=False
+            ),
+            _START, _END, prices=halted, universe_history=_universe_history(),
+        )
+
+    # The halt口径 changes the realised book vs the pre-B081 ffill-trades-stale口径.
+    assert run(True).ending_value != run(False).ending_value  # type: ignore[attr-defined]
+
+
 def test_partial_rebalance_threshold_controls_churn(prices: pd.DataFrame) -> None:
     # Option A: the per-name threshold is the sole churn filter — a wider threshold
     # trades fewer names → strictly lower cumulative turnover.

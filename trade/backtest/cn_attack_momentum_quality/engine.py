@@ -85,11 +85,14 @@ class CnAttackBacktestConfig:
     partial_rebalance: bool = True
     per_name_rebalance_threshold: float = 0.005  # 0.5% |Δw|
     # B081 F002 — 停牌/退市 realism (修复 #1, the heaviest overestimation source).
-    # delist_liquidation: a name with no real bar for delist_confirm_days trading days
-    # (past its final bar) is force-liquidated at close × delist_recovery_rate. Default
-    # True (更保守/honest); False bit-level reproduces the pre-B081 ffill口径 (which lets
-    # a delisted name keep marking + trading at its stale last price — overestimation).
-    # (suspension_halt handling — no-trade on halt days — lands in a follow-up increment.)
+    # suspension_halt: a held name with NO real bar on the execution day is halted — it
+    # is frozen (exact shares kept, no buy, no sell, its target deferred), and the OTHER
+    # names rebalance within the remaining tradeable pool (you can't sell a halted name
+    # to fund others — realistic). delist_liquidation: a name with no real bar for
+    # delist_confirm_days (past its final bar) is force-liquidated at close ×
+    # delist_recovery_rate. Both default True (更保守/honest); False bit-level reproduces
+    # the pre-B081 ffill口径 (which lets halted/delisted names trade at stale prices).
+    suspension_halt: bool = True
     delist_liquidation: bool = True
     delist_recovery_rate: float = 1.0  # liquidation haircut; 0.5 sensitivity per spec
     delist_confirm_days: int = 10
@@ -202,6 +205,18 @@ def _wide(prices: pd.DataFrame, value_col: str) -> pd.DataFrame:
     )
 
 
+def _real_bar_mask(prices: pd.DataFrame) -> pd.DataFrame:
+    """B081 F002 — which (date, ticker) had a REAL bar (True) vs would be an ffill
+    carry (False). The pre-``_wide``-ffill pivot's ``notna`` — this is what separates
+    a genuine trading day from a halted / delisted stale mark."""
+
+    return (
+        prices.pivot_table(index="date", columns="ticker", values="adj_close", aggfunc="last")
+        .sort_index()
+        .notna()
+    )
+
+
 def _delist_confirmations(
     prices: pd.DataFrame, trading_dates: list[date], confirm_days: int
 ) -> dict[date, set[str]]:
@@ -209,14 +224,9 @@ def _delist_confirmations(
     days after its FINAL real bar (a name with no bar for that long, and never
     recovering, is treated as delisted). Returns {date: names to force-liquidate that
     day}. A name still trading near the data end never confirms (its window runs off
-    the end) → not delisted. Uses the pre-ffill pivot so a real bar is distinguished
-    from an ffill-carried mark."""
+    the end) → not delisted."""
 
-    real = (
-        prices.pivot_table(index="date", columns="ticker", values="adj_close", aggfunc="last")
-        .sort_index()
-        .notna()
-    )
+    real = _real_bar_mask(prices)
     date_pos = {d: i for i, d in enumerate(trading_dates)}
     out: dict[date, set[str]] = {}
     for name in real.columns:
@@ -543,6 +553,7 @@ def run_cn_attack_backtest(
         if config.delist_liquidation
         else {}
     )
+    real_bar = _real_bar_mask(prices) if config.suspension_halt else None
 
     if start is None or end is None:
         default_start, default_end = _default_window(prices)
@@ -573,11 +584,39 @@ def run_cn_attack_backtest(
         executed_turnover = 0.0
         executed_cost = 0.0
         if pending is not None:
+            # B081 F002 — 停牌: names with NO real bar at this open are halted. Freeze
+            # held halted names (exact shares + entry/peak set aside) and drop them from
+            # the target so _execute_open can neither buy nor sell them; the non-halted
+            # book rebalances within the remaining tradeable pool, then halted names are
+            # restored. suspension_halt=False → real_bar is None → old ffill口径.
+            halted_today: frozenset[str] = frozenset()
+            if real_bar is not None:
+                row = real_bar.loc[ts]
+                halted_today = frozenset(str(t) for t in row.index if not bool(row[t]))
+            frozen_shares: dict[str, float] = {}
+            frozen_entry: dict[str, float] = {}
+            frozen_peak: dict[str, float] = {}
+            exec_pending = pending
+            if halted_today:
+                for t in [n for n in shares if n in halted_today and shares[n] > 0]:
+                    frozen_shares[t] = shares.pop(t)
+                    if t in entry_price:
+                        frozen_entry[t] = entry_price.pop(t)
+                    if t in peak_price:
+                        frozen_peak[t] = peak_price.pop(t)
+                exec_pending = _Pending(
+                    kind=pending.kind,
+                    target={k: v for k, v in pending.target.items() if k not in halted_today},
+                    exits=frozenset(e for e in pending.exits if e not in halted_today),
+                )
             shares, cash, executed_turnover, executed_cost = _execute_open(
-                shares, cash, open_row, pending, config.cost_model, entry_price,
+                shares, cash, open_row, exec_pending, config.cost_model, entry_price,
                 peak_price, config.lot_rounding, config.partial_rebalance,
                 config.per_name_rebalance_threshold,
             )
+            shares.update(frozen_shares)  # restore frozen halted names (untraded)
+            entry_price.update(frozen_entry)
+            peak_price.update(frozen_peak)
             total_turnover += executed_turnover
             total_cost += executed_cost
             pending = None
