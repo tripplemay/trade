@@ -261,6 +261,10 @@ def build_cn_attack_comparison(
                 exit_variant=exit_variant,
                 trailing_stop_pct=base.trailing_stop_pct,
                 profit_target_pct=base.profit_target_pct,
+                # B081 F001 — honor the base config's engine-fidelity switches across
+                # every variant (previously dropped → the comparison always ran the
+                # new default口径, ignoring a caller's lot_rounding=False).
+                lot_rounding=base.lot_rounding,
             )
             result = run_cn_attack_backtest(
                 params,

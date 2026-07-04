@@ -7,6 +7,7 @@ from datetime import date
 import pandas as pd
 import pytest
 
+from trade.backtest.cn_attack_momentum_quality.engine import CnAttackBacktestConfig
 from trade.reporting.cn_attack_momentum_quality import (
     build_cn_attack_comparison,
     build_cn_attack_report_payload,
@@ -133,8 +134,13 @@ def test_exit_overlay_inert_flagged(prices: pd.DataFrame) -> None:
 
 def test_implausible_sharpe_flagged(prices: pd.DataFrame) -> None:
     # The synthetic monotone uptrend yields an extreme Sharpe → red flag fires.
+    # lot_rounding=False (old口径): B081 F001(2) round-lot cash-drag lowers the Sharpe
+    # on this tiny synthetic book below the implausible threshold; the detector's
+    # subject here is the OLD extreme-Sharpe口径, so pin it.
     comparison = build_cn_attack_comparison(
-        _START, _END, prices=prices, fundamentals=None, universe_history=_universe_history()
+        _START, _END, prices=prices, fundamentals=None,
+        universe_history=_universe_history(),
+        config=CnAttackBacktestConfig(lot_rounding=False),
     )
     assert any("implausible_sharpe" in flag for flag in comparison.overfitting_flags)
 
