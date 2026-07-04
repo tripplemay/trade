@@ -41,10 +41,14 @@ _GROUPS: tuple[tuple[str, str], ...] = (
 )
 
 # Metrics transcribed VERBATIM from the A/B run (scripts/research/b081_engine_fidelity_ab.py
-# → docs/test-reports/B081-engine-fidelity-ab.md). The headline honest finding: realistic
-# 100-lot rounding on the *ST-heavy PIT turns the strategy NEGATIVE (OOS +28.4% → -14.7%),
-# so the B070 edge was substantially a fractional-share artifact. F002 (停牌/退市) are
-# no-ops here (the book holds liquid names). A backend test guards the registration path.
+# → docs/test-reports/B081-engine-fidelity-ab.md). ★F005 audit correction (r1, planner
+# adjudication c772c72): the "-14.7% / fractional-share artifact" reading was WRONG —
+# the negative numbers are the 100k-CNY CAPITAL FLOOR (≈9 of 25 names can't afford one
+# lot; at 1M lots keep OOS +27.1%, at 10M +28.2% ≈ 99% of the old edge), and new_all_on
+# mixes in the un-verdicted partial_rebalance strategy change. See B081_AUDIT_TRIALS
+# below for the capital-scan groups. F002 (停牌/退市) are legitimate no-ops here (the
+# momentum book rotates names out before delisting). The verbatim strings below are the
+# raw A/B outputs and are kept as-run; a backend test guards the registration path.
 _AB_METRICS: dict[str, str] = {
     "old_all_off": "CAGR 13.1% / Sharpe 0.559 / MaxDD -58.3% / OOS_CAGR 28.4% / OOS_Sharpe 0.93 / turnover 194 / rebal 639 (bit-level == B070 signoff)",
     "only_lot_rounding": "CAGR -8.6% / Sharpe -0.653 / MaxDD -50.7% / OOS_CAGR -16.0% / OOS_Sharpe -2.162 / turnover 1160 / rebal 1749 (dominant 数字变差: sub-lot *ST skipped + 6x churn)",
@@ -83,3 +87,76 @@ def _build_b081() -> tuple[dict[str, Any], ...]:
 
 B081_AB_TRIALS: tuple[dict[str, Any], ...] = _build_b081()
 B081_TRIAL_STAMP = TRIAL_BACKFILL_STAMP
+
+# --------------------------------------------------------------------------- #
+# B081 F005 audit trials (evaluator r1 — capital scan + isolation groups).
+# Every one of these was a real config actually run (DSR ``N`` accounting), so they
+# are registered like the A/B groups. Metrics transcribed VERBATIM from the r1
+# report tables. source_ref points at the r1 audit report.
+# --------------------------------------------------------------------------- #
+
+_AUDIT_SOURCE_REF = (
+    "docs/test-reports/B081-backtest-engine-fidelity-verifying-r1-2026-07-04.md"
+)
+
+_AUDIT_GROUPS: tuple[tuple[str, str], ...] = (
+    (
+        "audit_lot_at_1m",
+        "only_lot_rounding @ 1,000,000 CNY capital (capacity scan)",
+    ),
+    (
+        "audit_lot_at_10m",
+        "only_lot_rounding @ 10,000,000 CNY capital (capacity scan)",
+    ),
+    (
+        "audit_new_all_on_at_1m",
+        "new_all_on (incl. partial) @ 1,000,000 CNY capital",
+    ),
+    (
+        "audit_fidelity_only_at_100k",
+        "fidelity_only = lot+suspension+delist+price_limit+stamp5, partial OFF @ 100k",
+    ),
+    (
+        "audit_fidelity_only_at_1m",
+        "fidelity_only = lot+suspension+delist+price_limit+stamp5, partial OFF @ 1M",
+    ),
+    (
+        "audit_fullband_0p001",
+        "cadence isolation: full band 0.001 (near-daily), no partial, old costs @ 100k",
+    ),
+)
+
+_AUDIT_METRICS: dict[str, str] = {
+    "audit_lot_at_1m": "CAGR 10.5% / OOS_CAGR 23.5% / turnover 249 / rebal 849 (capacity recovers at 1M)",
+    "audit_lot_at_10m": "CAGR 13.2% / OOS_CAGR 28.2% / turnover 195 / rebal 644 (≈ old numbers — 99% edge retained; fractional-share-artifact claim falsified)",
+    "audit_new_all_on_at_1m": "CAGR 11.6% / OOS_CAGR 24.8% / turnover 265 / rebal 1704 (shipped new口径 positive at 1M)",
+    "audit_fidelity_only_at_100k": "CAGR -8.3% / OOS_CAGR -16.0% / turnover 1154 / rebal 1749 (== lot@100k: the negative is pure capital floor)",
+    "audit_fidelity_only_at_1m": "CAGR 11.7% / OOS_CAGR 27.1% / turnover 246 / rebal 844 (pure-fidelity baseline: ~95% of old edge at 1M)",
+    "audit_fullband_0p001": "OOS_CAGR 29.5% (cadence isolation: near-daily full-band ≈ partial's gain → partial = strategy-cadence change)",
+}
+
+
+def _build_b081_audit() -> tuple[dict[str, Any], ...]:
+    start, end = _window_dates(_WINDOW)
+    trials: list[dict[str, Any]] = []
+    for label, description in _AUDIT_GROUPS:
+        params = f"{label}: {description}"
+        trials.append(
+            {
+                "id": trial_id("B081", _STRATEGY_ID, params, _UNIVERSE, _WINDOW),
+                "batch": "B081",
+                "strategy_id": _STRATEGY_ID,
+                "params": {"description": params, "window": _WINDOW},
+                "universe": _UNIVERSE,
+                "window_start": start,
+                "window_end": end,
+                "oos_split": _OOS_SPLIT,
+                "metrics": {"summary": _AUDIT_METRICS[label]},
+                "verdict": "NA",
+                "source_ref": _AUDIT_SOURCE_REF,
+            }
+        )
+    return tuple(trials)
+
+
+B081_AUDIT_TRIALS: tuple[dict[str, Any], ...] = _build_b081_audit()

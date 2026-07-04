@@ -82,16 +82,24 @@ ERROR_KIND_SCORING = "scoring_error"
 # frontend reads these verbatim. NOT a return prediction — a truthful disclosure.
 CN_ATTACK_RESEARCH_CAVEAT: dict[str, Any] = {
     "validated": False,
+    # oos_result stays "negative": the shipped paper accounts run at the 10万-CNY
+    # retail capital where the lot-constrained OOS IS negative (capital-conditioned
+    # disclosure below; B081 F005 audit + planner adjudication c772c72).
     "oos_result": "negative",
-    "oos_cagr_range": "-14.7% (B081 引擎修真后 PIT)",
+    "oos_cagr_range": "-16.0% @10万 / +27.1% @100万 (B081 纯保真 PIT)",
     "headline_zh": (
-        "未经样本外验证：B081 引擎修真后（真实 100 股/手取整），去偏 PIT 样本外 "
-        "CAGR −14.7%——原 B070 +28.4% 大半是分数股假象，修真后策略样本外亏损。"
+        "未经样本外验证：B081 引擎修真（100 股/手等真实约束）后，去偏 PIT 样本外收益"
+        "呈资本条件化——10 万本金 CAGR −16.0%（25 只等权中约 9 只一手都买不起，"
+        "属容量下限，非策略失效）；100 万本金 +27.1%（保留 B070 +28.4% 约 95% 的 edge，"
+        "但正 OOS 含 2024Q4 行情顺风，仍不构成可配资证据）。"
     ),
     "headline_en": (
-        "Unvalidated out-of-sample: after B081 engine-fidelity fixes (realistic "
-        "100-share lots), de-biased PIT OOS CAGR is −14.7% — the apparent B070 "
-        "+28.4% was largely a fractional-share artifact; the strategy loses OOS."
+        "Unvalidated out-of-sample: after B081 engine-fidelity fixes (100-share "
+        "round lots etc.), the de-biased PIT OOS is capital-conditioned — at "
+        "100k CNY the OOS CAGR is −16.0% (about 9 of 25 equal-weight names cannot "
+        "afford one lot: a capacity floor, not strategy failure); at 1M CNY it is "
+        "+27.1% (≈95% of the B070 +28.4% edge retained, though the positive OOS "
+        "rides the 2024Q4 rally window and is still no evidence for funding)."
     ),
     "detail_zh": "advisory-only：系统只给建议，不自动下单、不预测收益；按它交易风险自负。",
     "detail_en": (

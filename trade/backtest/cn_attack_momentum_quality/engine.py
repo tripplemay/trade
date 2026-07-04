@@ -76,13 +76,15 @@ class CnAttackBacktestConfig:
     # cannot afford even one lot is skipped (its notional stays cash). Default True
     # (the honest/更保守口径); set False to bit-level reproduce the pre-B081 engine.
     lot_rounding: bool = True
-    # B081 F001(3) — band partial rebalance (user-adjudicated Option A): the aggregate
-    # no_trade_band is BYPASSED; the per-name threshold is the sole churn filter. A
-    # rebalance fires whenever a name is entering/exiting or drifts more than
-    # per_name_rebalance_threshold from its open weight — and ONLY those names trade
-    # (every other held name keeps its exact shares). Default True; False bit-level
-    # reproduces the pre-B081 full-band engine.
-    partial_rebalance: bool = True
+    # B081 F001(3) → F005 ISSUE-1（planner 裁定 c772c72）— band partial rebalance
+    # (Option A): the aggregate no_trade_band is BYPASSED; the per-name threshold is
+    # the sole churn filter — ONLY entering/exiting/drifted names trade. The F005
+    # audit proved this is a RETURN-IMPROVING strategy-cadence change (rebs 639→1517,
+    # OOS +28.4%→+32.7% on the de-biased PIT), NOT a conservative fidelity fix — per
+    # the B069/B076 verdict-gating discipline it must NOT ship as a default. Default
+    # False (pre-B081 full-band semantics, bit-level); True is a research option
+    # pending its own independent A/B verdict batch.
+    partial_rebalance: bool = False
     per_name_rebalance_threshold: float = 0.005  # 0.5% |Δw|
     # B081 F002 — 停牌/退市 realism (修复 #1, the heaviest overestimation source).
     # suspension_halt: a held name with NO real bar on the execution day is halted — it

@@ -127,6 +127,16 @@ def test_runs_non_degenerate_equity(prices: pd.DataFrame) -> None:
     assert result.rebalance_count >= 1
 
 
+def test_partial_rebalance_defaults_false_b081_issue1() -> None:
+    # B081 F005 ISSUE-1 guard (planner adjudication c772c72): Option A partial
+    # rebalance bypasses the aggregate no-trade band and IMPROVED returns on the
+    # de-biased PIT (rebs 639→1517, OOS +28.4%→+32.7%) — a strategy-cadence change,
+    # not a fidelity fix. Per the B069/B076 verdict-gating discipline it must stay
+    # opt-in research (default False) until its own independent A/B verdict batch.
+    # Mirrors test_live_producer_keeps_equal_weighting_b069.
+    assert CnAttackBacktestConfig().partial_rebalance is False
+
+
 def test_no_trade_band_holds_most_days(prices: pd.DataFrame) -> None:
     # This test verifies the AGGREGATE no-trade band's hold behavior, which B081
     # F001(3) Option A deliberately bypasses (partial rebalance uses the per-name

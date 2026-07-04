@@ -52,6 +52,7 @@ from workbench_api.monitoring.trial_backfill import (
 )
 from workbench_api.monitoring.trial_backfill_b081 import (
     B081_AB_TRIALS,
+    B081_AUDIT_TRIALS,
     B081_TRIAL_STAMP,
 )
 from workbench_api.settings import get_settings
@@ -194,7 +195,11 @@ def _import_trials(session: Session) -> int:
     # deploy; bootstrap keeps local dev in lockstep).
     for trial in B081_AB_TRIALS:
         repo.register(created_at=B081_TRIAL_STAMP, **trial)
-    return len(HISTORICAL_TRIALS) + len(B081_AB_TRIALS)
+    # B081 F005 r1 — the 6 evaluator audit trials (capital scan + isolation groups;
+    # migration 0036 lands these on deploy; bootstrap keeps local dev in lockstep).
+    for trial in B081_AUDIT_TRIALS:
+        repo.register(created_at=B081_TRIAL_STAMP, **trial)
+    return len(HISTORICAL_TRIALS) + len(B081_AB_TRIALS) + len(B081_AUDIT_TRIALS)
 
 
 def run(repo_root: Path) -> dict[str, int]:
