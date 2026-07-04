@@ -87,6 +87,18 @@
 - **被 lot@1M/lot@10M 证伪**：100 万本金 OOS **+23.5%**（保留 ~83% edge）、**1000 万本金 OOS +28.2%（保留 99% edge，≈ off 28.4%）**；edge **未消失**，转负**只**发生在 10 万零售容量下限。"分数股假象（fractional-share artifact）"+"策略样本外亏损（无条件）"= **误 attribute + 过度概括**。
 - **方向安全但叙事错误**：validated 恒 False、更保守（不变量④守住），但**因果叙事错误**（容量下限 ≠ edge 是假象），且 new_all_on 基线**混入 partial 策略变动**（非纯保真）。
 
+**纯保真基线对照（evaluator followup — 剥离 partial 策略变动，供 ISSUE-1/2 重算红卡；planner 复验判据）**
+`fidelity_only` = lot_rounding + suspension_halt + delist_liquidation + price_limit_gating + stamp5bp，**partial_rebalance=False**：
+
+| 组 | 本金 | full CAGR | OOS CAGR | turnover | rebs |
+|---|---|---|---|---|---|
+| new_all_on（含 partial，红卡基准） | 100k | −6.6% | −14.7% | 1070 | 1749 |
+| new_all_on（含 partial） | 1M | **+11.6%** | **+24.8%** | 265 | 1704 |
+| **fidelity_only（无 partial，红卡应据此）** | 100k | **−8.3%** | **−16.0%** | 1154 | 1749 |
+| **fidelity_only（无 partial）** | 1M | **+11.7%** | **+27.1%** | 246 | 844 |
+
+> **结论（实测定案）**：纯保真基线（无 partial）在 10 万本金 OOS **−16.0%**（≈ lot@100k −16.0%，其余保真开关 suspension/delist/price_limit/stamp5 合计 ≈0）——**−16% 完全是 lot@100k 容量下限**；100 万本金 OOS **+27.1%**（保留 old 28.4% 的 **~95% edge**，stamp5 略高于 lot@1M）。→ 红卡应据 `fidelity_only` 而非 `new_all_on`（后者混入 partial 策略变动），且必须**资本条件化**（10 万容量下限 vs ≥100 万 edge 保留）。**fidelity_only 全组均已实测**（`data/research/b070/b081_audit_followup.json`）。
+
 ---
 
 ## C. FIXING issues（须修 + 复验判据）
@@ -116,8 +128,8 @@
 ## D. Evaluator 复跑证据清单
 - `scripts/research/b081_audit_evaluator.py` — 资金扫描 + 可买性探针 + 忠实旧路径 replay 事件计数（`matches_old=true` 自校验）
 - `scripts/research/b081_live_smoke.py` — 新默认口径 live advisory 无报错验证
-- `scripts/research/b081_audit_followup.py` — new_all_on@1M / fidelity_only 隔离（容量 vs 策略变动，后台跑作佐证，不改变裁定）
-- `data/research/b070/b081_audit_evaluator.json` — 原始实测数字
+- `scripts/research/b081_audit_followup.py` — new_all_on@1M / fidelity_only@100k / fidelity_only@1M 隔离（容量 vs 策略变动，**全组实测完成**，佐证 ISSUE-1/2 修法与红卡重算口径）
+- `data/research/b070/b081_audit_evaluator.json` + `b081_audit_followup.json` — 原始实测数字（gitignore 缓存目录；关键值已全部转录进本报告表）
 - 生产只读核查：alembic head=0035 / trial_registry B081=8 / 红卡 validated=0 / 快照 computed_at 早于部署
 
 **状态流转**：verifying → **fixing**（fix_rounds 保持 0，首轮 verify→fixing）。generator 接 ISSUE 1/2 修复 → reverifying。
