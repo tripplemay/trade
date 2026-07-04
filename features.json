@@ -30,7 +30,7 @@
       "title": "涨跌停可执行性(修复 #2)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【spec §2 F003】触板判定纯价格推断(开盘 vs 前收 ±9.9%/19.9%,板幅按代码前缀 300/688=20% 其余 10%),涨停禁买/跌停禁卖,当日放弃留现金,下一调仓日重评。开关 price_limit_gating 默认 True,关闭 bit 级复现旧口径(_execute_open 无条件成交)。单测:触板买拒/卖拒/两档板幅判定/9.9% 边界/放弃后重评。诚实边界:日频开盘价近似为下界(盘中触板更严)。Gates(通用段,吸收 B080 F002 教训): 本地 .venv/bin/mypy trade + 根 python -m ruff check . + 根 pytest 相关子集; backend 侧涉及时先 cd workbench/backend && .venv/bin/python -m pip install ../.. 重装 trade; CI 三条全绿(Python CI+Backend+Frontend)。",
       "design_decisions": [
         "动量策略系统性买刚大涨的票→涨跌停不可执行是 A 股动量回测的经典乐观偏差(评审 §1.4)。",
