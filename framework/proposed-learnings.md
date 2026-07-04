@@ -457,3 +457,23 @@
 **建议写入：** `framework/harness/generator.md` §trade/-edit 门禁（默认口径变更 → full root pytest + 多变体构造器透传 switch）
 
 **状态：** 待确认
+
+## [2026-07-04] Claude CLI — 来源：B081 F002/F003（执行限制的 loop-level freeze/restore 模式）
+
+**类型：** 新规律 / 模板
+
+**内容：** 回测引擎里"某名当日不可交易"（停牌禁买卖 / 涨停禁买 / 跌停禁卖 / 退市前停牌窗口）的实现，**不要**在 `_execute_open` 内部改目标权重（会撞上 cost-reservation 缩股 churn + 归一化难题，同 F001#3 band×partial 三次失败）。**干净方案 = loop-level freeze/restore：** 执行前把受限持仓名（exact shares + entry/peak）**冻结取出**并从 target 剔除 → 非受限账本在剩余 tradeable pool 内正常 rebalance（full/partial/lot_rounding 全不动）→ 执行后把冻结名**原样放回**。equity 守恒（冻结价值在放回的 shares 里）。F002 停牌 + F003 涨跌停复用同一 `restricted_today` 集合（∪ 合并），一处逻辑覆盖两类限制。开关 off → 集合空 → bit 级旧口径。**规律：** 凡"部分持仓本轮不可动、其余照常调仓"的需求，shares-preserving freeze/restore 比"重定位到 current weight"更干净（后者被 cost 预留缩股）。
+
+**建议写入：** `framework/harness/generator.md` §回测引擎（执行限制 = loop-level freeze/restore，勿在 rebalance 内改权重）
+
+**状态：** 待确认
+
+## [2026-07-04] Claude CLI — 来源：B081 F004（A/B 真机重跑：分数股假象 + 慢跑抗 kill 基建）
+
+**类型：** 新规律 / 新坑
+
+**内容：** 两条。**(1) 回测保真度结论（值得进 framework 经验库）：** A股回测**不建手数取整（100 股/手）= 分数股假象，显著虚高收益**。B081 A/B 实测（B070 去偏 PIT，pure_momentum）：旧口径（分数股）OOS +28.4%，加真实手数取整后 **OOS 转负 -14.7%**——*ST 遍地的宽 PIT 里大量低价名买不起 1 手→被 skip→现金拖累 + 6x 换手。**边际大半是分数股假象**。反之 F002 停牌/退市在此策略 = **no-op**（流动动量票不停不退）——"最重高估源"对*本*策略零影响，但对持*ST/低流动名的策略才咬。教训：宣称某回测有 edge 前，先跑"引擎修真 A/B"（手数/停牌/退市/涨跌停各开关），确认 edge 非引擎理想化假象。**(2) 慢真机跑抗 background-kill 基建：** 8 组×~5min 全宇宙回测（236M 数据）在本 harness 下 background task ~20min 必被 kill，且每次重跑 CSV load ~5min 吃光窗口→永不前进。**方案：** runner 做 **resumable**（每组落 JSON，重跑跳已算）+ **pickle 缓存 prices**（`to_pickle`/`read_pickle`，pyarrow 缺则用 pickle；reload 5min→30s）。之后每次重跑续算 1-2 组，数轮收敛。缓存文件 gitignore（161MB）。
+
+**建议写入：** `framework/README.md` §经验教训（回测保真度：手数取整 A/B 揭分数股假象）+ `framework/harness/generator.md` §慢真机跑（resumable + pickle 缓存抗 kill）
+
+**状态：** 待确认
