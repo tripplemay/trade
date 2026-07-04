@@ -437,3 +437,13 @@
 **建议写入：** `framework/harness/generator.md`（api.ts 契约规则：schema 加字段 → 同步前端 fixture）
 
 **状态：** 待确认
+
+## [2026-07-04] Claude CLI — 来源：B080 F005（bootstrap-only seed 不入部署链 = 生产静默缺数据）
+
+**类型：** 新坑 / 铁律补充
+
+**内容：** `workbench-bootstrap` CLI 的幂等 seed（`_import_trials` 27 trials / curated symbol_names）**只手动跑**，不在 `deploy.sh`（只 `alembic upgrade`）/ `workbench-deploy.yml`。→ 部署后生产**从不落库**，且无调度器自愈（不同于有 timer 的 `monitoring_metric` 周 job / `reverify` 季 job）。B080 F001 `trial_registry=0` + B079 curated `symbol_name=0` **同源**。对比：OOS 红卡（迁移 0028）/ paper currency（0032）走 **data-migration 随 alembic 自动落地**就没这问题。本批 F005 修复即把 trial 回填改成 data-migration 0033。**规则：** 凡「部署后必须存在的种子数据」，必须走 **alembic data-migration**（随部署自动落地）或**显式接入部署链**，**不能只放 bootstrap CLI**——否则生产静默缺数据、无告警、不自愈。planner 起草含种子数据的 spec 时，acceptance 必须写明「落地路径 = 自动部署（migration/部署链），非手动 CLI」；generator 加种子数据时同此。**遗留：** curated symbol_name 生产=0 仍未修（B079 已 done + akshare_spot 日刷 5203 行覆盖显示，非阻断）——可 backlog 一并治本（bootstrap 接部署链）。
+
+**建议写入：** `framework/harness/generator.md` §部署种子数据规则 + `framework/harness/planner.md` spec acceptance（种子数据落地路径）
+
+**状态：** 待确认
