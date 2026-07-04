@@ -128,9 +128,14 @@ def test_runs_non_degenerate_equity(prices: pd.DataFrame) -> None:
 
 
 def test_no_trade_band_holds_most_days(prices: pd.DataFrame) -> None:
+    # This test verifies the AGGREGATE no-trade band's hold behavior, which B081
+    # F001(3) Option A deliberately bypasses (partial rebalance uses the per-name
+    # threshold instead), so it pins partial_rebalance=False (the full-band口径).
     result = run_cn_attack_backtest(
         _params(),
-        CnAttackBacktestConfig(exit_variant=EXIT_MOMENTUM_DECAY, no_trade_band=0.20),
+        CnAttackBacktestConfig(
+            exit_variant=EXIT_MOMENTUM_DECAY, no_trade_band=0.20, partial_rebalance=False
+        ),
         _START,
         _END,
         prices=prices,
@@ -325,6 +330,48 @@ def test_lot_rounding_off_is_fractional_old_kou_jing() -> None:
         {}, 100_000.0, open_row, pending, CnCostModel(), {}, {}, lot_rounding=False
     )
     assert any(qty % 100.0 != 0.0 for qty in new_shares.values())
+
+
+def test_partial_rebalance_preserves_kept_shares_trades_significant() -> None:
+    # B081 F001(3) Option A — a partial rebalance keeps a small-drift name's EXACT
+    # shares (no trade) and trades only entering/big-drift names. Per-rebalance this
+    # trades fewer names than the full re-target (换手<全量 per rebalance).
+    import pandas as pd
+
+    from trade.backtest.cn_attack_momentum_quality.costs import CnCostModel
+    from trade.backtest.cn_attack_momentum_quality.engine import _partial_rebalance_open
+
+    open_row = pd.Series({"AAA": 30.0, "BBB": 70.0, "NEW": 50.0})
+
+    def price(t: str) -> float:
+        return float(open_row[t])
+
+    shares = {"AAA": 1000.0, "BBB": 500.0}  # AAA 30k, BBB 35k, cash 35k → equity 100k
+    current_notional = {"AAA": 30_000.0, "BBB": 35_000.0}
+    # AAA weight 0.30 unchanged (kept); BBB 0.35→0.50 (traded); NEW enters at 0.15.
+    priced_target = {"AAA": 0.30, "BBB": 0.50, "NEW": 0.15}
+    new_shares, new_cash, _buy, _sell, cost = _partial_rebalance_open(
+        shares, current_notional, 100_000.0, priced_target, price,
+        CnCostModel(), 0.005, False,
+    )
+    assert new_shares["AAA"] == 1000.0  # kept: exact shares preserved, no trade
+    assert new_shares["BBB"] != 500.0  # traded (0.15 drift > threshold)
+    assert "NEW" in new_shares  # entering → traded
+    invested = sum(q * price(t) for t, q in new_shares.items())
+    assert invested + new_cash == pytest.approx(100_000.0 - cost, rel=1e-12)
+
+
+def test_partial_rebalance_threshold_controls_churn(prices: pd.DataFrame) -> None:
+    # Option A: the per-name threshold is the sole churn filter — a wider threshold
+    # trades fewer names → strictly lower cumulative turnover.
+    def turnover(thr: float) -> float:
+        return run_cn_attack_backtest(
+            _params(),
+            CnAttackBacktestConfig(partial_rebalance=True, per_name_rebalance_threshold=thr),
+            _START, _END, prices=prices, universe_history=_universe_history(),
+        ).total_turnover
+
+    assert turnover(0.05) < turnover(0.005)
 
 
 def test_halted_holding_carries_value_no_nan_no_leak() -> None:

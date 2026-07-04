@@ -23,7 +23,7 @@ Pure pandas / numpy; no US-engine import (US zero-regression).
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from datetime import date
 
@@ -76,6 +76,14 @@ class CnAttackBacktestConfig:
     # cannot afford even one lot is skipped (its notional stays cash). Default True
     # (the honest/更保守口径); set False to bit-level reproduce the pre-B081 engine.
     lot_rounding: bool = True
+    # B081 F001(3) — band partial rebalance (user-adjudicated Option A): the aggregate
+    # no_trade_band is BYPASSED; the per-name threshold is the sole churn filter. A
+    # rebalance fires whenever a name is entering/exiting or drifts more than
+    # per_name_rebalance_threshold from its open weight — and ONLY those names trade
+    # (every other held name keeps its exact shares). Default True; False bit-level
+    # reproduces the pre-B081 full-band engine.
+    partial_rebalance: bool = True
+    per_name_rebalance_threshold: float = 0.005  # 0.5% |Δw|
 
     def __post_init__(self) -> None:
         if self.starting_capital <= 0:
@@ -93,6 +101,8 @@ class CnAttackBacktestConfig:
         # variant fails fast rather than lurking until that variant is selected.
         if not 0.0 < self.trailing_stop_pct < 1.0:
             raise CnBacktestError("trailing_stop_pct must be in (0, 1)")
+        if self.per_name_rebalance_threshold < 0.0:
+            raise CnBacktestError("per_name_rebalance_threshold must be >= 0")
         if self.profit_target_pct <= 0.0:
             raise CnBacktestError("profit_target_pct must be > 0")
 
@@ -249,6 +259,79 @@ def _would_be_turnover(
     )
 
 
+def _partial_would_be_turnover(
+    current_weights: Mapping[str, float], target: Mapping[str, float], threshold: float
+) -> float:
+    """B081 F001(3) — the turnover a PARTIAL rebalance would actually execute: only
+    names entering/exiting or drifting > ``threshold`` count. Option A gates the
+    rebalance on this being > 0 (any significant name), bypassing the aggregate band."""
+
+    total = 0.0
+    for name in set(current_weights) | set(target):
+        tw = target.get(name, 0.0)
+        cw = current_weights.get(name, 0.0)
+        entering = tw > 0 and cw == 0.0
+        exiting = tw == 0.0 and cw > 0
+        if entering or exiting or abs(tw - cw) > threshold:
+            total += abs(tw - cw)
+    return total
+
+
+def _partial_rebalance_open(
+    shares: Mapping[str, float],
+    current_notional: Mapping[str, float],
+    equity_open: float,
+    priced_target: Mapping[str, float],
+    price: Callable[[str], float],
+    cost_model: CnCostModel,
+    threshold: float,
+    lot_rounding: bool,
+) -> tuple[dict[str, float], float, float, float, float]:
+    """B081 F001(3) — shares-preserving partial rebalance at the OPEN.
+
+    Classifies each name by its weight vs the EXECUTION-open weight (not the close
+    decision, which would churn on the overnight drift): a name entering, exiting, or
+    drifting more than ``threshold`` trades to its signal weight; every other held
+    name KEEPS ITS EXACT CURRENT SHARES (no re-target → no trade, no cost-reserve
+    shrink). Cost is charged only on the traded buys + the exiting/trim sells; cash
+    reconciles so equity is conserved. Returns (new_shares, cash, buy, sell, cost)."""
+
+    current_open_w = {t: n / equity_open for t, n in current_notional.items()}
+    kept: dict[str, float] = {}
+    traded_w: dict[str, float] = {}
+    for name in set(priced_target) | set(current_notional):
+        tw = priced_target.get(name, 0.0)
+        cw = current_open_w.get(name, 0.0)
+        held = name in current_notional
+        trade = (tw > 0 and not held) or (tw == 0.0 and held) or abs(tw - cw) > threshold
+        if trade:
+            if tw > 0:  # exiting (tw==0) is simply omitted → sold below
+                traded_w[name] = tw
+        elif held:
+            kept[name] = shares[name]  # preserve exact shares → no trade
+
+    traded_desired = {t: equity_open * w for t, w in traded_w.items()}
+    buy = sum(max(0.0, traded_desired[t] - current_notional.get(t, 0.0)) for t in traded_w)
+    exiting = [n for n in current_notional if n not in kept and n not in traded_w]
+    sell = sum(current_notional[n] for n in exiting) + sum(
+        max(0.0, current_notional.get(t, 0.0) - traded_desired[t]) for t in traded_w
+    )
+    cost = cost_model.trade_cost(buy, sell)
+
+    new_shares: dict[str, float] = dict(kept)
+    for t, target_notional in traded_desired.items():
+        if lot_rounding:
+            lots = math.floor(target_notional / price(t) / 100.0) * 100.0
+            if lots >= 100.0:
+                new_shares[t] = lots
+        else:
+            new_shares[t] = target_notional / price(t)
+    new_cash = max(
+        0.0, equity_open - cost - sum(q * price(t) for t, q in new_shares.items())
+    )
+    return new_shares, new_cash, buy, sell, cost
+
+
 def _execute_open(
     shares: dict[str, float],
     cash: float,
@@ -258,6 +341,8 @@ def _execute_open(
     entry_price: dict[str, float],
     peak_price: dict[str, float],
     lot_rounding: bool = False,
+    partial_rebalance: bool = False,
+    per_name_threshold: float = 0.0,
 ) -> tuple[dict[str, float], float, float, float]:
     """Apply a pending T+1 instruction at the open. Returns (shares, cash, turnover, cost).
 
@@ -277,41 +362,51 @@ def _execute_open(
 
     new_shares: dict[str, float] = {}
     if pending.kind == "rebalance":
-        # Full rebalance: re-target every name. Cost is reserved out of equity so the
-        # book invests (equity - cost); cash never goes negative. Cost is computed on
-        # the pre-reserve deltas (the ~cost^2 difference is immaterial).
         priced_target = {
             ticker: weight for ticker, weight in pending.target.items() if price(ticker) > 0
         }
-        desired = {ticker: equity_open * weight for ticker, weight in priced_target.items()}
-        names = set(current_notional) | set(desired)
-        buy_notional = sum(
-            max(0.0, desired.get(t, 0.0) - current_notional.get(t, 0.0)) for t in names
-        )
-        sell_notional = sum(
-            max(0.0, current_notional.get(t, 0.0) - desired.get(t, 0.0)) for t in names
-        )
-        cost = cost_model.trade_cost(buy_notional, sell_notional)
-        investable = max(0.0, equity_open - cost)
-        invested_fraction = sum(priced_target.values())
-        if lot_rounding:
-            # Floor each buy to whole 100-share lots; the rounding remainder (and any
-            # name too small to afford one lot) stays in cash. 余额守恒: invested +
-            # cash == investable, so equity is conserved exactly as in the else branch.
-            invested = 0.0
-            for ticker, weight in priced_target.items():
-                if weight > 0:
-                    lots = math.floor(investable * weight / price(ticker) / 100.0) * 100.0
-                    if lots >= 100.0:
-                        new_shares[ticker] = lots
-                        invested += lots * price(ticker)
-            new_cash = investable - invested
+        if partial_rebalance:
+            (
+                new_shares, new_cash, buy_notional, sell_notional, cost
+            ) = _partial_rebalance_open(
+                shares, current_notional, equity_open, priced_target, price,
+                cost_model, per_name_threshold, lot_rounding,
+            )
         else:
-            # Pre-B081 path — fractional shares. Byte-identical to reproduce old口径.
-            for ticker, weight in priced_target.items():
-                if weight > 0:
-                    new_shares[ticker] = investable * weight / price(ticker)
-            new_cash = investable * max(0.0, 1.0 - invested_fraction)
+            # Full rebalance: re-target every name. Cost is reserved out of equity so
+            # the book invests (equity - cost); cash never goes negative. Cost is on
+            # the pre-reserve deltas (the ~cost^2 difference is immaterial).
+            desired = {t: equity_open * w for t, w in priced_target.items()}
+            names = set(current_notional) | set(desired)
+            buy_notional = sum(
+                max(0.0, desired.get(t, 0.0) - current_notional.get(t, 0.0)) for t in names
+            )
+            sell_notional = sum(
+                max(0.0, current_notional.get(t, 0.0) - desired.get(t, 0.0)) for t in names
+            )
+            cost = cost_model.trade_cost(buy_notional, sell_notional)
+            investable = max(0.0, equity_open - cost)
+            invested_fraction = sum(priced_target.values())
+            if lot_rounding:
+                # Floor each buy to whole 100-share lots; the rounding remainder (and
+                # any name too small for one lot) stays in cash. 余额守恒: invested +
+                # cash == investable, so equity is conserved as in the else branch.
+                invested = 0.0
+                for ticker, weight in priced_target.items():
+                    if weight > 0:
+                        lots = (
+                            math.floor(investable * weight / price(ticker) / 100.0) * 100.0
+                        )
+                        if lots >= 100.0:
+                            new_shares[ticker] = lots
+                            invested += lots * price(ticker)
+                new_cash = investable - invested
+            else:
+                # Pre-B081 path — fractional shares. Byte-identical for old口径.
+                for ticker, weight in priced_target.items():
+                    if weight > 0:
+                        new_shares[ticker] = investable * weight / price(ticker)
+                new_cash = investable * max(0.0, 1.0 - invested_fraction)
         # Defensive invariant (belt-and-suspenders to the ffill in _wide): never let
         # a held name silently vanish. One unpriced even after forward-fill (a
         # never-listed edge) cannot be sold this open, so carry its shares forward.
@@ -434,7 +529,8 @@ def run_cn_attack_backtest(
         if pending is not None:
             shares, cash, executed_turnover, executed_cost = _execute_open(
                 shares, cash, open_row, pending, config.cost_model, entry_price,
-                peak_price, config.lot_rounding,
+                peak_price, config.lot_rounding, config.partial_rebalance,
+                config.per_name_rebalance_threshold,
             )
             total_turnover += executed_turnover
             total_cost += executed_cost
@@ -482,7 +578,21 @@ def run_cn_attack_backtest(
                 # target; the realised turnover is re-priced at open[d+1] on
                 # execution (T+1). The close-vs-open basis is by design, not a leak.
                 current_w = _current_weights(shares, close_row, equity)
-                if _would_be_turnover(current_w, target) > config.no_trade_band:
+                # B081 F001(3) Option A — partial rebalance bypasses the aggregate band:
+                # rebalance iff some name is entering/exiting or drifts > the per-name
+                # threshold (partial would-be turnover > 0). Full mode keeps the band.
+                if config.partial_rebalance:
+                    should_rebalance = (
+                        _partial_would_be_turnover(
+                            current_w, target, config.per_name_rebalance_threshold
+                        )
+                        > 0.0
+                    )
+                else:
+                    should_rebalance = (
+                        _would_be_turnover(current_w, target) > config.no_trade_band
+                    )
+                if should_rebalance:
                     pending = _Pending(kind="rebalance", target=target)
                     rebalanced = True
                     rebalance_count += 1
