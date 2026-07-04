@@ -96,6 +96,13 @@ class CnAttackBacktestConfig:
     delist_liquidation: bool = True
     delist_recovery_rate: float = 1.0  # liquidation haircut; 0.5 sensitivity per spec
     delist_confirm_days: int = 10
+    # B081 F003 — 涨跌停 executability (修复 #2): a name whose OPEN is at its price limit
+    # vs the prior close (板幅 20% for 300xxx/688xxx, else 10%) can't trade in the locked
+    # direction — 涨停 禁买, 跌停 禁卖 (放弃留现金). Detected purely from open-vs-prev-close
+    # (no new data). Restricted like a halt this day (frozen if held, excluded from the
+    # target), re-evaluated next rebalance. Default True (更保守); False bit-level
+    # reproduces the pre-B081口径 (trades through the limit at the open price).
+    price_limit_gating: bool = True
 
     def __post_init__(self) -> None:
         if self.starting_capital <= 0:
@@ -203,6 +210,25 @@ def _wide(prices: pd.DataFrame, value_col: str) -> pd.DataFrame:
         .sort_index()
         .ffill()
     )
+
+
+def _limit_hit_names(open_row: pd.Series, prev_close_row: pd.Series) -> frozenset[str]:
+    """B081 F003 — names locked at their price limit at THIS open (vs the prior close):
+    open >= +band (涨停) or <= -band (跌停). Band is 20% for 创业板/科创板 (300xxx /
+    688xxx) else 10%. Pure price inference — no new data. Both directions are returned
+    (the caller restricts the locked name from trading in the direction it can't)."""
+
+    hit: set[str] = set()
+    for ticker in open_row.index:
+        o = _price(open_row, str(ticker))
+        pc = _price(prev_close_row, str(ticker))
+        if o <= 0 or pc <= 0:
+            continue
+        band = 0.20 if str(ticker).startswith(("300", "688")) else 0.10
+        ratio = o / pc - 1.0
+        if ratio >= band - 1e-9 or ratio <= -band + 1e-9:
+            hit.add(str(ticker))
+    return frozenset(hit)
 
 
 def _real_bar_mask(prices: pd.DataFrame) -> pd.DataFrame:
@@ -568,6 +594,7 @@ def run_cn_attack_backtest(
     entry_price: dict[str, float] = {}
     peak_price: dict[str, float] = {}
     pending: _Pending | None = None
+    prev_close_row: pd.Series | None = None  # B081 F003 — for 涨跌停 open-vs-prev-close
 
     equity_rows: list[dict[str, object]] = []
     records: list[CnAttackDailyRecord] = []
@@ -589,16 +616,20 @@ def run_cn_attack_backtest(
             # the target so _execute_open can neither buy nor sell them; the non-halted
             # book rebalances within the remaining tradeable pool, then halted names are
             # restored. suspension_halt=False → real_bar is None → old ffill口径.
-            halted_today: frozenset[str] = frozenset()
+            # B081 F002 halt (no real bar) ∪ F003 涨跌停 (open locked at limit): both
+            # restrict a name from trading at this open, re-evaluated next rebalance.
+            restricted_today: frozenset[str] = frozenset()
             if real_bar is not None:
                 row = real_bar.loc[ts]
-                halted_today = frozenset(str(t) for t in row.index if not bool(row[t]))
+                restricted_today |= frozenset(str(t) for t in row.index if not bool(row[t]))
+            if config.price_limit_gating and prev_close_row is not None:
+                restricted_today |= _limit_hit_names(open_row, prev_close_row)
             frozen_shares: dict[str, float] = {}
             frozen_entry: dict[str, float] = {}
             frozen_peak: dict[str, float] = {}
             exec_pending = pending
-            if halted_today:
-                for t in [n for n in shares if n in halted_today and shares[n] > 0]:
+            if restricted_today:
+                for t in [n for n in shares if n in restricted_today and shares[n] > 0]:
                     frozen_shares[t] = shares.pop(t)
                     if t in entry_price:
                         frozen_entry[t] = entry_price.pop(t)
@@ -606,8 +637,8 @@ def run_cn_attack_backtest(
                         frozen_peak[t] = peak_price.pop(t)
                 exec_pending = _Pending(
                     kind=pending.kind,
-                    target={k: v for k, v in pending.target.items() if k not in halted_today},
-                    exits=frozenset(e for e in pending.exits if e not in halted_today),
+                    target={k: v for k, v in pending.target.items() if k not in restricted_today},
+                    exits=frozenset(e for e in pending.exits if e not in restricted_today),
                 )
             shares, cash, executed_turnover, executed_cost = _execute_open(
                 shares, cash, open_row, exec_pending, config.cost_model, entry_price,
@@ -713,6 +744,7 @@ def run_cn_attack_backtest(
                 executed_cost=executed_cost,
             )
         )
+        prev_close_row = close_row  # B081 F003 — next day's 涨跌停 reference close
 
     # Final held book (close-valued) — the live advisory producer publishes this as
     # "what the band-managed strategy holds today". ``close_row`` / ``equity`` /

@@ -385,6 +385,56 @@ def test_delist_confirmation_detection() -> None:
     assert conf2.get(date(2025, 1, 8)) == {"DELIST"}  # position 2 + 5 = 7 (Jan 8)
 
 
+def test_price_limit_detection() -> None:
+    # B081 F003 — 涨跌停 detection from open vs prior close: ±10% board default, ±20%
+    # for 创业板/科创板 (300xxx/688xxx); the 9.9% boundary is NOT locked.
+    import pandas as pd
+
+    from trade.backtest.cn_attack_momentum_quality.engine import _limit_hit_names
+
+    prev = pd.Series(
+        {"600519.SH": 100.0, "300750.SZ": 100.0, "000858.SZ": 100.0, "688111.SH": 100.0}
+    )
+    op = pd.Series(
+        {"600519.SH": 110.0, "300750.SZ": 110.0, "000858.SZ": 90.0, "688111.SH": 120.0}
+    )
+    hit = _limit_hit_names(op, prev)
+    assert "600519.SH" in hit  # +10% on a 10% board → 涨停
+    assert "000858.SZ" in hit  # -10% on a 10% board → 跌停
+    assert "688111.SH" in hit  # +20% on a 20% board → 涨停
+    assert "300750.SZ" not in hit  # +10% on a 20% board → not locked
+    # Boundary: exactly 9.9% on a 10% board is NOT locked.
+    assert not _limit_hit_names(
+        pd.Series({"600519.SH": 109.9}), pd.Series({"600519.SH": 100.0})
+    )
+
+
+def test_price_limit_gating_restricts_a_locked_name() -> None:
+    # A 涨停 open on a would-be-traded name → restricted (not traded) under the gate on;
+    # off (pre-B081) trades through it at the open → the two口径 diverge.
+    full = _synth_prices()
+    spike_day = pd.Timestamp("2025-10-06")
+    spiked = full.copy()
+    mask = (spiked["ticker"] == "000333.SZ") & (spiked["date"] == spike_day)
+    for col in ("open", "high", "low", "close", "adj_close"):
+        spiked.loc[mask, col] = spiked.loc[mask, col] * 1.15  # +15% → 涨停 (10% board)
+    hold_all = CnAttackParameters(
+        factor_variant=FACTOR_VARIANT_PURE_MOMENTUM, top_n=6, max_position_weight=0.4
+    )
+
+    def run(on: bool) -> object:
+        return run_cn_attack_backtest(
+            hold_all,
+            CnAttackBacktestConfig(
+                price_limit_gating=on, partial_rebalance=True,
+                suspension_halt=False, delist_liquidation=False,
+            ),
+            _START, _END, prices=spiked, universe_history=_universe_history(),
+        )
+
+    assert run(True).ending_value != run(False).ending_value  # type: ignore[attr-defined]
+
+
 def test_suspension_halt_freezes_a_held_name() -> None:
     # B081 F002 停牌 — a held name with NO real bar on a trading day is halted: frozen
     # (not traded) that day. Dropping several mid-window bars for a held name makes the
