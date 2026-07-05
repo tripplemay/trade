@@ -27,8 +27,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B090 F001 **SCOPED + feasibility verified (attempt→checkpoint at depth)**. ★数据全可得实测: 26 HK(akshare stock_hk_daily sina, REAL_UNIVERSE_TICKERS 0700.HK等)+4 proxy(MCHI/FXI/KWEB/ASHR akshare stock_us_daily)+defensive+FRED FX(DEXHKUS/DEXCHUS public CSV https://fred.stlouisfed.org/graph/fredgraph.csv?id=DEXHKUS). **精确接口(已勘)**: (1)unified schema=PRICES_REQUIRED_COLUMNS(date,ticker,open,high,low,close,adj_close,...) trade/data/hk_china_real_universe.py:65; (2)FX=fx_daily.csv(date,currency,rate; FRED LOCAL-per-USD; usd=local/rate) trade/data/fx.py, currency=HKD/CNY; FxConverter.load(path); (3)runner 纯装配复用 trade/backtest/hk_china_comparison_runner.py: build_usd_frames(unified,converter,proxy_defensive,real_defensive)→shared_quarterly_signal_dates(proxy_usd,real_usd)→run_proxy_vs_real_comparison(...)→ComparisonResult(cagr/sharpe/forced_defensive_periods). **★200D warmup 机制(关键, 不重写harness)**: 提供数据从 window_start-200D; 复用 build_usd_frames+shared_quarterly_signal_dates 拿全 quarter-ends; **FILTER signal_dates ≥ 意图 window_start(丢 warmup 期 quarter-ends, 消除B063前几季人为全防守)**; run_proxy_vs_real_comparison(filtered signals). BacktestParameters(monthly.py:24)无window字段→窗控靠 signal filter. **F001 build(增量+测试)**: fetch(30 ticker+FRED FX)→build unified+fx_daily.csv→build_usd_frames→filter signals→run→report proxy vs real cagr/sharpe/forced_defensive(likely NO-GO, planner预判200D闸让真个股躲2021-24中国股灾). research-only(不碰live/生产). **★checkpoint理由**: 最复杂批(3源+FX+多接口装配), decision-grade, 精确接口匹配处subtle错易藏(adj_close/FX方向/signal filter off-by-one)→fresh context 增量测试建更可靠(非intractable, 是substantial careful). 本session已astronomical(P0-P2+B086-B089 4win+8 gate).",
+    "status": "scoped_checkpoint"
   },
   "features": [
     "F001",
