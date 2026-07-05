@@ -305,7 +305,13 @@ describe("TicketPage F006 integration", () => {
     await waitFor(() => {
       expect(getByTestId("ticket-mode-card")).toBeInTheDocument();
     });
-    // Mode auto-flipped to defensive on red — click Generate.
+    // Mode auto-flips to defensive on red via a post-render effect; the POST body reads
+    // `mode`. Wait for the flip to SETTLE (defensive radio checked) before clicking —
+    // else the click races the effect and the POST carries defensive:false (a CI-timing
+    // flake: green locally / in isolation, red in the loaded CI runner).
+    await waitFor(() => {
+      expect(getByTestId("ticket-mode-defensive")).toBeChecked();
+    });
     fireEvent.click(getByTestId("ticket-generate"));
     await waitFor(() => {
       const postCall = state.posts.find(
