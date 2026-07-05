@@ -145,21 +145,6 @@
     "sequence_note": "评审路线图 P2；依赖引擎修真（硬）与 P0 trial registry（软）；建议 P0/P0.5/P1 之后执行。"
   },
   {
-    "id": "B0XX-etf-trend-ashare",
-    "title": "A股 ETF 时序趋势轮动（global_etf_momentum 改造，评审 P2）",
-    "description": "评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §3.4 排序第 3。证据：A 股指数层时序动量短期存在、长期反转（Physica A 2017）；横截面行业动量弱且快速均值回归→以时序动量/趋势过滤（择时）为主、横截面为辅。研报年化 18-24% 一律视为样本内上限打折（部分口径 2022 震荡市约 -5%，该数字未独立核验）。形态：宽基（300/500/1000/微盘代理）+红利+少量行业 ETF，趋势过滤/时序动量主信号，复用 global_etf_momentum.py 引擎+不动区，工作量最小。验收重点：2022 与 2024-02 型震荡/切换期的假信号损耗必须单独出数。",
-    "decisions": [
-      "2026-07-03 用户确认立项",
-      "以时序趋势（择时）为主信号，不做纯横截面行业动量（A 股证据弱）",
-      "震荡期（2022/2024-02 窗口）假信号损耗单列验收项；研报数字按样本内乐观值打折管理预期"
-    ],
-    "confirmed_at": "2026-07-03",
-    "priority": "medium",
-    "milestone": "Phase 5 — 策略研究体系化 + 新策略族（2026-07-03 评审路线图 P0-P2）",
-    "source": "2026-07-03 用户立项 P0-P2（评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §4 路线图）",
-    "sequence_note": "评审路线图 P2；与信号升级批次无依赖，可并行；基建契合度最高（改现有引擎）。"
-  },
-  {
     "id": "B0XX-bootstrap-seed-deploy-chain",
     "title": "bootstrap 种子数据全面接入部署链(curated symbol_name 生产=0 治本)",
     "description": "B080 F005 发现的系统性坑:workbench-bootstrap CLI 的幂等 seed 只手动跑,不在 deploy.sh/workflow → 生产静默缺数据无告警不自愈(B080 trial_registry=0 已由 migration 0033 根治;B079 curated symbol_name 生产=0 仍未修——akshare_spot 日刷 5203 行已覆盖显示故非阻断)。治本:把 bootstrap 其余种子(curated 名等)改 data-migration 或显式接入部署链;顺带审计 bootstrap 全部 seed 面找同类。来源:B080-evaluator r1/r2 + proposed-learning 2026-07-04。",

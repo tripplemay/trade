@@ -1,45 +1,45 @@
 {
-  "status": "done",
+  "status": "building",
   "total_features": 3,
-  "completed_features": 3,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": null,
+  "current_sprint": "F001",
   "last_updated": "2026-07-05",
-  "user_goal": "B083 PEAD/业绩预告事件 first-look(评审 P1 排序 2, 新信号族)。**first-look=低承诺证据一测**: forward-return rank-IC(同 B077)——IC 显著+单调→GO 推荐独立策略批次;噪音→INCONCLUSIVE 归档。**核心不变量**: 公告日 PIT(进场发布日 T+1 open,禁财报期末前视);盈余惊喜先验定死(预告净利润中点 vs 去年同期,禁扫参);涨跌停分层 IC(含/剔触板,揭纸面 vs 可执行);去偏 PIT 宇宙口径复用 B070。不建 paper/红卡/生产模式(first-look)。数据自带探针(akshare stock_yjyg/yjkb/yysj/profit_forecast 已确认可得),不可 PIT→NO-GO 合法。spec docs/specs/B083-pead-first-look-spec.md;预研 docs/research/next-batch-prep-pead-first-look.md。3 features 2g+1c。",
+  "user_goal": "B084 A股 ETF 时序趋势轮动(评审 P2, global_etf_momentum 改造 工作量最小). **first-look 低承诺**(同 B083): 时序动量趋势胜率/夏普一测——显著>买入持有+震荡损耗可控→GO;弱→INCONCLUSIVE. **核心不变量**: 参数(回看窗/MA)先验定死禁扫参; ★2022/2024-02 震荡切换期假信号损耗必分窗口报(趋势策略最大陷阱); ETF 无印花税; 时序动量非横截面行业轮动; B081 修真开关带上. 数据复用 B082 A股 ETF 管线(fund_etf_hist_em, 扩宽基). 不建 paper/红卡/生产(first-look). spec docs/specs/B084-etf-trend-ashare-spec.md; 预研 docs/research/next-batch-prep-etf-trend-ashare.md. 3 features 2g+1c.",
   "reference_docs": [
-    "docs/specs/B083-pead-first-look-spec.md",
-    "docs/research/next-batch-prep-pead-first-look.md",
-    "docs/research/ashare-strategy-deep-review-2026-07-03.md",
-    "docs/test-reports/B077-F002-first-look-ic.md",
-    "trade/backtest/cn_attack_momentum_quality/engine.py"
+    "docs/specs/B084-etf-trend-ashare-spec.md",
+    "docs/research/next-batch-prep-etf-trend-ashare.md",
+    "trade/backtest/global_etf_momentum.py",
+    "workbench/backend/workbench_api/data_refresh/cn_dividend_lowvol.py",
+    "docs/research/ashare-strategy-deep-review-2026-07-03.md"
   ],
   "docs": {
-    "spec": "docs/specs/B083-pead-first-look-spec.md",
+    "spec": "docs/specs/B084-etf-trend-ashare-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B083-pead-first-look-signoff-2026-07-05.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "B083 PEAD first-look 3 features 全 PASS → done. 独立验收(代Codex,与实现隔离). 命门(前视/时点)通过: 独立复算 lookahead_violations=0 + 手工3事件(歌尔/广汇/世纪华通)核对 entry严格>公告日、用公告日非报告期末. IC三条独立路径(直读CSV/searchsorted/numpy-Spearman)4位小数精确吻合(N1+0.024/N5-0.020/N10-0.077/N20-0.057). 惊喜口径单一先验无扫参(grep clean). 覆盖率23.0%/1152标的与报告逐位吻合(诚实披露偏差)+涨跌停分层落实. INCONCLUSIVE=与数字一致的合法裁定(不达GO门槛|IC|>0.03+同号+单调; 审证据质量非方向). migration 0038生产落地(deploy链证明: migrate-before-flip+Deploy success)+门禁全绿+HEAD≡prod(8b01d79)+零回归(cn_attack/dividend_lowvol 0行).",
-    "pass_count": 3,
+    "summary": null,
+    "pass_count": 0,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
   },
   "generator_handoff": {
-    "summary": "B083 F001+F002 done(2g). F001: 业绩预告 data-reality GO + 38,595 PIT 事件 bulk fetch(scripts/research/b083_pead_fetch.py, gitignored 可复现)+pit_dedup 单测. F002: forward-return rank-IC first-look → **INCONCLUSIVE**: 8235 事件 IC(可执行) N1+0.021/N5-0.021/N10-0.076/N20-0.057 = 弱pop+reversal 非PEAD正向drift, 跨horizon不同号不单调. ★前视 rigor(命门): entry>announce 单测锁(test_b083_pead_ic). 惊喜=(预测-上年)/|上年| 先验禁扫参. trial_registry 登记(trial_backfill_b083+migration 0038+bootstrap, verdict INCONCLUSIVE, DSR N). 报告 docs/test-reports/B083-pead-first-look-ic.md + B083-F001-data-reality.md. ★诚实(避B081过度归因): INCONCLUSIVE=此naive口径/宇宙无drift 非'PEAD死'; 3 caveat(B070大盘宇宙覆盖23%/预告非实际快报/SUE去年同期). **F003 codex 独立验收重点**: (1)前视/时点严谨核查=entry严格>公告日无look-ahead(重实现验); (2)惊喜口径无扫参(grep 单一bundle); (3)IC 数字从零重实现抽验(不import我方脚本); (4)宇宙偏差caveat诚实非过度归因; (5)trial登记幂等/N正确; (6)零回归(不触cn_attack/dividend_lowvol). Gates通用. 门禁全绿(backend mypy521/ruff/13测/migration 0038 apply).",
-    "status": "complete"
+    "summary": null,
+    "status": "pending"
   },
   "features": [
     "F001",
     "F002",
     "F003"
   ],
-  "completed_date": "2026-07-05",
+  "completed_date": null,
   "session_notes": {
-    "planner": "2026-07-05 B083 planning(Claude CLI planner+generator)。B082 红利低波 done(signoff 3bcff51,evaluator 复验 PASS 13/0,ISSUE-1 生产刷新隔离修复复验通过)后,done 阶段 16min 无并发 planner 开下一批→本 session 接手开批。B083=评审 P1 排序 2 PEAD first-look,预研 5c5a1e2/0140ed2 直接复用。**first-look 低承诺**(IC 一测非策略),核心=前视/时点严谨(公告日 PIT)。akshare 已确认可得预告/快报/预约披露/分析师预期函数。**【续接】** status=building,Generator 接 F001(数据探针 stock_yjyg_em 等+PIT 接入,NO-GO 停批合法)→F002(盈余惊喜+rank-IC first-look,涨跌停分层)→F003 codex 独立验收(重点:前视/时点严谨性)。**learnings 队列待用户确认**(含 B081 F002/F003 loop-freeze 模式 + F004 分数股假象条目的 F005 更正=资本条件化容量下限 + B082 refresh 编排脆弱性审计 + PEAD prep)——沉淀时以 F005 更正为准(不是分数股假象)。B081 教训: 引擎修真 A/B 揭 cn_attack OOS 资本条件化(10万-16%/100万+27.1%),非分数股假象;独立验收 gate 抓到 generator 的 F004 误判——governance 印证。",
-    "generator": "2026-07-05 B083 **F002 CORE DONE**(IC first-look 95dbd2c). 结果 INCONCLUSIVE: 8235 事件 IC(可执行) N1+0.021/N5-0.021/N10-0.076/N20-0.057 =弱pop+reversal 非PEAD正向drift, 跨horizon不同号不单调. ★诚实(避B081过度归因): INCONCLUSIVE=此naive口径/宇宙无drift 非'PEAD死'; 3 caveat(宇宙偏差 B070=cn_attack动量大盘覆盖23%/预告非实际快报/SUE用去年同期非分析师). 前视 rigor 单测 test_b083_pead_ic 锁 entry>announce. 报告 docs/test-reports/B083-pead-first-look-ic.md. scripts: b083_pead_fetch(events)+b083_pead_ic(IC). **【F002 收尾-剩】trial_registry 登记**(照 B081 trial_backfill_b081+migration 0034 模式, ★小心 bootstrap _N_TRIALS 测同步更新 B081 教训): 新 trial_backfill_b083.py 1 条 trial(batch=B083, strategy_id=cn_pead_first_look, params=预告surprise/B070/naive, metrics=IC N1-N20+INCONCLUSIVE, verdict=INCONCLUSIVE, source_ref=报告) + migration 0038(seed, 上一个是 0037/B082) + bootstrap _import_trials 追加 + test_bootstrap_cli _N_TRIALS+len(B083) + 注册路径 test. Gates: backend mypy/ruff/pytest. 然后 features F002 done→F003. **F003 = codex 独立验收**(前视/时点严谨核查=重点: entry>announce 无前视; 惊喜口径无扫参; IC 数字重实现; 宇宙偏差 caveat 诚实; 零回归). ★本 session 累计(astronomical): B079-B082 4批done → 开B083(spec/features/memory) → F001 done(探针GO+38595事件bulk) → F002 core done(IC INCONCLUSIVE). governance 印证: B081 F004 分数股假象归因被F005独立验收证伪=资本条件化——独立gate抓generator误判; 本批 F002 我主动避免同类过度归因(INCONCLUSIVE+caveat 非'PEAD死').\n\n=== 历史 ===\n2026-07-05 B083 **F001 DONE**(probe GO 2e5dec0 + bulk events 5824748). 38,595 PIT 事件(2019-2025,5246标的,预增10.6k/略增5.2k/预减4.5k/首亏4.4k/扭亏3.3k)via scripts/research/b083_pead_fetch.py(stock_yjyg_em 循环报告期→PIT去重同名同期取最新公告日). events.csv gitignored(脚本复现). pit_dedup 单测过. ★偏差(evaluator评估): spec F001 说 data_refresh 接入,实交 bulk 研究 fetch(first-look 不建生产模式,IC需bulk历史非日增量;daily wiring 推迟到策略批若GO). **【续接 F002】**: 盈余惊喜=(预测数值-上年同期值)/|上年同期值|(先验禁扫参,预告类型作分档 secondary); 事件日=公告日期; 进场 T+1 open; rank-IC N1/N5/N10/N20(B077 scripts/research/ 模式) 在 **events∩B070 去偏PIT宇宙** 子集(报样本量别混池); **涨跌停分层**(B081 F003 _limit_hit_names, 含/剔次日触板名两版IC); 报告 docs/test-reports/B083-pead-first-look-ic.md + trial_registry 登记(B080 data-migration). 裁定 |IC|>~0.03跨horizon同号+分档单调→GO(推荐策略批入backlog)否则 INCONCLUSIVE 归档. prices: data/research/b070 PIT(cn_attack 宇宙);事件用 events.csv 的 ticker JOIN. F002 数据都本地(b070 prices + b083 events). 然后 F003 codex 独立验收(前视/时点严谨为重).\n\n=== 历史 ===\n2026-07-05 B083 **F001 part1(探针)DONE→GO(commit 2e5dec0)**. akshare stock_yjyg_em(业绩预告)实测: ★命门(公告日 PIT)通过——`公告日期`是真发布日(非报告期末), 2024Q3 预告公告 08-02..11-14; `预测数值`+`上年同期值`→惊喜可算, `业绩变动幅度`(%)交叉校验, `预告类型`(略增/预增/扭亏/首亏/预减..)分档; 深度≥2019(5+年); 覆盖 598-2965/报告期(近年 Q3 降=披露口径,非缺). 报告 docs/test-reports/B083-F001-data-reality.md. **【续接 F001 part2 = data_refresh 接入】**(careful backend, 留 fresh context): (1) 新模块 workbench_api/data_refresh/cn_pead.py 照 cn_dividend_lowvol.py 模板(call_with_timeout 每 fetch 有界+best-effort, 写 <data_root>/snapshots/pead/ CSV). fetch: stock_yjyg_em 按报告期循环(近 N 年季度)→合并→规范化列(股票代码/公告日期/预测数值/上年同期值/业绩变动幅度/预告类型/报告期)→PIT 去重(同名同报告期取最新公告). (2) 定义 run_pead_refresh(data_root, loader, fetch_timeout_seconds, today). (3) 接 cli.py fetch_main: **排在 run_refresh 之前**(B082 F004 ISSUE-1 教训, Tiingo-独立)+ refresh_worker _DISPATCH 分发(若要日刷)——但 first-look 是研究批, 可能只需一次性快照 fetch 不必日 timer(planner 决策: first-look 不建生产模式, 快照够). (4) 单测: loader 规范化/PIT 去重/timeout 隔离/(若接 fetch_main)排序在 run_refresh 前. (5) Gates: backend mypy0/ruff/pytest; 不触 trade/(纯 backend data). **F002 续**: 盈余惊喜=(预测数值-上年同期值)/|上年同期值|(先验禁扫参); 事件日=公告日期; 进场 T+1 open; rank-IC N1/N5/N10/N20(B077 scripts/research/ 模式)去偏 PIT 宇宙事件子集; 涨跌停分层(B081 F003 _limit_hit_names). ★注: first-look 不建 paper/红卡/生产模式(spec §0#1); F001 快照可一次性(不必日 timer), planner 已定 first-look 低承诺. 本 session 累计: 再定向(多 agent workflow)→B082 F004 fixing→reverifying→(evaluator)done→开 B083(spec/features/progress/memory)→F001 探针 GO. ★governance 印证: 我 B081 F004 分数股假象归因被 F005 独立验收证伪=资本条件化容量下限——独立 gate 抓 generator 误判, 坚持不自评正确.",
-    "evaluator": "2026-07-05 B083 独立验收(代Codex,口头指派,与实现完全隔离)→ 全 PASS → done. signoff docs/test-reports/B083-pead-first-look-signoff-2026-07-05.md. **命门(前视/时点)是审核最重点,全过**: (1)独立脚本 scripts/research/b083_evaluator_independent_ic.py(不import generator, 直读 prices_daily.csv + np.searchsorted right + numpy average-rank Spearman)算出 lookahead_violations=0; (2)手工抽3事件(歌尔股份002241 预告2019-01-19发布/期末2019-03-31/进场01-21, 广汇600256, 世纪华通002602)全部 entry严格>公告日、**用公告日非报告期末进场**(report_period 仅去重分组). IC 三条独立路径4位小数精确吻合(events_priced=8235/locked_frac=0.008 亦吻合). 惊喜=(forecast-prior)/|prior| 单一先验, grep 无 grid/sweep/tune/argmax. 覆盖率独立复算23.0%/1152标的=报告逐位吻合(诚实披露大盘宇宙偏差,非过度归因). INCONCLUSIVE 正确(N1+0.021<0.03 + 符号+/-/-/- 不同号 + 不单调 = 三条GO条件均不满足; 审的是证据质量非结论方向). migration 0038: 迁移链单head线性, 部署release(8b01d79)树含0038+backfill_b083, deploy.sh migrate-before-flip+set -euo pipefail+Deploy success → 0038 已应用(alembic current直查因DB属deploy用户只读账户无权打开=权限限制非迁移失败). bootstrap _N_TRIALS 已+len(B083_TRIALS)(B081教训落实). 门禁: backend mypy313/ruff + root mypy trade101/ruff + trial/migration67测 + b083 9测 全绿; main CI三绿. 零回归 cn_attack/dividend_lowvol 0行. governance: generator 本批主动避免 B081式过度归因(INCONCLUSIVE+3 caveat 非'PEAD死'), 独立gate确认证据诚实. 复现物 scripts/research/b083_evaluator_*.py + signoff."
+    "planner": "2026-07-05 B084 planning(Claude CLI planner+generator). B083 PEAD done(signoff, evaluator F003 PASS 3/0: 命门前视全过 lookahead=0+IC 3独立路径4位吻合+INCONCLUSIVE合法裁定). done 阶段无并发 planner 开批→本 session 接手开 B084. B084=评审 P2 ETF 趋势(global_etf_momentum 改造 工作量最小), 预研 de5d2f3 直接复用. **【续接】** status=building. Generator 接 F001(ETF 数据复用 B082 管线扩宽基, NO-GO 停批合法)→F002(时序趋势 first-look, ★2022/2024-02 震荡损耗分窗口)→F003 codex(震荡损耗口径核实为重). **learnings 队列待用户确认**(B081 F002/F003/F004+B082 refresh 审计+B083 flake 诊断/更正). B081/B082 follow-up(partial=True 变体/refresh fx+benchmark 前移/PEAD 全A宽宇宙+快报 SUE)待并入 backlog. cn_attack-signal-upgrade(P2, B081 驱动)预研 81335f5 已备作 B084 后候选.",
+    "generator": null,
+    "evaluator": null
   }
 }

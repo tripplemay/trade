@@ -1,39 +1,39 @@
 {
-  "sprint": "F003",
+  "sprint": "F001",
   "features": [
     {
       "id": "F001",
-      "title": "业绩预告事件数据地基探针 + PIT 接入(stock_yjyg/yjkb/yysj/profit_forecast, 含 GO/NO-GO)",
-      "priority": "high",
+      "title": "A股宽基/红利 ETF 数据接入(复用 B082 fund_etf_hist_em 管线, 510300/510500/588000/512890, 含 GO/NO-GO)",
+      "priority": "medium",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【spec §2 F001】(1) akshare 真实 fetch 探针 stock_yjyg_em(预告)/stock_yjkb_em(快报)/stock_yysj_em(预约披露)/stock_profit_forecast_em(分析师预期): 覆盖率(宽宇宙 vs 有事件子集)/**公告日字段可 PIT 性**(发布日 vs 财报期末)/字段(净利润区间·类型·去年同期)/历史深度/刷新延迟——真数字落 docs/test-reports/B083-F001-data-reality.md(B077/B082 探针模式)。公告日不可 PIT 或覆盖/深度不足→NO-GO 停批诚实交代。(2) GO→data_refresh 接入(timeout-bounded+best-effort+自有快照目录, **排 Tiingo run_refresh 之前**——B082 F004 ISSUE-1 教训)。Gates(B081 教训显式): backend pytest/ruff 目录上下文/mypy CI-exact; 触 trade/ 则 + .venv/bin/mypy trade + 根 ruff + root pytest 全量 + backend venv 重装 trade; CI 全绿。",
+      "status": "pending",
+      "acceptance": "【spec §2 F001】复用 B082 fund_etf_hist_em fetch 扩标的(宽基 510300沪深300/510500中证500/588000科创50 + 512890红利低波). 真实 fetch 探针: 覆盖/深度/复权/新鲜度落 docs/test-reports/B084-F001-data-reality.md(真数字); 关键标的不可得或<3y→NO-GO 停批诚实. bulk 研究快照(first-look, 日刷 wiring 推迟到策略批若GO; 若接 data_refresh 排 Tiingo run_refresh 前=B082 F004教训). Gates: backend pytest/ruff/mypy; 触 trade/ 则 +mypy trade+根ruff+root pytest+venv重装; CI全绿.",
       "design_decisions": [
-        "公告日 PIT 是命门:进场必须用发布日之后可交易价,禁财报期末(前视虚高 IC)。",
-        "不可得/时点不可 PIT→NO-GO 停批合法(B077/B082 先例)。"
+        "复用 B082 A股 ETF 数据管线=工作量最小(评审§3.4);上市时间(科创ETF短史)决定窗口,诚实标注。",
+        "不可得→NO-GO 合法(B077/B082/B083 先例)。"
       ]
     },
     {
       "id": "F002",
-      "title": "盈余惊喜信号 + forward-return rank-IC first-look(N1/N5/N10/N20, 涨跌停分层)",
-      "priority": "high",
+      "title": "时序趋势信号 + first-look(胜率/夏普/2022+2024-02 震荡损耗)",
+      "priority": "medium",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【spec §2 F002】盈余惊喜=预告净利润区间中点 vs 去年同期(**先验口径,禁扫参**);事件日=公告日(PIT);进场=公告日 T+1 open。forward-return rank-IC N1/N5/N10/N20(B077 模式)在去偏 PIT 宇宙事件子集;分档 group-mean 单调性;**涨跌停分层**(含/剔除次日触板名两版 IC, B081 F003 _limit_hit_names 作分析口径)。报告落 docs/test-reports/B083-pead-first-look-ic.md(覆盖率/IC/单调/可执行性差/诚实边界) + trial_registry 登记(data-migration, B080 模式)。裁定: |IC|>~0.03 跨 horizon 同号+分档单调→GO(推荐独立策略批次入 backlog);否则 INCONCLUSIVE 归档。Gates 通用(mypy/ruff/单测 IC+分层)。",
+      "status": "pending",
+      "acceptance": "【spec §2 F002】时序动量(回看窗/MA 先验定死禁扫参);trend-following 持有/退现金;★分窗口报 2022/2024-02 震荡期假信号损耗+换手;full+WF 70/30 CAGR/Sharpe/MaxDD + vs 买入持有 delta;报告 docs/test-reports/B084-etf-trend-ic.md + trial_registry 登记(DSR N, B080 data-migration). 裁定: 趋势夏普显著>买入持有+震荡损耗可控→GO(推荐策略批);否则 INCONCLUSIVE 归档(震荡损耗吃edge 常见合法). Gates 通用(mypy/ruff/单测 趋势+分窗口损耗).",
       "design_decisions": [
-        "先做 IC 一测(低承诺),不建 paper/红卡/生产模式;IC 噪音→INCONCLUSIVE 是合法常见结局。",
-        "涨跌停分层揭示纸面 vs 可执行 alpha(大惊喜次日一字板买不进)。"
+        "first-look 低承诺(同 B083 PEAD),不建 paper/红卡/生产;弱/震荡损耗大→INCONCLUSIVE 合法。",
+        "非横截面行业轮动(A股横截面行业动量弱, 评审);时序动量为主。"
       ]
     },
     {
       "id": "F003",
-      "title": "Codex 独立验收 + signoff(IC 数字审计/前视时点严谨性/无扫参/零回归)",
-      "priority": "high",
+      "title": "Codex 独立验收 + signoff(趋势数字重实现/无扫参/2022+2024-02 震荡损耗口径核实/零回归)",
+      "priority": "medium",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "【spec §2 F003】Codex 独立: IC 数字从零重实现抽验(不 import 我方脚本)+**前视/时点严谨性核查**(公告日 PIT/进场 T+1/无财报期末前视)+惊喜口径无扫参(grep 单一 param bundle)+涨跌停分层口径正确+覆盖率/延迟探针复核+零回归(不触 cn_attack/dividend_lowvol 产品码)。signoff docs/test-reports/B083-pead-first-look-signoff.md;GO/INCONCLUSIVE 裁定确认。",
+      "status": "pending",
+      "acceptance": "【spec §2 F003】Codex 独立: 趋势数字从零重实现抽验(不import我方脚本)+参数无扫参(grep单一bundle)+★2022/2024-02 震荡损耗口径核实(趋势策略最大陷阱=样本内挑窗)+覆盖/新鲜度探针复核+零回归(不触cn_attack/dividend_lowvol/PEAD). signoff docs/test-reports/B084-etf-trend-signoff.md; GO/INCONCLUSIVE 确认.",
       "design_decisions": [
-        "first-look 结论=证据一测非可配资;前视是事件策略最大陷阱,独立核查时点。"
+        "趋势策略最大陷阱=样本内挑最优窗+震荡期损耗被样本内掩盖;独立核实分窗口口径。"
       ]
     }
   ]
