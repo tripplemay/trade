@@ -28,8 +28,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B085 F001 **PARTIAL**(mechanical core done, judgment-heavy A/B checkpointed). DONE(低风险机械可测): scripts/research/b085_residual_momentum.py = 残差动量计算(单因子: 每名日收益对等权市场收益 rolling β=cov/var 窗252 取残差 → 残差动量=过去[t-21-126,t-21]累计残差, 先验禁扫参 文献口径). 合成单测 test_b085_residual_momentum 锁: 隔离特质动量(纯市场名≈0/特质上下漂正负)非市场. ruff clean/pass. 零回归纯研究脚本. commit 03425ef. **★TODO(判断重, fresh context 严做——B084 sub-window 过度乐观教训所在)**: (1)A/B — 残差动量 rank 喂 cn_attack 引擎(trade/backtest/cn_attack_momentum_quality/) vs pure_momentum, 去偏 B070 PIT, 复用 B081 scripts/research/b081_engine_fidelity_ab.py runner(resumable+pickle缓存, b070数据~40min慢跑); (2)full+WF70/30 CAGR/Sharpe/MaxDD/OOS + **双本金10万/100万**(B081 F005容量); (3)★**分子窗损耗**(别年度聚合掩盖=B084 S1) + **turnover量化**(B084 S2); (4)报告 docs/test-reports/B085-residual-momentum-ab.md + trial登记(migration 0040, verdict GO/INCONCLUSIVE, LEAN映射INCONCLUSIVE); (5)裁定 GO(保真OOS显著提升非窗口落位)/INCONCLUSIVE; (6)零回归 cn_attack 产品码字节不变. 然后 F002 codex独立验收. Gates: mypy trade+根ruff+root pytest全量(触trade/读取)+CI三绿.",
+    "status": "partial"
   },
   "features": [
     "F001",
