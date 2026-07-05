@@ -19,7 +19,7 @@
       "title": "Codex 独立验收 + signoff(非退化/样本外合理/无过拟合红旗/诚实裁定)",
       "priority": "medium",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "Codex独立: 选股数字重算(非退化,有交易,选合理大盘股)+样本外 in-vs-out 对比(walk-forward)+★无过拟合红旗(夏普离谱存疑,多变体挑winner存疑)+诚实裁定(edge弱→INCONCLUSIVE合法)+research-only零回归(不碰生产/Master). signoff docs/test-reports/B092-...-signoff.md.",
       "design_decisions": [
         "subtle-edge 最大陷阱=过拟合/样本内挑winner;独立核实样本外+过拟合红旗。"

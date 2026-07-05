@@ -1,9 +1,9 @@
 {
-  "status": "verifying",
+  "status": "done",
   "total_features": 2,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
-  "current_sprint": "F002",
+  "current_sprint": null,
   "last_updated": "2026-07-05",
   "user_goal": "B092 = B055 US 进攻选股 **first-look**(低承诺: 宽美股宇宙动量+质量 top-N vs 基线, 有无 edge). **核心不变量**: research 快照(akshare/SEC EDGAR 免费, 不触生产data-refresh/Master universe); 质量过滤+动量排名 top-15 月度先验禁扫参; ★walk-forward 样本外+过拟合诚实评估(subtle-edge, A股attack OOS-negative期望低); GO(推荐全P1)/INCONCLUSIVE. 用户 away 战略问未答→best judgment 推 B055 first-look(唯一自主非基建项). spec docs/specs/B055-attack-stock-selection-spec.md(全P1). 2 features 1g+1c. Workflow-build.",
   "reference_docs": [
@@ -14,13 +14,13 @@
   "docs": {
     "spec": "docs/specs/B055-attack-stock-selection-spec.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/B092-us-attack-first-look-signoff-2026-07-05.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": null,
-    "pass_count": 0,
+    "summary": "全 PASS 2/2 → done. 独立重跑回测 9 指标格 bit 级复现(STRATEGY full 26.53%/1.36; OOS 策略 Sharpe 1.45 < EW 1.54); 裁定一致(OOS 风险调整 edge 为负→GO 未达→INCONCLUSIVE 纪律裁定); 幸存者偏方向性正确; 先验无扫参+模块关系如实(新构 filter-then-rank≠生产 us_quality_momentum 5 因子); 数据源诚实(2017 floor 独立坐实为真数据边界: pre-2017 1018 不可能移动 vs 2017+ 19, UNH +2845% 坐实 +2800%; missing-6 逐字复核); 推论有界(不建全 P1≠美股选股永久无效); 2 对抗验证 un-refuted 复核属实; research-only 零回归 git 级坐实(trade/+workbench/ diff 空)+ruff+18 单测绿+CI 三绿+HEAD≡prod. 3 软观察非阻断(O1 模块关系文档 gap/O2 成本非对称保守方向/O3 floor 略保守).",
+    "pass_count": 2,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
@@ -33,10 +33,10 @@
     "F001",
     "F002"
   ],
-  "completed_date": null,
+  "completed_date": "2026-07-05",
   "session_notes": {
     "planner": "2026-07-05 B091 done(Codex PASS 2/2, 10th; 修复真数据证有效 regional_risk_off 9/24翻)后开 B092(B055 US进攻 first-look). 用户away战略问未答→best judgment. Workflow-build(宽美股宇宙动量+质量 vs基线, walk-forward防过拟合). 剩 backlog: residual-engine/smart-money(待用户)/test-automation(基建).",
     "generator": null,
-    "evaluator": "2026-07-05 B091 F002 独立验收 → 全 PASS 2/2 → done. 代 Codex(用户 /goal 授权, 与实现完全隔离, 最高怀疑度). 修 above_200d_ma 多日历 MA bug(B090 真根因). 手段=独立取修前(94f8172)vs修后(HEAD)两版 above_200d_ma 对拍. 核验: (1)★零回归命门四重坐实: (i)结构性—生产宇宙 HK_CHINA_TICKERS=(MCHI/FXI/KWEB/ASHR)全NYSE单日历+SGOV→dropna对无缺口列=数学no-op→输出逐位不变; (ii)真proxy宇宙MCHI/FXI/KWEB/ASHR/SGOV 16个季末(2022-25)NEW==OLD bit级0mismatch; (iii)200随机单日历fuzz帧0处不吻合(index+values+dtype全等); (iv)VM current release symlink=b35a638(修复commit)+active trade包factors.py含_latest_ma_own_calendar标记×3→prod跑修复码. (2)★修复有效: 真数据24季末全量OLD-vs-NEW对拍→OLD above-count恒0(bug饿死一切,复现B090 real 25/25)→NEW 5-30, regional_risk_off由24/24恒True→9/24翻False(real sleeve 0%→~37%参与); 自建2-ticker异日历样本(AAA Mon-Fri/BBB Mon-Thu单调涨)旧union=False→修后True; 点名0700.HK真数据OLD False→NEW True(own_obs4926). (3)★语义: <200自观测→NaN MA→False(单测c+我复现); _wide_close仍filter date<=as_of无前视; trend_pass接口不变. (4)★变异检查有牙: 回退factors.py成OLD union rolling→新单测(a)FAIL(assert False is True),(b)(c)仍pass→(a)真守多日历修复; 已还原干净. (5)★2对抗验证un-refuted: journal wf_2a2ea377-422, 1 fix agent+2验证者(af021467/ab48abbc)均refuted=false, zero_regression_holds/multi_calendar_fixed/semantics_preserved/workbench_green/gates_green/blast_radius_ok=true issues空; fix agent summary明载'close still=wide.iloc[-1]'(O1知情保留). (6)门禁: mypy trade Success(103)+ruff All passed+root pytest hk_china相关118 passed+新单测3 passed+backend test_strategies 13 passed(backend venv内trade快照含修复标记实测非stale); CI b35a638 push→Python CI 6m50s+Backend CI 8m49s+Deploy 3m34s全success自动链式; HEAD 6653781仅动state JSON(git diff b35a638..HEAD -- trade/ workbench/backend/字节空)→HEAD产品码≡部署≡prod. 2软观察非阻断: O1 残留close=wide.iloc[-1] union最后行NaN(修复只改MA分母,close分子与修前同→某票最后union日未交易则close=NaN→above_MA=False, 真数据仅2/24季触发节假日错配2023-09-30/2024-03-31 Good Friday, 生产proxy单日历永不触发; 先存非回归非F001范围; 须follow-up决策级重跑处理否则伪防守季误记真信号; 建议Planner登backlog); O2 决策级real-vs-proxy重跑无离散backlog.json条目(F001解锁了该重跑, 本批正确未跑; follow-up仅记于B090 signoff§3 O2+B091 F001报告§follow-up, 建议Planner补登携B090三caveat+本O1 caveat). signoff docs/test-reports/B091-above-200d-ma-fix-signoff-2026-07-05.md. ★下阶段=backlog 决策级real-vs-proxy重跑(携O1 close-NaN+B090 O2 SGOV floor/幸存者偏差/matched top_n caveat) + 战略方向待用户."
+    "evaluator": "2026-07-05 B092 F002 独立验收 → 全 PASS 2/2 → done. 代 Codex(用户 /goal 授权, 与实现完全隔离, 最高怀疑度). B055 US 进攻选股 first-look(research-only, INCONCLUSIVE). 核心手段=从缓存快照独立重跑整条回测. 核验: (1)★对照数字独立复算: workbench/backend/.venv 跑 scripts.research.b092_us_attack_backtest → 9 指标格逐格 bit 级吻合报告(STRATEGY full 26.53%/1.36/-19.2%, in-samp 26.75%/1.30, oos 26.87%/1.45; EW full 21.44%/1.14, oos 24.20%/1.54; SPY full 17.08%/0.98)+诊断吻合(114 月/qualified 63/selected 15/universe 100/窗 2017-02-28..2026-07-02/split 68-46). ★裁定一致性: 对正确基线(同宇宙 EW)OOS 风险调整 edge 为负(策略 Sharpe 1.45<EW 1.54)→GO 门槛未达→INCONCLUSIVE 纪律裁定(非达标却保守亦非反向, B077/B085 守). (2)★幸存者偏方向性正确: 今日 S&P-100 幸存者上偏美化 strategy+EW, strategy-vs-EW 共享宇宙部分抵消; 美化收益→无偏真相更悲观→INCONCLUSIVE 在幸存者宇宙下反更可信; 报告方向论述正确未当有利因素. (3)★先验无扫参+模块关系如实: 冻结常量(TOP_N15/LOOKBACK6/SKIP1/DROP0.25)+grep 无 grid/optimize/product+docstring 明载 no tuning; 新独立构造 filter-then-rank ≠ 生产 us_quality_momentum(B025 5 因子 composite 35/30/15/10/10)→research 隔离合理契合 B055 spec; 报告未虚称复用. (4)★数据源诚实: akshare qfq 明标 adj_close=qfq close 非真 vendor(B090 caveat); SEC EDGAR 94/100 missing-6=PNC/PG/CAT/ITW/VZ/T 独立复核逐字吻合; PIT filed<=t 门(代码+单测双证无前视); ★2017 floor 独立验证=真数据边界非调参: cleaned 月度 pre-2017 1018 个不可能移动 vs 2017+ 仅 19, UNH pre-2017 +2845% 坐实报告 +2800%. (5)★无过拟合红旗+诚实裁定: Sharpe 1.3-1.45 非离谱(>2.5 才疑), 样本内胜 EW OOS 反转报告如实命名非 spin, 裁定 INCONCLUSIVE+明列 pre-conditions 合法. (6)★推论边界有界: 报告=不建全 4-feature P1(明列 pre-conditions 付费无偏 vendor+OOS Sharpe 须胜 EW), 未外推为美股选股永久无效. (7)★2 对抗验证 un-refuted: journal wf_0478a172-465, 1 build(a53a3bbf 输出逐字吻合报告)+2 验证者(a4f5791b/a4c6018f)均 refuted=false 且 recompute_matches/oos_edge_real=false/priors_not_tuned/no_look_ahead/verdict_honest/research_only=true; issues=报告 caveat. (8)★research-only 零回归: git diff 0374b32..HEAD -- trade/ workbench/ 字节空; 批次仅动 scripts/research×2+tests/unit×1+docs×1+state JSON; 快照 gitignored; ruff All passed+18 单测 fresh 绿; CI b285566→Python CI 5m28s+Backend CI 8m43s+Deploy 3m39s 全 success 自动链式; 无产品码变更→HEAD≡prod. 3 软观察非阻断: O1 报告未显式点名生产 us_quality_momentum 模块取舍(文档 gap 非缺陷, 诚实未虚称复用); O2 成本非对称(strategy 付 10bps turnover EW 不付, 保守-against-strategy 方向正确, 未来 P1 重测宜对称); O3 2017 floor 略保守(a4c6 称 2016 已 0 极端我复算 cleaned 月度仍~13, 阈值差异不 material). signoff docs/test-reports/B092-us-attack-first-look-signoff-2026-07-05.md. ★含义: B055 全 P1 攻击选股当前证据不推荐建(无样本外风险调整 edge). ★下阶段=战略方向待用户 + backlog 决策级 real-vs-proxy 重跑(携 B091 O1/B090 O2 caveat)."
   }
 }
