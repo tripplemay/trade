@@ -1,41 +1,40 @@
 {
-  "status": "done",
+  "status": "building",
   "total_features": 2,
-  "completed_features": 2,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": null,
+  "current_sprint": "F001",
   "last_updated": "2026-07-05",
-  "user_goal": "B087 bootstrap-seed deploy-chain 治本(运维, 治 B080 F005). 审计(docs/research/next-batch-prep-bootstrap-seed-audit.md)定唯一真缺口=CURATED_SYMBOL_NAMES bootstrap-only(0027建表不seed, deploy跑alembic→生产curated=0). F001=加幂等 seed migration 0041(复用 trials 0036-0040 模板, insert-if-absent 不覆盖 akshare_spot). 核心不变量: 零回归不改日刷/upsert优先级(curated仅fallback); 幂等. 小批 2 features 1g+1c. B086 done 后接手开批.",
+  "user_goal": "B088 Smoothed/feedback vol-targeting(BL-B013-D1, 基建/研究). open-loop vol-targeting turnover spike→加 smoothing+feedback 减 turnover 维持控波. **核心不变量**: 零策略/flagship 改动(新研究模块 trade/analysis/vol_targeting.py); 三变体先验禁扫参; ★turnover 减=控制律机械性质(合成可测非主观edge, 避B084过度乐观); realized vol 仍≈target. spec docs/specs/B088-vol-targeting-smoothing-spec.md. 2 features 1g+1c.",
   "reference_docs": [
-    "docs/research/next-batch-prep-bootstrap-seed-audit.md",
-    "workbench/backend/workbench_api/db/migrations/versions/0040_b085_residual_momentum_screen_trial.py",
-    "workbench/backend/workbench_api/symbols/names.py"
+    "docs/specs/B088-vol-targeting-smoothing-spec.md",
+    "trade/strategies/risk_parity.py"
   ],
   "docs": {
-    "spec": "docs/research/next-batch-prep-bootstrap-seed-audit.md",
+    "spec": "docs/specs/B088-vol-targeting-smoothing-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B087-bootstrap-seed-deploy-chain-signoff-2026-07-05.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "全 PASS 2/2 → done. migration 0041 幂等 seed CURATED_SYMBOL_NAMES 经 alembic 部署链落地生产(alembic head=0041); insert-if-absent 语义双证(静态 mutation-check 注入 overwrite→测试 FAIL 有牙 + 生产 4 A股 overlap 保 akshare_spot 中文名实测); 生产 curated=58>0(治本 production=0) / akshare_spot=5203 基线不减(零回归) / 58=68-10 mainland 逐点闭合; upgrade→downgrade→upgrade 幂等+可逆(downgrade 只删 curated 不误删 spot); bootstrap 同源 lockstep(names.py 单一真相源); 产品策略码 0 行; full backend unit 1531 passed/2 skip/0 fail+B087 2 单测 pass; CI 全绿(e1b0a03, Python CI 因 workbench/** paths-ignore 合法跳过)+HEAD≡prod. 治本闭环=B080 F005 同源缺口最后一块.",
-    "pass_count": 2,
+    "summary": null,
+    "pass_count": 0,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
   },
   "generator_handoff": {
-    "summary": "B087 F001 **done**. migration 0041 幂等 seed CURATED_SYMBOL_NAMES(68条, source=curated, 固定stamp) 治本 B080 F005(deploy跑alembic→生产curated=0). ★insert-if-absent 永不覆盖 akshare_spot override. 2单测(seed全落地+保override). mypy527+ruff clean, bootstrap+symbol 50测零回归, migration可逆+幂等. bootstrap已lockstep无需改. 报告 B087-F001-curated-seed-migration.md. **F002 codex 验证**: migration幂等落地生产curated>0+insert-if-absent不覆盖akshare_spot优先级+bootstrap lockstep+零回归(不改日刷). signoff docs/test-reports/B087-...-signoff.md. Gates全绿(mypy527/ruff/2+50测/0041可逆).",
-    "status": "complete"
+    "summary": null,
+    "status": "pending"
   },
   "features": [
     "F001",
     "F002"
   ],
-  "completed_date": "2026-07-05",
+  "completed_date": null,
   "session_notes": {
-    "planner": "2026-07-05 B087 done(F002 PASS 2/2, curated seed migration 治本 B080 F005). **本 session 收官态**: P0-P2 全收官(B081-B085)+安全基建 2 批(B086 数据源 fallback/B087 bootstrap-seed)done+validated. gate 6 次抓/证判断. **backlog 余 7 = 全需外部决策或不宜此深度自主**: residual-engine(冻结flagship待用户)/smart-money(Tushare¥200待用户)/hk-china(VM真跑decision-grade)/vol-target+VIX(careful-quant宜fresh, B084深度质量教训)/B055+test-auto(长尾remnant P3-P5). **★真瓶颈=战略方向(已 AskUserQuestion 2 次, 用户away)**: P0-P2 无强 edge, 下一步(严验B084 ETF防守/转聪明钱/careful-quant/基建 P3+)待用户. 安全机械自主 win 已尽. 33 learnings 待确认.",
+    "planner": "2026-07-05 B087 done 后开 B088(vol-targeting smoothing, BL-B013-D1). 判断=可测机械(控制律+turnover客观)非subtle-edge→在此深度可靠(近期 B085-B087 全 validated). Generator 接 F001(3控制律+单测+合成turnover对比). 剩 backlog 6项多需用户/careful-fresh.",
     "generator": null,
     "evaluator": "2026-07-05 B087 F002 独立验收 → 全 PASS 2/2 → done. 代 Codex(用户 /goal 授权, 与实现完全隔离, 最高怀疑度). 核验路径: (1)★insert-if-absent 语义(spec 点名最大陷阱=覆盖 akshare_spot 真名退化): upgrade() 先 SELECT 现存集合仅插不在集合的 symbol(line 52); mutation-check 注入 INSERT OR REPLACE(覆盖)→ test_...preserves_akshare_override FAIL 有牙, 还原 2 passed git status 空; (2)★生产 VM 只读实测(sudo sqlite3 -readonly, 零写): alembic_version=0041_curated_symbol_names_seed(head进); source breakdown=akshare_spot|5203 + curated|58; 4 个 mainland A股 overlap(600519/000858/300750/601318)全保 akshare_spot 中文名(贵州茅台等未被覆盖), HK(0700/9988)取 curated → 优先级不变活证; 抽样 SPY/AGG/AAPL/MSFT 值正确; updated_at 全=固定 stamp 2026-07-05; (3)计数逐点闭合 58=68-10 mainland(akshare 覆盖10 A股→精确跳过, 落地 27US+15ETF+16HK); (4)幂等+可逆: 本地 upgrade→downgrade→upgrade 循环实测(downgrade 只删 curated source 行 akshare 原样存活, re-upgrade 无 dupe count 逐位等); (5)零回归: F001 feat e1b0a03 diff=仅3文件(migration60+单测70+报告22, 产品策略码0行), 日刷 upsert(source=akshare_spot)路径/resolve_symbol_names DB优先解析不变, full backend unit 1531 passed/2 skip/0 fail(本地实跑12m56s)+bootstrap相关子集176 passed+B087 2 passed; (6)bootstrap 同源 lockstep(migration line27 与 bootstrap line80 同 import names.py 单一真相源); (7)CI全绿(Backend8m29s+Frontend+Deploy e1b0a03; Python CI 因 paths-ignore workbench/** 合法跳过, Backend CI 已覆盖 workbench_api)+生产 release symlink→e1b0a03≡HEAD产品码(d943133 仅 progress/features paths-ignore). 软观察2非阻断: O1 bootstrap upsert_names 覆盖语义 vs migration insert-if-absent(dev-only 差异, 生产走 migration 不跑 bootstrap, 名集同源已满 lockstep, 语义完全对齐可下批纯洁癖); O2 VM 3 systemd 服务 failed(data-refresh/prices/canonical-backtest)=pre-existing B087 前既存与 curated seed 无关(akshare 5203 历史刷入基线), 作用域外. ★治本闭环=B080 F005 同源 seed 缺口最后一块(curated 部署后=0 → migration 落地58条, 与 trials/cards migration纪律拉平). 下阶段战略决策+33 learnings 待用户方向."
   }

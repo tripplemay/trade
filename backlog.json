@@ -29,21 +29,6 @@
     "sequence_note": "2026-06-18 用户选 A 股进攻模型方向→数据批 B065(立项 building)做 qfq 复权口径对齐时**顺带覆盖 hk_china 26 universe=本重测数据前置就绪**。B065 done 后,本重测只剩『200D warmup + 重跑对比』(HK 价格已 sina,qfq 已对齐)=轻量收口。完成后据真对比重定 BL-B011-S2 Batch 3。"
   },
   {
-    "id": "BL-B013-D1",
-    "title": "Smoothed / feedback volatility targeting",
-    "description": "研究文献（arxiv 2022『Smoothing volatility targeting』、arxiv 2026『Single-Asset Adaptive Leveraged Volatility Control』）表明 open-loop vol-targeting（exposure 与 realized variance 倒数挂钩）会导致 turnover 与 leverage spike。改用 proportional-control 或 variational Bayes smoothing 可以显著减少 turnover 并维持目标波动率。可作为 B010 / B013 共同的 vol-target 优化批次，提供 feedback-based 与 smoothing 两种实现并对比 turnover/Sharpe。",
-    "decisions": [
-      "保留 open-loop 实现作为 baseline 对比",
-      "feedback 与 smoothing 两种实现至少各完成一种",
-      "不引入复杂的 Bayesian 推断库（保持 stdlib + numpy/pandas 范围）",
-      "Backtest 必须证明 turnover 显著下降且 realized vol 仍逼近目标"
-    ],
-    "confirmed_at": "2026-05-14",
-    "priority": "low",
-    "source": "B013 research material analysis (arxiv vol-targeting papers)",
-    "milestone": "Phase 4 长尾（里程碑 C 后按需）"
-  },
-  {
     "id": "BL-B013-D2",
     "title": "VIX-based tail risk overlay（option/ETN proxy 研究）",
     "description": "机构研究 13 篇汇总（『Hedging Market Tail Risk Factors with Volatility Indices』、『Hedging Tail Risk with Robust VIXY Models』、『VIX Tail Risk Hedging and Predictor』等）显示在系统性 drawdown 期间持有 VIX-linked 工具（VIXY / VXX / 期权）可以显著减少 tail loss。MVP 范围外，因涉及期权/期货数据与潜在 broker 接入。后续可作为研究性 sleeve（fixture-first，先评估在 2020/2022 stress window 下的对冲效果），不引入真实 broker / paid 数据。",
