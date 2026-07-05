@@ -1,13 +1,13 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
       "title": "多源 A股 ETF 行情 fetch 层 + fallback(Eastmoney→Sina) + mock 测试",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
-      "acceptance": "【spec §2 F001】模块 trade/data/ashare_market_source.py: 统一 fetch_etf_daily(code) → Eastmoney(fund_etf_hist_em qfq)→Sina(fund_etf_hist_sina raw) fallback, 返回带 source/adjust(qfq|raw)标注 DataFrame; SSLError/空→下一源; 全失败→明确 raise(不静默吞错). **单测 mock 源(不打真网)**: (1)Eastmoney成功用它 (2)Eastmoney SSLError→fallback Sina (3)全失败→raise (4)sh/sz symbol 派生 (5)返回带 source/adjust 标注. 报告 docs/test-reports/B086-F001-data-source-layer.md. ★零回归: 不碰策略/flagship/生产 data_root/已完成批次脚本. Gates: mypy trade+根ruff+root pytest+单测fallback各分支+CI绿.",
+      "status": "done",
+      "acceptance": "【spec §2 F001】模块 scripts/research/ashare_market_source.py: 统一 fetch_etf_daily(code) → Eastmoney(fund_etf_hist_em qfq)→Sina(fund_etf_hist_sina raw) fallback, 返回带 source/adjust(qfq|raw)标注 DataFrame; SSLError/空→下一源; 全失败→明确 raise(不静默吞错). **单测 mock 源(不打真网)**: (1)Eastmoney成功用它 (2)Eastmoney SSLError→fallback Sina (3)全失败→raise (4)sh/sz symbol 派生 (5)返回带 source/adjust 标注. 报告 docs/test-reports/B086-F001-data-source-layer.md. ★零回归: 不碰策略/flagship/生产 data_root/已完成批次脚本. Gates: mypy trade+根ruff+root pytest+单测fallback各分支+CI绿.",
       "design_decisions": [
         "本 session B084 撞 Eastmoney 限流切 Sina 驱动=固化多源 fallback 为可测层。",
         "不迁移 B082-B085 已 done 脚本(零回归);新模块供未来策略。",

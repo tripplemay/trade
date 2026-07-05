@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-07-05",
   "user_goal": "B086 A股行情数据源统一层(基建, 多源 fallback). **本 session B084 撞 Eastmoney 限流切 Sina 直接驱动**: 固化 Eastmoney→Sina fallback 为可测健壮层, 避免每策略重踩限流/格式坑. **核心不变量**: 零策略/零 flagship/零生产 data_root(硬边界); 多源 fallback 不静默吞错(log 命中源); 口径差异(qfq vs raw)显式标注; 不迁移已完成批次脚本(零回归). P0-P2 已收官(无强 edge), 此为基建(用户 away→按 option 3 安全推进). spec docs/specs/B086-ashare-data-source-layer-spec.md. 2 features 1g+1c.",
   "reference_docs": [
@@ -26,8 +26,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B086 F001 **done**. scripts/research/ashare_market_source.py: 多源 ETF fetch fallback(Eastmoney fund_etf_hist_em qfq→Sina fund_etf_hist_sina raw), 返回带 source/adjust 标注, 全失败→DataSourceError 不静默空. sina_symbol sh/sz. ★layering=research 层(非 trade/data/ 纯CSV). 6 mock 单测覆盖 fallback 各分支(SSLError/空/全失败/派生/标注). ruff+mypy clean, full root pytest 1156 passed 零回归(不碰策略/flagship/生产/已完成脚本). 报告 B086-F001-data-source-layer.md. **F002 codex 验证**: fallback mock 各分支真覆盖(非happy-path only)+口径标注(qfq vs raw)正确+不静默吞错+零回归 grep(不碰flagship/生产/已完成脚本). signoff docs/test-reports/B086-...-signoff.md. Gates 全绿.",
+    "status": "complete"
   },
   "features": [
     "F001",
