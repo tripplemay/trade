@@ -103,12 +103,22 @@ def above_200d_ma(
     byte-identical to a plain union-frame rolling.
 
     Tickers without ``ma_long`` days of history (MA is NaN) resolve to
-    ``False`` — insufficient trend evidence is treated as "not above"."""
+    ``False`` — insufficient trend evidence is treated as "not above".
+
+    The compared close is each ticker's own LAST VALID close
+    (``wide.ffill().iloc[-1]``), not the raw union last row (B091-O1 fix). On a
+    multi-calendar frame the union's final date may be a holiday for some
+    ticker, leaving a NaN in that column's last row; the raw last row would then
+    yield ``close > ma == NaN`` → ``fillna(False)`` → a spurious "below MA"
+    (false-defensive). Forward-filling to each column's last real observation
+    removes that artefact. On a single-calendar (gap-free) frame every row is
+    fully populated, so ``ffill`` is a no-op and this equals ``wide.iloc[-1]``
+    exactly — the live US-only ETF-proxy path is byte-identical."""
 
     wide = _wide_close(prices, as_of)
     if wide.empty:
         return pd.Series(dtype=bool)
-    close = wide.iloc[-1]
+    close = wide.ffill().iloc[-1]
     ma = wide.apply(lambda col: _latest_ma_own_calendar(col, ma_long))
     return (close > ma).fillna(False)
 
