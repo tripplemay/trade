@@ -1,28 +1,28 @@
 {
-  "sprint": "F002",
+  "sprint": "F001",
   "features": [
     {
       "id": "F001",
-      "title": "残差 vs 裸动量 rank-IC 前置筛 first-look(INCONCLUSIVE 弱方向支持) [rescoped from 引擎A/B]",
+      "title": "多源 A股 ETF 行情 fetch 层 + fallback(Eastmoney→Sina) + mock 测试",
       "priority": "medium",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【spec §2 rescoped F001】残差动量计算(单因子β残差,先验禁扫参,单测锁隔离特质动量) + 前置筛(残差 vs 裸动量 forward-return 月度 rank-IC,同窗公平,无前视单测锁). 结果: 残差 IC 0.0108(t=0.45) vs 裸 -0.0009; delta +0.0118 t=1.98(borderline). 裁定 INCONCLUSIVE(弱但真实方向支持). 报告 docs/test-reports/B085-residual-vs-raw-ic-screen.md + trial(migration 0040 DSR N). 零回归纯研究脚本. 完整引擎A/B降级backlog(触冻结flagship待决策). Gates: 根ruff+root pytest+backend(trial)全绿.",
+      "status": "pending",
+      "acceptance": "【spec §2 F001】模块 trade/data/ashare_market_source.py: 统一 fetch_etf_daily(code) → Eastmoney(fund_etf_hist_em qfq)→Sina(fund_etf_hist_sina raw) fallback, 返回带 source/adjust(qfq|raw)标注 DataFrame; SSLError/空→下一源; 全失败→明确 raise(不静默吞错). **单测 mock 源(不打真网)**: (1)Eastmoney成功用它 (2)Eastmoney SSLError→fallback Sina (3)全失败→raise (4)sh/sz symbol 派生 (5)返回带 source/adjust 标注. 报告 docs/test-reports/B086-F001-data-source-layer.md. ★零回归: 不碰策略/flagship/生产 data_root/已完成批次脚本. Gates: mypy trade+根ruff+root pytest+单测fallback各分支+CI绿.",
       "design_decisions": [
-        "先做证据最强的残差动量一升级(评审建议先行);剩SUE/剔涨停/2月规避留后续批。",
-        "禁扫参(B081 partial混入+B084挑窗教训);残差不提升→INCONCLUSIVE合法(B083/B084先例)。",
-        "零回归=A/B研究脚本不改cn_attack产品默认(B076策略改动双门禁)。"
+        "本 session B084 撞 Eastmoney 限流切 Sina 驱动=固化多源 fallback 为可测层。",
+        "不迁移 B082-B085 已 done 脚本(零回归);新模块供未来策略。",
+        "口径差异(qfq vs raw)显式标注返回。"
       ]
     },
     {
       "id": "F002",
-      "title": "Codex 独立验收 + signoff(验证前置筛: 残差/IC数字重实现/β口径/无扫参/前视/borderline诚实/trial幂等/零回归)",
+      "title": "Codex 独立验收 + signoff(fallback mock 覆盖/口径标注/不静默吞错/零回归)",
       "priority": "medium",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "【spec §2 rescoped F002】Codex独立验证**前置筛**(非引擎A/B): 残差动量+IC数字从零重实现抽验(不import我方)+β/残差口径核实+参数无扫参(grep)+前视核查(signal≤t,forward>t)+IC相对比较口径+★borderline t=1.98诚实性(别过度宣称显著)+trial幂等/N正确+零回归. signoff docs/test-reports/B085-...-signoff.md; INCONCLUSIVE(弱支持)确认. 引擎A/B不在本批范围(降级backlog).",
+      "status": "pending",
+      "acceptance": "【spec §2 F002】Codex独立: fallback 逻辑 mock-源覆盖核实(各分支非happy-path only)+口径标注(qfq vs raw)正确+不静默吞错+不碰flagship/生产路径/已完成脚本(零回归 grep). signoff docs/test-reports/B086-...-signoff.md.",
       "design_decisions": [
-        "残差动量最大陷阱=β口径/窗口落位/年度聚合掩盖子窗;独立核实(B084 S1教训直接适用)。"
+        "fallback 最大陷阱=只测 happy-path;独立核实各源失败分支真覆盖。"
       ]
     }
   ]
