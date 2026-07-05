@@ -43,6 +43,9 @@ from workbench_api.db.models.account_snapshot import (
 )
 from workbench_api.db.repositories import AccountRepository, BacklogRepository
 from workbench_api.db.repositories.account_snapshot import AccountSnapshotRepository
+from workbench_api.db.repositories.oos_verification_card import (
+    OosVerificationCardRepository,
+)
 from workbench_api.db.repositories.symbol_name import SymbolNameRepository
 from workbench_api.db.repositories.trial_registry import TrialRegistryRepository
 from workbench_api.db.session import get_session
@@ -54,6 +57,12 @@ from workbench_api.monitoring.trial_backfill_b081 import (
     B081_AB_TRIALS,
     B081_AUDIT_TRIALS,
     B081_TRIAL_STAMP,
+)
+from workbench_api.monitoring.trial_backfill_b082 import (
+    B082_TRIAL_STAMP,
+    B082_TRIALS,
+    CN_DIVIDEND_LOWVOL_RESEARCH_CAVEAT,
+    CN_DIVIDEND_LOWVOL_STRATEGY_ID,
 )
 from workbench_api.settings import get_settings
 from workbench_api.symbols.names import CURATED_SYMBOL_NAMES
@@ -199,7 +208,30 @@ def _import_trials(session: Session) -> int:
     # migration 0036 lands these on deploy; bootstrap keeps local dev in lockstep).
     for trial in B081_AUDIT_TRIALS:
         repo.register(created_at=B081_TRIAL_STAMP, **trial)
-    return len(HISTORICAL_TRIALS) + len(B081_AB_TRIALS) + len(B081_AUDIT_TRIALS)
+    # B082 F002 — the 6 dividend-lowvol backtest configs (migration 0037 lands these on
+    # deploy; bootstrap keeps local dev in lockstep).
+    for trial in B082_TRIALS:
+        repo.register(created_at=B082_TRIAL_STAMP, **trial)
+    return (
+        len(HISTORICAL_TRIALS)
+        + len(B081_AB_TRIALS)
+        + len(B081_AUDIT_TRIALS)
+        + len(B082_TRIALS)
+    )
+
+
+def _import_oos_cards(session: Session) -> int:
+    """B082 F002 — seed the dividend-lowvol OOS red card (migration 0037 lands it on
+    deploy; bootstrap keeps local dev in lockstep). Idempotent upsert from the same
+    constant the migration uses, so the two paths converge byte-identically."""
+
+    OosVerificationCardRepository(session).upsert_card(
+        CN_DIVIDEND_LOWVOL_STRATEGY_ID,
+        CN_DIVIDEND_LOWVOL_RESEARCH_CAVEAT,
+        source="seed",
+        updated_at=B082_TRIAL_STAMP,
+    )
+    return 1
 
 
 def run(repo_root: Path) -> dict[str, int]:
@@ -218,6 +250,7 @@ def run(repo_root: Path) -> dict[str, int]:
         n_backlog = _import_backlog(session, backlog_path)
         n_symbol_names = _import_symbol_names(session)
         n_trials = _import_trials(session)
+        n_cards = _import_oos_cards(session)
         # Trigger the generator's commit on a clean close.
         with contextlib.suppress(StopIteration):
             next(session_gen)
@@ -226,6 +259,7 @@ def run(repo_root: Path) -> dict[str, int]:
             "backlog": n_backlog,
             "symbol_names": n_symbol_names,
             "trials": n_trials,
+            "oos_cards": n_cards,
         }
     except Exception:
         session_gen.throw(SystemExit("rollback"))
@@ -270,7 +304,7 @@ def main(argv: list[str] | None = None) -> int:
     print(
         f"workbench-bootstrap: imported accounts={counts['accounts']} "
         f"backlog={counts['backlog']} symbol_names={counts['symbol_names']} "
-        f"trials={counts['trials']}",
+        f"trials={counts['trials']} oos_cards={counts['oos_cards']}",
         file=sys.stderr,
     )
     return 0
