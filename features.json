@@ -19,7 +19,7 @@
       "title": "Codex 独立验收 + signoff(验证前置筛: 残差/IC数字重实现/β口径/无扫参/前视/borderline诚实/trial幂等/零回归)",
       "priority": "medium",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【spec §2 rescoped F002】Codex独立验证**前置筛**(非引擎A/B): 残差动量+IC数字从零重实现抽验(不import我方)+β/残差口径核实+参数无扫参(grep)+前视核查(signal≤t,forward>t)+IC相对比较口径+★borderline t=1.98诚实性(别过度宣称显著)+trial幂等/N正确+零回归. signoff docs/test-reports/B085-...-signoff.md; INCONCLUSIVE(弱支持)确认. 引擎A/B不在本批范围(降级backlog).",
       "design_decisions": [
         "残差动量最大陷阱=β口径/窗口落位/年度聚合掩盖子窗;独立核实(B084 S1教训直接适用)。"

@@ -1,9 +1,9 @@
 {
-  "status": "verifying",
+  "status": "done",
   "total_features": 2,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
-  "current_sprint": "F002",
+  "current_sprint": null,
   "last_updated": "2026-07-05",
   "user_goal": "B085 cn_attack 信号升级 A/B(评审 P2, 残差动量先行). **B081 驱动**(cn_attack edge 资本条件化, 升级提稳). **first-look 低承诺 + 焊死禁扫参**: 残差动量(裸动量对市场/风格β回归取残差的动量)A/B vs 现纯保真基线, 显著提升(保真OOS非窗口落位)→推荐并入否则INCONCLUSIVE. **核心不变量**: 回看窗/β模型先验定死禁扫参; 双本金(10万/100万); ★分子窗损耗+turnover量化(B084 S1/S2教训); **零回归 cn_attack 产品码字节不变**(A/B是研究脚本, B076策略改动双门禁). 复用 B081 A/B runner + cn_attack 引擎 + B070 PIT. 剩三升级(SUE/剔涨停/2月规避)留后续. spec docs/specs/B085-cn-attack-signal-upgrade-spec.md; 预研 81335f5. 2 features 1g+1c.",
   "reference_docs": [
@@ -16,13 +16,13 @@
   "docs": {
     "spec": "docs/specs/B085-cn-attack-signal-upgrade-spec.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/B085-cn-attack-signal-upgrade-signoff-2026-07-05.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": null,
-    "pass_count": 0,
+    "summary": "全 PASS (2/2). 残差/IC 数字独立异路径从零重实现逐位吻合 (0.0108/-0.0009/delta0.0118/t1.98); β 口径 PIT 无前视 (手工核对+未来扰动反事实双证); 禁扫参 grep 零匹配 (3 先验常量); trial 生产落地实测 (alembic0040 + B085 INCONCLUSIVE 行 + 确定性 id 逐字幂等); 零回归 cn_attack 产品码 0 行; CI 全绿 + HEAD=prod(ad8e99d). rescope(引擎A/B→前置筛)=合规缩窄(first-look纪律+尊冻结硬边界+五处披露). INCONCLUSIVE 弱方向支持=合法保守裁定. 软观察3(ddof/月末采样/宇宙偏差)非阻断.",
+    "pass_count": 2,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
@@ -35,10 +35,10 @@
     "F001",
     "F002"
   ],
-  "completed_date": null,
+  "completed_date": "2026-07-05",
   "session_notes": {
     "planner": "2026-07-05 B085 planning(Claude CLI planner+generator). B084 ETF趋势 done(F003 PASS, evaluator 独立异路径复算逐位吻合; soft-watch: S1 我'未见震荡损耗'偏乐观-年度聚合掩盖子窗损耗/S2 turnover未量化→并入本类严验). done 阶段无并发 planner 开批→本 session 接手开 B085. B085=评审 P2 cn_attack 信号升级(残差动量先行, B081驱动), 预研 81335f5 复用. **【续接】** status=building. Generator 接 F001(残差动量 A/B, ★分子窗损耗+turnover量化=B084教训, 禁扫参, 零回归cn_attack产品码)→F002 codex独立验收. **learnings 队列待用户确认**(累积: B081 F002/F003/F004+B082 refresh审计+B083 flake+B084 sub-window聚合掩盖教训). B081/B082/B083/B084 follow-up待并入 backlog. ★本 session astronomical: B079-B082 done + B083 done + B084 done(3 first-look 独立验收全 PASS, evaluator 3次抓/证我的判断: B081过度归因/B083 rigor确认/B084 sub-window乐观).",
     "generator": null,
-    "evaluator": null
+    "evaluator": "2026-07-05 B085 F002 独立验收 → 全 PASS 2/2 → done. 代 Codex 执行(用户 /goal 授权, 与实现隔离). 核验路径: (1)残差/IC 从零 pandas/numpy 重实现(不 import 我方)51 月度点逐位吻合 resid0.0108/raw-0.0009/delta0.0118/t1.98/resid_t0.45; (2)手工核对 000001.SZ/2020-11-23 β=0.812397 numpy=pandas + 扰动未来 β 不变=PIT 双证; (3)禁扫参广谱 grep 零匹配, 3 先验常量; (4)VM 只读 sudo 查证 prod DB alembic=0040 + B085 行 bf-72732307519dec56/INCONCLUSIVE, 本地确定性 id 逐字相同=幂等; (5)零回归 cn_attack 产品目录 0 行; (6)CI 全绿 HEAD=prod ad8e99d. rescope(引擎A/B→前置筛)判为合规缩窄非 scope-dodge(first-look 纪律+尊冻结硬边界+五处披露+保守裁定). 软观察3: S1 t-stat 用 ddof=0(样本 std 复算 t=1.96 两者均<2.0 同 borderline 不改裁定); S2 月末采样用日历月末丢~40%点(对称施加相对比较仍公平); S3 绝对 IC 带宇宙偏差(已4处标注). 三项均与保守裁定同向→非阻断, 并入严验后续批. 完整引擎 A/B 留 backlog 待用户对触冻结 flagship 决策."
   }
 }
