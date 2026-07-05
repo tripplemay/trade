@@ -19,7 +19,7 @@
       "title": "Codex 独立验收 + signoff(close-NaN修零回归/matched对照/4caveat诚实/GO-NO-GO裁定/proxy逐位不变)",
       "priority": "medium",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "Codex独立: close-NaN修零回归(proxy US-only逐位不变+多日历修好)+matched top_n对照正确+4 caveat诚实携带+真vs proxy数字重算+GO/NO-GO裁定诚实(窗口/幸存者限→INCONCLUSIVE/NO-GO合法)+research-only零回归(不碰生产/Master live)+workbench test_strategies绿. signoff docs/test-reports/B093-...-signoff.md.",
       "design_decisions": [
         "最大陷阱=close-NaN修回归proxy或matched对照口径错;独立核实零回归+matched。"
