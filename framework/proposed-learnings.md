@@ -489,3 +489,13 @@
 **建议写入：** `framework/harness/generator.md` §CI 红诊断（改动面 vs 红测面物理关联判 flake）+ backlog test-automation-infra（risk-banner flake 治本）
 
 **状态：** 待确认
+
+## [2026-07-05] Claude CLI — 来源：B087+B090 验收方两次流程观察（planner 抢跑 done/开批）
+
+**类型：** 新坑 / 模板修订（角色时序）
+
+**内容：** 两例同款时序耦合：Planner 在 Evaluator 的 signoff 提交落地**之前**执行 done 收尾或开下一批（B087：done-phase 把 evaluator 未提交的写盘状态 sweep 进自己的 commit；B090：预设 PASS 开 B091 并重置 progress.json，消费掉 B090-done 瞬态）。两次均因裁定恰为 PASS 而无害，但**若裁定为 fixing 则状态机将不一致**（下批已开而上批实为未闭环）。规约建议：Planner 在 verifying/reverifying 期间不执行 done 收尾、不开下批；以「evaluator 的 signoff 报告文件 + 状态流转 commit 已在 origin/main」为唯一开批前置；等待期可做只读预研（预研 commit 注明"不动状态机"——现行做法保留）。
+
+**建议写入：** `framework/harness/planner.md`（§done 收尾/开批前置：signoff 落地 gate）
+
+**状态：** 待确认
