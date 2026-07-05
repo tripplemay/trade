@@ -64,6 +64,10 @@ from workbench_api.monitoring.trial_backfill_b082 import (
     CN_DIVIDEND_LOWVOL_RESEARCH_CAVEAT,
     CN_DIVIDEND_LOWVOL_STRATEGY_ID,
 )
+from workbench_api.monitoring.trial_backfill_b083 import (
+    B083_TRIAL_STAMP,
+    B083_TRIALS,
+)
 from workbench_api.settings import get_settings
 from workbench_api.symbols.names import CURATED_SYMBOL_NAMES
 
@@ -212,11 +216,16 @@ def _import_trials(session: Session) -> int:
     # deploy; bootstrap keeps local dev in lockstep).
     for trial in B082_TRIALS:
         repo.register(created_at=B082_TRIAL_STAMP, **trial)
+    # B083 F002 — the PEAD first-look IC (INCONCLUSIVE; migration 0038 lands it on
+    # deploy; bootstrap keeps local dev in lockstep).
+    for trial in B083_TRIALS:
+        repo.register(created_at=B083_TRIAL_STAMP, **trial)
     return (
         len(HISTORICAL_TRIALS)
         + len(B081_AB_TRIALS)
         + len(B081_AUDIT_TRIALS)
         + len(B082_TRIALS)
+        + len(B083_TRIALS)
     )
 
 
