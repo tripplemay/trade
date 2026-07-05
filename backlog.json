@@ -99,28 +99,6 @@
     "sequence_note": "2026-06-12 用户调序：排在 B055 进攻选股之后；属工程基建非交易 gate。Phase 1 golden 数据集为最高 ROI 单项。**2026-06-21 Phase 0+1 已立项=B071**(building,5 features 4g+1c):门禁确权+golden 真数据(data/fixtures/golden/ 真 Tiingo+SEC 含 2020/2022 危机窗)+验收即代码(tests/acceptance/ 6 复发不变量永久回归,★N 策略两两不同新增)+Codex mutation 元验收。触发=A股 进攻 B066-B070 五批反复靠手动真机回测分幻觉/真信号+§25 evaluator 退化系统性。本项余 P2-P5。**2026-06-21 Phase 2 核心已立项=B072**(building,4 features 3g+1c):golden 全栈 CI(sqlite+进程,★不引 docker/Postgres=Explore 发现全仓 0 docker+sqlite+systemd,引入是架构冲突)+e2e 交易闭环(推荐→diff→ticket→fills→reconcile→journal=BL-B023-S1 手动冒烟自动化)+可注入时钟(timer CLI --as-of 贯穿现有 seam,CI 快进验证定时)。**VCR 录放(P2-F3)ROI 最低延后 Phase 2.1**。本项余 Phase 2.1-P5。**2026-06-22 Phase 2.1 已立项=B073**(building,3 features 2g+1c):VCR 录放外部 HTTP(Tiingo/SEC/LLM gateway,CI 离线确定性)+AI Safety Eval 网关韧性(区分网关不可达[infra,不硬阻断]vs advisor 真不安全[硬阻断不变];★不削弱安全门)。触发=B072 期间外部 LLM 网关宕机拖红 AI Safety Eval 阻断 deploy gate(活证:外部故障不应阻断不相关部署)。本项余 **P3(prod synthetic+canary)/P4(LLM-judge)/P5(瘦身评审+signoff 起草)**,待 B073 跑顺。spec docs/specs/B073-test-automation-vcr-eval-resilience-spec.md。"
   },
   {
-    "id": "B0XX-ashare-data-source",
-    "title": "A 股数据源接入（数据先行，复用 B059 provider 抽象；P0 可行性 spike→P1 数据地基+A 股 lookup）",
-    "description": "【2026-06-13 用户基于 TradingAgents-astock 研究结论要求规划 A 股数据源接入路径】planning 文档 docs/product/a-share-data-source-integration-path-2026-06.md(7 章)。**核心思路**：数据先行、分层、**复用 B059 SymbolDataProvider 抽象**(A 股=该抽象的又一个 provider)→接在 B059 之后(先插座后插头)；**借 TradingAgents 的数据源，不借 LLM 决策**(领域信号未来量化因子化非 LLM 辩论)。**选型**：价格地基 baostock(最稳免费历史)或 AkShare(覆盖最广,聚合东财/新浪/THS/TDX)二选一/互 fallback；**futu/tiger 是券商 SDK 在 safety 禁列——只接数据库不接券商**。**工程现实**：符号体系不同(6 位+交易所后缀 .SH/.SZ，现 US-implicit 无市场维度→须加 market/exchange 横切地基)+CN 交易日历+币种 CNY≠USD(FX 延后)+基本面 CAS schema 独立 SEC+复权约定+非官方源(同 yfinance 风险)+**地理访问(境外 VM 拉中国源可能不稳=首要 de-risk)**。**分期**：P0 可行性 spike(验证 baostock/AkShare 从生产 VM 真能拉 A 股 EOD+稳定性/延迟/额度，地理访问是最大未知，去/不去依据)→P1 数据地基(符号市场维度+CN 日历+A 股价格 provider 插 B059+入 data_refresh/缓存+B059 详情页支持 A 股代码,EOD/CNY 诚实标注)→P2 基本面(AkShare CAS)+新闻(扩 B034/35)→P3 A 股策略/回测/执行(交易规则 T+1/涨跌停/手数/ST+领域因子量化化,远期 B055-P3/未来,需 B057 框架+本地基)；币种/跨市场 FX 延后。**附带**：数据地基建好后未来可用真 A 股/港股替换 hk_china_universe 的 ADR/ETF proxy(BL-B011-S2 更真)。",
-    "decisions": [
-      "2026-06-13 用户要求规划(基于 TradingAgents-astock 借鉴结论)；planning 文档已落",
-      "数据先行非策略承诺：接数据≠建 A 股策略≠交易 A 股；策略是 P3 远期",
-      "复用 B059 SymbolDataProvider 抽象(A 股=又一 provider)→接在 B059 之后",
-      "借数据源不借 LLM 决策；领域信号(龙虎榜/北向/解禁)未来量化因子化非 LLM 辩论",
-      "只接数据库(AkShare/baostock)不接券商 SDK(futu/tiger 在 safety 禁列)；provider 抽象多源 fallback",
-      "P0 可行性 spike 先行=地理访问(境外 VM 拉中国源)是最大未知,去/不去事实依据",
-      "符号/市场维度+CN 日历=横切地基(market 维度向后兼容 US 默认)；币种 FX/基本面/新闻/交易规则逐期延后",
-      "P0 spike 细化(规划文档 §8)：先试 AkShare(东财历史,reachability 用大站最可能通)+baostock 对照/fallback；代表标的 600519.SH/000001.SZ/300750.SZ/688981.SH/000300(跨板块+指数)；指标=连通性成功率≥95%·p95<5s/覆盖 5/5/深度≥3-5y/复权可得/交叉源<0.5%/日更可行/不引入禁列 broker SDK；GO/CONDITIONAL(缓解:缓存/China-region 代理/窄 universe)/NO-GO(geo-block→需中国区组件或延后)；executor=codex(Generator 供 probe 脚本 scripts/test/,Codex VM 跑+写 feasibility 报告)；权威环境=生产 VM 非本地,跨≥1 天跨时段。",
-      "P1 符号/市场维度 schema 细化(规划文档 §9)：**market 限定 canonical 字符串(后缀约定)+派生 SymbolRef，不做全表复合键迁移**；裸 ticker=US 默认(现有 US 数据零迁移零改动)，CN 用 6 位+.SH/.SZ(与 US 字母 ticker 无碰撞,可同表共存)；SymbolRef{canonical,code,market,exchange,currency,board} 派生+校验(board 由 code 前缀=未来交易规则预留；消歧坑 BRK.B 的.B 非市场码判 US)；每 provider 符号格式不同→canonical↔native 适配挂 B059 SymbolDataProvider;价格缓存按 canonical 键+可选 market/currency 列;CN 交易日历(gap 检查按市场);**币种 P1 仅元数据/展示不入组合聚合(FX 延后)**;provider 按市场路由(CN→AkShare/baostock,US→现有)。**P1 边界**:只动数据/lookup 层,账户/NAV/执行/票据/策略/交易规则一概不动(仍 US-only)。P1 草拆 5 feature:F-symbology/F-cn-provider/F-cn-calendar/F-lookup-cn/F-codex。"
-    ],
-    "confirmed_at": "2026-06-13",
-    "priority": "medium",
-    "milestone": "平台原语/多市场地基 — A 股数据源",
-    "source": "2026-06-13 用户要求规划 A 股数据源接入路径(基于 TradingAgents-astock 研究结论)",
-    "phase_plan": "P0 可行性 spike(VM 拉 A 股 EOD,地理访问 de-risk) / P1 数据地基+A 股 lookup(符号市场维度+CN 日历+provider 插 B059+B059 详情页支持 A 股) / P2 基本面(AkShare CAS)+新闻 / P3 策略+回测+交易规则+领域因子(远期 B055-P3) / 币种 FX 延后",
-    "sequence_note": "2026-06-13 P0 spike(B060)=GO；**P1 数据地基+lookup 已立项=B061**(符号维度 §9/CN provider akshare+baostock/CN 日历/详情页支持 A 股/§8 深度验证)。2026-06-18 **P2(基本面+新闻)已立项=B064**(用户拍板 A股+港股一并;基本面 AkShare CAS+个股新闻 on-demand;lookup 展示)。本项收窄为 **P3+残余**(A股策略/回测/交易规则 T+1·涨跌停·手数·ST/领域信号量化因子化/跨市场 FX·NAV 聚合),P3 远期(需 B057 框架+本地基)待按需立项；附带=A 股地基成后可用真 A 股替换 hk_china ADR proxy(BL-B011-S2 重测 Batch 2.5)。是多市场地基,B055-P3 依赖。"
-  },
-  {
     "id": "B0XX-ashare-smart-money-following",
     "title": "A股 聪明钱/机构资金跟随策略(用户真实目标:跟踪机构/大资金建仓动向跟随获利)",
     "description": "【2026-06-25 用户澄清真实目标:不是因子策略,是跟踪机构/大资金、摸其建仓动向、跟随获利的实战策略(信息流族)。cn_attack 4 连 NO-GO 后换此真正不同方向。2026-06-26 用户:保存本轮调研结论,后续再深入。】**B077 可行性摸底结论(done)**:三源数据现实——①北向 ELIMINATED(2024-05-13 停实时/2024-08-20 改季度披露,日度信号监管性死亡,任何源含 Wind 救不回);②主力资金流 HOLD(akshare 仅 0.5y 太浅);③龙虎榜机构席位 INCONCLUSIVE_COVERAGE_LIMITED(rank-IC 0.018-0.023 偏弱+驼峰非单调,但只测到 19.2% 事件——80.8% 机构 LHB 异动在 B070 去偏宇宙未覆盖的小盘)。决定性下一步=补小盘覆盖重跑 LHB 机构席位 first-look。**付费数据源调研结论(docs/research/ashare-smart-money-paid-data-sources-2026-06.md)**:(a)标杆=**Tushare Pro ¥200-500/年**(top_inst 龙虎榜机构 2005+ 全市场+全市场历史价含退市→补小盘覆盖+深度);(b)★主力资金流是 Level-1 推算劣质代理(大单≠机构/可对倒操纵/平台口径不一)→降级别当主信号;(c)Level-2 真实逐笔资金流=唯一'更真'但年费上万+只订阅10只+历史海量→对全市场研究不实用,搁置;(d)★数据真实性核查:top_inst 是真官方龙虎榜机构专用席位披露(本质优于主力资金流),但'机构专用'是噪/可马甲信号(私募/游资可弄机构专用马甲诱多/匿名/仅异动股/T+1滞后+拥挤'与虎谋皮')→上轮'最干净真机构信号'说过头已修正;(e)机构级(恒生聚源/朝阳永续 数十万/年个人无法申请;Wind ¥3-6万 过配)排除;(f)游资席位=独立未测信号(打板/动量族,龙虎榜公开可得)可作第二支。**结构性洞察**:A股 聪明钱披露三难全——及时的信号(龙虎榜/资金流)可被操纵,干净的信号(季报机构持仓滞后45天/北向季度/Level-2)滞后或不实用。'跟机构实时建仓'撞的不是找不到数据,是'及时+干净+可得'不可兼得=这条路真实天花板。",
