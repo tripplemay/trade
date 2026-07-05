@@ -129,22 +129,6 @@
     "sequence_note": "2026-06-25 B077(聪明钱数据可行性摸底)done=整体 NOT-GO 但收窄到龙虎榜机构席位+决定性下一步(补小盘覆盖)。2026-06-25/26 付费数据源调研(2 轮含真实性核查)=Tushare ¥200 标杆但 LHB 机构席位是噪/可马甲信号、期望放低。用户决定保存结论后续再深入。下一步候选=B078(Tushare 全覆盖去偏 LHB 机构席位低期望决定性一测)或重新评估这条路值不值得。研究文档 docs/research/ashare-smart-money-paid-data-sources-2026-06.md。"
   },
   {
-    "id": "B0XX-cn-attack-signal-upgrade",
-    "title": "cn_attack 信号升级 A/B：残差动量/SUE 叠加/剔涨停/2月规避（评审 P2）",
-    "description": "评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §1.4A。背景：12-1 原始价格动量在 A 股长期溢价≈0 或为负（Hsu 2018 约 -1%/年；LSY CH-4 无动量因子；Li et al 2024 传统价格动量不显著），B066 OOS 红卡是结构性现象非 bug——升级方向是换信号构造非调参。候选（文献证据从强到弱）：①残差动量（对 CH-3/FF-3 残差算 12-1；A 股 VW 0.59%/月且 3 年不反转）；②盈余动量 SUE 作第二信号/过滤器（与 PEAD 批次共享数据）；③多尺度价量趋势因子（Liu-Zhou-Zhu：月均 1.43%/月 Sharpe 0.48/MDD 13%）；④剔涨停修正动量（形成期剔除涨停日贡献）；⑤2 月规避（春节月强反转掩盖全年动量，George-Hwang-Li 2023）；⑥因子动量（TSFM 年化 9.91%/Sharpe 1.15，吞噬个股动量——若成立则 12-1 应让位）；⑦regime 门控（换手率分位/大小盘相对强弱作开关）。验收：沿用 B076 verdict-gating——去偏 B070 宇宙 primary 定裁、全样本+OOS 双门禁、NO-GO 合法；每个变体记入 trial registry。",
-    "decisions": [
-      "2026-07-03 用户确认立项",
-      "硬前置：①回测引擎修真批次完成（B0XX-backtest-engine-fidelity）；②quality 变体去偏缺口须先补齐或在 spec 显式声明局限（B070/B076 去偏只跑过 pure，quality 全部正面数字来自幸存者宇宙）",
-      "裁定纪律照搬 B076：去偏宇宙 primary、verdict-gated、不为『用上新构造』硬上更差策略；纯动量降级为对照基准",
-      "每次配置试验登记入 trial registry（P0 批次产物）以支撑 DSR 计算"
-    ],
-    "confirmed_at": "2026-07-03",
-    "priority": "medium",
-    "milestone": "Phase 5 — 策略研究体系化 + 新策略族（2026-07-03 评审路线图 P0-P2）",
-    "source": "2026-07-03 用户立项 P0-P2（评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §4 路线图）",
-    "sequence_note": "评审路线图 P2；依赖引擎修真（硬）与 P0 trial registry（软）；建议 P0/P0.5/P1 之后执行。"
-  },
-  {
     "id": "B0XX-bootstrap-seed-deploy-chain",
     "title": "bootstrap 种子数据全面接入部署链(curated symbol_name 生产=0 治本)",
     "description": "B080 F005 发现的系统性坑:workbench-bootstrap CLI 的幂等 seed 只手动跑,不在 deploy.sh/workflow → 生产静默缺数据无告警不自愈(B080 trial_registry=0 已由 migration 0033 根治;B079 curated symbol_name 生产=0 仍未修——akshare_spot 日刷 5203 行已覆盖显示故非阻断)。治本:把 bootstrap 其余种子(curated 名等)改 data-migration 或显式接入部署链;顺带审计 bootstrap 全部 seed 面找同类。来源:B080-evaluator r1/r2 + proposed-learning 2026-07-04。",
