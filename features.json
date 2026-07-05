@@ -6,7 +6,7 @@
    "title": "A股 ETF 数据地基 spike+接入(512890/红利低波指数/股息率/十年国债利差, 含 GO/NO-GO 探针)",
    "priority": "high",
    "executor": "generator",
-   "status": "pending",
+   "status": "done",
    "acceptance": "【spec §2 F001 + §0 数据地基】(1) akshare 真实 fetch 探针: 512890(+备选)日线深度/复权、H30269 指数历史、股息率序列、十年国债收益率——覆盖/深度/新鲜度落 docs/test-reports/B082-F001-data-reality.md(B077 模式,真数字);任一关键序列不可得或<5y→NO-GO 停批诚实交代。(2) GO→序列接入 data_refresh 管线(B065 模式,日刷 wiring+超时纪律 v0.9.54 §38/39)。正面证据:探针报告落盘;生产数据根可查新序列;日刷含新序列且超时守门。Gates(B081 教训显式): backend pytest/ruff 目录上下文/mypy CI-exact; 触 trade/ 则 + .venv/bin/mypy trade + 根 ruff + root pytest 全量 + backend venv 重装 trade; CI 三条全绿。",
    "design_decisions": [
     "数据不可得→NO-GO 停批也是合法交付(B077 先例);利差信号需要 ≥5y 利率历史。",
@@ -18,7 +18,7 @@
    "title": "策略实现+回测+红黄绿卡(持有基线+三档利差规则, ETF 成本口径, B081 开关, 双本金)",
    "priority": "high",
    "executor": "generator",
-   "status": "pending",
+   "status": "done",
    "acceptance": "【spec §2 F002 + §0】(1) trade/strategies/cn_dividend_lowvol/: 持有基线+三档利差配置(≥2.5% 满配/1.5-2.5% 半配 50%/<1.5% 低配 25%——spec 先验定死,禁止回测扫参优化,代码无阈值搜索路径);月度执行+不动区。(2) 回测: ETF 成本口径(无印花税,佣金 2.5bp+滑点 5bp——costs 须区分 ETF 与个股)+B081 修真开关(partial 默认 False 不变量)+10万/100万双本金(B081 容量教训)+WF 70/30+CPCV-lite;重点输出 2022 全年与 2024-02 窗口 DD 对照(vs HS300/vs cn_attack);ETF 窗口+指数 secondary 双口径诚实标注。(3) oos_verification_card 新行(validated=False,防守腿回撤口径)+trial_registry 登记全部试验。正面证据:回测报告真数字落盘;阈值先验性可审计;卡片+registry 落地。Gates(B081 教训显式): backend pytest/ruff 目录上下文/mypy CI-exact; 触 trade/ 则 + .venv/bin/mypy trade + 根 ruff + root pytest 全量 + backend venv 重装 trade; CI 三条全绿。",
    "design_decisions": [
     "利差阈值先验设定是本批最硬不变量——防守腿最易的美化是阈值隐性优化(评审 §2 纪律)。",
@@ -31,7 +31,7 @@
    "title": "模式注册+advisory surface+paper+B080 监控接入(cn_dividend_lowvol 研究态)",
    "priority": "high",
    "executor": "generator",
-   "status": "pending",
+   "status": "done",
    "acceptance": "【spec §2 F003】(1) registry append cn_dividend_lowvol(FUNDING_RESEARCH/月度)+target producer(利差档位进 master_meta)+refresh_worker 分发+timer(TimeoutStartSec 显式)。(2) paper 账户(10 万 CNY, CSI300 基准——B080 F004 per-strategy 基准)+前端模式选择器(B057 框架自动)+B080 监控面板覆盖新 strategy_id(若 B080 实现 cn_attack 硬编码则顺带参数化)。(3) 快照带研究态 disclaimer+红卡(读 DB 卡片 B080 机制)。正面证据:生产端到端(timer→target→快照→paper→面板);no-execution 守门;Master/cn_attack/regime 零回归。Gates(B081 教训显式): backend pytest/ruff 目录上下文/mypy CI-exact; 触 trade/ 则 + .venv/bin/mypy trade + 根 ruff + root pytest 全量 + backend venv 重装 trade; CI 三条全绿。 + Playwright e2e。",
    "design_decisions": [
     "B057 框架承诺『任何策略最小成本插入』——本批是该框架第 4 个消费者,插入成本本身是框架质量的检验。"
@@ -42,7 +42,7 @@
    "title": "Codex:独立验收(探针数字抽验/回测数字研究员级审计/阈值先验性/端到端/零回归)+signoff",
    "priority": "high",
    "executor": "codex",
-   "status": "pending",
+   "status": "done",
    "acceptance": "【spec §2 F004】L1 全门禁+新单测抽查。L2:探针数字抽验(独立重 fetch 1-2 序列对照);回测数字复核(抽 1 组重跑);利差阈值先验性审计(无扫参路径,grep+diff);生产模式端到端实测;回撤对照表数字与评审报告引用一致;零回归(cn_attack/master paper/B080 监控);HEAD≡prod。★B081 教训:对回测数字做研究员级审计——防守腿易美化点=窗口挑选与阈值隐性优化。signoff 逐条证据。",
    "design_decisions": [
     "验收主体:独立无实现上下文 agent 代 Codex(B079-B081 先例,用户 /goal 授权)。"
