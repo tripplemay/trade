@@ -34,4 +34,19 @@
 - **涨跌停可执行性**：大惊喜（预增/扭亏）次日常一字涨停买不进 → F002 必做涨跌停分层 IC（B081 F003 `_limit_hit_names`）。
 - **公告日 vs 数据日**：极少数预告可能盘中发布 → 保守用公告日 T+1 open（本报告口径）。
 
-## 裁定：**GO** → F001 part2 = data_refresh 接入（timeout-bounded + best-effort + 自有快照目录，排 Tiingo run_refresh 之前，B082 F004 ISSUE-1 教训）。
+## 裁定：**GO**
+
+## Part2 落地（bulk 研究 fetch，非 daily data_refresh）
+
+**first-look 是研究批（spec §0#1 不建生产模式）**，IC 需要的是**一次性 bulk 历史事件**（非日增量），
+故 F001 part2 = `scripts/research/b083_pead_fetch.py` 循环 stock_yjyg_em 2019Q1..2024Q4 → 规范化 →
+**PIT 去重**（同名同报告期取最新公告日）→ `data/research/b083_pead/events.csv`（gitignored，脚本可复现，同 b070/b081）。
+**daily data_refresh 日刷 wiring 推迟**到策略批（若 PEAD GO）——first-look 用 bulk 快照即可。
+
+**实测产出**（`scripts/research/b083_pead_fetch.py`）：
+- **38,595 条 PIT 事件**（2019-01-14 .. 2025-04-30），**5,246 只**唯一标的（全 A 宽覆盖）。
+- 预告类型分布：预增 10,616 / 略增 5,239 / 预减 4,469 / 首亏 4,351 / 扭亏 3,299（正/负惊喜均衡，够 IC 分档）。
+- PIT 去重单测：`tests/unit/test_b083_pead_fetch.py`（取最新公告 + 丢无公告日行 + 跨报告期分离）。
+
+**F002 消费**：events.csv（事件日=公告日 PIT）JOIN B070 PIT prices（前向收益）；宇宙对齐=事件∩B070 去偏宇宙子集
+（覆盖：38,595 事件 vs B070 ~800 名宇宙——F002 报事件∩宇宙的 IC 样本量，别混池）。
