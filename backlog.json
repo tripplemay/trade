@@ -11,24 +11,6 @@
     "priority": "low"
   },
   {
-    "id": "B0XX-hk-china-real-data-retest",
-    "title": "hk_china real-data Batch 2.5：修方法学重测一轮(把『真个股 vs proxy』真正测到)",
-    "description": "【2026-06-18 用户裁定:B063 真跑结论 NO-GO/未证实=方法学缺陷致核心假设没测到,不接受,修方法学重测一轮】B063 对比真跑(proxy CAGR +2.77%/Sharpe 0.55 vs real −0.06%/−0.32)的致命缺陷:real 策略 20/20 季度 regional_risk_off **全防守、0 选股**(forced_defensive=0=数据完整,是 2021-24 中国熊市真 risk-off 信号 + 前~4 季 200D MA 无 warmup 人为防守)→ real −0.06% = 持 SGOV 现金减摩擦,**『真个股 vs proxy ETF』核心假设根本没测到**。本批=修三处方法学缺陷重跑对比,让真个股真正参与回测,得到可信 go/no-go:(1) **200D warmup**——回测窗口前预留≥200 交易日数据预热趋势闸,避免前几季因 MA 未成形人为全防守;(2) **HK 数据源改 sina**(B062 已知:东财 stock_hk_hist ConnectionError → akshare stock_hk_daily sina 端点,B060 验过可达);(3) **A股 qfq 复权口径对齐**——akshare-baostock 交叉源偏差 2-60% 疑后复权/前复权口径不一致,对齐到 S2 §8 cross-source<0.5% 门槛(决策报告可信前提)。复跑后:若 real 仍全防守=结论坐实(200D 闸让真个股全程躲开 2021-24 中国股灾,任何中国股暴露这窗口都难看);若 real 真选了股=首次得到真个股 vs proxy 的真对比 → 据此重定 Batch 3。",
-    "decisions": [
-      "2026-06-18 用户裁定:不接受 B063 NO-GO(方法学缺陷致核心假设没测到),修方法学重测一轮",
-      "三处必修:①回测窗口前 200D warmup(趋势闸预热);②HK 改 sina(akshare stock_hk_daily,东财端点弃用);③A股 qfq 复权口径对齐到 cross-source<0.5%",
-      "复用 B063 已建资产:trade/backtest/hk_china_comparison_runner.py(装配层)+scripts/test/hk_china_proxy_vs_real_backtest.py(VM 驱动)+ashare_quality_check(26 universe)+FxConverter;只补 warmup/数据源/复权口径,不重写 harness",
-      "decision-grade=执行者须真跑出真数字(evaluator.md §29 实测证据硬段);若 Codex 无真机手段路由 Generator VM 真跑(planner.md done §1.5)",
-      "研究态不碰 live 推荐(hk_china 仍 proxy);trade 仍离线读 CSV;Master/US 不破——边界同 B063",
-      "planner 诚实提示:200D 闸本就让真个股全程躲开 2021-24 中国股灾,重测大概率仍 NO-GO,但能把假设真正测到=有效结论(值得做以闭合决策点)"
-    ],
-    "confirmed_at": "2026-06-18",
-    "priority": "medium",
-    "milestone": "C — hk_china 真数据 Batch 2.5(决策点重测,闸控 Batch 3)",
-    "source": "2026-06-18 B063 done 收尾用户裁定(不接受 NO-GO,修方法学重测)",
-    "sequence_note": "2026-06-18 用户选 A 股进攻模型方向→数据批 B065(立项 building)做 qfq 复权口径对齐时**顺带覆盖 hk_china 26 universe=本重测数据前置就绪**。B065 done 后,本重测只剩『200D warmup + 重跑对比』(HK 价格已 sina,qfq 已对齐)=轻量收口。完成后据真对比重定 BL-B011-S2 Batch 3。"
-  },
-  {
     "id": "B055",
     "title": "进攻型『单市场个股选股』新交易模式（独立于 Master，月度动量+质量，US 先行，按市场参数化可扩）",
     "description": "【2026-06-11 用户讨论确认的新方向：Phase 4 策略深化。与 Master 完全不同性格——更进攻/更集中/更高频】用户要一个**独立的新交易模式**：自己选股、**不进 Master 综合**（Master=稳健核心仓，本模式=进攻卫星，两者并行各看各的推荐）。**三角度需求**：①新模式独立个股选股（非 ETF）；②单一市场，初期一个、扩充后**每市场一份独立推荐、不交叉选股**（策略按市场参数化：各自股票池+数据源，独立跑各出一份）；③调仓更频繁、追更高收益。**用户确认决策**：风格=**动量+质量**（在质量好的股票里选动量最强 top N，质量过滤掉易暴雷/崩盘标的——进攻但有底）。**Planner 分析定的默认（待 planning 复核）**：市场=**美股先行**（数据现实：SEC EDGAR 财报只有美股+Tiingo 价格美股最全，多因子需财报）；频率=**月度**（比 Master 季度明显更频繁、能捕捉动量轮动、手工月度可承受、成本/过拟合可控——日/周不现实）；集中=**top 10-20**。**扩展硬约束**：非美市场无现成财报源→未来扩展的市场先用**纯价格动量**（不用财报），或接新数据源；架构按市场参数化干净支持。**诚实原则（须贯穿）**：『更频繁≠更高收益』——收益来自 个股>ETF + 集中 + 进攻因子（均同步带更高风险/更深回撤/个股暴雷/动量崩盘），频率只带成本；**追收益+高频最易过拟合，必须 walk-forward 样本外验证**，research-only/no 收益预测边界不变。**复用**：us_quality_momentum 因子+打分基建、B050 per-strategy 回测引擎（新模式自动获独立回测先验证再上实盘）、recommendation→diff→ticket→execution 闭环。**新建（实打实新功能区）**：单市场个股选股引擎+新推荐页/模式（独立于 Recommendations/Master）+股票池扩充（data-refresh 拉更多美股 symbol）+月度 cadence+per-模式风控(drawdown guard/防御)。**开放决策（留 planning）**：股票池来源(S&P500 成分 vs top-N 流动性)、持仓数(10/15/20)、具体因子定义(质量=ROE/margin/debt？动量=3/6/12 月？复用 us_quality)、模式内权重(等权 vs 动量加权 vs 波动加权)、per-模式是否要 kill-switch/防御、**资本如何在 Master 与本模式间分配**(本模式占账户多少%？还是独立 notional？关键产品问题)、surface 设计(新页 vs Recommendations 加模式选择器)、是否分期(P1 US 引擎+回测研究 / P2 推荐 surface+执行 / P3 多市场扩展)。",

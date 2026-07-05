@@ -1,28 +1,29 @@
 {
-  "sprint": "F002",
+  "sprint": "F001",
   "features": [
     {
       "id": "F001",
-      "title": "VIX tail-overlay: SPY+VIXY fetch + 静态overlay + tail-loss减/carry代价对比(可测)",
-      "priority": "low",
+      "title": "hk_china 真数据 Batch 2.5 重测: 200D warmup + 真个股 vs proxy 重跑对比(修方法学)",
+      "priority": "medium",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【prep docs/research/next-batch-prep-vix-overlay.md】fetch SPY+VIXY(akshare stock_us_daily Sina, 已实测可得 SPY2001-/VIXY2011-)→静态 X% VIXY overlay on SPY(先验 X=5%/10% 禁扫参, 月度再平衡)→可测对比 vs 纯 SPY: (1)tail-loss减(2020/2022 stress MaxDD)(2)negative carry代价(全期 CAGR)(3)综合诚实两面. ★焊死: VIXY长期负carry必量化(对冲不免费). 单测(overlay权重/再平衡机械). 报告 docs/test-reports/B089-F001-vix-overlay.md. ★零回归: 新研究模块 trade/analysis/vix_overlay.py, 不碰策略/flagship/生产. Gates: mypy trade+根ruff+root pytest+CI绿.",
+      "status": "pending",
+      "acceptance": "【backlog B0XX-hk-china-real-data-retest 三处必修】(1)★200D warmup=回测窗口前预留≥200交易日预热趋势闸(避前几季MA未成形人为全防守);(2)HK真个股 via akshare stock_hk_daily(sina, 26 REAL_UNIVERSE_TICKERS)+proxy(MCHI/FXI/KWEB/ASHR stock_us_daily)+defensive;(3)FX via FRED(DEXHKUS/DEXCHUS public CSV)→fx_daily.csv→FxConverter. 组unified prices→复用 hk_china_comparison_runner(纯装配层)run→真个股vs proxy CAGR/Sharpe/MaxDD对比. 报告 docs/test-reports/B090-F001-hk-china-retest.md. 增量+测试(fetch/FX/unified各步单测). ★诚实: planner预判大概率仍NO-GO(200D闸让真个股躲2021-24中国股灾), 但把'真个股vs proxy'假设真正测到=有效结论. research-only(不碰live/生产). Gates: mypy trade+根ruff+root pytest+CI绿.",
       "design_decisions": [
-        "前提已实测(2020 covid SPY-34%/VIXY+278%);tail-loss/carry可测客观非subtle-edge(B088 同思路)。",
-        "负carry必诚实量化=对冲不免费(无免费午餐两面)。",
-        "US fetch用 stock_us_daily(Sina绕Eastmoney限流, 同B084/B086思路)。"
+        "数据全可得实测确认(26 HK sina+4 proxy stock_us_daily+FRED FX public CSV)——非VM-gated(B063旧约束已解)。",
+        "复用 hk_china_comparison_runner 纯装配层(不重写harness);只补 warmup+本地数据源+FX。",
+        "增量+测试建(fetch→FX→unified→run各步验证);若某步深度不可靠则诚实checkpoint。",
+        "research-only边界不变(trade离线读CSV, 不碰live推荐)。"
       ]
     },
     {
       "id": "F002",
-      "title": "Codex 独立验收 + signoff(overlay数字重算/tail-loss减真/carry代价诚实/无扫参/零回归)",
-      "priority": "low",
+      "title": "Codex 独立验收 + signoff(200D warmup口径/真vs proxy数字/FX方向/NO-GO裁定诚实/零回归)",
+      "priority": "medium",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "【prep doc】Codex独立: overlay数字重算(不import我方)+tail-loss减(2020/2022 MaxDD)真+negative carry代价诚实量化(对冲代价非吹免费)+参数无扫参(grep先验X)+零回归(策略/flagship不动). signoff docs/test-reports/B089-...-signoff.md.",
+      "status": "pending",
+      "acceptance": "【backlog】Codex独立: 200D warmup口径核实(真消除前几季人为全防守)+真个股vs proxy数字重算+FX转换方向正确(local/rate=USD)+forced_defensive计数(真选股 vs 全防守)+go/no-go裁定诚实(NO-GO或真对比)+research-only零回归(不碰live/生产). signoff docs/test-reports/B090-...-signoff.md.",
       "design_decisions": [
-        "最大陷阱=只报tail-loss减不报carry代价(吹对冲免费);独立核实两面诚实。"
+        "核心=200D warmup是否真让真个股参与(非人为全防守)+真vs proxy是否首次真对比。"
       ]
     }
   ]
