@@ -25,7 +25,7 @@
 ## 2. Feature 拆解（2：1 generator + 1 codex）
 
 ### F001 (g) — 多源 A股 ETF 行情 fetch 层 + fallback + 测试
-- 模块 `trade/data/ashare_market_source.py`（或 scripts/research 下, 视是否入 trade/）：统一 `fetch_etf_daily(code)` →
+- 模块 `scripts/research/ashare_market_source.py`（research 层——trade/data/ 纯 CSV 读不依赖 akshare, 故落 research 层与 b084/b085 同层）：统一 `fetch_etf_daily(code)` →
   Eastmoney→Sina fallback，返回带 `source`/`adjust`（qfq|raw）标注的 DataFrame；SSLError/空 → 下一源；全失败 → 明确 raise。
 - **单测**（mock 源，不打真网）：(1) Eastmoney 成功→用它；(2) Eastmoney SSLError→fallback Sina；(3) 全失败→raise 明确错误；(4) sh/sz symbol 派生；(5) 返回带 source/adjust 标注。
 - 报告 `docs/test-reports/B086-F001-data-source-layer.md`（设计 + 源矩阵 + fallback 触发条件 + 口径差异）。
