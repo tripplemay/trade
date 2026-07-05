@@ -1,41 +1,42 @@
 {
-  "status": "done",
+  "status": "building",
   "total_features": 2,
-  "completed_features": 2,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": null,
+  "current_sprint": "F001",
   "last_updated": "2026-07-05",
-  "user_goal": "B092 = B055 US 进攻选股 **first-look**(低承诺: 宽美股宇宙动量+质量 top-N vs 基线, 有无 edge). **核心不变量**: research 快照(akshare/SEC EDGAR 免费, 不触生产data-refresh/Master universe); 质量过滤+动量排名 top-15 月度先验禁扫参; ★walk-forward 样本外+过拟合诚实评估(subtle-edge, A股attack OOS-negative期望低); GO(推荐全P1)/INCONCLUSIVE. 用户 away 战略问未答→best judgment 推 B055 first-look(唯一自主非基建项). spec docs/specs/B055-attack-stock-selection-spec.md(全P1). 2 features 1g+1c. Workflow-build.",
+  "user_goal": "B093 = hk_china 真个股 vs proxy 决策级重跑(B091修复解锁, BL-B011-S2 收口). 修 B091-O1 close-NaN 残留(per-ticker最后有效close, 零回归proxy)+重跑matched top_n对照+携4 caveat(SGOV floor/幸存者/matched/close-NaN). 产出=真vs proxy对照+GO/NO-GO(闸控Batch3激活hk_china live Master; NO-GO/INCONCLUSIVE合法). research-only(不碰生产/Master live). 2 features 1g+1c. Workflow-build.",
   "reference_docs": [
-    "docs/specs/B055-attack-stock-selection-spec.md",
-    "trade/strategies/us_quality_momentum/factors.py",
-    "trade/backtest/us_quality_momentum/engine.py"
+    "docs/test-reports/B090-F001-hk-china-retest.md",
+    "docs/test-reports/B091-F001-above-200d-ma-fix.md",
+    "trade/strategies/hk_china_momentum/factors.py",
+    "scripts/research/b090_hk_china_retest.py"
   ],
   "docs": {
-    "spec": "docs/specs/B055-attack-stock-selection-spec.md",
+    "spec": null,
     "test_cases": null,
-    "signoff": "docs/test-reports/B092-us-attack-first-look-signoff-2026-07-05.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "全 PASS 2/2 → done. 独立重跑回测 9 指标格 bit 级复现(STRATEGY full 26.53%/1.36; OOS 策略 Sharpe 1.45 < EW 1.54); 裁定一致(OOS 风险调整 edge 为负→GO 未达→INCONCLUSIVE 纪律裁定); 幸存者偏方向性正确; 先验无扫参+模块关系如实(新构 filter-then-rank≠生产 us_quality_momentum 5 因子); 数据源诚实(2017 floor 独立坐实为真数据边界: pre-2017 1018 不可能移动 vs 2017+ 19, UNH +2845% 坐实 +2800%; missing-6 逐字复核); 推论有界(不建全 P1≠美股选股永久无效); 2 对抗验证 un-refuted 复核属实; research-only 零回归 git 级坐实(trade/+workbench/ diff 空)+ruff+18 单测绿+CI 三绿+HEAD≡prod. 3 软观察非阻断(O1 模块关系文档 gap/O2 成本非对称保守方向/O3 floor 略保守).",
-    "pass_count": 2,
+    "summary": null,
+    "pass_count": 0,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
   },
   "generator_handoff": {
-    "summary": "B092 F001 **done**(Workflow 3子代理 build+2对抗验证 un-refuted survived, 专盯过拟合). B055 US进攻 first-look: ~100 S&P100(akshare价格+SEC EDGAR PIT财报 94/100 无前视)动量+质量 top-15月度. ★裁定 **INCONCLUSIVE**: 策略 CAGR26.53%/Sharpe1.36 胜SPY但仅靠等权tilt非选股(EW同样胜SPY); 对正确基线(同宇宙等权)样本内胜(1.30>0.97)但**样本外反转**(1.45<EW1.54)=edge-decay/过拟合→不推荐建全P1. 合survivorship偏+单牛市窗+A股OOS-negative(B070). ★数据发现 akshare US qfq 2017前腐败(处理:spike remover+2017 floor非调参). research-only(4文件, 不碰生产/Master). gates ruff+18单测. 报告 B092-us-attack-first-look.md. **F002 codex 验证**: 选股数字重算+★样本外无edge(策略1.45<EW1.54)+过拟合红旗(样本内胜样本外反转)+先验无扫参(2017 floor 是真数据 floor 非cherry-pick)+无前视+诚实裁定(INCONCLUSIVE合法)+research-only零回归. signoff docs/test-reports/B092-...-signoff.md. **含义: B055 全 P1 不推荐建(first-look 答否)**.",
-    "status": "complete"
+    "summary": null,
+    "status": "pending"
   },
   "features": [
     "F001",
     "F002"
   ],
-  "completed_date": "2026-07-05",
+  "completed_date": null,
   "session_notes": {
-    "planner": "2026-07-05 B091 done(Codex PASS 2/2, 10th; 修复真数据证有效 regional_risk_off 9/24翻)后开 B092(B055 US进攻 first-look). 用户away战略问未答→best judgment. Workflow-build(宽美股宇宙动量+质量 vs基线, walk-forward防过拟合). 剩 backlog: residual-engine/smart-money(待用户)/test-automation(基建).",
+    "planner": "2026-07-05 B092 done(Codex PASS 2/2 11th; US进攻 INCONCLUSIVE 无OOS edge)后开 B093(hk-china决策级重跑, B091解锁). Workflow-build(修close-NaN残留+matched对照+4caveat+GO/NO-GO). 剩backlog: residual-engine/smart-money(待用户)/test-automation(基建). ultracode Workflow连跑第4次.",
     "generator": null,
     "evaluator": "2026-07-05 B092 F002 独立验收 → 全 PASS 2/2 → done. 代 Codex(用户 /goal 授权, 与实现完全隔离, 最高怀疑度). B055 US 进攻选股 first-look(research-only, INCONCLUSIVE). 核心手段=从缓存快照独立重跑整条回测. 核验: (1)★对照数字独立复算: workbench/backend/.venv 跑 scripts.research.b092_us_attack_backtest → 9 指标格逐格 bit 级吻合报告(STRATEGY full 26.53%/1.36/-19.2%, in-samp 26.75%/1.30, oos 26.87%/1.45; EW full 21.44%/1.14, oos 24.20%/1.54; SPY full 17.08%/0.98)+诊断吻合(114 月/qualified 63/selected 15/universe 100/窗 2017-02-28..2026-07-02/split 68-46). ★裁定一致性: 对正确基线(同宇宙 EW)OOS 风险调整 edge 为负(策略 Sharpe 1.45<EW 1.54)→GO 门槛未达→INCONCLUSIVE 纪律裁定(非达标却保守亦非反向, B077/B085 守). (2)★幸存者偏方向性正确: 今日 S&P-100 幸存者上偏美化 strategy+EW, strategy-vs-EW 共享宇宙部分抵消; 美化收益→无偏真相更悲观→INCONCLUSIVE 在幸存者宇宙下反更可信; 报告方向论述正确未当有利因素. (3)★先验无扫参+模块关系如实: 冻结常量(TOP_N15/LOOKBACK6/SKIP1/DROP0.25)+grep 无 grid/optimize/product+docstring 明载 no tuning; 新独立构造 filter-then-rank ≠ 生产 us_quality_momentum(B025 5 因子 composite 35/30/15/10/10)→research 隔离合理契合 B055 spec; 报告未虚称复用. (4)★数据源诚实: akshare qfq 明标 adj_close=qfq close 非真 vendor(B090 caveat); SEC EDGAR 94/100 missing-6=PNC/PG/CAT/ITW/VZ/T 独立复核逐字吻合; PIT filed<=t 门(代码+单测双证无前视); ★2017 floor 独立验证=真数据边界非调参: cleaned 月度 pre-2017 1018 个不可能移动 vs 2017+ 仅 19, UNH pre-2017 +2845% 坐实报告 +2800%. (5)★无过拟合红旗+诚实裁定: Sharpe 1.3-1.45 非离谱(>2.5 才疑), 样本内胜 EW OOS 反转报告如实命名非 spin, 裁定 INCONCLUSIVE+明列 pre-conditions 合法. (6)★推论边界有界: 报告=不建全 4-feature P1(明列 pre-conditions 付费无偏 vendor+OOS Sharpe 须胜 EW), 未外推为美股选股永久无效. (7)★2 对抗验证 un-refuted: journal wf_0478a172-465, 1 build(a53a3bbf 输出逐字吻合报告)+2 验证者(a4f5791b/a4c6018f)均 refuted=false 且 recompute_matches/oos_edge_real=false/priors_not_tuned/no_look_ahead/verdict_honest/research_only=true; issues=报告 caveat. (8)★research-only 零回归: git diff 0374b32..HEAD -- trade/ workbench/ 字节空; 批次仅动 scripts/research×2+tests/unit×1+docs×1+state JSON; 快照 gitignored; ruff All passed+18 单测 fresh 绿; CI b285566→Python CI 5m28s+Backend CI 8m43s+Deploy 3m39s 全 success 自动链式; 无产品码变更→HEAD≡prod. 3 软观察非阻断: O1 报告未显式点名生产 us_quality_momentum 模块取舍(文档 gap 非缺陷, 诚实未虚称复用); O2 成本非对称(strategy 付 10bps turnover EW 不付, 保守-against-strategy 方向正确, 未来 P1 重测宜对称); O3 2017 floor 略保守(a4c6 称 2016 已 0 极端我复算 cleaned 月度仍~13, 阈值差异不 material). signoff docs/test-reports/B092-us-attack-first-look-signoff-2026-07-05.md. ★含义: B055 全 P1 攻击选股当前证据不推荐建(无样本外风险调整 edge). ★下阶段=战略方向待用户 + backlog 决策级 real-vs-proxy 重跑(携 B091 O1/B090 O2 caveat)."
   }

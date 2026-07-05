@@ -1,28 +1,28 @@
 {
-  "sprint": "F002",
+  "sprint": "F001",
   "features": [
     {
       "id": "F001",
-      "title": "B055 US 进攻选股 first-look: 宽美股宇宙动量+质量 top-N vs 基线(可测研究答案)",
+      "title": "hk_china 真个股 vs proxy 决策级重跑(B091修复解锁; 修 B091-O1 close-NaN 残留 + matched top_n + 4 caveat)",
       "priority": "medium",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【B055 backlog first-look 低承诺】fetch 宽美股 universe(~S&P100 100 大盘, 价格 akshare stock_us_daily/研究快照, 财报 SEC EDGAR 免费API 或 akshare US 基本面, research-only 快照不触生产data-refresh)→动量+质量选股(质量过滤 ROE/杠杆/margin 剔低质 → 合格池动量排名 6m skip 1m → top-15 等权, 月度)→回测 vs 等权基线/SPY, ★walk-forward 样本外(in-sample设计/OOS验证). 报告 docs/test-reports/B092-us-attack-first-look.md: 是否有 edge(vs基线 CAGR/Sharpe/MaxDD)+样本外+★诚实过拟合评估(subtle-edge, A股attack已OOS-negative故期望低). 裁定 GO(推荐全P1)/INCONCLUSIVE. research-only(不碰生产/Master universe). Gates: 根ruff+root pytest+CI绿. Workflow-build(fresh子代理+对抗验证防过拟合).",
+      "status": "pending",
+      "acceptance": "【backlog hk-china-real-vs-proxy-decision-rerun; B090 signoff O2 + B091 signoff O1/O2 前置清单】(1)★修 B091-O1 close-NaN 残留: above_200d_ma 的 close=wide.iloc[-1] 遇 as_of 对某票是节假日→NaN→伪防守(真数据24季2季触发); 修=per-ticker 最后有效 close(ffill/dropna last), ★零回归 live US-only proxy 逐位不变(同 B091). (2)重跑 b090 retest with 修好因子 + **matched top_n**(真选N股/proxy选N ETF 同数对照). (3)携4 caveat 处理: SGOV floor 2020窗/26HK幸存者偏/matched top_n/close-NaN残留剔或修. 产出=真vs proxy 对照表(CAGR/Sharpe/MaxDD/参与率)+**GO/NO-GO verdict**(闸控 BL-B011-S2 Batch3 激活 hk_china live Master; NO-GO/INCONCLUSIVE合法). research-only. Gates: mypy trade+backend/根ruff/root pytest+backend test_strategies绿. Workflow-build(fresh子代理+对抗验证零回归+决策级诚实).",
       "design_decisions": [
-        "first-look 低承诺(同B083-085): 先证 US 集中动量+质量有无 edge, 再决全4-feature P1。",
-        "research 快照(akshare/SEC EDGAR 免费)不触生产 data-refresh/Tiingo预算(避 production-adjacent)。",
-        "subtle-edge→Workflow 多对抗验证防过拟合(夏普离谱要存疑); A股OOS-negative 故诚实期望低。"
+        "B091修复解锁真sleeve参与(0→~37%),首次可真测real vs proxy。",
+        "close-NaN残留=B091-O1 同类per-ticker日历问题(close非MA);修per-ticker最后有效close,零回归proxy。",
+        "4 caveat须诚实携带;窗口/幸存者限→verdict大概率INCONCLUSIVE/NO-GO合法(闸控Batch3)。"
       ]
     },
     {
       "id": "F002",
-      "title": "Codex 独立验收 + signoff(非退化/样本外合理/无过拟合红旗/诚实裁定)",
+      "title": "Codex 独立验收 + signoff(close-NaN修零回归/matched对照/4caveat诚实/GO-NO-GO裁定/proxy逐位不变)",
       "priority": "medium",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "Codex独立: 选股数字重算(非退化,有交易,选合理大盘股)+样本外 in-vs-out 对比(walk-forward)+★无过拟合红旗(夏普离谱存疑,多变体挑winner存疑)+诚实裁定(edge弱→INCONCLUSIVE合法)+research-only零回归(不碰生产/Master). signoff docs/test-reports/B092-...-signoff.md.",
+      "status": "pending",
+      "acceptance": "Codex独立: close-NaN修零回归(proxy US-only逐位不变+多日历修好)+matched top_n对照正确+4 caveat诚实携带+真vs proxy数字重算+GO/NO-GO裁定诚实(窗口/幸存者限→INCONCLUSIVE/NO-GO合法)+research-only零回归(不碰生产/Master live)+workbench test_strategies绿. signoff docs/test-reports/B093-...-signoff.md.",
       "design_decisions": [
-        "subtle-edge 最大陷阱=过拟合/样本内挑winner;独立核实样本外+过拟合红旗。"
+        "最大陷阱=close-NaN修回归proxy或matched对照口径错;独立核实零回归+matched。"
       ]
     }
   ]
