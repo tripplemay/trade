@@ -126,6 +126,7 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 # engine-fidelity report; reflowing risks altering the numbers.
 "workbench_api/monitoring/trial_backfill_b081.py" = ["E501"]
 "workbench_api/monitoring/trial_backfill_b083.py" = ["E501"]
+"workbench_api/monitoring/trial_backfill_b084.py" = ["E501"]
 
 [tool.mypy]
 python_version = "3.11"

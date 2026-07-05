@@ -68,6 +68,10 @@ from workbench_api.monitoring.trial_backfill_b083 import (
     B083_TRIAL_STAMP,
     B083_TRIALS,
 )
+from workbench_api.monitoring.trial_backfill_b084 import (
+    B084_TRIAL_STAMP,
+    B084_TRIALS,
+)
 from workbench_api.settings import get_settings
 from workbench_api.symbols.names import CURATED_SYMBOL_NAMES
 
@@ -220,12 +224,17 @@ def _import_trials(session: Session) -> int:
     # deploy; bootstrap keeps local dev in lockstep).
     for trial in B083_TRIALS:
         repo.register(created_at=B083_TRIAL_STAMP, **trial)
+    # B084 F002 — the ETF trend first-look (LEAN-GO; migration 0039 lands it on deploy;
+    # bootstrap keeps local dev in lockstep).
+    for trial in B084_TRIALS:
+        repo.register(created_at=B084_TRIAL_STAMP, **trial)
     return (
         len(HISTORICAL_TRIALS)
         + len(B081_AB_TRIALS)
         + len(B081_AUDIT_TRIALS)
         + len(B082_TRIALS)
         + len(B083_TRIALS)
+        + len(B084_TRIALS)
     )
 
 

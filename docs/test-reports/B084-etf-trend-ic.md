@@ -16,6 +16,9 @@
 
 ## 裁定：**LEAN-GO**（防守型趋势 edge 真实，但非 definitive GO）
 
+> **正式 trial verdict = INCONCLUSIVE**（正向/防守 lean）：有效验证集只含 GO/NO_GO/INCONCLUSIVE/NA；
+> LEAN-GO 映射为 INCONCLUSIVE ——真实正向但 OOS 窗口落位使其未达 definitive GO，须严验后再判。避 B081 式过度归因。
+
 - **正向**：趋势在**所有口径**（收益/夏普/回撤）胜买入持有，熊市防守有效 → 满足 spec§2 F002 "夏普>买入持有+震荡可控" 的 GO 方向。
 - **★caveat（避 B081 式过度归因，决定 LEAN 非 definitive GO）**：
   1. **OOS Sharpe 1.14 > full 0.566 = 窗口落位假象嫌疑**（同 B070 教训）：OOS（后 30%≈2022-2026）**恰含 2022 熊市**——趋势防守正好在此窗口发光；OOS>IS **非稳健证据**，是窗口落位。
