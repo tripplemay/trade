@@ -1,5 +1,5 @@
 {
-  "sprint": "F002",
+  "sprint": "F003",
   "features": [
     {
       "id": "F001",
@@ -18,7 +18,7 @@
       "title": "盈余惊喜信号 + forward-return rank-IC first-look(N1/N5/N10/N20, 涨跌停分层)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【spec §2 F002】盈余惊喜=预告净利润区间中点 vs 去年同期(**先验口径,禁扫参**);事件日=公告日(PIT);进场=公告日 T+1 open。forward-return rank-IC N1/N5/N10/N20(B077 模式)在去偏 PIT 宇宙事件子集;分档 group-mean 单调性;**涨跌停分层**(含/剔除次日触板名两版 IC, B081 F003 _limit_hit_names 作分析口径)。报告落 docs/test-reports/B083-pead-first-look-ic.md(覆盖率/IC/单调/可执行性差/诚实边界) + trial_registry 登记(data-migration, B080 模式)。裁定: |IC|>~0.03 跨 horizon 同号+分档单调→GO(推荐独立策略批次入 backlog);否则 INCONCLUSIVE 归档。Gates 通用(mypy/ruff/单测 IC+分层)。",
       "design_decisions": [
         "先做 IC 一测(低承诺),不建 paper/红卡/生产模式;IC 噪音→INCONCLUSIVE 是合法常见结局。",

@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 3,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
-  "current_sprint": "F002",
+  "current_sprint": "F003",
   "last_updated": "2026-07-05",
   "user_goal": "B083 PEAD/业绩预告事件 first-look(评审 P1 排序 2, 新信号族)。**first-look=低承诺证据一测**: forward-return rank-IC(同 B077)——IC 显著+单调→GO 推荐独立策略批次;噪音→INCONCLUSIVE 归档。**核心不变量**: 公告日 PIT(进场发布日 T+1 open,禁财报期末前视);盈余惊喜先验定死(预告净利润中点 vs 去年同期,禁扫参);涨跌停分层 IC(含/剔触板,揭纸面 vs 可执行);去偏 PIT 宇宙口径复用 B070。不建 paper/红卡/生产模式(first-look)。数据自带探针(akshare stock_yjyg/yjkb/yysj/profit_forecast 已确认可得),不可 PIT→NO-GO 合法。spec docs/specs/B083-pead-first-look-spec.md;预研 docs/research/next-batch-prep-pead-first-look.md。3 features 2g+1c。",
   "reference_docs": [
@@ -28,8 +28,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B083 F001+F002 done(2g). F001: 业绩预告 data-reality GO + 38,595 PIT 事件 bulk fetch(scripts/research/b083_pead_fetch.py, gitignored 可复现)+pit_dedup 单测. F002: forward-return rank-IC first-look → **INCONCLUSIVE**: 8235 事件 IC(可执行) N1+0.021/N5-0.021/N10-0.076/N20-0.057 = 弱pop+reversal 非PEAD正向drift, 跨horizon不同号不单调. ★前视 rigor(命门): entry>announce 单测锁(test_b083_pead_ic). 惊喜=(预测-上年)/|上年| 先验禁扫参. trial_registry 登记(trial_backfill_b083+migration 0038+bootstrap, verdict INCONCLUSIVE, DSR N). 报告 docs/test-reports/B083-pead-first-look-ic.md + B083-F001-data-reality.md. ★诚实(避B081过度归因): INCONCLUSIVE=此naive口径/宇宙无drift 非'PEAD死'; 3 caveat(B070大盘宇宙覆盖23%/预告非实际快报/SUE去年同期). **F003 codex 独立验收重点**: (1)前视/时点严谨核查=entry严格>公告日无look-ahead(重实现验); (2)惊喜口径无扫参(grep 单一bundle); (3)IC 数字从零重实现抽验(不import我方脚本); (4)宇宙偏差caveat诚实非过度归因; (5)trial登记幂等/N正确; (6)零回归(不触cn_attack/dividend_lowvol). Gates通用. 门禁全绿(backend mypy521/ruff/13测/migration 0038 apply).",
+    "status": "complete"
   },
   "features": [
     "F001",
