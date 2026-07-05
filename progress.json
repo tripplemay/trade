@@ -1,9 +1,9 @@
 {
-  "status": "verifying",
+  "status": "done",
   "total_features": 3,
-  "completed_features": 2,
+  "completed_features": 3,
   "fix_rounds": 0,
-  "current_sprint": "F003",
+  "current_sprint": null,
   "last_updated": "2026-07-05",
   "user_goal": "B084 A股 ETF 时序趋势轮动(评审 P2, global_etf_momentum 改造 工作量最小). **first-look 低承诺**(同 B083): 时序动量趋势胜率/夏普一测——显著>买入持有+震荡损耗可控→GO;弱→INCONCLUSIVE. **核心不变量**: 参数(回看窗/MA)先验定死禁扫参; ★2022/2024-02 震荡切换期假信号损耗必分窗口报(趋势策略最大陷阱); ETF 无印花税; 时序动量非横截面行业轮动; B081 修真开关带上. 数据复用 B082 A股 ETF 管线(fund_etf_hist_em, 扩宽基). 不建 paper/红卡/生产(first-look). spec docs/specs/B084-etf-trend-ashare-spec.md; 预研 docs/research/next-batch-prep-etf-trend-ashare.md. 3 features 2g+1c.",
   "reference_docs": [
@@ -16,13 +16,13 @@
   "docs": {
     "spec": "docs/specs/B084-etf-trend-ashare-spec.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/B084-etf-trend-first-look-signoff-2026-07-05.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": null,
-    "pass_count": 0,
+    "summary": "B084 3/3 PASS → done. 独立异路径复算(不import我方): full/OOS CAGR/Sharpe/MaxDD+2022/2024窗+avg_n_held 逐位吻合; 单一先验12月动量无扫参; 数据13359行完整+独立重fetch 512890逐行0差+非复权诚实(B082教训已接); migration 0039生产落地(生产DB alembic=0039+B084 INCONCLUSIVE行实测)+CI三绿+HEAD≡prod(7d30073)+bootstrap _N_TRIALS lockstep+零回归. INCONCLUSIVE(LEAN-GO)=与数字一致且保守的合法裁定. 软观察非阻断: S1报告'未见震荡损耗'叙述偏乐观(紧2024-02趋势+6.2%vs持有+10.9%/22年初趋势-14%vs持有-9% 子窗跑输,年度聚合掩盖) + S2换手未显式量化——均并入LEAN-GO严验后续批.",
+    "pass_count": 3,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
@@ -36,10 +36,10 @@
     "F002",
     "F003"
   ],
-  "completed_date": null,
+  "completed_date": "2026-07-05",
   "session_notes": {
     "planner": "2026-07-05 B084 planning(Claude CLI planner+generator). B083 PEAD done(signoff, evaluator F003 PASS 3/0: 命门前视全过 lookahead=0+IC 3独立路径4位吻合+INCONCLUSIVE合法裁定). done 阶段无并发 planner 开批→本 session 接手开 B084. B084=评审 P2 ETF 趋势(global_etf_momentum 改造 工作量最小), 预研 de5d2f3 直接复用. **【续接】** status=building. Generator 接 F001(ETF 数据复用 B082 管线扩宽基, NO-GO 停批合法)→F002(时序趋势 first-look, ★2022/2024-02 震荡损耗分窗口)→F003 codex(震荡损耗口径核实为重). **learnings 队列待用户确认**(B081 F002/F003/F004+B082 refresh 审计+B083 flake 诊断/更正). B081/B082 follow-up(partial=True 变体/refresh fx+benchmark 前移/PEAD 全A宽宇宙+快报 SUE)待并入 backlog. cn_attack-signal-upgrade(P2, B081 驱动)预研 81335f5 已备作 B084 后候选.",
     "generator": "2026-07-05 B084 **F001 DONE**(probe GO + Sina fetch 16f4607). ★解 Eastmoney 限流: fund_etf_hist_em(Eastmoney)撞SSL限流→换 fund_etf_hist_sina(Sina源绕开)+史更长; baostock无ETF弃. data/research/b084_etf/prices.csv=13,359行/5 ETF(510300/510500/588000/512890/159915)/2011-2026(14+年覆盖2022+2024-02震荡). 口径=Sina原始价(非qfq,趋势first-look方向不受影响,建策略再复权). _sina_symbol 单测. **【续接 F002】时序趋势 first-look**: 复用 trade/backtest/global_etf_momentum.py; 时序动量(回看窗/MA **先验禁扫参**)持有/退现金; full+WF 70/30 CAGR/Sharpe/MaxDD vs 买入持有 delta; ★**2022/2024-02 震荡期假信号损耗分窗口报**(趋势策略最大陷阱=命门); 报告 docs/test-reports/B084-etf-trend-ic.md + trial_registry 登记(DSR N, B080 data-migration). 裁定 趋势夏普显著>买入持有+震荡损耗可控→GO 否则 INCONCLUSIVE. prices 本地已备(scripts b084_etf_fetch 复现). 然后 F003 codex(震荡损耗口径核实为重). ★avoid B081 过度归因: 结论诚实(趋势若被震荡损耗吃掉=INCONCLUSIVE 合法, 同 B083 PEAD).\n\n=== 历史 ===\n2026-07-05 B084 **F001 part1 探针 GO**(510300沪深300/510500中证500/588000科创50/512890红利/159915创业板 via fund_etf_hist_em qfq; 宽基7+年深度覆盖2022/2024-02震荡期; 科创短史2020-诚实标注). 报告 docs/test-reports/B084-F001-data-reality.md. **★F001 part2 = bulk fetch 待 Eastmoney 限流恢复**: scripts/research/b084_etf_fetch.py 已就绪(ruff clean, 每ETF缓存断点续), 但探针后 bulk 连撞 SSLError push2his.eastmoney.com=本session大量akshare请求(B083预告bulk+本探针)触IP限流(同B082 Tiingo 429 transient). 数据可得性已证. **续接: fresh session/隔段重跑 b084_etf_fetch.py 落 data/research/b084_etf/prices.csv**. **F002**: 时序动量(回看窗/MA 先验禁扫参)趋势 first-look; ★2022/2024-02 震荡损耗分窗口报(趋势最大陷阱); vs 买入持有 delta; 报告+trial登记; 裁定 GO/INCONCLUSIVE. 复用 trade/backtest/global_etf_momentum.py. 然后 F003 codex(震荡损耗口径核实). ★本 session(astronomical): B079-B082 done + B083 done(F001-F003, PEAD first-look INCONCLUSIVE, evaluator PASS 3/0 命门前视全过) + 修红main flake + 开B084(F001探针GO). prep 备: ETF-trend(本批)/cn_attack-signal(81335f5). learnings 队列待用户确认.",
-    "evaluator": null
+    "evaluator": "2026-07-05 B084 F003 独立验收(代 Codex, 与实现隔离最高怀疑度) → **PASS 3/3 → done**. 命门=震荡损耗口径: 独立异路径脚本 scripts/research/b084_evaluator_independent_verify.py(groupby面板+显式shift+ddof=1, 不import我方)复算 full trend CAGR17.94%/Sharpe0.566/MaxDD-45.9% + OOS Sharpe1.139 + 2022/2024H1窗 + avg_n_held2.24 **全逐位吻合**. ★关键 evaluator 增量: 报告结论'未见震荡损耗'偏乐观——我算更细子窗揭示 紧2024-02(趋势+6.2%vs持有+10.9%,踏空反弹)+22年初(趋势-14%vs持有-9%,带仓杀入)趋势跑输,年度聚合(2022全年趋势-6%胜持有-8.4%)掩盖之. 判为**软观察S1非阻断**(数字未隐藏+方向与保守INCONCLUSIVE同向). 另 S2 换手未量化. 二者并入LEAN-GO严验后续批. 无扫参(单一_LOOKBACK_M=12). 数据: 独立重fetch 512890逐行0差, 非复权4处披露(B082教训已接). migration 0039生产DB实测 alembic=0039+trial bf-d68e1e96d89a0fc1/INCONCLUSIVE落地. HEAD=ee59c07(chore-only), prod release=7d30073含0039 → 部署≡HEAD. CI三绿+bootstrap _N_TRIALS lockstep+零回归(cn_attack/dividend_lowvol/PEAD 0行). signoff docs/test-reports/B084-etf-trend-first-look-signoff-2026-07-05.md."
   }
 }

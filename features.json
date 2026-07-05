@@ -30,7 +30,7 @@
       "title": "Codex 独立验收 + signoff(趋势数字重实现/无扫参/2022+2024-02 震荡损耗口径核实/零回归)",
       "priority": "medium",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【spec §2 F003】Codex 独立: 趋势数字从零重实现抽验(不import我方脚本)+参数无扫参(grep单一bundle)+★2022/2024-02 震荡损耗口径核实(趋势策略最大陷阱=样本内挑窗)+覆盖/新鲜度探针复核+零回归(不触cn_attack/dividend_lowvol/PEAD). signoff docs/test-reports/B084-etf-trend-signoff.md; GO/INCONCLUSIVE 确认.",
       "design_decisions": [
         "趋势策略最大陷阱=样本内挑最优窗+震荡期损耗被样本内掩盖;独立核实分窗口口径。"
