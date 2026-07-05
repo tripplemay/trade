@@ -29,21 +29,6 @@
     "sequence_note": "2026-06-18 用户选 A 股进攻模型方向→数据批 B065(立项 building)做 qfq 复权口径对齐时**顺带覆盖 hk_china 26 universe=本重测数据前置就绪**。B065 done 后,本重测只剩『200D warmup + 重跑对比』(HK 价格已 sina,qfq 已对齐)=轻量收口。完成后据真对比重定 BL-B011-S2 Batch 3。"
   },
   {
-    "id": "BL-B013-D2",
-    "title": "VIX-based tail risk overlay（option/ETN proxy 研究）",
-    "description": "机构研究 13 篇汇总（『Hedging Market Tail Risk Factors with Volatility Indices』、『Hedging Tail Risk with Robust VIXY Models』、『VIX Tail Risk Hedging and Predictor』等）显示在系统性 drawdown 期间持有 VIX-linked 工具（VIXY / VXX / 期权）可以显著减少 tail loss。MVP 范围外，因涉及期权/期货数据与潜在 broker 接入。后续可作为研究性 sleeve（fixture-first，先评估在 2020/2022 stress window 下的对冲效果），不引入真实 broker / paid 数据。",
-    "decisions": [
-      "首版只用 ETN/ETF proxy（VIXY 或等价），不用期权",
-      "保持 fixture-first；如需历史数据，走 B009 snapshot 路径",
-      "Backtest 必须显示对冲后 tail loss 显著下降但长期负 carry 可量化",
-      "不接入真实 broker 或 paper API"
-    ],
-    "confirmed_at": "2026-05-14",
-    "priority": "low",
-    "source": "B013 research material analysis (institutional tail-risk hedging papers)",
-    "milestone": "Phase 4 长尾（里程碑 C 后按需）"
-  },
-  {
     "id": "B055",
     "title": "进攻型『单市场个股选股』新交易模式（独立于 Master，月度动量+质量，US 先行，按市场参数化可扩）",
     "description": "【2026-06-11 用户讨论确认的新方向：Phase 4 策略深化。与 Master 完全不同性格——更进攻/更集中/更高频】用户要一个**独立的新交易模式**：自己选股、**不进 Master 综合**（Master=稳健核心仓，本模式=进攻卫星，两者并行各看各的推荐）。**三角度需求**：①新模式独立个股选股（非 ETF）；②单一市场，初期一个、扩充后**每市场一份独立推荐、不交叉选股**（策略按市场参数化：各自股票池+数据源，独立跑各出一份）；③调仓更频繁、追更高收益。**用户确认决策**：风格=**动量+质量**（在质量好的股票里选动量最强 top N，质量过滤掉易暴雷/崩盘标的——进攻但有底）。**Planner 分析定的默认（待 planning 复核）**：市场=**美股先行**（数据现实：SEC EDGAR 财报只有美股+Tiingo 价格美股最全，多因子需财报）；频率=**月度**（比 Master 季度明显更频繁、能捕捉动量轮动、手工月度可承受、成本/过拟合可控——日/周不现实）；集中=**top 10-20**。**扩展硬约束**：非美市场无现成财报源→未来扩展的市场先用**纯价格动量**（不用财报），或接新数据源；架构按市场参数化干净支持。**诚实原则（须贯穿）**：『更频繁≠更高收益』——收益来自 个股>ETF + 集中 + 进攻因子（均同步带更高风险/更深回撤/个股暴雷/动量崩盘），频率只带成本；**追收益+高频最易过拟合，必须 walk-forward 样本外验证**，research-only/no 收益预测边界不变。**复用**：us_quality_momentum 因子+打分基建、B050 per-strategy 回测引擎（新模式自动获独立回测先验证再上实盘）、recommendation→diff→ticket→execution 闭环。**新建（实打实新功能区）**：单市场个股选股引擎+新推荐页/模式（独立于 Recommendations/Master）+股票池扩充（data-refresh 拉更多美股 symbol）+月度 cadence+per-模式风控(drawdown guard/防御)。**开放决策（留 planning）**：股票池来源(S&P500 成分 vs top-N 流动性)、持仓数(10/15/20)、具体因子定义(质量=ROE/margin/debt？动量=3/6/12 月？复用 us_quality)、模式内权重(等权 vs 动量加权 vs 波动加权)、per-模式是否要 kill-switch/防御、**资本如何在 Master 与本模式间分配**(本模式占账户多少%？还是独立 notional？关键产品问题)、surface 设计(新页 vs Recommendations 加模式选择器)、是否分期(P1 US 引擎+回测研究 / P2 推荐 surface+执行 / P3 多市场扩展)。",
