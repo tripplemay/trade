@@ -1,12 +1,12 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
       "title": "A股宽基/红利 ETF 数据接入(复用 B082 fund_etf_hist_em 管线, 510300/510500/588000/512890, 含 GO/NO-GO)",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【spec §2 F001】复用 B082 fund_etf_hist_em fetch 扩标的(宽基 510300沪深300/510500中证500/588000科创50 + 512890红利低波). 真实 fetch 探针: 覆盖/深度/复权/新鲜度落 docs/test-reports/B084-F001-data-reality.md(真数字); 关键标的不可得或<3y→NO-GO 停批诚实. bulk 研究快照(first-look, 日刷 wiring 推迟到策略批若GO; 若接 data_refresh 排 Tiingo run_refresh 前=B082 F004教训). Gates: backend pytest/ruff/mypy; 触 trade/ 则 +mypy trade+根ruff+root pytest+venv重装; CI全绿.",
       "design_decisions": [
         "复用 B082 A股 ETF 数据管线=工作量最小(评审§3.4);上市时间(科创ETF短史)决定窗口,诚实标注。",
