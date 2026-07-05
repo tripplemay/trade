@@ -2,10 +2,11 @@
   {
     "id": "B0XX-fix-above-200d-ma-calendar-bug",
     "title": "修 above_200d_ma 多日历 MA bug(hk_china 真 sleeve 恒全防守真根因, B090发现)",
-    "description": "B090 F001 发现: trade/strategies/hk_china_momentum/factors.py above_200d_ma 对 HK+A股+US(SGOV) union 日历建宽表后 rolling 200-ROW min_periods=200 窗→跨市独有日注 NaN→任一票 200-row 窗内仅~184-188 非NaN→200D-MA 恒 NaN→读'below MA'→regional_risk_off 每季触发→真 sleeve 25/25 全防守 0 持股(B063 原 20/20 防守很可能亦此 bug 非 MA warmup 误判). 修=per-ticker 各自日历算 MA(rolling 前 drop 该票 NaN, 或 calendar-day 窗/放松 min_periods). 修后才能真跑 real vs proxy go/no-go. 触 trade/ 策略码→正常 spec→build→verify. 复现探针 docs/test-reports/B090-F001-hk-china-retest.md §6.",
+    "description": "B090 F001 发现: trade/strategies/hk_china_momentum/factors.py above_200d_ma 对 HK+A股+US(SGOV) union 日历建宽表后 rolling 200-ROW min_periods=200 窗→跨市独有日注 NaN→任一票 200-row 窗内仅~184-188 非NaN→200D-MA 恒 NaN→读'below MA'→regional_risk_off 每季触发→真 sleeve 25/25 全防守 0 持股(B063 原 20/20 防守很可能亦此 bug 非 MA warmup 误判). 修=per-ticker 各自日历算 MA(rolling 前 drop 该票 NaN, 或 calendar-day 窗/放松 min_periods). 修后才能真跑 real vs proxy go/no-go. 触 trade/ 策略码→正常 spec→build→verify. 复现探针 docs/test-reports/B090-F001-hk-china-retest.md §6. ★FIX 设计+blast radius(B090后勘): above_200d_ma(factors.py L~88): `wide.rolling(ma_long, min_periods=ma_long).mean()` over union-calendar wide frame→NaN. 修=**per-ticker .dropna() before rolling**(各票自身日历算MA)。**★blast radius=hk_china_momentum 策略**(above_200d_ma←trend_pass L99/122; wired 进 workbench backtests/worker.py + recommendations/precompute.py 非纯research)。**★零回归铁律**: 现 live hk_china=US-only proxy(MCHI/FXI/KWEB/ASHR 单日历)MA 已正常; per-ticker dropna 对单日历=**no-op**→proxy 行为字节不变; 仅多日历(real HK+A股+US)case 修好。验收须: (a)proxy/US-only 输出逐位不变(零回归 live), (b)多日历 real case MA 有效(0700.HK uptrend→above_MA=True), (c)workbench test_strategies.py+worker+precompute 全绿。适合 Workflow(fix+对抗验证零回归+多日历修)。",
     "decisions": [
       "B090研究批已证 warmup 非根因;真根因=多日历 fixed-row 窗 factor bug",
-      "修触 trade/ 策略码=正常批次(非research);修后 B090 retest 可复跑得真 go/no-go"
+      "修触 trade/ 策略码=正常批次(非research);修后 B090 retest 可复跑得真 go/no-go",
+      "★零回归: fix 对单日历 no-op 保 live proxy 行为不变; 仅多日历 real case 修好; 验收须证 proxy 逐位不变"
     ],
     "confirmed_at": "2026-07-05",
     "priority": "medium",
