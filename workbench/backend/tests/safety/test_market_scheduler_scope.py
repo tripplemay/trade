@@ -90,6 +90,10 @@ CN_ATTACK_QUALITY_TIMER_UNIT = (
 )
 CN_ATTACK_PURE_SERVICE_UNIT = SYSTEMD_DIR / "workbench-cn-attack-pure-momentum.service"
 CN_ATTACK_PURE_TIMER_UNIT = SYSTEMD_DIR / "workbench-cn-attack-pure-momentum.timer"
+CN_DIVIDEND_LOWVOL_SERVICE_UNIT = (
+    SYSTEMD_DIR / "workbench-cn-dividend-lowvol.service"
+)
+CN_DIVIDEND_LOWVOL_TIMER_UNIT = SYSTEMD_DIR / "workbench-cn-dividend-lowvol.timer"
 RISK_EXPL_MODULE = (
     BACKEND_ROOT / "workbench_api" / "services" / "risk_explanation.py"
 )
@@ -825,3 +829,72 @@ def test_cn_attack_precompute_may_import_trade() -> None:
         encoding="utf-8"
     )
     assert "trade.backtest.cn_attack_momentum_quality" in precompute_src
+
+
+# --- B082 F003 cn_dividend_lowvol precompute (boundary (r-c): read-only quant scoring
+# of the 红利低波 defensive-sleeve mode's target; research-state, no prediction) ---
+
+
+def test_cn_dividend_lowvol_service_execstart_runs_cli() -> None:
+    assert CN_DIVIDEND_LOWVOL_SERVICE_UNIT.is_file(), (
+        f"missing {CN_DIVIDEND_LOWVOL_SERVICE_UNIT}"
+    )
+    text = CN_DIVIDEND_LOWVOL_SERVICE_UNIT.read_text(encoding="utf-8")
+    execstart = [ln for ln in text.splitlines() if ln.startswith("ExecStart=")]
+    assert len(execstart) == 1, execstart
+    assert "workbench_api.strategy_modes.cn_dividend_lowvol_cli" in execstart[0]
+
+
+def test_cn_dividend_lowvol_service_references_no_trade_execution() -> None:
+    # Scan only systemd directive lines, not comments — the boundary comment
+    # legitimately *names* the forbidden surfaces to document (r-c).
+    directives = "\n".join(
+        ln
+        for ln in CN_DIVIDEND_LOWVOL_SERVICE_UNIT.read_text(encoding="utf-8").splitlines()
+        if not ln.strip().startswith("#")
+    ).lower()
+    for frag in ("broker", "order_ticket", "execution", "fills", "reconcile"):
+        assert frag not in directives, (
+            f"cn_dividend_lowvol .service directive references trade-execution {frag!r} "
+            "(boundary (r-c))"
+        )
+
+
+def test_cn_dividend_lowvol_service_sets_explicit_timeout() -> None:
+    """v0.9.54 §38 — a Type=oneshot precompute must cap TimeoutStartSec explicitly so a
+    wedged read is killed, not left hanging (parity with the monitoring service)."""
+    text = CN_DIVIDEND_LOWVOL_SERVICE_UNIT.read_text(encoding="utf-8")
+    assert any(ln.startswith("TimeoutStartSec=") for ln in text.splitlines()), text
+
+
+def test_cn_dividend_lowvol_timer_runs_daily_and_pulls_service() -> None:
+    assert CN_DIVIDEND_LOWVOL_TIMER_UNIT.is_file(), (
+        f"missing {CN_DIVIDEND_LOWVOL_TIMER_UNIT}"
+    )
+    text = CN_DIVIDEND_LOWVOL_TIMER_UNIT.read_text(encoding="utf-8")
+    assert "OnCalendar=" in text
+    assert "Unit=workbench-cn-dividend-lowvol.service" in text
+    assert "WantedBy=timers.target" in text
+
+
+def test_cn_dividend_lowvol_timer_wired_by_dry_loop() -> None:
+    """B082 timer installs via the B037-OPS1 workbench-*.timer loop — zero deploy.sh
+    change, no hardcoded enable literal."""
+    text = DEPLOY_SH.read_text(encoding="utf-8")
+    timer = "workbench-cn-dividend-lowvol.timer"
+    assert f"enable --now {timer}" not in text, (
+        f"{timer} must be wired by the DRY loop, not a hardcoded enable"
+    )
+    assert (SYSTEMD_DIR / timer).is_file()
+
+
+def test_cn_dividend_lowvol_precompute_may_import_trade() -> None:
+    """Boundary (r-c, B082): the dividend-lowvol precompute is explicitly ALLOWED to
+    import the ``trade`` package (the F002 spread signal) — pin that it does, so a
+    regression that severs the scoring import is caught. The generic target layer +
+    registry must NOT import trade (separate §12.10 AST guard)."""
+
+    precompute_src = (
+        STRATEGY_MODES_PKG / "cn_dividend_lowvol_precompute.py"
+    ).read_text(encoding="utf-8")
+    assert "trade.strategies.cn_dividend_lowvol" in precompute_src

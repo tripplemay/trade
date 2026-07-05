@@ -52,6 +52,9 @@ DEFAULT_SLIPPAGE_BPS = 5.0
 _STRATEGY_BASE_CURRENCY = {
     "cn_attack_pure_momentum": "CNY",
     "cn_attack_quality_momentum": "CNY",
+    # B082 F003 — the 红利低波 defensive sleeve trades a CNY-denominated A-share ETF, so
+    # its paper book is kept in CNY (10万 CNY at activation, CSI300 benchmark).
+    "cn_dividend_lowvol": "CNY",
 }
 
 

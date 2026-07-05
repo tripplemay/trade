@@ -43,10 +43,31 @@ from workbench_api.monitoring.tracking import (
 
 logger = logging.getLogger(__name__)
 
-# The two research-state cn_attack modes this job monitors (spec §2 F002).
-MONITORED_STRATEGIES = ("cn_attack_quality_momentum", "cn_attack_pure_momentum")
-# The synthetic cash row cn_attack persists — never part of an IC/exposure cross-section.
+# The synthetic cash row the CN modes persist — never part of an IC/exposure cross-section.
 CASH_SYMBOL = "CASH"
+
+
+def monitored_strategy_ids() -> tuple[str, ...]:
+    """The research-state CN modes this weekly job monitors, derived from the registry.
+
+    B082 F003 generalised what was a hardcoded ``("cn_attack_quality_momentum",
+    "cn_attack_pure_momentum")`` tuple: a new CN research mode is now picked up by
+    appending its registry row (B057 platform promise). Scoped to the CSI300-benchmarked
+    research cohort so the funded flagship (Master) and the SPY-benchmarked regime mode
+    keep their existing zero-monitoring behaviour (Master/regime zero-regression) — the
+    monitoring job only reads CN inputs (cn_csi300 / cn_size), so the CN cohort is the
+    right set. Registry selector order is preserved (quality+momentum first), so the two
+    cn_attack modes stay byte-identical and cn_dividend_lowvol appends after them.
+    """
+
+    from workbench_api.strategy_modes.registry import list_modes
+
+    return tuple(
+        mode.strategy_id
+        for mode in list_modes()
+        if mode.is_research_state
+        and STRATEGY_BENCHMARK.get(mode.strategy_id) == "CSI300"
+    )
 
 
 def _load_size_rows(path: Path | None) -> list[tuple[date, str, float]]:
@@ -224,7 +245,7 @@ def run_monitoring(
     stamp = computed_at or datetime.now(UTC)
     metric_repo = MonitoringMetricRepository(session)
     written = 0
-    for strategy_id in MONITORED_STRATEGIES:
+    for strategy_id in monitored_strategy_ids():
         try:
             written += _ic_metrics(session, metric_repo, strategy_id, as_of, stamp)
             written += _paper_metrics(

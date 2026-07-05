@@ -11,11 +11,13 @@ from __future__ import annotations
 from datetime import date
 from typing import Any
 
-# Per-strategy benchmark (spec §2 F002 / F004). cn_attack research modes are
-# benchmarked to CSI300 (沪深300); the funded modes stay SPY. Keyed by strategy_id.
+# Per-strategy benchmark (spec §2 F002 / F004). The CN research modes are benchmarked to
+# CSI300 (沪深300); the funded / US modes stay SPY. Keyed by strategy_id.
 STRATEGY_BENCHMARK: dict[str, str] = {
     "cn_attack_quality_momentum": "CSI300",
     "cn_attack_pure_momentum": "CSI300",
+    # B082 F003 — the 红利低波 defensive sleeve is an A-share mode, benchmarked to CSI300.
+    "cn_dividend_lowvol": "CSI300",
     "master_portfolio": "SPY",
     "regime_adaptive": "SPY",
 }
