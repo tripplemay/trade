@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-07-05",
   "user_goal": "B092 = B055 US 进攻选股 **first-look**(低承诺: 宽美股宇宙动量+质量 top-N vs 基线, 有无 edge). **核心不变量**: research 快照(akshare/SEC EDGAR 免费, 不触生产data-refresh/Master universe); 质量过滤+动量排名 top-15 月度先验禁扫参; ★walk-forward 样本外+过拟合诚实评估(subtle-edge, A股attack OOS-negative期望低); GO(推荐全P1)/INCONCLUSIVE. 用户 away 战略问未答→best judgment 推 B055 first-look(唯一自主非基建项). spec docs/specs/B055-attack-stock-selection-spec.md(全P1). 2 features 1g+1c. Workflow-build.",
   "reference_docs": [
@@ -26,8 +26,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B092 F001 **done**(Workflow 3子代理 build+2对抗验证 un-refuted survived, 专盯过拟合). B055 US进攻 first-look: ~100 S&P100(akshare价格+SEC EDGAR PIT财报 94/100 无前视)动量+质量 top-15月度. ★裁定 **INCONCLUSIVE**: 策略 CAGR26.53%/Sharpe1.36 胜SPY但仅靠等权tilt非选股(EW同样胜SPY); 对正确基线(同宇宙等权)样本内胜(1.30>0.97)但**样本外反转**(1.45<EW1.54)=edge-decay/过拟合→不推荐建全P1. 合survivorship偏+单牛市窗+A股OOS-negative(B070). ★数据发现 akshare US qfq 2017前腐败(处理:spike remover+2017 floor非调参). research-only(4文件, 不碰生产/Master). gates ruff+18单测. 报告 B092-us-attack-first-look.md. **F002 codex 验证**: 选股数字重算+★样本外无edge(策略1.45<EW1.54)+过拟合红旗(样本内胜样本外反转)+先验无扫参(2017 floor 是真数据 floor 非cherry-pick)+无前视+诚实裁定(INCONCLUSIVE合法)+research-only零回归. signoff docs/test-reports/B092-...-signoff.md. **含义: B055 全 P1 不推荐建(first-look 答否)**.",
+    "status": "complete"
   },
   "features": [
     "F001",

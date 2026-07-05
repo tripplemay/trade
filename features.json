@@ -1,12 +1,12 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
       "title": "B055 US 进攻选股 first-look: 宽美股宇宙动量+质量 top-N vs 基线(可测研究答案)",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【B055 backlog first-look 低承诺】fetch 宽美股 universe(~S&P100 100 大盘, 价格 akshare stock_us_daily/研究快照, 财报 SEC EDGAR 免费API 或 akshare US 基本面, research-only 快照不触生产data-refresh)→动量+质量选股(质量过滤 ROE/杠杆/margin 剔低质 → 合格池动量排名 6m skip 1m → top-15 等权, 月度)→回测 vs 等权基线/SPY, ★walk-forward 样本外(in-sample设计/OOS验证). 报告 docs/test-reports/B092-us-attack-first-look.md: 是否有 edge(vs基线 CAGR/Sharpe/MaxDD)+样本外+★诚实过拟合评估(subtle-edge, A股attack已OOS-negative故期望低). 裁定 GO(推荐全P1)/INCONCLUSIVE. research-only(不碰生产/Master universe). Gates: 根ruff+root pytest+CI绿. Workflow-build(fresh子代理+对抗验证防过拟合).",
       "design_decisions": [
         "first-look 低承诺(同B083-085): 先证 US 集中动量+质量有无 edge, 再决全4-feature P1。",
