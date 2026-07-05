@@ -1,9 +1,9 @@
 {
-  "status": "verifying",
+  "status": "done",
   "total_features": 2,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
-  "current_sprint": "F002",
+  "current_sprint": null,
   "last_updated": "2026-07-05",
   "user_goal": "B087 bootstrap-seed deploy-chain 治本(运维, 治 B080 F005). 审计(docs/research/next-batch-prep-bootstrap-seed-audit.md)定唯一真缺口=CURATED_SYMBOL_NAMES bootstrap-only(0027建表不seed, deploy跑alembic→生产curated=0). F001=加幂等 seed migration 0041(复用 trials 0036-0040 模板, insert-if-absent 不覆盖 akshare_spot). 核心不变量: 零回归不改日刷/upsert优先级(curated仅fallback); 幂等. 小批 2 features 1g+1c. B086 done 后接手开批.",
   "reference_docs": [
@@ -14,13 +14,13 @@
   "docs": {
     "spec": "docs/research/next-batch-prep-bootstrap-seed-audit.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/B087-bootstrap-seed-deploy-chain-signoff-2026-07-05.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": null,
-    "pass_count": 0,
+    "summary": "全 PASS 2/2 → done. migration 0041 幂等 seed CURATED_SYMBOL_NAMES 经 alembic 部署链落地生产(alembic head=0041); insert-if-absent 语义双证(静态 mutation-check 注入 overwrite→测试 FAIL 有牙 + 生产 4 A股 overlap 保 akshare_spot 中文名实测); 生产 curated=58>0(治本 production=0) / akshare_spot=5203 基线不减(零回归) / 58=68-10 mainland 逐点闭合; upgrade→downgrade→upgrade 幂等+可逆(downgrade 只删 curated 不误删 spot); bootstrap 同源 lockstep(names.py 单一真相源); 产品策略码 0 行; full backend unit 1531 passed/2 skip/0 fail+B087 2 单测 pass; CI 全绿(e1b0a03, Python CI 因 workbench/** paths-ignore 合法跳过)+HEAD≡prod. 治本闭环=B080 F005 同源缺口最后一块.",
+    "pass_count": 2,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
@@ -33,10 +33,10 @@
     "F001",
     "F002"
   ],
-  "completed_date": null,
+  "completed_date": "2026-07-05",
   "session_notes": {
-    "planner": "2026-07-05 B086 done(F002 PASS 2/2)后开 B087(bootstrap-seed 治本, 审计预勘已定 tight scope). Generator 接 F001(migration 0041 幂等 seed CURATED_SYMBOL_NAMES, insert-if-absent). 剩 backlog 7项(多 conditional/长尾/待用户). 33 learnings 待确认.",
+    "planner": "2026-07-05 B087 done(F002 PASS 2/2, curated seed migration 治本 B080 F005). **本 session 收官态**: P0-P2 全收官(B081-B085)+安全基建 2 批(B086 数据源 fallback/B087 bootstrap-seed)done+validated. gate 6 次抓/证判断. **backlog 余 7 = 全需外部决策或不宜此深度自主**: residual-engine(冻结flagship待用户)/smart-money(Tushare¥200待用户)/hk-china(VM真跑decision-grade)/vol-target+VIX(careful-quant宜fresh, B084深度质量教训)/B055+test-auto(长尾remnant P3-P5). **★真瓶颈=战略方向(已 AskUserQuestion 2 次, 用户away)**: P0-P2 无强 edge, 下一步(严验B084 ETF防守/转聪明钱/careful-quant/基建 P3+)待用户. 安全机械自主 win 已尽. 33 learnings 待确认.",
     "generator": null,
-    "evaluator": "2026-07-05 B086 F002 独立验收 → 全 PASS 2/2 → done. 代 Codex 执行(用户 /goal 授权, 与实现完全隔离, 最高怀疑度). 核验路径: (1)6 mock 单测覆盖 fallback 各分支(成功/SSLError→Sina/空→Sina/全失败raise/sina_symbol派生/标注)非 happy-path only; (2)★mutation-check 双变异证有牙: 改源 continue→raise 破 fallback → 2测FAIL, sina_symbol 恒 sh 前缀 → 1测FAIL, 还原后6 passed git diff空; (3)★真网端到端实测 fetch_etf_daily('510300',2024-01..02): Eastmoney 真 SSLError(push2his.eastmoney.com record layer failure)→WARNING→Sina 接管 23 行/source=sina/adjust=raw/日期窗正确过滤→INFO 'sina served after eastmoney SSLError'(不静默双log命中源); (4)口径标注按构造必异(qfq施复权/raw不施)+模块显式 adjust 列防混价(结构核实); (5)零回归: full root pytest(--ignore=acceptance) 1160 passed 0 failed / grep 无 trade·workbench 产品码 import 新模块(唯一importer=本模块单测)/ b082-b085 完成脚本 git diff 字节不变 / cn_attack·flagship·生产 data_root 0行; (6)CI全绿(Python CI+Backend CI+Deploy 520897f)+生产 release symlink→520897f≡HEAD产品码(其后3a7a24e/2e499a1/b98b065 均paths-ignore chore/docs不部署). 软观察3非阻断: O1 网络调用未包timeout(作用域审计=§38/§39源B078生产宽集刷job挂死, 非本research模块; 与b084/b085零timeout先例一致; 促码若接生产timer须补, 建议docstring加提示); O2 mypy CI作用域=trade(模块在scripts/research/外→CI不查, 直跑报akshare import-untyped属research层预期, ruff全仓过); O3 并发planner提交b98b065(下批docs预研)不碰B086状态机. ★两源live数值对照受限: Eastmoney 持续不可达(dev box SSL + VM ConnectionError, 510300+159915各重试4次共8次全FAIL)→无法抓 live qfq-vs-raw 数值差; 已诚实披露, 此持续阻断反再验证模块'固化 fallback'前提, 核心不变量(口径显式标注/fallback不静默/零回归)全达成→全PASS. 下阶段战略决策待用户方向(P0-P2 follow-up + backlog)."
+    "evaluator": "2026-07-05 B087 F002 独立验收 → 全 PASS 2/2 → done. 代 Codex(用户 /goal 授权, 与实现完全隔离, 最高怀疑度). 核验路径: (1)★insert-if-absent 语义(spec 点名最大陷阱=覆盖 akshare_spot 真名退化): upgrade() 先 SELECT 现存集合仅插不在集合的 symbol(line 52); mutation-check 注入 INSERT OR REPLACE(覆盖)→ test_...preserves_akshare_override FAIL 有牙, 还原 2 passed git status 空; (2)★生产 VM 只读实测(sudo sqlite3 -readonly, 零写): alembic_version=0041_curated_symbol_names_seed(head进); source breakdown=akshare_spot|5203 + curated|58; 4 个 mainland A股 overlap(600519/000858/300750/601318)全保 akshare_spot 中文名(贵州茅台等未被覆盖), HK(0700/9988)取 curated → 优先级不变活证; 抽样 SPY/AGG/AAPL/MSFT 值正确; updated_at 全=固定 stamp 2026-07-05; (3)计数逐点闭合 58=68-10 mainland(akshare 覆盖10 A股→精确跳过, 落地 27US+15ETF+16HK); (4)幂等+可逆: 本地 upgrade→downgrade→upgrade 循环实测(downgrade 只删 curated source 行 akshare 原样存活, re-upgrade 无 dupe count 逐位等); (5)零回归: F001 feat e1b0a03 diff=仅3文件(migration60+单测70+报告22, 产品策略码0行), 日刷 upsert(source=akshare_spot)路径/resolve_symbol_names DB优先解析不变, full backend unit 1531 passed/2 skip/0 fail(本地实跑12m56s)+bootstrap相关子集176 passed+B087 2 passed; (6)bootstrap 同源 lockstep(migration line27 与 bootstrap line80 同 import names.py 单一真相源); (7)CI全绿(Backend8m29s+Frontend+Deploy e1b0a03; Python CI 因 paths-ignore workbench/** 合法跳过, Backend CI 已覆盖 workbench_api)+生产 release symlink→e1b0a03≡HEAD产品码(d943133 仅 progress/features paths-ignore). 软观察2非阻断: O1 bootstrap upsert_names 覆盖语义 vs migration insert-if-absent(dev-only 差异, 生产走 migration 不跑 bootstrap, 名集同源已满 lockstep, 语义完全对齐可下批纯洁癖); O2 VM 3 systemd 服务 failed(data-refresh/prices/canonical-backtest)=pre-existing B087 前既存与 curated seed 无关(akshare 5203 历史刷入基线), 作用域外. ★治本闭环=B080 F005 同源 seed 缺口最后一块(curated 部署后=0 → migration 落地58条, 与 trials/cards migration纪律拉平). 下阶段战略决策+33 learnings 待用户方向."
   }
 }
