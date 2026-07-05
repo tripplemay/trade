@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-07-05",
   "user_goal": "B088 Smoothed/feedback vol-targeting(BL-B013-D1, 基建/研究). open-loop vol-targeting turnover spike→加 smoothing+feedback 减 turnover 维持控波. **核心不变量**: 零策略/flagship 改动(新研究模块 trade/analysis/vol_targeting.py); 三变体先验禁扫参; ★turnover 减=控制律机械性质(合成可测非主观edge, 避B084过度乐观); realized vol 仍≈target. spec docs/specs/B088-vol-targeting-smoothing-spec.md. 2 features 1g+1c.",
   "reference_docs": [
@@ -25,8 +25,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B088 F001 **done**. trade/analysis/vol_targeting.py: 3控制律 open_loop(min(target/rv,max))/smoothed(EWMA rv)/feedback(partial-adjust k). 先验 target0.08/halflife21/k0.5 禁扫参. turnover 对比(合成regime-vol seed42可复现): smoothed -54%turnover但控波1.30x略松; feedback -12%但控波1.13x几乎不损. realized vol 1.1-1.3x target=rv估计滞后(已知局限诚实标注). 4单测(控制律+turnover减机械性质)pass, ruff+mypy clean, ★零回归risk_parity不动. 报告 B088-F001-vol-targeting.md, 复现 python -m scripts.research.b088_vol_targeting_demo. **F002 codex 验证**: 三控制律公式核实+turnover减重算合成对比+参数无扫参(grep先验常量)+realized vol≈target(不牺牲控波)+零回归(risk_parity字节不变). signoff. Gates全绿.",
+    "status": "complete"
   },
   "features": [
     "F001",

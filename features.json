@@ -1,12 +1,12 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
       "title": "三 vol-targeting 控制律(open-loop/smoothing/feedback) + 单测 + turnover 对比(可测)",
       "priority": "low",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【spec §1 F001】trade/analysis/vol_targeting.py: open_loop_exposure(min(target/rv,max))/smoothed_exposure(EWMA rv)/feedback_exposure(partial-adjust e_t=e_{t-1}+k(openloop-e_{t-1})); 先验 halflife=21/k=0.5/target=0.08 禁扫参. 单测: open-loop(rv0.16→0.5/rv0.04→capped1.0)+smoothing(尖峰rv→turnover<open-loop)+feedback(k=1→==open-loop/k<1→turnover<open-loop). turnover 对比(合成 regime-vol 序列, 可测客观): smoothing/feedback turnover vs open-loop 降幅 + realized vol 仍≈target. 报告 docs/test-reports/B088-F001-vol-targeting.md. ★零回归: 不改 risk_parity/策略产品码(纯研究模块). Gates: mypy trade+根ruff+root pytest+CI绿.",
       "design_decisions": [
         "turnover 减=控制律机械性质(任意 vol-varying 序列可证)→可测非主观 edge(避 B084 过度乐观)。",
