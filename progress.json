@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-07-05",
   "user_goal": "B093 = hk_china 真个股 vs proxy 决策级重跑(B091修复解锁, BL-B011-S2 收口). 修 B091-O1 close-NaN 残留(per-ticker最后有效close, 零回归proxy)+重跑matched top_n对照+携4 caveat(SGOV floor/幸存者/matched/close-NaN). 产出=真vs proxy对照+GO/NO-GO(闸控Batch3激活hk_china live Master; NO-GO/INCONCLUSIVE合法). research-only(不碰生产/Master live). 2 features 1g+1c. Workflow-build.",
   "reference_docs": [
@@ -27,8 +27,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B093 F001 **done**(Workflow 3子代理 build+2对抗验证 un-refuted survived). hk_china决策级重跑: 修close-NaN残留(above_200d_ma close→ffill per-ticker, ★零回归proxy 0/25差异)+matched top_n=2 真vs proxy对照. ★裁定 **NO-GO(保ETF-proxy)**: 真sleeve参与72%(B091解锁0→72%)但CAGR+2.97%/Sharpe0.437/MaxDD-9.2% **不胜** proxy+2.75%/0.522/-3.87%(Sharpe差+回撤深2.4x带幸存者顺风); top_n=6 favorable=breadth artifact matched消失. 闸控Batch3=不激活live个股hk_china. close-NaN修 immaterial to verdict(移0聚合防守季,修2票/1季非top)诚实. 4 caveat诚实. research-only(仅factors.py+研究文件). gates全绿(ruff+mypy103+5测+backend test_strategies13). 报告 B093-hk-china-decision-rerun.md. **F002 codex 验证**: close-NaN修零回归(proxy逐位不变0/25)+matched top_n=2对照+真不胜proxy数字重算+4caveat诚实+NO-GO裁定纪律(无manufactured GO)+research-only零回归+workbench test_strategies绿. signoff. **含义: hk_china real-stock 悬案闭合=NO-GO 保proxy(B063以来)**.",
+    "status": "complete"
   },
   "features": [
     "F001",

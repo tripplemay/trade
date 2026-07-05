@@ -1,12 +1,12 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
       "title": "hk_china 真个股 vs proxy 决策级重跑(B091修复解锁; 修 B091-O1 close-NaN 残留 + matched top_n + 4 caveat)",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【backlog hk-china-real-vs-proxy-decision-rerun; B090 signoff O2 + B091 signoff O1/O2 前置清单】(1)★修 B091-O1 close-NaN 残留: above_200d_ma 的 close=wide.iloc[-1] 遇 as_of 对某票是节假日→NaN→伪防守(真数据24季2季触发); 修=per-ticker 最后有效 close(ffill/dropna last), ★零回归 live US-only proxy 逐位不变(同 B091). (2)重跑 b090 retest with 修好因子 + **matched top_n**(真选N股/proxy选N ETF 同数对照). (3)携4 caveat 处理: SGOV floor 2020窗/26HK幸存者偏/matched top_n/close-NaN残留剔或修. 产出=真vs proxy 对照表(CAGR/Sharpe/MaxDD/参与率)+**GO/NO-GO verdict**(闸控 BL-B011-S2 Batch3 激活 hk_china live Master; NO-GO/INCONCLUSIVE合法). research-only. Gates: mypy trade+backend/根ruff/root pytest+backend test_strategies绿. Workflow-build(fresh子代理+对抗验证零回归+决策级诚实).",
       "design_decisions": [
         "B091修复解锁真sleeve参与(0→~37%),首次可真测real vs proxy。",
