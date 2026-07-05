@@ -75,10 +75,32 @@ def return_6m(prices: pd.DataFrame, as_of: date) -> pd.Series:
     return trailing_return(prices, as_of, 6)
 
 
+def _latest_ma_own_calendar(col: pd.Series, ma_long: int) -> float:
+    """Latest ``ma_long``-day MA of one ticker, on ITS OWN trading calendar.
+
+    ``_wide_close`` unions every ticker's calendar, so a column carries NaN on
+    dates the ticker did not trade. Dropping those NaNs *before* the rolling
+    window makes ``min_periods`` count real observations, not union rows. A
+    ticker with fewer than ``ma_long`` real observations yields NaN (insufficient
+    trend evidence). On a single-calendar (gap-free) column ``dropna`` removes
+    nothing, so this equals the plain per-column rolling exactly."""
+
+    own = col.dropna()
+    ma = own.rolling(window=ma_long, min_periods=ma_long).mean()
+    return float("nan") if ma.empty else float(ma.iloc[-1])
+
+
 def above_200d_ma(
     prices: pd.DataFrame, as_of: date, ma_long: int = DEFAULT_MA_LONG
 ) -> pd.Series:
     """Boolean per ETF: latest close strictly above its 200-day MA.
+
+    The MA is computed on each ticker's own trading calendar (see
+    :func:`_latest_ma_own_calendar`): cross-market universes (HK + mainland-A +
+    US) inject NaN gaps into every column, which would otherwise starve the
+    ``min_periods=ma_long`` window and read "below MA" forever. On a
+    single-calendar frame the per-ticker dropna is a no-op, so the result is
+    byte-identical to a plain union-frame rolling.
 
     Tickers without ``ma_long`` days of history (MA is NaN) resolve to
     ``False`` — insufficient trend evidence is treated as "not above"."""
@@ -86,8 +108,8 @@ def above_200d_ma(
     wide = _wide_close(prices, as_of)
     if wide.empty:
         return pd.Series(dtype=bool)
-    ma = wide.rolling(window=ma_long, min_periods=ma_long).mean().iloc[-1]
     close = wide.iloc[-1]
+    ma = wide.apply(lambda col: _latest_ma_own_calendar(col, ma_long))
     return (close > ma).fillna(False)
 
 
