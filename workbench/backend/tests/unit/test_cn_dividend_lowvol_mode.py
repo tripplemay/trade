@@ -14,7 +14,7 @@ The real akshare/VM data is exercised at L2 (Codex F004); these assert logic / w
 from __future__ import annotations
 
 from collections.abc import Iterator
-from datetime import date
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import pandas as pd  # type: ignore[import-untyped]
@@ -23,12 +23,14 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from workbench_api.data_refresh.cn_dividend_lowvol import DIVIDEND_LOWVOL_SUBDIR
 from workbench_api.db.engine import get_engine
+from workbench_api.db.repositories.paper_account import PaperPositionRepository
+from workbench_api.db.repositories.price_snapshot import PriceSnapshotRepository
 from workbench_api.db.repositories.recommendation_snapshot import (
     RecommendationSnapshotRepository,
 )
 from workbench_api.monitoring.metrics_job import monitored_strategy_ids
 from workbench_api.monitoring.tracking import STRATEGY_BENCHMARK
-from workbench_api.paper.service import resolve_base_currency
+from workbench_api.paper.service import activate_paper_account, resolve_base_currency
 from workbench_api.paper.targets import PAPER_STRATEGIES, load_strategy_targets
 from workbench_api.strategy_modes.cn_dividend_lowvol_cli import main as cli_main
 from workbench_api.strategy_modes.cn_dividend_lowvol_precompute import (
@@ -40,6 +42,7 @@ from workbench_api.strategy_modes.cn_dividend_lowvol_precompute import (
     CnDividendLowvolTargetResult,
     run_cn_dividend_lowvol_precompute,
     score_cn_dividend_lowvol_target,
+    upsert_etf_price_marks,
 )
 from workbench_api.strategy_modes.refresh_worker import _DISPATCH, run_refresh_job
 from workbench_api.strategy_modes.registry import (
@@ -171,6 +174,97 @@ def test_score_data_not_covered_without_data_root(
     monkeypatch.delenv("WORKBENCH_DATA_ROOT", raising=False)
     with pytest.raises(CnDividendLowvolPrecomputeError):
         score_cn_dividend_lowvol_target(as_of=date(2024, 6, 28))
+
+
+# --------------------------------------------------------------------------- #
+# ETF price-mark sync + real paper build (B074 同类 minimal-increment fix)
+# --------------------------------------------------------------------------- #
+
+
+def _write_etf_csv(root: Path, closes: list[tuple[str, float]]) -> Path:
+    """Write ``etf_512890.csv`` (date,open,high,low,close,volume) under the snapshot dir."""
+
+    base = root.joinpath(*DIVIDEND_LOWVOL_SUBDIR)
+    base.mkdir(parents=True, exist_ok=True)
+    rows = [
+        {"date": d, "open": c, "high": c, "low": c, "close": c, "volume": 1000}
+        for d, c in closes
+    ]
+    pd.DataFrame(rows).to_csv(base / "etf_512890.csv", index=False)
+    return base
+
+
+def test_upsert_etf_marks_writes_512890(session: Session, tmp_path: Path) -> None:
+    base = _write_etf_csv(
+        tmp_path, [("2024-06-24", 1.10), ("2024-06-25", 1.12), ("2024-06-26", 1.11)]
+    )
+    written = upsert_etf_price_marks(session, data_dir=base)
+    session.commit()
+    assert written == 3
+    # The paper mark source now has 512890.SH (2 most recent → markable).
+    rows = PriceSnapshotRepository(session).latest_two_by_symbol(
+        CN_DIVIDEND_LOWVOL_ETF_SYMBOL
+    )
+    assert len(rows) == 2
+    assert float(rows[0].close) == pytest.approx(1.11)  # newest first
+    # Idempotent: a re-run writes nothing new.
+    assert upsert_etf_price_marks(session, data_dir=base) == 0
+
+
+def test_upsert_etf_marks_noop_when_csv_absent(
+    session: Session, tmp_path: Path
+) -> None:
+    base = tmp_path.joinpath(*DIVIDEND_LOWVOL_SUBDIR)
+    base.mkdir(parents=True, exist_ok=True)  # dir exists, no etf CSV
+    assert upsert_etf_price_marks(session, data_dir=base) == 0  # no write, no crash
+
+
+def test_paper_build_succeeds_once_etf_marked(session: Session, tmp_path: Path) -> None:
+    """The B074 downstream half for this mode: with the ETF marked (via the producer's
+    snapshot→price_snapshot sync), the cn_dividend_lowvol paper book builds its 512890.SH
+    position instead of stranding all-cash. Cash-sentinel CASH is stripped (no skip)."""
+
+    # 1. Producer syncs the ETF mark from the frozen snapshot.
+    base = _write_etf_csv(tmp_path, [("2024-06-25", 1.00), ("2024-06-26", 1.00)])
+    assert upsert_etf_price_marks(session, data_dir=base) == 2
+    session.commit()
+
+    # 2. Producer's published target (ETF half + CASH residual).
+    RecommendationSnapshotRepository(session).save_batch(
+        strategy_id=CN_DIVIDEND_LOWVOL_STRATEGY_ID,
+        as_of_date=date(2024, 6, 26),
+        rows=[
+            {
+                "symbol": CN_DIVIDEND_LOWVOL_ETF_SYMBOL,
+                "sleeve": "dividend_lowvol",
+                "target_weight": 0.5,
+            },
+            {"symbol": CN_DIVIDEND_LOWVOL_CASH_SYMBOL, "sleeve": "cash", "target_weight": 0.5},
+        ],
+        master_meta={"data_source": "real"},
+    )
+    session.commit()
+
+    # 3. Activate the paper account with the REAL DbPriceProvider (reads price_snapshot).
+    account, plan = activate_paper_account(
+        session,
+        strategy_id=CN_DIVIDEND_LOWVOL_STRATEGY_ID,
+        on_date=date(2024, 6, 27),
+        now=datetime(2024, 6, 27, tzinfo=UTC),
+        initial_capital=100_000.0,
+    )
+    session.commit()
+
+    assert account.base_currency == "CNY"  # 10万 CNY book
+    assert plan is not None and plan.traded is True
+    assert plan.skipped_symbols == ()  # 512890.SH was marked → not skipped
+    assert account.build_complete is True
+    positions = {
+        p.symbol for p in PaperPositionRepository(session).list_by_account(account.id)
+    }
+    assert positions == {CN_DIVIDEND_LOWVOL_ETF_SYMBOL}  # CASH stripped → no cash position
+    # ~50% deployed into the ETF, ~50% residual cash (less honest rebalance cost).
+    assert account.cash == pytest.approx(50_000.0, rel=0.05)
 
 
 # --------------------------------------------------------------------------- #

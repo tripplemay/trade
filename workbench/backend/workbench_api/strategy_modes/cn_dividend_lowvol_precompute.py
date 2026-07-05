@@ -53,6 +53,7 @@ from workbench_api.data_refresh.cn_dividend_lowvol import DIVIDEND_LOWVOL_SUBDIR
 from workbench_api.db.repositories.oos_verification_card import (
     OosVerificationCardRepository,
 )
+from workbench_api.db.repositories.price_snapshot import PriceSnapshotRepository
 from workbench_api.db.repositories.recommendation_snapshot import (
     RecommendationSnapshotRepository,
 )
@@ -82,6 +83,15 @@ _WEIGHT_ROUND_DIGITS = 6
 _TR_INDEX_CSV = "index_h20269"
 _PR_INDEX_CSV = "index_h30269"
 _YIELD_CSV = "cn_10y_yield"
+
+# The ETF bars CSV (華泰柏瑞中證紅利低波動 ETF, sina). The producer syncs its latest
+# closes into ``price_snapshot`` so the paper engine can MARK 512890.SH — an A-share
+# price absent from ``price_snapshot`` strands the paper book all-cash (the exact B074
+# cn_attack failure). ``_ETF_MARK_LOOKBACK`` closes are upserted (the engine marks the
+# latest against the prior trading day, so ≥2 are needed; a few more survive a skipped run).
+_ETF_CSV = "etf_512890"
+_ETF_MARK_SOURCE = "b082_dividend_lowvol_snapshot"
+_ETF_MARK_LOOKBACK = 5
 
 # Error-kind codes the refresh worker / frontend map to a friendly message (mirrors
 # cn_attack / regime — distinguish a data-coverage gap from a real bug).
@@ -159,6 +169,52 @@ def _load_series(data_dir: Path, name: str, value_col: str) -> Any:
         )
     frame = pd.read_csv(path, parse_dates=["date"])
     return frame.set_index("date")[value_col].astype(float).sort_index()
+
+
+def upsert_etf_price_marks(session: Session, *, data_dir: Path | None = None) -> int:
+    """Sync the ETF's latest closes from the frozen snapshot into ``price_snapshot``.
+
+    Minimal-increment paper-mark fix (B074 同类): the paper engine marks a target symbol
+    from ``price_snapshot`` and strands the book all-cash when the mark is absent. The
+    512890 ETF is NOT in the shared prices CLI universe (Tiingo US ETFs + the unified CN
+    individual-stock prices), so this producer — the only owner of the dividend-lowvol
+    data — upserts JUST this one symbol's last ``_ETF_MARK_LOOKBACK`` closes. It reads
+    only the dividend-lowvol snapshot and touches only ``512890.SH`` rows, so the shared
+    prices pipeline / ``price_universe`` (Master/cn_attack zero-regression) is untouched.
+
+    Idempotent (``save_if_new`` skips an existing ``(symbol, obs_date)``); best-effort —
+    a missing ETF CSV / unreadable file returns 0 without raising (the target persist has
+    already committed). ``data_dir`` is injectable for tests. Returns rows written.
+    """
+
+    import pandas as pd
+
+    directory = data_dir or _dividend_lowvol_data_dir()
+    if directory is None:
+        return 0
+    path = directory.joinpath(f"{_ETF_CSV}.csv")
+    if not path.is_file():
+        return 0
+    frame = pd.read_csv(path, parse_dates=["date"])
+    closes = frame[["date", "close"]].dropna().sort_values("date").tail(_ETF_MARK_LOOKBACK)
+    repo = PriceSnapshotRepository(session)
+    written = 0
+    for _, row in closes.iterrows():
+        close = float(row["close"])
+        if close <= 0:
+            continue
+        obs_date = row["date"].date()
+        if (
+            repo.save_if_new(
+                symbol=CN_DIVIDEND_LOWVOL_ETF_SYMBOL,
+                obs_date=obs_date,
+                close=close,
+                source=_ETF_MARK_SOURCE,
+            )
+            is not None
+        ):
+            written += 1
+    return written
 
 
 def _tier_label(weight: float, params: Any) -> str:
@@ -355,6 +411,18 @@ def run_cn_dividend_lowvol_precompute(
         computed_at=computed_at or datetime.now(UTC),
     )
     session.commit()
+
+    # Sync the ETF price mark so the paper engine can build 512890.SH (B074 同类).
+    # Best-effort in its own transaction: a failure here must not lose the target that
+    # already committed above. An injected ``score_fn`` (tests) with no data root → no-op.
+    try:
+        marks = upsert_etf_price_marks(session)
+        if marks:
+            session.commit()
+    except Exception:  # noqa: BLE001 — mark sync is advisory; never fail the target job
+        logger.warning("cn_dividend_lowvol_etf_mark_sync_failed", exc_info=True)
+        session.rollback()
+
     logger.info(
         "cn_dividend_lowvol_precompute_done",
         extra={
@@ -404,4 +472,5 @@ __all__ = [
     "CnDividendLowvolTargetResult",
     "run_cn_dividend_lowvol_precompute",
     "score_cn_dividend_lowvol_target",
+    "upsert_etf_price_marks",
 ]
