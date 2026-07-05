@@ -1,29 +1,28 @@
 {
-  "sprint": "F002",
+  "sprint": "F001",
   "features": [
     {
       "id": "F001",
-      "title": "hk_china 真数据 Batch 2.5 重测: 200D warmup + 真个股 vs proxy 重跑对比(修方法学)",
+      "title": "修 above_200d_ma 多日历 MA bug(per-ticker dropna; ★零回归 live US proxy 逐位不变)",
       "priority": "medium",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【backlog B0XX-hk-china-real-data-retest 三处必修】(1)★200D warmup=回测窗口前预留≥200交易日预热趋势闸(避前几季MA未成形人为全防守);(2)HK真个股 via akshare stock_hk_daily(sina, 26 REAL_UNIVERSE_TICKERS)+proxy(MCHI/FXI/KWEB/ASHR stock_us_daily)+defensive;(3)FX via FRED(DEXHKUS/DEXCHUS public CSV)→fx_daily.csv→FxConverter. 组unified prices→复用 hk_china_comparison_runner(纯装配层)run→真个股vs proxy CAGR/Sharpe/MaxDD对比. 报告 docs/test-reports/B090-F001-hk-china-retest.md. 增量+测试(fetch/FX/unified各步单测). ★诚实: planner预判大概率仍NO-GO(200D闸让真个股躲2021-24中国股灾), 但把'真个股vs proxy'假设真正测到=有效结论. research-only(不碰live/生产). Gates: mypy trade+根ruff+root pytest+CI绿.",
+      "status": "pending",
+      "acceptance": "【backlog B0XX-fix-above-200d-ma-calendar-bug + B090 F001 §6-7】修 trade/strategies/hk_china_momentum/factors.py above_200d_ma: 现 `wide.rolling(ma_long,min_periods=ma_long).mean()` over union-calendar 宽表→跨市日注NaN→MA恒NaN. 修=**per-ticker 各自日历算MA(rolling前 dropna该票)**. ★**零回归铁律**: (a)现 live hk_china=US-only proxy(MCHI/FXI/KWEB/ASHR 单日历)输出**逐位不变**(dropna对单日历=no-op); (b)多日历(real HK+A股+US)case MA有效(0700.HK uptrend→above_MA=True); (c)workbench test_strategies.py+backtests/worker.py+recommendations/precompute.py 全绿. 新单测(多日历MA有效+单日历no-op). Gates: mypy trade+backend/根ruff/root pytest+backend pytest+CI全绿.",
       "design_decisions": [
-        "数据全可得实测确认(26 HK sina+4 proxy stock_us_daily+FRED FX public CSV)——非VM-gated(B063旧约束已解)。",
-        "复用 hk_china_comparison_runner 纯装配层(不重写harness);只补 warmup+本地数据源+FX。",
-        "增量+测试建(fetch→FX→unified→run各步验证);若某步深度不可靠则诚实checkpoint。",
-        "research-only边界不变(trade离线读CSV, 不碰live推荐)。"
+        "per-ticker dropna 对单日历=no-op→保 live proxy 行为字节不变(零回归); 仅多日历real case修好。",
+        "blast radius=hk_china_momentum(wired workbench worker+precompute);验收须证proxy逐位不变。",
+        "修后 B090 retest 可复跑得真 real vs proxy go/no-go(follow-up)。"
       ]
     },
     {
       "id": "F002",
-      "title": "Codex 独立验收 + signoff(200D warmup口径/真vs proxy数字/FX方向/NO-GO裁定诚实/零回归)",
+      "title": "Codex 独立验收 + signoff(零回归 proxy逐位不变/多日历MA有效/workbench全绿)",
       "priority": "medium",
       "executor": "codex",
       "status": "pending",
-      "acceptance": "【backlog】Codex独立: 200D warmup口径核实(真消除前几季人为全防守)+真个股vs proxy数字重算+FX转换方向正确(local/rate=USD)+forced_defensive计数(真选股 vs 全防守)+go/no-go裁定诚实(NO-GO或真对比)+research-only零回归(不碰live/生产). signoff docs/test-reports/B090-...-signoff.md.",
+      "acceptance": "Codex独立: ★零回归核实(US-only proxy above_200d_ma/trend_pass 输出修前后逐位不变)+多日历real case MA有效(0700.HK above_MA True)+workbench test_strategies/worker/precompute全绿+per-ticker dropna语义正确+无扫参. signoff docs/test-reports/B091-...-signoff.md.",
       "design_decisions": [
-        "核心=200D warmup是否真让真个股参与(非人为全防守)+真vs proxy是否首次真对比。"
+        "最大陷阱=修改动了单日历proxy行为(回归live);独立核实proxy逐位不变为重。"
       ]
     }
   ]
