@@ -1,12 +1,12 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
       "title": "VIX tail-overlay: SPY+VIXY fetch + 静态overlay + tail-loss减/carry代价对比(可测)",
       "priority": "low",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【prep docs/research/next-batch-prep-vix-overlay.md】fetch SPY+VIXY(akshare stock_us_daily Sina, 已实测可得 SPY2001-/VIXY2011-)→静态 X% VIXY overlay on SPY(先验 X=5%/10% 禁扫参, 月度再平衡)→可测对比 vs 纯 SPY: (1)tail-loss减(2020/2022 stress MaxDD)(2)negative carry代价(全期 CAGR)(3)综合诚实两面. ★焊死: VIXY长期负carry必量化(对冲不免费). 单测(overlay权重/再平衡机械). 报告 docs/test-reports/B089-F001-vix-overlay.md. ★零回归: 新研究模块 trade/analysis/vix_overlay.py, 不碰策略/flagship/生产. Gates: mypy trade+根ruff+root pytest+CI绿.",
       "design_decisions": [
         "前提已实测(2020 covid SPY-34%/VIXY+278%);tail-loss/carry可测客观非subtle-edge(B088 同思路)。",
