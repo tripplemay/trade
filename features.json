@@ -1,12 +1,12 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
       "title": "修 above_200d_ma 多日历 MA bug(per-ticker dropna; ★零回归 live US proxy 逐位不变)",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【backlog B0XX-fix-above-200d-ma-calendar-bug + B090 F001 §6-7】修 trade/strategies/hk_china_momentum/factors.py above_200d_ma: 现 `wide.rolling(ma_long,min_periods=ma_long).mean()` over union-calendar 宽表→跨市日注NaN→MA恒NaN. 修=**per-ticker 各自日历算MA(rolling前 dropna该票)**. ★**零回归铁律**: (a)现 live hk_china=US-only proxy(MCHI/FXI/KWEB/ASHR 单日历)输出**逐位不变**(dropna对单日历=no-op); (b)多日历(real HK+A股+US)case MA有效(0700.HK uptrend→above_MA=True); (c)workbench test_strategies.py+backtests/worker.py+recommendations/precompute.py 全绿. 新单测(多日历MA有效+单日历no-op). Gates: mypy trade+backend/根ruff/root pytest+backend pytest+CI全绿.",
       "design_decisions": [
         "per-ticker dropna 对单日历=no-op→保 live proxy 行为字节不变(零回归); 仅多日历real case修好。",

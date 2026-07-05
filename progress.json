@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-07-05",
   "user_goal": "B091 修 above_200d_ma 多日历 MA bug(B090 发现的真根因). 现 union-calendar 宽表 rolling 200-row→跨市日注NaN→MA恒NaN→regional_risk_off恒触发. 修=per-ticker dropna(各票自身日历). **★零回归铁律**: live US-only proxy 单日历→dropna no-op→输出逐位不变; 仅多日历real case修好. blast radius=hk_china_momentum wired workbench. 2 features 1g+1c. Workflow-build(fresh子代理+对抗验证零回归).",
   "reference_docs": [
@@ -26,8 +26,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B091 F001 **done**(Workflow 3子代理: fix+2对抗验证 un-refuted survived=true). 修 above_200d_ma 多日历bug=新 _latest_ma_own_calendar(col.dropna前置 rolling)各票自身日历算MA; above_200d_ma 用wide.apply逐列; 语义+trend_pass接口不变. ★零回归三重证明: builder assert_series_equal+验证#1 fuzz 200单日历帧0不吻合+验证#2 random-walk; dropna单日历=no-op; workbench test_strategies 13 passed(live proxy活证). 多日历修好(单测a). gates全绿(ruff+mypy trade103/backend529+3/9/13测). 仅factors.py+新测 diff. 报告 B091-F001-above-200d-ma-fix.md. **F002 codex 验证**: ★零回归 proxy US-only 逐位不变(assert_series_equal/fuzz)+多日历real MA有效(0700.HK above_MA True)+<200obs→False语义+无前视+workbench test_strategies/worker/precompute绿+仅factors.py diff. signoff docs/test-reports/B091-...-signoff.md.",
+    "status": "complete"
   },
   "features": [
     "F001",
