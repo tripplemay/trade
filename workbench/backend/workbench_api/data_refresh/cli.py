@@ -234,6 +234,31 @@ def fetch_main(
         and not getattr(args, "no_cn_fundamentals", False)
     )
 
+    # B082 F001 / F004 ISSUE-1 — refresh the 红利低波 defensive-sleeve series
+    # (512890 ETF + H30269/H20269 indices + 10Y yield + market 股息率) into
+    # snapshots/dividend_lowvol/ BEFORE the Tiingo price refresh. It is INDEPENDENT of
+    # Tiingo (own sina/csindex/chinabond/legulegu hosts + own output dir) and each
+    # series fetch is timeout-bounded + best-effort (单序列失败不炸整轮). It used to run
+    # AFTER the unguarded ``run_refresh``, so the 2026-07 Tiingo 429 storm wedged the
+    # daily job before this step ran and the defensive-sleeve data NEVER landed in
+    # production (F004 ISSUE-1). Ordering it first decouples its landing from upstream
+    # Tiingo health; ``run_refresh`` is untouched, so its exit-code semantics
+    # (resolve_exit_decision) are byte-identical — this only reorders an independent,
+    # already-best-effort step. Only the real job injects the loader (tests pass None).
+    if dividend_lowvol_loader is not None:
+        from workbench_api.data_refresh.cn_dividend_lowvol import (
+            run_dividend_lowvol_refresh,
+        )
+
+        run_dividend_lowvol_refresh(
+            data_root=args.data_root,
+            loader=dividend_lowvol_loader,  # type: ignore[arg-type]
+            # B078 F001 — bound each series fetch (杜绝挂死).
+            fetch_timeout_seconds=cn_fetch_timeout,
+            # csindex end_date window pinned to the refresh run date.
+            today=run_date,
+        )
+
     summary = run_refresh(
         data_root=args.data_root,
         from_date=from_date,
@@ -268,24 +293,6 @@ def fetch_main(
             loader=cn_benchmark_loader,  # type: ignore[arg-type]
             # B078 F001 — bound the single index fetch (杜绝挂死).
             fetch_timeout_seconds=cn_fetch_timeout,
-        )
-
-    # B082 F001 — refresh the 红利低波 defensive-sleeve series (512890 ETF +
-    # H30269/H20269 indices + 10Y yield + market 股息率) into
-    # snapshots/dividend_lowvol/. Best-effort per series (每 fetch timeout-bounded,
-    # 单序列失败不炸整轮). Only the real job injects the loader (tests pass None).
-    if dividend_lowvol_loader is not None:
-        from workbench_api.data_refresh.cn_dividend_lowvol import (
-            run_dividend_lowvol_refresh,
-        )
-
-        run_dividend_lowvol_refresh(
-            data_root=args.data_root,
-            loader=dividend_lowvol_loader,  # type: ignore[arg-type]
-            # B078 F001 — bound each series fetch (杜绝挂死).
-            fetch_timeout_seconds=cn_fetch_timeout,
-            # csindex end_date window pinned to the refresh run date.
-            today=run_date,
         )
 
     # B065 F001 — build the A-share point-in-time universe membership artifact

@@ -331,6 +331,80 @@ def test_cli_default_data_root_from_env(monkeypatch: pytest.MonkeyPatch) -> None
     assert str(args.data_root) == "/var/lib/workbench/data"
 
 
+# --- B082 F004 ISSUE-1: dividend_lowvol refresh is decoupled from Tiingo health ---
+
+
+def _record_dividend_lowvol(
+    monkeypatch: pytest.MonkeyPatch, calls: list[str]
+) -> None:
+    """Patch the lazily-imported dividend_lowvol refresh to record when it runs."""
+
+    import workbench_api.data_refresh.cn_dividend_lowvol as dlv
+
+    def _rec(*_a: object, **_k: object) -> None:
+        calls.append("dividend_lowvol")
+
+    monkeypatch.setattr(dlv, "run_dividend_lowvol_refresh", _rec)
+
+
+def test_dividend_lowvol_runs_before_tiingo_run_refresh(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The 红利低波 series (independent of Tiingo) must refresh BEFORE ``run_refresh``
+    so a Tiingo outage can never wedge the job before it lands (F004 ISSUE-1)."""
+
+    calls: list[str] = []
+    # cli.py binds run_refresh by value (from ... import run_refresh), so the patch
+    # must target the cli module's own attribute, not the source module.
+    real_run_refresh = getattr(refresh_cli, "run_refresh")  # noqa: B009
+
+    def _rec_run_refresh(*a: object, **k: object) -> object:
+        calls.append("run_refresh")
+        return real_run_refresh(*a, **k)
+
+    monkeypatch.setattr(refresh_cli, "run_refresh", _rec_run_refresh)
+    _record_dividend_lowvol(monkeypatch, calls)
+
+    args = refresh_cli.parse_args(
+        ["fetch", "--data-root", str(tmp_path), "--lookback-days", "400"]
+    )
+    refresh_cli.fetch_main(
+        args,
+        loader_factory=lambda: (_FakePrices(), _FakeFundamentals(), _FakeCnHk(), _FakeFx()),
+        today=date(2024, 12, 31),
+        dividend_lowvol_loader=object(),  # truthy sentinel → the block runs
+    )
+    assert calls == ["dividend_lowvol", "run_refresh"]
+
+
+def test_dividend_lowvol_lands_even_when_run_refresh_wedges(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A Tiingo 429 storm that makes ``run_refresh`` raise must NOT stop the
+    dividend_lowvol landing (it already ran) — and the raise still propagates so
+    ``run_refresh``'s strict exit-code semantics are preserved (只隔离不吞错)."""
+
+    calls: list[str] = []
+
+    def _boom(*_a: object, **_k: object) -> object:
+        calls.append("run_refresh")
+        raise RuntimeError("tiingo 429 storm")
+
+    monkeypatch.setattr(refresh_cli, "run_refresh", _boom)
+    _record_dividend_lowvol(monkeypatch, calls)
+
+    args = refresh_cli.parse_args(["fetch", "--data-root", str(tmp_path)])
+    with pytest.raises(RuntimeError, match="tiingo 429 storm"):
+        refresh_cli.fetch_main(
+            args,
+            loader_factory=lambda: (_FakePrices(), _FakeFundamentals(), _FakeCnHk(), _FakeFx()),
+            today=date(2024, 12, 31),
+            dividend_lowvol_loader=object(),
+        )
+    # dividend_lowvol ran BEFORE the wedge; run_refresh still raised (not swallowed).
+    assert calls == ["dividend_lowvol", "run_refresh"]
+
+
 # --- B065 F001: A-share universe superset price EXTENSION + US/CN_HK zero-regression ---
 
 
