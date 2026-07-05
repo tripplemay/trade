@@ -30,7 +30,7 @@
       "title": "Codex 独立验收 + signoff(IC 数字审计/前视时点严谨性/无扫参/零回归)",
       "priority": "high",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【spec §2 F003】Codex 独立: IC 数字从零重实现抽验(不 import 我方脚本)+**前视/时点严谨性核查**(公告日 PIT/进场 T+1/无财报期末前视)+惊喜口径无扫参(grep 单一 param bundle)+涨跌停分层口径正确+覆盖率/延迟探针复核+零回归(不触 cn_attack/dividend_lowvol 产品码)。signoff docs/test-reports/B083-pead-first-look-signoff.md;GO/INCONCLUSIVE 裁定确认。",
       "design_decisions": [
         "first-look 结论=证据一测非可配资;前视是事件策略最大陷阱,独立核查时点。"
