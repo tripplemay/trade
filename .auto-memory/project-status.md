@@ -5,9 +5,9 @@ type: project
 ---
 
 ## 当前状态
-- **B081 ✅ done（2026-07-04）**(cn_attack 回测引擎修真 P0.5) = 全 5 特性 PASS(两轮闭环)。6 高估源修复各带独立开关(停牌/退市/涨跌停/手数/印花税5bp/band部分调仓+死参清理)，旧口径 bit 级复现 B070。**F005 独立验收关键**: r1 研究员级 A/B 数字审计坐实 2 HIGH → fixing(planner 实施 4e1feed) → r2 复验 PASS。**四疑点裁定**: ①lot_rounding 灾难=**10万本金容量下限**(lot@100k OOS-16%→1M+23.5%→10M+28.2% 单调恢复,探针10万本金~9/25买不起一手)非"分数股假象"; ②停牌/退市=合法no-op(0事件); ③partial_rebalance=收益改善型策略变动(绕no-trade-band,OOS+28.4%→32.7%)→默认改False留独立verdict; ④红卡改**资本条件化**(-16.0%@10万/+27.1%@100万纯保真,删"分数股假象",validated恒False)。生产 alembic=0036/trial_registry B081=14/红卡 source=b081_f005_capital_conditioned。signoff docs/test-reports/B081-...-signoff-2026-07-04.md(+verifying-r1)。
-- **B080 ✅ done（2026-07-04）**(策略生命周期监控 L0+L1)=全5 PASS。trial_registry 27 回填 data-migration 0033/监控指标+周timer/冻结再验证 pipeline/paper 三口径。signoff docs/test-reports/B080-...-signoff-2026-07-04.md。
-- **B079 ✅ done（2026-07-03）** 标的名称显示(soft-watch 已关)。**B078 done** data-refresh 卡死修复。**B077 NOT-GO** 聪明钱摸底。B076/B075/B074 done。
+- **B082 🔧 fixing（2026-07-05, verifying r1）**(红利低波防守腿 3g+1c)。独立验收(代 Codex)：代码/回测审计**全面 PASS**(F002 数字独立重实现逐位复现 7.49%/-40.5%·10.64%/-66.2%、阈值无扫参、TR-PR 手算、2024-02 更正证实真 HS300 -6.1%、探针重fetch、27+34+68 单测+CI三绿、alembic 0037/trial B082=6 逐位吻合/OOS card validated=0·mixed、零回归、no-execution)。**ISSUE-1(HIGH)阻断**：生产 live 数据从未落地(VM snapshots/dividend_lowvol/ 不存在、journal 全史无 dividend)——根因 cli.py fetch_main 中 dividend_lowvol(akshare)排在无 try/except 的 run_refresh(Tiingo)之后，今日 01:30 首刷撞 Tiingo 429 hang 未到达→03:50 timer 将 data_not_covered。代码正确性已证(真数据本机 producer 端到端 OK)，纯落地问题+部分环境性。建议隔离 akshare CN 系列与 run_refresh 失败(或观察自愈日复验)。报告 docs/test-reports/B082-...-verifying-r1-2026-07-05.md。
+- **B081 ✅ done（2026-07-04）**(cn_attack 回测引擎修真) = 全 5 PASS(两轮闭环)。6 高估源各带开关，旧口径 bit 级复现 B070。红卡改**资本条件化**(-16.0%@10万/+27.1%@100万纯保真,validated恒False,source=b081_f005_capital_conditioned)。生产 alembic=0036/trial B081=14。signoff docs/test-reports/B081-...-signoff-2026-07-04.md。
+- **B080 ✅ done** 策略生命周期监控(trial 27 回填 migration 0033/周timer/paper 三口径)。**B079 done** 标的名。**B078 done** refresh 卡死。**B077 NOT-GO**。B076/B075/B074 done。
 - **接续**：backlog ~19 项(partial_rebalance 策略变体独立 A/B verdict 批次[B081衍生] / B048 安全风控 / B0XX-ashare 数据源等)。
 
 ## 遗留 / soft-watch
