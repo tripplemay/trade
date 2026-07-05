@@ -47,5 +47,18 @@
     "milestone": "Phase 4 — 新方向:A股 聪明钱跟随(用户真实目标)",
     "source": "2026-06-25 用户澄清真实目标 + B077 可行性摸底 + 2026-06-25/26 付费数据源深入调研",
     "sequence_note": "2026-06-25 B077(聪明钱数据可行性摸底)done=整体 NOT-GO 但收窄到龙虎榜机构席位+决定性下一步(补小盘覆盖)。2026-06-25/26 付费数据源调研(2 轮含真实性核查)=Tushare ¥200 标杆但 LHB 机构席位是噪/可马甲信号、期望放低。用户决定保存结论后续再深入。下一步候选=B078(Tushare 全覆盖去偏 LHB 机构席位低期望决定性一测)或重新评估这条路值不值得。研究文档 docs/research/ashare-smart-money-paid-data-sources-2026-06.md。"
+  },
+  {
+    "id": "B0XX-hk-china-real-vs-proxy-decision-rerun",
+    "title": "hk_china 真个股 vs proxy 决策级重跑(B091 修复已解锁, BL-B011-S2 原始诉求收口)",
+    "description": "B090 证伪 warmup 假设+定位 above_200d_ma 多日历 bug,B091 已修(real sleeve 0%→~37% 参与)。决策级 GO/NO-GO 重跑现已解锁但须携带四 caveat 处理:①SGOV floor 2020 窗口;②26 HK 宇宙幸存者偏差;③matched top_n 对照(真/proxy 同选股数);④B091-O1 close-NaN 残留(union 最后行节假日错配→伪防守季,真数据 24 季触发 2 季,须修或剔除受影响季)。产出=真 vs proxy 对照表+GO/NO-GO verdict(闸控 BL-B011-S2 Batch 3 激活 hk_china live Master)。",
+    "decisions": [
+      "B090 signoff §3 O2 + B091 signoff O1/O2 为技术前置清单",
+      "verdict-gating: NO-GO 合法"
+    ],
+    "confirmed_at": "2026-07-05",
+    "priority": "medium",
+    "milestone": "BL-B011-S2 收口",
+    "source": "B090/B091 evaluator 建议 + planner 补登"
   }
 ]
