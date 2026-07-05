@@ -1,28 +1,28 @@
 {
-  "sprint": "F002",
+  "sprint": "F001",
   "features": [
     {
       "id": "F001",
-      "title": "多源 A股 ETF 行情 fetch 层 + fallback(Eastmoney→Sina) + mock 测试",
-      "priority": "medium",
+      "title": "CURATED_SYMBOL_NAMES 幂等 seed data-migration(治本 B080 F005 生产=0 缺口)",
+      "priority": "low",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【spec §2 F001】模块 scripts/research/ashare_market_source.py: 统一 fetch_etf_daily(code) → Eastmoney(fund_etf_hist_em qfq)→Sina(fund_etf_hist_sina raw) fallback, 返回带 source/adjust(qfq|raw)标注 DataFrame; SSLError/空→下一源; 全失败→明确 raise(不静默吞错). **单测 mock 源(不打真网)**: (1)Eastmoney成功用它 (2)Eastmoney SSLError→fallback Sina (3)全失败→raise (4)sh/sz symbol 派生 (5)返回带 source/adjust 标注. 报告 docs/test-reports/B086-F001-data-source-layer.md. ★零回归: 不碰策略/flagship/生产 data_root/已完成批次脚本. Gates: mypy trade+根ruff+root pytest+单测fallback各分支+CI绿.",
+      "status": "pending",
+      "acceptance": "【design: docs/research/next-batch-prep-bootstrap-seed-audit.md】migration 0041 幂等 seed CURATED_SYMBOL_NAMES(68 条 {symbol:name}, source='curated', 固定 stamp) 入 symbol_name 表——**insert-if-absent**(symbol 不在现有则插, 不覆盖 akshare_spot override)。复用 trials migration 0036-0040 模板(bulk_insert + 幂等 id 检查)。bootstrap 已 lockstep(_import_symbol_names 本地 seed 同名, 无需改)。单测: migration 幂等(重跑无重复)+seed 后 curated 名 count>0+不覆盖已存在 akshare_spot 名。★零回归: 不改 akshare_spot 日刷路径/upsert 优先级(curated 仅 fallback). Gates: backend mypy/ruff/pytest+0041 apply+CI绿.",
       "design_decisions": [
-        "本 session B084 撞 Eastmoney 限流切 Sina 驱动=固化多源 fallback 为可测层。",
-        "不迁移 B082-B085 已 done 脚本(零回归);新模块供未来策略。",
-        "口径差异(qfq vs raw)显式标注返回。"
+        "deploy 跑 alembic only→非 migration 的 seed 生产静默缺(B080 F005). 治本=curated 名走 data-migration。",
+        "insert-if-absent 不覆盖 akshare_spot(curated=fallback, akshare_spot=override 优先)。",
+        "US curated 名(AAPL 等)akshare_spot(A股)不覆盖→本 migration 真填补其生产=0。"
       ]
     },
     {
       "id": "F002",
-      "title": "Codex 独立验收 + signoff(fallback mock 覆盖/口径标注/不静默吞错/零回归)",
-      "priority": "medium",
+      "title": "Codex 独立验收 + signoff(migration 幂等/生产 curated>0/不覆盖 override/零回归)",
+      "priority": "low",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "【spec §2 F002】Codex独立: fallback 逻辑 mock-源覆盖核实(各分支非happy-path only)+口径标注(qfq vs raw)正确+不静默吞错+不碰flagship/生产路径/已完成脚本(零回归 grep). signoff docs/test-reports/B086-...-signoff.md.",
+      "status": "pending",
+      "acceptance": "【design 审计 doc】Codex独立: migration 0041 幂等落地生产 curated 名>0 核实+insert-if-absent 不覆盖 akshare_spot override(优先级不变)+bootstrap lockstep+零回归(不改日刷). signoff docs/test-reports/B087-...-signoff.md.",
       "design_decisions": [
-        "fallback 最大陷阱=只测 happy-path;独立核实各源失败分支真覆盖。"
+        "最大陷阱=migration 覆盖 akshare_spot 真名(退化);独立核实 insert-if-absent 语义。"
       ]
     }
   ]
