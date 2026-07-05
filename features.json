@@ -1,12 +1,12 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
       "title": "hk_china 真数据 Batch 2.5 重测: 200D warmup + 真个股 vs proxy 重跑对比(修方法学)",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【backlog B0XX-hk-china-real-data-retest 三处必修】(1)★200D warmup=回测窗口前预留≥200交易日预热趋势闸(避前几季MA未成形人为全防守);(2)HK真个股 via akshare stock_hk_daily(sina, 26 REAL_UNIVERSE_TICKERS)+proxy(MCHI/FXI/KWEB/ASHR stock_us_daily)+defensive;(3)FX via FRED(DEXHKUS/DEXCHUS public CSV)→fx_daily.csv→FxConverter. 组unified prices→复用 hk_china_comparison_runner(纯装配层)run→真个股vs proxy CAGR/Sharpe/MaxDD对比. 报告 docs/test-reports/B090-F001-hk-china-retest.md. 增量+测试(fetch/FX/unified各步单测). ★诚实: planner预判大概率仍NO-GO(200D闸让真个股躲2021-24中国股灾), 但把'真个股vs proxy'假设真正测到=有效结论. research-only(不碰live/生产). Gates: mypy trade+根ruff+root pytest+CI绿.",
       "design_decisions": [
         "数据全可得实测确认(26 HK sina+4 proxy stock_us_daily+FRED FX public CSV)——非VM-gated(B063旧约束已解)。",

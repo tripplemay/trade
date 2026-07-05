@@ -1,5 +1,17 @@
 [
   {
+    "id": "B0XX-fix-above-200d-ma-calendar-bug",
+    "title": "修 above_200d_ma 多日历 MA bug(hk_china 真 sleeve 恒全防守真根因, B090发现)",
+    "description": "B090 F001 发现: trade/strategies/hk_china_momentum/factors.py above_200d_ma 对 HK+A股+US(SGOV) union 日历建宽表后 rolling 200-ROW min_periods=200 窗→跨市独有日注 NaN→任一票 200-row 窗内仅~184-188 非NaN→200D-MA 恒 NaN→读'below MA'→regional_risk_off 每季触发→真 sleeve 25/25 全防守 0 持股(B063 原 20/20 防守很可能亦此 bug 非 MA warmup 误判). 修=per-ticker 各自日历算 MA(rolling 前 drop 该票 NaN, 或 calendar-day 窗/放松 min_periods). 修后才能真跑 real vs proxy go/no-go. 触 trade/ 策略码→正常 spec→build→verify. 复现探针 docs/test-reports/B090-F001-hk-china-retest.md §6.",
+    "decisions": [
+      "B090研究批已证 warmup 非根因;真根因=多日历 fixed-row 窗 factor bug",
+      "修触 trade/ 策略码=正常批次(非research);修后 B090 retest 可复跑得真 go/no-go"
+    ],
+    "confirmed_at": "2026-07-05",
+    "priority": "medium",
+    "source": "B090 F001 workflow 发现+2对抗验证确认"
+  },
+  {
     "id": "B0XX-residual-momentum-engine-ab",
     "title": "残差动量完整引擎A/B(触冻结cn_attack flagship,条件)",
     "description": "B085前置筛证残差动量弱方向支持(delta t=1.98,残差IC 0.0108<门槛). 完整引擎A/B需在signal.py加残差factor_variant(additive+pure_momentum逐位回归证零回归)或研究wrapper. ★需用户决策: 是否为边际信号触冻结flagship. 若做: 双本金+分子窗损耗+turnover(B084教训)+保真口径.",
