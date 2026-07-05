@@ -127,6 +127,7 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 "workbench_api/monitoring/trial_backfill_b081.py" = ["E501"]
 "workbench_api/monitoring/trial_backfill_b083.py" = ["E501"]
 "workbench_api/monitoring/trial_backfill_b084.py" = ["E501"]
+"workbench_api/monitoring/trial_backfill_b085.py" = ["E501"]
 
 [tool.mypy]
 python_version = "3.11"

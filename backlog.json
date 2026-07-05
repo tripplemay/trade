@@ -1,5 +1,16 @@
 [
   {
+    "id": "B0XX-residual-momentum-engine-ab",
+    "title": "残差动量完整引擎A/B(触冻结cn_attack flagship,条件)",
+    "description": "B085前置筛证残差动量弱方向支持(delta t=1.98,残差IC 0.0108<门槛). 完整引擎A/B需在signal.py加残差factor_variant(additive+pure_momentum逐位回归证零回归)或研究wrapper. ★需用户决策: 是否为边际信号触冻结flagship. 若做: 双本金+分子窗损耗+turnover(B084教训)+保真口径.",
+    "decisions": [
+      "前置筛已证edge弱,ROI低",
+      "触冻结flagship=硬边界需授权"
+    ],
+    "confirmed_at": "2026-07-05",
+    "priority": "low"
+  },
+  {
     "id": "B0XX-hk-china-real-data-retest",
     "title": "hk_china real-data Batch 2.5：修方法学重测一轮(把『真个股 vs proxy』真正测到)",
     "description": "【2026-06-18 用户裁定:B063 真跑结论 NO-GO/未证实=方法学缺陷致核心假设没测到,不接受,修方法学重测一轮】B063 对比真跑(proxy CAGR +2.77%/Sharpe 0.55 vs real −0.06%/−0.32)的致命缺陷:real 策略 20/20 季度 regional_risk_off **全防守、0 选股**(forced_defensive=0=数据完整,是 2021-24 中国熊市真 risk-off 信号 + 前~4 季 200D MA 无 warmup 人为防守)→ real −0.06% = 持 SGOV 现金减摩擦,**『真个股 vs proxy ETF』核心假设根本没测到**。本批=修三处方法学缺陷重跑对比,让真个股真正参与回测,得到可信 go/no-go:(1) **200D warmup**——回测窗口前预留≥200 交易日数据预热趋势闸,避免前几季因 MA 未成形人为全防守;(2) **HK 数据源改 sina**(B062 已知:东财 stock_hk_hist ConnectionError → akshare stock_hk_daily sina 端点,B060 验过可达);(3) **A股 qfq 复权口径对齐**——akshare-baostock 交叉源偏差 2-60% 疑后复权/前复权口径不一致,对齐到 S2 §8 cross-source<0.5% 门槛(决策报告可信前提)。复跑后:若 real 仍全防守=结论坐实(200D 闸让真个股全程躲开 2021-24 中国股灾,任何中国股暴露这窗口都难看);若 real 真选了股=首次得到真个股 vs proxy 的真对比 → 据此重定 Batch 3。",

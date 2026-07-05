@@ -26,6 +26,7 @@ from workbench_api.monitoring.trial_backfill_b081 import (
 from workbench_api.monitoring.trial_backfill_b082 import B082_TRIALS
 from workbench_api.monitoring.trial_backfill_b083 import B083_TRIALS
 from workbench_api.monitoring.trial_backfill_b084 import B084_TRIALS
+from workbench_api.monitoring.trial_backfill_b085 import B085_TRIALS
 from workbench_api.services.nav import aggregate_account_state
 from workbench_api.symbols.names import CURATED_SYMBOL_NAMES
 
@@ -37,6 +38,7 @@ _N_TRIALS = (  # B080 27 + B081 F004 8 + B081 F005 audit 6 + B082 F002 6 + B083 
     + len(B082_TRIALS)
     + len(B083_TRIALS)
     + len(B084_TRIALS)
+    + len(B085_TRIALS)
 )
 
 

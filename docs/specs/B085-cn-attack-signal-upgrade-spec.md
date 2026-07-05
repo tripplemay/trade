@@ -24,15 +24,29 @@
 | 指标 / WF / CPCV | B070/us_quality metrics | F001 |
 | trial 登记 | B080/B083/B084 data-migration 模式 | F002 |
 
-## 2. Feature 拆解（2：1 generator + 1 codex）
+## ★2026-07-05 rescope（Planner, 前置筛结果 + 冻结边界驱动）
 
-### F001 (g) — 残差动量 A/B（基线 vs +残差, 双本金, 分窗口）
-- 残差动量 signal（先验窗, 禁扫参）；A/B vs 现纯保真基线, 去偏 B070 PIT；full + WF 70/30 CAGR/Sharpe/MaxDD/OOS + 双本金 + **分子窗损耗**（B084 教训：别年度聚合掩盖）+ **turnover**（B084 S2 教训：量化换手）。
-- 报告 `docs/test-reports/B085-residual-momentum-ab.md` + trial_registry 登记（DSR N）。裁定 GO（保真 OOS 显著提升非窗口落位）/ INCONCLUSIVE。
-- **★零回归守门**：cn_attack 产品码字节不变（A/B 是研究脚本）。Gates: mypy trade + 根 ruff + root pytest（触 trade/ 读取路径）+ backend 若触。
+**前置筛（scripts/research/b085_residual_vs_raw_ic.py）实测：残差动量 edge 弱**——仅 borderline 改进裸动量
+（delta t=1.98），残差绝对 IC 0.0108 < |IC|>0.03 GO 门槛。**完整引擎 A/B 需触及冻结的 cn_attack flagship
+（signal.py 加变体），是永久硬边界**（AskUserQuestion 已问用户；用户 away → 按推荐 option 1 推进）。
 
-### F002 (codex) — 独立验收 + signoff
-- Codex 独立：残差动量数字从零重实现抽验（不 import 我方脚本）；β 回归/残差口径核实；参数无扫参（grep）；**分子窗损耗 + turnover 口径核实**（B084 S1/S2 教训直接适用）；OOS 提升是否窗口落位（B070/B084 教训）；双本金容量；零回归（cn_attack 产品码字节不变）。signoff `docs/test-reports/B085-...-signoff.md`；GO/INCONCLUSIVE 确认。
+**决定：F001 收窄为前置筛 first-look（残差 vs 裸动量 IC，裁定 INCONCLUSIVE 弱方向支持）；完整引擎 A/B
+降级为 backlog 条件 follow-up**（`B0XX-residual-momentum-engine-ab`，待用户对触冻结 flagship 决策）。
+理由：弱信号不值得为边际收益触冻结旗舰（研究纪律 + 硬边界尊重）。F002 相应验证前置筛（非引擎 A/B）。
+
+## 2. Feature 拆解（rescoped：1 generator screen + 1 codex verify）
+
+### F001 (g) — ✅ 残差 vs 裸动量 rank-IC 前置筛 first-look（**done**）
+- 残差动量计算（scripts/research/b085_residual_momentum.py, 单因子 β 残差, 先验禁扫参, 单测锁隔离特质动量）。
+- 前置筛（b085_residual_vs_raw_ic.py）：残差 vs 裸动量 forward-return 月度 rank-IC, 同窗公平, 无前视单测锁。
+- 结果：残差 IC 0.0108(t=0.45) vs 裸 -0.0009; delta +0.0118 t=1.98(borderline)。**裁定 INCONCLUSIVE（弱但真实方向支持）**。
+  报告 `docs/test-reports/B085-residual-vs-raw-ic-screen.md` + trial_registry 登记（migration 0040, DSR N）。零回归（纯研究脚本）。
+
+### F002 (codex) — 独立验收 + signoff（验证**前置筛**）
+- Codex 独立：残差动量 + IC 数字从零重实现抽验（不 import 我方脚本）；β/残差口径核实；参数无扫参（grep）；
+  **前视核查**（signal≤t, forward>t）；IC 相对比较（残差 vs 裸）口径 + borderline t=1.98 诚实性；trial 幂等/N 正确；零回归。
+  signoff `docs/test-reports/B085-...-signoff.md`；INCONCLUSIVE（弱支持）确认。
+- **引擎 A/B 不在本批验收范围**（降级 backlog follow-up 待冻结决策）。
 
 ## 3. 验收（通用段）
 - Gates：mypy trade + backend / 根 ruff / root pytest 全量（触 trade/ 读取）/ 单测（残差动量计算 + 分窗口 + turnover）/ CI 全绿。

@@ -1,13 +1,13 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
-      "title": "残差动量 A/B(基线纯保真 vs +残差动量, 双本金 10万/100万, 分子窗损耗+turnover)",
+      "title": "残差 vs 裸动量 rank-IC 前置筛 first-look(INCONCLUSIVE 弱方向支持) [rescoped from 引擎A/B]",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
-      "acceptance": "【spec §2 F001】残差动量 signal(滚动12M对市场收益回归取残差, 残差过去N月累计, **回看窗/β模型先验定死禁扫参**); A/B vs 现 cn_attack 纯保真基线(B081修真开关默认开/partial=False), 去偏 B070 PIT pure_momentum+equal; full+WF 70/30 CAGR/Sharpe/MaxDD/OOS + **双本金**(10万/100万 B081 F005容量) + ★**分子窗损耗**(B084教训 别年度聚合掩盖) + **turnover**(B084 S2量化换手). 报告 docs/test-reports/B085-residual-momentum-ab.md + trial_registry 登记(DSR N). 裁定 GO(保真OOS显著提升非窗口落位)/INCONCLUSIVE. ★**零回归守门: cn_attack 产品码(signal/engine/precompute)字节不变**(A/B是研究脚本). Gates: mypy trade+backend/根ruff/root pytest全量(触trade/读取)/单测(残差计算+分窗口+turnover)/CI三绿.",
+      "status": "done",
+      "acceptance": "【spec §2 rescoped F001】残差动量计算(单因子β残差,先验禁扫参,单测锁隔离特质动量) + 前置筛(残差 vs 裸动量 forward-return 月度 rank-IC,同窗公平,无前视单测锁). 结果: 残差 IC 0.0108(t=0.45) vs 裸 -0.0009; delta +0.0118 t=1.98(borderline). 裁定 INCONCLUSIVE(弱但真实方向支持). 报告 docs/test-reports/B085-residual-vs-raw-ic-screen.md + trial(migration 0040 DSR N). 零回归纯研究脚本. 完整引擎A/B降级backlog(触冻结flagship待决策). Gates: 根ruff+root pytest+backend(trial)全绿.",
       "design_decisions": [
         "先做证据最强的残差动量一升级(评审建议先行);剩SUE/剔涨停/2月规避留后续批。",
         "禁扫参(B081 partial混入+B084挑窗教训);残差不提升→INCONCLUSIVE合法(B083/B084先例)。",
@@ -16,11 +16,11 @@
     },
     {
       "id": "F002",
-      "title": "Codex 独立验收 + signoff(残差数字重实现/β口径/无扫参/分子窗损耗+turnover核实/窗口落位/零回归)",
+      "title": "Codex 独立验收 + signoff(验证前置筛: 残差/IC数字重实现/β口径/无扫参/前视/borderline诚实/trial幂等/零回归)",
       "priority": "medium",
       "executor": "codex",
       "status": "pending",
-      "acceptance": "【spec §2 F002】Codex独立: 残差动量数字从零重实现抽验(不import我方)+β回归/残差口径核实+参数无扫参(grep)+★分子窗损耗+turnover口径核实(B084 S1/S2教训)+OOS提升是否窗口落位(B070/B084教训)+双本金容量+零回归(cn_attack产品码字节不变). signoff docs/test-reports/B085-...-signoff.md; GO/INCONCLUSIVE确认.",
+      "acceptance": "【spec §2 rescoped F002】Codex独立验证**前置筛**(非引擎A/B): 残差动量+IC数字从零重实现抽验(不import我方)+β/残差口径核实+参数无扫参(grep)+前视核查(signal≤t,forward>t)+IC相对比较口径+★borderline t=1.98诚实性(别过度宣称显著)+trial幂等/N正确+零回归. signoff docs/test-reports/B085-...-signoff.md; INCONCLUSIVE(弱支持)确认. 引擎A/B不在本批范围(降级backlog).",
       "design_decisions": [
         "残差动量最大陷阱=β口径/窗口落位/年度聚合掩盖子窗;独立核实(B084 S1教训直接适用)。"
       ]

@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-07-05",
   "user_goal": "B085 cn_attack 信号升级 A/B(评审 P2, 残差动量先行). **B081 驱动**(cn_attack edge 资本条件化, 升级提稳). **first-look 低承诺 + 焊死禁扫参**: 残差动量(裸动量对市场/风格β回归取残差的动量)A/B vs 现纯保真基线, 显著提升(保真OOS非窗口落位)→推荐并入否则INCONCLUSIVE. **核心不变量**: 回看窗/β模型先验定死禁扫参; 双本金(10万/100万); ★分子窗损耗+turnover量化(B084 S1/S2教训); **零回归 cn_attack 产品码字节不变**(A/B是研究脚本, B076策略改动双门禁). 复用 B081 A/B runner + cn_attack 引擎 + B070 PIT. 剩三升级(SUE/剔涨停/2月规避)留后续. spec docs/specs/B085-cn-attack-signal-upgrade-spec.md; 预研 81335f5. 2 features 1g+1c.",
   "reference_docs": [
@@ -28,8 +28,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": "B085 F001 **PARTIAL**(mechanical core done, judgment-heavy A/B checkpointed). DONE(低风险机械可测): scripts/research/b085_residual_momentum.py = 残差动量计算(单因子: 每名日收益对等权市场收益 rolling β=cov/var 窗252 取残差 → 残差动量=过去[t-21-126,t-21]累计残差, 先验禁扫参 文献口径). 合成单测 test_b085_residual_momentum 锁: 隔离特质动量(纯市场名≈0/特质上下漂正负)非市场. ruff clean/pass. 零回归纯研究脚本. commit 03425ef. **★TODO(判断重, fresh context 严做——B084 sub-window 过度乐观教训所在)**: (1)A/B — 残差动量 rank 喂 cn_attack 引擎(trade/backtest/cn_attack_momentum_quality/) vs pure_momentum, 去偏 B070 PIT, 复用 B081 scripts/research/b081_engine_fidelity_ab.py runner(resumable+pickle缓存, b070数据~40min慢跑); (2)full+WF70/30 CAGR/Sharpe/MaxDD/OOS + **双本金10万/100万**(B081 F005容量); (3)★**分子窗损耗**(别年度聚合掩盖=B084 S1) + **turnover量化**(B084 S2); (4)报告 docs/test-reports/B085-residual-momentum-ab.md + trial登记(migration 0040, verdict GO/INCONCLUSIVE, LEAN映射INCONCLUSIVE); (5)裁定 GO(保真OOS显著提升非窗口落位)/INCONCLUSIVE; (6)零回归 cn_attack 产品码字节不变. 然后 F002 codex独立验收. Gates: mypy trade+根ruff+root pytest全量(触trade/读取)+CI三绿.\n\n=== A/B 集成洞察(探索 b081 _run_group + 引擎, 已 de-risk fresh context 工作) ===\n引擎 run_cn_attack_backtest(params,config,...) **内部**按 params.factor_variant(=FACTOR_VARIANT_PURE_MOMENTUM)算动量, 无外部 signal hook. result 已带 **total_turnover**(B084 S2 换手免费得)+metrics+equity_curve. b081 _run_group 是 A/B 模板(残差动量只需换 factor_variant). **★残差动量注入 = 设计判断(fresh context 定)**: 选项(a)signal.py 加 FACTOR_VARIANT_RESIDUAL_MOMENTUM(**additive**: 现 pure_momentum 输出字节级不变→零回归行为义成立; 但改 signal.py 源码与 spec'字节不变'字面冲突——建议读作'现有行为不变'非'无新代码', 加变体后重跑 pure_momentum 基线证输出逐位吻合); 选项(b)研究 wrapper 重实现回测环(复杂易错). **推荐(a)+基线逐位回归证明**. residual_momentum(prices) 已备(03425ef)→喂新变体的排序. 慢跑~40min(b070). 裁定仍判断重(B084 教训 fresh 做, 别年度聚合掩盖子窗).\n\n=== F001 前置筛 done(65871da, 安全推进) ===\n残差 vs 裸动量 rank-IC 前置筛(廉价安全, 不触 flagship, B083 IC 模式): 残差 IC 0.0108(t=0.45弱) vs 裸 IC -0.0009(~零,证实A股裸动量弱); **改进配对 delta +0.0118 t=1.98(borderline 显著)**. 裁定 **弱但真实方向支持**——引擎 A/B 值得做但**期望低**(残差绝对IC仍<|IC|>0.03门槛, t=1.98非铁证). scripts/research/b085_residual_vs_raw_ic.py + 前视单测. 报告 docs/test-reports/B085-residual-vs-raw-ic-screen.md. **★引擎 A/B(仍 fresh context, 判断重)现更明确**: 前置筛已证残差>裸(borderline)+前提成立→引擎A/B值得做; 但预期小幅改进非转变, 若保真+双本金口径改进不实质→INCONCLUSIVE 合法. trial 登记应含本前置筛(verdict INCONCLUSIVE 弱方向支持)+引擎A/B结果.",
-    "status": "partial"
+    "summary": "B085 F001 **done(rescoped 为前置筛)**. 残差动量计算(b085_residual_momentum.py,单因子β残差,单测锁隔离特质) + 残差 vs 裸动量 rank-IC 前置筛(b085_residual_vs_raw_ic.py,无前视单测). 结果: 残差 IC 0.0108(t=0.45弱) vs 裸 -0.0009(~零证实A股裸动量弱); delta +0.0118 t=1.98(borderline). **裁定 INCONCLUSIVE 弱但真实方向支持**. trial migration 0040(DSR N). 报告 B085-residual-vs-raw-ic-screen.md. **★rescope 理由**: 完整引擎A/B需触冻结cn_attack flagship(硬边界); AskUserQuestion已问,用户away→按推荐option1(收窄前置筛,不为弱信号触冻结). 引擎A/B降级backlog条件follow-up. **F002 codex 验证前置筛**(非引擎A/B): 残差/IC数字重实现+β口径+无扫参+前视核查+★borderline t=1.98诚实性(别过度宣称)+trial幂等+零回归. Gates全绿(mypy525/ruff/10测/0040 apply). ★本session: B079-B084 done + B085(F001前置筛done, 安全推进-核心+筛+trial全CI绿, 引擎A/B降级待冻结决策).",
+    "status": "complete"
   },
   "features": [
     "F001",
