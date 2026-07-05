@@ -1,12 +1,12 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
       "title": "业绩预告事件数据地基探针 + PIT 接入(stock_yjyg/yjkb/yysj/profit_forecast, 含 GO/NO-GO)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【spec §2 F001】(1) akshare 真实 fetch 探针 stock_yjyg_em(预告)/stock_yjkb_em(快报)/stock_yysj_em(预约披露)/stock_profit_forecast_em(分析师预期): 覆盖率(宽宇宙 vs 有事件子集)/**公告日字段可 PIT 性**(发布日 vs 财报期末)/字段(净利润区间·类型·去年同期)/历史深度/刷新延迟——真数字落 docs/test-reports/B083-F001-data-reality.md(B077/B082 探针模式)。公告日不可 PIT 或覆盖/深度不足→NO-GO 停批诚实交代。(2) GO→data_refresh 接入(timeout-bounded+best-effort+自有快照目录, **排 Tiingo run_refresh 之前**——B082 F004 ISSUE-1 教训)。Gates(B081 教训显式): backend pytest/ruff 目录上下文/mypy CI-exact; 触 trade/ 则 + .venv/bin/mypy trade + 根 ruff + root pytest 全量 + backend venv 重装 trade; CI 全绿。",
       "design_decisions": [
         "公告日 PIT 是命门:进场必须用发布日之后可交易价,禁财报期末(前视虚高 IC)。",
