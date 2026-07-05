@@ -479,3 +479,13 @@
 **状态：** 待确认
 
 **★F005 r1 审计更正（2026-07-04，必读）：** 条目 (1) 的「分数股假象/边际大半是假象」结论**已被独立验收的本金扫描证伪**——负数是 **10 万本金容量下限**（25 只等权中约 9 只一手买不起），lot@1M OOS +23.5%、lot@10M +28.2%（保留 99% edge）。**修正后的正确教训：** ①引擎修真 A/B 的「手数取整」组必须**同时做本金扫描**（100k/1M/10M），否则会把容量下限误读为策略失效；②宣称「某修复揭示假象」前，先问该效应是否随本金/规模消失；③「宣称 edge 前先跑引擎修真 A/B」的元教训仍然成立，且本次 fixing 轮补充了第四条：**A/B 结论本身也要过独立数字审计**（F005 抓住了 F004 的误读）。条目 (2) 抗 kill 基建不受影响。沉淀时请以本更正为准。
+
+## [2026-07-05] Claude CLI — 来源：B083 F002（前端 flaky 测 red main / backend-only commit 诊断）
+
+**类型：** 新坑 / 诊断规律
+
+**内容：** B083 F002 是**纯 backend commit**（trial 登记：trial_backfill_b083 + migration 0038 + bootstrap + test），Backend CI 绿，但 **Frontend CI 红**——`tests/unit/risk-banner.spec.tsx > 红 risk banner: keeping defensive posts defensive=true`（expected defensive:true got false）。**诊断规律：backend-only commit 让 frontend UI 测红 = 几乎必为 flaky**（backend 改动物理上不可能影响 frontend vitest fixture 逻辑）。实证：本机 `npx vitest run risk-banner -t "keeping defensive"` 隔离跑 **3×全绿**，CI 全套跑偶红 → **测隔离/test-order 共享状态问题**（非本 commit 引入；前序 commit CI 全绿）。**处置：** `gh run rerun <id> --failed` 重跑清 flake 绿 main（本次已做）。**建议 backlog `test-automation-infra` 一并治本**：risk-banner.spec.tsx 全套跑的 flake（隔离绿/全套偶红）需查 test 间共享状态（likely 某前序 test 泄漏 defensive-posture mock/store 未 reset）。**规律沉淀：** 判 CI 红是否本 commit 责任，先看「改动面 vs 红测面」物理关联——无关联(backend↔frontend)优先怀疑 flake，隔离本机复跑证伪，rerun 清；有关联才深查。
+
+**建议写入：** `framework/harness/generator.md` §CI 红诊断（改动面 vs 红测面物理关联判 flake）+ backlog test-automation-infra（risk-banner flake 治本）
+
+**状态：** 待确认
