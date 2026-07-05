@@ -1,52 +1,40 @@
 {
- "sprint": "B082-dividend-lowvol-defense",
- "features": [
-  {
-   "id": "F001",
-   "title": "A股 ETF 数据地基 spike+接入(512890/红利低波指数/股息率/十年国债利差, 含 GO/NO-GO 探针)",
-   "priority": "high",
-   "executor": "generator",
-   "status": "done",
-   "acceptance": "【spec §2 F001 + §0 数据地基】(1) akshare 真实 fetch 探针: 512890(+备选)日线深度/复权、H30269 指数历史、股息率序列、十年国债收益率——覆盖/深度/新鲜度落 docs/test-reports/B082-F001-data-reality.md(B077 模式,真数字);任一关键序列不可得或<5y→NO-GO 停批诚实交代。(2) GO→序列接入 data_refresh 管线(B065 模式,日刷 wiring+超时纪律 v0.9.54 §38/39)。正面证据:探针报告落盘;生产数据根可查新序列;日刷含新序列且超时守门。Gates(B081 教训显式): backend pytest/ruff 目录上下文/mypy CI-exact; 触 trade/ 则 + .venv/bin/mypy trade + 根 ruff + root pytest 全量 + backend venv 重装 trade; CI 三条全绿。",
-   "design_decisions": [
-    "数据不可得→NO-GO 停批也是合法交付(B077 先例);利差信号需要 ≥5y 利率历史。",
-    "ETF 层无个股幸存者偏差;512890 上市~2018 末决定回测窗口,指数 secondary 补长史(标注无成本口径)。"
-   ]
-  },
-  {
-   "id": "F002",
-   "title": "策略实现+回测+红黄绿卡(持有基线+三档利差规则, ETF 成本口径, B081 开关, 双本金)",
-   "priority": "high",
-   "executor": "generator",
-   "status": "done",
-   "acceptance": "【spec §2 F002 + §0】(1) trade/strategies/cn_dividend_lowvol/: 持有基线+三档利差配置(≥2.5% 满配/1.5-2.5% 半配 50%/<1.5% 低配 25%——spec 先验定死,禁止回测扫参优化,代码无阈值搜索路径);月度执行+不动区。(2) 回测: ETF 成本口径(无印花税,佣金 2.5bp+滑点 5bp——costs 须区分 ETF 与个股)+B081 修真开关(partial 默认 False 不变量)+10万/100万双本金(B081 容量教训)+WF 70/30+CPCV-lite;重点输出 2022 全年与 2024-02 窗口 DD 对照(vs HS300/vs cn_attack);ETF 窗口+指数 secondary 双口径诚实标注。(3) oos_verification_card 新行(validated=False,防守腿回撤口径)+trial_registry 登记全部试验。正面证据:回测报告真数字落盘;阈值先验性可审计;卡片+registry 落地。Gates(B081 教训显式): backend pytest/ruff 目录上下文/mypy CI-exact; 触 trade/ 则 + .venv/bin/mypy trade + 根 ruff + root pytest 全量 + backend venv 重装 trade; CI 三条全绿。",
-   "design_decisions": [
-    "利差阈值先验设定是本批最硬不变量——防守腿最易的美化是阈值隐性优化(评审 §2 纪律)。",
-    "防守腿核验重点=回撤控制(2022/2024-02 窗口)非绝对收益。",
-    "双本金显式化容量口径(B081 F005 教训)。"
-   ]
-  },
-  {
-   "id": "F003",
-   "title": "模式注册+advisory surface+paper+B080 监控接入(cn_dividend_lowvol 研究态)",
-   "priority": "high",
-   "executor": "generator",
-   "status": "done",
-   "acceptance": "【spec §2 F003】(1) registry append cn_dividend_lowvol(FUNDING_RESEARCH/月度)+target producer(利差档位进 master_meta)+refresh_worker 分发+timer(TimeoutStartSec 显式)。(2) paper 账户(10 万 CNY, CSI300 基准——B080 F004 per-strategy 基准)+前端模式选择器(B057 框架自动)+B080 监控面板覆盖新 strategy_id(若 B080 实现 cn_attack 硬编码则顺带参数化)。(3) 快照带研究态 disclaimer+红卡(读 DB 卡片 B080 机制)。正面证据:生产端到端(timer→target→快照→paper→面板);no-execution 守门;Master/cn_attack/regime 零回归。Gates(B081 教训显式): backend pytest/ruff 目录上下文/mypy CI-exact; 触 trade/ 则 + .venv/bin/mypy trade + 根 ruff + root pytest 全量 + backend venv 重装 trade; CI 三条全绿。 + Playwright e2e。",
-   "design_decisions": [
-    "B057 框架承诺『任何策略最小成本插入』——本批是该框架第 4 个消费者,插入成本本身是框架质量的检验。"
-   ]
-  },
-  {
-   "id": "F004",
-   "title": "Codex:独立验收(探针数字抽验/回测数字研究员级审计/阈值先验性/端到端/零回归)+signoff",
-   "priority": "high",
-   "executor": "codex",
-   "status": "done",
-   "acceptance": "【spec §2 F004】L1 全门禁+新单测抽查。L2:探针数字抽验(独立重 fetch 1-2 序列对照);回测数字复核(抽 1 组重跑);利差阈值先验性审计(无扫参路径,grep+diff);生产模式端到端实测;回撤对照表数字与评审报告引用一致;零回归(cn_attack/master paper/B080 监控);HEAD≡prod。★B081 教训:对回测数字做研究员级审计——防守腿易美化点=窗口挑选与阈值隐性优化。signoff 逐条证据。",
-   "design_decisions": [
-    "验收主体:独立无实现上下文 agent 代 Codex(B079-B081 先例,用户 /goal 授权)。"
-   ]
-  }
- ]
+  "sprint": "F001",
+  "features": [
+    {
+      "id": "F001",
+      "title": "业绩预告事件数据地基探针 + PIT 接入(stock_yjyg/yjkb/yysj/profit_forecast, 含 GO/NO-GO)",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "【spec §2 F001】(1) akshare 真实 fetch 探针 stock_yjyg_em(预告)/stock_yjkb_em(快报)/stock_yysj_em(预约披露)/stock_profit_forecast_em(分析师预期): 覆盖率(宽宇宙 vs 有事件子集)/**公告日字段可 PIT 性**(发布日 vs 财报期末)/字段(净利润区间·类型·去年同期)/历史深度/刷新延迟——真数字落 docs/test-reports/B083-F001-data-reality.md(B077/B082 探针模式)。公告日不可 PIT 或覆盖/深度不足→NO-GO 停批诚实交代。(2) GO→data_refresh 接入(timeout-bounded+best-effort+自有快照目录, **排 Tiingo run_refresh 之前**——B082 F004 ISSUE-1 教训)。Gates(B081 教训显式): backend pytest/ruff 目录上下文/mypy CI-exact; 触 trade/ 则 + .venv/bin/mypy trade + 根 ruff + root pytest 全量 + backend venv 重装 trade; CI 全绿。",
+      "design_decisions": [
+        "公告日 PIT 是命门:进场必须用发布日之后可交易价,禁财报期末(前视虚高 IC)。",
+        "不可得/时点不可 PIT→NO-GO 停批合法(B077/B082 先例)。"
+      ]
+    },
+    {
+      "id": "F002",
+      "title": "盈余惊喜信号 + forward-return rank-IC first-look(N1/N5/N10/N20, 涨跌停分层)",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "【spec §2 F002】盈余惊喜=预告净利润区间中点 vs 去年同期(**先验口径,禁扫参**);事件日=公告日(PIT);进场=公告日 T+1 open。forward-return rank-IC N1/N5/N10/N20(B077 模式)在去偏 PIT 宇宙事件子集;分档 group-mean 单调性;**涨跌停分层**(含/剔除次日触板名两版 IC, B081 F003 _limit_hit_names 作分析口径)。报告落 docs/test-reports/B083-pead-first-look-ic.md(覆盖率/IC/单调/可执行性差/诚实边界) + trial_registry 登记(data-migration, B080 模式)。裁定: |IC|>~0.03 跨 horizon 同号+分档单调→GO(推荐独立策略批次入 backlog);否则 INCONCLUSIVE 归档。Gates 通用(mypy/ruff/单测 IC+分层)。",
+      "design_decisions": [
+        "先做 IC 一测(低承诺),不建 paper/红卡/生产模式;IC 噪音→INCONCLUSIVE 是合法常见结局。",
+        "涨跌停分层揭示纸面 vs 可执行 alpha(大惊喜次日一字板买不进)。"
+      ]
+    },
+    {
+      "id": "F003",
+      "title": "Codex 独立验收 + signoff(IC 数字审计/前视时点严谨性/无扫参/零回归)",
+      "priority": "high",
+      "executor": "codex",
+      "status": "pending",
+      "acceptance": "【spec §2 F003】Codex 独立: IC 数字从零重实现抽验(不 import 我方脚本)+**前视/时点严谨性核查**(公告日 PIT/进场 T+1/无财报期末前视)+惊喜口径无扫参(grep 单一 param bundle)+涨跌停分层口径正确+覆盖率/延迟探针复核+零回归(不触 cn_attack/dividend_lowvol 产品码)。signoff docs/test-reports/B083-pead-first-look-signoff.md;GO/INCONCLUSIVE 裁定确认。",
+      "design_decisions": [
+        "first-look 结论=证据一测非可配资;前视是事件策略最大陷阱,独立核查时点。"
+      ]
+    }
+  ]
 }

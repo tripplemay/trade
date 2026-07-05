@@ -129,22 +129,6 @@
     "sequence_note": "2026-06-25 B077(聪明钱数据可行性摸底)done=整体 NOT-GO 但收窄到龙虎榜机构席位+决定性下一步(补小盘覆盖)。2026-06-25/26 付费数据源调研(2 轮含真实性核查)=Tushare ¥200 标杆但 LHB 机构席位是噪/可马甲信号、期望放低。用户决定保存结论后续再深入。下一步候选=B078(Tushare 全覆盖去偏 LHB 机构席位低期望决定性一测)或重新评估这条路值不值得。研究文档 docs/research/ashare-smart-money-paid-data-sources-2026-06.md。"
   },
   {
-    "id": "B0XX-pead-first-look",
-    "title": "PEAD/业绩预告事件策略 first-look（评审 P1，新信号族）",
-    "description": "评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §3.4 排序第 2。学术证据：A 股 PEAD 多篇一致确认（EMFT 2022/IRFA 2024）；SUE 对冲组合 IR 量级 ≈2（西部证券口径 HS300 内 1.97/ZZ500 内 2.02）；Li et al 2024 复制 469 异象中盈余动量是 A 股动量类唯一大范围显著者（Sue1 月均 0.93-1.17%，t>3）；A 股强制业绩预告制度是相对美股的结构优势。数据零成本：akshare stock_yjyg_em（业绩预告）/stock_yysj_em、stock_report_disclosure（预约披露日期），三接口已实测存在。形态：first-look 先行——在宽宇宙（优先去偏口径）上测『预告惊喜多头、公告次日入场（无前视）、持有 20-60 交易日』的 IC 与分组单调性，沿用 B077 的 first-look 纪律（IC≥0.03 门槛+单调性检查）与 B066 式红黄绿卡；苗头成立再立全回测批次。纯多头事件驱动天然低频，与日频监控+不动区架构契合。",
-    "decisions": [
-      "2026-07-03 用户确认立项",
-      "first-look 先行（复用 B077 探针纪律），不直接搭全策略；IC 门槛与单调性检查照搬 B077 标准",
-      "entry 必须公告次一交易日（预告盘后披露，当日入场=前视）",
-      "卖方研报数字（IR≈2）视为样本内乐观值，预期打折"
-    ],
-    "confirmed_at": "2026-07-03",
-    "priority": "high",
-    "milestone": "Phase 5 — 策略研究体系化 + 新策略族（2026-07-03 评审路线图 P0-P2）",
-    "source": "2026-07-03 用户立项 P0-P2（评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §4 路线图）",
-    "sequence_note": "评审路线图 P1；数据零成本、证据最一致的新信号族；若将来买 Tushare（¥200 档 disclosure_date/forecast）可加深，但 akshare 免费即可起步。"
-  },
-  {
     "id": "B0XX-cn-attack-signal-upgrade",
     "title": "cn_attack 信号升级 A/B：残差动量/SUE 叠加/剔涨停/2月规避（评审 P2）",
     "description": "评审报告 docs/research/ashare-strategy-deep-review-2026-07-03.md §1.4A。背景：12-1 原始价格动量在 A 股长期溢价≈0 或为负（Hsu 2018 约 -1%/年；LSY CH-4 无动量因子；Li et al 2024 传统价格动量不显著），B066 OOS 红卡是结构性现象非 bug——升级方向是换信号构造非调参。候选（文献证据从强到弱）：①残差动量（对 CH-3/FF-3 残差算 12-1；A 股 VW 0.59%/月且 3 年不反转）；②盈余动量 SUE 作第二信号/过滤器（与 PEAD 批次共享数据）；③多尺度价量趋势因子（Liu-Zhou-Zhu：月均 1.43%/月 Sharpe 0.48/MDD 13%）；④剔涨停修正动量（形成期剔除涨停日贡献）；⑤2 月规避（春节月强反转掩盖全年动量，George-Hwang-Li 2023）；⑥因子动量（TSFM 年化 9.91%/Sharpe 1.15，吞噬个股动量——若成立则 12-1 应让位）；⑦regime 门控（换手率分位/大小盘相对强弱作开关）。验收：沿用 B076 verdict-gating——去偏 B070 宇宙 primary 定裁、全样本+OOS 双门禁、NO-GO 合法；每个变体记入 trial registry。",
