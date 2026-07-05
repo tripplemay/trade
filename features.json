@@ -19,7 +19,7 @@
       "title": "Codex 独立验收 + signoff(fallback mock 覆盖/口径标注/不静默吞错/零回归)",
       "priority": "medium",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【spec §2 F002】Codex独立: fallback 逻辑 mock-源覆盖核实(各分支非happy-path only)+口径标注(qfq vs raw)正确+不静默吞错+不碰flagship/生产路径/已完成脚本(零回归 grep). signoff docs/test-reports/B086-...-signoff.md.",
       "design_decisions": [
         "fallback 最大陷阱=只测 happy-path;独立核实各源失败分支真覆盖。"
