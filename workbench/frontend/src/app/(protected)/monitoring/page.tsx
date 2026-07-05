@@ -18,10 +18,13 @@ type TrialsResponse = components["schemas"]["TrialsResponse"];
 type TrialRow = components["schemas"]["TrialRow"];
 type ResearchCaveat = components["schemas"]["ResearchCaveat"];
 
-// The two research-state modes the monitoring surface covers (spec §2 F004).
+// The research-state CN modes the monitoring surface covers (spec §2 F004; B082 F003
+// adds the 红利低波 defensive sleeve — the backend monitored set is registry-driven, see
+// monitoring.metrics_job.monitored_strategy_ids).
 const MONITORED = [
   { id: "cn_attack_pure_momentum", label: "CN Attack · Pure Momentum" },
   { id: "cn_attack_quality_momentum", label: "CN Attack · Quality + Momentum" },
+  { id: "cn_dividend_lowvol", label: "CN Dividend Low-Vol · Defensive" },
 ] as const;
 
 // The metric rows a health card shows, in display order.
