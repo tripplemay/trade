@@ -1,9 +1,9 @@
 {
-  "status": "verifying",
+  "status": "done",
   "total_features": 2,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
-  "current_sprint": "F002",
+  "current_sprint": null,
   "last_updated": "2026-07-05",
   "user_goal": "B091 修 above_200d_ma 多日历 MA bug(B090 发现的真根因). 现 union-calendar 宽表 rolling 200-row→跨市日注NaN→MA恒NaN→regional_risk_off恒触发. 修=per-ticker dropna(各票自身日历). **★零回归铁律**: live US-only proxy 单日历→dropna no-op→输出逐位不变; 仅多日历real case修好. blast radius=hk_china_momentum wired workbench. 2 features 1g+1c. Workflow-build(fresh子代理+对抗验证零回归).",
   "reference_docs": [
@@ -14,13 +14,13 @@
   "docs": {
     "spec": "docs/test-reports/B090-F001-hk-china-retest.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/B091-above-200d-ma-fix-signoff-2026-07-05.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": null,
-    "pass_count": 0,
+    "summary": "全 PASS 2/2 → done. 独立取修前(94f8172)vs修后两版对拍: 零回归命门四重坐实(结构性单日历dropna no-op + 真proxy宇宙16季末bit级0mismatch + 200fuzz帧0mismatch + VM prod跑修复commit); 修复有效经真数据24季末全量对拍(OLD above恒0→NEW 5-30, regional_risk_off 9/24翻False, real sleeve 0%→~37%参与)+自建2-ticker异日历样本(旧union False→修后True)+点名0700.HK OLD False→NEW True; 单测有牙(变异回退→(a)红); 2对抗验证un-refuted经journal复核; 门禁全绿(mypy trade103/ruff/root118+3/backend13)+CI三绿(b35a638自动链式)+HEAD产品码≡部署≡prod. 2软观察非阻断: O1残留close=wide.iloc[-1] union最后行NaN(先存非回归非F001范围, 真数据仅2/24季触发节假日错配, 生产proxy永不触发, 须follow-up重跑处理); O2决策级real-vs-proxy重跑无离散backlog条目(软性文档gap, 仅记于B090 signoff O2+F001报告).",
+    "pass_count": 2,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
@@ -33,10 +33,10 @@
     "F001",
     "F002"
   ],
-  "completed_date": null,
+  "completed_date": "2026-07-05",
   "session_notes": {
     "planner": "2026-07-05 B090 done(Codex F002 PASS 2/2 独立确认warmup证伪+root cause)后开 B091(修 above_200d_ma bug). ultracode: Workflow-build(fresh子代理修+对抗验证零回归). 修法/blast radius/零回归铁律 backlog已定标. 剩 backlog: B055(Workflow-doable)+residual-engine/smart-money(待用户决策).",
     "generator": null,
-    "evaluator": "2026-07-05 B090 F002 独立验收 → 全 PASS 2/2 → done. 代 Codex(用户 /goal 授权, 与实现完全隔离, 最高怀疑度). 纯研究/负结论批(scripts/research/b090_hk_china_{fetch,retest}.py, 缓存真数据 31 标的 130,371 行 qfq, 无生产面). 核验路径: (1)★warmup 假设证伪独立重跑: NO-WARMUP(截 2020-05-28)real defensive 25/25 holdings 0.00 / WITH-WARMUP(全 history 回 2001-04)25/25 holdings 0.00, warmup 令 defensive 变化 +0; 关键佐证 warmup 确被施加=avg_scored 19.36→23.12(更多名字有历史打分)然持股仍 0→卡点在 scoring 下游(regional_risk_off 门)非 warmup 饥饿; 证伪逻辑链(修好→仍全防守→非 warmup 之罪)成立, 逐数字与报告 §4 等; (2)★factor bug 真根因从零最小 2-ticker 样本独立复现(不复用被验脚本探针): AAA=Mon-Fri/BBB=Mon-Thu 故意异日历 + 价格严格单调上涨(最新 close 必远高 MA), above_200d_ma union 帧 BBB 仅 160/200 non-NaN→MA=NaN→above=False(错应 True), AAA 200/200→True; 机理坐实 min_periods=200 的 200-row 窗遇 union 日历跨市场空缺注 NaN→窗内非 NaN<200→MA 恒 NaN; 真数据探针 0700.HK 188/200 union=False HK-only=True / 9988 188/200 / 600519 184/200, reason=regional_risk_off 25/25, 逐位与报告 §6 等; (3)★单日历无害(backlog 零回归前提): 同 2-ticker 置单一日历 BBB 200/200→above=True 正确; 真数据 proxy sleeve defensive 12/25(非 25/25)佐证 proxy(US ETF 同 NYSE 单日历)MA 正常→bug 只多日历触发, 生产 proxy 不受影响, 坐实修复项『零回归铁律 proxy 逐位不变』前提; (4)★真-vs-proxy 诚实度: 因 bug real 25/25 全防守一股未持→本次真-vs-proxy 仍未真正测到(B063 同样卡 bug), 报告 §7 如实标 INCONCLUSIVE 未夸大(『never actually participated, no clean evidence either way』+bias_notes 标 UPPER BOUND/需 matched top_n 再跑); (5)qfq 口径 caveat 诚实(代码 _normalize_frame close=adj_close=qfq + 报告 §8.1 明标非真 Tiingo adj)+FX 方向抽点 to_usd(7.8 HKD,2024-06-28)=0.99894 USD, 原始 DEXHKUS=7.8083(peg 7.75-7.85 内)→除以 rate 正确非倒置(倒置得~60); (6)★workflow journal wf_8b114995-355 复核: build agent 数字(proxy cagr0.0275/sharpe0.5216 real cagr0.0003/sharpe0.9973 defensive25/25)与我复现逐位等, 2 对抗验证者均 refuted=false(un-refuted 属实, 各项 adj_close_ok/fx_direction_ok/recompute_matches/zero_regression/gates_green/verdict_honest=true), 抽 fx/recompute/root-cause 3 结论独立再验全 hold; (7)零回归: F001 feat 0a8e21d 仅 4 文件(fetch230+retest322+单测140+报告102), git diff 93493a3..HEAD -- trade/ 字节空, 产品策略码 0 行, above_200d_ma bug 发现未修正确推 backlog(修需碰产品码走独立 spec→build→verify); (8)Gates: ruff(3 文件)All passed + 10 单测本地实跑 10 passed + mypy trade Success(103 文件); CI 含 F001 代码 push(tip c9c36e8)Python CI 6m49s+Backend CI 8m52s+Deploy 3m44s 全绿, HEAD 0c0f5d0=chore(backlog)单文件 paths-ignore 合法不触发; HEAD≡prod 无生产面/无部署项如实标注. 2 软观察非阻断: O1 3 研究脚本未被 mypy CI 覆盖(Python CI 仅 mypy trade), 直跑仅暴露调用层 artifacts(akshare 无 stub import-untyped/scripts.research 双模块名解析)非真类型缺陷, 两对抗验证者已注; O2 可跑窗仅 25 季(2020-06…2026-06)SGOV floor 住重压中国股灾+今日流动名单幸存者偏差→即便 bug 修好, 真-vs-proxy 决策级 GO/NO-GO 须待(a)factor bug 修(backlog)+(b)更长无偏窗+matched top_n 再跑, 本批如实标 INCONCLUSIVE 已正确. signoff docs/test-reports/B090-hk-china-retest-signoff-2026-07-05.md. ★下阶段=backlog 修 above_200d_ma calendar bug(medium, per-ticker dropna 单日历 no-op 保 live proxy) + 战略方向待用户."
+    "evaluator": "2026-07-05 B091 F002 独立验收 → 全 PASS 2/2 → done. 代 Codex(用户 /goal 授权, 与实现完全隔离, 最高怀疑度). 修 above_200d_ma 多日历 MA bug(B090 真根因). 手段=独立取修前(94f8172)vs修后(HEAD)两版 above_200d_ma 对拍. 核验: (1)★零回归命门四重坐实: (i)结构性—生产宇宙 HK_CHINA_TICKERS=(MCHI/FXI/KWEB/ASHR)全NYSE单日历+SGOV→dropna对无缺口列=数学no-op→输出逐位不变; (ii)真proxy宇宙MCHI/FXI/KWEB/ASHR/SGOV 16个季末(2022-25)NEW==OLD bit级0mismatch; (iii)200随机单日历fuzz帧0处不吻合(index+values+dtype全等); (iv)VM current release symlink=b35a638(修复commit)+active trade包factors.py含_latest_ma_own_calendar标记×3→prod跑修复码. (2)★修复有效: 真数据24季末全量OLD-vs-NEW对拍→OLD above-count恒0(bug饿死一切,复现B090 real 25/25)→NEW 5-30, regional_risk_off由24/24恒True→9/24翻False(real sleeve 0%→~37%参与); 自建2-ticker异日历样本(AAA Mon-Fri/BBB Mon-Thu单调涨)旧union=False→修后True; 点名0700.HK真数据OLD False→NEW True(own_obs4926). (3)★语义: <200自观测→NaN MA→False(单测c+我复现); _wide_close仍filter date<=as_of无前视; trend_pass接口不变. (4)★变异检查有牙: 回退factors.py成OLD union rolling→新单测(a)FAIL(assert False is True),(b)(c)仍pass→(a)真守多日历修复; 已还原干净. (5)★2对抗验证un-refuted: journal wf_2a2ea377-422, 1 fix agent+2验证者(af021467/ab48abbc)均refuted=false, zero_regression_holds/multi_calendar_fixed/semantics_preserved/workbench_green/gates_green/blast_radius_ok=true issues空; fix agent summary明载'close still=wide.iloc[-1]'(O1知情保留). (6)门禁: mypy trade Success(103)+ruff All passed+root pytest hk_china相关118 passed+新单测3 passed+backend test_strategies 13 passed(backend venv内trade快照含修复标记实测非stale); CI b35a638 push→Python CI 6m50s+Backend CI 8m49s+Deploy 3m34s全success自动链式; HEAD 6653781仅动state JSON(git diff b35a638..HEAD -- trade/ workbench/backend/字节空)→HEAD产品码≡部署≡prod. 2软观察非阻断: O1 残留close=wide.iloc[-1] union最后行NaN(修复只改MA分母,close分子与修前同→某票最后union日未交易则close=NaN→above_MA=False, 真数据仅2/24季触发节假日错配2023-09-30/2024-03-31 Good Friday, 生产proxy单日历永不触发; 先存非回归非F001范围; 须follow-up决策级重跑处理否则伪防守季误记真信号; 建议Planner登backlog); O2 决策级real-vs-proxy重跑无离散backlog.json条目(F001解锁了该重跑, 本批正确未跑; follow-up仅记于B090 signoff§3 O2+B091 F001报告§follow-up, 建议Planner补登携B090三caveat+本O1 caveat). signoff docs/test-reports/B091-above-200d-ma-fix-signoff-2026-07-05.md. ★下阶段=backlog 决策级real-vs-proxy重跑(携O1 close-NaN+B090 O2 SGOV floor/幸存者偏差/matched top_n caveat) + 战略方向待用户."
   }
 }

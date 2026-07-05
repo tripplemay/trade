@@ -19,7 +19,7 @@
       "title": "Codex 独立验收 + signoff(零回归 proxy逐位不变/多日历MA有效/workbench全绿)",
       "priority": "medium",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "Codex独立: ★零回归核实(US-only proxy above_200d_ma/trend_pass 输出修前后逐位不变)+多日历real case MA有效(0700.HK above_MA True)+workbench test_strategies/worker/precompute全绿+per-ticker dropna语义正确+无扫参. signoff docs/test-reports/B091-...-signoff.md.",
       "design_decisions": [
         "最大陷阱=修改动了单日历proxy行为(回归live);独立核实proxy逐位不变为重。"

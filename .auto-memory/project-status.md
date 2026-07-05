@@ -5,15 +5,14 @@ type: project
 ---
 
 ## 当前状态
-- **B090 ✅ done（2026-07-05, round1 一轮闭环）** hk_china 真数据重测(BL hk-china-real-data-retest, 纯研究/负结论批, 1g+1c, 无生产面)。scripts/research/b090_hk_china_{fetch,retest}.py, 缓存真数据 31 标的(16HK sina/10A股/4proxy/SGOV qfq 130,371 行)+FRED FX。★交付=诚实负结论+真根因: **warmup 假设证伪**(NO/WITH-warmup 均 real 25/25 全防守 0 持股, defensive 变化+0; avg_scored 19→23 证 warmup 确施加却不改局→卡点非 warmup); ★真根因=**above_200d_ma calendar-misalignment bug**(200-row 窗 × 3 交易日历 union→MA 恒 NaN→regional_risk_off 每季→真 sleeve 100% 趴 SGOV)。独立验收(代 Codex,隔离,最高怀疑度): 独立重跑逐数字复现报告 §4/§5/§6; ★从零最小 2-ticker 异日历样本复现 bug(严格上涨 ticker union 帧 160/200 non-NaN→误判 below MA)+证单日历无害(proxy 12/25 佐证, backlog 零回归前提); 真-vs-proxy 因 bug 仍未真正测到→报告如实 INCONCLUSIVE 未夸大; qfq caveat 诚实+FX 方向抽点正确(7.8 HKD→0.999 USD); workflow journal 复核 2 对抗验证 un-refuted 属实; 零回归(4 文件 diff+trade/ 空 diff+产品码 0 行, bug 发现未修正确推 backlog)+ruff/10 单测/mypy trade clean+CI 绿(c9c36e8)。signoff docs/test-reports/B090-hk-china-retest-signoff-2026-07-05.md。
-- **B089 ✅ done** VIX tail-overlay(纯研究/基建)。静态 X% VIXY overlay on SPY, 2020 covid tail-loss 减真(10% −34%→−15%)+carry 代价诚实焊死(drag 1.04pp/yr, VIXY buy-hold −99.7% roll-cost)。signoff B089-...-2026-07-05。
-- **B088 ✅ done** Smoothed/feedback vol-targeting(纯研究/基建)。三控制律逐点对拍+turnover 独立复算(smoothed −54%/feedback −12%)+控波两面诚实。signoff B088-...-2026-07-05。
-- **B087 ✅** bootstrap-seed deploy-chain 治本; migration 0041 幂等 seed CURATED_SYMBOL_NAMES insert-if-absent 不覆盖 akshare(VM 只读双证)。**B086 ✅** A股行情统一层。**B085/B084/B083 ✅** cn_attack/ETF趋势/PEAD first-look。**B082–B074 done**(B077 NOT-GO)。
-- **接续**：★backlog 新增 **修 above_200d_ma calendar bug**(medium, per-ticker dropna 单日历 no-op 保 live proxy/多日历 real 修好; blast radius=hk_china_momentum wired workbench; Workflow-doable)。余 4 项(A股聪明钱[¥200 Tushare 待用户]/test-automation P3-P5/B055 US careful/residual-engine 触冻结待用户)。★下阶段战略决策待用户(P0-P2 无强 edge; 安全可测机械 win 已尽 B086-B089)。33 learnings 待用户确认。
+- **B091 ✅ done（2026-07-05, round1 一轮闭环）** 修 above_200d_ma 多日历 MA bug(B090 真根因, 1g+1c, Workflow-build)。修=新 `_latest_ma_own_calendar`(col.dropna()前置 rolling)各票自身日历算 MA + `above_200d_ma` 用 wide.apply 逐列; close/fillna(False)语义+trend_pass 接口不变(factors.py +23/−1)。独立验收(代 Codex,隔离): ★零回归命门四重坐实(结构性生产宇宙 MCHI/FXI/KWEB/ASHR 单 NYSE 日历 dropna no-op + 真 proxy 16 季末 bit 级 0mismatch + 200 fuzz 帧 0mismatch + VM prod 跑修复 commit b35a638); ★修复有效—真数据 24 季末 OLD above 恒 0→NEW 5-30, regional_risk_off 24/24 恒 True→9/24 翻 False(real sleeve 0%→~37%参与)+0700.HK OLD False→NEW True; 单测有牙(变异回退→(a)红); 2 对抗验证 un-refuted(journal wf_2a2ea377-422); 门禁全绿+CI 三绿(b35a638 自动链式)+HEAD 产品码≡部署≡prod。signoff docs/test-reports/B091-above-200d-ma-fix-signoff-2026-07-05.md。
+- **B090 ✅ done** hk_china 真数据重测(纯研究/负结论批, 无生产面)。warmup 假设证伪(NO/WITH 均 real 25/25 全防守)+发现真根因=above_200d_ma calendar bug(200-row 窗×3 日历 union→MA 恒 NaN)→B091 已修。signoff B090-...-2026-07-05。
+- **B089/B088 ✅** VIX tail-overlay / smoothed-feedback vol-targeting(纯研究基建, carry/turnover 诚实焊死)。**B087 ✅** bootstrap-seed deploy-chain 治本。**B086–B074 done**(B077 NOT-GO)。
+- **接续**：★下阶段 = backlog **决策级 real-vs-proxy 重跑**(B091 已解锁 real sleeve 真参与; 须携 O1 close-NaN + B090 O2 三 caveat)。余 4 项(A股聪明钱[¥200 Tushare 待用户]/test-automation P3-P5/B055 US careful/residual-engine 触冻结待用户)。★战略决策待用户(P0-P2 无强 edge)。34 learnings 待用户确认。
 
 ## 遗留 / soft-watch
-- **B090 O1**：3 研究脚本未被 mypy CI 覆盖(Python CI 仅 mypy trade), 直跑仅暴露调用层 artifacts(akshare 无 stub/双模块名解析)非真缺陷。**B090 O2**：可跑窗仅 25 季(2020-06…2026-06)SGOV floor 住重压中国股灾+今日流动名单幸存者偏差→真-vs-proxy 决策级 GO/NO-GO 须待 factor bug 修+更长无偏窗+matched top_n 再跑。
-- **B089 O1/O2**：报告「月度再平衡 carry 温和/比 buy-hold 高效」措辞略强; 窗口(2011-26)未显式 caveat 缺 2008 GFC。**B088 O1/O2**：smoothing turnover 减经验稳健措辞略强; realized vol 系统>target 通用局限。**B087/B086/B081**：见旧注(bootstrap 覆盖 vs migration insert-if-absent/fetch_etf timeout/聪明钱方向 backlog)。
+- **B091 O1**：残留 `close = wide.iloc[-1]` union 最后行 NaN(修复只改 MA 分母, close 分子与修前同→某票最后 union 日未交易则 close=NaN→above_MA=False; 真数据仅 2/24 季触发节假日错配; 生产 proxy 单日历永不触发; 先存非回归非 F001 范围; 须 follow-up 重跑处理)。**B091 O2**：决策级重跑无离散 backlog 条目(仅记于 B090 signoff O2+B091 报告, 建议 Planner 补登)。
+- **B090 O2**：可跑窗仅 25 季(2020-06…2026-06)SGOV floor 住+今日流动名单幸存者偏差→决策级 GO/NO-GO 须更长无偏窗+matched top_n 再跑。**B090 O1**（研究脚本未纳 mypy CI）非真缺陷。**B089/B088**：carry/turnover 措辞略强+窗口 caveat。**B087/B086/B081**：见旧注。
 
 ## 永久硬边界
 - B045 market data refresh (r) 只读+§12.10.2 AST 守门；research-safe / no-broker / no-AI 预测 / no 自动下单；hk_china 仍 ETF proxy。
@@ -21,7 +20,7 @@ type: project
 - golden 只进测试 fixture seam，不碰生产 data_root/unified 真数据路径。
 
 ## Framework 状态（最新 3 版）
-- **v0.9.54**（B078）：generator.md §38 宽集刷超时含 bulk discovery / §39 paper round-trip 成本 / §40 静默冻结守门 / evaluator.md §32 systemd oneshot 卡死诊断。
+- **v0.9.54**（B078）：generator.md §38-40 / evaluator.md §32 systemd oneshot 卡死诊断。
 - **v0.9.53**（B077）：§36 §23 派生字段 measured-not-assumed / §37 first-look 覆盖-门控裁定 / evaluator.md §31 date-bomb。
 
 ## 已知 gap
