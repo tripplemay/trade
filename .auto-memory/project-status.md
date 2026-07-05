@@ -5,16 +5,17 @@ type: project
 ---
 
 ## 当前状态
-- **B086 ✅ done（2026-07-05, round1 一轮闭环）** A股行情数据源统一层(基建, 多源 fallback, 1g+1c)。`scripts/research/ashare_market_source.py` `fetch_etf_daily()` Eastmoney(fund_etf_hist_em qfq)→Sina(fund_etf_hist_sina raw) fallback, 返回带 source/adjust 标注, 全失败→DataSourceError 不静默空。独立验收(代 Codex,与实现隔离): 6 mock 单测覆盖 fallback 各分支 + **mutation-check 双变异证有牙**(破fallback→2测FAIL/破sina_symbol→1测FAIL) + **真网端到端实测**(Eastmoney 真SSLError→Sina 接管23行/adjust=raw/日期窗正确/warning+info双log不静默); 口径标注按构造必异+显式(结构核实); 零回归 root pytest 1160 passed 0 failed + 无产品码 import 新模块 + b082-b085 脚本字节不变 + cn_attack·flagship·生产data_root 0行; CI全绿 + 生产release≡HEAD产品码(520897f, research模块不入部署)。软观察3非阻断(O1 timeout未包=作用域生产刷job非本research模块,与b084/b085先例一致/O2 mypy CI作用域=trade/O3 并发planner docs提交)。**两源live数值对照因 Eastmoney 持续不可达(8次重试全FAIL,dev+VM双向)受限,已诚实披露**——反再验证模块前提。signoff docs/test-reports/B086-ashare-quote-source-unify-signoff-2026-07-05.md。
-- **B085 ✅ done（2026-07-05）** cn_attack 残差动量升级 first-look = 全2 PASS。**★评审路线图 P0–P2 全部收官**。残差IC异路径重算51月度点逐位吻合(0.0108/t0.45弱; delta+0.0118/t1.98 borderline); β PIT无前视双证; 禁扫参; rescope 引擎A/B→前置筛=合规缩窄(尊冻结flagship边界); INCONCLUSIVE 合法。完整引擎A/B降级backlog(待用户对触冻结flagship决策)。
-- **B084 ✅ done** A股 ETF 趋势 first-look=全3 PASS(INCONCLUSIVE/LEAN-GO, 独立异路径复算逐位吻合, migration 0039)。**B083 ✅ done** PEAD first-look=全3 PASS(前视全过, IC三路径吻合, INCONCLUSIVE, migration 0038)。**B082 ✅ done** 红利低波防守腿(生产5CSV落地实证, alembic 0037)。**B081 ✅ done** cn_attack 回测引擎修真(alembic 0036)。B080/B079/B078/B076/B075/B074 done。B077 NOT-GO。
-- **接续**：backlog ~9 项(A股聪明钱/hk_china retest/test-automation/B055/vol-target/VIX/bootstrap-seed 等; A股数据源已 B086 兑现)。B081-B085 严验 follow-up(refresh fx+benchmark/PEAD全A+快报SUE/ETF CPCV+复权+turnover/完整引擎A/B)待 planner 并入。learnings 队列待用户确认。下阶段战略决策待用户方向。
+- **B087 ✅ done（2026-07-05, round1 一轮闭环）** bootstrap-seed deploy-chain 治本(运维, 1g+1c)。migration `0041_curated_symbol_names_seed` 幂等 seed CURATED_SYMBOL_NAMES(68条,source=curated,固定stamp)走 alembic 部署链落地生产。独立验收(代 Codex,与实现隔离): ★insert-if-absent 双证不覆盖 akshare_spot(静态 mutation-check 注入 INSERT OR REPLACE→测试 FAIL 有牙 + 生产 4 A股 overlap 保 akshare_spot 中文名实测); VM 只读实测 alembic head=0041 / breakdown akshare_spot|5203(基线不减)+curated|58(治本 production=0) / 58=68-10 mainland 逐点闭合 / SPY·AGG·AAPL·MSFT 值正确; upgrade→downgrade→upgrade 幂等+可逆(downgrade 只删 curated 不误删 spot); bootstrap 同源 lockstep(names.py 单一真相源); 产品策略码 0 行; 176 回归+2 单测 pass; CI 全绿(e1b0a03,Python CI 因 workbench/** paths-ignore 合法跳过)+HEAD≡prod。★治本闭环=B080 F005 同源 seed 缺口最后一块。signoff docs/test-reports/B087-bootstrap-seed-deploy-chain-signoff-2026-07-05.md。
+- **B086 ✅ done** A股行情数据源统一层(基建,多源 fallback)。fetch_etf_daily Eastmoney(qfq)→Sina(raw) fallback 带 source/adjust 标注全失败 raise。验收 6 mock+mutation双变异有牙+真网端到端(Eastmoney SSLError→Sina 23行); 两源 live 数值对照因 Eastmoney 持续不可达受限(已披露)。
+- **B085 ✅** cn_attack 残差动量 first-look 全2 PASS，★评审路线图 P0–P2 全收官。**B084/B083 ✅** ETF趋势/PEAD first-look 全PASS(migration 0039/0038)。**B082/B081/B080/B079/B078/B076/B075/B074 done**，B077 NOT-GO。
+- **接续**：backlog ~7 项(A股聪明钱/hk_china retest/test-automation/B055/vol-target/VIX 等; bootstrap-seed 已 B087 兑现)。B081-B085 严验 follow-up 待 planner 并入。33 learnings 待用户确认。下阶段战略决策待用户方向。
 
 ## 遗留 / soft-watch
-- **B086 O1（促码提示）**：`fetch_etf_daily` 网络调用未包 timeout(research 层非阻断)；若未来接生产刷 job/systemd timer 须按 §38 补 daemon-线程 join(timeout)，建议 docstring 加提示。
+- **B087 O1**：bootstrap `_import_symbol_names` upsert(覆盖) vs migration insert-if-absent(不覆盖)——dev-only 差异(生产走 migration 不跑 bootstrap)，名集同源已满 lockstep；语义完全对齐可下批纯洁癖(非缺陷)。
+- **B087 O2**：VM `workbench-data-refresh`/`workbench-prices`/`workbench-canonical-backtest` 3 服务 failed=pre-existing 与 B087 无关(akshare 5203 历史基线)，供运维知悉。
+- **B086 O1（促码提示）**：fetch_etf_daily 网络调用未包 timeout(research 层非阻断)；接生产刷 job 须按 §38 补 daemon 线程 join(timeout)。
 - **B081 快照自愈**：cn_attack advisory 快照 daily timer 重算入纯保真口径；partial_rebalance=True 变体留独立 verdict 批。
 - **★聪明钱方向**：backlog `B0XX-ashare-smart-money-following`，结论存 docs/research/。
-- **B070 follow-on**：2因子去偏 baostock；港股 P3（backlog B055）。
 
 ## 永久硬边界
 - B045 market data refresh (r) 只读+§12.10.2 AST 守门；research-safe / no-broker / no-AI 预测 / no 自动下单；hk_china 仍 ETF proxy。

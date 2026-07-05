@@ -19,7 +19,7 @@
       "title": "Codex 独立验收 + signoff(migration 幂等/生产 curated>0/不覆盖 override/零回归)",
       "priority": "low",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【design 审计 doc】Codex独立: migration 0041 幂等落地生产 curated 名>0 核实+insert-if-absent 不覆盖 akshare_spot override(优先级不变)+bootstrap lockstep+零回归(不改日刷). signoff docs/test-reports/B087-...-signoff.md.",
       "design_decisions": [
         "最大陷阱=migration 覆盖 akshare_spot 真名(退化);独立核实 insert-if-absent 语义。"
