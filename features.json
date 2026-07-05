@@ -19,7 +19,7 @@
       "title": "Codex 独立验收 + signoff(overlay数字重算/tail-loss减真/carry代价诚实/无扫参/零回归)",
       "priority": "low",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【prep doc】Codex独立: overlay数字重算(不import我方)+tail-loss减(2020/2022 MaxDD)真+negative carry代价诚实量化(对冲代价非吹免费)+参数无扫参(grep先验X)+零回归(策略/flagship不动). signoff docs/test-reports/B089-...-signoff.md.",
       "design_decisions": [
         "最大陷阱=只报tail-loss减不报carry代价(吹对冲免费);独立核实两面诚实。"
