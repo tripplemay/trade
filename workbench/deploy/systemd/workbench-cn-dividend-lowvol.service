@@ -1,0 +1,46 @@
+[Unit]
+Description=Workbench CN 红利低波 defensive-sleeve advisory target precompute (B082, research-state, advisory-only, read-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B082-dividend-lowvol-defense-spec.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=deploy
+Group=deploy
+WorkingDirectory=/srv/workbench/current/backend
+
+# Secrets (WORKBENCH_DB_URL, ...) live in /etc/workbench/workbench.env
+# (chmod 600 root:deploy). Never committed.
+EnvironmentFile=/etc/workbench/workbench.env
+
+# B082 F001/F003 — point the trade loaders at the VM data root the data-refresh job
+# writes, so the dividend-lowvol precompute reads the real frozen series it produced
+# (snapshots/dividend_lowvol/index_h20269.csv + index_h30269.csv + cn_10y_yield.csv)
+# instead of failing data_not_covered. Not a secret — a fixed path. Local / CI leave unset.
+Environment=WORKBENCH_DATA_ROOT=/var/lib/workbench/data
+
+# v0.9.54 §38 (B078) — a Type=oneshot service has TimeoutStartSec DISABLED by default, so a
+# hung read (e.g. a stuck CSV/DB read) would run forever. Set it explicitly so a wedged
+# precompute run is killed, not left hanging.
+TimeoutStartSec=1800
+
+# Permanent product boundary (r-c) (B082 spec §3 invariant): this timer runs the
+# DETERMINISTIC QUANT 红利低波 advisory target precompute ONLY — it imports the trade
+# package (the F002 spread signal) and writes the recommendation_snapshot table under
+# strategy_id=cn_dividend_lowvol. ExecStart invokes the dividend-lowvol precompute CLI and
+# nothing else — it never runs broker / order-ticket / execution / fills / reconcile code.
+# The mode is research-state + advisory-only: it never places an order, never auto-trades
+# and never predicts returns. tests/safety/test_market_scheduler_scope.py greps this
+# ExecStart line + scans the precompute package to enforce that.
+ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.strategy_modes.cn_dividend_lowvol_cli
+
+# Standard hardening (mirrors workbench-recommendations.service).
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/workbench /var/log/workbench /tmp
+
+# No [Install] section — this oneshot is pulled by
+# workbench-cn-dividend-lowvol.timer, never enabled / started directly.

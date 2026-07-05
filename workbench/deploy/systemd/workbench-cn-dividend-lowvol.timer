@@ -1,0 +1,19 @@
+[Unit]
+Description=Daily timer for workbench CN 红利低波 defensive-sleeve advisory precompute (B082, research-state, advisory-only, read-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B082-dividend-lowvol-defense-spec.md
+
+[Timer]
+# Daily 03:50 UTC — after the data-refresh (00:30), recommendations (03:00) and the two
+# cn-attack precomputes (03:30 / 03:40), staggered 10 min after cn-attack pure-momentum
+# so the trade-importing precomputes do not run concurrently on the VM. The sleeve is a
+# monthly-execution rule but the timer monitors DAILY (每日监控 / 不动区): the published
+# target is the latest COMPLETED month-end 利差档位, so a re-run is idempotent within the
+# month. Persistent=true catches up a missed run after a VM reboot; the precompute is
+# idempotent (RecommendationSnapshotRepository.save_batch overwrites the
+# (cn_dividend_lowvol, as_of_date) set).
+OnCalendar=*-*-* 03:50:00
+Persistent=true
+Unit=workbench-cn-dividend-lowvol.service
+
+[Install]
+WantedBy=timers.target

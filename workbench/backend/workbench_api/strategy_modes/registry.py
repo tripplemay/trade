@@ -38,6 +38,15 @@ REGIME_STRATEGY_ID = "regime_adaptive"
 # recommendation / account / execution chain), each with an independent account.
 CN_ATTACK_QUALITY_MOMENTUM_STRATEGY_ID = "cn_attack_quality_momentum"
 CN_ATTACK_PURE_MOMENTUM_STRATEGY_ID = "cn_attack_pure_momentum"
+# B082 F003 — the 红利低波 defensive-sleeve advisory mode (P1). A single-instrument
+# tactical allocation (a dividend-low-vol ETF + cash) driven by the frozen
+# three-tier 股息率−十年国债利差 rule (F002). This is the SAME strategy_id the F002
+# backtest / OOS card / trial_registry rows already use; F003 makes it a first-class
+# *mode* (its own daily-monitor target producer + paper account + surface). Research
+# -state and honestly caveated: the F002 backtest found the rule cuts tail drawdown
+# but adds NO return, and the 2022/2024 defence comes mostly from the instrument
+# itself, not the rule — advisory-only, unvalidated (see the verification card).
+CN_DIVIDEND_LOWVOL_STRATEGY_ID = "cn_dividend_lowvol"
 
 # Funding states (B057 §1 honesty boundary).
 FUNDING_LIVE = "live"  # the user is trading real money in this mode
@@ -151,6 +160,32 @@ _MODES: tuple[StrategyMode, ...] = (
             "A股 进攻型选股：纯 12-1 动量（无质量过滤），每日监控 / 不动区。研究态：未验证，"
             "B066 样本外为动量逆转期（样本外表现以验证卡片为准 / see verification card）；"
             "advisory-only，不自动下单，非收益预测。"
+        ),
+    ),
+    # B082 F003 — 红利低波防守腿 (P1). Single-instrument tactical allocation between a
+    # dividend-low-vol ETF and cash on the frozen three-tier 利差 rule; daily monitor /
+    # monthly execution / 不动区. Research-state and honestly caveated: the F002 backtest
+    # found the rule削尾部回撤 but adds NO return (CAGR 10.6%→7.5%), and the 2022/2024
+    # defence comes mostly from the instrument itself, not the rule. advisory-only.
+    StrategyMode(
+        id="cn_dividend_lowvol",
+        strategy_id=CN_DIVIDEND_LOWVOL_STRATEGY_ID,
+        display_name="A股 红利低波防守（研究态）",
+        target_producer="workbench_api.strategy_modes.cn_dividend_lowvol_precompute",
+        # No per-mode backtest is wired off the registry: the F002 backtest is a
+        # standalone research run (scripts/research/b082_dividend_lowvol_backtest.py),
+        # not dispatched by the mode key.
+        backtest_key=None,
+        # Monthly execution (act monthly / 不动区), but the timer monitors DAILY so the
+        # published tier reflects the latest completed month-end 利差档位.
+        cadence=CADENCE_MONTHLY,
+        funding_state=FUNDING_RESEARCH,
+        description=(
+            "A股 红利低波防守腿：单一红利低波 ETF + 现金，按股息率−十年国债利差三档配置"
+            "（≥2.5% 满配 / 1.5-2.5% 半配 / <1.5% 低配；阈值 spec 先验、禁回测扫参），"
+            "日频监控 / 月度执行 / 不动区。研究态：未经样本外验证——回测显示规则削尾部回撤"
+            "但无收益增量、2022/2024 防守主要来自品种本身（样本外表现以验证卡片为准 / "
+            "see verification card）；advisory-only，不自动下单，非收益预测。"
         ),
     ),
 )
