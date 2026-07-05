@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-07-05",
   "user_goal": "B087 bootstrap-seed deploy-chain 治本(运维, 治 B080 F005). 审计(docs/research/next-batch-prep-bootstrap-seed-audit.md)定唯一真缺口=CURATED_SYMBOL_NAMES bootstrap-only(0027建表不seed, deploy跑alembic→生产curated=0). F001=加幂等 seed migration 0041(复用 trials 0036-0040 模板, insert-if-absent 不覆盖 akshare_spot). 核心不变量: 零回归不改日刷/upsert优先级(curated仅fallback); 幂等. 小批 2 features 1g+1c. B086 done 后接手开批.",
   "reference_docs": [
@@ -26,8 +26,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B087 F001 **done**. migration 0041 幂等 seed CURATED_SYMBOL_NAMES(68条, source=curated, 固定stamp) 治本 B080 F005(deploy跑alembic→生产curated=0). ★insert-if-absent 永不覆盖 akshare_spot override. 2单测(seed全落地+保override). mypy527+ruff clean, bootstrap+symbol 50测零回归, migration可逆+幂等. bootstrap已lockstep无需改. 报告 B087-F001-curated-seed-migration.md. **F002 codex 验证**: migration幂等落地生产curated>0+insert-if-absent不覆盖akshare_spot优先级+bootstrap lockstep+零回归(不改日刷). signoff docs/test-reports/B087-...-signoff.md. Gates全绿(mypy527/ruff/2+50测/0041可逆).",
+    "status": "complete"
   },
   "features": [
     "F001",

@@ -1,12 +1,12 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
       "title": "CURATED_SYMBOL_NAMES 幂等 seed data-migration(治本 B080 F005 生产=0 缺口)",
       "priority": "low",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【design: docs/research/next-batch-prep-bootstrap-seed-audit.md】migration 0041 幂等 seed CURATED_SYMBOL_NAMES(68 条 {symbol:name}, source='curated', 固定 stamp) 入 symbol_name 表——**insert-if-absent**(symbol 不在现有则插, 不覆盖 akshare_spot override)。复用 trials migration 0036-0040 模板(bulk_insert + 幂等 id 检查)。bootstrap 已 lockstep(_import_symbol_names 本地 seed 同名, 无需改)。单测: migration 幂等(重跑无重复)+seed 后 curated 名 count>0+不覆盖已存在 akshare_spot 名。★零回归: 不改 akshare_spot 日刷路径/upsert 优先级(curated 仅 fallback). Gates: backend mypy/ruff/pytest+0041 apply+CI绿.",
       "design_decisions": [
         "deploy 跑 alembic only→非 migration 的 seed 生产静默缺(B080 F005). 治本=curated 名走 data-migration。",
