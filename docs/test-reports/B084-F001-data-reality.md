@@ -15,11 +15,16 @@
 - 宽基（沪深300/中证500/创业板）**7+ 年**深度, 够时序趋势 WF 70/30 + 覆盖 2022/2024-02 震荡期（★F002 命门窗口）。
 - 科创 50 短史（2020-11）——窗口诚实标注, 时序动量按可用史打折。
 
-## ★fetch 落地：待 Eastmoney 限流恢复（transient, 非数据问题）
+## ★fetch 落地：**DONE via Sina 源（绕开 Eastmoney 限流）**
 
-`scripts/research/b084_etf_fetch.py`（fetch 池→`data/research/b084_etf/prices.csv`）已就绪, ruff clean。
-**探针成功后, bulk fetch 连续撞 `SSLError push2his.eastmoney.com`** —— 本 session 大量 akshare 请求（B083 业绩预告 bulk +
-本探针）触 Eastmoney **IP 限流**（同 B082 Tiingo 429 transient 类）。**数据可得性已由探针证实**；fetch 待限流恢复
-（fresh session / 隔一段重跑 `b084_etf_fetch.py`, 每 ETF 缓存断点续跑）。
+初次 bulk fetch 用 `fund_etf_hist_em`（Eastmoney push2his）连撞 `SSLError` —— 本 session 大量 akshare 请求
+（B083 业绩预告 38k bulk + 本探针）触 Eastmoney **IP 限流**。**换 `fund_etf_hist_sina`（Sina 源, 不同 host）绕开**，
+且史更长（510300→2012 / 159915→2011）。baostock 无 ETF 覆盖（0 行, 弃）。
 
-## 裁定：**GO**（数据可得）；F001 part2 = 限流恢复后跑 fetch 落 prices.csv → F002 时序趋势 first-look
+**实测产出** `scripts/research/b084_etf_fetch.py` → `data/research/b084_etf/prices.csv`（gitignored, 脚本复现）：
+**13,359 行 / 5 ETF / 2011-12-09..2026-07-03**（14+ 年, 宽基覆盖 2022/2024-02 震荡期 = F002 命门窗口）。
+
+**★口径**：Sina `fund_etf_hist_sina` = **原始价（非 qfq 复权）**。趋势/时序动量 first-look **方向不受影响**
+（ETF 分红小、极少拆分）——F002 用原始 close 算趋势合理；若后续建可配策略, 补复权口径。
+
+## 裁定：**GO** — F001 done（探针 + Sina fetch 13,359 行落盘）→ F002 时序趋势 first-look

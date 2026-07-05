@@ -26,6 +26,12 @@ _ETFS = {
 }
 
 
+def _sina_symbol(code: str) -> str:
+    """sh for 5xxxxx/6xxxxx (Shanghai), sz for 0/1/3xxxxx (Shenzhen)."""
+
+    return ("sh" if code[0] in "56" else "sz") + code
+
+
 def _fetch_one(code: str, name: str) -> Any:
     import pandas as pd
 
@@ -35,13 +41,12 @@ def _fetch_one(code: str, name: str) -> Any:
 
     import akshare as ak
 
-    df = ak.fund_etf_hist_em(
-        symbol=code, period="daily", start_date="20180101", end_date="20250705", adjust="qfq"
-    )
-    date_col = next(c for c in df.columns if "日期" in c or "date" in c.lower())
-    close_col = next(c for c in df.columns if "收盘" in c or c.lower() == "close")
+    # Sina source (fund_etf_hist_sina) — different host from the rate-limited Eastmoney
+    # (push2his.eastmoney.com). Raw (non-qfq) close: fine for a trend/momentum first-look
+    # (direction preserved; ETF dividends small) — 口径 noted in the report.
+    df = ak.fund_etf_hist_sina(symbol=_sina_symbol(code))
     out = pd.DataFrame(
-        {"date": pd.to_datetime(df[date_col]), "ticker": code, "name": name, "close": df[close_col]}
+        {"date": pd.to_datetime(df["date"]), "ticker": code, "name": name, "close": df["close"]}
     )
     _PER_ETF_DIR.mkdir(parents=True, exist_ok=True)
     out.to_csv(cache, index=False)
