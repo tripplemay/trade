@@ -1,41 +1,41 @@
 {
-  "status": "done",
+  "status": "building",
   "total_features": 2,
-  "completed_features": 2,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": null,
+  "current_sprint": "F001",
   "last_updated": "2026-07-05",
-  "user_goal": "B091 修 above_200d_ma 多日历 MA bug(B090 发现的真根因). 现 union-calendar 宽表 rolling 200-row→跨市日注NaN→MA恒NaN→regional_risk_off恒触发. 修=per-ticker dropna(各票自身日历). **★零回归铁律**: live US-only proxy 单日历→dropna no-op→输出逐位不变; 仅多日历real case修好. blast radius=hk_china_momentum wired workbench. 2 features 1g+1c. Workflow-build(fresh子代理+对抗验证零回归).",
+  "user_goal": "B092 = B055 US 进攻选股 **first-look**(低承诺: 宽美股宇宙动量+质量 top-N vs 基线, 有无 edge). **核心不变量**: research 快照(akshare/SEC EDGAR 免费, 不触生产data-refresh/Master universe); 质量过滤+动量排名 top-15 月度先验禁扫参; ★walk-forward 样本外+过拟合诚实评估(subtle-edge, A股attack OOS-negative期望低); GO(推荐全P1)/INCONCLUSIVE. 用户 away 战略问未答→best judgment 推 B055 first-look(唯一自主非基建项). spec docs/specs/B055-attack-stock-selection-spec.md(全P1). 2 features 1g+1c. Workflow-build.",
   "reference_docs": [
-    "docs/test-reports/B090-F001-hk-china-retest.md",
-    "trade/strategies/hk_china_momentum/factors.py",
-    "workbench/backend/tests/unit/test_strategies.py"
+    "docs/specs/B055-attack-stock-selection-spec.md",
+    "trade/strategies/us_quality_momentum/factors.py",
+    "trade/backtest/us_quality_momentum/engine.py"
   ],
   "docs": {
-    "spec": "docs/test-reports/B090-F001-hk-china-retest.md",
+    "spec": "docs/specs/B055-attack-stock-selection-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B091-above-200d-ma-fix-signoff-2026-07-05.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "全 PASS 2/2 → done. 独立取修前(94f8172)vs修后两版对拍: 零回归命门四重坐实(结构性单日历dropna no-op + 真proxy宇宙16季末bit级0mismatch + 200fuzz帧0mismatch + VM prod跑修复commit); 修复有效经真数据24季末全量对拍(OLD above恒0→NEW 5-30, regional_risk_off 9/24翻False, real sleeve 0%→~37%参与)+自建2-ticker异日历样本(旧union False→修后True)+点名0700.HK OLD False→NEW True; 单测有牙(变异回退→(a)红); 2对抗验证un-refuted经journal复核; 门禁全绿(mypy trade103/ruff/root118+3/backend13)+CI三绿(b35a638自动链式)+HEAD产品码≡部署≡prod. 2软观察非阻断: O1残留close=wide.iloc[-1] union最后行NaN(先存非回归非F001范围, 真数据仅2/24季触发节假日错配, 生产proxy永不触发, 须follow-up重跑处理); O2决策级real-vs-proxy重跑无离散backlog条目(软性文档gap, 仅记于B090 signoff O2+F001报告).",
-    "pass_count": 2,
+    "summary": null,
+    "pass_count": 0,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
   },
   "generator_handoff": {
-    "summary": "B091 F001 **done**(Workflow 3子代理: fix+2对抗验证 un-refuted survived=true). 修 above_200d_ma 多日历bug=新 _latest_ma_own_calendar(col.dropna前置 rolling)各票自身日历算MA; above_200d_ma 用wide.apply逐列; 语义+trend_pass接口不变. ★零回归三重证明: builder assert_series_equal+验证#1 fuzz 200单日历帧0不吻合+验证#2 random-walk; dropna单日历=no-op; workbench test_strategies 13 passed(live proxy活证). 多日历修好(单测a). gates全绿(ruff+mypy trade103/backend529+3/9/13测). 仅factors.py+新测 diff. 报告 B091-F001-above-200d-ma-fix.md. **F002 codex 验证**: ★零回归 proxy US-only 逐位不变(assert_series_equal/fuzz)+多日历real MA有效(0700.HK above_MA True)+<200obs→False语义+无前视+workbench test_strategies/worker/precompute绿+仅factors.py diff. signoff docs/test-reports/B091-...-signoff.md.",
-    "status": "complete"
+    "summary": null,
+    "status": "pending"
   },
   "features": [
     "F001",
     "F002"
   ],
-  "completed_date": "2026-07-05",
+  "completed_date": null,
   "session_notes": {
-    "planner": "2026-07-05 B090 done(Codex F002 PASS 2/2 独立确认warmup证伪+root cause)后开 B091(修 above_200d_ma bug). ultracode: Workflow-build(fresh子代理修+对抗验证零回归). 修法/blast radius/零回归铁律 backlog已定标. 剩 backlog: B055(Workflow-doable)+residual-engine/smart-money(待用户决策).",
+    "planner": "2026-07-05 B091 done(Codex PASS 2/2, 10th; 修复真数据证有效 regional_risk_off 9/24翻)后开 B092(B055 US进攻 first-look). 用户away战略问未答→best judgment. Workflow-build(宽美股宇宙动量+质量 vs基线, walk-forward防过拟合). 剩 backlog: residual-engine/smart-money(待用户)/test-automation(基建).",
     "generator": null,
     "evaluator": "2026-07-05 B091 F002 独立验收 → 全 PASS 2/2 → done. 代 Codex(用户 /goal 授权, 与实现完全隔离, 最高怀疑度). 修 above_200d_ma 多日历 MA bug(B090 真根因). 手段=独立取修前(94f8172)vs修后(HEAD)两版 above_200d_ma 对拍. 核验: (1)★零回归命门四重坐实: (i)结构性—生产宇宙 HK_CHINA_TICKERS=(MCHI/FXI/KWEB/ASHR)全NYSE单日历+SGOV→dropna对无缺口列=数学no-op→输出逐位不变; (ii)真proxy宇宙MCHI/FXI/KWEB/ASHR/SGOV 16个季末(2022-25)NEW==OLD bit级0mismatch; (iii)200随机单日历fuzz帧0处不吻合(index+values+dtype全等); (iv)VM current release symlink=b35a638(修复commit)+active trade包factors.py含_latest_ma_own_calendar标记×3→prod跑修复码. (2)★修复有效: 真数据24季末全量OLD-vs-NEW对拍→OLD above-count恒0(bug饿死一切,复现B090 real 25/25)→NEW 5-30, regional_risk_off由24/24恒True→9/24翻False(real sleeve 0%→~37%参与); 自建2-ticker异日历样本(AAA Mon-Fri/BBB Mon-Thu单调涨)旧union=False→修后True; 点名0700.HK真数据OLD False→NEW True(own_obs4926). (3)★语义: <200自观测→NaN MA→False(单测c+我复现); _wide_close仍filter date<=as_of无前视; trend_pass接口不变. (4)★变异检查有牙: 回退factors.py成OLD union rolling→新单测(a)FAIL(assert False is True),(b)(c)仍pass→(a)真守多日历修复; 已还原干净. (5)★2对抗验证un-refuted: journal wf_2a2ea377-422, 1 fix agent+2验证者(af021467/ab48abbc)均refuted=false, zero_regression_holds/multi_calendar_fixed/semantics_preserved/workbench_green/gates_green/blast_radius_ok=true issues空; fix agent summary明载'close still=wide.iloc[-1]'(O1知情保留). (6)门禁: mypy trade Success(103)+ruff All passed+root pytest hk_china相关118 passed+新单测3 passed+backend test_strategies 13 passed(backend venv内trade快照含修复标记实测非stale); CI b35a638 push→Python CI 6m50s+Backend CI 8m49s+Deploy 3m34s全success自动链式; HEAD 6653781仅动state JSON(git diff b35a638..HEAD -- trade/ workbench/backend/字节空)→HEAD产品码≡部署≡prod. 2软观察非阻断: O1 残留close=wide.iloc[-1] union最后行NaN(修复只改MA分母,close分子与修前同→某票最后union日未交易则close=NaN→above_MA=False, 真数据仅2/24季触发节假日错配2023-09-30/2024-03-31 Good Friday, 生产proxy单日历永不触发; 先存非回归非F001范围; 须follow-up决策级重跑处理否则伪防守季误记真信号; 建议Planner登backlog); O2 决策级real-vs-proxy重跑无离散backlog.json条目(F001解锁了该重跑, 本批正确未跑; follow-up仅记于B090 signoff§3 O2+B091 F001报告§follow-up, 建议Planner补登携B090三caveat+本O1 caveat). signoff docs/test-reports/B091-above-200d-ma-fix-signoff-2026-07-05.md. ★下阶段=backlog 决策级real-vs-proxy重跑(携O1 close-NaN+B090 O2 SGOV floor/幸存者偏差/matched top_n caveat) + 战略方向待用户."
   }
