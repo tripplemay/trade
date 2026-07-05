@@ -1,5 +1,5 @@
 {
-  "sprint": "F002",
+  "sprint": "F003",
   "features": [
     {
       "id": "F001",
@@ -18,7 +18,7 @@
       "title": "时序趋势信号 + first-look(胜率/夏普/2022+2024-02 震荡损耗)",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【spec §2 F002】时序动量(回看窗/MA 先验定死禁扫参);trend-following 持有/退现金;★分窗口报 2022/2024-02 震荡期假信号损耗+换手;full+WF 70/30 CAGR/Sharpe/MaxDD + vs 买入持有 delta;报告 docs/test-reports/B084-etf-trend-ic.md + trial_registry 登记(DSR N, B080 data-migration). 裁定: 趋势夏普显著>买入持有+震荡损耗可控→GO(推荐策略批);否则 INCONCLUSIVE 归档(震荡损耗吃edge 常见合法). Gates 通用(mypy/ruff/单测 趋势+分窗口损耗).",
       "design_decisions": [
         "first-look 低承诺(同 B083 PEAD),不建 paper/红卡/生产;弱/震荡损耗大→INCONCLUSIVE 合法。",

@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 3,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
-  "current_sprint": "F002",
+  "current_sprint": "F003",
   "last_updated": "2026-07-05",
   "user_goal": "B084 A股 ETF 时序趋势轮动(评审 P2, global_etf_momentum 改造 工作量最小). **first-look 低承诺**(同 B083): 时序动量趋势胜率/夏普一测——显著>买入持有+震荡损耗可控→GO;弱→INCONCLUSIVE. **核心不变量**: 参数(回看窗/MA)先验定死禁扫参; ★2022/2024-02 震荡切换期假信号损耗必分窗口报(趋势策略最大陷阱); ETF 无印花税; 时序动量非横截面行业轮动; B081 修真开关带上. 数据复用 B082 A股 ETF 管线(fund_etf_hist_em, 扩宽基). 不建 paper/红卡/生产(first-look). spec docs/specs/B084-etf-trend-ashare-spec.md; 预研 docs/research/next-batch-prep-etf-trend-ashare.md. 3 features 2g+1c.",
   "reference_docs": [
@@ -28,8 +28,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B084 F001+F002 done(2g). F001: 宽基/红利 ETF prices via Sina(绕 Eastmoney 限流), 13,359行/5ETF/2011-2026, Sina原始价(非qfq,趋势方向不受影响). F002: 时序趋势 first-look → **LEAN-GO(trial verdict=INCONCLUSIVE)**: 月末12月绝对动量>0持有否则退现金(先验禁扫参), 月度; 趋势 full CAGR 17.9%/Sharpe0.566/MaxDD-45.9% vs 买入持有14.2%/0.478/-53.2%(趋势全面胜, 熊市防守减亏). ★前视 rigor 单测 test_b084_etf_trend(signal≤t·收益t+1·退现金). ★caveat(避B081过度归因): OOS Sharpe1.14>full0.566=窗口落位嫌疑(OOS含2022熊市); 样本小5ETF; 非复权. trial 登记 migration 0039. 报告 docs/test-reports/B084-etf-trend-ic.md + B084-F001-data-reality.md. **F003 codex 独立验收重点**: (1)★2022/2024-02 震荡损耗口径核实(趋势策略最大陷阱=样本内挑窗); (2)趋势数字从零重实现抽验(不import我方脚本); (3)参数先验无扫参(grep单一bundle); (4)前视核查(signal≤t); (5)OOS窗口落位caveat诚实非过度归因; (6)trial幂等/N正确; (7)零回归. Gates通用. 门禁全绿(mypy523/ruff/13测/0039 apply).",
+    "status": "complete"
   },
   "features": [
     "F001",
