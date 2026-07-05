@@ -1,9 +1,9 @@
 {
-  "status": "verifying",
+  "status": "done",
   "total_features": 2,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
-  "current_sprint": "F002",
+  "current_sprint": null,
   "last_updated": "2026-07-05",
   "user_goal": "B093 = hk_china 真个股 vs proxy 决策级重跑(B091修复解锁, BL-B011-S2 收口). 修 B091-O1 close-NaN 残留(per-ticker最后有效close, 零回归proxy)+重跑matched top_n对照+携4 caveat(SGOV floor/幸存者/matched/close-NaN). 产出=真vs proxy对照+GO/NO-GO(闸控Batch3激活hk_china live Master; NO-GO/INCONCLUSIVE合法). research-only(不碰生产/Master live). 2 features 1g+1c. Workflow-build.",
   "reference_docs": [
@@ -15,13 +15,13 @@
   "docs": {
     "spec": null,
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/B093-hk-china-real-vs-proxy-signoff-2026-07-05.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": null,
-    "pass_count": 0,
+    "summary": "全 PASS 2/2 → done. 裁定 = NO-GO(保 ETF-proxy). 独立从缓存快照重跑整条决策: (1) close-NaN 修零回归 proxy 单日历 25 信号日 bit 级 0 mismatch; (2) close-NaN 修 immaterial to verdict — matched real 指标 fixed-vs-buggy bit 级恒等; (3) flip 恰 2 票/1 季(2023-09-29)均不在 top-rank, team-lead 标记的 2024-03 Good Friday 悬念解为 shared 信号日 03-28 避假日→0 flip; (4) matched top_n 真对照 2v2, real +2.97%/0.437/-9.20% 不胜 proxy +2.75%/0.522/-3.87% 独立重算逐格吻合; (5) NO-GO 与数字一致(real Sharpe 更差+MaxDD 2.4x 深, 幸存者顺风美化 real 使 NO-GO 反更稳, top6 有利读数=breadth artifact), 守 B069/B076 verdict-gating; (6) 四 caveat 诚实; (7) research-only(trade/ 仅 factors.py)+门禁全绿+CI 三绿+HEAD≡prod. 闸控: BL-B011-S2 Batch3 不推进, hk_china real-stock 悬案(B063 以来)闭合=NO-GO.",
+    "pass_count": 2,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
@@ -34,10 +34,10 @@
     "F001",
     "F002"
   ],
-  "completed_date": null,
+  "completed_date": "2026-07-05",
   "session_notes": {
-    "planner": "2026-07-05 B092 done(Codex PASS 2/2 11th; US进攻 INCONCLUSIVE 无OOS edge)后开 B093(hk-china决策级重跑, B091解锁). Workflow-build(修close-NaN残留+matched对照+4caveat+GO/NO-GO). 剩backlog: residual-engine/smart-money(待用户)/test-automation(基建). ultracode Workflow连跑第4次.",
+    "planner": "2026-07-05 B093 done(Codex PASS 2/2 12th; NO-GO 保ETF-proxy, 独立重跑整条决策). **hk_china real-stock 悬案闭合(B063以来)=NO-GO**. **★ultracode Workflow stretch 收官(4批全survived+Codex验)**: B090发现bug→B091修复→B092 US进攻INCONCLUSIVE→B093 hk_china NO-GO. Workflow(fresh子代理+2对抗验证)=退化注意力下careful/decision-grade批次的正解. **本session总账**: P0-P2收官 + B086-B093九批(含发现+修复真factor bug + 闭合hk_china悬案) + 12治理门验证. **诚实全景: 所有探过的策略研究(cn_attack/PEAD/ETF趋势/红利/残差动量/US进攻/hk_china)均无强edge或NO-GO**. **backlog余3全需用户或低价值触边界**: smart-money(¥200 Tushare, ★用户真实目标=唯一高价值未测方向)/residual-engine(冻结授权,edge已证弱)/test-automation P3-P5(低ROI: P3触生产canary/P4触安全门/P5铁律4独立性冲突). ★下一步真正在用户: 尤其 smart-money(¥200). 高价值自主工作已尽. 33 learnings 待用户确认.",
     "generator": null,
-    "evaluator": "2026-07-05 B092 F002 独立验收 → 全 PASS 2/2 → done. 代 Codex(用户 /goal 授权, 与实现完全隔离, 最高怀疑度). B055 US 进攻选股 first-look(research-only, INCONCLUSIVE). 核心手段=从缓存快照独立重跑整条回测. 核验: (1)★对照数字独立复算: workbench/backend/.venv 跑 scripts.research.b092_us_attack_backtest → 9 指标格逐格 bit 级吻合报告(STRATEGY full 26.53%/1.36/-19.2%, in-samp 26.75%/1.30, oos 26.87%/1.45; EW full 21.44%/1.14, oos 24.20%/1.54; SPY full 17.08%/0.98)+诊断吻合(114 月/qualified 63/selected 15/universe 100/窗 2017-02-28..2026-07-02/split 68-46). ★裁定一致性: 对正确基线(同宇宙 EW)OOS 风险调整 edge 为负(策略 Sharpe 1.45<EW 1.54)→GO 门槛未达→INCONCLUSIVE 纪律裁定(非达标却保守亦非反向, B077/B085 守). (2)★幸存者偏方向性正确: 今日 S&P-100 幸存者上偏美化 strategy+EW, strategy-vs-EW 共享宇宙部分抵消; 美化收益→无偏真相更悲观→INCONCLUSIVE 在幸存者宇宙下反更可信; 报告方向论述正确未当有利因素. (3)★先验无扫参+模块关系如实: 冻结常量(TOP_N15/LOOKBACK6/SKIP1/DROP0.25)+grep 无 grid/optimize/product+docstring 明载 no tuning; 新独立构造 filter-then-rank ≠ 生产 us_quality_momentum(B025 5 因子 composite 35/30/15/10/10)→research 隔离合理契合 B055 spec; 报告未虚称复用. (4)★数据源诚实: akshare qfq 明标 adj_close=qfq close 非真 vendor(B090 caveat); SEC EDGAR 94/100 missing-6=PNC/PG/CAT/ITW/VZ/T 独立复核逐字吻合; PIT filed<=t 门(代码+单测双证无前视); ★2017 floor 独立验证=真数据边界非调参: cleaned 月度 pre-2017 1018 个不可能移动 vs 2017+ 仅 19, UNH pre-2017 +2845% 坐实报告 +2800%. (5)★无过拟合红旗+诚实裁定: Sharpe 1.3-1.45 非离谱(>2.5 才疑), 样本内胜 EW OOS 反转报告如实命名非 spin, 裁定 INCONCLUSIVE+明列 pre-conditions 合法. (6)★推论边界有界: 报告=不建全 4-feature P1(明列 pre-conditions 付费无偏 vendor+OOS Sharpe 须胜 EW), 未外推为美股选股永久无效. (7)★2 对抗验证 un-refuted: journal wf_0478a172-465, 1 build(a53a3bbf 输出逐字吻合报告)+2 验证者(a4f5791b/a4c6018f)均 refuted=false 且 recompute_matches/oos_edge_real=false/priors_not_tuned/no_look_ahead/verdict_honest/research_only=true; issues=报告 caveat. (8)★research-only 零回归: git diff 0374b32..HEAD -- trade/ workbench/ 字节空; 批次仅动 scripts/research×2+tests/unit×1+docs×1+state JSON; 快照 gitignored; ruff All passed+18 单测 fresh 绿; CI b285566→Python CI 5m28s+Backend CI 8m43s+Deploy 3m39s 全 success 自动链式; 无产品码变更→HEAD≡prod. 3 软观察非阻断: O1 报告未显式点名生产 us_quality_momentum 模块取舍(文档 gap 非缺陷, 诚实未虚称复用); O2 成本非对称(strategy 付 10bps turnover EW 不付, 保守-against-strategy 方向正确, 未来 P1 重测宜对称); O3 2017 floor 略保守(a4c6 称 2016 已 0 极端我复算 cleaned 月度仍~13, 阈值差异不 material). signoff docs/test-reports/B092-us-attack-first-look-signoff-2026-07-05.md. ★含义: B055 全 P1 攻击选股当前证据不推荐建(无样本外风险调整 edge). ★下阶段=战略方向待用户 + backlog 决策级 real-vs-proxy 重跑(携 B091 O1/B090 O2 caveat)."
+    "evaluator": "2026-07-05 B093 F002 独立验收 → 全 PASS 2/2 → done. 裁定 = NO-GO(保 ETF-proxy). 代 Codex(用户 /goal 授权, 与实现完全隔离, 最高怀疑度). hk_china 真个股 vs proxy 决策级重跑(B091 解锁). 核心手段=从缓存快照独立重跑整条决策(matched top_n=2 + reference top_n=6). 核验: (1)★close-NaN 修零回归(命门): close=wide.iloc[-1]→wide.ffill().iloc[-1], 对生产 proxy 宇宙(MCHI/FXI/KWEB/ASHR/SGOV 全 NYSE 单日历)25 信号日逐日 fixed-vs-buggy assert_series_equal → 0 mismatch=BYTE-IDENTICAL, proxy 末行 NaN 季=0(ffill no-op 演绎必然+实证). (2)★close-NaN 修 immaterial to verdict: 独立重算 matched top_n=2 real 指标 fixed=buggy=(cagr 0.02966228, sharpe 0.43699448, vol 0.07267638, mdd -0.09202964, def 7) bit 级恒等. (3)★flip 逐季定位: 恰 2 票/1 季=2023-09-29(600900.SH/601398.SH buggy False→fixed True; 该季 union 末行 09-29 A股黄金周休→10 支 NaN), 两票 rank=n/a 不在 top2[0883.HK,0941.HK]/top6→immaterial to selection. ★team-lead 标记的 2024-03 Good Friday 悬念独立解: B093 用 shared_quarterly_signal_dates 交集→2024-Q1 信号日=03-28(落 Good Friday 03-29 前)→NaN=0 flip=0, B091-O1 按 raw 季末 03-31 预测的伪防守根本不进入→报告'仅 1 季'正确非漏报. (4)★matched top_n 真对照: selection_top_n proxy=2/real=2(proxy 引擎 design §8.2 硬 cap {1,2}), real +2.97%/0.437/vol7.27%/-9.20% 不胜 proxy +2.75%/0.5216/vol5.48%/-3.87% 独立重算逐格吻合. (5)★NO-GO 与数字一致(verdict-gating B069/B076): 公平 matched 上 real Sharpe 更差(0.437<0.522)+MaxDD 2.4x 深, 幸存者顺风只美化 real→NO-GO 在美化宇宙下反更稳; 唯一有利 top6 Sharpe 0.616 经 matched 消失=breadth artifact 正确归因, 无 manufactured GO. (6)★四 caveat 诚实(SGOV floor 2020-05-28 独立复算 25 季/幸存者方向性论述正确/matched 2v2/close-NaN 修+immaterial 双证). (7)★research-only 零回归: git diff b4b3cc2^..HEAD -- trade/ 仅 factors.py(+12/-2 授权 close-NaN 修), 无 workbench 产品码; 批次余动 scripts/research×1(新)+tests/unit×1(新)+docs×1+backlog/features/progress; ruff All passed+5 单测+backend test_strategies 13 passed; CI b5c9a10→Python CI 7m18s+Backend CI 8m27s+Deploy 3m33s 全 success 自动链式; HEAD 产品码≡feat(2ba60de 仅动 state). Workflow journal 本机不可及(独立 session, transcript 已散)→非阻断, 独立从零重算全部数字超越 workflow 验证者. 3 软观察非阻断: O1 报告未溯源 2024-03 shared-date 03-28 机制(文档 gap 非缺陷, 已独立坐实); O2 proxy 本身弱基准(报告已注); O3 25 季 SGOV-floored 单 regime+幸存者=结构性天花板窗口不可扩(报告已注). signoff docs/test-reports/B093-hk-china-real-vs-proxy-signoff-2026-07-05.md. ★闸控含义: BL-B011-S2 Batch3(激活 hk_china real individual-stock live Master)NOT 推进, 保 ETF-proxy 永久边界. hk_china real-stock 悬案(B063 以来真 sleeve 全防守→B090 发现 factor bug→B091 修→B093 决策级重跑)闭合=NO-GO. ★下阶段=战略方向待用户 + backlog 剩 residual-momentum/test-automation/ashare-smart-money."
   }
 }
