@@ -1,10 +1,10 @@
 {
-  "status": "verifying",
+  "status": "done",
   "total_features": 2,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
-  "current_sprint": "F002",
-  "last_updated": "2026-07-05",
+  "current_sprint": null,
+  "last_updated": "2026-07-06",
   "user_goal": "B094 = smart-money 游资席位 first-look(backlog 第二支免费未测信号, 龙虎榜公开). 用户away+autonomous goal→做唯一自主可及项. ★诚实: 打板/游资拥挤族期望NO-GO; 这是**次要信号非用户首要institutional目标**(后者需¥200 Tushare, 待用户). research-only(免费快照不触生产/¥200). 2 features 1g+1c. Workflow-build. NO-GO 有效答案.",
   "reference_docs": [
     "docs/research/ashare-smart-money-paid-data-sources-2026-06.md"
@@ -12,13 +12,13 @@
   "docs": {
     "spec": null,
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/B094-youzi-first-look-signoff-2026-07-06.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": null,
-    "pass_count": 0,
+    "summary": "全 PASS 2/2 → done. 裁定 = NO-GO(跟游资反而亏, significant NEGATIVE). 独立验收(代 Codex, 隔离, 最高怀疑度): 从缓存快照用我自己的独立代码从零重算整条决策. ★无前视: 手工核对 3 真实事件(上榜日 T 盘后披露 → entry 严格 T+1, bisect_right)+单测双 pin. ★覆盖 23.89%(12,502/52,337, 35月)独立复算吻合 + 核实为 seed-94 uniform-random 子样(非 B077 结构性偏)→显著负号方向可外推/幅度 first-look, NO-GO 保守成立, 报告限定为 follow-vs-baseline 承重比较. ★IC/收益我自己的独立代码 bit 级吻合(youzi_flag IC N5 -0.0434/t=-4.10, N10 -0.0426/t=-3.16; follow edge N5 -1.00%/t=-2.92)+去重对抗检验证 immaterial(dedup 剔 7,979 重复行后 N5 IC -0.042/t=-3.95 仍显著 NO-GO, N10 反略强). ★无扫参(阈值先验标准常量 0.03/|t|≥2, horizons 固定)+席位识别先验第三方(EastMoney 解读标签+交易所标签, 非事后挑赢家)+§2(c) 141/141 交叉验证独立坐实. ★NO-GO 与数字一致(judge() 负数据无法制造 GO, 措辞'反而亏'经措辞-数字匹配校准=显著 N5 edge+显著 N5/N10 IC 非噪音, 守 B069/B076). research-only 零回归(无 workbench/, 无 trade 包, 无 ¥200)+门禁全绿(ruff+22 单测)+CI 三绿(013f681)+HEAD≡prod. 4 软观察非阻断(O1 重复键未去重+docstring 措辞不准 immaterial / O2 caveat 措辞欠精确 / O3 priced 1,279 / O4 仅 N5 edge 显著). signoff docs/test-reports/B094-youzi-first-look-signoff-2026-07-06.md.",
+    "pass_count": 2,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
@@ -31,10 +31,10 @@
     "F001",
     "F002"
   ],
-  "completed_date": null,
+  "completed_date": "2026-07-05",
   "session_notes": {
-    "planner": "2026-07-05 B093 done(hk_china悬案闭合)后开 B094(smart-money 游资席位 first-look, 免费第二支). 用户away+autonomous goal→做唯一自主可及项(institutional首要目标仍需¥200). Workflow-build. 期望NO-GO(打板拥挤). ultracode Workflow第5次.",
+    "planner": "2026-07-05 B094 done(Codex PASS 2/2 13th; 游资 NO-GO 跟游资显著亏, 独立从零重算+3事件手核无前视). smart-money **免费第二支(游资)=NO-GO**; institutional 首要仍需 ¥200. **★ultracode Workflow stretch 完整收官(5批全survived+Codex验)**: B090发现bug→B091修复→B092 US进攻INCONCLUSIVE→B093 hk_china NO-GO(闭合B063悬案)→B094 游资NO-GO. **诚实全景: 探过的所有A股散户可及策略(cn_attack/PEAD/ETF趋势/红利/残差/US进攻/hk_china/游资)无一显强edge**——一致诚实的研究结论. **backlog余3全需用户或硬约束/冗余**: smart-money institutional(¥200 Tushare ★用户真实目标=唯一未测高价值方向)/residual-engine(B085已筛weak IC0.0108<门槛冗余; flagship-change决策需授权)/test-automation P3-P5(P3触生产/P4触安全门/P5铁律4独立性). ★高价值自主工作已尽(B094 游资是最后worth-doing自主项). 下一步真正在用户: institutional smart-money(¥200). 35 learnings 待确认.",
     "generator": null,
-    "evaluator": "2026-07-05 B093 F002 独立验收 → 全 PASS 2/2 → done. 裁定 = NO-GO(保 ETF-proxy). 代 Codex(用户 /goal 授权, 与实现完全隔离, 最高怀疑度). hk_china 真个股 vs proxy 决策级重跑(B091 解锁). 核心手段=从缓存快照独立重跑整条决策(matched top_n=2 + reference top_n=6). 核验: (1)★close-NaN 修零回归(命门): close=wide.iloc[-1]→wide.ffill().iloc[-1], 对生产 proxy 宇宙(MCHI/FXI/KWEB/ASHR/SGOV 全 NYSE 单日历)25 信号日逐日 fixed-vs-buggy assert_series_equal → 0 mismatch=BYTE-IDENTICAL, proxy 末行 NaN 季=0(ffill no-op 演绎必然+实证). (2)★close-NaN 修 immaterial to verdict: 独立重算 matched top_n=2 real 指标 fixed=buggy=(cagr 0.02966228, sharpe 0.43699448, vol 0.07267638, mdd -0.09202964, def 7) bit 级恒等. (3)★flip 逐季定位: 恰 2 票/1 季=2023-09-29(600900.SH/601398.SH buggy False→fixed True; 该季 union 末行 09-29 A股黄金周休→10 支 NaN), 两票 rank=n/a 不在 top2[0883.HK,0941.HK]/top6→immaterial to selection. ★team-lead 标记的 2024-03 Good Friday 悬念独立解: B093 用 shared_quarterly_signal_dates 交集→2024-Q1 信号日=03-28(落 Good Friday 03-29 前)→NaN=0 flip=0, B091-O1 按 raw 季末 03-31 预测的伪防守根本不进入→报告'仅 1 季'正确非漏报. (4)★matched top_n 真对照: selection_top_n proxy=2/real=2(proxy 引擎 design §8.2 硬 cap {1,2}), real +2.97%/0.437/vol7.27%/-9.20% 不胜 proxy +2.75%/0.5216/vol5.48%/-3.87% 独立重算逐格吻合. (5)★NO-GO 与数字一致(verdict-gating B069/B076): 公平 matched 上 real Sharpe 更差(0.437<0.522)+MaxDD 2.4x 深, 幸存者顺风只美化 real→NO-GO 在美化宇宙下反更稳; 唯一有利 top6 Sharpe 0.616 经 matched 消失=breadth artifact 正确归因, 无 manufactured GO. (6)★四 caveat 诚实(SGOV floor 2020-05-28 独立复算 25 季/幸存者方向性论述正确/matched 2v2/close-NaN 修+immaterial 双证). (7)★research-only 零回归: git diff b4b3cc2^..HEAD -- trade/ 仅 factors.py(+12/-2 授权 close-NaN 修), 无 workbench 产品码; 批次余动 scripts/research×1(新)+tests/unit×1(新)+docs×1+backlog/features/progress; ruff All passed+5 单测+backend test_strategies 13 passed; CI b5c9a10→Python CI 7m18s+Backend CI 8m27s+Deploy 3m33s 全 success 自动链式; HEAD 产品码≡feat(2ba60de 仅动 state). Workflow journal 本机不可及(独立 session, transcript 已散)→非阻断, 独立从零重算全部数字超越 workflow 验证者. 3 软观察非阻断: O1 报告未溯源 2024-03 shared-date 03-28 机制(文档 gap 非缺陷, 已独立坐实); O2 proxy 本身弱基准(报告已注); O3 25 季 SGOV-floored 单 regime+幸存者=结构性天花板窗口不可扩(报告已注). signoff docs/test-reports/B093-hk-china-real-vs-proxy-signoff-2026-07-05.md. ★闸控含义: BL-B011-S2 Batch3(激活 hk_china real individual-stock live Master)NOT 推进, 保 ETF-proxy 永久边界. hk_china real-stock 悬案(B063 以来真 sleeve 全防守→B090 发现 factor bug→B091 修→B093 决策级重跑)闭合=NO-GO. ★下阶段=战略方向待用户 + backlog 剩 residual-momentum/test-automation/ashare-smart-money."
+    "evaluator": "2026-07-06 B094 F002 独立验收 → 全 PASS 2/2 → done. 裁定 = NO-GO(跟游资反而亏, significant NEGATIVE). 代 Codex(用户 /goal 授权, 与实现完全隔离, 最高怀疑度). smart-money 游资席位 follow-signal first-look(免费龙虎榜第二支). 核心手段=从缓存快照用我自己的独立代码从零重算整条决策. 核验: (1)★无前视: 上榜日 T=龙虎榜盘后披露日, 入场=bisect_right(dates,T) 首个严格>T 的 bar; 手工核对 3 真实覆盖事件 002349.SZ(T=2022-01-20→entry 2022-01-21)/603137.SH(T=2023-08-23→entry 2023-08-24)/603686.SH(T=2024-12-25→entry 2024-12-26) 全过 assert dates[entry]>T, 3 例中 2 例 event-day 异动后回落印证负 IC; 单测双 pin(含精确匹配日跳过回归锁). (2)★覆盖 23.89%(12,502/52,337, 35月)独立复算逐格吻合; ★关键=价格宇宙是 seed-94 uniform-random 1,500-ticker 子样(非 B077 结构性大盘-only 宇宙)→随机聚类子样, t=-4.10 显著负号方向可外推到总体/幅度 first-look; 与 B077 合法区别(B077 结构偏+微弱正→INCONCLUSIVE_COVERAGE_LIMITED; B094 随机子样+显著负→NO-GO 决策=不追, 保守成立); 报告限定为 follow-vs-baseline 承重比较未过度外推. (3)★IC/收益我自己的独立 forward-return+avg-rank Spearman+monthly-cohort+follow-backtest 代码(非复用其脚本)bit 级吻合: youzi_flag IC N1 -0.0084(t=-0.80)/N5 -0.0434(t=-4.10)/N10 -0.0426(t=-3.16); follow edge N5 -1.00%(t=-2.92, 12/35); baseline lhb-net N1 +0.0164/N5 -0.0133; ★去重对抗检验(events.csv 有 6,901 重复(date,ticker)键/7,979 多余行=同股同日多上榜原因, akshare 多行; fetch docstring 'one row per stock' 不准确): dedup(唯一 date-ticker, OR 游资 flag)后 N5 IC -0.0420(t=-3.95)/N10 -0.0450(t=-3.27) 仍显著 NO-GO, N10 反略强→重复键 immaterial to verdict. (4)★无扫参 grep(无 param-grid/argmax/best-of; 阈值先验标准常量 _STRONG_IC=0.03/_FAINT_IC=0.015/|t|≥2/horizons 固定(1,5,10)=因子研究教科书值)+席位识别先验第三方(primary=EastMoney 解读'实力游资买入'编辑标签 close T 可得非事后挑赢家; classify_branch 用交易所标签机构专用/股通; 频率启发式事后浮出拉萨天团=验证非选赢家)+§2(c) 141/141 交叉验证独立坐实(seats_sample 800 中 tagged=141, 141/141 youzi_buy_net>0 且 youzi_top≥inst_net, tagged 均值¥141M vs untagged¥74M~2×). (5)★NO-GO 与数字一致(verdict-gating B069/B076): judge() GO 需≥2 strong 正 IC 且显著正 edge, strong_pos 只收 ic>0, 显著负 IC 入 sig_neg 永不入 GO 通道→负数据无法制造 GO; 实测 strong_pos=0/best_edge=-0.00037≤0/2 显著负 IC→NO-GO 正确; 措辞'反而亏'经措辞-数字匹配校准(显著 N5 edge -1.00% t=-2.92+显著 N5/N10 IC 非噪音, N1/N10 edge 不显著报告逐 horizon 透明贴 t-stat 且标'significantly so at N=5'); '亏'语义=follow 劣于 all-LHB baseline 非绝对 tradeable 主张. (6)选择偏差+打板拥挤 caveat 诚实保留(§7 caveat 3 异动条件). (7)★research-only 零回归: git diff 9a2ff54^..HEAD = scripts/research×2(新)+tests/unit×1(新)+docs×1+backlog/features/progress, 无 workbench/ 产品码无 trade 包; ruff All passed(3 文件)+pytest 22 passed; CI 013f681→Python CI 7m25s+Backend CI 8m30s+Deploy 3m24s 全 success 自动链式; HEAD 产品码≡prod(零产品码平凡). Workflow journal 本机不可及(独立 session transcript 已散)→非阻断, 独立从零用自己的代码重算全部数字+去重对抗超越 workflow 验证者. 4 软观察非阻断: O1 重复键未去重+docstring 措辞不准(immaterial); O2 §1 caveat 'small-cap sit outside' 措辞欠精确(实为随机子样 sign 无偏, 加固 NO-GO); O3 priced tickers 实际 1,279 非满 1,500; O4 仅 N5 follow-edge 显著负(报告透明). signoff docs/test-reports/B094-youzi-first-look-signoff-2026-07-06.md. ★含义: smart-money backlog 免费两支信号均已测尽=机构席位 first-look(B077)INCONCLUSIVE_COVERAGE_LIMITED+游资席位 follow(B094)NO-GO(跟游资反而亏). 用户首要 institutional 目标仍需付费 Tushare ¥200 全覆盖机构席位, 本批故意未买保留给用户. ★下阶段=战略方向待用户 + backlog 剩 test-automation/residual-engine/ashare-smart-money(¥200)."
   }
 }
