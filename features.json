@@ -1,40 +1,28 @@
 {
-  "sprint": "F003",
+  "sprint": "F001",
   "features": [
     {
       "id": "F001",
-      "title": "test-automation P3-F1: 部署后 synthetic 套件(只读打关键端点+断言形状+recent-errors+HEAD≡prod)",
-      "priority": "medium",
+      "title": "test-automation P5-F1: signoff 自动起草工具(从 CI/features/git 结果填机械 scaffold, 判断核留独立 agent)",
+      "priority": "low",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【backlog test-automation roadmap P3-F1(M), 桶B; 用户已授权生产操作】扩 workbench/deploy/scripts/healthcheck.sh(现只查/api/health) → 完整 synthetic 套件: (1)★只读(GET)打关键端点(/api/health + 择 /current /market-context /monitoring /reports 等公开或可安全打的)断言数据形状/范围合理; (2)recent-errors=0(打 /monitoring 或日志端点); (3)HEAD≡prod(部署 SHA==运行 SHA). ★对活生产(https://trade.guangai.ai)只读实测确认健康 prod 上**零假红**. ★端点若需鉴权: 仅用公开端点或安全处理(不 commit 任何凭证/token). 幂等/无副作用. Gates: shellcheck/bash 语法 + 本地/prod 只读实测 + 现有 healthcheck 不破. Workflow-build(fresh子代理+对抗验证 只读/零假红/无凭证泄露).",
+      "status": "pending",
+      "acceptance": "【backlog test-automation roadmap P5-F1(S), 桶D可辅助部分, 守铁律4】建工具(scripts/ 或 workbench/ CLI)从批次状态自动起草 signoff 草稿的**机械部分**: 批次/feature 号+标题、被验收 commit SHA、改动文件清单、CI 结论(gh run)、门禁结果(测试数/ruff/mypy)、git-diff scope、生产面(是否触 runtime)。★**绝不预填 verdict/裁定/命门判断**(判断核=独立 evaluator 填)——工具只填可从 CI/git/features.json 机械提取的事实, 输出带 `[待独立评估填写]` 占位的判断段。守铁律4: 是**辅助脚手架**非评估本身. Gates: 根ruff+单测(机械提取正确+judgment段留占位). Workflow-build(fresh子代理+对抗验证 不预填判断/机械正确/守铁律4).",
       "design_decisions": [
-        "用户授权生产→可对活prod只读实测(防假红是命门, 假红触发不必要rollback)。",
-        "只读GET+断言形状; 绝不mutate prod; 不commit凭证。",
-        "扩healthcheck.sh(已有post-deploy→rollback钩); P3-F2接线/P3-F3定时canary留后续feature。"
+        "roadmap自评P5-F1=辅助起草(判断核留独立), 守铁律4→工具填机械scaffold不填verdict。",
+        "P5-F2(独立对抗评审触发点)=evaluator流程域, 非generator可有意义构建→本批不含, 标注留evaluator/planner流程。",
+        "低-中价值: 省evaluator机械脚手架(见B096 signoff证据表工作量), 但adoption=evaluator的choice。"
       ]
     },
     {
       "id": "F002",
-      "title": "test-automation P3-F2/F3: synthetic→rollback 接线 + 定时 prod 健康 canary",
-      "priority": "medium",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "【P3-F2(S)+P3-F3(S)】(F2)synthetic 套件接入 deploy workflow 作 rollback 触发(现有 healthcheck→rollback 钩扩为 synthetic; ★可靠性证后再作硬触发, 或与现/api/health并列both-must-pass避免单点假红); (F3)定时(schedule) prod 健康 canary workflow(非部署触发, 只读常态监控, 红则告警非自动rollback). ★不引入假红rollback风险. Gates: workflow lint + 逻辑审. Workflow-build.",
-      "design_decisions": [
-        "rollback触发=生产风险最高点; 先证synthetic可靠(F001 prod实测)再接硬触发。",
-        "定时canary只读告警不自动rollback(常态监控低风险)。"
-      ]
-    },
-    {
-      "id": "F003",
-      "title": "Codex 独立验收 + signoff(只读/零假红/无凭证泄露/rollback接线安全/prod实证)",
-      "priority": "medium",
+      "title": "Codex 独立验收 + signoff(机械提取正确/不预填判断/守铁律4/占位段留白)",
+      "priority": "low",
       "executor": "codex",
       "status": "pending",
-      "acceptance": "Codex独立: synthetic套件只读(无mutate prod, 核实GET-only)+对活prod实测零假红+★无凭证/token committed(grep)+rollback接线安全(不引入单点假红触发)+定时canary只读+现有healthcheck不破. signoff docs/test-reports/B097-...-signoff.md.",
+      "acceptance": "Codex独立: 工具机械提取正确(commit/文件/CI/门禁数字准)+★不预填任何verdict/裁定/命门判断(judgment段=占位)+守铁律4(辅助非评估)+单测覆盖. signoff docs/test-reports/B098-...-signoff.md.",
       "design_decisions": [
-        "最大陷阱=假红触发rollback打断好部署/凭证泄露/误mutate prod;独立核实。"
+        "最大陷阱=工具预填判断侵蚀evaluator独立性;独立核实judgment段留白。"
       ]
     }
   ]

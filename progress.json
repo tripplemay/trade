@@ -1,16 +1,14 @@
 {
-  "status": "verifying",
-  "total_features": 3,
-  "completed_features": 2,
+  "status": "building",
+  "total_features": 2,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F003",
+  "current_sprint": "F001",
   "last_updated": "2026-07-06",
-  "user_goal": "B097 = test-automation P3 部署后 synthetic 监控(只读端点检查+recent-errors+HEAD≡prod)+rollback接线+定时canary. 用户2026-07-05授权生产操作解锁. ★命门: synthetic 只读(不mutate prod)+对活prod(trade.guangai.ai)实测零假红(假红触发不必要rollback)+无凭证泄露. 3 features 2g+1c. Workflow-build careful.",
+  "user_goal": "B098 = test-automation P5-F1 signoff 自动起草工具(机械 scaffold, 判断核留独立 agent, 守铁律4). ★工具只填 CI/git/features 可机械提取的事实, 绝不预填 verdict/裁定/命门→judgment段留占位. P5-F2(独立评审触发点)=evaluator流程域不含本批. 2 features 1g+1c. Workflow-build. 完成后 test-automation roadmap generator-buildable 部分全完(P0-P5-F1); 剩 P5-F2=evaluator流程 + backlog smart-money(¥200)+residual-engine(用户决策).",
   "reference_docs": [
     "docs/dev/test-automation-roadmap.md",
-    "workbench/deploy/scripts/healthcheck.sh",
-    "workbench/deploy/scripts/rollback.sh",
-    ".github/workflows/workbench-deploy.yml"
+    "docs/test-reports/B096-llm-judge-semantic-signoff-2026-07-06.md"
   ],
   "docs": {
     "spec": "docs/dev/test-automation-roadmap.md",
@@ -27,18 +25,17 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": "B097 F001+F002 **done**(Workflow, 各2对抗验证; F001含build→REFUTED假红→fix→CONFIRMED). P3 生产 synthetic 监控全部实现. F001: synthetic_check.sh(只读4检查, 活生产实测零假红, 真红不吞). F002: deploy additive接线(healthcheck保留+synthetic额外门+rollback if扩为二者任一, EXPECTED_SHA=RELEASE_SHA, actionlint exit0)+定时canary(每6h只读告警绝不rollback). ★安全全绿: read-only/无secret/actionlint过/healthcheck保留. **F003 codex验证**: 独立复核 synthetic只读(GET-only无mutate)+零假红(活prod实测)+rollback逻辑正确(边界trace:双通过不rollback/任一红rollback/deploy失败不rollback)+EXPECTED_SHA武装+canary只读告警非rollback+无secret+actionlint/yaml valid+healthcheck未删. signoff docs/test-reports/B097-...-signoff.md. **含义: P3全完(P4-F1+P4-F2+P3), test-automation仅剩P5(铁律4独立性)**.",
-    "status": "complete"
+    "summary": null,
+    "status": "pending"
   },
   "features": [
     "F001",
-    "F002",
-    "F003"
+    "F002"
   ],
   "completed_date": null,
   "session_notes": {
-    "planner": "2026-07-06 B096(P4-F2)done(Codex PASS 2/2 15th; key零泄露blocking gate过)后开 B097(P3生产synthetic监控). 用户授权生产解锁. Workflow-build careful(只读实测防假红+无凭证泄露). test-automation: P4-F1✅+P4-F2✅+P3(本批), 剩P5(铁律4). ultracode Workflow第8次. ★key对话暴露→用完轮换.",
+    "planner": "2026-07-06 B097(P3)done(Codex PASS 3/3 16th; canary真机run绿)后开 B098(P5-F1 signoff起草工具). 用户解锁后test-automation: P4-F1+P4-F2+P3✅, 本批P5-F1(机械scaffold守铁律4). P5-F2=evaluator流程不含. ultracode Workflow第9批. 剩backlog: P5-F2(evaluator流程)+smart-money(¥200)+residual-engine(用户). ★key用完轮换.",
     "generator": null,
-    "evaluator": "2026-07-06 B096 F002 独立验收 → 全 PASS 2/2 → done. test-automation P4-F2 LLM-judge 语义层(模糊残留+grounding, advisory, additive). 代 Codex(用户 /goal 授权, 与实现完全隔离, 最高怀疑度). ★核心手段=独立解码非信任测试自证: 我从磁盘 yaml.safe_load→gzip.decompress→json 逐条解开 810 行 cassette 的 9 个响应体, 独立比对 EVAL_SET 预期标签 → 9/9 全 match(跨 4 象限 3clean/2fuzzy/3ungrounded/1both, 含硬 mismatch P/E 12.5vs22·TLT 35%vs15% 非单纯缺失); evidence 字段引真机 Haiku 措辞('the momentum outlook remains constructive'/'约 18%'/'P/E 为 12.5'/'35%'/'outlook 依旧 bullish')证非伪造 stub. ★★命门 1 key 零泄露(BLOCKING, 独立三重扫描): (a)cassette header 剥除=gateway 用 Authorization:Bearer{key}发送, 两 committed cassette grep '^\\s*authorization:'=零命中+全历史 grep 'bearer <value>'=空 → filter_headers 确整条剥除, 机制常驻 conftest 未来录制自动脱敏; (b)全 git 历史 git log -p --all grep 'sk-[A-Za-z0-9]{20,}'/'bearer [value]'=空, 长 base64 串=gzip 响应体(H4sI)+req_/trc_ ID 非 secret; (c)无硬编码 key 走 os.environ.get('AIGC_GATEWAY_API_KEY') 缺失即 raise+.env.example 空+.gitignore 覆盖.env*+工作树无未跟踪 env. 结论=任何 committed 文件/commit/cassette 均无明文 key, 无需轮换触发(但 key 曾对话明文暴露, 用户宜用完后主动轮换, 与本批 commit 安全独立). ★命门 3 additive 零回归: git diff 3845ae4^..HEAD 对 test_ai_advisor_red_team*/data/safety-evals/judge.py/conftest=空(逐字节未动); grep 证 semantic_judge 唯一 import 者=tests/safety/test_semantic_judge_vcr.py(除模块+routing 条目)=advisory-only 未接 runtime; routing.py additive(仅+semantic_judge→claude-haiku-4.5 一条+注释, 既有未动); ai-safety-eval 硬门只列 3 red-team 文件不含本测. ★命门 5 advisory+路由无硬编码: SemanticVerdict.advisory:bool=True 永久标记, judge_semantic 仅契约违反(非 JSON/错 shape/错类型)raise ValueError(fail-loud); 独立解码路由 cassette 请求体=model\":\"claude-haiku-4.5\" 证经 routing 表解析非模块字面量; 独立 task(非 safety_judge 复用)防混淆红队硬门. ★命门 4 VCR: record_mode='none' 仅重放无真网, _offline_gateway dummy key+_NoopGuard, AIGC_GATEWAY_API_KEY= pytest=4 passed 离线跑通; 全 safety=261 passed/15 skipped(15 skip=red-team L2 需真 key CI 注入, 正常分层非回归). 门禁 ruff All passed+mypy Success 320 files+pytest 4/261. CI(4ff104d push)=Backend CI success 11m28s+AI Safety Eval success 1m47s(红队门真 key 复跑活证)+Deploy success 5m0s. 3 软观察非阻断: O1 frontend CI failure=Playwright E2E smoke flake, backend-only 变更触碰 0 frontend 文件+前序 B083 同 flake+有 harden-flake commit 佐证, 非 deploy gate(门=Backend+SafetyEval, 二者绿)Deploy 已绿到底, 与本批无关非回归; O2 语义 judge 尚无 runtime-gate 消费者(advisory-only, 但 workbench-backend.yml pytest tests/safety 每次离线跑本评测集=drift 检测已进 CI 正向); O3 cassette 按录制顺序重放(match_on 排 body), EVAL_SET 列表顺序 load-bearing 重排需重录. signoff docs/test-reports/B096-llm-judge-semantic-signoff-2026-07-06.md. ★含义: 推进 test-automation roadmap 1 feature(P4-F2 LLM 语义能力层+评测集证据网), item 不清空——P3(生产, 已授权待 B097)+P5(独立评审, 铁律 4)仍待办."
+    "evaluator": "2026-07-06 B097 F003 独立验收 → 全 PASS 3/3 → done. test-automation P3 生产 synthetic 监控(只读端点+recent-errors+HEAD≡prod)+synthetic→rollback 接线(additive)+定时 canary. 代 Codex(用户 /goal 授权, 与实现完全隔离, 最高怀疑度, 触生产敏感批从严). ★核心手段=不信任 generator '零假红' 声明, 独立对活生产只读实测+拉真机 CI run 日志+逐条 trace 触发逻辑. ★★命门1只读(BLOCKING清): synthetic_check.sh 4 curl 全 GET(65/71/144/146, 无 -X/--data/-d/-T), 唯 POST/PUT/DELETE 字样在契约注释; canary GET-only 无 SSH 无 secret 不触 VM(permissions contents:read). ★★命门2 rollback 安全(BLOCKING清, 最危险): (a)触发边界 4 场景逐条 trace=双门全过 failure()假不回滚/healthcheck 红回滚/healthcheck 过·synthetic 红回滚(新覆盖)/deploy 本身红 deploy.outcome 守门不回滚; additive=既有 healthcheck.outcome!=success 保留仅 OR 扩加 synthetic, 既有触发是新条件子集不削弱; blast radius 有界=rollback 仅 deploy job failure()上下文+deploy.outcome==success 守门→非任意可触发的生产回滚, 无 dispatch/schedule 能单触发, rollback.sh B097 未改(symlink flip+restart 不碰 DB/数据不级联). (b)假红稳健=活 prod 本地跑 synthetic_check.sh EXIT0 零假红([4b] market-context/home/reports 全 401)+真机 canary run 28776985789 日志同样零假红绿 12s+armed check[3]双向 teeth(EXPECTED_SHA==4ff104d 活 prod SHA→PASS / 错 SHA→FAIL+exit1)+只断可靠为真值(HTTP 状态/JSON 形状/40-hex SHA 格式)不断易变值(uptime/counts)不可评估 SKIP 非 FAIL; armed 部署自洽=prod /api/health.version 读 /srv/workbench/current/RELEASE_SHA(=git rev-parse HEAD 全 40-hex)与 deploy 传 EXPECTED_SHA=RELEASE_SHA 同源必等, healthcheck-first 20s 重试作 settling gate 缓解 restart race. ★★命门3无凭证泄露(BLOCKING清): 新文件无硬编码 secret(sk-/Bearer/password 仅注释), synthetic 唯一 secret=可选 SESSION_COOKIE 仅 env 读不落盘未设则 public-only, canary 不设 secret, deploy synthetic 步仅设 EXPECTED_SHA 不设 cookie, 全 git 历史扫 synthetic+canary=空, deploy echo secrets 为 B097 未触碰既有 SSH 步(重定向文件非 stdout+GitHub mask+if:always 拆除)非本批非泄露. ★命门4 additive 零回归: healthcheck 未改仍 baseline/synthetic 新增额外门/rollback if OR 扩展非替换/GC·teardown 未改/绿部署全过不回滚不变/canary 独立 workflow 不干扰三门/git diff 4ff104d..HEAD -- 产品路径(backend·frontend·trade)=空 prod≡HEAD 逐字节相同. ★命门5 生产落地: canary 注册 active 307860088+真机 workflow_dispatch run success 12s(日志确认真跑套件非 no-op 绿); HEAD≡prod 可部署等价(产品树相同, SHA gap 纯 deploy-infra+harness+docs=标准 chore gap); B097 提交路径(workbench/deploy/**·.github/workflows/deploy·canary)不在 Backend(workbench/backend+trade)·Frontend CI 触发路径→不触发产品 CI→不触发部署链→prod 合法停 4ff104d(B096-F001 最后触产品代码 commit)=预期非异常; 部署 gate=Backend+Safety 二门绿, Frontend CI failure=B096 已裁定既有 Playwright E2E smoke flake(B097 触 0 前端文件产品树 diff 空佐证)非门禁非回归. 3 soft-watch 非阻断: S1 actionlint deploy.yml exit1=5×SC2087 warning(SSH heredoc 未引号=故意 client-side 展开 RELEASE_SHA), 但 pre-B097 已 4 处(deploy/healthcheck/GC), 新 synthetic 步只加第 5 处复用同惯用法意图正确, GitHub 成功解析运行两 workflow, generator 'actionlint exit0' 略欠精确(实 exit1 于既有 shellcheck warning)但 canary.yml 确 clean 且 warning 全 pre-existing→非回归非 bug; S2 修改后 deploy.yml synthetic→rollback 集成路径尚未在真实 CI 部署执行(无触发性产品 commit), 证据=脚本本地+真机 canary 双证零假红+armed check[3]行为直验+边界逻辑静态验证=read-only 授权下最强证据, 下次产品部署即 exercise; S3 environment.md 记 prod=astock.guangai.ai 陈旧, 本项目活生产 API=trade.guangai.ai(astock 返 nginx 401 basic-auth 非本项目面), 脚本/deploy 均正确用 trade, 交 Planner 修正. signoff docs/test-reports/B097-prod-synthetic-canary-signoff-2026-07-06.md. ★含义: test-automation P3(生产 synthetic/canary)完成落地, roadmap 仅剩 P5(独立评审固化, 铁律 4). ★key 曾对话明文暴露仍建议用户用完轮换(与本批 commit 安全独立)."
   }
 }
