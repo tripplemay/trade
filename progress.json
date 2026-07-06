@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-07-05",
   "user_goal": "B095 = test-automation P4-F1 确定性语义预过滤(英文残留+no-AI禁语 additive lint). roadmap桶C确定性部分='可自动化'. ★ADDITIVE ONLY 零修改red-team硬门/dataset; ai-safety-eval复跑校验; 对抗验证合法输出零假阳+捕禁语+零回归. research/infra(不改硬门/生产账户). 2 features 1g+1c. Workflow-build. 注: 仅推进test-automation一个feature, 不清该item(P3生产/P4-F2 LLM/P5独立性仍user-gated).",
   "reference_docs": [
@@ -27,8 +27,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B095 F001 **done**(Workflow 2轮: build→2对抗验证REFUTED假阳→fix→2对抗验证CONFIRMED survived). test-automation P4-F1 确定性语义lint(桶C). 新增 advisor/semantic_lint.py(纯re/词表)+test_semantic_lint.py(74测). detect_english_residual(英文残留, joiner-split白名单 EV/EBITDA·SPY/QQQ/TLT逐段验证)+detect_banned_phrases(no-AI禁语 收益预测/自动下单/替代量化, 难入否定). ★第1轮对抗验证拦3类真假阳→第2轮修好+广泛猎clean+真违规仍捕. ★ADDITIVE(仅2新文件, red-team门+data/safety-evals零改动, advisory非硬block, 无LLM). gates全绿(ruff+mypy319+safety257 +20测 red-team 0 regression). soft-watch: YoY/QoQ混合(baseline)/vs(intended). **F002 codex验证**: 合法输出零假阳(核实不误伤grounded解释, 3类修好+广猎)+真捕禁语/英文残留+★red-team门零回归(test_ai_advisor_red_team不变+ai-safety-eval绿)+additive(仅2新文件)+确定性无LLM+backend safety pytest绿. signoff. **含义: 推进test-automation 1 feature(P4-F1); item不清(P4-F2/P3/P5仍user-gated)**.",
+    "status": "complete"
   },
   "features": [
     "F001",
