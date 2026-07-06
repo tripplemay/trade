@@ -19,7 +19,7 @@
       "title": "Codex 独立验收 + signoff(席位识别/无前视/无过拟合/诚实裁定/research-only)",
       "priority": "low",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "Codex独立: 游资席位识别口径核实+信号数字重算+无前视(上榜日T跟随T+1)+无过拟合红旗+诚实裁定(NO-GO/INCONCLUSIVE合法, 次要信号框如实)+research-only零回归. signoff docs/test-reports/B094-...-signoff.md.",
       "design_decisions": [
         "最大陷阱=游资席位识别主观/前视/过拟合;独立核实。"
