@@ -1,28 +1,28 @@
 {
-  "sprint": "F002",
+  "sprint": "F001",
   "features": [
     {
       "id": "F001",
-      "title": "test-automation P5-F1: signoff 自动起草工具(从 CI/features/git 结果填机械 scaffold, 判断核留独立 agent)",
-      "priority": "low",
+      "title": "smart-money 机构建仓 first-look(免费季度机构持股变化, 用户真实目标的免费季度版)",
+      "priority": "medium",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【backlog test-automation roadmap P5-F1(S), 桶D可辅助部分, 守铁律4】建工具(scripts/ 或 workbench/ CLI)从批次状态自动起草 signoff 草稿的**机械部分**: 批次/feature 号+标题、被验收 commit SHA、改动文件清单、CI 结论(gh run)、门禁结果(测试数/ruff/mypy)、git-diff scope、生产面(是否触 runtime)。★**绝不预填 verdict/裁定/命门判断**(判断核=独立 evaluator 填)——工具只填可从 CI/git/features.json 机械提取的事实, 输出带 `[待独立评估填写]` 占位的判断段。守铁律4: 是**辅助脚手架**非评估本身. Gates: 根ruff+单测(机械提取正确+judgment段留占位). Workflow-build(fresh子代理+对抗验证 不预填判断/机械正确/守铁律4).",
+      "status": "pending",
+      "acceptance": "【backlog smart-money 季报持仓 alternative, 免费 akshare, 比游资更贴近用户真实目标(institutional建仓)】fetch 季度机构持股(ak.stock_institute_hold(symbol='<YYYY><Q>'), 多季 e.g. 2020Q1-2024Q4, ~3000股/季, 字段: 机构数/机构数变化/持股比例/持股比例增幅/占流通股比例)+个股价格(ak.stock_zh_a_daily qfq). 信号=机构建仓(机构数变化>0 或 持股比例增幅>0)→跟随(买建仓股)→forward-return rank-IC(季度)+简易回测 vs 基线(等权全市场/指数). ★无前视: 季报披露滞后~1-2月, 信号在披露后可用→follow 在 Q-end+滞后(非Q-end当天). research-only. ★诚实: 季度滞后期望弱, NO-GO/INCONCLUSIVE合法; 用户真实目标的免费季度版(无edge弱化¥200日频预期, 有edge激励). 报告 docs/test-reports/B099-inst-building-first-look.md. Gates: 根ruff+root pytest+CI绿. Workflow-build(对抗验证防前视/过拟合).",
       "design_decisions": [
-        "roadmap自评P5-F1=辅助起草(判断核留独立), 守铁律4→工具填机械scaffold不填verdict。",
-        "P5-F2(独立对抗评审触发点)=evaluator流程域, 非generator可有意义构建→本批不含, 标注留evaluator/planner流程。",
-        "低-中价值: 省evaluator机械脚手架(见B096 signoff证据表工作量), 但adoption=evaluator的choice。"
+        "机构数变化/持股比例增幅=机构建仓=用户真实目标(非游资retail), 免费akshare。",
+        "季报滞后~1-2月→无前视须follow在披露后。",
+        "免费季度版: 无edge弱化¥200预期, 有edge激励; 诚实NO-GO有效。"
       ]
     },
     {
       "id": "F002",
-      "title": "Codex 独立验收 + signoff(机械提取正确/不预填判断/守铁律4/占位段留白)",
-      "priority": "low",
+      "title": "Codex 独立验收 + signoff(无前视/披露滞后/无过拟合/诚实裁定/research-only)",
+      "priority": "medium",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "Codex独立: 工具机械提取正确(commit/文件/CI/门禁数字准)+★不预填任何verdict/裁定/命门判断(judgment段=占位)+守铁律4(辅助非评估)+单测覆盖. signoff docs/test-reports/B098-...-signoff.md.",
+      "status": "pending",
+      "acceptance": "Codex独立: 机构建仓信号正确+★无前视(季报披露滞后: 信号披露后可用, follow非Q-end当天)+IC/回测重算+无过拟合+诚实裁定(季度滞后弱→NO-GO/INCONCLUSIVE合法)+research-only零回归. signoff.",
       "design_decisions": [
-        "最大陷阱=工具预填判断侵蚀evaluator独立性;独立核实judgment段留白。"
+        "最大陷阱=用未披露季报数据(前视);独立核实滞后处理。"
       ]
     }
   ]

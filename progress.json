@@ -1,40 +1,39 @@
 {
-  "status": "done",
+  "status": "building",
   "total_features": 2,
-  "completed_features": 2,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": null,
+  "current_sprint": "F001",
   "last_updated": "2026-07-06",
-  "user_goal": "B098 = test-automation P5-F1 signoff 自动起草工具(机械 scaffold, 判断核留独立 agent, 守铁律4). ★工具只填 CI/git/features 可机械提取的事实, 绝不预填 verdict/裁定/命门→judgment段留占位. P5-F2(独立评审触发点)=evaluator流程域不含本批. 2 features 1g+1c. Workflow-build. 完成后 test-automation roadmap generator-buildable 部分全完(P0-P5-F1); 剩 P5-F2=evaluator流程 + backlog smart-money(¥200)+residual-engine(用户决策).",
+  "user_goal": "B099 = smart-money 机构建仓 first-look(免费季度 stock_institute_hold, 用户真实目标institutional建仓的免费季度版). 信号=机构数变化/持股比例增幅>0→跟随→季度rank-IC+回测. ★无前视(季报滞后~1-2月, follow披露后). research-only. 诚实NO-GO合法, 比游资更贴近用户真实目标. 2 features 1g+1c. Workflow-build.",
   "reference_docs": [
-    "docs/dev/test-automation-roadmap.md",
-    "docs/test-reports/B096-llm-judge-semantic-signoff-2026-07-06.md"
+    "docs/test-reports/B094-youzi-seat-first-look.md"
   ],
   "docs": {
-    "spec": "docs/dev/test-automation-roadmap.md",
+    "spec": null,
     "test_cases": null,
-    "signoff": "docs/test-reports/B098-signoff-scaffold-tool-signoff-2026-07-06.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "B098 全 PASS 2/2 → done. 独立验收(代 Codex, 与实现隔离, 最高怀疑度). ★命门1(铁律#4, 最重)PASS: render_judgment_sections() 零参结构证(inspect.signature 单测有牙)+判断段全硬编码[待独立评估填写]占位; 亲跑活工具 --batch B097(真绿CI)反向测试→判断半段 grep verdict=NONE, 绿CI不诱导PASS; 机械段只 echo gh 原始 conclusion/features.status/generator_handoff(标自报未判定)/location 分桶(标非风险裁定), 不映射PASS. 命门2 additive 零回归 PASS: 全仓 grep 消费者=0, 无CI wiring, read-only, 既有 signoff 流程不变. 命门3 PASS: 23测双环境绿+ruff/mypy clean+CI(Backend+Python@6fc0721/Deploy@ae8c1cd success 独立 gh run view 复核)+产品码 diff 空 HEAD≡prod. 3 soft-watch 非阻断(S1 §5 echo 整个 handoff 叙事含 generator 自拟框架措辞但明标自报置机械段不破铁律4/S2 diffstat 范围含开批 chore 无关文件机械正确/S3 本机 py 无 ruff 须 venv).",
-    "pass_count": 2,
+    "summary": null,
+    "pass_count": 0,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
   },
   "generator_handoff": {
-    "summary": "B098 F001 **done**(Workflow 3子代理 build+2对抗验证 CONFIRMED survived). P5-F1 signoff起草工具 scripts/gen_signoff_draft.py(23测). 填机械scaffold(批次/commit按scope/文件stat/CI结论gh/门禁echo/生产面位置heuristic). ★★铁律#4: render_judgment_sections()取0参→结构不可能从绿CI推裁定; 判断段全占位, 跑B097 grep verdict=NONE. read-only+graceful+机械正确. gates ruff+mypy+23测. 辅助脚手架非评估. **F002 codex验证**: 机械提取正确(commit/文件/CI数字准)+★不预填任何verdict/裁定/命门(判断段占位, 绿CI不推PASS)+守铁律4(辅助非评估)+read-only+23测非平凡. signoff. **含义: test-automation generator-buildable 全完(P0-P5-F1); 剩P5-F2=evaluator流程+smart-money(¥200)+residual-engine(用户)**.",
-    "status": "complete"
+    "summary": null,
+    "status": "pending"
   },
   "features": [
     "F001",
     "F002"
   ],
-  "completed_date": "2026-07-06",
+  "completed_date": null,
   "session_notes": {
-    "planner": "2026-07-06 B098(P5-F1 signoff工具)done(Codex PASS 2/2 17th; render_judgment零参结构证铁律#4). **★用户2026-07-05解锁(AIGC key+生产授权)后 test-automation generator-buildable 全完+Codex验: P4-F1(B095)+P4-F2(B096)+P3(B097 canary真机run绿)+P5-F1(B098)** (P0-P2早完). 仅剩 P5-F2=评估流程约定(已提 proposed-learnings 待用户确认, 非generator代码). **ultracode Workflow stretch 9批 B090-B098 全survived+17治理门**: B090发现factor bug→B091修复→B092 US进攻INCONCLUSIVE→B093 hk_china NO-GO(闭合B063)→B094游资NO-GO→B095-098 test-automation. B095/B097 对抗验证commit前拦真bug(假阳/假红), B096 key零泄露blocking gate过. **剩backlog全需用户: smart-money institutional(¥200 ★用户真实目标,唯一未测高价值)+residual-engine(用户决策,我评估weak/低ROI)+test-automation P5-F2(流程约定待确认)**. 高价值下一步=smart-money需¥200. ★AIGC key对话明文暴露→建议轮换.",
+    "planner": "2026-07-06 B098 done后开 B099(smart-money 机构建仓 first-look, 免费季度stock_institute_hold). 机构持股变化=免费季度institutional建仓信号(比游资更贴近用户真实目标). Workflow-build 无前视. ultracode第10批. 剩backlog: smart-money日频版(¥200)+residual-engine+P5-F2.",
     "generator": null,
     "evaluator": "2026-07-06 B098 F002 独立验收 → 全 PASS 2/2 → done. test-automation P5-F1 signoff 自动起草工具(scripts/gen_signoff_draft.py 598 行+23 测). 代 Codex(用户 /goal+B079-B097 先例, 与实现完全隔离, 最高怀疑度). ★核心手段=不信任 generator '铁律#4-safe/render_judgment 0 参' 声明, 逐行读工具全 598 行+独立复跑门禁+亲跑活工具反向对抗测试+grep 全仓消费者+gh run view 独立复核 CI. ★★命门1 工具不僭越判断(铁律#4, 最重, BLOCKING清): (a)结构证=render_judgment_sections() 定义零参数, 函数体硬编码章节标题+JUDGMENT_PLACEHOLDER 占位(§7-10 裁定/命门/软观察/learnings 全 [待独立评估填写]), 判断段不接受任何 batch state→结构上不可能从 git/gh/features 推裁定; 单测 test_judgment_function_takes_no_state 用 inspect.signature 断言参数=0 有牙. (b)对抗反向测试=亲跑 --batch B097(真绿 CI 3 workflow success) 拆 '# 以下为判断段' banner 后半段 grep PASS|FAIL|裁定：|全PASS|→done|✅|通过=NONE, 判断半段仅 4 占位, 绿 CI 未诱导隐式 PASS; 无输入路径能触及判断渲染器→无法构造'已填 PASS'草稿. (c)机械段只搬事实不搬裁定=§4 CI echo gh 原始 conclusion(success/failure)不映射 PASS 明标非裁定/§1 echo features.status 原字段/§5 echo generator_handoff 标'自报未判定真伪判定属 evaluator'/§6 location 分桶标'非风险裁定'单测断言不含 PASS/FAIL/安全/有风险. 工具不读测试结果自动判绿只 echo gh 词汇→辅助脚手架非评估, 铁律#4 未破. ★★命门2 additive 零回归(BLOCKING清): 全仓 grep gen_signoff_draft 外部消费者=0, .github/workflows grep signoff=空→未接 CI 硬门不自动生成并提交 signoff; read-only(仅 git log/diff/gh run list 只读命令, 写只在显式 -o 时, 从不改仓库 state, 缺数据 graceful 降级占位不 crash); 既有 signoff 流程不变 evaluator 仍可手写(本批即手写); 无硬编码 secret. ★命门3 L1 有牙+CI 绿+HEAD≡prod+0 产品码(BLOCKING清): 23 测系统 py3+backend venv 双环境均 23 passed+ruff All checks passed+mypy Success; CI 独立 gh run view 复核=Backend CI+Python CI@6fc0721 success(Python CI 跑 tests/unit→23 测 CI 内绿)+Deploy@ae8c1cd success; git diff --name-only 99a3d53^..ae8c1cd -- trade/ workbench/backend/ workbench/frontend/=空→产品策略码 0 行改动 HEAD≡prod 逐字节; 机械提取对 B098 自身抽验(3 commit 与 git log 吻合 scope 过滤正确/CI conclusion 准/diffstat 准). Workflow 对抗验证记录=未止于抽查 generator 记录而独立复现同一反向测试, 结论一致(绿 CI 不推裁定). 3 soft-watch 非阻断: S1 §5 门禁 echo 整个 generator_handoff.summary 叙事 blob 含 generator 自拟'signoff/守铁律4/机械提取正确'框架措辞, 但明标'自报未判定真伪'且置机械半段(§7 裁定仍空占位)→不破铁律#4, 未来加固可只 echo 结构化门禁数字最小化锚定, 非缺陷; S2 commit-range 启发式 oldest^..newest 使 §3 diffstat 纳入开批 chore(99a3d53) 里与 F001 无关文件(B097 signoff md/auto-memory) 机械正确非 bug 但范围宽于单一 feature; S3 本机 py3=3.9.6 无 ruff/mypy 须 venv(已知 gap). signoff docs/test-reports/B098-signoff-scaffold-tool-signoff-2026-07-06.md. ★含义: test-automation generator-buildable 部分全落地(P0-P5-F1); 剩 P5-F2=evaluator 流程域(非 generator 可构建)+backlog smart-money(¥200)+residual-engine(用户决策). ★[旧] B097 F003 全 PASS 3/3 → done(生产 synthetic/canary/rollback 接线, 命门 1-5 详见 B097 signoff)."
   }
