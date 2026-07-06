@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 3,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
-  "current_sprint": "F002",
+  "current_sprint": "F003",
   "last_updated": "2026-07-06",
   "user_goal": "B097 = test-automation P3 部署后 synthetic 监控(只读端点检查+recent-errors+HEAD≡prod)+rollback接线+定时canary. 用户2026-07-05授权生产操作解锁. ★命门: synthetic 只读(不mutate prod)+对活prod(trade.guangai.ai)实测零假红(假红触发不必要rollback)+无凭证泄露. 3 features 2g+1c. Workflow-build careful.",
   "reference_docs": [
@@ -27,7 +27,7 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": "B097 F001 **done**(Workflow 2轮 build+fix, 2对抗验证 REFUTED假红→CONFIRMED survived). P3-F1 synthetic套件 synthetic_check.sh(只读post-deploy监控, 未接线rollback). 4检查只读GET: health 200+db/recent-errors(opt-in)/HEAD≡prod(version=40hex SHA)/JSON形状+401路由证. ★对活生产trade.guangai.ai实测 exit0零假红. ★对抗验证第1轮拦 set-e/pipefail 假红崩溃(过期cookie→崩溃exit1→会rollback好部署)→第2轮修(|| true 无匹配SKIP; 真红不吞). read-only/无凭证/未接线/healthcheck不破 全独立复验. **接续F002**: P3-F2(synthetic接deploy作rollback触发, 可靠已证)+P3-F3(定时canary只读告警). 我继续 Workflow 建 F002.",
+    "summary": "B097 F001+F002 **done**(Workflow, 各2对抗验证; F001含build→REFUTED假红→fix→CONFIRMED). P3 生产 synthetic 监控全部实现. F001: synthetic_check.sh(只读4检查, 活生产实测零假红, 真红不吞). F002: deploy additive接线(healthcheck保留+synthetic额外门+rollback if扩为二者任一, EXPECTED_SHA=RELEASE_SHA, actionlint exit0)+定时canary(每6h只读告警绝不rollback). ★安全全绿: read-only/无secret/actionlint过/healthcheck保留. **F003 codex验证**: 独立复核 synthetic只读(GET-only无mutate)+零假红(活prod实测)+rollback逻辑正确(边界trace:双通过不rollback/任一红rollback/deploy失败不rollback)+EXPECTED_SHA武装+canary只读告警非rollback+无secret+actionlint/yaml valid+healthcheck未删. signoff docs/test-reports/B097-...-signoff.md. **含义: P3全完(P4-F1+P4-F2+P3), test-automation仅剩P5(铁律4独立性)**.",
     "status": "complete"
   },
   "features": [

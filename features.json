@@ -1,5 +1,5 @@
 {
-  "sprint": "F002",
+  "sprint": "F003",
   "features": [
     {
       "id": "F001",
@@ -19,7 +19,7 @@
       "title": "test-automation P3-F2/F3: synthetic→rollback 接线 + 定时 prod 健康 canary",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【P3-F2(S)+P3-F3(S)】(F2)synthetic 套件接入 deploy workflow 作 rollback 触发(现有 healthcheck→rollback 钩扩为 synthetic; ★可靠性证后再作硬触发, 或与现/api/health并列both-must-pass避免单点假红); (F3)定时(schedule) prod 健康 canary workflow(非部署触发, 只读常态监控, 红则告警非自动rollback). ★不引入假红rollback风险. Gates: workflow lint + 逻辑审. Workflow-build.",
       "design_decisions": [
         "rollback触发=生产风险最高点; 先证synthetic可靠(F001 prod实测)再接硬触发。",
