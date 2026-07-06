@@ -276,8 +276,30 @@ jobs:
           bash ${CURRENT_LINK}/scripts/healthcheck.sh
           EOF
 
-      - name: SSH — rollback on healthcheck failure
-        if: failure() && steps.deploy.outcome == 'success' && steps.healthcheck.outcome != 'success'
+      # B097 F002 (P3-F2): ADDITIVE second gate. The proven single-endpoint
+      # healthcheck above stays the baseline gate; this runs the read-only
+      # synthetic suite as an EXTRA gate with WORKBENCH_SYNTHETIC_EXPECTED_SHA
+      # armed to the SHA we just deployed, so check (3) asserts prod's
+      # /api/health.version == the deployed SHA. Public-only: we do NOT set
+      # WORKBENCH_SYNTHETIC_SESSION_COOKIE, so the recent-errors probe SKIPs and
+      # no secret enters the deploy. Runs over the same SSH context as the
+      # healthcheck; the synthetic probes the public prod URL from the VM.
+      - name: SSH — post-deploy synthetic suite (additive gate, EXPECTED_SHA armed)
+        id: synthetic
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/id_deploy -o IdentitiesOnly=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" bash -se <<EOF
+          set -euo pipefail
+          WORKBENCH_SYNTHETIC_EXPECTED_SHA=${RELEASE_SHA} \
+            bash ${CURRENT_LINK}/scripts/synthetic_check.sh
+          EOF
+
+      # Rollback fires when EITHER gate fails: the proven healthcheck OR the
+      # new synthetic suite. Extended from the healthcheck-only condition so
+      # synthetic adds coverage without weakening the existing trigger.
+      - name: SSH — rollback on healthcheck or synthetic failure
+        if: failure() && steps.deploy.outcome == 'success' && (steps.healthcheck.outcome != 'success' || steps.synthetic.outcome != 'success')
         run: |
           set -euo pipefail
           ssh -i ~/.ssh/id_deploy -o IdentitiesOnly=yes \

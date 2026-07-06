@@ -1,0 +1,45 @@
+name: Workbench Prod Canary
+
+# B097 F003 (P3-F3): scheduled, READ-ONLY production health canary.
+#
+# Runs the synthetic monitoring suite (workbench/deploy/scripts/synthetic_check.sh,
+# B097 F001) against the PUBLIC production URL on a cron schedule. This is
+# ALERTING / MONITORING ONLY:
+#   * On red (synthetic_check.sh exits non-zero) the job FAILS, which surfaces
+#     via the normal GitHub Actions failure notification (email / UI / Slack app
+#     if configured). GitHub notifies the actor + watchers on a failed run.
+#   * It NEVER rolls back and NEVER touches the VM. There is no SSH, no secret,
+#     no mutation — every probe is an HTTP GET against the public prod URL.
+#
+# Public-only by construction: WORKBENCH_SYNTHETIC_SESSION_COOKIE is left unset,
+# so the auth-gated recent-errors probe SKIPs and no credential is required or
+# committed. WORKBENCH_SYNTHETIC_EXPECTED_SHA is left unset too — a scheduled
+# canary has no "expected" deploy SHA, so check (3) shape-checks the version
+# field and SKIPs the equality assertion (that armed assertion lives in the
+# deploy path, P3-F2).
+
+on:
+  schedule:
+    # Every 6 hours, on the hour (UTC). Cron has no notion of local time.
+    - cron: "0 */6 * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: workbench-prod-canary
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repo (for synthetic_check.sh)
+        uses: actions/checkout@v4
+
+      - name: Run synthetic suite against prod (read-only, alert-only)
+        run: |
+          set -euo pipefail
+          bash workbench/deploy/scripts/synthetic_check.sh
