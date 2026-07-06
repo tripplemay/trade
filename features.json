@@ -19,7 +19,7 @@
       "title": "Codex 独立验收 + signoff(无前视/公平双本金A/B/turnover/诚实裁定/不触冻结flagship产品码)",
       "priority": "medium",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "Codex独立: 残差变体构造正确+公平A/B(双本金等本金, 残差vs裸同窗口/skip)+turnover成本计入+★无前视+数字重算+无过拟合+诚实裁定(边际edge→INCONCLUSIVE/NO-GO合法)+research-only(不改cn_attack冻结产品码/不mark validated/不触data_root). signoff.",
       "design_decisions": [
         "最大陷阱=不公平A/B(残差多减β要同口径)/前视/触冻结产品码;独立核实。"
