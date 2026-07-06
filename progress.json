@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-07-06",
   "user_goal": "B099 = smart-money 机构建仓 first-look(免费季度 stock_institute_hold, 用户真实目标institutional建仓的免费季度版). 信号=机构数变化/持股比例增幅>0→跟随→季度rank-IC+回测. ★无前视(季报滞后~1-2月, follow披露后). research-only. 诚实NO-GO合法, 比游资更贴近用户真实目标. 2 features 1g+1c. Workflow-build.",
   "reference_docs": [
@@ -24,8 +24,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B099 F001 **done**(Workflow 3子代理 build+2对抗验证 CONFIRMED survived). smart-money 机构建仓 first-look(用户真实目标的免费季度版). 免费季度机构持股(stock_institute_hold 20季)机构数变化/持股比例增幅=加仓信号. ★无前视: 季报滞后→进场披露deadline后加整月(20季全审0违规). ★裁定 **NO-GO/INCONCLUSIVE**: rank-IC~0全|t|<1, 回测+49%=beta/size海市蜃楼(IC~0/负却+49%对单调不可能→tilt非skill). 元凶=披露滞后(月级陈旧). ★关键: **不证伪¥200日频版**(日频砍latency)→精炼¥200决策. research-only(4文件). gates ruff+12单测. 报告 B099-inst-building-first-look.md. **F002 codex验证**: ★无前视(季报披露滞后, 进场deadline后, forward未来bar, 20季0违规)+机构建仓信号正确+IC/回测重算(byte-identical)+回测+49%是tilt非skill(诚实诊断)+无过拟合(prior未调, 实测IC~0<stated+0.03)+诚实裁定(NO-GO+不证伪¥200日频)+research-only. signoff. **含义: smart-money免费季度版=NO-GO(滞后元凶); ¥200日频版仍是决定性测试待用户**.",
+    "status": "complete"
   },
   "features": [
     "F001",

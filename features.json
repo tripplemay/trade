@@ -1,12 +1,12 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
       "title": "smart-money 机构建仓 first-look(免费季度机构持股变化, 用户真实目标的免费季度版)",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【backlog smart-money 季报持仓 alternative, 免费 akshare, 比游资更贴近用户真实目标(institutional建仓)】fetch 季度机构持股(ak.stock_institute_hold(symbol='<YYYY><Q>'), 多季 e.g. 2020Q1-2024Q4, ~3000股/季, 字段: 机构数/机构数变化/持股比例/持股比例增幅/占流通股比例)+个股价格(ak.stock_zh_a_daily qfq). 信号=机构建仓(机构数变化>0 或 持股比例增幅>0)→跟随(买建仓股)→forward-return rank-IC(季度)+简易回测 vs 基线(等权全市场/指数). ★无前视: 季报披露滞后~1-2月, 信号在披露后可用→follow 在 Q-end+滞后(非Q-end当天). research-only. ★诚实: 季度滞后期望弱, NO-GO/INCONCLUSIVE合法; 用户真实目标的免费季度版(无edge弱化¥200日频预期, 有edge激励). 报告 docs/test-reports/B099-inst-building-first-look.md. Gates: 根ruff+root pytest+CI绿. Workflow-build(对抗验证防前视/过拟合).",
       "design_decisions": [
         "机构数变化/持股比例增幅=机构建仓=用户真实目标(非游资retail), 免费akshare。",
