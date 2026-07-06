@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-07-05",
   "user_goal": "B094 = smart-money 游资席位 first-look(backlog 第二支免费未测信号, 龙虎榜公开). 用户away+autonomous goal→做唯一自主可及项. ★诚实: 打板/游资拥挤族期望NO-GO; 这是**次要信号非用户首要institutional目标**(后者需¥200 Tushare, 待用户). research-only(免费快照不触生产/¥200). 2 features 1g+1c. Workflow-build. NO-GO 有效答案.",
   "reference_docs": [
@@ -24,8 +24,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B094 F001 **done**(Workflow 3子代理 build+2对抗验证 un-refuted survived). smart-money 游资席位 first-look(免费第二支): 龙虎榜52,337事件, 游资识别3法交叉验证. ★裁定 **NO-GO(跟游资反而亏)**: 游资-buy rank-IC N5 -0.043(t=-4.1)/N10 -0.043(t=-3.16)显著负; follow游资 输裸LHB基线(N5-1.00% t=-2.92). 打板拥挤族亏钱, 印证先验. 无前视单测锁. 覆盖23.9%诚实. research-only(不触生产/¥200). gates ruff+22单测. 报告 B094-youzi-seat-first-look.md. **F002 codex 验证**: 游资席位识别口径(非事后挑赢家)+无前视(上榜日T后严格进场)+IC/回测数字重算+无过拟合+诚实NO-GO裁定(显著负→NO-GO)+research-only零回归. signoff. **含义: smart-money 免费第二支(游资)=NO-GO; 首要institutional目标仍需¥200待用户**.",
+    "status": "complete"
   },
   "features": [
     "F001",

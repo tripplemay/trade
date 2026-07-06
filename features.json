@@ -1,12 +1,12 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
       "title": "smart-money 游资席位 first-look(免费龙虎榜, 打板/动量族次要信号, 期望低)",
       "priority": "low",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【backlog smart-money 第二支: 游资席位独立未测信号, 龙虎榜公开可得】fetch 龙虎榜席位明细(akshare, B077 用过的函数; 识别游资席位=非机构专用的活跃营业部, 用频繁上榜启发式或已知游资营业部清单)→构造跟随信号(游资席位买入的票→次日/次周跟随)→forward-return rank-IC/简易回测 vs 基线. research-only(免费数据快照, 不触生产/无 ¥200). ★诚实: 打板/游资跟随是已知拥挤族, 期望 NO-GO; 且这是**次要信号非用户首要 institutional 目标**(后者仍需 ¥200 Tushare). 报告 docs/test-reports/B094-youzi-seat-first-look.md: IC/回测 + GO/INCONCLUSIVE/NO-GO + ★诚实框(次要/拥挤/非首要目标). ★无前视(席位上榜日 T, 跟随 T+1). Gates: 根ruff+root pytest+CI绿. Workflow-build(fresh子代理+对抗验证防过拟合/前视).",
       "design_decisions": [
         "游资席位=backlog记录的免费未测第二支信号(非需¥200的institutional首要目标)。",
