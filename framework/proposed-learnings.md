@@ -509,3 +509,13 @@
 **建议写入：** `framework/harness/evaluator.md`（独立评审触发点约定）+ `framework/README.md` §经验教训（Workflow 对抗验证 pre-commit 拦 bug 的价值）
 
 **状态：** 待确认
+
+## [2026-07-06] Claude CLI — 来源：B098 F002 并发写竞态致无效 JSON 进 main（铁律 #11 实例 + 已落实钩子）
+
+**类型：** 新坑 / 铁律补充（含已落实的防御）
+
+**内容：** 多 session 并发写同一状态 JSON 的严重后果实例：planner done-phase 写 progress.json 与 evaluator signoff 写 progress.json 并发，git 合并抓到 `session_notes.evaluator` 尾部断裂态 → commit f2bbb1c 短暂在 main tip 携带**不可解析的 progress.json**（铁律 #11 breach，与 MVP commit b44b789 缺 `}` 同族）。已被 4477e7d 自愈。**这正是铁律 #11 建议 pre-commit 钩子要防的。★已落实**：`scripts/check_state_json.py`（校验 progress/features/backlog，负测有牙）+ `scripts/pre-commit-hook.sh`（git-tracked 副本）+ 本机 `.git/hooks/pre-commit` 已装（拦无效 JSON 进 commit 实测通过）。**遗留待用户决策的更根本项**（evaluator 建议 2）：钩子只拦"无效 JSON"，拦不住"竞态覆盖"（A 覆盖 B 的有效但错误的写）——序列化 planner-done-phase 与 evaluator-signoff 的写入需要协调协议（如 done-phase 必须在 evaluator signoff 落地 origin/main 后才跑，与前条 [2026-07-05] signoff-gate learning 同族）。
+
+**建议写入：** `harness-rules.md` §启动流程（clone 后 setup 步骤装钩子：`cp scripts/pre-commit-hook.sh .git/hooks/pre-commit && chmod +x`）+ `framework/harness/planner.md`（done-phase 写入序列化 gate）。
+
+**状态：** 待确认（钩子已本机落实；harness-rules/planner.md 文字待用户批）
