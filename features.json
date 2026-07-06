@@ -1,12 +1,12 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
       "title": "test-automation P3-F1: 部署后 synthetic 套件(只读打关键端点+断言形状+recent-errors+HEAD≡prod)",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【backlog test-automation roadmap P3-F1(M), 桶B; 用户已授权生产操作】扩 workbench/deploy/scripts/healthcheck.sh(现只查/api/health) → 完整 synthetic 套件: (1)★只读(GET)打关键端点(/api/health + 择 /current /market-context /monitoring /reports 等公开或可安全打的)断言数据形状/范围合理; (2)recent-errors=0(打 /monitoring 或日志端点); (3)HEAD≡prod(部署 SHA==运行 SHA). ★对活生产(https://trade.guangai.ai)只读实测确认健康 prod 上**零假红**. ★端点若需鉴权: 仅用公开端点或安全处理(不 commit 任何凭证/token). 幂等/无副作用. Gates: shellcheck/bash 语法 + 本地/prod 只读实测 + 现有 healthcheck 不破. Workflow-build(fresh子代理+对抗验证 只读/零假红/无凭证泄露).",
       "design_decisions": [
         "用户授权生产→可对活prod只读实测(防假红是命门, 假红触发不必要rollback)。",
