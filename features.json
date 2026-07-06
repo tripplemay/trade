@@ -19,7 +19,7 @@
       "title": "Codex 独立验收 + signoff(机械提取正确/不预填判断/守铁律4/占位段留白)",
       "priority": "low",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "Codex独立: 工具机械提取正确(commit/文件/CI/门禁数字准)+★不预填任何verdict/裁定/命门判断(judgment段=占位)+守铁律4(辅助非评估)+单测覆盖. signoff docs/test-reports/B098-...-signoff.md.",
       "design_decisions": [
         "最大陷阱=工具预填判断侵蚀evaluator独立性;独立核实judgment段留白。"
