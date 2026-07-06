@@ -1,28 +1,29 @@
 {
-  "sprint": "F002",
+  "sprint": "F001",
   "features": [
     {
       "id": "F001",
-      "title": "smart-money 游资席位 first-look(免费龙虎榜, 打板/动量族次要信号, 期望低)",
+      "title": "test-automation P4-F1: 确定性语义预过滤(英文残留+no-AI禁语)—additive安全lint, 零回归red-team门",
       "priority": "low",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【backlog smart-money 第二支: 游资席位独立未测信号, 龙虎榜公开可得】fetch 龙虎榜席位明细(akshare, B077 用过的函数; 识别游资席位=非机构专用的活跃营业部, 用频繁上榜启发式或已知游资营业部清单)→构造跟随信号(游资席位买入的票→次日/次周跟随)→forward-return rank-IC/简易回测 vs 基线. research-only(免费数据快照, 不触生产/无 ¥200). ★诚实: 打板/游资跟随是已知拥挤族, 期望 NO-GO; 且这是**次要信号非用户首要 institutional 目标**(后者仍需 ¥200 Tushare). 报告 docs/test-reports/B094-youzi-seat-first-look.md: IC/回测 + GO/INCONCLUSIVE/NO-GO + ★诚实框(次要/拥挤/非首要目标). ★无前视(席位上榜日 T, 跟随 T+1). Gates: 根ruff+root pytest+CI绿. Workflow-build(fresh子代理+对抗验证防过拟合/前视).",
+      "status": "pending",
+      "acceptance": "【backlog test-automation-infra roadmap P4-F1(S), 桶C确定性部分】新建确定性语义 lint 模块(regex/词表): (a)AI advisor 输出英文残留检测(中文解释中不该有英文句/词, 排除代码/ticker/单位白名单); (b)no-AI 禁语检测(收益预测/执行指令/替代quant 等 no-AI 边界短语). ★ADDITIVE ONLY: 新模块+新单测(+可选 additive 安全测/VCR advisor 输出断言); **零修改** test_ai_advisor_red_team.py 逻辑 / data/safety-evals/** / 现有硬门. ai-safety-eval 须保持 GREEN(改 advisor/** 会触发它复跑=校验网). ★对抗验证: 合法中文 advisor 输出零假阳(不误伤 grounded 数值解释) + 真捕禁语/英文残留 + 现有 red-team 门零回归. Gates: 根ruff+mypy trade + backend ruff/mypy/pytest(safety) + ai-safety-eval CI 绿. Workflow-build(fresh子代理+对抗验证 false-pos/零回归).",
       "design_decisions": [
-        "游资席位=backlog记录的免费未测第二支信号(非需¥200的institutional首要目标)。",
-        "打板/游资跟随已知拥挤→期望NO-GO, 诚实负结论有效(同B092/B093)。",
-        "免费龙虎榜数据(akshare, B077用过), research快照不触生产/¥200。"
+        "P4-F1=roadmap桶C确定性部分(词法/正则), 明确'可自动化'(非需LLM的P4-F2, 非触独立性的P5)。",
+        "additive: 补层不改red-team硬门; ai-safety-eval复跑=安全网(改advisor/**触发)。",
+        "确定性=可对抗验证(合法输出零假阳+捕禁语), 不引入概率性judge。",
+        "仅推进test-automation一个feature, 不清空该item(P3生产/P4-F2 LLM/P5独立性仍需用户/硬约束)。"
       ]
     },
     {
       "id": "F002",
-      "title": "Codex 独立验收 + signoff(席位识别/无前视/无过拟合/诚实裁定/research-only)",
+      "title": "Codex 独立验收 + signoff(零假阳/捕禁语/red-team门零回归/additive/eval绿)",
       "priority": "low",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "Codex独立: 游资席位识别口径核实+信号数字重算+无前视(上榜日T跟随T+1)+无过拟合红旗+诚实裁定(NO-GO/INCONCLUSIVE合法, 次要信号框如实)+research-only零回归. signoff docs/test-reports/B094-...-signoff.md.",
+      "status": "pending",
+      "acceptance": "Codex独立: 语义lint合法中文输出零假阳(核实不误伤grounded解释)+真捕英文残留/no-AI禁语(测试用例覆盖)+★red-team门零回归(test_ai_advisor_red_team不变+ai-safety-eval绿)+additive(仅新模块/测, 不改硬门/dataset)+backend safety pytest绿. signoff docs/test-reports/B095-...-signoff.md.",
       "design_decisions": [
-        "最大陷阱=游资席位识别主观/前视/过拟合;独立核实。"
+        "最大陷阱=误伤合法输出(假阳)或悄改硬门;独立核实零假阳+additive。"
       ]
     }
   ]
