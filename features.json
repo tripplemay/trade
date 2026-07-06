@@ -1,29 +1,40 @@
 {
-  "sprint": "F002",
+  "sprint": "F001",
   "features": [
     {
       "id": "F001",
-      "title": "test-automation P4-F2: LLM-judge 语义层(模糊残留+grounding)扩 ai-safety-eval, 带judge评测集+VCR",
+      "title": "test-automation P3-F1: 部署后 synthetic 套件(只读打关键端点+断言形状+recent-errors+HEAD≡prod)",
       "priority": "medium",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【backlog test-automation roadmap P4-F2(M), 桶C概率部分, 用户已授权 AIGC_GATEWAY_API_KEY】扩 judge.py(B032)范式为**语义 judge**: (1)模糊英文/混合残留(P4-F1 确定性漏的)+ (2)grounding(解释数值是否 grounded 在给定 quant/data, 无编造). 经 LLMGateway task 路由(禁硬编码模型名, 边界l). ★judge 自身评测集(labeled: 已知残留/未grounded + 已知clean, ≥8例)验 judge 准确率防漂移. ★VCR cassette(conftest filter_headers=[authorization] 自动脱敏 key)录放, CI 离线确定性. ADVISORY(flag 非硬 block), ADDITIVE(不弱化 red-team 硬门, ai-safety-eval 绿). ★key 仅 env(scratchpad/aigc.env)录制用, cassette 脱敏, **绝不 commit key**. Gates: 根ruff+backend ruff/mypy/pytest(safety incl judge评测) + ai-safety-eval CI 绿. Workflow-build(fresh子代理+对抗验证 judge准确率/脱敏/additive).",
+      "status": "pending",
+      "acceptance": "【backlog test-automation roadmap P3-F1(M), 桶B; 用户已授权生产操作】扩 workbench/deploy/scripts/healthcheck.sh(现只查/api/health) → 完整 synthetic 套件: (1)★只读(GET)打关键端点(/api/health + 择 /current /market-context /monitoring /reports 等公开或可安全打的)断言数据形状/范围合理; (2)recent-errors=0(打 /monitoring 或日志端点); (3)HEAD≡prod(部署 SHA==运行 SHA). ★对活生产(https://trade.guangai.ai)只读实测确认健康 prod 上**零假红**. ★端点若需鉴权: 仅用公开端点或安全处理(不 commit 任何凭证/token). 幂等/无副作用. Gates: shellcheck/bash 语法 + 本地/prod 只读实测 + 现有 healthcheck 不破. Workflow-build(fresh子代理+对抗验证 只读/零假红/无凭证泄露).",
       "design_decisions": [
-        "judge.py(B032)已有LLM-judge范式(AI边界规则); P4-F2扩为语义层(残留+grounding)非重造。",
-        "用户授权key→可录真cassette; VCR filter_headers自动脱敏(commit安全)。",
-        "judge评测集验准确率=roadmap'防漂移'要求; ADVISORY非硬block=低安全风险。",
-        "key仅scratchpad env录制用,绝不commit;cassette脱敏后可commit。"
+        "用户授权生产→可对活prod只读实测(防假红是命门, 假红触发不必要rollback)。",
+        "只读GET+断言形状; 绝不mutate prod; 不commit凭证。",
+        "扩healthcheck.sh(已有post-deploy→rollback钩); P3-F2接线/P3-F3定时canary留后续feature。"
       ]
     },
     {
       "id": "F002",
-      "title": "Codex 独立验收 + signoff(judge准确率/cassette脱敏/additive/red-team门零回归/eval绿)",
+      "title": "test-automation P3-F2/F3: synthetic→rollback 接线 + 定时 prod 健康 canary",
+      "priority": "medium",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "【P3-F2(S)+P3-F3(S)】(F2)synthetic 套件接入 deploy workflow 作 rollback 触发(现有 healthcheck→rollback 钩扩为 synthetic; ★可靠性证后再作硬触发, 或与现/api/health并列both-must-pass避免单点假红); (F3)定时(schedule) prod 健康 canary workflow(非部署触发, 只读常态监控, 红则告警非自动rollback). ★不引入假红rollback风险. Gates: workflow lint + 逻辑审. Workflow-build.",
+      "design_decisions": [
+        "rollback触发=生产风险最高点; 先证synthetic可靠(F001 prod实测)再接硬触发。",
+        "定时canary只读告警不自动rollback(常态监控低风险)。"
+      ]
+    },
+    {
+      "id": "F003",
+      "title": "Codex 独立验收 + signoff(只读/零假红/无凭证泄露/rollback接线安全/prod实证)",
       "priority": "medium",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "Codex独立: 语义judge在评测集准确率(残留+grounding正确分类)+★cassette 无明文key(grep committed cassette 无 pk_/Bearer token)+ADDITIVE(red-team test_ai_advisor_red_team不变+ai-safety-eval绿)+advisory非硬block+task路由无硬编码模型+backend safety pytest绿+无committed key. signoff docs/test-reports/B096-...-signoff.md.",
+      "status": "pending",
+      "acceptance": "Codex独立: synthetic套件只读(无mutate prod, 核实GET-only)+对活prod实测零假红+★无凭证/token committed(grep)+rollback接线安全(不引入单点假红触发)+定时canary只读+现有healthcheck不破. signoff docs/test-reports/B097-...-signoff.md.",
       "design_decisions": [
-        "最大陷阱=cassette漏明文key/judge漂移误判/悄弱化红门;独立核实脱敏+准确率+additive。"
+        "最大陷阱=假红触发rollback打断好部署/凭证泄露/误mutate prod;独立核实。"
       ]
     }
   ]
