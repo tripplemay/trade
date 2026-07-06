@@ -1,12 +1,12 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
       "title": "残差动量引擎 A/B(research-only wrapper, B085 前置筛推荐的完整引擎测)",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【backlog residual-engine; B085 前置筛(IC screen)明推此为下一步引擎A/B, 期望低】research-only wrapper: 复用 B085 残差动量计算(scripts/research/b085_residual_momentum.py)+ read-only 复用 cn_attack 引擎逻辑(trade/strategies/cn_attack_momentum_quality/), 把残差 momentum rank 喂引擎作研究变体(不改冻结产品码/不 mark validated)→回测 vs 裸动量基线. ★B084 教训: 双本金(等本金公平对比)+分子窗损耗+turnover 成本+保真口径(诚实指标非年聚合掩盖子窗). ★无前视(forward 严格未来, momentum 不依赖未来, 同 B085 单测). 预期小幅改进(残差 edge 边际, B085 delta t=1.98 borderline)→INCONCLUSIVE 合法(同 B083/B084). research-only(不触冻结 flagship 产品码/data_root/不 mark validated). 报告 docs/test-reports/B100-residual-engine-ab.md: 残差变体 vs 裸 CAGR/Sharpe/MaxDD/turnover+GO/INCONCLUSIVE/NO-GO+诚实框(边际 edge, 触 flagship 采纳=用户决策). Gates: 根 ruff+mypy+root pytest+CI 绿. Workflow-build(对抗验证防前视/过拟合/双本金公平).",
       "design_decisions": [
         "B085(IC screen)明推引擎A/B为下一步; 残差计算+因子数据已有(B085)。",

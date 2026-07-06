@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-07-06",
   "user_goal": "B100 = 残差动量引擎A/B(research-only wrapper, B085前置筛推荐). 复用B085残差计算+read-only复用引擎, 喂残差rank作研究变体回测vs裸动量. ★B084教训双本金+turnover+保真口径; 无前视. 预期边际edge→INCONCLUSIVE合法. research-only(不触冻结flagship产品码). flagship采纳=用户决策非本批. 2 features 1g+1c. Workflow-build.",
   "reference_docs": [
@@ -26,8 +26,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B100 F001 done(Workflow 3子代理 build+2对抗验证 CONFIRMED survived). 残差动量引擎A/B(B085前置筛明推). research-only wrapper read-only复用冻结build_cn_portfolio跑两遍(唯一差裸vs残差momentum). ★裁定 INCONCLUSIVE(略偏负): 残差变体CAGR15.87%/Sharpe0.608 边际TRAILS裸17.20%/0.64(delta-1.33pp t~2噪声内); turnover同; B084子窗诚实(变体仅2020胜, 其余trailing, 最坏窗略worse非masked). B085 borderline IC未survive进全引擎→不支持残差采纳进flagship(采纳=用户决策). ★公平A/B(两臂同引擎唯一差momentum bit-identical证)+无前视(2 invariance单测)+research-only(cn_attack产品码零diff不mark validated). gates ruff+mypy+8单测. 报告 B100-residual-engine-ab.md. F002 codex验证: 公平双本金A/B(残差vs裸同口径)+无前视+turnover计入+B084子窗无掩盖(诚实year-by-year)+数字重算+诚实裁定(边际trailing→INCONCLUSIVE)+research-only(不改冻结产品码/不mark validated/不触data_root). signoff. 含义: 残差引擎A/B=INCONCLUSIVE不支持采纳; 剩backlog仅 smart-money日频(¥200)+P5-F2(流程约定), 均需用户.",
+    "status": "complete"
   },
   "features": [
     "F001",
