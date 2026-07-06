@@ -642,3 +642,19 @@ nvm use                          # 不一致时切换；无 nvm 装 Node 20 LTS
 **坑：** oneshot service 的 `TimeoutStartSec` **默认禁用（infinity）**,与普通 service（默认 90s）不同。ExecStart 内有无超时的阻塞网络读 → 服务**永「activating」**、timer `Trigger=n/a`、堵所有后续刷新（B078: data-refresh 卡 3 天冻 A股 数据/推荐/模拟盘）。**诊断：`systemctl show -p ActiveState,SubState,ActiveEnterTimestamp <svc>`,activating 超 X 时即 stuck**（`list-timers` 见 `Trigger: n/a` 是堵塞信号）。**L2 部署要点：修复部署须先 `systemctl stop` + 杀卡死旧 PID**（旧阻塞进程不自退,新码不生效）。配套 generator.md §38（超时含 bulk discovery）+ §40（静默冻结守门）。
 
 **来源：** B078（data-refresh.service `activating (start) since ...; 3 days ago` / Main PID 阻塞 / CPU 18s;planner VM 诊断 + Codex L2 杀重启验收）。
+
+## 33. 独立对抗评审触发点固化——pre-commit 对抗验证 + evaluator 只审判断核 + signoff「审+签」（test-automation P5-F2，用户 2026-07-06 确认）
+
+**约定（承接 §30「只审新颖/模糊」，把整条评审流程固化）：**
+
+**两层验证模型（职责分离）：**
+1. **Generator-side pre-commit 对抗验证（QA 层，非正式验收）：** generator 在 commit 前对每个交付物跑对抗验证——独立子代理以最高怀疑度试图 **refute** 交付物（机械 + 新颖都查：门禁/数字/前视/过拟合/公平性/零回归/密钥泄露等）。拦下明显缺陷于 commit 之前。本 session B090-B100 用 Workflow（每批 2 个对抗验证子代理）实践；**B095（语义 lint 假阳）、B097（生产 synthetic 假红）正是此层在 commit 前拦下真 bug**。这层是 QA / pre-handoff，**不替代**正式独立验收。
+2. **Independent evaluator 判断核（正式验收，守铁律 #4）：** Codex 独立 F002/F003 **只审机器判断不了的部分**——验收设计对不对？新颖真数据交付物是否真验（§25.1/§29）？过拟合/前视/外推边界？裁定 PASS/FAIL/soft-watch 分级 + 框架沉淀。机械部分（测试跑没跑、CI 绿没绿、复发不变量）由 CI + acceptance 层确立（§30），**不重复手工复跑**。
+
+**触发点：** 每批 `verifying`/`reverifying`（done 前）触发独立评审；评审 SCOPE = 新颖/模糊残留 + 判断核，**不含**已 CI 绿的机械门禁。
+
+**Signoff「审+签」：** 机械 scaffold（批次/feature、被验收 commit、改动文件、CI 结论、门禁数字、生产面）由 **P5-F1 工具 `scripts/gen_signoff_draft.py`** 自动填（该工具结构上不预填任何 verdict/判断——`render_judgment_sections()` 零参数，判断段全 `[待独立评估填写]` 占位，B098 铁律#4-safe）；evaluator 只**审阅机械段 + 填判断段 + 签裁定**。signoff 从「全手写」→「审 + 签」。
+
+**★铁律 #4 边界（关键）：** 本约定**收窄 evaluator 的 SCOPE**（复跑机械门禁 → 只做判断核），**不削弱独立性**。generator-side 对抗验证是 generator 自己的 QA（pre-handoff），产出物仍交独立 evaluator 正式验收；evaluator 绝不自评自己实现的代码。两层分离恰恰**强化**了铁律 #4——generator 先自查（省 evaluator 复跑机械），evaluator 专注独立判断。
+
+**来源：** test-automation roadmap P5-F2（B098 提案 `framework/proposed-learnings.md`，用户 2026-07-06 确认）。配套 §30（verifying 只审新颖/模糊）+ P5-F1 signoff 工具（B098）+ 本 session B090-B100 11 批 Workflow 对抗验证实践（B095/B097 commit 前拦真 bug）。

@@ -508,7 +508,7 @@
 
 **建议写入：** `framework/harness/evaluator.md`（独立评审触发点约定）+ `framework/README.md` §经验教训（Workflow 对抗验证 pre-commit 拦 bug 的价值）
 
-**状态：** 待确认
+**状态：** ✅ 已确认（2026-07-06 用户同意）→ 已写入 `framework/harness/evaluator.md` §33（承接 §30）。test-automation P5-F2 落地完成。
 
 ## [2026-07-06] Claude CLI — 来源：B098 F002 并发写竞态致无效 JSON 进 main（铁律 #11 实例 + 已落实钩子）
 
