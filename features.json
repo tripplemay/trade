@@ -20,7 +20,7 @@
       "title": "Codex 独立验收 + signoff(judge准确率/cassette脱敏/additive/red-team门零回归/eval绿)",
       "priority": "medium",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "Codex独立: 语义judge在评测集准确率(残留+grounding正确分类)+★cassette 无明文key(grep committed cassette 无 pk_/Bearer token)+ADDITIVE(red-team test_ai_advisor_red_team不变+ai-safety-eval绿)+advisory非硬block+task路由无硬编码模型+backend safety pytest绿+无committed key. signoff docs/test-reports/B096-...-signoff.md.",
       "design_decisions": [
         "最大陷阱=cassette漏明文key/judge漂移误判/悄弱化红门;独立核实脱敏+准确率+additive。"
