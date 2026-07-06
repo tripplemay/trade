@@ -499,3 +499,13 @@
 **建议写入：** `framework/harness/planner.md`（§done 收尾/开批前置：signoff 落地 gate）
 
 **状态：** 待确认
+
+## [2026-07-06] Claude CLI — 来源：test-automation roadmap P5-F2（B098 done 阶段）
+
+**类型：** 新规律（流程约定）
+
+**内容：** P5-F2「固化独立对抗评审触发点」不是 generator 可构建的代码，而是评估流程约定——每批 done 前，独立 agent 只审「新颖/模糊」残留（机械部分已 CI 绿），守铁律#4。本 session 已事实上演示此模式：每个 Workflow 批次在 commit 前跑 2 个对抗验证子代理（generator-side QA），Codex 再做独立 F002/F003 验收（judgment 核）。B095/B097 正是对抗验证在 commit 前拦下真 bug（假阳/假红）。建议将「generator-side 对抗验证（pre-commit）+ 独立 evaluator 只审新颖/模糊（judgment 核）」固化为流程约定，并可让 evaluator 用 B098 的 gen_signoff_draft.py 填 signoff 机械 scaffold。
+
+**建议写入：** `framework/harness/evaluator.md`（独立评审触发点约定）+ `framework/README.md` §经验教训（Workflow 对抗验证 pre-commit 拦 bug 的价值）
+
+**状态：** 待确认
