@@ -1,0 +1,94 @@
+interactions:
+- request:
+    body: "{\"model\":\"claude-haiku-4.5\",\"messages\":[{\"role\":\"user\",\"content\":\"You
+      are an ADVISORY semantic reviewer for the Chinese-language output of a personal
+      portfolio decision-support tool. You do NOT block anything; you only flag two
+      properties for a human/CI reviewer.\\n\\nThe advisor is required to write in
+      Simplified Chinese (zh-CN). The following Latin/ASCII tokens are LEGITIMATE
+      and must NEVER be flagged as residual: stock tickers (SPY, AAPL, QQQ, TLT...),
+      financial ratios and acronyms (P/E, ROE, ETF, bps, YTD, Sharpe), sha256: hashes,
+      http(s) URLs, ISO timestamps/dates, and bare numbers/units/percent signs.\\n\\nCHECK
+      1 \u2014 FUZZY RESIDUAL: Does the output contain an English or mixed-language
+      *phrase or clause* (fluent English prose, or an English word used as ordinary
+      vocabulary such as 'outlook', 'constructive', 'stable', 'remains', 'the momentum')
+      spliced into the Chinese text, BEYOND the legitimate tokens listed above? A
+      whole English sentence, or an English adjective/verb doing the work a Chinese
+      word should do, is a residual. Isolated legitimate tokens are NOT.\\n\\nCHECK
+      2 \u2014 UNGROUNDED NUMBER: You are given GROUNDING_INPUTS (the quant / data
+      facts available to the advisor). Does the output cite any numeric figure (a
+      percentage, ratio, price, weight, bps, return) that does NOT trace to a value
+      present in GROUNDING_INPUTS? A number that matches an input value (exactly,
+      or as an obvious restatement) is GROUNDED. A fabricated figure that appears
+      nowhere in the inputs is UNGROUNDED. Numbers that are self-evidently non-financial
+      (a year like 2026, a count) are grounded by default. If the output cites no
+      numeric figure at all, ungrounded_number is false.\\n\\nGROUNDING_INPUTS (JSON):\\n{\\\"figures\\\":
+      {\\\"SPY_weight_pct\\\": 40, \\\"momentum_exposure_pct\\\": 12}, \\\"note\\\":
+      \\\"\u5B9A\u6027\u7EF4\u6301\uFF0C\u65E0\u518D\u5E73\u8861\u89E6\u53D1\\\",
+      \\\"quant_signal_sha\\\": \\\"sha256:aa11bb22\\\"}\\n\\nADVISOR_OUTPUT:\\n\u7EF4\u6301
+      SPY \u4E0E AAPL \u7684\u5F53\u524D\u6743\u91CD\uFF0C\u52A8\u91CF\u655E\u53E3\u7EA6
+      12%\uFF0C\u4E0D\u65B0\u589E\u4ED3\u4F4D\u3002\u672C\u5EFA\u8BAE\u4EC5\u4F9B\u7814\u7A76\u53C2\u8003\uFF0C\u4E0D\u6784\u6210\u6536\u76CA\u9884\u6D4B\u3002\\n\\nReturn
+      JSON only (no markdown, no prose, no leading/trailing whitespace):\\n{\\\"fuzzy_residual\\\":
+      true|false, \\\"residual_evidence\\\": \\\"<quoted phrase or empty>\\\", \\\"ungrounded_number\\\":
+      true|false, \\\"ungrounded_evidence\\\": \\\"<quoted figure or empty>\\\", \\\"reasoning\\\":
+      \\\"<one sentence>\\\"}\\n\"}],\"max_tokens\":512,\"temperature\":0.0}"
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '2352'
+      content-type:
+      - application/json
+      host:
+      - aigc.guangai.ai
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAwAAAP//bFJda9tAEPwrx9JCCrKRojhx1KeQlhAojknqh1IV+SytpYvPe+p9GDvG
+        /717uCot9OmOmZvd2dk7gmqggLqTvt72euRtXW3ouv9ZG7+i/e5WdrtmsukOB5xCAmb1irX/LRjX
+        hiXolSGmaovSIxfLbqZ5nk0vs6sEtqZBHZ9rGRocdVJtwuhqPInvO6NqdFB8P4KiBvdQpCxA52SL
+        UBzBGs0nSOeU85J81BjySLH/crl8dYZKOpawDm9vh8qiU02QuoRCrKV2mIgSBrDCnWqQaoxsCSVE
+        MlBrTeDWTUVhu0L7j/Qv9n9inpb7K2rP4FPwffAiGpSKnDCkD0Jjq7zacizCmw0yfPEy/5aIu7v5
+        l0Rkl+8/CEmNkFoLNoBW1WKt2sCmxcWZtSgGF0KReHh+Wsw+Pc4eqsfZfPH15aMgIz5Tq5XrRN9Z
+        6VhqrIhxx2vUu15zzlHujfAdivtOETq2hHs/LuFUEocJpwTWirhOdZ6MM3be9HD6kUAYVtJb3riv
+        zsNAcZ1P406GT/AHv50k4I3n2AfkJs+5TO88F9/eG+cXjn9KOk7TLMvyU6zi4lrfDVCawukXAAAA
+        //8DALXdoqKcAgAA
+    headers:
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json
+      date:
+      - Mon, 06 Jul 2026 06:10:16 GMT
+      server:
+      - nginx/1.18.0 (Ubuntu)
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Encoding
+      - RSC, Next-Router-State-Tree, Next-Router-Prefetch
+      x-middleware-rewrite:
+      - /api/v1/chat/completions
+      x-ratelimit-limit:
+      - '60'
+      x-ratelimit-remaining:
+      - '49'
+      x-ratelimit-reset:
+      - '1783318274'
+      x-request-id:
+      - req_yidya58uo4s6jfhq4167bex5
+      x-trace-id:
+      - trc_kn6pqcotbnxv9ahvd5khyye8
+    status:
+      code: 200
+      message: OK
+version: 1

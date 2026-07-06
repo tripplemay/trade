@@ -1,0 +1,810 @@
+interactions:
+- request:
+    body: "{\"model\":\"claude-haiku-4.5\",\"messages\":[{\"role\":\"user\",\"content\":\"You
+      are an ADVISORY semantic reviewer for the Chinese-language output of a personal
+      portfolio decision-support tool. You do NOT block anything; you only flag two
+      properties for a human/CI reviewer.\\n\\nThe advisor is required to write in
+      Simplified Chinese (zh-CN). The following Latin/ASCII tokens are LEGITIMATE
+      and must NEVER be flagged as residual: stock tickers (SPY, AAPL, QQQ, TLT...),
+      financial ratios and acronyms (P/E, ROE, ETF, bps, YTD, Sharpe), sha256: hashes,
+      http(s) URLs, ISO timestamps/dates, and bare numbers/units/percent signs.\\n\\nCHECK
+      1 \u2014 FUZZY RESIDUAL: Does the output contain an English or mixed-language
+      *phrase or clause* (fluent English prose, or an English word used as ordinary
+      vocabulary such as 'outlook', 'constructive', 'stable', 'remains', 'the momentum')
+      spliced into the Chinese text, BEYOND the legitimate tokens listed above? A
+      whole English sentence, or an English adjective/verb doing the work a Chinese
+      word should do, is a residual. Isolated legitimate tokens are NOT.\\n\\nCHECK
+      2 \u2014 UNGROUNDED NUMBER: You are given GROUNDING_INPUTS (the quant / data
+      facts available to the advisor). Does the output cite any numeric figure (a
+      percentage, ratio, price, weight, bps, return) that does NOT trace to a value
+      present in GROUNDING_INPUTS? A number that matches an input value (exactly,
+      or as an obvious restatement) is GROUNDED. A fabricated figure that appears
+      nowhere in the inputs is UNGROUNDED. Numbers that are self-evidently non-financial
+      (a year like 2026, a count) are grounded by default. If the output cites no
+      numeric figure at all, ungrounded_number is false.\\n\\nGROUNDING_INPUTS (JSON):\\n{\\\"figures\\\":
+      {\\\"SPY_weight_pct\\\": 40, \\\"momentum_exposure_pct\\\": 12}, \\\"note\\\":
+      \\\"\u5B9A\u6027\u7EF4\u6301\uFF0C\u65E0\u518D\u5E73\u8861\u89E6\u53D1\\\",
+      \\\"quant_signal_sha\\\": \\\"sha256:aa11bb22\\\"}\\n\\nADVISOR_OUTPUT:\\n\u7EF4\u6301
+      SPY \u4E0E AAPL \u7684\u5F53\u524D\u6743\u91CD\uFF0C\u52A8\u91CF\u655E\u53E3\u7EA6
+      12%\uFF0C\u4E0D\u65B0\u589E\u4ED3\u4F4D\u3002\u672C\u5EFA\u8BAE\u4EC5\u4F9B\u7814\u7A76\u53C2\u8003\uFF0C\u4E0D\u6784\u6210\u6536\u76CA\u9884\u6D4B\u3002\\n\\nReturn
+      JSON only (no markdown, no prose, no leading/trailing whitespace):\\n{\\\"fuzzy_residual\\\":
+      true|false, \\\"residual_evidence\\\": \\\"<quoted phrase or empty>\\\", \\\"ungrounded_number\\\":
+      true|false, \\\"ungrounded_evidence\\\": \\\"<quoted figure or empty>\\\", \\\"reasoning\\\":
+      \\\"<one sentence>\\\"}\\n\"}],\"max_tokens\":512,\"temperature\":0.0}"
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '2352'
+      content-type:
+      - application/json
+      host:
+      - aigc.guangai.ai
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAwAAAP//bFJda9tAEPwry9JCCrKRIqd21KeQlhAojmnqh1AV+SKtpbPPd+p9JHGM
+        /3v3cFRa6NMdMze7s7N3QNlggXUnfL3r1cjbump9o1w9Of9Fwmwn7fTZ6fC02UtM0DxuqPZvgnFt
+        WEJeGs1UbUl44mLZdJbn2Sy7zBLcmYZUfK5EaGjUCbkNo8n4Ir7vjKzJYfHjgFI39IJFygJyTrSE
+        xQGtUXyicE46L7SPGqM96dh/tVptnNGlPpS4Dq+v+8qSk00QqsQC1kI5SqDEAazoSTaka4psiSVG
+        MujWmsCtm0qH3SPZf6R/sf8T87TcX+r2BN4F3wcP0aCQ2oHRag+KWunljmMBb7bE8Nn94iGBq6vF
+        1wSy8/cfQOgGhFLABsjKGtayDWwazk6sJRhcgNRw8+1uOf98O7+pbueL5ff7T6ANfNGtkq6DvrPC
+        sdRYiHHHa9S7XnHOUe4N+I7gupOaHFuiFz8u8VhqDhOPCa6l5jrVaTLO2HnT4/FngmFYSW954746
+        DYPFx3wWdzJ8gj/45UWC3niOfUCmec5leue5+O7aOL90/FPScZpmWZYfYxUX1/pugNIUj78BAAD/
+        /wMAVowNNJwCAAA=
+    headers:
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json
+      date:
+      - Mon, 06 Jul 2026 06:09:52 GMT
+      server:
+      - nginx/1.18.0 (Ubuntu)
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Encoding
+      - RSC, Next-Router-State-Tree, Next-Router-Prefetch
+      x-middleware-rewrite:
+      - /api/v1/chat/completions
+      x-ratelimit-limit:
+      - '60'
+      x-ratelimit-remaining:
+      - '58'
+      x-ratelimit-reset:
+      - '1783318250'
+      x-request-id:
+      - req_mv7bzg3vcb7ncjppdrpw03n9
+      x-trace-id:
+      - trc_gtdlsc42qeaok4g7wsnuvjyi
+    status:
+      code: 200
+      message: OK
+- request:
+    body: "{\"model\":\"claude-haiku-4.5\",\"messages\":[{\"role\":\"user\",\"content\":\"You
+      are an ADVISORY semantic reviewer for the Chinese-language output of a personal
+      portfolio decision-support tool. You do NOT block anything; you only flag two
+      properties for a human/CI reviewer.\\n\\nThe advisor is required to write in
+      Simplified Chinese (zh-CN). The following Latin/ASCII tokens are LEGITIMATE
+      and must NEVER be flagged as residual: stock tickers (SPY, AAPL, QQQ, TLT...),
+      financial ratios and acronyms (P/E, ROE, ETF, bps, YTD, Sharpe), sha256: hashes,
+      http(s) URLs, ISO timestamps/dates, and bare numbers/units/percent signs.\\n\\nCHECK
+      1 \u2014 FUZZY RESIDUAL: Does the output contain an English or mixed-language
+      *phrase or clause* (fluent English prose, or an English word used as ordinary
+      vocabulary such as 'outlook', 'constructive', 'stable', 'remains', 'the momentum')
+      spliced into the Chinese text, BEYOND the legitimate tokens listed above? A
+      whole English sentence, or an English adjective/verb doing the work a Chinese
+      word should do, is a residual. Isolated legitimate tokens are NOT.\\n\\nCHECK
+      2 \u2014 UNGROUNDED NUMBER: You are given GROUNDING_INPUTS (the quant / data
+      facts available to the advisor). Does the output cite any numeric figure (a
+      percentage, ratio, price, weight, bps, return) that does NOT trace to a value
+      present in GROUNDING_INPUTS? A number that matches an input value (exactly,
+      or as an obvious restatement) is GROUNDED. A fabricated figure that appears
+      nowhere in the inputs is UNGROUNDED. Numbers that are self-evidently non-financial
+      (a year like 2026, a count) are grounded by default. If the output cites no
+      numeric figure at all, ungrounded_number is false.\\n\\nGROUNDING_INPUTS (JSON):\\n{\\\"figures\\\":
+      {\\\"pe_ratio\\\": 22, \\\"roe_pct\\\": 15}, \\\"sleeve\\\": \\\"core-equity\\\"}\\n\\nADVISOR_OUTPUT:\\n\u8BE5
+      sleeve \u7684 P/E \u7EA6 22\uFF0CROE \u7A33\u5B9A\u5728 15% \u5DE6\u53F3\uFF0C\u5C5E\u4E8E\u7814\u7A76\u6001\u89C2\u5BDF\uFF0C\u4E0D\u66FF\u4EE3\u91CF\u5316\u4FE1\u53F7\u3002\\n\\nReturn
+      JSON only (no markdown, no prose, no leading/trailing whitespace):\\n{\\\"fuzzy_residual\\\":
+      true|false, \\\"residual_evidence\\\": \\\"<quoted phrase or empty>\\\", \\\"ungrounded_number\\\":
+      true|false, \\\"ungrounded_evidence\\\": \\\"<quoted figure or empty>\\\", \\\"reasoning\\\":
+      \\\"<one sentence>\\\"}\\n\"}],\"max_tokens\":512,\"temperature\":0.0}"
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '2240'
+      content-type:
+      - application/json
+      host:
+      - aigc.guangai.ai
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAwAAAP//bFLRjtowEPyV1aqnewEuwMEB93jiuVWlPjVVMM6SGBw79dpcOcS/d627
+        VK1UKZKj2Z0ZecZXNDVuULcq6q634xh09bN4dfo450NjTmY5f7XN+fzUqAuO0O+PpOMHYaK9UCga
+        72SkA6lIIjZ9Ws3n09V0PRth52uyed2qVNO4VeaUxo+TRd5vvdHEuPl+ReNq+oWbQgjErBrCzRWD
+        t3KiYjYclYuZ410kl/13u92RvSvdtcRDenu7VIHY1EnZEjdwUJZpBCUOYEVnU5PTlKcllpiHyTXB
+        J7GuK5e6PYV/qH9N/0eW24q/cc07+OVhC7MZKFfD189bmC7uQAWCvY8tDDpgnHx9ivwM92yJznQP
+        hkGBpcZE00l+cDBOOW2UhUihg8TCUwxnr9U+WRUuz+A8bF1jDbfQt0ExMfgAOeL8y72VXMUoeogt
+        wUtrHDFBHzzTpMRb6SQ8vI1QrESjer+JZMrR93j7McI0VCCcro9V9Cdy0tRivcwdDKX/wddSXPRR
+        Yh6Q5Uo2U89RxLsXz/Eby8soJkUxLR6Xt6zCucZPA1QUePsNAAD//wMA2n+8wowCAAA=
+    headers:
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json
+      date:
+      - Mon, 06 Jul 2026 06:09:54 GMT
+      server:
+      - nginx/1.18.0 (Ubuntu)
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Encoding
+      - RSC, Next-Router-State-Tree, Next-Router-Prefetch
+      x-middleware-rewrite:
+      - /api/v1/chat/completions
+      x-ratelimit-limit:
+      - '60'
+      x-ratelimit-remaining:
+      - '57'
+      x-ratelimit-reset:
+      - '1783318252'
+      x-request-id:
+      - req_k8e4qw5x829pwkpgpixk28ys
+      x-trace-id:
+      - trc_q0wncj3sfgiki63wlgvv7gay
+    status:
+      code: 200
+      message: OK
+- request:
+    body: "{\"model\":\"claude-haiku-4.5\",\"messages\":[{\"role\":\"user\",\"content\":\"You
+      are an ADVISORY semantic reviewer for the Chinese-language output of a personal
+      portfolio decision-support tool. You do NOT block anything; you only flag two
+      properties for a human/CI reviewer.\\n\\nThe advisor is required to write in
+      Simplified Chinese (zh-CN). The following Latin/ASCII tokens are LEGITIMATE
+      and must NEVER be flagged as residual: stock tickers (SPY, AAPL, QQQ, TLT...),
+      financial ratios and acronyms (P/E, ROE, ETF, bps, YTD, Sharpe), sha256: hashes,
+      http(s) URLs, ISO timestamps/dates, and bare numbers/units/percent signs.\\n\\nCHECK
+      1 \u2014 FUZZY RESIDUAL: Does the output contain an English or mixed-language
+      *phrase or clause* (fluent English prose, or an English word used as ordinary
+      vocabulary such as 'outlook', 'constructive', 'stable', 'remains', 'the momentum')
+      spliced into the Chinese text, BEYOND the legitimate tokens listed above? A
+      whole English sentence, or an English adjective/verb doing the work a Chinese
+      word should do, is a residual. Isolated legitimate tokens are NOT.\\n\\nCHECK
+      2 \u2014 UNGROUNDED NUMBER: You are given GROUNDING_INPUTS (the quant / data
+      facts available to the advisor). Does the output cite any numeric figure (a
+      percentage, ratio, price, weight, bps, return) that does NOT trace to a value
+      present in GROUNDING_INPUTS? A number that matches an input value (exactly,
+      or as an obvious restatement) is GROUNDED. A fabricated figure that appears
+      nowhere in the inputs is UNGROUNDED. Numbers that are self-evidently non-financial
+      (a year like 2026, a count) are grounded by default. If the output cites no
+      numeric figure at all, ungrounded_number is false.\\n\\nGROUNDING_INPUTS (JSON):\\n{\\\"news_set\\\":
+      [{\\\"title\\\": \\\"Fed minutes hint slower pace of cuts\\\", \\\"url\\\":
+      \\\"https://example.com/fed-2026-05-20\\\"}], \\\"quant_signal_sha\\\": \\\"sha256:9f8e7d6c\\\"}\\n\\nADVISOR_OUTPUT:\\n\u4F9D\u636E
+      sha256:9f8e7d6c \u4E0E\u65B0\u95FB https://example.com/fed-2026-05-20 \u7ED9\u51FA\u5B9A\u6027\u5224\u65AD\uFF1A\u5229\u7387\u8DEF\u5F84\u504F\u9E70\uFF0C\u7EF4\u6301\u9632\u5FA1\u6027\u914D\u7F6E\u3002\\n\\nReturn
+      JSON only (no markdown, no prose, no leading/trailing whitespace):\\n{\\\"fuzzy_residual\\\":
+      true|false, \\\"residual_evidence\\\": \\\"<quoted phrase or empty>\\\", \\\"ungrounded_number\\\":
+      true|false, \\\"ungrounded_evidence\\\": \\\"<quoted figure or empty>\\\", \\\"reasoning\\\":
+      \\\"<one sentence>\\\"}\\n\"}],\"max_tokens\":512,\"temperature\":0.0}"
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '2355'
+      content-type:
+      - application/json
+      host:
+      - aigc.guangai.ai
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAwAAAP//bFJdi9swEPwrYulDC05wksvH+R7vqVA4aLmnujiyvImVk1euVgpNQv57
+        V+RSWuiTxezO7OysL2A7qMD0OpphdJMYTHMe2pUzh/Enepqt7fKxPJ2Pq/YIBfj2gCa+E6bGCwWj
+        9SQlE1BHFLHZerNYzDazx1UBg+/Q5XanU4eTXtu3NHmYLnN/761Bhur7BSx1+AuqUgjIrPcI1QWC
+        d/IFzWw5aoqZ4yki5fnb7fbAnmq61LBL5/OpCci2S9rVUKmddoyFquEONni0HZLBXK2hhlxMtA8+
+        yeiuoTS0GP6h/lX9H1m2lfmW9jfwJcUxRZUNakusPLmTcri30Q4Si4r+DQX+yL2eL1eq19wX6vXr
+        l0J9/vaiutxiKQOflKZOPfeWkFGNwTM+Ke2cCrjDkF2wikGbLKluDsWEkGU8PynyskEbrMm3ULIW
+        ylvt7D5JFCInohSnNVxrkgjhWsDOkuW+ue0jyXL0I1x/FJDuhxATwxib2wpQrR7m+RL30//BN4sC
+        oo8S9h1Zz5ciM3IU8eHZc3xl+T/KaVnOyuX6mlU4H/PDHSpLuP4GAAD//wMAf5zVRpICAAA=
+    headers:
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json
+      date:
+      - Mon, 06 Jul 2026 06:09:58 GMT
+      server:
+      - nginx/1.18.0 (Ubuntu)
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Encoding
+      - RSC, Next-Router-State-Tree, Next-Router-Prefetch
+      x-middleware-rewrite:
+      - /api/v1/chat/completions
+      x-ratelimit-limit:
+      - '60'
+      x-ratelimit-remaining:
+      - '56'
+      x-ratelimit-reset:
+      - '1783318255'
+      x-request-id:
+      - req_qgdpz1p3me80yqga5ff6dirw
+      x-trace-id:
+      - trc_zmb6lcjpqeon17i590yzv6bv
+    status:
+      code: 200
+      message: OK
+- request:
+    body: "{\"model\":\"claude-haiku-4.5\",\"messages\":[{\"role\":\"user\",\"content\":\"You
+      are an ADVISORY semantic reviewer for the Chinese-language output of a personal
+      portfolio decision-support tool. You do NOT block anything; you only flag two
+      properties for a human/CI reviewer.\\n\\nThe advisor is required to write in
+      Simplified Chinese (zh-CN). The following Latin/ASCII tokens are LEGITIMATE
+      and must NEVER be flagged as residual: stock tickers (SPY, AAPL, QQQ, TLT...),
+      financial ratios and acronyms (P/E, ROE, ETF, bps, YTD, Sharpe), sha256: hashes,
+      http(s) URLs, ISO timestamps/dates, and bare numbers/units/percent signs.\\n\\nCHECK
+      1 \u2014 FUZZY RESIDUAL: Does the output contain an English or mixed-language
+      *phrase or clause* (fluent English prose, or an English word used as ordinary
+      vocabulary such as 'outlook', 'constructive', 'stable', 'remains', 'the momentum')
+      spliced into the Chinese text, BEYOND the legitimate tokens listed above? A
+      whole English sentence, or an English adjective/verb doing the work a Chinese
+      word should do, is a residual. Isolated legitimate tokens are NOT.\\n\\nCHECK
+      2 \u2014 UNGROUNDED NUMBER: You are given GROUNDING_INPUTS (the quant / data
+      facts available to the advisor). Does the output cite any numeric figure (a
+      percentage, ratio, price, weight, bps, return) that does NOT trace to a value
+      present in GROUNDING_INPUTS? A number that matches an input value (exactly,
+      or as an obvious restatement) is GROUNDED. A fabricated figure that appears
+      nowhere in the inputs is UNGROUNDED. Numbers that are self-evidently non-financial
+      (a year like 2026, a count) are grounded by default. If the output cites no
+      numeric figure at all, ungrounded_number is false.\\n\\nGROUNDING_INPUTS (JSON):\\n{\\\"figures\\\":
+      {\\\"momentum_exposure_pct\\\": 12}}\\n\\nADVISOR_OUTPUT:\\n\u7EF4\u6301\u5F53\u524D\u6743\u91CD\uFF0Cthe
+      momentum outlook remains constructive\uFF0C\u6682\u4E0D\u8C03\u6574\u3002\\n\\nReturn
+      JSON only (no markdown, no prose, no leading/trailing whitespace):\\n{\\\"fuzzy_residual\\\":
+      true|false, \\\"residual_evidence\\\": \\\"<quoted phrase or empty>\\\", \\\"ungrounded_number\\\":
+      true|false, \\\"ungrounded_evidence\\\": \\\"<quoted figure or empty>\\\", \\\"reasoning\\\":
+      \\\"<one sentence>\\\"}\\n\"}],\"max_tokens\":512,\"temperature\":0.0}"
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '2184'
+      content-type:
+      - application/json
+      host:
+      - aigc.guangai.ai
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA4xSy47bMAz8FUIosJcksLt5bXpc9A/aU104ikXbSmTRlag02SD/XippFttbTzaG
+        nBmKw4uyRm1U02tuhtFNOTR1u1yW50M3lsbh6uwPzum23f8+qYmi3R4b/kuYNSQUZEteSk1AzShi
+        5Wr9/Fyuy5f1RA1k0OV2p5PBaa/tIU3ns0Xu78k2GNXmx0VZb/CkNoUQMEbdodpcVCAnX6VjtJG1
+        58whz+iz/3a73Ufylb9Uqk1vb+c6YLQmaVepDXBIOIFKPbAaj9agbzAXK8U9wkCDKKUBKLEjOkDA
+        QVsfQTyi8Bu2R2nPKsl3gZKMaGqfhh2GrNJqF28eH6r/utzJshWZ0/ruDn4T67EPOiI8/fcYT2Aj
+        tC5JJ3z1nbOxhzGQaMTRyRINWM8Er731KCDjiUF7A0dLTjKJkJ0C/kpW1LMIS3rv7bGn5AzsEFIU
+        qZYCUDDW63CGIzV6l5z8fgFPIM/HYBtobZdkt6ADQmP5NsDNRF4xJp5V6lp5iUhdJ6q1Xuat73uQ
+        5CLTqK4/Jyo9gpanDCPXTAf0cg+LxSon/Titd/xFYCaWNB/IcjEXmVH2hHp4pcjfo9xfMSuKsph/
+        vmaVmI/l0wMqCnX9AwAA//8DAFeYoLzyAgAA
+    headers:
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json
+      date:
+      - Mon, 06 Jul 2026 06:10:00 GMT
+      server:
+      - nginx/1.18.0 (Ubuntu)
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Encoding
+      - RSC, Next-Router-State-Tree, Next-Router-Prefetch
+      x-middleware-rewrite:
+      - /api/v1/chat/completions
+      x-ratelimit-limit:
+      - '60'
+      x-ratelimit-remaining:
+      - '55'
+      x-ratelimit-reset:
+      - '1783318258'
+      x-request-id:
+      - req_cw68kise1xbc0p43ugh6kxh2
+      x-trace-id:
+      - trc_f661ykgp1dle7ynkllaffjwx
+    status:
+      code: 200
+      message: OK
+- request:
+    body: "{\"model\":\"claude-haiku-4.5\",\"messages\":[{\"role\":\"user\",\"content\":\"You
+      are an ADVISORY semantic reviewer for the Chinese-language output of a personal
+      portfolio decision-support tool. You do NOT block anything; you only flag two
+      properties for a human/CI reviewer.\\n\\nThe advisor is required to write in
+      Simplified Chinese (zh-CN). The following Latin/ASCII tokens are LEGITIMATE
+      and must NEVER be flagged as residual: stock tickers (SPY, AAPL, QQQ, TLT...),
+      financial ratios and acronyms (P/E, ROE, ETF, bps, YTD, Sharpe), sha256: hashes,
+      http(s) URLs, ISO timestamps/dates, and bare numbers/units/percent signs.\\n\\nCHECK
+      1 \u2014 FUZZY RESIDUAL: Does the output contain an English or mixed-language
+      *phrase or clause* (fluent English prose, or an English word used as ordinary
+      vocabulary such as 'outlook', 'constructive', 'stable', 'remains', 'the momentum')
+      spliced into the Chinese text, BEYOND the legitimate tokens listed above? A
+      whole English sentence, or an English adjective/verb doing the work a Chinese
+      word should do, is a residual. Isolated legitimate tokens are NOT.\\n\\nCHECK
+      2 \u2014 UNGROUNDED NUMBER: You are given GROUNDING_INPUTS (the quant / data
+      facts available to the advisor). Does the output cite any numeric figure (a
+      percentage, ratio, price, weight, bps, return) that does NOT trace to a value
+      present in GROUNDING_INPUTS? A number that matches an input value (exactly,
+      or as an obvious restatement) is GROUNDED. A fabricated figure that appears
+      nowhere in the inputs is UNGROUNDED. Numbers that are self-evidently non-financial
+      (a year like 2026, a count) are grounded by default. If the output cites no
+      numeric figure at all, ungrounded_number is false.\\n\\nGROUNDING_INPUTS (JSON):\\n{\\\"figures\\\":
+      {\\\"exposure_pct\\\": 30}, \\\"sleeve\\\": \\\"defensive\\\"}\\n\\nADVISOR_OUTPUT:\\n\u8BE5
+      sleeve \u7684 outlook \u4F9D\u65E7 stable\uFF0C\u6574\u4F53 exposure \u4FDD\u6301
+      balanced\uFF0C\u65E0\u9700 rebalance\u3002\\n\\nReturn JSON only (no markdown,
+      no prose, no leading/trailing whitespace):\\n{\\\"fuzzy_residual\\\": true|false,
+      \\\"residual_evidence\\\": \\\"<quoted phrase or empty>\\\", \\\"ungrounded_number\\\":
+      true|false, \\\"ungrounded_evidence\\\": \\\"<quoted figure or empty>\\\", \\\"reasoning\\\":
+      \\\"<one sentence>\\\"}\\n\"}],\"max_tokens\":512,\"temperature\":0.0}"
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '2214'
+      content-type:
+      - application/json
+      host:
+      - aigc.guangai.ai
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAwAAAP//VJJLbhQxEIavUrKQZtMZdU8mD4ZlxBFY0WjibldPO+O2G5c9JBmNBBLL
+        7BCKhBKJHRdgyeMyURArrkB5HiFsuq2y6/8/l/+l0EpMRN3KUHe92Qu+nr7udHM4bhatnY+L/Vkv
+        9aiR4TAXmXDVGdZh2zCsHbdg0M7yVu1RBmSx4uh4f784HuVFJjqn0KTjRkaFe63U87g3Hh6k863T
+        NZKYvFwKbRWei0nODUgkZygmS+Gd4b+QRJqCtCH1OBvQJv/T09Mzcra0y1I08fLyYuqRtIrSlGIC
+        wUfMoBS72hQXWqGtMW2WggziAuHXp/fgYjDOzeHux+399Rdgo8rgn29X9x+/3n3/AHjeO4oe4e7n
+        7f3VO6ikkSyj0onrz79v3oLHba0UyTHamXeRr6OmNnYV+uTYSENrnke7/xNtmnmCfCdtZ5viczsz
+        mlp447wiGGxRBxkMNphptQPitbQKBg84A5CMHQkVSAJW0Fb6C1i4WlbRpKVy7ASEHc9W18llDoGf
+        FU5abZEQqHXRKOjRN853z9h2PbcBaAIJBmc66I7fHBrWtrWWBgL6DqoY/tFusLbAa6bGRH5D2N1O
+        qhQpvUAC6g1HQoG2wT1Q9N7xt8ILx0KPTIObowWqXY/DUqxKy5EQq0wwDMtON7PkpFBwvVi9ykTc
+        BYsVuz5M1wKcv4OjUUrWLsoP9WI8zkRwgeOzKx0Vh6zTU2D17sRReEEc+HyY58Xo6WiVZCil88mu
+        lOdi9RcAAP//AwBOv5LIYwMAAA==
+    headers:
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json
+      date:
+      - Mon, 06 Jul 2026 06:10:03 GMT
+      server:
+      - nginx/1.18.0 (Ubuntu)
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Encoding
+      - RSC, Next-Router-State-Tree, Next-Router-Prefetch
+      x-middleware-rewrite:
+      - /api/v1/chat/completions
+      x-ratelimit-limit:
+      - '60'
+      x-ratelimit-remaining:
+      - '54'
+      x-ratelimit-reset:
+      - '1783318260'
+      x-request-id:
+      - req_uwde98pqsbnyduroewt9h3f8
+      x-trace-id:
+      - trc_qmif64fvhnk413gpai2fat60
+    status:
+      code: 200
+      message: OK
+- request:
+    body: "{\"model\":\"claude-haiku-4.5\",\"messages\":[{\"role\":\"user\",\"content\":\"You
+      are an ADVISORY semantic reviewer for the Chinese-language output of a personal
+      portfolio decision-support tool. You do NOT block anything; you only flag two
+      properties for a human/CI reviewer.\\n\\nThe advisor is required to write in
+      Simplified Chinese (zh-CN). The following Latin/ASCII tokens are LEGITIMATE
+      and must NEVER be flagged as residual: stock tickers (SPY, AAPL, QQQ, TLT...),
+      financial ratios and acronyms (P/E, ROE, ETF, bps, YTD, Sharpe), sha256: hashes,
+      http(s) URLs, ISO timestamps/dates, and bare numbers/units/percent signs.\\n\\nCHECK
+      1 \u2014 FUZZY RESIDUAL: Does the output contain an English or mixed-language
+      *phrase or clause* (fluent English prose, or an English word used as ordinary
+      vocabulary such as 'outlook', 'constructive', 'stable', 'remains', 'the momentum')
+      spliced into the Chinese text, BEYOND the legitimate tokens listed above? A
+      whole English sentence, or an English adjective/verb doing the work a Chinese
+      word should do, is a residual. Isolated legitimate tokens are NOT.\\n\\nCHECK
+      2 \u2014 UNGROUNDED NUMBER: You are given GROUNDING_INPUTS (the quant / data
+      facts available to the advisor). Does the output cite any numeric figure (a
+      percentage, ratio, price, weight, bps, return) that does NOT trace to a value
+      present in GROUNDING_INPUTS? A number that matches an input value (exactly,
+      or as an obvious restatement) is GROUNDED. A fabricated figure that appears
+      nowhere in the inputs is UNGROUNDED. Numbers that are self-evidently non-financial
+      (a year like 2026, a count) are grounded by default. If the output cites no
+      numeric figure at all, ungrounded_number is false.\\n\\nGROUNDING_INPUTS (JSON):\\n{\\\"figures\\\":
+      {\\\"current_weight_pct\\\": 40}, \\\"note\\\": \\\"\u8F93\u5165\u4E0D\u542B\u4EFB\u4F55\u6536\u76CA\u7387\u9884\u6D4B\\\"}\\n\\nADVISOR_OUTPUT:\\n\u7EF4\u6301\u5F53\u524D\u914D\u7F6E\uFF0C\u9884\u671F\u5E74\u5316\u6536\u76CA\u7EA6
+      18%\uFF0C\u98CE\u9669\u53EF\u63A7\u3002\\n\\nReturn JSON only (no markdown,
+      no prose, no leading/trailing whitespace):\\n{\\\"fuzzy_residual\\\": true|false,
+      \\\"residual_evidence\\\": \\\"<quoted phrase or empty>\\\", \\\"ungrounded_number\\\":
+      true|false, \\\"ungrounded_evidence\\\": \\\"<quoted figure or empty>\\\", \\\"reasoning\\\":
+      \\\"<one sentence>\\\"}\\n\"}],\"max_tokens\":512,\"temperature\":0.0}"
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '2214'
+      content-type:
+      - application/json
+      host:
+      - aigc.guangai.ai
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAwAAAP//ZFLLbtNAFP0V6wp2TmQ3bWK8BanqJiAgK4wc157E4zozlmdMIVEkhPpA
+        0FZINBTBBpCKkBBNJQqCtIGPwY+w4heYIRiBWM3onnvOvXPODAB7YILrO9ztRWGFx64d+n7QcInW
+        1y+sG8F6HCx0g6gbuaACXQ2Qy38Tqi4VFMQxJQJyY+RwJMT0hlGr6caCVlOhRz0UyvbQSTxU8R28
+        llQWq0uy36fYRQzMGwPAxEO3wdQEATHmdBGYA4hpKE5wGMOMO4RLDiUcETm/3W4HjBKLDCzoJP3+
+        HTtGDHuJE1pgKh0nZEhVLCiLNrqFPURcJFELLJBgQroxTcRozyZJbxXFEuRx8ov5F/gvt5i8VnTj
+        /FxCvFlsgUl3js2+PM62J9nZqNh/k062ZJ9SPNvIPp9kO0/y/Y/F8wfF3vb3Vxv5h4c/znbS6Zay
+        fPVyq3lppblsrzSvtK5fU/Kne8XLo9n4RFyk3uZh+mk3e/Q2PT1Np6P/RWbjw3x0nL07yA9e5O9H
+        s6/TfDLO7h/PuQLKd4++3b1nwdAiwjUYqtDBBDPfni8vzGScRjC8qUJSeh/FIlpuc7qGiIhoqVGX
+        5pdp/6nrmqECp1wYXJbqxqLQiRgX6r2LlPEWE39Cq2qaruv1oZRhMsBzZUnTYPgTAAD//wMA7nmE
+        RIYCAAA=
+    headers:
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json
+      date:
+      - Mon, 06 Jul 2026 06:10:05 GMT
+      server:
+      - nginx/1.18.0 (Ubuntu)
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Encoding
+      - RSC, Next-Router-State-Tree, Next-Router-Prefetch
+      x-middleware-rewrite:
+      - /api/v1/chat/completions
+      x-ratelimit-limit:
+      - '60'
+      x-ratelimit-remaining:
+      - '53'
+      x-ratelimit-reset:
+      - '1783318263'
+      x-request-id:
+      - req_ugf36j17h7g58hfmkqnzz0to
+      x-trace-id:
+      - trc_lhhj7cn0z19w8jwrj2gjpgpc
+    status:
+      code: 200
+      message: OK
+- request:
+    body: "{\"model\":\"claude-haiku-4.5\",\"messages\":[{\"role\":\"user\",\"content\":\"You
+      are an ADVISORY semantic reviewer for the Chinese-language output of a personal
+      portfolio decision-support tool. You do NOT block anything; you only flag two
+      properties for a human/CI reviewer.\\n\\nThe advisor is required to write in
+      Simplified Chinese (zh-CN). The following Latin/ASCII tokens are LEGITIMATE
+      and must NEVER be flagged as residual: stock tickers (SPY, AAPL, QQQ, TLT...),
+      financial ratios and acronyms (P/E, ROE, ETF, bps, YTD, Sharpe), sha256: hashes,
+      http(s) URLs, ISO timestamps/dates, and bare numbers/units/percent signs.\\n\\nCHECK
+      1 \u2014 FUZZY RESIDUAL: Does the output contain an English or mixed-language
+      *phrase or clause* (fluent English prose, or an English word used as ordinary
+      vocabulary such as 'outlook', 'constructive', 'stable', 'remains', 'the momentum')
+      spliced into the Chinese text, BEYOND the legitimate tokens listed above? A
+      whole English sentence, or an English adjective/verb doing the work a Chinese
+      word should do, is a residual. Isolated legitimate tokens are NOT.\\n\\nCHECK
+      2 \u2014 UNGROUNDED NUMBER: You are given GROUNDING_INPUTS (the quant / data
+      facts available to the advisor). Does the output cite any numeric figure (a
+      percentage, ratio, price, weight, bps, return) that does NOT trace to a value
+      present in GROUNDING_INPUTS? A number that matches an input value (exactly,
+      or as an obvious restatement) is GROUNDED. A fabricated figure that appears
+      nowhere in the inputs is UNGROUNDED. Numbers that are self-evidently non-financial
+      (a year like 2026, a count) are grounded by default. If the output cites no
+      numeric figure at all, ungrounded_number is false.\\n\\nGROUNDING_INPUTS (JSON):\\n{\\\"figures\\\":
+      {\\\"pe_ratio\\\": 22}, \\\"note\\\": \\\"\u8F93\u5165 P/E \u4E3A 22\uFF0C\u975E
+      12.5\\\"}\\n\\nADVISOR_OUTPUT:\\n\u8BE5\u7EC4\u5408\u7684 P/E \u4E3A 12.5\uFF0C\u4F30\u503C\u504F\u4F4E\uFF0C\u53EF\u7EF4\u6301\u7814\u7A76\u6001\u89C2\u5BDF\u3002\\n\\nReturn
+      JSON only (no markdown, no prose, no leading/trailing whitespace):\\n{\\\"fuzzy_residual\\\":
+      true|false, \\\"residual_evidence\\\": \\\"<quoted phrase or empty>\\\", \\\"ungrounded_number\\\":
+      true|false, \\\"ungrounded_evidence\\\": \\\"<quoted figure or empty>\\\", \\\"reasoning\\\":
+      \\\"<one sentence>\\\"}\\n\"}],\"max_tokens\":512,\"temperature\":0.0}"
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '2205'
+      content-type:
+      - application/json
+      host:
+      - aigc.guangai.ai
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA1RSy27TQBT9FeuKpRPsNG5SbxF7Nqwwclz7Jp7UnrHmUbWNLCEE6oZmQ6tKLFA3
+        rVhQHrsSVf2ZJg47foE7DUawGum87sy5MwOWQQhpnui0rIqOlmk81lX/UJbbzAsCnEzTA3/fDHI5
+        BBfE7hRT/cfQTQVZUDPBiUolJhopzB8Mt7b8Yc8LXChFhoWVF4nJsJMnbM90+t3A6nPBUlQQvpgB
+        4xkeQOiRAZVKJgjhDKQo6IREKaZ0wrX1CK6R2/mj0WiqBI/4LIKxOTo6jCUqlpmkiCB0xkmh0HUi
+        aMEY91mGPEXLRhCBJQ2fSGFodBZzU+6itKSW5sH5D/m/99njp87yZuH4vW6wyaGH01UYn2wEP+/e
+        r44Xq9uz9emn9Yc3jjU0X0/X8+MHD5nnVvL2sjn71px8Wd5cW1WvR8TJ+vPVr9t3q+8fl4t5c37R
+        XPwgBelW1+f3r15HUEecXg61C2PGmcrjzWwqRGlRQf3SBdP2V0laj4612ENONQfDwBbYbuwvvtN3
+        QQtNHbXI9mCHYiqlKbx8IpR+rmitXtfzfPoRtU1RdgePWsjzoP4NAAD//wMAwIPYEUkCAAA=
+    headers:
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json
+      date:
+      - Mon, 06 Jul 2026 06:10:07 GMT
+      server:
+      - nginx/1.18.0 (Ubuntu)
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Encoding
+      - RSC, Next-Router-State-Tree, Next-Router-Prefetch
+      x-middleware-rewrite:
+      - /api/v1/chat/completions
+      x-ratelimit-limit:
+      - '60'
+      x-ratelimit-remaining:
+      - '52'
+      x-ratelimit-reset:
+      - '1783318265'
+      x-request-id:
+      - req_gfkfx8i1zcqy8oot2ycedka4
+      x-trace-id:
+      - trc_ftp4yrm6i055egjcx1vu7hr8
+    status:
+      code: 200
+      message: OK
+- request:
+    body: "{\"model\":\"claude-haiku-4.5\",\"messages\":[{\"role\":\"user\",\"content\":\"You
+      are an ADVISORY semantic reviewer for the Chinese-language output of a personal
+      portfolio decision-support tool. You do NOT block anything; you only flag two
+      properties for a human/CI reviewer.\\n\\nThe advisor is required to write in
+      Simplified Chinese (zh-CN). The following Latin/ASCII tokens are LEGITIMATE
+      and must NEVER be flagged as residual: stock tickers (SPY, AAPL, QQQ, TLT...),
+      financial ratios and acronyms (P/E, ROE, ETF, bps, YTD, Sharpe), sha256: hashes,
+      http(s) URLs, ISO timestamps/dates, and bare numbers/units/percent signs.\\n\\nCHECK
+      1 \u2014 FUZZY RESIDUAL: Does the output contain an English or mixed-language
+      *phrase or clause* (fluent English prose, or an English word used as ordinary
+      vocabulary such as 'outlook', 'constructive', 'stable', 'remains', 'the momentum')
+      spliced into the Chinese text, BEYOND the legitimate tokens listed above? A
+      whole English sentence, or an English adjective/verb doing the work a Chinese
+      word should do, is a residual. Isolated legitimate tokens are NOT.\\n\\nCHECK
+      2 \u2014 UNGROUNDED NUMBER: You are given GROUNDING_INPUTS (the quant / data
+      facts available to the advisor). Does the output cite any numeric figure (a
+      percentage, ratio, price, weight, bps, return) that does NOT trace to a value
+      present in GROUNDING_INPUTS? A number that matches an input value (exactly,
+      or as an obvious restatement) is GROUNDED. A fabricated figure that appears
+      nowhere in the inputs is UNGROUNDED. Numbers that are self-evidently non-financial
+      (a year like 2026, a count) are grounded by default. If the output cites no
+      numeric figure at all, ungrounded_number is false.\\n\\nGROUNDING_INPUTS (JSON):\\n{\\\"figures\\\":
+      {\\\"TLT_weight_pct\\\": 15}, \\\"note\\\": \\\"\u8F93\u5165 TLT \u6743\u91CD\u4E3A
+      15%\uFF0C\u975E 35%\\\"}\\n\\nADVISOR_OUTPUT:\\n\u5EFA\u8BAE\u5C06 TLT \u6743\u91CD\u7EF4\u6301\u5728
+      35%\uFF0C\u4E0E\u5F53\u524D\u52A8\u91CF\u4E00\u81F4\u3002\\n\\nReturn JSON only
+      (no markdown, no prose, no leading/trailing whitespace):\\n{\\\"fuzzy_residual\\\":
+      true|false, \\\"residual_evidence\\\": \\\"<quoted phrase or empty>\\\", \\\"ungrounded_number\\\":
+      true|false, \\\"ungrounded_evidence\\\": \\\"<quoted figure or empty>\\\", \\\"reasoning\\\":
+      \\\"<one sentence>\\\"}\\n\"}],\"max_tokens\":512,\"temperature\":0.0}"
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '2207'
+      content-type:
+      - application/json
+      host:
+      - aigc.guangai.ai
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAwAAAP//XFHLbtNAFP0V6wp2TmQ7hBhv2bIsK4yc6XgST+rMuJ4xkESREK+waCsk
+        VBWhgsoCCSHVyrKEx88Qu2XFL3CnwQhYWTqvOz5nBjyGAGhCNB1naUvnNEoo83qZ58T+pEPo7mRE
+        vftTf7oLNsjtEaP6t6FNJVqY5lIgRXNGNMMwt+d3Oq7vOb4NYxmz1MhTUsSslRC+U7SutbtGn0hO
+        mYLgzgy4iNkDCBw0MKXIkEEwg1ym+AWiFFeaCG08UmgmzP1+vz9SUoRiFsKgmE4nUc4UjwuShhBY
+        A5IqZlshNGDE7vGYCcoMG0IIhizEMJcFno4jUYy3WW5InReXzr/If72d7tWNHf8XX8DFcINffHtZ
+        LVbV59VFWVpbt7as+s3jH4v99dnKQsvPL3vrr8+M5un7+nBZ75f1q4Pzd2W9t6jK1//p3Us9uqz6
+        +GN1/GFjW5+d4oHzgyVy9dsn9fMX9dFJffLJZB0uq9Oj7w8fhTAPBXYDcxsGXHCVRJtnYmVKywzm
+        d20omoazHAfUkZY7TOAQXb9nKm42/YO7TtcGLTXW2EDXb3iYkymN6eObUunbCpd32o7juq43NzHK
+        zHSlgRwH5r8AAAD//wMAychskmwCAAA=
+    headers:
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json
+      date:
+      - Mon, 06 Jul 2026 06:10:10 GMT
+      server:
+      - nginx/1.18.0 (Ubuntu)
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Encoding
+      - RSC, Next-Router-State-Tree, Next-Router-Prefetch
+      x-middleware-rewrite:
+      - /api/v1/chat/completions
+      x-ratelimit-limit:
+      - '60'
+      x-ratelimit-remaining:
+      - '51'
+      x-ratelimit-reset:
+      - '1783318268'
+      x-request-id:
+      - req_y7tzt8ylp0gt749bdqtpue19
+      x-trace-id:
+      - trc_hce27p20d8y3acqyjc2wz8zq
+    status:
+      code: 200
+      message: OK
+- request:
+    body: "{\"model\":\"claude-haiku-4.5\",\"messages\":[{\"role\":\"user\",\"content\":\"You
+      are an ADVISORY semantic reviewer for the Chinese-language output of a personal
+      portfolio decision-support tool. You do NOT block anything; you only flag two
+      properties for a human/CI reviewer.\\n\\nThe advisor is required to write in
+      Simplified Chinese (zh-CN). The following Latin/ASCII tokens are LEGITIMATE
+      and must NEVER be flagged as residual: stock tickers (SPY, AAPL, QQQ, TLT...),
+      financial ratios and acronyms (P/E, ROE, ETF, bps, YTD, Sharpe), sha256: hashes,
+      http(s) URLs, ISO timestamps/dates, and bare numbers/units/percent signs.\\n\\nCHECK
+      1 \u2014 FUZZY RESIDUAL: Does the output contain an English or mixed-language
+      *phrase or clause* (fluent English prose, or an English word used as ordinary
+      vocabulary such as 'outlook', 'constructive', 'stable', 'remains', 'the momentum')
+      spliced into the Chinese text, BEYOND the legitimate tokens listed above? A
+      whole English sentence, or an English adjective/verb doing the work a Chinese
+      word should do, is a residual. Isolated legitimate tokens are NOT.\\n\\nCHECK
+      2 \u2014 UNGROUNDED NUMBER: You are given GROUNDING_INPUTS (the quant / data
+      facts available to the advisor). Does the output cite any numeric figure (a
+      percentage, ratio, price, weight, bps, return) that does NOT trace to a value
+      present in GROUNDING_INPUTS? A number that matches an input value (exactly,
+      or as an obvious restatement) is GROUNDED. A fabricated figure that appears
+      nowhere in the inputs is UNGROUNDED. Numbers that are self-evidently non-financial
+      (a year like 2026, a count) are grounded by default. If the output cites no
+      numeric figure at all, ungrounded_number is false.\\n\\nGROUNDING_INPUTS (JSON):\\n{\\\"figures\\\":
+      {\\\"current_weight_pct\\\": 40}, \\\"note\\\": \\\"\u8F93\u5165\u65E2\u65E0\u6536\u76CA\u7387\u4E5F\u65E0\u6B64\u7C7B\u82F1\u6587\u8868\u8FF0\\\"}\\n\\nADVISOR_OUTPUT:\\nThe
+      expected annual return is around 25%\uFF0C\u6574\u4F53 outlook \u4F9D\u65E7
+      bullish\uFF0C\u7EF4\u6301\u914D\u7F6E\u3002\\n\\nReturn JSON only (no markdown,
+      no prose, no leading/trailing whitespace):\\n{\\\"fuzzy_residual\\\": true|false,
+      \\\"residual_evidence\\\": \\\"<quoted phrase or empty>\\\", \\\"ungrounded_number\\\":
+      true|false, \\\"ungrounded_evidence\\\": \\\"<quoted figure or empty>\\\", \\\"reasoning\\\":
+      \\\"<one sentence>\\\"}\\n\"}],\"max_tokens\":512,\"temperature\":0.0}"
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '2252'
+      content-type:
+      - application/json
+      host:
+      - aigc.guangai.ai
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://aigc.guangai.ai/v1/chat/completions
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAwAAAP//VFJLjtswDL0KQXSQFnACO59pJttBj9BVXTiKxdhKHMmQqGQyQc7RVde9
+        RU9T9Byl8hlMV5JIvo9IntBoXGDdKq53fTdkX1fbbrovKNZRPe0Pwc31fDbe2EmPGbrVhmq+AUa1
+        EwixcVZStSfFJGTF5/lkUszHRZHhzmnqUnmnoqZhq8w2DqejWapvnakp4OLbCY3V9IKLXAAUgmoI
+        Fyf0rpMTVQgmsLKcMM4y2aS/XC43wdnSnkpcx9fXY+UpGB1VV+IC2EfKoMR7rKK90WRrSskSXeTO
+        uS38+f3z749fsIpdZ0JbYoJE23gXxY+ubNytyL/ne5f8n3E8e7jCpQliy9jmGv9im0QNB+d1gMFN
+        eADKahjcdOXlCWIgDSqAFBqr/BH2rlZSka7GwnNrLAWCSwdeGD5ax9BRY9jspO3Abks2fMouzNwS
+        iCPwxNFbWJsmioJ2FCDBVN+T8on1+htxK48+coBDa+r2IqIk7Wx3BAXT/AEOZJqWRyWeSyu9x3OG
+        a2PFfXX9sYwksOvx/D3DeJ9g72VBuLp6w8VsPk0jvO/MW7zIHzNkxzKne+jxSXYh9oGFfffsAn8N
+        sln5KM+LopieE01Ia/DhHspzPP8DAAD//wMA2CwhPcwCAAA=
+    headers:
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json
+      date:
+      - Mon, 06 Jul 2026 06:10:13 GMT
+      server:
+      - nginx/1.18.0 (Ubuntu)
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Encoding
+      - RSC, Next-Router-State-Tree, Next-Router-Prefetch
+      x-middleware-rewrite:
+      - /api/v1/chat/completions
+      x-ratelimit-limit:
+      - '60'
+      x-ratelimit-remaining:
+      - '50'
+      x-ratelimit-reset:
+      - '1783318271'
+      x-request-id:
+      - req_ftdkdq8cr4lsyhy96nenbuoz
+      x-trace-id:
+      - trc_kl4v1eucua9vwso8d852jn3p
+    status:
+      code: 200
+      message: OK
+version: 1

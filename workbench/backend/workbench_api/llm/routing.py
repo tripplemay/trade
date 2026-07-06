@@ -72,6 +72,16 @@ ROUTING_TABLE: Final[dict[str, str]] = {
     # × ~20 runs/month ≈ ¥30 (well under the ¥1500 monthly cap and
     # the 80% alert ratio).
     "safety_judge": "claude-sonnet-4.6",
+    # B096 F001 — P4-F2 ADVISORY semantic judge (fuzzy-residual + grounding).
+    # This is the LLM layer *above* the deterministic P4-F1 lint
+    # (advisor/semantic_lint.py). It is advisory only (flags, never a deploy
+    # gate), runs over a small labeled eval-set on committed cassettes, so
+    # Haiku 4.5 is the right tier: cheap, and the two checks (Latin-residual
+    # detection + does-this-number-trace-to-inputs) are short-context
+    # classification, not the cross-rule reasoning the red-team safety_judge
+    # needs. Distinct task (not a safety_judge reuse) so the advisory layer
+    # can never be conflated with — or accidentally re-route — the hard gate.
+    "semantic_judge": "claude-haiku-4.5",
     # Cost-guard fallback chain (callers re-route once the alert
     # threshold is crossed; per §6 keep the system functional).
     # bge-m3 is the only multilingual embedding the gateway currently
