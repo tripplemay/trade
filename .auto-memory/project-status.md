@@ -5,13 +5,14 @@ type: project
 ---
 
 ## 当前状态
-- **B094 ✅ done（2026-07-06, first-look, round1 一轮闭环）** smart-money 游资席位 follow-signal first-look(backlog 免费第二支, 龙虎榜公开, 1g+1c, Workflow-build)。★裁定 **NO-GO(跟游资反而亏, significant NEGATIVE)**: youzi_flag rank-IC N5 -0.0434(t=-4.10)/N10 -0.0426(t=-3.16) 显著负; follow 游资 输裸 LHB baseline N5 -1.00%(t=-2.92)。独立验收(代 Codex, 隔离, 用我自己的独立代码从零重算): ★无前视(手工核对 3 真实事件 上榜日 T 盘后披露→entry 严格 T+1); ★覆盖 23.89% 为 seed-94 uniform-random 子样(非 B077 结构性偏)→显著负号方向可外推/幅度 first-look, NO-GO 保守成立; ★IC/收益我自己代码 bit 级吻合+去重对抗证 immaterial(events 有 7,979 重复行, dedup 后 N5 IC -0.042/t=-3.95 仍显著); ★无扫参+席位识别先验第三方(EastMoney 解读标签, 非事后挑赢家)+§2(c) 141/141 交叉验证坐实; ★NO-GO 与数字一致(judge 负数据无法制造 GO)。research-only(无 workbench/无 trade 包无¥200)+门禁全绿+CI 三绿(013f681)+HEAD≡prod。signoff docs/test-reports/B094-youzi-first-look-signoff-2026-07-06.md。
-- **★smart-money backlog 免费两支信号均已测尽 = 机构席位 first-look(B077)INCONCLUSIVE_COVERAGE_LIMITED + 游资席位 follow(B094)NO-GO。用户首要 institutional-following 目标仍需付费 Tushare ¥200 全覆盖机构席位, 本批故意未买, 保留给用户。**
-- **B093 ✅ done** hk_china 真个股 vs proxy 决策级重跑 → **NO-GO(保 ETF-proxy)**, real-stock 悬案(B063 以来)闭合。**B092 ✅** US 攻击选股 first-look INCONCLUSIVE。**B091 ✅** MA 多日历 bug。**B090/B089/B088/B087 ✅**。**B086–B074 done**(B077 NOT-GO)。
-- **接续**：★战略决策待用户(P0-P2 无强 edge; 所有免费策略研究无强 edge)。backlog 剩: A股聪明钱[机构席位 ¥200 Tushare 待用户] + test-automation P3-P5(基建) + residual-engine(触冻结待用户)。34+ learnings 待用户确认。
+- **B095 ✅ done（2026-07-06, 混合批 1g+1c, Workflow-build）** test-automation roadmap **P4-F1 确定性语义 lint**(桶 C 确定性部分, additive)。新增 `advisor/semantic_lint.py`(318 行, 纯 re/词表)+`test_semantic_lint.py`(74 测): detect_english_residual(英文残留, URL/sha256 mask+joiner 逐段 acronym 白名单)+detect_banned_phrases(no-AI 禁语 收益预测/自动下单/替代 quant, NEGATION_WINDOW=5 否定守卫)。★裁定 **全 PASS 2/2**。独立验收(代 Codex, 隔离, 用我自己从零构造对抗样本): ★真阳=我自己 10 条已知违例全 HIT; ★零假阳=我自己 10 条合法 grounded advice(多 ticker 斜杠/EV·EBITDA/下单碰撞/难-否定/ISO/acronym)全 CLEAN+committed 12+真 cassette 零 finding; ★变异有牙(否定窗口/bare 下单不误报)。★additive 零回归: git diff 证红队门/dataset 逐字节未动+grep 证**未接入任何 runtime**(唯一 import 者=其单测=advisory-only 生产零变更)+safety 257 passed+CI AI Safety Eval 绿。门禁全绿(ruff/mypy/pytest)+CI 四 workflow 三绿(560a143)+HEAD≡prod。signoff docs/test-reports/B095-test-automation-semantic-lint-signoff-2026-07-06.md。3 软观察非阻断(O1 宁漏勿误漏报口/O2 allowlist 演进/O3 lint 尚无消费者)。
+- **★含义**: 推进 test-automation 1 feature(P4-F1 确定性能力层+证据网, 未接 runtime gate, 符合 roadmap advisory 非硬 block)。item **不清空**——P4-F2(LLM-judge 概率性)+P3(生产 synthetic/canary)+P5(独立评审固化)仍 user-gated/需 LLM。
+- **B094 ✅ done** 游资席位 follow first-look **NO-GO(跟游资反而亏)**; ★smart-money 免费两支已测尽(机构 B077 INCONCLUSIVE + 游资 B094 NO-GO), 首要 institutional 仍需付费 Tushare ¥200(故意未买, 留给用户)。**B093 ✅** hk_china real-stock **NO-GO(保 proxy)**。**B092/B091/B090–B074 ✅**(B077 NOT-GO)。
+- **接续**：★战略决策待用户(所有免费策略研究无强 edge)。backlog 剩: A股聪明钱[机构 ¥200 待用户] + test-automation P3/P4-F2/P5(基建, user-gated) + residual-engine(触冻结待用户)。34+ learnings 待用户确认。
 
 ## 遗留 / soft-watch
-- **B094 O1/O2/O3/O4**（非阻断）：events.csv 重复(date,ticker)键未去重+fetch docstring 'one row per stock' 措辞不准(immaterial, dedup 后仍显著 NO-GO) / §1 caveat 'small-cap sit outside' 措辞欠精确(实为随机子样 sign 无偏, 加固 NO-GO) / priced tickers 实际 1,279 非满 1,500 / 仅 N5 follow-edge 显著(报告透明贴 t-stat)。
+- **B095 O1/O2/O3**（非阻断）：确定性 pre-filter 固有'宁漏勿误'漏报口(bare 下单剔除+NEGATION_WINDOW=5, docstring 明述, P4-F2 后手) / 小写 allowlist 演进需守证据门 / lint 尚无 runtime/CI 消费者(advisory-only 能力层)。
+- **B094 O1–O4**（非阻断, 归档）：events.csv 重复键未去重(immaterial, dedup 后仍显著 NO-GO) / §1 caveat 措辞欠精确 / priced 1,279 非满 1,500 / 仅 N5 edge 显著。
 - **B093 O1/O2/O3**（非阻断）：报告未溯源 2024-03 shared-date 机制 / proxy 本身弱基准 / 25 季 SGOV-floored 单 regime+幸存者=结构性天花板窗口不可扩。
 - **B089/B088**：carry/turnover 措辞略强+窗口 caveat。**B087/B086/B081**：见旧注。
 

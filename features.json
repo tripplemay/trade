@@ -20,7 +20,7 @@
       "title": "Codex 独立验收 + signoff(零假阳/捕禁语/red-team门零回归/additive/eval绿)",
       "priority": "low",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "Codex独立: 语义lint合法中文输出零假阳(核实不误伤grounded解释)+真捕英文残留/no-AI禁语(测试用例覆盖)+★red-team门零回归(test_ai_advisor_red_team不变+ai-safety-eval绿)+additive(仅新模块/测, 不改硬门/dataset)+backend safety pytest绿. signoff docs/test-reports/B095-...-signoff.md.",
       "design_decisions": [
         "最大陷阱=误伤合法输出(假阳)或悄改硬门;独立核实零假阳+additive。"
