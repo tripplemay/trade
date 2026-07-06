@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-07-05",
   "user_goal": "B096 = test-automation P4-F2 LLM-judge语义层(模糊残留+grounding). 用户2026-07-05授权 AIGC_GATEWAY_API_KEY(已验HTTP200). 扩judge.py(B032)范式+judge评测集防漂移+VCR cassette(自动脱敏key)+advisory+additive(red-team门零回归). ★key仅env录制用绝不commit, cassette脱敏后commit. 2 features 1g+1c. Workflow-build. ★安全: key已在对话明文暴露→本批用完后建议用户轮换。",
   "reference_docs": [
@@ -28,8 +28,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B096 F001 **done**(Workflow 3子代理 build+2对抗验证 CONFIRMED survived). P4-F2 LLM-judge语义层. 用户授权key解锁. 扩judge.py范式: 语义judge(模糊残留+grounding)单调用双verdict. ★9例评测集 judge **9/9准确**(offline cassette防漂移). ★★安全: cassette filter_headers脱敏, 独立grep 67字符明文key **绝不在**任何committed文件; task 'semantic_judge'→haiku(边界l, 独立safety_judge硬门). ADVISORY(advisory=True永不block). ★ADDITIVE: 4新文件+routing+1行; red-team门+conftest+judge.py+data/safety-evals 逐字节不变; ai-safety-eval硬门仅3 red-team文件不含本测. gates全绿(ruff+mypy320+safety261 offline). **F002 codex验证**: ★cassette无明文key(grep 67字符 pk_/Bearer)+judge评测集准确率(9/9非平凡)+offline确定性replay(无key)+ADDITIVE(red-team门零回归+ai-safety-eval绿)+advisory非硬block+task路由无硬编码. signoff. **含义: 推进test-automation P4-F2; 剩P3(生产已授权→B097)+P5(铁律4)**.",
+    "status": "complete"
   },
   "features": [
     "F001",

@@ -1,12 +1,12 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
       "title": "test-automation P4-F2: LLM-judge 语义层(模糊残留+grounding)扩 ai-safety-eval, 带judge评测集+VCR",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【backlog test-automation roadmap P4-F2(M), 桶C概率部分, 用户已授权 AIGC_GATEWAY_API_KEY】扩 judge.py(B032)范式为**语义 judge**: (1)模糊英文/混合残留(P4-F1 确定性漏的)+ (2)grounding(解释数值是否 grounded 在给定 quant/data, 无编造). 经 LLMGateway task 路由(禁硬编码模型名, 边界l). ★judge 自身评测集(labeled: 已知残留/未grounded + 已知clean, ≥8例)验 judge 准确率防漂移. ★VCR cassette(conftest filter_headers=[authorization] 自动脱敏 key)录放, CI 离线确定性. ADVISORY(flag 非硬 block), ADDITIVE(不弱化 red-team 硬门, ai-safety-eval 绿). ★key 仅 env(scratchpad/aigc.env)录制用, cassette 脱敏, **绝不 commit key**. Gates: 根ruff+backend ruff/mypy/pytest(safety incl judge评测) + ai-safety-eval CI 绿. Workflow-build(fresh子代理+对抗验证 judge准确率/脱敏/additive).",
       "design_decisions": [
         "judge.py(B032)已有LLM-judge范式(AI边界规则); P4-F2扩为语义层(残留+grounding)非重造。",
