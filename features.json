@@ -1,12 +1,12 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
       "title": "test-automation P5-F1: signoff 自动起草工具(从 CI/features/git 结果填机械 scaffold, 判断核留独立 agent)",
       "priority": "low",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【backlog test-automation roadmap P5-F1(S), 桶D可辅助部分, 守铁律4】建工具(scripts/ 或 workbench/ CLI)从批次状态自动起草 signoff 草稿的**机械部分**: 批次/feature 号+标题、被验收 commit SHA、改动文件清单、CI 结论(gh run)、门禁结果(测试数/ruff/mypy)、git-diff scope、生产面(是否触 runtime)。★**绝不预填 verdict/裁定/命门判断**(判断核=独立 evaluator 填)——工具只填可从 CI/git/features.json 机械提取的事实, 输出带 `[待独立评估填写]` 占位的判断段。守铁律4: 是**辅助脚手架**非评估本身. Gates: 根ruff+单测(机械提取正确+judgment段留占位). Workflow-build(fresh子代理+对抗验证 不预填判断/机械正确/守铁律4).",
       "design_decisions": [
         "roadmap自评P5-F1=辅助起草(判断核留独立), 守铁律4→工具填机械scaffold不填verdict。",

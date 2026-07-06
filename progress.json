@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-07-06",
   "user_goal": "B098 = test-automation P5-F1 signoff 自动起草工具(机械 scaffold, 判断核留独立 agent, 守铁律4). ★工具只填 CI/git/features 可机械提取的事实, 绝不预填 verdict/裁定/命门→judgment段留占位. P5-F2(独立评审触发点)=evaluator流程域不含本批. 2 features 1g+1c. Workflow-build. 完成后 test-automation roadmap generator-buildable 部分全完(P0-P5-F1); 剩 P5-F2=evaluator流程 + backlog smart-money(¥200)+residual-engine(用户决策).",
   "reference_docs": [
@@ -25,8 +25,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B098 F001 **done**(Workflow 3子代理 build+2对抗验证 CONFIRMED survived). P5-F1 signoff起草工具 scripts/gen_signoff_draft.py(23测). 填机械scaffold(批次/commit按scope/文件stat/CI结论gh/门禁echo/生产面位置heuristic). ★★铁律#4: render_judgment_sections()取0参→结构不可能从绿CI推裁定; 判断段全占位, 跑B097 grep verdict=NONE. read-only+graceful+机械正确. gates ruff+mypy+23测. 辅助脚手架非评估. **F002 codex验证**: 机械提取正确(commit/文件/CI数字准)+★不预填任何verdict/裁定/命门(判断段占位, 绿CI不推PASS)+守铁律4(辅助非评估)+read-only+23测非平凡. signoff. **含义: test-automation generator-buildable 全完(P0-P5-F1); 剩P5-F2=evaluator流程+smart-money(¥200)+residual-engine(用户)**.",
+    "status": "complete"
   },
   "features": [
     "F001",
