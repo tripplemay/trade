@@ -1,28 +1,28 @@
 {
-  "sprint": "F002",
+  "sprint": "F001",
   "features": [
     {
       "id": "F001",
-      "title": "smart-money inst_buy_net 免费席位扩样 first-look(压力测 B103 的 +0.20 IC)",
+      "title": "inst_buy_net ranked 多空组合 first-look(IC 是否转化为扣成本 edge)",
       "priority": "medium",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【backlog smart-money; B103 发现精确机构净买¥(inst_buy_net)在800样本232对现 +0.20 IC(t2.22)但薄→压力测】扩免费席位样本: 复用 B094 events.csv(52k) + 找可用 akshare 席位明细函数(stock_lhb_stock_detail_em 或 B094 用过的; ★慢→agent cap/sample 更大子集 e.g. 3000-5000 事件, documented, 或后台fetch)取 inst_buy_net → 复用 B103 无前视逻辑重测 inst_buy_net rank-IC(N1/5/10). ★关键: +0.20 IC 在 3-5x 更大免费样本上 holds(→真信号强化¥200 case) 或 decays(→薄样本噪声弱化). research-only. 报告 docs/test-reports/B104-inst-net-expand-first-look.md: 扩样后 inst_buy_net IC vs B103(232对)+GO/INCONCLUSIVE/NO-GO+诚实框(免费扩样仍2022-2024/幸存者限, ¥200全史/退市才干净). Gates: 根ruff+root pytest+CI绿. Workflow-build(对抗验证防前视/过拟合).",
+      "status": "pending",
+      "acceptance": "【backlog smart-money; B104 inst_buy_net +0.15 IC(t2.9, 5d+10d)挺过扩样已Codex独立验; 但B103 binary-follow回测非正=张力】建 ranked 多空: 每月按 inst_buy_net 排名连续权重(long high/short low, 用全485对避五分位薄), 复用 B104 无前视 cohort. 计 GROSS 收益 + NET(realistic LHB名流动成本 30-50bp) + 隐含 Sharpe. ★解B104张力: +0.15 IC 在排名里(binary follow忽略)→ranked应捕获(数学: return≈IC×spread×vol). research-only(复用B104缓存). ★诚实: 免费仍2022-2024/幸存者/LHB选择限→即便正也survivorship-inflated; ¥200全史/退市才干净. 报告 docs/test-reports/B105-inst-net-longshort-first-look.md: GROSS/NET多空收益+Sharpe+是否扣成本转化+GO/INCONCLUSIVE/NO-GO+诚实框(vs¥200). Gates: 根ruff+root pytest+CI绿. Workflow-build(对抗验证防前视/成本乐观/幸存者).",
       "design_decisions": [
-        "B103精确¥ inst_buy_net +0.20 IC薄(232对)是session最promising发现→免费扩席位样本cheaply压力测。",
-        "扩样holds→强化¥200 case; decays→薄样本噪声。免费席位fetch慢(per-event)→agent cap/后台。",
-        "免费扩样仍2022-2024/幸存者限→¥200全史/退市/~50x才干净决定; B104是免费能走多远的中间步。"
+        "B104 IC~0.15挺过扩样但binary follow非正=张力→ranked多空看IC是否转化(IC在排名,binary忽略)。",
+        "连续权重用全485对避五分位薄; realistic LHB成本30-50bp; GROSS+NET双报。",
+        "免费仍survivorship限→正亦inflated; ¥200干净; B105是免费能给的'是否赚钱'预览。"
       ]
     },
     {
       "id": "F002",
-      "title": "Codex 独立验收 + signoff(无前视/席位扩样honest/inst_buy_net IC重算/诚实裁定/research-only)",
+      "title": "Codex 独立验收 + signoff(无前视/成本realistic/幸存者诚实/ranked正确/诚实裁定/research-only)",
       "priority": "medium",
       "executor": "codex",
       "status": "pending",
-      "acceptance": "Codex独立: 席位扩样fetch+inst_buy_net解析正确+★无前视(上榜日T后T+1复用B103)+扩样IC重算 vs B103 232对+无过拟合+诚实裁定(+0.20 holds/decays, 免费仍survivorship限)+research-only. signoff.",
+      "acceptance": "Codex独立: ranked多空构造正确(权重∝inst_buy_net排名)+★无前视(T+1复用B104)+realistic成本(非乐观)+GROSS/NET重算+幸存者上偏诚实+诚实裁定(净edge是否survivorship-inflated, vs¥200)+research-only. signoff.",
       "design_decisions": [
-        "最大陷阱=扩样引入前视/样本非随机;独立核实。"
+        "最大陷阱=成本乐观/幸存者当真/前视;独立核实。"
       ]
     }
   ]
