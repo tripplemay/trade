@@ -19,7 +19,7 @@
       "title": "Codex 独立验收 + signoff(无前视/机构信号解析/无过拟合/诚实裁定/research-only)",
       "priority": "medium",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "Codex独立: 机构买入信号解析正确(jiedu家数/inst_buy_net)+★无前视(上榜日T follow T+1)+IC/回测重算+无过拟合+诚实裁定(免费LHB机构噪/马甲→NO-GO/INCONCLUSIVE合法, 与¥200关系如实)+research-only. signoff.",
       "design_decisions": [
         "最大陷阱=用上榜日当天(前视)/机构信号解析错;独立核实。"
