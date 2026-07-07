@@ -1,12 +1,12 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
       "title": "smart-money 大股东/高管增持 first-look(免费, 最promising free angle: 内部人买入=已知mild alpha)",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【backlog smart-money; 大股东/高管增持=内部人买入信号, 已知mild alpha, 比游资/季度机构持仓更promising, 免费akshare, 贴近用户真实目标(大资金建仓)】fetch 股东/高管增持记录(akshare: 找可用函数, 如 stock_ggcg_em/stock_hold_management_*/东财增减持; ★数据finicky需agent迭代找对函数+高效fetch+慢则cap+documented; 若genuinely infeasible则报告为valid outcome)+个股价格(stock_zh_a_daily qfq). 信号=大股东/高管净增持(增持金额/比例)→跟随(增持披露后买)→forward-return rank-IC+简易回测 vs 基线. ★无前视: 增持披露有滞后, follow在披露日后(非增持发生日). research-only. ★诚实: 内部人买入是已知mild alpha故比前两个free角度更可能有edge(或确认连最promising free也NO-GO); NO-GO/INCONCLUSIVE/GO均valid. 报告 docs/test-reports/B101-insider-buying-first-look.md. Gates: 根ruff+root pytest+CI绿. Workflow-build(对抗验证防前视/过拟合).",
       "design_decisions": [
         "大股东/高管增持=内部人买入, 已知mild alpha(比游资retail/季度holdings更promising), 免费akshare, 贴近大资金建仓。",

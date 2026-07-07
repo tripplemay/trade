@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-07-06",
   "user_goal": "B101 = smart-money 大股东/高管增持 first-look(免费, 最promising free angle: 内部人买入=已知mild alpha). 信号=大股东/高管净增持→披露后跟随→rank-IC+回测. ★无前视(增持披露滞后, follow披露日后). research-only. 内部人买入比游资/季度机构持仓更promising→或找到有edge的free信号, 或确认连最promising free也NO-GO. 2 features 1g+1c. Workflow-build.",
   "reference_docs": [
@@ -25,8 +25,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B101 F001 done(Workflow 3子代理 build+2对抗验证 CONFIRMED survived). 大股东/高管增持 first-look(最promising free angle). 数据可行 stock_ggcg_em(股东增持) 33400事件, 含公告日. ★无前视(按公告月cohort进场次月首日, 83季0违规, +15d guard). ★裁定 INCONCLUSIVE/NO-GO: rank-IC~0全|t|<2, size-book全horizon LOSES, 事件tilt trivial+60d翻负. 连最promising free角度也失败(合游资B094+机构建仓B099). ★关键caveat: 价格cache liquid-tilt→小盘/illiquid sleeve(内部人信号plausibly集中处)未测; ¥200日频LHB仍separate. research-only(4文件). gates ruff+14单测. 报告 B101-insider-buying-first-look.md. F002 codex验证: ★无前视(公告日非变动日, 进场公告月后, 83季0违规)+增持信号正确+IC/回测重算+无过拟合+诚实裁定(NO-GO+小盘sleeve未测caveat)+research-only. signoff. 含义: 3个免费smart-money角度(游资/机构建仓/insider)在流动大盘均NO-GO; 未测=小盘sleeve(需扩数据)+¥200日频. 剩backlog: smart-money日频(¥200).",
+    "status": "complete"
   },
   "features": [
     "F001",
