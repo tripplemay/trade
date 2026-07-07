@@ -1,40 +1,41 @@
 {
-  "status": "done",
+  "status": "building",
   "total_features": 2,
-  "completed_features": 2,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": null,
-  "last_updated": "2026-07-07",
-  "user_goal": "B103 = smart-money 全LHB机构买入 first-look(免费, 用户PRIMARY信号=日频LHB机构席位). 复用B094缓存(52k事件含jiedu机构tag 29.6%+800样本inst_buy_net)测机构买入信号→跟随→IC/回测. ★无前视(上榜日T follow T+1). research-only(复用缓存). 比B077(b070限19%)广; 免费LHB机构噪/可马甲期望NO-GO但PRIMARY信号决定测. 2 features 1g+1c. Workflow-build.",
+  "current_sprint": "F001",
+  "last_updated": "2026-07-06",
+  "user_goal": "B104 = smart-money inst_buy_net 免费席位扩样(压力测 B103 的 +0.20 IC). B103精确机构净买¥现+0.20 IC(t2.22)但薄232对→扩免费席位样本(3-5x)重测. ★+0.20 holds→强化¥200 case; decays→薄样本噪声. research-only. 免费扩样仍survivorship限→¥200全史才干净. 2 features 1g+1c. Workflow-build 无前视.",
   "reference_docs": [
-    "docs/test-reports/B094-youzi-seat-first-look.md",
-    "scripts/research/b094_youzi_ic.py"
+    "docs/test-reports/B103-lhb-institutional-first-look.md",
+    "scripts/research/b103_lhb_inst_ic.py",
+    "scripts/research/b094_youzi_fetch.py"
   ],
   "docs": {
     "spec": null,
     "test_cases": null,
-    "signoff": "docs/test-reports/B103-full-lhb-institutional-first-look-signoff-2026-07-07.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "全 PASS 2/2 → done. B103 全 LHB 机构买入 first-look INCONCLUSIVE 裁定成立且 nuanced 得当. 独立复跑每数字 bit 级吻合(coverage 23.9%/12502 · 35月; inst_buy_flag 平|t|<0.6; inst_count N5/N10 显著负 t-2.74/-3.49; inst_buy_net N5 +0.205 t2.22 但仅232对/26月; follow edge 全非正; crosscheck 89.3%/rank-IC+0.368). ★★命门1 覆盖 vs B077+Tushare含义 PASS: B103 仍~24%覆盖(非近全, 但跨全板比 B077 19%大盘 only 更具代表性)→¥200 全覆盖仍决定性未测; 但粗糙 N家机构 tag 这条免费路已被否(NO-GO), ¥200 独立价值收窄为定向 confirm/kill 精确 inst_buy_net 的 +0.20; 报告双向不误导(明写 +0.20 fragile 不承诺白花 / 不宣称信号已死不劝白省). 独立 fragility 压测坐实 +0.20 薄(26月仅15月正, 逐月IC±0.9, 5-11名/月). 命门2 PIT 无前视 PASS(bisect_right 严格>T + 3真实事件手核 + 16单测). 命门3 及时性/B099 PASS+软观察 S1(报告未显式接 B099 季度滞后对照). 命门4 PASS(禁扫参 grep净/0产品码 diff空/L1 16测/Python+Backend CI success/Deploy success HEAD≡prod/对抗2 CONFIRMED 我复现). 3非阻断软观察见 signoff §4.",
-    "pass_count": 2,
+    "summary": null,
+    "pass_count": 0,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
   },
   "generator_handoff": {
-    "summary": "B103 F001 done(Workflow 3子代理 build+2对抗验证 CONFIRMED survived, 每数字复现). 全LHB机构买入 first-look(用户PRIMARY信号). 复用B094缓存+无前视机制. ★★关键nuanced发现: (1)粗糙免费信号(N家机构买入count)NO-GO——binary flat, graded count显著负(N5 t-2.74/N10 t-3.49)=机构越买越跌(马甲/派发印证先验). (2)但精确机构净买¥(inst_buy_net)正borderline-sig IC(+0.20 t2.2)反方向, 薄样本232对/26月. 免费无法仲裁→INCONCLUSIVE. ★★这把¥200从fishing变**定向确认测试**: ¥200全史/退市/精确席位¥(~50x)可confirm/kill inst_buy_net +0.20 IC at scale. 无前视复用B094单测. research-only(复用缓存3文件). gates ruff+16单测. 报告 B103-lhb-institutional-first-look.md. F002 codex验证: ★无前视(上榜日T后T+1复用B094 bisect_right)+机构信号解析正确(N家买入/卖出别搞反)+IC/回测重算+粗糙tag NO-GO与精确¥+0.20分歧诚实(薄n=232)+无过拟合+诚实裁定(INCONCLUSIVE, ¥200定向确认)+research-only. signoff. 含义: 免费LHB机构粗糙tag NO-GO但精确¥现薄正信号→¥200成定向确认inst_buy_net的干净测试. 剩backlog: smart-money日频(¥200).",
-    "status": "complete"
+    "summary": null,
+    "status": "pending"
   },
   "features": [
     "F001",
     "F002"
   ],
-  "completed_date": "2026-07-07",
+  "completed_date": null,
   "session_notes": {
-    "planner": "2026-07-06 B102 done后开 B103(全LHB机构买入 first-look, 用户PRIMARY信号). 9th under-count: B094拉全LHB但只测游资, 机构tag(29.6%)未测=用户primary日频机构信号. 复用B094缓存(快). Workflow-build无前视. ultracode第14批. 剩backlog: smart-money日频全史版(¥200).",
+    "planner": "2026-07-06 B103 done(Codex PASS 2/2 22nd; 全LHB机构nuanced: 粗糙tag NO-GO但精确¥+0.20 IC薄232对)后开 B104(inst_buy_net免费席位扩样压力测+0.20). 免费能走多远地验证session最promising发现. Workflow-build无前视. ultracode第15批. 剩backlog: smart-money日频全史(¥200).",
     "generator": null,
     "evaluator": "2026-07-07 B103 F002 独立验收(代 Codex, 与实现完全隔离, 最高怀疑度) → **全 PASS 2/2 → done**. 全 LHB 机构买入 first-look(用户 PRIMARY 信号=日频 LHB 机构席位; 复用 B094 缓存 52337 事件补 B094 只测游资 + B077 只测 b070 19% 双缺口)→ **INCONCLUSIVE**(粗糙 tag≈NO-GO, 精确 ¥ +0.20 IC 薄). **报告全部数字我独立复跑 bit 级吻合**: 覆盖 12502/52337=**23.9%**/35月; `inst_buy_flag` 全 horizon 平(|t|<0.6); `inst_count`(有符号家数)N5/N10 **显著负 t=−2.74/−3.49**(机构越买越跌=马甲/派发印证先验); `inst_buy_net`(精确席位¥)N5 **+0.205 t=2.22** 但仅 **232对/26月/~9名/月**; follow 回测 edge 全非正(N10 −0.76% t=−1.70); crosscheck 方向一致 89.3%/rank-IC(count,net)=+0.368. ★★命门1(覆盖 vs B077 + Tushare 含义, 本批最关键): **PASS**. B103 免费**仍覆盖受限**(23.9%, 非近全)→¥200 全覆盖仍决定性未测=**团队情形(b)**; 但精修=covered 1279 ticker **跨全板**(SH主板418/SZ主板392/ChiNext216/STAR134, 我独立板块分解, 比 B077 大盘 only 19% 更具代表性), 仍漏退市(幸存者)+BJ 全缺. **关键: 粗糙 N家机构 tag 这条免费路这次已被否(NO-GO)**→¥200 不是重测粗糙 tag, 而是**定向 confirm/kill 精确 inst_buy_net 的 +0.20**(免费只凑 232 对薄样本, 方向且与粗糙 count 相反). 报告表述**双向不误导**: 不误导白花(明写 +0.20 'fragile n≈232'/'hypothesis not result'/不承诺 ¥200 找到 edge) + 不误导白省(不宣称 PRIMARY 信号已死, 因精确 ¥ 覆盖子集是正的). **我独立 fragility 压测坐实 +0.20 薄**: 26 月仅 15 月为正, 逐月 IC 在 ±0.9 间剧烈跳(5-11 名/月横截面单股主导). 命门2 PIT 无前视 PASS(forward_returns bisect_right 严格>T, 沿用 B094 已验模块; 我抽 3 真实机构买入事件手核入场严格晚于上榜日 000498.SZ 01-27→01-28 / 000530.SZ 01-11→01-12; 16 单测含 3 PIT 全过). 命门3 及时性/B099 PASS+软观察 S1: B099 证季度滞后=元凶, B103 日频=及时对照→及时粗糙 tag 仍 NO-GO(及时单靠免费粗糙 tag 不能救)+及时精确 ¥ 薄正留住 ¥200; 但报告 §5 关系表未显式接 B099 这层. 命门4 PASS(禁扫参 grep 净/0 产品码 diff 81bad04^..HEAD -- trade workbench 空, F001 仅报告+probe+测试 3 文件/L1 16 passed/Python CI+Workbench Backend CI success@34767a4/Workbench Deploy success→HEAD≡prod/对抗2 CONFIRMED 我逐数字复现). 3 非阻断软观察: S1 B099 及时性层未显式讨论(不改裁定/数字); S2 程序化 judge() 只吃 ic_flag+follow-edge 不吃显著负 count+正 net→标签比正文薄但正文更诚实; S3 复算 json 未落盘(报告 .md 承载全数字, 我直接跑 probe 解析 JSON bit 复现). signoff docs/test-reports/B103-full-lhb-institutional-first-look-signoff-2026-07-07.md. ★对 Tushare ¥200 决策含义: 免费全 LHB 仍~24%覆盖(比 B077 19% 跨板但非近全)→¥200 全覆盖仍决定性未测; 粗糙 N家机构路已否, ¥200 独立价值收窄为精确席位¥ 全覆盖+退市+全史定向 confirm/kill +0.20 薄正信号——**既未被证明白花(+0.20 是活假设)也未被证明可省(免费无法否定精确¥)**, 仍待用户决策. (历史 B102 F002 note 已归档 signoff)"
   }

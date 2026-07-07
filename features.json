@@ -1,28 +1,28 @@
 {
-  "sprint": "F002",
+  "sprint": "F001",
   "features": [
     {
       "id": "F001",
-      "title": "smart-money 全LHB机构买入 first-look(免费, 用户PRIMARY信号, 复用B094缓存, 比B077广)",
+      "title": "smart-money inst_buy_net 免费席位扩样 first-look(压力测 B103 的 +0.20 IC)",
       "priority": "medium",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【backlog smart-money PRIMARY信号=日频LHB机构席位; B077只测b070大盘19%覆盖INCONCLUSIVE; B094拉全LHB(52k事件全股2022-2024)但只测游资→机构信号未测】复用 B094 缓存(data/research/b094_youzi/events.csv 52337事件含jiedu机构tag 15474=29.6% 'N家机构买入'; prices.csv; seats_sample.csv 800事件inst_buy_net)+无前视逻辑(上榜日T盘后→T+1进场). 信号=机构买入(jiedu 'N家机构买入' 家数/成功率, 或seat inst_buy_net)→跟随→forward-return rank-IC(N1/5/10)+回测 vs 基线. ★无前视(上榜日T, follow T+1, 同B094单测). research-only(复用缓存不重fetch). ★诚实: LHB机构席位已知噪/可马甲(记忆先验)→期望弱可能NO-GO; 但这是用户PRIMARY信号在全免费LHB的决定性一测(比B077 b070广), 或找到edge或确认免费LHB机构也不成→¥200全史/退市才是干净决定测. 报告 docs/test-reports/B103-lhb-institutional-first-look.md. Gates: 根ruff+root pytest+CI绿. Workflow-build(对抗验证防前视/过拟合).",
+      "status": "pending",
+      "acceptance": "【backlog smart-money; B103 发现精确机构净买¥(inst_buy_net)在800样本232对现 +0.20 IC(t2.22)但薄→压力测】扩免费席位样本: 复用 B094 events.csv(52k) + 找可用 akshare 席位明细函数(stock_lhb_stock_detail_em 或 B094 用过的; ★慢→agent cap/sample 更大子集 e.g. 3000-5000 事件, documented, 或后台fetch)取 inst_buy_net → 复用 B103 无前视逻辑重测 inst_buy_net rank-IC(N1/5/10). ★关键: +0.20 IC 在 3-5x 更大免费样本上 holds(→真信号强化¥200 case) 或 decays(→薄样本噪声弱化). research-only. 报告 docs/test-reports/B104-inst-net-expand-first-look.md: 扩样后 inst_buy_net IC vs B103(232对)+GO/INCONCLUSIVE/NO-GO+诚实框(免费扩样仍2022-2024/幸存者限, ¥200全史/退市才干净). Gates: 根ruff+root pytest+CI绿. Workflow-build(对抗验证防前视/过拟合).",
       "design_decisions": [
-        "用户PRIMARY信号=日频LHB机构; B077 b070限19%; B094全LHB机构tag未测→复用B094缓存测机构买入。",
-        "机构买入信号=jiedu 'N家机构买入'家数(全覆盖29.6%)或seat inst_buy_net(800样本)。",
-        "记忆先验LHB机构噪/可马甲→期望NO-GO; 但PRIMARY信号全免费LHB决定测; 免费亦NO-GO则¥200全史/退市决定。"
+        "B103精确¥ inst_buy_net +0.20 IC薄(232对)是session最promising发现→免费扩席位样本cheaply压力测。",
+        "扩样holds→强化¥200 case; decays→薄样本噪声。免费席位fetch慢(per-event)→agent cap/后台。",
+        "免费扩样仍2022-2024/幸存者限→¥200全史/退市/~50x才干净决定; B104是免费能走多远的中间步。"
       ]
     },
     {
       "id": "F002",
-      "title": "Codex 独立验收 + signoff(无前视/机构信号解析/无过拟合/诚实裁定/research-only)",
+      "title": "Codex 独立验收 + signoff(无前视/席位扩样honest/inst_buy_net IC重算/诚实裁定/research-only)",
       "priority": "medium",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "Codex独立: 机构买入信号解析正确(jiedu家数/inst_buy_net)+★无前视(上榜日T follow T+1)+IC/回测重算+无过拟合+诚实裁定(免费LHB机构噪/马甲→NO-GO/INCONCLUSIVE合法, 与¥200关系如实)+research-only. signoff.",
+      "status": "pending",
+      "acceptance": "Codex独立: 席位扩样fetch+inst_buy_net解析正确+★无前视(上榜日T后T+1复用B103)+扩样IC重算 vs B103 232对+无过拟合+诚实裁定(+0.20 holds/decays, 免费仍survivorship限)+research-only. signoff.",
       "design_decisions": [
-        "最大陷阱=用上榜日当天(前视)/机构信号解析错;独立核实。"
+        "最大陷阱=扩样引入前视/样本非随机;独立核实。"
       ]
     }
   ]
