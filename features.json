@@ -1,12 +1,12 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
       "title": "inst_buy_net ranked 多空组合 first-look(IC 是否转化为扣成本 edge)",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【backlog smart-money; B104 inst_buy_net +0.15 IC(t2.9, 5d+10d)挺过扩样已Codex独立验; 但B103 binary-follow回测非正=张力】建 ranked 多空: 每月按 inst_buy_net 排名连续权重(long high/short low, 用全485对避五分位薄), 复用 B104 无前视 cohort. 计 GROSS 收益 + NET(realistic LHB名流动成本 30-50bp) + 隐含 Sharpe. ★解B104张力: +0.15 IC 在排名里(binary follow忽略)→ranked应捕获(数学: return≈IC×spread×vol). research-only(复用B104缓存). ★诚实: 免费仍2022-2024/幸存者/LHB选择限→即便正也survivorship-inflated; ¥200全史/退市才干净. 报告 docs/test-reports/B105-inst-net-longshort-first-look.md: GROSS/NET多空收益+Sharpe+是否扣成本转化+GO/INCONCLUSIVE/NO-GO+诚实框(vs¥200). Gates: 根ruff+root pytest+CI绿. Workflow-build(对抗验证防前视/成本乐观/幸存者).",
       "design_decisions": [
         "B104 IC~0.15挺过扩样但binary follow非正=张力→ranked多空看IC是否转化(IC在排名,binary忽略)。",

@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-07-06",
   "user_goal": "B105 = inst_buy_net ranked 多空组合(IC是否转化为扣成本edge). B104 IC~0.15挺过扩样已验但binary follow非正=张力→ranked多空(权重∝排名)看IC转化. 复用B104缓存+无前视. GROSS+NET(LHB成本30-50bp)+Sharpe. research-only. 免费survivorship限→正亦inflated, ¥200干净. 2 features 1g+1c. Workflow-build.",
   "reference_docs": [
@@ -25,8 +25,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B105 F001 done(Workflow 3子代理 build+2对抗验证 CONFIRMED survived, 每数字复现). inst_buy_net ranked多空. 解B103↔B104张力(IC在排名). 复用B104缓存+无前视. ★结果: +0.15 IC转化——GROSS 5d Sharpe1.15(t1.97)/10d 1.61(t2.75); NET@40bp 5d+46.7%/10d+103.3% 净正挺过30-80bp全成本; corr(IC,L/S-ret)0.83-0.88 book monetize rank-IC; 1d负控制. ★★裁定 GO(纸面挺过成本)但重caveat: (1)短腿A股基本不可行(融券)→dollar-neutral是纸面, 实盘long-tilt实质更弱; (2)幸存者2022-2024=上界; (3)35 cohort薄 5d t1.97 GO靠10d; (4)非tradeable as-is. ¥200全史/退市/干净席位=决定性测真long-tilt survivorship-clean edge. research-only(4文件). gates ruff+21单测. F002 codex验证: ★无前视(T+1复用B104)+ranked构造正确(dollar-neutral sum-w0/monotone/全对)+成本realistic(30-80bp sens, 短腿不可行caveat)+幸存者诚实(上界非tradeable)+GROSS/NET重算+诚实裁定(GO纸面但long-tilt/survivorship caveat, ¥200决定)+research-only. signoff. 含义: **免费探索definitive结论=inst_buy_net真信号(IC~0.15验+纸面挺过成本), 但实盘long-tilt需¥200干净测(短腿+幸存者)**. 剩backlog: smart-money日频全史(¥200)=well-motivated确认真edge.",
+    "status": "complete"
   },
   "features": [
     "F001",
