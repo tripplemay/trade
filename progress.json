@@ -1,41 +1,46 @@
 {
-  "status": "done",
-  "total_features": 2,
-  "completed_features": 2,
+  "status": "building",
+  "total_features": 3,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "F002",
+  "current_sprint": "F001",
   "last_updated": "2026-07-07",
-  "user_goal": "B105 = inst_buy_net ranked 多空组合(IC是否转化为扣成本edge). B104 IC~0.15挺过扩样已验但binary follow非正=张力→ranked多空(权重∝排名)看IC转化. 复用B104缓存+无前视. GROSS+NET(LHB成本30-50bp)+Sharpe. research-only. 免费survivorship限→正亦inflated, ¥200干净. 2 features 1g+1c. Workflow-build.",
+  "user_goal": "B106 组合层落地(deployment-plan 阶段 A,整体提收益最高杠杆)。2026-07-07 用户授权全权运作项目。把红利低波防守腿并入 Master 组杠铃(与动量负相关)+固定权重40/30/20/10 改风险加权(risk_parity_vol_target/hrp 已有基建),回测验证组合 Sharpe/回撤提升。**核心不变量**:现 Master 4-sleeve fixed 默认向后兼容 byte-identical(生产 master_portfolio paper 不破);verdict-gating(提升显著才改默认);B070 去偏+真成本;research-only/不碰真金;跨市场币种口径诚实对齐(红利低波 CNY vs Master USD)。3 features 2g+1c:F001 组合配置扩展+权重方案/F002 5方案回测对照+verdict/F003 独立验收。spec docs/specs/B106-portfolio-layer-uplift-spec.md。触 trade/ 全套门禁。",
   "reference_docs": [
-    "docs/test-reports/B104-inst-net-expand-first-look.md",
-    "scripts/research/b104_inst_net_ic.py"
+    "docs/specs/B106-portfolio-layer-uplift-spec.md",
+    "docs/research/deployment-plan-2026-07-07.md",
+    "docs/research/ashare-portfolio-uplift-review-2026-07-07.md",
+    "trade/portfolio/master.py",
+    "trade/strategies/risk_parity_hrp.py",
+    "trade/strategies/cn_dividend_lowvol/"
   ],
   "docs": {
-    "spec": null,
+    "spec": "docs/specs/B106-portfolio-layer-uplift-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B105-inst-net-ranked-longshort-signoff-2026-07-07.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "全 PASS 2/2 → done. GO(纸面 dollar-neutral L/S 扣30/40/50/80bp全档5d/10d净正)算术为真且逐位独立复现(自写平均秩+Spearman不import b105): GROSS 5d cum+0.6843 Sharpe1.151 t1.97/10d+1.3322 Sharpe1.612 t2.75; NET@40bp 5d+0.4667/10d+1.0334; 1d负控制flat→NET每档负; corr(IC,ret)0.879/0.825. ★★决定性拆腿(generator没做,我补): 净收益~90-107%来自A股不可行空头腿, 多头腿绝对≈0(5d Sharpe-0.08/10d0.12)——LHB异动名整体下漂-2.7/-3.3%每月, 空头靠做空最差名赚,多头只是跌得少. long-only绝对≈0, long-vs-异动篮子alpha Sharpe~1.0-1.4但是相对下跌篮子非绝对钱. 报告方向诚实(已标短腿不可行/非tradeable/upper bound)但未量化此点. 无前视(4事件手核T+1)/无p-hacking(horizon=B094固定,成本预声明,无sweep/挑权重)/产品码0diff/CI双绿/HEAD≡prod/21测/ruff净. ¥200=well-motivated但收窄confirm/kill(付费买不回做空限制).",
-    "pass_count": 2,
+    "summary": null,
+    "pass_count": 0,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
   },
   "generator_handoff": {
-    "summary": "B105 F001 done(Workflow 3子代理 build+2对抗验证 CONFIRMED survived, 每数字复现). inst_buy_net ranked多空. 解B103↔B104张力(IC在排名). 复用B104缓存+无前视. ★结果: +0.15 IC转化——GROSS 5d Sharpe1.15(t1.97)/10d 1.61(t2.75); NET@40bp 5d+46.7%/10d+103.3% 净正挺过30-80bp全成本; corr(IC,L/S-ret)0.83-0.88 book monetize rank-IC; 1d负控制. ★★裁定 GO(纸面挺过成本)但重caveat: (1)短腿A股基本不可行(融券)→dollar-neutral是纸面, 实盘long-tilt实质更弱; (2)幸存者2022-2024=上界; (3)35 cohort薄 5d t1.97 GO靠10d; (4)非tradeable as-is. ¥200全史/退市/干净席位=决定性测真long-tilt survivorship-clean edge. research-only(4文件). gates ruff+21单测. F002 codex验证: ★无前视(T+1复用B104)+ranked构造正确(dollar-neutral sum-w0/monotone/全对)+成本realistic(30-80bp sens, 短腿不可行caveat)+幸存者诚实(上界非tradeable)+GROSS/NET重算+诚实裁定(GO纸面但long-tilt/survivorship caveat, ¥200决定)+research-only. signoff. 含义: **免费探索definitive结论=inst_buy_net真信号(IC~0.15验+纸面挺过成本), 但实盘long-tilt需¥200干净测(短腿+幸存者)**. 剩backlog: smart-money日频全史(¥200)=well-motivated确认真edge.",
-    "status": "complete"
+    "summary": null,
+    "status": "pending"
   },
   "features": [
     "F001",
-    "F002"
+    "F002",
+    "F003"
   ],
-  "completed_date": "2026-07-06",
+  "completed_date": null,
   "session_notes": {
-    "planner": "2026-07-06 B105(inst_buy_net多空)done(Codex PASS 2/2 24th). ★★Codex独立拆腿(generator没做)=本session最关键修正: 纸面dollar-neutral L/S GO算术真, 但**净收益~90-107%来自A股不可做空的空头腿(做空跌最狠的机构没买名), 可落地long-only多头腿绝对收益≈0**(5d Sharpe-0.08/10d 0.12; long-only跟机构买入持有5d负/10d~0). 根因: LHB异动名事件后整体下漂-2.7%/-3.3%每月, 空头腿赚, 多头腿只是跌得少. **★免费探索definitive诚实结论: inst_buy_net是真横截面排名信号(IC~0.15验), 但A股散户可落地的绝对多头edge≈0**(纸面GO的钱在不可行短腿). 修正早前'well-motivated确认真信号'过乐观框. **ultracode Workflow stretch 16批 B090-B105全survived+24治理门**. ★这正是治理价值: Codex独立拆腿抓到generator/我的纸面GO过乐观(edge在不可行短腿). **backlog剩1: smart-money日频(¥200)=测clean long-only是否有任何绝对edge**——免费证据示~0, 故¥200从'强赌'降为'边际赌注'(若信真想知clean full-history long-only有无残值可上, 但期望低). ★AIGC key轮换.",
+    "planner": "2026-07-07 B106 planning(操盘负责人)。用户授权全权运作('保证收益最大化,干起来')。B105 聪明钱收官(inst_buy_net 真信号但可落地 long-only edge≈0/赚钱空头 A股做不了/¥200 改不了做空限制→归档聪明钱方向)。据 deployment-plan 阶段 A 开组合层落地=整体提收益最高杠杆。**红利低波并入 Master 组杠铃+权重改风险加权**,基建现成(risk_parity_hrp/vol_target 已有,红利低波只差并入)。**【续接】**:status=building,Generator 接 F001(组合配置扩展+3权重方案,默认零回归)→F002(5方案回测对照+verdict+跨市场口径诚实),F003 独立 agent 验收。★本批后启动阶段 B(新配置 paper 前向验证≥12月统计门槛)。★负责人纪律:验收结论 git 核实才采信(B104/B105 幻觉消息教训)。",
     "generator": null,
-    "evaluator": "2026-07-07 B105 F002 独立验收(代Codex,与实现完全隔离,最高怀疑度). ⚠️前一次'B105验收'是幻觉(声称推f4e2b1c/NO-GO但commit不存在/无signoff/status仍verifying)→我从零重做,以git实际+磁盘为准. → **全PASS 2/2 → done**. ①GO算术为真且逐位独立复现: 自写平均秩(np.unique)+自写Spearman,不import任何b105函数,在真实485对面板上复算 GROSS 5d+0.6843/Sharpe1.151/t1.97, 10d+1.3322/1.612/t2.75, NET@40bp 5d+0.4667/Sharpe0.865 10d+1.0334/Sharpe1.364, 30/40/50/80bp全净正, 1d负控制flat→NET每档负, corr(IC,ret)0.879/0.825——与committed result.json bit级一致. ②★★命门2拆腿(generator没做,我补,对¥200最关键): dollar-neutral净收益~90-107%来自空头腿(5d空107%/10d91%, Sharpe1.74), 多头腿绝对≈0甚至负(5d-0.0011/月Sharpe-0.08, 10d+0.0022/月Sharpe0.12). 根因=LHB异动universe事件后整体下漂-2.70%(5d)/-3.29%(10d)每月, 空头做空跌最狠的最差名赚钱,多头只是跌得比平均少. A股散户无法融券做空小盘→纸面GO里能落地的多头恰是不赚钱那侧. long-only绝对5d-0.0022/10d+0.0044(≈0); long-only-vs-异动篮子超额Sharpe净~1.0-1.4但是相对下跌篮子的alpha非绝对钱. ③命门4: 无前视(沿用B094 bisect_right,另手核4真实事件002443/300943/002682/002862全入场严格T+1)/无p-hacking(horizon=B094固定1/5/10,成本40bp中心+预声明30/50/80敏感度,grep无argmax/sweep/tune/挑权重方案,verdict门judge()预声明确定性)/产品码0diff(git diff 0666743^..HEAD -- trade workbench空,research-only)/CI Python+Backend双success@09387c3/Deploy success/HEAD≡prod(产品码0diff平凡满足)/21单测pass/ruff净. ★对¥200诚实: 信号REAL(24批唯一没死聪明钱线索,IC~0.15挺过扩样+扣成本)但可落地多头edge弱; ¥200能解决幸存者/更长窗/50x样本/干净席位/confirm-kill+测long-only是否有绝对残值, 解决不了A股做空限制(市场结构,付费改不了→~90%纸面利润在结构性关闭的空头腿). =well-motivated但收窄的confirm/kill非买已知edge. 3软观察(非阻断): S1报告'materially weaker'未量化多头绝对≈0(我signoff§5补齐); S2 corr0.88是近机械一致性检验非独立盈利证据(承重是GROSS t-stat); S3 485对仅174(36%)nonzero有效样本(承袭B104). signoff docs/test-reports/B105-inst-net-ranked-longshort-signoff-2026-07-07.md; 独立复算脚本 docs/test-cases/b105_independent_recompute.py 可复现."
+    "evaluator": null
   }
 }

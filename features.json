@@ -1,29 +1,43 @@
 {
-  "sprint": "F002",
-  "features": [
-    {
-      "id": "F001",
-      "title": "inst_buy_net ranked 多空组合 first-look(IC 是否转化为扣成本 edge)",
-      "priority": "medium",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "【backlog smart-money; B104 inst_buy_net +0.15 IC(t2.9, 5d+10d)挺过扩样已Codex独立验; 但B103 binary-follow回测非正=张力】建 ranked 多空: 每月按 inst_buy_net 排名连续权重(long high/short low, 用全485对避五分位薄), 复用 B104 无前视 cohort. 计 GROSS 收益 + NET(realistic LHB名流动成本 30-50bp) + 隐含 Sharpe. ★解B104张力: +0.15 IC 在排名里(binary follow忽略)→ranked应捕获(数学: return≈IC×spread×vol). research-only(复用B104缓存). ★诚实: 免费仍2022-2024/幸存者/LHB选择限→即便正也survivorship-inflated; ¥200全史/退市才干净. 报告 docs/test-reports/B105-inst-net-longshort-first-look.md: GROSS/NET多空收益+Sharpe+是否扣成本转化+GO/INCONCLUSIVE/NO-GO+诚实框(vs¥200). Gates: 根ruff+root pytest+CI绿. Workflow-build(对抗验证防前视/成本乐观/幸存者).",
-      "design_decisions": [
-        "B104 IC~0.15挺过扩样但binary follow非正=张力→ranked多空看IC是否转化(IC在排名,binary忽略)。",
-        "连续权重用全485对避五分位薄; realistic LHB成本30-50bp; GROSS+NET双报。",
-        "免费仍survivorship限→正亦inflated; ¥200干净; B105是免费能给的'是否赚钱'预览。"
-      ]
-    },
-    {
-      "id": "F002",
-      "title": "Codex 独立验收 + signoff(无前视/成本realistic/幸存者诚实/ranked正确/诚实裁定/research-only)",
-      "priority": "medium",
-      "executor": "codex",
-      "status": "done",
-      "acceptance": "Codex独立: ranked多空构造正确(权重∝inst_buy_net排名)+★无前视(T+1复用B104)+realistic成本(非乐观)+GROSS/NET重算+幸存者上偏诚实+诚实裁定(净edge是否survivorship-inflated, vs¥200)+research-only. signoff.",
-      "design_decisions": [
-        "最大陷阱=成本乐观/幸存者当真/前视;独立核实。"
-      ]
-    }
-  ]
+ "sprint": "B106-portfolio-layer-uplift",
+ "features": [
+  {
+   "id": "F001",
+   "title": "Master 组合层扩展:红利低波防守腿 sleeve + 权重方案参数化(fixed/风险平价/HRP)",
+   "priority": "high",
+   "executor": "generator",
+   "status": "pending",
+   "acceptance": "【spec §2 F001】(1) cn_dividend_lowvol 作防守腿并入 Master sleeve(role=defensive_sleeve)组杠铃(进攻动量+防守红利低波),保权重和=1。(2) sleeve 层权重参数化:fixed(现状40/30/20/10 默认)/risk_parity(risk_parity_vol_target 波动率反比)/hrp(risk_parity_hrp)。(3) ★默认 fixed+现4 sleeve 与生产 Master byte-identical(零回归守门单测,master_portfolio paper 不破);新防守腿+新权重方案 opt-in 对照。正面证据:配置扩展+3 权重方案+默认零回归+各方案权重和=1。Gates(触 trade/ 全套): .venv/bin/mypy trade + 根 python -m ruff check . + root pytest 全量 + cd workbench/backend && .venv/bin/python -m pip install ../.. 重装 trade + backend pytest；CI 三条全绿。",
+   "design_decisions": [
+    "红利低波与动量负相关+削回撤,并入组杠铃是组合 Sharpe 最直接提升来源(uplift review §1)。",
+    "权重方案复用已有 risk_parity_vol_target/risk_parity_hrp 基建,不新造。",
+    "向后兼容铁律:默认配置生产字节级不破,新配置 opt-in——verdict GO 才改默认(B069/B076 先例)。"
+   ]
+  },
+  {
+   "id": "F002",
+   "title": "组合回测对照(5 方案)+ verdict——Sharpe/回撤/复利提升量化",
+   "priority": "high",
+   "executor": "generator",
+   "status": "pending",
+   "acceptance": "【spec §2 F002】runner scripts/research/b106_portfolio_uplift_ab.py:去偏数据+真成本跑 5 方案对照(①现状基线②+防守腿fixed③+防守腿risk_parity④+防守腿hrp⑤+防守腿voltarget),产组合 NAV/Sharpe/CAGR/MaxDD/复利对照表落 docs/test-reports/B106-portfolio-uplift-ab.md。★重点:各方案 vs 基线 Sharpe/MaxDD 提升+红利低波与动量相关性(证分散)+2022/2024-02 回撤窗口杠铃缓冲+回撤复利量化。verdict-gating:显著优→建议改默认/都不优→诚实保持现状。基线与现状复现一致;登记 trial_registry。诚实标注跨市场币种/口径对齐(红利低波 A股 vs Master 美股/港股)。Gates(触 trade/ 全套): .venv/bin/mypy trade + 根 python -m ruff check . + root pytest 全量 + cd workbench/backend && .venv/bin/python -m pip install ../.. 重装 trade + backend pytest；CI 三条全绿。",
+   "design_decisions": [
+    "★跨市场组合口径:红利低波 A股(CNY)与 Master 美股/港股(USD)——回测须诚实处理币种/口径对齐(USD 统一或分市场 sub-portfolio),不能混算误导。",
+    "verdict-gating:提升是风险调整后(Sharpe/回撤)非绝对 alpha,不为'用上红利低波'硬改默认。",
+    "回撤复利价值量化=uplift review 核心(−40%只需+67%回本 vs −66%需+194%)。"
+   ]
+  },
+  {
+   "id": "F003",
+   "title": "Codex:独立验收(回测对照复算/提升真实性/相关性/默认零回归/verdict)+signoff",
+   "priority": "high",
+   "executor": "codex",
+   "status": "pending",
+   "acceptance": "【spec §2 F003】L1 全门禁+新单测抽查(默认向后兼容 byte-identical 断言重点)。L2/研究:回测对照数字独立复算(抽 2 方案重跑)、组合 Sharpe/回撤提升真实性(非样本内乐观)、红利低波与动量相关性真实、回撤复利算术、verdict 与数字一致、★现有 Master 4-sleeve 默认零回归(master_portfolio 生产 paper 不破)、跨市场口径对齐诚实性、HEAD≡prod。边界:research-only/no-broker/不碰真金;signoff 逐条证据。",
+   "design_decisions": [
+    "验收主体:独立无实现上下文 agent 代 Codex(B079-B105 先例,用户全权授权下仍守铁律 4 独立性)。",
+    "★负责人自查:B104/B105 曾被幻觉 evaluator 消息误导→本批验收结论必须 git 核实(signoff 真落盘+status 真变+commit 真推)才采信。"
+   ]
+  }
+ ]
 }
