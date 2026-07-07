@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-07-06",
   "user_goal": "B104 = smart-money inst_buy_net 免费席位扩样(压力测 B103 的 +0.20 IC). B103精确机构净买¥现+0.20 IC(t2.22)但薄232对→扩免费席位样本(3-5x)重测. ★+0.20 holds→强化¥200 case; decays→薄样本噪声. research-only. 免费扩样仍survivorship限→¥200全史才干净. 2 features 1g+1c. Workflow-build 无前视.",
   "reference_docs": [
@@ -26,8 +26,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B104 F001 done(Workflow机制+扩样fetch 1000席位+fresh agent独立验收finalize). 压力测 B103 inst_buy_net +0.205 IC. 复用B103无前视(上榜日T后T+1 bisect_right). ★★关键(session转折): **inst_buy_net +0.20 IC HOLDS挺过2.1x扩样**——N5 +0.148(t2.92)485对/35月; N10 +0.162(t2.84)也holds; N1死. 点估计0.205→0.148=薄样本mean-reversion(真~0.10-0.15)但5d+10d显著挺过, 非decay. ★★裁定 HOLDS(GO-LEAN): 免费探索5测首个非NO-GO, 机构净买¥截面真信号(modest/horizon-dep/幸存者caveat). ¥200从图thorough变确认已挺过免费压力测的真信号(全史/退市/50x/干净席位=clean决定测). 非tradeable(无正follow-edge/幸存者限). 扩样部分1000/~3500(resumable). research-only(4文件). gates ruff+17单测. F002 codex验证: ★无前视(T+1复用B103)+席位扩样诚实(485对vs232, seed-104信号无关)+inst_buy_net机构专用-only解析+IC重算(N5+0.148 t2.92/N10+0.162 t2.84)+holds诚实(非decay, horizon-dep, 幸存者caveat)+无过拟合+研究only. signoff. 含义: inst_buy_net挺过免费扩样=真信号→¥200成确认已验证prior的well-motivated clean测. 剩backlog: smart-money日频全史(¥200).",
+    "status": "complete"
   },
   "features": [
     "F001",

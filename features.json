@@ -1,12 +1,12 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
       "title": "smart-money inst_buy_net 免费席位扩样 first-look(压力测 B103 的 +0.20 IC)",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【backlog smart-money; B103 发现精确机构净买¥(inst_buy_net)在800样本232对现 +0.20 IC(t2.22)但薄→压力测】扩免费席位样本: 复用 B094 events.csv(52k) + 找可用 akshare 席位明细函数(stock_lhb_stock_detail_em 或 B094 用过的; ★慢→agent cap/sample 更大子集 e.g. 3000-5000 事件, documented, 或后台fetch)取 inst_buy_net → 复用 B103 无前视逻辑重测 inst_buy_net rank-IC(N1/5/10). ★关键: +0.20 IC 在 3-5x 更大免费样本上 holds(→真信号强化¥200 case) 或 decays(→薄样本噪声弱化). research-only. 报告 docs/test-reports/B104-inst-net-expand-first-look.md: 扩样后 inst_buy_net IC vs B103(232对)+GO/INCONCLUSIVE/NO-GO+诚实框(免费扩样仍2022-2024/幸存者限, ¥200全史/退市才干净). Gates: 根ruff+root pytest+CI绿. Workflow-build(对抗验证防前视/过拟合).",
       "design_decisions": [
         "B103精确¥ inst_buy_net +0.20 IC薄(232对)是session最promising发现→免费扩席位样本cheaply压力测。",
