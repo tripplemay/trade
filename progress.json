@@ -1,40 +1,40 @@
 {
-  "status": "done",
+  "status": "building",
   "total_features": 2,
-  "completed_features": 2,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": null,
-  "last_updated": "2026-07-07",
-  "user_goal": "B102 = smart-money insider-buying 小盘 sleeve first-look(扩数据收口 recurring caveat). B101 insider流动大盘NO-GO但liquid-tilt→小盘(信号集中处)未测(Codex F002确认). 复用B101 insider events+扩fetch小盘价格重测. ★无前视(公告日cohort). research-only. 或找到免费信号小盘真edge, 或确认免费空间全穷尽只剩¥200日频. 2 features 1g+1c. Workflow-build.",
+  "current_sprint": "F001",
+  "last_updated": "2026-07-06",
+  "user_goal": "B103 = smart-money 全LHB机构买入 first-look(免费, 用户PRIMARY信号=日频LHB机构席位). 复用B094缓存(52k事件含jiedu机构tag 29.6%+800样本inst_buy_net)测机构买入信号→跟随→IC/回测. ★无前视(上榜日T follow T+1). research-only(复用缓存). 比B077(b070限19%)广; 免费LHB机构噪/可马甲期望NO-GO但PRIMARY信号决定测. 2 features 1g+1c. Workflow-build.",
   "reference_docs": [
-    "docs/test-reports/B101-insider-buying-first-look.md",
-    "scripts/research/b101_insider_fetch.py"
+    "docs/test-reports/B094-youzi-seat-first-look.md",
+    "scripts/research/b094_youzi_ic.py"
   ],
   "docs": {
     "spec": null,
     "test_cases": null,
-    "signoff": "docs/test-reports/B102-insider-smallcap-first-look-signoff-2026-07-07.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "全 PASS 2/2 → done. insider-buying 小盘 sleeve first-look → NO-GO(收口免费 smart-money 探索四角度全 NO-GO). 独立验收(代 Codex, 隔离, 最高怀疑度): ★命门1 NO-GO 证据基础 PASS(不降级 INCONCLUSIVE): 小盘 fetch 完成 530名(66.2%)/覆盖 32.7% 事件/13 打分月=残缺但报告 foreground 而非隐藏; 裁定正确 scoped 到'免费数据部署决策'+付费 ¥200 门显式保留; 决定性负面证据(信号 IC 噪音离散±0.45 t=1.18 不显著 + 事件簿全 horizon×全30-80bp网格净负)独立于覆盖规模成立; 乐观上界仍失败=保守论证; 自写独立 IC 实现逐位吻合+bit 可复现. 命门2 PIT PASS(verbatim B101 核心+3 cohort 抽核入场晚于最晚公告+单测). 命门3 外推边界 PASS(付费日频 top_inst 门保留, latency-cutting 呼应 B099). 命门4 PASS(无扫参仅成本敏感度带/0 产品码/L1 12 passed/ruff 净/Python+Backend CI success/Deploy 成功 HEAD≡prod). 2 非阻断软观察(打分月时间聚集 2018-19 未披露/上界措辞非严格).",
-    "pass_count": 2,
+    "summary": null,
+    "pass_count": 0,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
   },
   "generator_handoff": {
-    "summary": "B102 F001 done(Workflow机制+后台fetch完成530名+fresh agent独立验收完整结果). insider-buying小盘sleeve. ★结果(byte-identical复现): 小盘rank-IC h5+0.086(t1.18不显著,仅13月过门槛)/h20+0.034/h60~0; 事件book GROSS h20/h60已underperform小盘基线; NET@50bp全horizon负(-4%/-15%/-43%). 幸存者上偏(270=33.8%退市)乐观上界仍NO-GO. ★裁定 NO-GO: 连最promising免费信号(insider)在小盘sleeve带幸存者顺风也无edge. 无前视复用B101公告月+1进场(单测锁). ★★收口: 免费smart-money探索全穷尽(游资B094/机构建仓B099/insider流动B101/insider小盘B102 四角度NO-GO). ¥200日频LHB=剩唯一干净决定性测试. research-only(4文件). gates ruff+12单测. 报告 B102-insider-smallcap-first-look.md. F002 codex验证: ★无前视(公告月+1进场复用B101, 单测)+IC/回测(gross+net)重算+幸存者33.8%退市诚实(上偏上界仍NO-GO)+流动性50bp成本+薄样本13月caveat+诚实裁定(NO-GO)+research-only. signoff. 含义: 免费smart-money四角度全NO-GO; 剩backlog=smart-money日频(¥200)唯一未测干净路径.",
-    "status": "complete"
+    "summary": null,
+    "status": "pending"
   },
   "features": [
     "F001",
     "F002"
   ],
-  "completed_date": "2026-07-06",
+  "completed_date": null,
   "session_notes": {
-    "planner": "2026-07-06 B102(insider小盘)done(Codex PASS 2/2 21st; NO-GO证据基础坐实不降级). **★★免费A股smart-money探索彻底完成: 游资B094/机构建仓B099/insider流动B101/insider小盘B102 四核心角度全NO-GO**(小盘sleeve真测530名1M行, 幸存者上偏乐观上界仍无edge). 北向/主力资金流/Level-2不可行. **ultracode Workflow stretch 14批 B090-B102全survived+21治理门**. 修正8次under-count. B095/B097对抗验证commit前拦真bug. **backlog剩1: smart-money日频institutional(¥200 Tushare LHB)=剩唯一未测干净决定性路径**(幸存者干净/bulk-fast/砍latency, 恰修免费版失败的元凶). 免费空间已彻底覆盖→证据硬指向¥200. 无更多可自主构建的免费工作. ★AIGC key轮换.",
+    "planner": "2026-07-06 B102 done后开 B103(全LHB机构买入 first-look, 用户PRIMARY信号). 9th under-count: B094拉全LHB但只测游资, 机构tag(29.6%)未测=用户primary日频机构信号. 复用B094缓存(快). Workflow-build无前视. ultracode第14批. 剩backlog: smart-money日频全史版(¥200).",
     "generator": null,
     "evaluator": "2026-07-07 B102 F002 独立验收(代 Codex, 与实现完全隔离, 最高怀疑度) → **全 PASS 2/2 → done**. insider-buying 小盘 sleeve first-look(复用 B101 insider events + 扩 fetch 非流动小盘 qfq 价格重测)→ **小盘 NO-GO**, 收口免费 smart-money 探索(游资 B094/机构建仓 B099/insider 流动大盘 B101/insider 小盘 B102 四角度全 NO-GO). ★★命门1(本批命门=NO-GO 证据基础扎实性, F001 初稿曾 INCONCLUSIVE data-incomplete 后改判 NO-GO): **裁定 NO-GO 成立, 不降级 INCONCLUSIVE**. 小盘最终覆盖=akshare 限流后 fetch 完成 **530/800 名(66.2%)**, 覆盖 **4017/12290(32.7%)小盘事件**, **13/~101 打分月**(多数月<20 名最小横截面被弃)——覆盖**确属残缺**, 但报告**foreground 而非隐藏**这些数字(66.2%/32.7%/13月/33.8%退市/薄横截面均明标为 caveat), 裁定与实际覆盖**匹配**. NO-GO 非过度断言三理由: ①正确 scoped 到'免费数据部署决策'+**付费 ¥200 LHB 门显式保留**为唯一干净决定性测试(未宣称信号科学上死); ②决定性负面证据独立于覆盖规模成立=信号 IC 为噪音(我复算13月度 h5 IC 离散 −0.45~+0.43, 均值+0.086 t=1.18 不显著)+事件簿 GROSS 已 underperform(h20 −7%/h60 −32%)+净成本**全 horizon×全30-80bp 网格负**(唯一正 5d gross+2.2% 扛不住 round-trip); ③幸存者33.8%退市=乐观上界, 上界都 fail=保守. **自写独立 IC 实现(不 import generator run())逐位吻合**(h5+0.0863/t1.184, h20+0.0345, h60−0.0020, 净成本网格全对上)+`ic_result.json` 复跑 bit-identical. 命门2 PIT PASS(verbatim B101 公告月 M+1 入场核心+3 随机 cohort 抽核入场严格晚于最晚公告日+3 单测). 命门3 外推边界 PASS(报告§6 保留付费日频 top_inst 门='免费全否≠¥200无效', 且 latency-cutting T+1 一句直接呼应 B099 滞后元凶). 命门4 PASS(无扫参=grep 仅命中成本敏感度带 30/50/80bp 全报非择优/0 产品码 trade+workbench diff 空/L1 12 passed/ruff 净/python-checks+workbench-backend@58a9798 success/Workbench Deploy success→HEAD≡prod). 3 非阻断软观察: S1 打分月时间聚集(13 月中 10 个 2017-2019, 2021-2023 零覆盖)报告未点明→强化 coverage-limited 但不翻转部署裁定; S2 'optimistic upper bound' 措辞非严格(excess 是相对量, 幸存者同抬两端, 上界成立需假设增持名退市率≥基线率, 但非 load-bearing 因净成本负独立成立); S3 复算 json 本机 gitignored(md+coverage.json 承载全数字, 已 bit 复现). signoff docs/test-reports/B102-insider-smallcap-first-look-signoff-2026-07-07.md. ★含义: 免费 smart-money 四角度全 NO-GO, 免费空间穷尽; 剩=付费 ¥200/日 Tushare top_inst(唯一干净决定性测试: 幸存者干净+批量快+T+1 及时性), 仍待用户决策. (历史 B101 F002 note 已归档 signoff)"
   }

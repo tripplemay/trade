@@ -1,28 +1,28 @@
 {
-  "sprint": "F002",
+  "sprint": "F001",
   "features": [
     {
       "id": "F001",
-      "title": "smart-money insider-buying 小盘 sleeve first-look(扩数据, B094/B099/B101 recurring caveat 收口)",
+      "title": "smart-money 全LHB机构买入 first-look(免费, 用户PRIMARY信号, 复用B094缓存, 比B077广)",
       "priority": "medium",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "【backlog smart-money; B101 insider-buying 流动大盘 NO-GO 但 liquid-tilt→小盘 sleeve 未测(内部人信号 plausibly 集中处), Codex F002 确认此 caveat】复用 B101 insider events(stock_ggcg_em 股东增持, 含公告日)+★扩数据: fetch **小盘/非流动**(不在 B070 liquid cache 的 insider 股, ~2235只)价格(akshare stock_zh_a_daily qfq; ★慢→agent cap/sample e.g. 500-1000 deterministic subset, documented). 在小盘 sleeve 上重测 insider-buying 信号→forward-return rank-IC+回测 vs 小盘基线. ★无前视(复用 B101 公告日 cohort 逻辑, follow 公告月后). research-only. ★诚实: 小盘是 A股 smart-money/内部人信号 plausibly 集中处→或找到免费信号在小盘的真 edge(用户目标实质进展), 或确认免费空间(liquid+小盘)全穷尽只剩 ¥200 日频. 报告 docs/test-reports/B102-insider-smallcap-first-look.md: 小盘 IC/回测 vs liquid(B101)对比+GO/INCONCLUSIVE/NO-GO+诚实框(小盘幸存者偏/流动性成本 caveat). Gates: 根ruff+root pytest+CI绿. Workflow-build(对抗验证防前视/过拟合/小盘流动性成本).",
+      "status": "pending",
+      "acceptance": "【backlog smart-money PRIMARY信号=日频LHB机构席位; B077只测b070大盘19%覆盖INCONCLUSIVE; B094拉全LHB(52k事件全股2022-2024)但只测游资→机构信号未测】复用 B094 缓存(data/research/b094_youzi/events.csv 52337事件含jiedu机构tag 15474=29.6% 'N家机构买入'; prices.csv; seats_sample.csv 800事件inst_buy_net)+无前视逻辑(上榜日T盘后→T+1进场). 信号=机构买入(jiedu 'N家机构买入' 家数/成功率, 或seat inst_buy_net)→跟随→forward-return rank-IC(N1/5/10)+回测 vs 基线. ★无前视(上榜日T, follow T+1, 同B094单测). research-only(复用缓存不重fetch). ★诚实: LHB机构席位已知噪/可马甲(记忆先验)→期望弱可能NO-GO; 但这是用户PRIMARY信号在全免费LHB的决定性一测(比B077 b070广), 或找到edge或确认免费LHB机构也不成→¥200全史/退市才是干净决定测. 报告 docs/test-reports/B103-lhb-institutional-first-look.md. Gates: 根ruff+root pytest+CI绿. Workflow-build(对抗验证防前视/过拟合).",
       "design_decisions": [
-        "B094/B099/B101 均 liquid 大盘 NO-GO + recurring caveat=小盘未测(信号集中处); Codex F002 确认→值得测。",
-        "扩数据: fetch 小盘价格(慢→cap/sample deterministic subset documented); 复用 B101 insider events+公告日无前视逻辑。",
-        "小盘流动性成本+幸存者偏 caveat 须诚实; NO-GO/GO/INCONCLUSIVE 均 valid; 这是收口免费空间的最后一测。"
+        "用户PRIMARY信号=日频LHB机构; B077 b070限19%; B094全LHB机构tag未测→复用B094缓存测机构买入。",
+        "机构买入信号=jiedu 'N家机构买入'家数(全覆盖29.6%)或seat inst_buy_net(800样本)。",
+        "记忆先验LHB机构噪/可马甲→期望NO-GO; 但PRIMARY信号全免费LHB决定测; 免费亦NO-GO则¥200全史/退市决定。"
       ]
     },
     {
       "id": "F002",
-      "title": "Codex 独立验收 + signoff(无前视/小盘sample honest/流动性成本/无过拟合/诚实裁定/research-only)",
+      "title": "Codex 独立验收 + signoff(无前视/机构信号解析/无过拟合/诚实裁定/research-only)",
       "priority": "medium",
       "executor": "codex",
-      "status": "done",
-      "acceptance": "Codex独立: 小盘价格fetch+insider信号正确+★无前视(公告日cohort)+小盘sample deterministic honest+流动性成本caveat+IC/回测重算+无过拟合+诚实裁定(小盘NO-GO/GO/INCONCLUSIVE均valid, 幸存者偏caveat)+research-only. signoff.",
+      "status": "pending",
+      "acceptance": "Codex独立: 机构买入信号解析正确(jiedu家数/inst_buy_net)+★无前视(上榜日T follow T+1)+IC/回测重算+无过拟合+诚实裁定(免费LHB机构噪/马甲→NO-GO/INCONCLUSIVE合法, 与¥200关系如实)+research-only. signoff.",
       "design_decisions": [
-        "最大陷阱=小盘流动性成本忽略/幸存者偏/前视;独立核实。"
+        "最大陷阱=用上榜日当天(前视)/机构信号解析错;独立核实。"
       ]
     }
   ]
