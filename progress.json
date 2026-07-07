@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 3,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
-  "current_sprint": "F002",
+  "current_sprint": "F003",
   "last_updated": "2026-07-07",
   "user_goal": "B106 组合层落地(deployment-plan 阶段 A,整体提收益最高杠杆)。2026-07-07 用户授权全权运作项目。把红利低波防守腿并入 Master 组杠铃(与动量负相关)+固定权重40/30/20/10 改风险加权(risk_parity_vol_target/hrp 已有基建),回测验证组合 Sharpe/回撤提升。**核心不变量**:现 Master 4-sleeve fixed 默认向后兼容 byte-identical(生产 master_portfolio paper 不破);verdict-gating(提升显著才改默认);B070 去偏+真成本;research-only/不碰真金;跨市场币种口径诚实对齐(红利低波 CNY vs Master USD)。3 features 2g+1c:F001 组合配置扩展+权重方案/F002 5方案回测对照+verdict/F003 独立验收。spec docs/specs/B106-portfolio-layer-uplift-spec.md。触 trade/ 全套门禁。",
   "reference_docs": [
@@ -29,8 +29,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "F001+F002 done。F002 组合层 uplift A/B(commit 6dd0ec9 runner/report/单测 + c7acc30 trial_registry)。裁定 NO_GO 保持现状:5方案对齐窗口(2015-09~2026-04,116月)Sharpe ①1.222基线 ②1.141 ③1.234 ④1.168 ⑤1.092,最优③risk_parity ΔSharpe仅+0.012(<0.15门槛)且拖CAGR−2.5pp。核心机理:红利低波vs进攻腿相关性USD+0.20~+0.48/CNY原生+0.11~+0.41(弱正非负)——spec的负相关是vsA股动量(本组不持),FX换算把防守腿波动抬15.8%/MaxDD−31.8%,跨市场+跨币种双错配分散前提不成立。F003 待 Codex 独立验收。",
+    "status": "ready"
   },
   "features": [
     "F001",
@@ -40,7 +40,7 @@
   "completed_date": null,
   "session_notes": {
     "planner": "2026-07-07 B106 planning(操盘负责人)。用户授权全权运作('保证收益最大化,干起来')。B105 聪明钱收官(inst_buy_net 真信号但可落地 long-only edge≈0/赚钱空头 A股做不了/¥200 改不了做空限制→归档聪明钱方向)。据 deployment-plan 阶段 A 开组合层落地=整体提收益最高杠杆。**红利低波并入 Master 组杠铃+权重改风险加权**,基建现成(risk_parity_hrp/vol_target 已有,红利低波只差并入)。**【续接】**:status=building,Generator 接 F001(组合配置扩展+3权重方案,默认零回归)→F002(5方案回测对照+verdict+跨市场口径诚实),F003 独立 agent 验收。★本批后启动阶段 B(新配置 paper 前向验证≥12月统计门槛)。★负责人纪律:验收结论 git 核实才采信(B104/B105 幻觉消息教训)。",
-    "generator": "2026-07-07 F001 done(commit 95202f3)。Master 组合层扩展落地。**交付**:①MasterPortfolioParameters 加 weight_scheme 字段(默认 fixed);②parameter_hash 条件省略 fixed→默认 4-sleeve/fixed 字节级不变(金值 726f9ce6a4acd956dcde72f2bc32a9c1633ba5c23acfc359c7533aea6ea7a644,守门单测钉死);③resolve_sleeve_weights(scheme,sleeves,returns?)——fixed 透传 planning_weight / risk_parity 复用 risk_parity._inverse_volatility_weights / hrp 复用 risk_parity_hrp.compute_hrp_weights;④防守腿走独立 barbell 构造器 master_portfolio_parameters_with_defensive_barbell(defensive_weight=0.20,weight_scheme=fixed)=cn_dividend_lowvol(role_label=defensive_sleeve),4 进攻腿按(1-防守权重)缩放保相对比例,默认 sleeve 列表**不含**防守腿→生产零回归。**★向后兼容权衡**:防守腿刻意不进默认 sleeve 列表(进了会改默认组合破字节级)→纯 opt-in 对照。门禁全绿:mypy trade 0err + 根 ruff 净 + 全量 unit 1365 passed(master/portfolio/risk_parity 零回归)+ backend test_strategies 13 passed(重装 trade 后)。**【F002 续接指引】**:写 scripts/research/b106_portfolio_uplift_ab.py 回测对照 5 方案——①现状(default_master_portfolio_parameters,基线,须复现历史数字)②barbell fixed ③barbell risk_parity ④barbell hrp ⑤barbell vol-target。方案②-⑤用 master_portfolio_parameters_with_defensive_barbell(weight_scheme=...);actual sleeve 权重调 resolve_sleeve_weights(scheme,sleeves,sleeve_returns)。★跨市场口径:红利低波 CNY(2018+ ETF/2005+ 指数 TR)vs Master 其他腿 USD/HKD——分市场 sub-portfolio 或 USD 统一,诚实标注窗口/币种限制。★注意:master_portfolio 回测引擎(trade/backtest/master_portfolio.py)当前用 sleeve.planning_weight 直算,尚未消费 weight_scheme;F002 runner 需自行用 resolve_sleeve_weights 派生权重喂回测(或按需在引擎接 weight_scheme,但那是新改动需评估零回归)。cn_dividend_lowvol sleeve 的 child 回测执行 F002 需接(现引擎 KNOWN_IMPLEMENTED_STRATEGY_IDS 未含 cn_dividend_lowvol,unknown strategy_id 会 fail-closed)。verdict-gating:提升显著才建议改默认,否则 NO-GO 合法。报告落 docs/test-reports/B106-portfolio-uplift-ab.md + trial_registry。",
+    "generator": "2026-07-07 F002 done(commit 6dd0ec9 runner+report+15单测 / c7acc30 trial_registry)。scripts/research/b106_portfolio_uplift_ab.py:5方案 sleeve-return 层月度 A/B。**★★跨市场口径怎么处理(本批最大陷阱)**:进攻4腿USD(tiingo adj_close),防守腿cn_dividend_lowvol是CNY(H20269 TR)。PRIMARY口径=USD统一——防守腿CNY收益按USD/CNY汇率(data/research/b090_hk/fx_daily.csv,CNY per USD)换算USD投资者实收 (1+r_cny)·fx_prev/fx_now−1;单列CNY-native对照使FX拖累可分离。★发现生产master引擎跑不了真实数据(动量需月频bar/risk_parity需120日频观测,同records不兼容)→sleeve-return层重构各腿原生频率,权重派生复用resolve_sleeve_weights(滚动无look-ahead)。窗口:5方案对齐共同交集2015-09~2026-04(116月),否则基线被多算6月惩罚虚高杠铃(此修正把risk_parity ΔSharpe从虚假+0.128修正为真实+0.012)。**★★5方案真数字 CAGR/Sharpe/MaxDD**:①baseline 10.46%/1.222/−8.3% ②barbell fixed 9.33%/1.141/−8.1% ③barbell risk_parity 7.93%/1.234/−7.0% ④barbell hrp 6.91%/1.168/−6.7% ⑤barbell vol_target 8.24%/1.092/−8.1%。**★红利低波vs进攻腿相关性**:USD换算+0.20~+0.48(hk_china最高+0.48),CNY原生+0.11~+0.41——全弱正NON-negative。spec预期负相关是vsA股动量(2024-02踩踏),本组持美股/全球动量不迁移;2024-01/02窗口所有方案MaxDD≈0(A股内部事件USD组没被波及)。**★verdict NO_GO**:门槛ΔSharpe≥0.15且ΔMaxDD≥3pp双门,无方案过;最优③仅+0.012 Sharpe且拖CAGR2.5pp,靠砍波动非防守腿分散→不落地,保持default 4-sleeve fixed(B069/B076先例)。**门禁全绿**:mypy trade 0err(零回归,未触master.py)+ruff净+根pytest 1395 passed(F001金值726f9ce6守门单测未破)+backend test_bootstrap_cli/test_trial_registry 10 passed+迁移单头0042。**【F003续接给Codex】**:L1全门禁+新15单测抽查(vol-target no-normalize回归=真bug修复重点);L2独立复算——重跑runner(本机需tiingo/b082/b090_hk快照,均gitignore本机存在)、抽2方案数字复核、★口径诚实(USD换算+CNY-native双列)、相关性真实(USD正相关=FX+市场双错配)、回撤复利算术、verdict与数字一致、★现有master 4-sleeve默认零回归、HEAD≡prod。关键判断点:combine_dynamic normalize=False(vol-target残差进现金否则scale被抵消)、rolling用trailing d<t无look-ahead、cny_returns_to_usd FX方向(rate=CNY per USD升=人民币贬=USD投资者亏)。报告docs/test-reports/B106-portfolio-uplift-ab.md含完整口径声明。",
     "evaluator": null
   }
 }
