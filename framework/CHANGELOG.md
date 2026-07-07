@@ -5,6 +5,26 @@
 
 ---
 
+## v0.9.55 — 2026-07-07（B080-B098 队列清扫：trade/-edit 门禁族 + api.ts 契约 + 部署种子数据 + freeze/restore + 回测保真本金扫描 + CI-红物理关联诊断 + signoff 落地 gate + pre-commit 钩子）
+
+**来源批次：** B080 / B081 / B083 / B087+B090 / B098（2026-07-03 → 2026-07-06 累积 10 条候选，用户 2026-07-07 明确「沉淀 learnings，全批准」）。其中 P5-F2（B098）已于 2026-07-06 先行写入 `evaluator.md §33`，本次仅归档。
+
+**沉淀内容（用户确认，9 条正式写入 + 1 条已在 §33）：**
+- **编辑 `trade/` 触发 spec 未列的额外门禁 family——子集绿≠全绿** → `generator.md §41`（B080 F002 取 trade/ 源新字段落库须 `mypy trade`+根 pytest+重装 backend venv；B081 F001 翻转 backtest 默认口径须 full root pytest+多变体透传 switch，合并为一族）。
+- **pydantic 加带默认值字段 → openapi-ts 仍标 required → 前端 fixture 须同 commit 补** → `generator.md §42`（B080 F004，分两 commit 则中间 Frontend CI 必红）。
+- **部署种子数据必须走 alembic data-migration 或显式接入部署链，不能只放 bootstrap CLI** → `generator.md §43` + `planner.md §种子数据落地路径`（B080 F005，bootstrap-only seed 生产静默缺数据无自愈）。
+- **回测引擎执行限制 = loop-level freeze/restore，勿在 rebalance 内改权重** → `generator.md §44`（B081 F002/F003，停牌+涨跌停复用 `restricted_today` ∪，shares-preserving equity 守恒，开关 off=bit 级旧口径）。
+- **慢真机回测抗 background-kill 基建——resumable + pickle 缓存 prices** → `generator.md §45`（B081 F004，8 组全宇宙 sweep 抗 ~20min kill）。
+- **★回测保真度：引擎修真 A/B 必须配本金扫描（100k/1M/10M）** → `README.md §经验教训`（B081 F004，**★用 F005 审计更正版**：原「分数股假象」叙事已被证伪——`lot@100k` OOS −14.7% 是 10 万本金容量下限，`lot@10M` +28.2% 保留 99% edge；负数是容量约束非策略失效；A/B 结论本身也要过独立数字审计）。
+- **判 CI 红是否本 commit 责任：改动面 vs 红测面物理关联；rerun 不清=环境一致 race 须真修** → `evaluator.md §34`（B083 F002，修正 §27「先 rerun 放行」——rerun 不清不再当 flake，须真修测等 async settle）。
+- **done 收尾/开批前置 gate：evaluator signoff 落地 origin/main + 状态写入序列化** → `planner.md §done 收尾/开批前置 gate`（B087+B090 planner 抢跑 done/开批 + B098 F002 并发写竞态致无效 JSON，合并为一「signoff 落地才动状态机」纪律）。
+- **clone 后一次性装 pre-commit 钩子拦无效状态 JSON** → `harness-rules.md §启动流程`（B098 F002，`scripts/pre-commit-hook.sh` → `.git/hooks/pre-commit`，铁律 #11 落地；钩子已本机安装）。
+- **（已先行沉淀）独立对抗评审触发点固化** → `evaluator.md §33`（test-automation P5-F2，commit `c5694f7`，本次仅归档）。
+
+归档 `framework/archive/proposed-learnings-archive-v0.9.55.md`。**活跃候选队列清空。**
+
+---
+
 ## v0.9.54 — 2026-06-26（B078：A股 data-refresh 卡死生产事故——oneshot 超时/宽集刷含 bulk discovery/round-trip 成本/静默冻结守门）
 
 **来源批次：** B078 A股 data-refresh 卡死修复（生产 hotfix,B075 宽宇宙回归,fix_rounds=1 done）。4 条 learning 用户 done 收尾批准。

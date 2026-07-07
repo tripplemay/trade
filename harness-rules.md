@@ -54,6 +54,12 @@ git pull --ff-only origin main
 
 > 同机场景下此命令输出 `Already up to date.`，无副作用，仍需执行。
 
+> **首次 clone 后一次性 setup（装 pre-commit 钩子，防无效状态 JSON 进 main）：** 新机器 clone 仓库后执行一次
+> ```bash
+> cp scripts/pre-commit-hook.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+> ```
+> 钩子调 `scripts/check_state_json.py` 校验 `progress.json`/`features.json`/`backlog.json`，拦截无效 JSON 提交（铁律 #11 落地）。`.git/hooks/` 不入 git，故每台机器须各装一次。
+
 **第二：从磁盘重新读取以下文件，不得使用任何缓存版本：**
 - `.agent-id` — 当前 agent 的身份标识（文件不存在则 myId = null）
 - `.agents-registry` — 项目 agent 注册表（Planner 角色分配时使用）

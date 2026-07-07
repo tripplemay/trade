@@ -431,6 +431,23 @@ master sleeve 子策略 `generate_signal().weights_dict()` 必须返回 **sleeve
 
 **来源：** B076（cn_attack size-tilt NO-GO;OOS-窗口险平假 GO + survivor=GO/去偏=NO-GO 镜像;Codex 独立复跑 bit-identical 裁定 NO-GO）。
 
+### 种子数据落地路径：spec acceptance 须写明「自动部署（migration/部署链）」，非手动 CLI（v0.9.55 — B080 F005 沉淀）
+
+起草含**种子数据**（部署后必须存在的库内数据,如 trial registry / curated symbol names）的 spec 时,acceptance 必须**写明落地路径 = 自动部署**：走 **alembic data-migration**（随 `alembic upgrade` 自动落地）或**显式接入部署链**（`deploy.sh` / `workbench-deploy.yml`）。**不能只放 `workbench-bootstrap` CLI**——bootstrap 只手动跑、不在部署链、无 timer 自愈 → 生产静默缺数据、无告警（B080 F001 `trial_registry=0` + B079 `symbol_name=0` 同源;对比 OOS 红卡迁移 0028 / paper currency 0032 走 data-migration 就没这问题）。**gates 段还须提醒：涉及 trade/ 源取新字段 / 改默认口径的 feature 显式列 `mypy trade` + 重装 trade + 根 pytest 子集**（见 generator.md §41/§43）。
+
+**来源：** B080 F005（trial 回填从 bootstrap CLI 改 data-migration 0033）。配套 generator.md §43。
+
+---
+
+## done 收尾 / 开批前置 gate：evaluator signoff 落地 + 状态写入序列化（v0.9.55 — B087+B090+B098 F002 沉淀）
+
+**规约（Planner 在 verifying/reverifying 期间的时序纪律）：**
+
+1. **signoff 落地 gate（B087+B090）：** Planner 在 `verifying`/`reverifying` 期间**不执行 done 收尾、不开下一批**。开批/收尾的**唯一前置** = 「evaluator 的 signoff 报告文件 + 状态流转 commit **已在 `origin/main`**」。反例（两例均恰为 PASS 而无害,但若裁定为 fixing 则状态机将不一致）：B087 done-phase 把 evaluator 未提交的写盘状态 sweep 进自己的 commit;B090 预设 PASS 开 B091 并重置 progress.json,消费掉 B090-done 瞬态。等待期可做**只读预研**（预研 commit 注明「不动状态机」）。
+2. **状态写入序列化（B098 F002，铁律 #11 邻域）：** planner done-phase 写 `progress.json` 与 evaluator signoff 写 `progress.json` **并发** → git 合并可抓到 `session_notes` 尾部断裂态,短暂让 main tip 携带**不可解析的 progress.json**（commit `f2bbb1c` 实例,`4477e7d` 自愈）。pre-commit 钩子（`scripts/check_state_json.py`）只拦「无效 JSON」,**拦不住「竞态覆盖」**（A 覆盖 B 的有效但错误的写）。**根治 = 序列化写入：done-phase 必须在 evaluator signoff 落地 `origin/main` 之后才跑**（与第 1 条同一 gate:signoff 已在 origin/main = done-phase 前置）。两条同族,合并为一个「signoff 落地才动状态机」纪律。
+
+**来源：** B087+B090（planner 抢跑 done/开批时序耦合两例）+ B098 F002（并发写竞态致无效 JSON 进 main,钩子已本机落实但拦不住竞态覆盖）。配套 harness-rules.md 铁律 #11 + §启动流程（clone 后装 pre-commit 钩子）。
+
 ---
 
 ## status = "done" 时的收尾流程

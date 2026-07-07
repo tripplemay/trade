@@ -426,7 +426,7 @@
 
 **建议写入：** `framework/harness/planner.md`（spec Gates 段模板：trade/-edit feature 加门禁）+ `framework/harness/generator.md`（trade/ 编辑后重装 backend venv 的坑，或 environment.md）
 
-**状态：** 待确认
+**状态：** ✅ 已沉淀 v0.9.55（generator.md §41(a) trade/-edit 门禁 family + planner.md §种子数据落地路径 gates 提醒；与 B081 F001 合并一族）
 
 ## [2026-07-03] Claude CLI — 来源：B080 F004（api.ts 新 required 字段致 Frontend CI 瞬红）
 
@@ -436,7 +436,7 @@
 
 **建议写入：** `framework/harness/generator.md`（api.ts 契约规则：schema 加字段 → 同步前端 fixture）
 
-**状态：** 待确认
+**状态：** ✅ 已沉淀 v0.9.55（generator.md §42）
 
 ## [2026-07-04] Claude CLI — 来源：B080 F005（bootstrap-only seed 不入部署链 = 生产静默缺数据）
 
@@ -446,7 +446,7 @@
 
 **建议写入：** `framework/harness/generator.md` §部署种子数据规则 + `framework/harness/planner.md` spec acceptance（种子数据落地路径）
 
-**状态：** 待确认
+**状态：** ✅ 已沉淀 v0.9.55（generator.md §43 + planner.md §种子数据落地路径）
 
 ## [2026-07-04] Claude CLI — 来源：B081 F001（改 backtest 默认口径的 trade/ edit 须跑全 root pytest）
 
@@ -456,7 +456,7 @@
 
 **建议写入：** `framework/harness/generator.md` §trade/-edit 门禁（默认口径变更 → full root pytest + 多变体构造器透传 switch）
 
-**状态：** 待确认
+**状态：** ✅ 已沉淀 v0.9.55（generator.md §41(b)；与 B080 F002 合并一族）
 
 ## [2026-07-04] Claude CLI — 来源：B081 F002/F003（执行限制的 loop-level freeze/restore 模式）
 
@@ -466,7 +466,7 @@
 
 **建议写入：** `framework/harness/generator.md` §回测引擎（执行限制 = loop-level freeze/restore，勿在 rebalance 内改权重）
 
-**状态：** 待确认
+**状态：** ✅ 已沉淀 v0.9.55（generator.md §44）
 
 ## [2026-07-04] Claude CLI — 来源：B081 F004（A/B 真机重跑：分数股假象 + 慢跑抗 kill 基建）
 
@@ -476,7 +476,7 @@
 
 **建议写入：** `framework/README.md` §经验教训（回测保真度：手数取整 A/B 揭分数股假象）+ `framework/harness/generator.md` §慢真机跑（resumable + pickle 缓存抗 kill）
 
-**状态：** 待确认
+**状态：** ✅ 已沉淀 v0.9.55（README.md §经验教训「回测保真度：引擎修真 A/B 必须配本金扫描」+ generator.md §45）。**★采用 F005 审计更正版**——负数=10 万本金容量下限（lot@10M 保留 99% edge），非分数股假象；沉淀文案已按更正为准（原「分数股假象」叙事未固化进 framework）。
 
 **★F005 r1 审计更正（2026-07-04，必读）：** 条目 (1) 的「分数股假象/边际大半是假象」结论**已被独立验收的本金扫描证伪**——负数是 **10 万本金容量下限**（25 只等权中约 9 只一手买不起），lot@1M OOS +23.5%、lot@10M +28.2%（保留 99% edge）。**修正后的正确教训：** ①引擎修真 A/B 的「手数取整」组必须**同时做本金扫描**（100k/1M/10M），否则会把容量下限误读为策略失效；②宣称「某修复揭示假象」前，先问该效应是否随本金/规模消失；③「宣称 edge 前先跑引擎修真 A/B」的元教训仍然成立，且本次 fixing 轮补充了第四条：**A/B 结论本身也要过独立数字审计**（F005 抓住了 F004 的误读）。条目 (2) 抗 kill 基建不受影响。沉淀时请以本更正为准。
 
@@ -488,7 +488,7 @@
 
 **建议写入：** `framework/harness/generator.md` §CI 红诊断（改动面 vs 红测面物理关联判 flake）+ backlog test-automation-infra（risk-banner flake 治本）
 
-**状态：** 待确认
+**状态：** ✅ 已沉淀 v0.9.55（evaluator.md §34，修正 §27——rerun 不清=环境一致 race 须真修）
 
 ## [2026-07-05] Claude CLI — 来源：B087+B090 验收方两次流程观察（planner 抢跑 done/开批）
 
@@ -498,7 +498,7 @@
 
 **建议写入：** `framework/harness/planner.md`（§done 收尾/开批前置：signoff 落地 gate）
 
-**状态：** 待确认
+**状态：** ✅ 已沉淀 v0.9.55（planner.md §done 收尾/开批前置 gate；与 B098 F002 写入序列化合并一节）
 
 ## [2026-07-06] Claude CLI — 来源：test-automation roadmap P5-F2（B098 done 阶段）
 
@@ -508,7 +508,7 @@
 
 **建议写入：** `framework/harness/evaluator.md`（独立评审触发点约定）+ `framework/README.md` §经验教训（Workflow 对抗验证 pre-commit 拦 bug 的价值）
 
-**状态：** ✅ 已确认（2026-07-06 用户同意）→ 已写入 `framework/harness/evaluator.md` §33（承接 §30）。test-automation P5-F2 落地完成。
+**状态：** ✅ 已确认（2026-07-06 用户同意）→ 已写入 `framework/harness/evaluator.md` §33（承接 §30，commit `c5694f7`）。test-automation P5-F2 落地完成。**v0.9.55 归档**（本次不重复写入，仅入 archive）。
 
 ## [2026-07-06] Claude CLI — 来源：B098 F002 并发写竞态致无效 JSON 进 main（铁律 #11 实例 + 已落实钩子）
 
@@ -518,4 +518,8 @@
 
 **建议写入：** `harness-rules.md` §启动流程（clone 后 setup 步骤装钩子：`cp scripts/pre-commit-hook.sh .git/hooks/pre-commit && chmod +x`）+ `framework/harness/planner.md`（done-phase 写入序列化 gate）。
 
-**状态：** 待确认（钩子已本机落实；harness-rules/planner.md 文字待用户批）
+**状态：** ✅ 已沉淀 v0.9.55（harness-rules.md §启动流程 clone 后装钩子 setup 步骤 + planner.md §done 收尾/开批前置 gate 写入序列化；钩子已本机落实 commit `2f79ae5`）
+
+<!-- 2026-07-07: v0.9.55 沉淀完成（B080-B098 队列清扫,用户 2026-07-07「沉淀 learnings,全批准」）：9 条正式写入 + 1 条（P5-F2）先行已在 evaluator.md §33 仅归档。①B080 F002 + B081 F001 合并 → generator.md §41(a)(b)（trade/-edit 门禁 family,子集绿≠全绿）;②B080 F004 → generator.md §42（api.ts required 字段同 commit 补前端 fixture）;③B080 F005 → generator.md §43 + planner.md §种子数据落地路径（种子数据走 data-migration/部署链,勿只 bootstrap CLI）;④B081 F002/F003 → generator.md §44（执行限制 loop-level freeze/restore）;⑤B081 F004 → generator.md §45（慢真机跑 resumable+pickle 抗 kill）+ README §经验教训「回测保真度」（★F005 更正版:容量下限非分数股假象,lot@10M 保留 99% edge）;⑥B083 F002 → evaluator.md §34（改动面 vs 红测面物理关联判 flake,rerun 不清=race 须真修,修正 §27）;⑦B087+B090 + B098 F002 planner 部分合并 → planner.md §done 收尾/开批前置 gate（signoff 落地 + 写入序列化）;⑧B098 F002 → harness-rules.md §启动流程（clone 后装 pre-commit 钩子）;⑨P5-F2 已在 evaluator.md §33 仅归档。归档 framework/archive/proposed-learnings-archive-v0.9.55.md。CHANGELOG v0.9.55。**活跃候选队列=空。** -->
+
+<!-- 当前活动候选（v0.9.55 后）：无。 -->

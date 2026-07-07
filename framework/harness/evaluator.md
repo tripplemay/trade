@@ -657,4 +657,19 @@ nvm use                          # 不一致时切换；无 nvm 装 Node 20 LTS
 
 **★铁律 #4 边界（关键）：** 本约定**收窄 evaluator 的 SCOPE**（复跑机械门禁 → 只做判断核），**不削弱独立性**。generator-side 对抗验证是 generator 自己的 QA（pre-handoff），产出物仍交独立 evaluator 正式验收；evaluator 绝不自评自己实现的代码。两层分离恰恰**强化**了铁律 #4——generator 先自查（省 evaluator 复跑机械），evaluator 专注独立判断。
 
+## 34. 判 CI 红是否本 commit 责任：先看「改动面 vs 红测面」物理关联；rerun 不清 = 环境一致 race 须真修（v0.9.55 — B083 F002 沉淀，修正 §27）
+
+**诊断规律（承接 §27，补物理关联判据 + rerun-不清 更正）：** 判一个红 CI 是否本 commit 责任，**先看改动面与红测面是否有物理关联**：
+- **无物理关联优先疑 flake：** `backend-only commit`（如 B083 F002 = trial 登记 migration + bootstrap + backend test）让 **frontend UI 单测**红（`risk-banner.spec.tsx > 红 banner keeping defensive`）——backend 改动**物理上不可能**影响 frontend vitest fixture 逻辑 → 几乎必为 flake。**证伪法：本机 `npx vitest run <spec> -t "<case>"` 隔离跑 ≥3 次全绿 + 前序 commit CI 全绿。**
+- **有物理关联才深查**：改动面覆盖红测路径 = 按真回归处理。
+
+**★rerun-不清更正（修正 §27 的「先 rerun 放行」）：** §27 说「定性无关后 `gh run rerun` 绿即放行」——但 **rerun 若不清（重跑仍红）= 非随机 flake,而是 CI-环境一致的 async race**（本机隔离/全套都绿,CI runner 负载下一致触发）。B083 实证根因:risk-banner 测点击 Generate 前只等 mode-CARD 渲染,**未等 red→defensive 的 post-render `useEffect` settle**,CI 时序下点击抢跑 effect → POST `{defensive:false}`。**此时必须真修（测加 `await waitFor(defensive radio checked)` 等 flip settle 再点,组件不改——auto-flip 本身对,是测该等 async settle）,不可反复 rerun 赌绿。**
+
+**规约（合并 §27）：**
+1. 无物理关联 → 优先疑 flake,隔离本机复跑证伪。
+2. 证伪后 rerun：**清则放行**（§27）;**不清 = 环境一致 race,须真修（测等 async settle）**,不得反复 rerun 赌绿。
+3. 治本入 backlog `test-automation-infra`（risk-banner.spec.tsx 全套跑 flake：隔离绿/全套偶红,查 test 间共享状态泄漏——likely 某前序 test 泄漏 defensive-posture mock/store 未 reset）。
+
+**来源：** B083 F002（纯 backend commit 让 frontend risk-banner 测红;隔离 3× 绿 + rerun 不清 → 真修 test 加 waitFor settle）。修正 §27（rerun 不清不再是 flake 而是须真修的 race）+ 配套 generator.md §27（前端本机绿≠CI 绿 waitFor 等被断言目标）。
+
 **来源：** test-automation roadmap P5-F2（B098 提案 `framework/proposed-learnings.md`，用户 2026-07-06 确认）。配套 §30（verifying 只审新颖/模糊）+ P5-F1 signoff 工具（B098）+ 本 session B090-B100 11 批 Workflow 对抗验证实践（B095/B097 commit 前拦真 bug）。
