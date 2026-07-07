@@ -76,6 +76,10 @@ from workbench_api.monitoring.trial_backfill_b085 import (
     B085_TRIAL_STAMP,
     B085_TRIALS,
 )
+from workbench_api.monitoring.trial_backfill_b106 import (
+    B106_TRIAL_STAMP,
+    B106_TRIALS,
+)
 from workbench_api.settings import get_settings
 from workbench_api.symbols.names import CURATED_SYMBOL_NAMES
 
@@ -236,6 +240,10 @@ def _import_trials(session: Session) -> int:
     # deploy; bootstrap keeps local dev in lockstep).
     for trial in B085_TRIALS:
         repo.register(created_at=B085_TRIAL_STAMP, **trial)
+    # B106 F002 — Master 组合层 uplift A/B (NO-GO; migration 0042 lands it on deploy;
+    # bootstrap keeps local dev in lockstep).
+    for trial in B106_TRIALS:
+        repo.register(created_at=B106_TRIAL_STAMP, **trial)
     return (
         len(HISTORICAL_TRIALS)
         + len(B081_AB_TRIALS)
@@ -244,6 +252,7 @@ def _import_trials(session: Session) -> int:
         + len(B083_TRIALS)
         + len(B084_TRIALS)
         + len(B085_TRIALS)
+        + len(B106_TRIALS)
     )
 
 
