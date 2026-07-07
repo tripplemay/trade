@@ -8,6 +8,7 @@
 - [Generator 行为规范](role-context/generator.md) — 编码约定、设计稿还原、回归测试沉淀 | 加载：角色为 Generator 时
 - [Evaluator 行为规范](role-context/evaluator.md) — 测试分层 L1/L2、UI 验收、签收报告 | 加载：角色为 Evaluator 时
 - [Planner 行为规范](role-context/planner.md) — 需求处理、角色分配、done 收尾、框架维护 | 加载：角色为 Planner 时
+- [Strategy Scout 研究员 SOP](role-context/strategy-scout.md) — 定期自动:读数据/提优化/搜集全球策略/够格候选自动开 first-look 批 | 加载：作为策略研究员运行时（每周 scout 循环）
 
 ## T2 — 触发条件命中时加载
 - [用户角色与工作方式](user-role.md) — 用户身份、技术背景、沟通偏好 | 加载：需要调整沟通风格时
