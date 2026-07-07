@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-07-06",
   "user_goal": "B103 = smart-money 全LHB机构买入 first-look(免费, 用户PRIMARY信号=日频LHB机构席位). 复用B094缓存(52k事件含jiedu机构tag 29.6%+800样本inst_buy_net)测机构买入信号→跟随→IC/回测. ★无前视(上榜日T follow T+1). research-only(复用缓存). 比B077(b070限19%)广; 免费LHB机构噪/可马甲期望NO-GO但PRIMARY信号决定测. 2 features 1g+1c. Workflow-build.",
   "reference_docs": [
@@ -25,8 +25,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B103 F001 done(Workflow 3子代理 build+2对抗验证 CONFIRMED survived, 每数字复现). 全LHB机构买入 first-look(用户PRIMARY信号). 复用B094缓存+无前视机制. ★★关键nuanced发现: (1)粗糙免费信号(N家机构买入count)NO-GO——binary flat, graded count显著负(N5 t-2.74/N10 t-3.49)=机构越买越跌(马甲/派发印证先验). (2)但精确机构净买¥(inst_buy_net)正borderline-sig IC(+0.20 t2.2)反方向, 薄样本232对/26月. 免费无法仲裁→INCONCLUSIVE. ★★这把¥200从fishing变**定向确认测试**: ¥200全史/退市/精确席位¥(~50x)可confirm/kill inst_buy_net +0.20 IC at scale. 无前视复用B094单测. research-only(复用缓存3文件). gates ruff+16单测. 报告 B103-lhb-institutional-first-look.md. F002 codex验证: ★无前视(上榜日T后T+1复用B094 bisect_right)+机构信号解析正确(N家买入/卖出别搞反)+IC/回测重算+粗糙tag NO-GO与精确¥+0.20分歧诚实(薄n=232)+无过拟合+诚实裁定(INCONCLUSIVE, ¥200定向确认)+research-only. signoff. 含义: 免费LHB机构粗糙tag NO-GO但精确¥现薄正信号→¥200成定向确认inst_buy_net的干净测试. 剩backlog: smart-money日频(¥200).",
+    "status": "complete"
   },
   "features": [
     "F001",

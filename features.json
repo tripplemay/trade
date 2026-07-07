@@ -1,12 +1,12 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
       "title": "smart-money 全LHB机构买入 first-look(免费, 用户PRIMARY信号, 复用B094缓存, 比B077广)",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【backlog smart-money PRIMARY信号=日频LHB机构席位; B077只测b070大盘19%覆盖INCONCLUSIVE; B094拉全LHB(52k事件全股2022-2024)但只测游资→机构信号未测】复用 B094 缓存(data/research/b094_youzi/events.csv 52337事件含jiedu机构tag 15474=29.6% 'N家机构买入'; prices.csv; seats_sample.csv 800事件inst_buy_net)+无前视逻辑(上榜日T盘后→T+1进场). 信号=机构买入(jiedu 'N家机构买入' 家数/成功率, 或seat inst_buy_net)→跟随→forward-return rank-IC(N1/5/10)+回测 vs 基线. ★无前视(上榜日T, follow T+1, 同B094单测). research-only(复用缓存不重fetch). ★诚实: LHB机构席位已知噪/可马甲(记忆先验)→期望弱可能NO-GO; 但这是用户PRIMARY信号在全免费LHB的决定性一测(比B077 b070广), 或找到edge或确认免费LHB机构也不成→¥200全史/退市才是干净决定测. 报告 docs/test-reports/B103-lhb-institutional-first-look.md. Gates: 根ruff+root pytest+CI绿. Workflow-build(对抗验证防前视/过拟合).",
       "design_decisions": [
         "用户PRIMARY信号=日频LHB机构; B077 b070限19%; B094全LHB机构tag未测→复用B094缓存测机构买入。",
