@@ -1,9 +1,9 @@
 {
   "status": "building",
   "total_features": 3,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-07-07",
   "user_goal": "B106 组合层落地(deployment-plan 阶段 A,整体提收益最高杠杆)。2026-07-07 用户授权全权运作项目。把红利低波防守腿并入 Master 组杠铃(与动量负相关)+固定权重40/30/20/10 改风险加权(risk_parity_vol_target/hrp 已有基建),回测验证组合 Sharpe/回撤提升。**核心不变量**:现 Master 4-sleeve fixed 默认向后兼容 byte-identical(生产 master_portfolio paper 不破);verdict-gating(提升显著才改默认);B070 去偏+真成本;research-only/不碰真金;跨市场币种口径诚实对齐(红利低波 CNY vs Master USD)。3 features 2g+1c:F001 组合配置扩展+权重方案/F002 5方案回测对照+verdict/F003 独立验收。spec docs/specs/B106-portfolio-layer-uplift-spec.md。触 trade/ 全套门禁。",
   "reference_docs": [
@@ -40,7 +40,7 @@
   "completed_date": null,
   "session_notes": {
     "planner": "2026-07-07 B106 planning(操盘负责人)。用户授权全权运作('保证收益最大化,干起来')。B105 聪明钱收官(inst_buy_net 真信号但可落地 long-only edge≈0/赚钱空头 A股做不了/¥200 改不了做空限制→归档聪明钱方向)。据 deployment-plan 阶段 A 开组合层落地=整体提收益最高杠杆。**红利低波并入 Master 组杠铃+权重改风险加权**,基建现成(risk_parity_hrp/vol_target 已有,红利低波只差并入)。**【续接】**:status=building,Generator 接 F001(组合配置扩展+3权重方案,默认零回归)→F002(5方案回测对照+verdict+跨市场口径诚实),F003 独立 agent 验收。★本批后启动阶段 B(新配置 paper 前向验证≥12月统计门槛)。★负责人纪律:验收结论 git 核实才采信(B104/B105 幻觉消息教训)。",
-    "generator": null,
+    "generator": "2026-07-07 F001 done(commit 95202f3)。Master 组合层扩展落地。**交付**:①MasterPortfolioParameters 加 weight_scheme 字段(默认 fixed);②parameter_hash 条件省略 fixed→默认 4-sleeve/fixed 字节级不变(金值 726f9ce6a4acd956dcde72f2bc32a9c1633ba5c23acfc359c7533aea6ea7a644,守门单测钉死);③resolve_sleeve_weights(scheme,sleeves,returns?)——fixed 透传 planning_weight / risk_parity 复用 risk_parity._inverse_volatility_weights / hrp 复用 risk_parity_hrp.compute_hrp_weights;④防守腿走独立 barbell 构造器 master_portfolio_parameters_with_defensive_barbell(defensive_weight=0.20,weight_scheme=fixed)=cn_dividend_lowvol(role_label=defensive_sleeve),4 进攻腿按(1-防守权重)缩放保相对比例,默认 sleeve 列表**不含**防守腿→生产零回归。**★向后兼容权衡**:防守腿刻意不进默认 sleeve 列表(进了会改默认组合破字节级)→纯 opt-in 对照。门禁全绿:mypy trade 0err + 根 ruff 净 + 全量 unit 1365 passed(master/portfolio/risk_parity 零回归)+ backend test_strategies 13 passed(重装 trade 后)。**【F002 续接指引】**:写 scripts/research/b106_portfolio_uplift_ab.py 回测对照 5 方案——①现状(default_master_portfolio_parameters,基线,须复现历史数字)②barbell fixed ③barbell risk_parity ④barbell hrp ⑤barbell vol-target。方案②-⑤用 master_portfolio_parameters_with_defensive_barbell(weight_scheme=...);actual sleeve 权重调 resolve_sleeve_weights(scheme,sleeves,sleeve_returns)。★跨市场口径:红利低波 CNY(2018+ ETF/2005+ 指数 TR)vs Master 其他腿 USD/HKD——分市场 sub-portfolio 或 USD 统一,诚实标注窗口/币种限制。★注意:master_portfolio 回测引擎(trade/backtest/master_portfolio.py)当前用 sleeve.planning_weight 直算,尚未消费 weight_scheme;F002 runner 需自行用 resolve_sleeve_weights 派生权重喂回测(或按需在引擎接 weight_scheme,但那是新改动需评估零回归)。cn_dividend_lowvol sleeve 的 child 回测执行 F002 需接(现引擎 KNOWN_IMPLEMENTED_STRATEGY_IDS 未含 cn_dividend_lowvol,unknown strategy_id 会 fail-closed)。verdict-gating:提升显著才建议改默认,否则 NO-GO 合法。报告落 docs/test-reports/B106-portfolio-uplift-ab.md + trial_registry。",
     "evaluator": null
   }
 }
