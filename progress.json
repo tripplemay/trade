@@ -1,40 +1,40 @@
 {
-  "status": "done",
+  "status": "building",
   "total_features": 2,
-  "completed_features": 2,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": null,
+  "current_sprint": "F001",
   "last_updated": "2026-07-06",
-  "user_goal": "B101 = smart-money 大股东/高管增持 first-look(免费, 最promising free angle: 内部人买入=已知mild alpha). 信号=大股东/高管净增持→披露后跟随→rank-IC+回测. ★无前视(增持披露滞后, follow披露日后). research-only. 内部人买入比游资/季度机构持仓更promising→或找到有edge的free信号, 或确认连最promising free也NO-GO. 2 features 1g+1c. Workflow-build.",
+  "user_goal": "B102 = smart-money insider-buying 小盘 sleeve first-look(扩数据收口 recurring caveat). B101 insider流动大盘NO-GO但liquid-tilt→小盘(信号集中处)未测(Codex F002确认). 复用B101 insider events+扩fetch小盘价格重测. ★无前视(公告日cohort). research-only. 或找到免费信号小盘真edge, 或确认免费空间全穷尽只剩¥200日频. 2 features 1g+1c. Workflow-build.",
   "reference_docs": [
-    "docs/test-reports/B099-inst-building-first-look.md",
-    "docs/test-reports/B094-youzi-seat-first-look.md"
+    "docs/test-reports/B101-insider-buying-first-look.md",
+    "scripts/research/b101_insider_fetch.py"
   ],
   "docs": {
     "spec": null,
     "test_cases": null,
-    "signoff": "docs/test-reports/B101-insider-buying-first-look-signoff-2026-07-06.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "全 PASS 2/2 → done. 免费大股东/高管增持 first-look 流动大盘 NO-GO. 独立验收(代 Codex, 隔离, 最高怀疑度, 真 998股/12249事件面板复算非 fixture): PIT 无前视 83/83 cohort 0违规+3手核+原始事件 announce>=txn(min_lag=0); ★外推边界正确(结论限流动大盘, 小盘 sleeve 未测 caveat 完整保留, 未过度外推为信号全体无效); 自写独立 IC 实现 h20 逐位吻合(-0.0358/t=-1.58)+bit可复现; ★新增 look-ahead 对照(交易月作弊版亦 IC≈0)坐实 NO-GO 非滞后 artifact+归因正确; 无扫参+零回归(0产品码)+L1 14测+CI(python-checks/backend@0472146 success)+HEAD≡prod. signoff 已写.",
-    "pass_count": 2,
+    "summary": null,
+    "pass_count": 0,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
   },
   "generator_handoff": {
-    "summary": "B101 F001 done(Workflow 3子代理 build+2对抗验证 CONFIRMED survived). 大股东/高管增持 first-look(最promising free angle). 数据可行 stock_ggcg_em(股东增持) 33400事件, 含公告日. ★无前视(按公告月cohort进场次月首日, 83季0违规, +15d guard). ★裁定 INCONCLUSIVE/NO-GO: rank-IC~0全|t|<2, size-book全horizon LOSES, 事件tilt trivial+60d翻负. 连最promising free角度也失败(合游资B094+机构建仓B099). ★关键caveat: 价格cache liquid-tilt→小盘/illiquid sleeve(内部人信号plausibly集中处)未测; ¥200日频LHB仍separate. research-only(4文件). gates ruff+14单测. 报告 B101-insider-buying-first-look.md. F002 codex验证: ★无前视(公告日非变动日, 进场公告月后, 83季0违规)+增持信号正确+IC/回测重算+无过拟合+诚实裁定(NO-GO+小盘sleeve未测caveat)+research-only. signoff. 含义: 3个免费smart-money角度(游资/机构建仓/insider)在流动大盘均NO-GO; 未测=小盘sleeve(需扩数据)+¥200日频. 剩backlog: smart-money日频(¥200).",
-    "status": "complete"
+    "summary": null,
+    "status": "pending"
   },
   "features": [
     "F001",
     "F002"
   ],
-  "completed_date": "2026-07-06",
+  "completed_date": null,
   "session_notes": {
-    "planner": "2026-07-06 B100 done后开 B101(大股东/高管增持 first-look, 最promising free angle). 内部人买入=已知mild alpha, 比游资/季度holdings更可能有edge. 数据finicky→agent迭代. Workflow-build无前视. ultracode第12批. 剩backlog: smart-money日频(¥200).",
+    "planner": "2026-07-06 B101 done(Codex PASS 2/2 20th; insider流动大盘NO-GO, 外推边界正确小盘caveat保留)后开 B102(insider小盘sleeve, 收口recurring liquid-tilt caveat). 扩fetch小盘价格重测. Workflow-build无前视. ultracode第13批. 剩backlog: smart-money日频(¥200).",
     "generator": null,
     "evaluator": "2026-07-06 B101 F002 独立验收(代 Codex, 与实现完全隔离, 最高怀疑度) → **全 PASS 2/2 → done**. 免费大股东/高管增持 first-look(ak.stock_ggcg_em '股东增持', 33400事件/3233股; ∩B070流动子集=998股30.9%/12249可交易事件)→ **流动大盘 NO-GO(信号真空)**. 本机真实 998股面板复算非 fixture. ★★命门1 PIT 无前视: 事件按公告月分 cohort, 入场=月M+1首交易日(严格晚于该月所有公告), forward=未来 bar, +15d guard 防 pre-2018 snap; **自写独立 PIT 审计 83/83 cohort 0违规**+3 cohort 手核(2017-12→2018-01-02/2022-03→2022-04-01/2026-04→2026-05-06 均入场晚于最晚公告)+原始33400事件 announce>=txn(min_lag=0, 抽样 lag 82d/1d/3d 坐实重尾滞后 median3/mean60/p90183); 14 L1 单测 pass(含 pre-panel-no-snap/entry-after-cohort). ★★命门2 外推边界(本批最关键): 报告**结论明确限流动大盘子集**(§verdict 'liquid tradeable universe'/'free liquid version')+**小盘 sleeve 未测 caveat 完整保留**(§5.3 'small-cap sleeve is untested'/§6 'not proof the whole angle is dead, 小盘门+¥200 LHB 两门敞开')→**没有过度外推为大股东/高管增持信号全体无效**; 增持信号在信息不对称更大的小盘可能更强而未覆盖, 门诚实敞开(同 B077/B094/B099 覆盖限). ★★命门3 look-ahead 对照(我构造, 超越 generator): 把公告月入场换成**交易月作弊/前视版**, h20 CHEAT meanIC=-0.0179 t=-0.83 / h60 CHEAT -0.0006 t=-0.03 —— **即便作弊时点也 IC≈0**(与 B099 作弊版 t>2 相反)→ 坐实流动大盘 NO-GO **非滞后 artifact 而信号本身真空**, 且报告**没有错误甩锅给滞后**(归因正确=magnitude 无截面信息+tilt 非稳健); 对照只测时点维度, 小盘覆盖维度正交→小盘门不受影响仍合法未测. 命门4 IC 独立复算: **自写实现(不 import generator 模块) h20 逐位吻合** meanIC=-0.0358 t=-1.580 excess=0.0008 hit=0.518; 复跑 generator 管线输出 bit-IDENTICAL; GO 门槛(IC≥0.03&|t|≥2&单调)6组无一达标(max|IC|=0.0358 非单调翻号 全|t|<2)→NO-GO 唯一正确; event excess 5/20/60=+0.10%/+0.08%/-0.27% 60d翻负+magnitude book 全 horizon LOSES, 报告诚实标横向不一致. 命门5 覆盖诚实(998/3233=30.9% liquid tilt 明标, 价格宇宙 B070 独立选取不偏信号)+无扫参(grep 无 grid/sweep/tune, _HORIZONS/_TOP_Q/_MIN_XS/_MAX_ENTRY_GAP 硬编码先验, 6组全量非择优, 先验 IC~0.02-0.05 声明一次未回调). 命门6 零回归(F001 仅 docs/scripts.research/tests, 产品码 trade/workbench 0文件, 无生产消费者)+L1 14 passed+ruff 净+CI(python-checks/workbench-backend@0472146 success, scripts/tests 触发 Python CI)+HEAD≡prod(0产品码 trivially). 3 soft-watch 非阻断: S1 小盘 sleeve 真未测门(需扩小盘 qfq 才能给信号全体定论)/S2 我的 look-ahead 对照为验收侧新增证据未入交付脚本(与 B099 命门3 互补)/S3 复算 json 本机 gitignored(报告 md 承载全数字, 本次已 bit 复现). signoff docs/test-reports/B101-insider-buying-first-look-signoff-2026-07-06.md. ★含义: 免费 smart-money 四支(机构席位 B077/游资 B094/机构建仓 B099/大股东增持 B101)在流动大盘均无可靠 edge; 未测=小盘 sleeve(需扩数据)+付费 ¥200/日 top_inst(决定性测试, 仍待用户)."
   }
