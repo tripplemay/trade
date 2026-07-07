@@ -5,23 +5,24 @@ type: project
 ---
 
 ## 当前状态
-- **B103 ✅ done（2026-07-07, 1g+1c, Workflow-build）** 全 LHB **机构买入** first-look（用户 PRIMARY 信号=日频 LHB 机构席位；复用 B094 缓存 52,337 事件，补 B094 只测游资 + B077 只测 b070 19% 双缺口）→ **INCONCLUSIVE**（粗糙 tag≈NO-GO，精确 ¥ +0.20 IC 薄）。★裁定 **全 PASS 2/2**。独立验收（代 Codex，隔离，最高怀疑度，真 52k 事件面板复算非 fixture）：**报告全部数字 bit 级复现**——覆盖 **23.9%（12,502/52,337）/35 月**；`inst_buy_flag` 平（|t|<0.6）；`inst_count`（有符号家数）N5/N10 **显著负 t=−2.74/−3.49**（机构越买越跌=马甲/派发印证先验）；`inst_buy_net`（精确席位¥）N5 **+0.205 t=2.22 但仅 232 对/26 月/~9 名/月**；follow edge 全非正（N10 −0.76% t=−1.70）。
-- **★★命门1（覆盖 vs B077 + Tushare ¥200 含义，本批最关键）PASS**：B103 免费**仍覆盖受限（~24%，非近全）**→ ¥200 全覆盖仍**决定性未测**；精修=covered 1,279 ticker **跨全板**（SH主板/SZ主板/ChiNext/STAR，比 B077 大盘 only 19% 更具代表性），仍漏退市（幸存者）+BJ 全缺。**关键：粗糙「N家机构」tag 这条免费路这次已被否（NO-GO）**→ ¥200 不是重测粗糙 tag，而是**定向 confirm/kill 精确 inst_buy_net 的 +0.20**（免费只凑 232 对薄样本，方向且与粗糙 count 相反）。报告**双向不误导**：不误导白花（明写 +0.20「fragile n≈232 / hypothesis not result」，不承诺 ¥200 找 edge）+ 不误导白省（不宣称 PRIMARY 信号已死，因精确 ¥ 覆盖子集是正的）。**我独立 fragility 压测坐实 +0.20 薄**：26 月仅 15 月为正，逐月 IC ±0.9 剧烈跳（5-11 名/月单股主导）。命门2 PIT 无前视 PASS（bisect_right 严格>T + 3 真实事件手核 + 16 单测）。命门3 及时性/B099 PASS+软观察 S1（及时粗糙 tag 仍 NO-GO=及时单靠免费粗糙 tag 不能救；精确 ¥ 薄正留住 ¥200；但报告未显式接 B099 季度滞后对照）。命门4 PASS（禁扫参 grep 净+0 产品码 diff 空+L1 16 测+Python/Backend CI success@34767a4+Deploy success HEAD≡prod+对抗 2 CONFIRMED 我复现）。3 软观察见下。signoff `docs/test-reports/B103-full-lhb-institutional-first-look-signoff-2026-07-07.md`。
-- **★对 Tushare ¥200 决策含义**：免费全 LHB 仍 ~24% 覆盖（比 B077 19% 跨板但非近全）→ **¥200 全覆盖仍决定性未测**；不同的是**粗糙 N家机构路已否（NO-GO）**，¥200 独立价值收窄为**精确席位 ¥ 在全覆盖 + 退市 + 全史上定向 confirm/kill 那条 +0.20 薄正信号**——**既未被证明白花（+0.20 是活假设）也未被证明可省（免费无法否定精确 ¥）**，仍待用户决策。
-- **B102–B074 ✅**（免费 smart-money 四角度 NO-GO：游资 B094/机构建仓 B099/insider 大盘 B101/小盘 B102；残差引擎 A/B INCONCLUSIVE B100）。活生产 API=`trade.guangai.ai`（非 astock）。
-- **接续**：★战略决策待用户。backlog 剩：A股聪明钱[**付费 ¥200 日频 LHB top_inst / 精确席位¥** 待用户，B103 已把它精化为**定向确认 inst_buy_net +0.20** 的干净测试] + residual-engine（B100 INCONCLUSIVE，采纳待用户）。34+ learnings 待用户确认。★key 曾对话明文暴露→建议轮换。
+- **B104 ✅ done（2026-07-07, 1g+1c, Workflow-build）** inst_buy_net(精确机构净买¥)免费 **2.1x 席位扩样**压力测 B103 的 +0.20 IC → **HOLDS（真且稳，但薄）**。★裁定 **全 PASS 2/2**。独立验收（代 Codex，隔离，最高怀疑度，**自写 Spearman 不 import generator**）：扩样 N5 **+0.148 t2.925** / N10 **+0.1615 t2.838** / N1 −0.0105（485 对/35 月）vs 基线 N5 +0.2047 t2.222（232 对/26 月）——**bit 级复现 committed JSON**。
+- **★★命门1（反转之谜 / 防 p-hacking，本批最高怀疑点）PASS = 无 p-hacking**：所谓"早期 3.6x 扩样塌成 0.03"是**幻影**——它是 planner 早前对用户的**预测**（"+0.20 很可能全覆盖后塌成噪音"），被回顾叙述成已测得的塌陷；**磁盘 + 全 transcript 均无此计算**。真实只两次 seed-104（+100 新 364 对 t2.26 → +200 新 485 对 t2.92）**都 HOLD 单调不塌**。停 200 是 **fetch 限流非挑显著点**（轨迹 +0/+50/+100/+150/+200 → t 2.22/2.92/2.26/2.86/2.92 **每点 t>2.2**）；无挑种子（全 seed-104；seed-102 属 B102 无关）/无扫描码（grep 无 argmax/sweep/for-seed）/apples-to-apples（同 b103.run，唯一差 seats 行数）。
+- **★★命门2 独立复算+稳健 PASS（真且稳但薄）**：jackknife-by-month 删任一月 N5 t∈[2.67,3.43] 无单月扛全场；但 **485 对仅 174（36%）真有机构买入（~5 名/月）**，逐月 IC −0.48…+0.73 剧跳/23 月正，点 IC 降 28%（t 升纯因月数 26→35 缩小标准误），"2.09x 翻倍"多为 0 值补薄月解锁存量（真机构观测 221→297，+34%）。命门3 PIT 无前视 PASS（bisect_right 严格>T + 3 新事件手核 T+1 + 17 单测）。命门4 PASS（0 产品码 diff 空/17 测/ruff 净/Python+Backend CI success@bc0805d/Deploy success→HEAD≡prod）。3 软观察见下。signoff `docs/test-reports/B104-inst-buy-net-stress-test-signoff-2026-07-07.md`。
+- **★对 Tushare ¥200 决策含义（本批直接影响花钱）**：HOLDS **站得住**（数字真 + 非 p-hacking + jackknife/checkpoint 全稳）但**站在薄冰**（~5 名机构/月、只测 7% 目标扩样、点 IC 已降 28%、仍 2022-2024+幸存者限、很可能全覆盖后塌）。这是**24 批唯一没死、且挺过一次（虽部分）真实压力测的聪明钱信号**=最好免费线索 → ¥200 是对它的**诚实决定性 confirm/kill 测（非买已知 edge，期望须低）**；报告护栏不误导白花（明标非 tradeable/非 settled）亦不误导白省 → **仍待用户知情决策**。
+- **B103 ✅**（全 LHB 机构 first-look INCONCLUSIVE：粗糙 tag NO-GO 但精确 ¥ +0.20 IC 薄 232 对；covered 23.9% 跨全板）。**B102–B074 ✅**（免费 smart-money 四角度 NO-GO；残差引擎 A/B INCONCLUSIVE B100）。活生产 API=`trade.guangai.ai`（非 astock）。
+- **接续**：**B105 已开批 building（planner e9e3a19）** = inst_buy_net ranked 多空（测 IC 是否扣成本转化 edge，解 B104 IC~0.15 vs binary-follow 非正张力，复用 B104 缓存无前视）。★战略决策待用户：backlog 剩 A股聪明钱[**付费 ¥200 日频 LHB / 精确席位¥**，B104 已精化为**对唯一没死的 +0.20 信号做诚实 confirm/kill**，期望须低] + residual-engine（B100 INCONCLUSIVE 待用户）。34+ learnings 待用户确认。★key 曾对话明文暴露→建议轮换。
 
 ## 遗留 / soft-watch
-- **B103 S1/S2/S3**（非阻断）：报告 §5 关系表未显式接 B099「季度滞后 vs 日频及时」层→不改裁定/数字 / 程序化 judge() 只吃 ic_flag+follow-edge 不吃显著负 count+正 net（标签比正文薄，但正文 foreground 分歧更诚实）/ 复算 json 未落盘（.md 承载全数字，我直接跑 probe 解析 JSON bit 复现）。
-- **B102 S1/S2/S3**（归档）：打分月时间聚集 / 「optimistic upper bound」措辞非严格 / 复算 json gitignored。**B101–B081**：见旧注归档。
+- **B104 S1/S2/S3**（非阻断）：报告 "HOLDS: strengthens" 措辞偏乐观（t 升实为月数增之机械结果，点 IC 反降 28%）/ 未显式披露 36%-nonzero 有效薄样本（承袭 B103 已接受方法）/ 只测 200/2704 目标扩样（7%），fetcher resumable 可续跑更强测。
+- **B103 S1/S2/S3**（归档）：报告未显式接 B099 季度滞后对照 / judge() 只吃 flag+edge / 复算 json 未落盘。**B102–B081**：见旧注归档。
 
 ## 永久硬边界
 - B045 market data refresh (r) 只读+§12.10.2 AST 守门；research-safe / no-broker / no-AI 预测 / no 自动下单；**hk_china 仍 ETF proxy（B093 NO-GO 坐实）**。
 - cn_attack 仍研究态/OOS 红卡/edge 微弱不可配资。冻结再验证 pipeline **永不** validated→True（仅人工解红卡；三重守门）。**残差动量 B100 A/B INCONCLUSIVE，不切入。**
-- golden 只进测试 fixture seam，不碰生产真数据路径。**smart-money 免费信号（游资/机构建仓/insider/全 LHB 机构 tag）first-look 均 research-only（0 产品码），无一切入生产；免费粗糙路收口，精确席位 ¥ 待 ¥200 定向验。**
+- golden 只进测试 fixture seam。**smart-money 免费信号（游资/机构建仓/insider/全 LHB tag）first-look 均 research-only（0 产品码），无一切入生产；免费粗糙路收口，精确席位 ¥ inst_buy_net 免费 2.1x 扩样 HOLDS 但薄/部分→¥200 定向确认待用户。**
 
 ## Framework 状态（最新 3 版）
-- **P5-F2**（c5694f7, 2026-07-06）：evaluator.md §33 固化独立对抗评审触发点（承接 §30）；test-automation roadmap P0–P5 全完→backlog 移除。
+- **P5-F2**（c5694f7, 2026-07-06）：evaluator.md §33 固化独立对抗评审触发点（承接 §30）。
 - **v0.9.55**（f67332e, 2026-07-06）：B080-B098 队列 9 条 learnings 沉淀（全批准清队列）。
 - **v0.9.53**（B077）：§36 §23 派生字段 measured-not-assumed / §37 first-look 覆盖-门控裁定 / evaluator.md §31 date-bomb。
 
