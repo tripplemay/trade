@@ -19,7 +19,7 @@
       "title": "Codex 独立验收 + signoff(无前视/披露滞后/无过拟合/诚实裁定/research-only)",
       "priority": "medium",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "Codex独立: 增持信号构造正确+★无前视(披露滞后: follow披露日后非增持发生日)+IC/回测重算+无过拟合+诚实裁定+research-only零回归. signoff.",
       "design_decisions": [
         "最大陷阱=用增持发生日而非披露日(前视);独立核实。"
