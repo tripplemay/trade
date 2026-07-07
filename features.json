@@ -19,7 +19,7 @@
       "title": "Codex 独立验收 + signoff(无前视/成本realistic/幸存者诚实/ranked正确/诚实裁定/research-only)",
       "priority": "medium",
       "executor": "codex",
-      "status": "pending",
+      "status": "done",
       "acceptance": "Codex独立: ranked多空构造正确(权重∝inst_buy_net排名)+★无前视(T+1复用B104)+realistic成本(非乐观)+GROSS/NET重算+幸存者上偏诚实+诚实裁定(净edge是否survivorship-inflated, vs¥200)+research-only. signoff.",
       "design_decisions": [
         "最大陷阱=成本乐观/幸存者当真/前视;独立核实。"
