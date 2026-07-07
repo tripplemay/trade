@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-07-06",
   "user_goal": "B102 = smart-money insider-buying 小盘 sleeve first-look(扩数据收口 recurring caveat). B101 insider流动大盘NO-GO但liquid-tilt→小盘(信号集中处)未测(Codex F002确认). 复用B101 insider events+扩fetch小盘价格重测. ★无前视(公告日cohort). research-only. 或找到免费信号小盘真edge, 或确认免费空间全穷尽只剩¥200日频. 2 features 1g+1c. Workflow-build.",
   "reference_docs": [
@@ -25,8 +25,8 @@
     "issues": []
   },
   "generator_handoff": {
-    "summary": null,
-    "status": "pending"
+    "summary": "B102 F001 done(Workflow机制+后台fetch完成530名+fresh agent独立验收完整结果). insider-buying小盘sleeve. ★结果(byte-identical复现): 小盘rank-IC h5+0.086(t1.18不显著,仅13月过门槛)/h20+0.034/h60~0; 事件book GROSS h20/h60已underperform小盘基线; NET@50bp全horizon负(-4%/-15%/-43%). 幸存者上偏(270=33.8%退市)乐观上界仍NO-GO. ★裁定 NO-GO: 连最promising免费信号(insider)在小盘sleeve带幸存者顺风也无edge. 无前视复用B101公告月+1进场(单测锁). ★★收口: 免费smart-money探索全穷尽(游资B094/机构建仓B099/insider流动B101/insider小盘B102 四角度NO-GO). ¥200日频LHB=剩唯一干净决定性测试. research-only(4文件). gates ruff+12单测. 报告 B102-insider-smallcap-first-look.md. F002 codex验证: ★无前视(公告月+1进场复用B101, 单测)+IC/回测(gross+net)重算+幸存者33.8%退市诚实(上偏上界仍NO-GO)+流动性50bp成本+薄样本13月caveat+诚实裁定(NO-GO)+research-only. signoff. 含义: 免费smart-money四角度全NO-GO; 剩backlog=smart-money日频(¥200)唯一未测干净路径.",
+    "status": "complete"
   },
   "features": [
     "F001",

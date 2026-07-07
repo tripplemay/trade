@@ -1,12 +1,12 @@
 {
-  "sprint": "F001",
+  "sprint": "F002",
   "features": [
     {
       "id": "F001",
       "title": "smart-money insider-buying 小盘 sleeve first-look(扩数据, B094/B099/B101 recurring caveat 收口)",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "【backlog smart-money; B101 insider-buying 流动大盘 NO-GO 但 liquid-tilt→小盘 sleeve 未测(内部人信号 plausibly 集中处), Codex F002 确认此 caveat】复用 B101 insider events(stock_ggcg_em 股东增持, 含公告日)+★扩数据: fetch **小盘/非流动**(不在 B070 liquid cache 的 insider 股, ~2235只)价格(akshare stock_zh_a_daily qfq; ★慢→agent cap/sample e.g. 500-1000 deterministic subset, documented). 在小盘 sleeve 上重测 insider-buying 信号→forward-return rank-IC+回测 vs 小盘基线. ★无前视(复用 B101 公告日 cohort 逻辑, follow 公告月后). research-only. ★诚实: 小盘是 A股 smart-money/内部人信号 plausibly 集中处→或找到免费信号在小盘的真 edge(用户目标实质进展), 或确认免费空间(liquid+小盘)全穷尽只剩 ¥200 日频. 报告 docs/test-reports/B102-insider-smallcap-first-look.md: 小盘 IC/回测 vs liquid(B101)对比+GO/INCONCLUSIVE/NO-GO+诚实框(小盘幸存者偏/流动性成本 caveat). Gates: 根ruff+root pytest+CI绿. Workflow-build(对抗验证防前视/过拟合/小盘流动性成本).",
       "design_decisions": [
         "B094/B099/B101 均 liquid 大盘 NO-GO + recurring caveat=小盘未测(信号集中处); Codex F002 确认→值得测。",
