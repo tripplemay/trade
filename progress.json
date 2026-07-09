@@ -1,10 +1,10 @@
 {
-  "status": "verifying",
+  "status": "done",
   "total_features": 3,
-  "completed_features": 2,
+  "completed_features": 3,
   "fix_rounds": 0,
   "current_sprint": "F003",
-  "last_updated": "2026-07-07",
+  "last_updated": "2026-07-09",
   "user_goal": "B106 组合层落地(deployment-plan 阶段 A,整体提收益最高杠杆)。2026-07-07 用户授权全权运作项目。把红利低波防守腿并入 Master 组杠铃(与动量负相关)+固定权重40/30/20/10 改风险加权(risk_parity_vol_target/hrp 已有基建),回测验证组合 Sharpe/回撤提升。**核心不变量**:现 Master 4-sleeve fixed 默认向后兼容 byte-identical(生产 master_portfolio paper 不破);verdict-gating(提升显著才改默认);B070 去偏+真成本;research-only/不碰真金;跨市场币种口径诚实对齐(红利低波 CNY vs Master USD)。3 features 2g+1c:F001 组合配置扩展+权重方案/F002 5方案回测对照+verdict/F003 独立验收。spec docs/specs/B106-portfolio-layer-uplift-spec.md。触 trade/ 全套门禁。",
   "reference_docs": [
     "docs/specs/B106-portfolio-layer-uplift-spec.md",
@@ -16,14 +16,14 @@
   ],
   "docs": {
     "spec": "docs/specs/B106-portfolio-layer-uplift-spec.md",
-    "test_cases": null,
-    "signoff": null,
+    "test_cases": "docs/test-cases/b106_independent_recompute.py",
+    "signoff": "docs/test-reports/B106-portfolio-uplift-signoff-2026-07-09.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": null,
-    "pass_count": 0,
+    "summary": "全 PASS 3/3。L1 全门禁绿(mypy trade 0err/ruff净/root pytest 1395 passed/backend 10 passed/新单测38 passed/迁移单头0042/CI三条+Deploy全绿)。★核心不变量byte-identical零回归独立证实(最强形式):前B106源码 f7adc15 的默认Master parameter_hash=726f9ce6…=守门单测金值=HEAD默认hash,三者逐位相等,非新测试内部自洽。barbell/weight_scheme纯opt-in研究,未接入生产(precompute/services仍用default_master_portfolio_parameters)。L2独立复算(numpy自写指标数学不调runner内部函数):5方案CAGR/Sharpe/MaxDD/回本/NAV、verdict双门槛、相关性(USD+0.20~+0.48/CNY+0.11~+0.41弱正非负)、币种口径(CNY-native Sharpe0.480 vs USD-converted0.365)、FX方向、回撤复利全部Δ≈1e-16与报告一致。runner确定性重跑JSON逐字节复现。verdict NO_GO与数字一致(最优③ΔSharpe+0.0117<0.15门槛且拖CAGR−2.5pp)。HEAD≡prod:生产version=c7acc30含全部产品码,HEAD差异仅progress.json状态机文件。3 soft-watch(S1绝对Sharpe偏高/S2 sleeve-return proxy/S3 建议下批测4-sleeve无防守腿risk_parity隔离效应)均报告已诚实披露,非新bug,不阻塞。",
+    "pass_count": 3,
     "partial_count": 0,
     "fail_count": 0,
     "issues": []
@@ -37,10 +37,10 @@
     "F002",
     "F003"
   ],
-  "completed_date": null,
+  "completed_date": "2026-07-09",
   "session_notes": {
     "planner": "2026-07-07 B106 planning(操盘负责人)。用户授权全权运作('保证收益最大化,干起来')。B105 聪明钱收官(inst_buy_net 真信号但可落地 long-only edge≈0/赚钱空头 A股做不了/¥200 改不了做空限制→归档聪明钱方向)。据 deployment-plan 阶段 A 开组合层落地=整体提收益最高杠杆。**红利低波并入 Master 组杠铃+权重改风险加权**,基建现成(risk_parity_hrp/vol_target 已有,红利低波只差并入)。**【续接】**:status=building,Generator 接 F001(组合配置扩展+3权重方案,默认零回归)→F002(5方案回测对照+verdict+跨市场口径诚实),F003 独立 agent 验收。★本批后启动阶段 B(新配置 paper 前向验证≥12月统计门槛)。★负责人纪律:验收结论 git 核实才采信(B104/B105 幻觉消息教训)。",
     "generator": "2026-07-07 F002 done(commit 6dd0ec9 runner+report+15单测 / c7acc30 trial_registry)。scripts/research/b106_portfolio_uplift_ab.py:5方案 sleeve-return 层月度 A/B。**★★跨市场口径怎么处理(本批最大陷阱)**:进攻4腿USD(tiingo adj_close),防守腿cn_dividend_lowvol是CNY(H20269 TR)。PRIMARY口径=USD统一——防守腿CNY收益按USD/CNY汇率(data/research/b090_hk/fx_daily.csv,CNY per USD)换算USD投资者实收 (1+r_cny)·fx_prev/fx_now−1;单列CNY-native对照使FX拖累可分离。★发现生产master引擎跑不了真实数据(动量需月频bar/risk_parity需120日频观测,同records不兼容)→sleeve-return层重构各腿原生频率,权重派生复用resolve_sleeve_weights(滚动无look-ahead)。窗口:5方案对齐共同交集2015-09~2026-04(116月),否则基线被多算6月惩罚虚高杠铃(此修正把risk_parity ΔSharpe从虚假+0.128修正为真实+0.012)。**★★5方案真数字 CAGR/Sharpe/MaxDD**:①baseline 10.46%/1.222/−8.3% ②barbell fixed 9.33%/1.141/−8.1% ③barbell risk_parity 7.93%/1.234/−7.0% ④barbell hrp 6.91%/1.168/−6.7% ⑤barbell vol_target 8.24%/1.092/−8.1%。**★红利低波vs进攻腿相关性**:USD换算+0.20~+0.48(hk_china最高+0.48),CNY原生+0.11~+0.41——全弱正NON-negative。spec预期负相关是vsA股动量(2024-02踩踏),本组持美股/全球动量不迁移;2024-01/02窗口所有方案MaxDD≈0(A股内部事件USD组没被波及)。**★verdict NO_GO**:门槛ΔSharpe≥0.15且ΔMaxDD≥3pp双门,无方案过;最优③仅+0.012 Sharpe且拖CAGR2.5pp,靠砍波动非防守腿分散→不落地,保持default 4-sleeve fixed(B069/B076先例)。**门禁全绿**:mypy trade 0err(零回归,未触master.py)+ruff净+根pytest 1395 passed(F001金值726f9ce6守门单测未破)+backend test_bootstrap_cli/test_trial_registry 10 passed+迁移单头0042。**【F003续接给Codex】**:L1全门禁+新15单测抽查(vol-target no-normalize回归=真bug修复重点);L2独立复算——重跑runner(本机需tiingo/b082/b090_hk快照,均gitignore本机存在)、抽2方案数字复核、★口径诚实(USD换算+CNY-native双列)、相关性真实(USD正相关=FX+市场双错配)、回撤复利算术、verdict与数字一致、★现有master 4-sleeve默认零回归、HEAD≡prod。关键判断点:combine_dynamic normalize=False(vol-target残差进现金否则scale被抵消)、rolling用trailing d<t无look-ahead、cny_returns_to_usd FX方向(rate=CNY per USD升=人民币贬=USD投资者亏)。报告docs/test-reports/B106-portfolio-uplift-ab.md含完整口径声明。",
-    "evaluator": null
+    "evaluator": "2026-07-09 B106 F003 独立验收(代Codex,独立无实现上下文agent)。全PASS 3/3 → done。★验收方法论亮点:byte-identical零回归用【前B106源码独立算hash】而非仅信新测试金值——checkout F001 parent f7adc15 的master.py,default_master_portfolio_parameters().parameter_hash()=726f9ce6…=守门单测金值=HEAD默认hash,三者逐位相等,证明weight_scheme在默认fixed下从hash payload条件省略真=旧行为。L2独立复算脚本docs/test-cases/b106_independent_recompute.py:复用runner的sleeve-return重构(数据层)+F001 resolve_sleeve_weights(权重派生),但numpy自写组合/窗口对齐/CAGR/Sharpe/MaxDD/Pearson(scipy本机无)/verdict门槛——5方案+相关性+口径+FX方向+回撤复利全部Δ≈1e-16与报告一致。runner重跑JSON逐字节复现。关键判断点全核实:normalize=False(vol-target现金残差)、rolling严格d<t无look-ahead、5方案对齐116月共同交集。生产隔离:barbell仅research/tests引用未接生产,backend唯一defensive_barbell字面是trial NO-GO标签。HEAD≡prod:prod version=c7acc30含全部产品码,diff仅progress.json。FX报告描述6.19→7.17准确(2015min6.187/2024区间7.01-7.30)。3 soft-watch均报告已披露非新bug。**【下批续接给Planner】**:done阶段处理framework沉淀(framework_reviewed=false待Planner)+询问阶段B(新配置paper前向验证≥12月);S3建议下批补测【4-sleeve risk_parity无防守腿】隔离风险加权本身效应(③Sharpe微增+波动大降提示这可能才是真杠杆,尤其压hk_china17.65%波动权重)。"
   }
 }
