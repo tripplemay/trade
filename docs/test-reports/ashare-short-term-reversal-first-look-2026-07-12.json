@@ -1,0 +1,2484 @@
+{
+  "analysis_date": "2026-07-12",
+  "capital_cny": 2100000,
+  "diagnostics": {
+    "all_historical_members": 1310,
+    "corporate_action_and_delist_ledger_available": false,
+    "entry_delay_market_sessions": {
+      "max": 39.0,
+      "median": 0.0,
+      "min": 0.0,
+      "n": 68791,
+      "p10": 0.0
+    },
+    "fresh_clone_rebuild_available": false,
+    "historical_pit_industry_available": false,
+    "historical_st_and_exact_limit_prices_available": false,
+    "latest_members": 800,
+    "limit_up_events": 354,
+    "n20_delayed_exits": 77,
+    "n20_max_exit_delay_sessions": 416,
+    "n20_missing": 808,
+    "n20_path_ended_or_missing": 8,
+    "n20_right_censored": 800,
+    "nominal_ohlc_and_adjustment_factor_available": false,
+    "noncurrent_members": 510,
+    "pit_market_cap_coverage": 1.0,
+    "price_end": "2026-06-18",
+    "price_rows": 2467137,
+    "price_start": "2018-01-02",
+    "price_tickers": 1310,
+    "priced_events": 68791,
+    "signal_coverage": {
+      "max": 1.0,
+      "median": 1.0,
+      "min": 0.99875,
+      "n": 86,
+      "p10": 1.0
+    },
+    "signal_coverage_by_month": [
+      {
+        "anchor_date": "2019-04-01",
+        "coverage": 1.0,
+        "signal_date": "2019-04-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2019-04-30",
+        "coverage": 1.0,
+        "signal_date": "2019-05-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2019-05-30",
+        "coverage": 0.99875,
+        "signal_date": "2019-06-28",
+        "signal_n": 799,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2019-07-03",
+        "coverage": 1.0,
+        "signal_date": "2019-07-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2019-08-02",
+        "coverage": 1.0,
+        "signal_date": "2019-08-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2019-08-30",
+        "coverage": 1.0,
+        "signal_date": "2019-09-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2019-09-26",
+        "coverage": 1.0,
+        "signal_date": "2019-10-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2019-11-01",
+        "coverage": 1.0,
+        "signal_date": "2019-11-29",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2019-12-03",
+        "coverage": 1.0,
+        "signal_date": "2019-12-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2019-12-25",
+        "coverage": 1.0,
+        "signal_date": "2020-01-23",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2020-01-23",
+        "coverage": 1.0,
+        "signal_date": "2020-02-28",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2020-03-03",
+        "coverage": 1.0,
+        "signal_date": "2020-03-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2020-04-01",
+        "coverage": 1.0,
+        "signal_date": "2020-04-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2020-04-28",
+        "coverage": 1.0,
+        "signal_date": "2020-05-29",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2020-05-29",
+        "coverage": 1.0,
+        "signal_date": "2020-06-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2020-07-03",
+        "coverage": 1.0,
+        "signal_date": "2020-07-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2020-08-03",
+        "coverage": 1.0,
+        "signal_date": "2020-08-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2020-09-02",
+        "coverage": 1.0,
+        "signal_date": "2020-09-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2020-09-24",
+        "coverage": 1.0,
+        "signal_date": "2020-10-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2020-11-02",
+        "coverage": 1.0,
+        "signal_date": "2020-11-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2020-12-03",
+        "coverage": 1.0,
+        "signal_date": "2020-12-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2020-12-31",
+        "coverage": 1.0,
+        "signal_date": "2021-01-29",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2021-01-22",
+        "coverage": 1.0,
+        "signal_date": "2021-02-26",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2021-03-03",
+        "coverage": 1.0,
+        "signal_date": "2021-03-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2021-04-01",
+        "coverage": 1.0,
+        "signal_date": "2021-04-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2021-04-28",
+        "coverage": 1.0,
+        "signal_date": "2021-05-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2021-06-01",
+        "coverage": 1.0,
+        "signal_date": "2021-06-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2021-07-02",
+        "coverage": 1.0,
+        "signal_date": "2021-07-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2021-08-03",
+        "coverage": 1.0,
+        "signal_date": "2021-08-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2021-08-31",
+        "coverage": 1.0,
+        "signal_date": "2021-09-30",
+        "signal_n": 799,
+        "universe_n": 799
+      },
+      {
+        "anchor_date": "2021-09-24",
+        "coverage": 1.0,
+        "signal_date": "2021-10-29",
+        "signal_n": 799,
+        "universe_n": 799
+      },
+      {
+        "anchor_date": "2021-11-02",
+        "coverage": 1.0,
+        "signal_date": "2021-11-30",
+        "signal_n": 799,
+        "universe_n": 799
+      },
+      {
+        "anchor_date": "2021-12-03",
+        "coverage": 1.0,
+        "signal_date": "2021-12-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2021-12-30",
+        "coverage": 1.0,
+        "signal_date": "2022-01-28",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2022-01-24",
+        "coverage": 1.0,
+        "signal_date": "2022-02-28",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2022-03-03",
+        "coverage": 1.0,
+        "signal_date": "2022-03-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2022-03-30",
+        "coverage": 1.0,
+        "signal_date": "2022-04-29",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2022-04-28",
+        "coverage": 1.0,
+        "signal_date": "2022-05-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2022-06-01",
+        "coverage": 1.0,
+        "signal_date": "2022-06-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2022-07-01",
+        "coverage": 1.0,
+        "signal_date": "2022-07-29",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2022-08-03",
+        "coverage": 1.0,
+        "signal_date": "2022-08-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2022-09-01",
+        "coverage": 1.0,
+        "signal_date": "2022-09-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2022-09-26",
+        "coverage": 1.0,
+        "signal_date": "2022-10-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2022-11-02",
+        "coverage": 1.0,
+        "signal_date": "2022-11-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2022-12-02",
+        "coverage": 1.0,
+        "signal_date": "2022-12-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2022-12-26",
+        "coverage": 1.0,
+        "signal_date": "2023-01-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2023-01-31",
+        "coverage": 1.0,
+        "signal_date": "2023-02-28",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2023-03-03",
+        "coverage": 1.0,
+        "signal_date": "2023-03-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2023-03-30",
+        "coverage": 1.0,
+        "signal_date": "2023-04-28",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2023-04-28",
+        "coverage": 1.0,
+        "signal_date": "2023-05-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2023-05-31",
+        "coverage": 1.0,
+        "signal_date": "2023-06-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2023-07-03",
+        "coverage": 1.0,
+        "signal_date": "2023-07-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2023-08-03",
+        "coverage": 1.0,
+        "signal_date": "2023-08-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2023-08-31",
+        "coverage": 1.0,
+        "signal_date": "2023-09-28",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2023-09-25",
+        "coverage": 1.0,
+        "signal_date": "2023-10-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2023-11-02",
+        "coverage": 1.0,
+        "signal_date": "2023-11-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2023-12-01",
+        "coverage": 1.0,
+        "signal_date": "2023-12-29",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2024-01-03",
+        "coverage": 1.0,
+        "signal_date": "2024-01-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2024-01-24",
+        "coverage": 1.0,
+        "signal_date": "2024-02-29",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2024-03-01",
+        "coverage": 1.0,
+        "signal_date": "2024-03-29",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2024-03-29",
+        "coverage": 1.0,
+        "signal_date": "2024-04-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2024-04-30",
+        "coverage": 1.0,
+        "signal_date": "2024-05-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2024-05-30",
+        "coverage": 1.0,
+        "signal_date": "2024-06-28",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2024-07-03",
+        "coverage": 1.0,
+        "signal_date": "2024-07-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2024-08-02",
+        "coverage": 1.0,
+        "signal_date": "2024-08-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2024-08-29",
+        "coverage": 1.0,
+        "signal_date": "2024-09-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2024-09-26",
+        "coverage": 1.0,
+        "signal_date": "2024-10-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2024-11-01",
+        "coverage": 1.0,
+        "signal_date": "2024-11-29",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2024-12-03",
+        "coverage": 1.0,
+        "signal_date": "2024-12-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2024-12-27",
+        "coverage": 1.0,
+        "signal_date": "2025-01-27",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2025-01-23",
+        "coverage": 0.99875,
+        "signal_date": "2025-02-28",
+        "signal_n": 799,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2025-03-03",
+        "coverage": 1.0,
+        "signal_date": "2025-03-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2025-04-01",
+        "coverage": 1.0,
+        "signal_date": "2025-04-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2025-04-29",
+        "coverage": 1.0,
+        "signal_date": "2025-05-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2025-05-30",
+        "coverage": 1.0,
+        "signal_date": "2025-06-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2025-07-03",
+        "coverage": 1.0,
+        "signal_date": "2025-07-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2025-08-01",
+        "coverage": 1.0,
+        "signal_date": "2025-08-29",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2025-09-02",
+        "coverage": 1.0,
+        "signal_date": "2025-09-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2025-09-25",
+        "coverage": 1.0,
+        "signal_date": "2025-10-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2025-10-31",
+        "coverage": 1.0,
+        "signal_date": "2025-11-28",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2025-12-03",
+        "coverage": 1.0,
+        "signal_date": "2025-12-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2025-12-31",
+        "coverage": 1.0,
+        "signal_date": "2026-01-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2026-01-22",
+        "coverage": 1.0,
+        "signal_date": "2026-02-27",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2026-03-03",
+        "coverage": 1.0,
+        "signal_date": "2026-03-31",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2026-04-01",
+        "coverage": 1.0,
+        "signal_date": "2026-04-30",
+        "signal_n": 800,
+        "universe_n": 800
+      },
+      {
+        "anchor_date": "2026-04-28",
+        "coverage": 1.0,
+        "signal_date": "2026-05-29",
+        "signal_n": 800,
+        "universe_n": 800
+      }
+    ],
+    "signal_rows": 68795,
+    "signals_without_later_tradeable_entry": 4,
+    "suspended_rows": 16779,
+    "universe_member_count": {
+      "max": 800.0,
+      "median": 800.0,
+      "min": 799.0,
+      "n": 29,
+      "p10": 800.0
+    },
+    "universe_snapshots": 29
+  },
+  "exposure_diagnostics": {
+    "industry_neutrality": "not testable: the PIT data has no historical industry labels",
+    "market_cap_coverage": 1.0,
+    "median_amount_proxy_by_decile": {
+      "1": 432256568.9486998,
+      "10": 288547564.76773757,
+      "2": 296901025.2244175,
+      "3": 228058818.54331046,
+      "4": 196715211.29559216,
+      "5": 177261862.23155603,
+      "6": 165770341.345,
+      "7": 173960338.20627266,
+      "8": 185490219.2882472,
+      "9": 224779960.5026277
+    },
+    "median_market_cap_by_decile": {
+      "1": 32636549077.935,
+      "10": 24291650919.325,
+      "2": 30379821410.53,
+      "3": 27562807810.965,
+      "4": 25986848765.39,
+      "5": 24474292315.765,
+      "6": 23862807963.61,
+      "7": 23619922227.205,
+      "8": 23540718329.989998,
+      "9": 24686458624.31
+    },
+    "median_pre20_return_by_decile": {
+      "1": 0.17512193294555545,
+      "10": -0.13203724506687042,
+      "2": 0.08409785932721725,
+      "3": 0.04235305209524831,
+      "4": 0.014864864864864824,
+      "5": -0.003418096519756386,
+      "6": -0.01872659176029967,
+      "7": -0.03455308987948913,
+      "8": -0.05342695896131017,
+      "9": -0.07827896529924894
+    },
+    "median_volatility_by_decile": {
+      "1": 0.4631491675128132,
+      "10": 0.43219422493286785,
+      "2": 0.378336932221146,
+      "3": 0.3405458202100128,
+      "4": 0.31700434104334707,
+      "5": 0.3035031337059404,
+      "6": 0.30407423192363514,
+      "7": 0.31438072362484376,
+      "8": 0.33499160964729674,
+      "9": 0.3677648651995462
+    }
+  },
+  "gates": {
+    "cny_2_1m_portfolio_backtest_allowed": false,
+    "execution_data_ready": false,
+    "four_folds": [
+      {
+        "end": "2021-01-29",
+        "fold": 1,
+        "mean_ic": -0.0030426706518182282,
+        "months": 22,
+        "start": "2019-04-30"
+      },
+      {
+        "end": "2022-10-31",
+        "fold": 2,
+        "mean_ic": 0.04391713260270356,
+        "months": 21,
+        "start": "2021-02-26"
+      },
+      {
+        "end": "2024-07-31",
+        "fold": 3,
+        "mean_ic": -0.030981805166893004,
+        "months": 21,
+        "start": "2022-11-30"
+      },
+      {
+        "end": "2026-04-30",
+        "fold": 4,
+        "mean_ic": 0.030792833917015976,
+        "months": 21,
+        "start": "2024-08-30"
+      }
+    ],
+    "positive_fold_count": 2,
+    "signal": {
+      "long_only_q5_excess_bootstrap_ci_above_zero": false,
+      "long_only_q5_excess_ge_20bp_per_month": false,
+      "n20_bootstrap_ci_above_zero": false,
+      "n20_hac_t_ge_2": false,
+      "n20_mean_ic_ge_003": false,
+      "n20_q5_minus_q1_positive_and_monotonic": false,
+      "n20_three_of_four_folds_positive": false,
+      "past_loser_q5_absolute_return_positive": true
+    },
+    "signal_data": {
+      "formation_uses_adjusted_close_only_through_signal_date": true,
+      "historical_noncurrent_members_present": true,
+      "n20_at_least_60_valid_months": true,
+      "pit_universe_at_least_28_snapshots": true,
+      "signal_coverage_min_ge_95pct": true
+    },
+    "signal_data_pass": true,
+    "signal_pass": false,
+    "signal_probe_allowed": true,
+    "verdict": "SIGNAL_NO_GO"
+  },
+  "input_evidence": {
+    "prices": "data/research/b070/b081_prices_cache.pkl",
+    "prices_sha256": "1da4d40a3506ef2da0f90f8ecef7378d070cbbd53688b8a897fe0791dadaeef3",
+    "runner_sha256": "e113e742cb40cb97bb95a2993d2bc1d14c696ed52e823a20900f570ce2bc7b9f",
+    "shared_helper": "scripts/test/ashare_multiscale_pv_trend_first_look.py",
+    "shared_helper_sha256": "82fc4d1f089a59f5d18c1af98c7030b0b2f72a2d03fcb87fe5cb0cdc2d43dbe9",
+    "size": "data/research/b076/cn_size.csv",
+    "size_sha256": "a0c569542f2e9ccc3acb2dbaecb7cc5bd0f1da3de9623507211fd566d52b46b3",
+    "test_sha256": "6d5b9bbc79ae7c62748382f2917784efda2367a9b7bf9d6843ae94376aaf5d4a",
+    "universe": "data/research/b070/snapshots/universe/cn_pit_universe.csv",
+    "universe_sha256": "e37023eadbf5bed7b06b7428a4e204759aa897996f315dd767d11674898d518c"
+  },
+  "interpretation_limits": [
+    "This is a signal first-look, not a CNY 2.1m portfolio return backtest.",
+    "B070 is a liquid HS300/CSI500/SSE50-derived PIT subset, not the full A-share market; microcap reversal is not tested.",
+    "Qfq OHLC is suitable for return labels but cannot certify 100-share lot sizing, historical capacity, or broker fills.",
+    "Historical PIT industry, ST flags, exact exchange limit prices, corporate actions, and a delist cash ledger are unavailable.",
+    "The input caches are gitignored; hashes identify this run but a fresh clone cannot rebuild it.",
+    "A long-short spread is not implementable evidence when its profit is concentrated in shorting past winners.",
+    "Signals with no later tradeable entry are absent from the shared event labeler rather than retained as cash; the count is disclosed.",
+    "No broker, paper account, product strategy, or production configuration was touched."
+  ],
+  "long_only_attribution": {
+    "investable_universe_mean": 0.007856332324718083,
+    "long_leg_excess": -0.0020284956837789327,
+    "long_short_spread": -0.0014762742671249702,
+    "past_loser_q5_mean": 0.005827836640939151,
+    "past_winner_q1_mean": 0.007304110908064121,
+    "winner_short_leg_contribution": 0.0005522214166539616,
+    "winner_short_share_of_spread": -0.37406424331259763
+  },
+  "n20_exit_stress": {
+    "block_bootstrap": {
+      "ci_high": 0.04282279778082759,
+      "ci_low": -0.021209839877916945,
+      "prob_positive": 0.7198
+    },
+    "forced_loss_events": 11,
+    "hac": {
+      "mean": 0.00989939003179128,
+      "se": 0.016677217540370697,
+      "t": 0.5935876298206061
+    },
+    "long_delay_forced_loss": 3,
+    "path_ended_forced_loss": 8,
+    "quintiles": {
+      "means": {
+        "1": 0.007217109599103701,
+        "2": 0.010003459053920916,
+        "3": 0.009188485261948886,
+        "4": 0.006511993627650527,
+        "5": 0.005548754447193989
+      },
+      "monotonic_rank_corr": -0.7,
+      "months": 85,
+      "q5_excess_bootstrap": {
+        "ci_high": 0.002386143234194018,
+        "ci_low": -0.0063659255809743135,
+        "prob_positive": 0.17
+      },
+      "q5_excess_hac": {
+        "mean": -0.0021469130313357425,
+        "se": 0.002291397439211135,
+        "t": -0.9369448505951309
+      },
+      "q5_minus_all": -0.0021469130313357425,
+      "q5_minus_q1": -0.001668355151909712
+    },
+    "rule": "ret_20=-100% for non-right-censored missing paths and exits delayed more than 20 ticker records",
+    "valid_months": 85
+  },
+  "primary": {
+    "events": 68791,
+    "executable_events": 68437,
+    "formation_exposure": {
+      "hac": {
+        "mean": -0.9995091622549107,
+        "se": 0.00012656714841137104,
+        "t": -7897.066298802011
+      },
+      "valid_months": 86
+    },
+    "horizons": {
+      "N1": {
+        "block_bootstrap": {
+          "ci_high": 0.05608778155487125,
+          "ci_low": -0.04285022644149809,
+          "prob_positive": 0.596
+        },
+        "cross_section_observations": 68789,
+        "executable_only_ic_sensitivity": {
+          "hac": {
+            "mean": 0.007603430345785989,
+            "se": 0.02545665792862066,
+            "t": 0.2986814045702963
+          },
+          "valid_months": 86
+        },
+        "folds": [
+          {
+            "end": "2021-08-31",
+            "fold": 1,
+            "mean_ic": 0.0525355093015414,
+            "months": 29,
+            "start": "2019-04-30"
+          },
+          {
+            "end": "2024-01-31",
+            "fold": 2,
+            "mean_ic": -0.04394734925528893,
+            "months": 29,
+            "start": "2021-09-30"
+          },
+          {
+            "end": "2026-05-29",
+            "fold": 3,
+            "mean_ic": 0.010390812257907821,
+            "months": 28,
+            "start": "2024-02-29"
+          }
+        ],
+        "hac": {
+          "mean": 0.00627906261119466,
+          "se": 0.02545979708594475,
+          "t": 0.24662657718749292
+        },
+        "monthly": [
+          {
+            "ic": -0.2086356681564944,
+            "month": "2019-04-30",
+            "n": 800
+          },
+          {
+            "ic": 0.03323964942429081,
+            "month": "2019-05-31",
+            "n": 799
+          },
+          {
+            "ic": 0.20821606448955474,
+            "month": "2019-06-28",
+            "n": 799
+          },
+          {
+            "ic": -0.15529044280360552,
+            "month": "2019-07-31",
+            "n": 800
+          },
+          {
+            "ic": -0.02951406399964187,
+            "month": "2019-08-30",
+            "n": 800
+          },
+          {
+            "ic": 0.1251235685114657,
+            "month": "2019-09-30",
+            "n": 800
+          },
+          {
+            "ic": -0.098781706636747,
+            "month": "2019-10-31",
+            "n": 800
+          },
+          {
+            "ic": 0.025019472189772834,
+            "month": "2019-11-29",
+            "n": 800
+          },
+          {
+            "ic": 0.11086811415677103,
+            "month": "2019-12-31",
+            "n": 800
+          },
+          {
+            "ic": -0.3049122687344293,
+            "month": "2020-01-23",
+            "n": 800
+          },
+          {
+            "ic": 0.04760712265293459,
+            "month": "2020-02-28",
+            "n": 800
+          },
+          {
+            "ic": 0.48330778991262136,
+            "month": "2020-03-31",
+            "n": 800
+          },
+          {
+            "ic": -0.02318890537800819,
+            "month": "2020-04-30",
+            "n": 800
+          },
+          {
+            "ic": 0.2507230180691285,
+            "month": "2020-05-29",
+            "n": 800
+          },
+          {
+            "ic": 0.23374712136457454,
+            "month": "2020-06-30",
+            "n": 800
+          },
+          {
+            "ic": 0.10179491528300878,
+            "month": "2020-07-31",
+            "n": 800
+          },
+          {
+            "ic": -0.11602719167402961,
+            "month": "2020-08-31",
+            "n": 800
+          },
+          {
+            "ic": 0.2301637913650302,
+            "month": "2020-09-30",
+            "n": 800
+          },
+          {
+            "ic": -0.06882156216160862,
+            "month": "2020-10-30",
+            "n": 800
+          },
+          {
+            "ic": 0.07388293757652896,
+            "month": "2020-11-30",
+            "n": 800
+          },
+          {
+            "ic": -0.28453462205005703,
+            "month": "2020-12-31",
+            "n": 800
+          },
+          {
+            "ic": -0.2713710590516695,
+            "month": "2021-01-29",
+            "n": 800
+          },
+          {
+            "ic": 0.09160870799312902,
+            "month": "2021-02-26",
+            "n": 800
+          },
+          {
+            "ic": 0.2919360887242151,
+            "month": "2021-03-31",
+            "n": 800
+          },
+          {
+            "ic": 0.14180775389804814,
+            "month": "2021-04-30",
+            "n": 800
+          },
+          {
+            "ic": 0.13904014703623443,
+            "month": "2021-05-31",
+            "n": 800
+          },
+          {
+            "ic": 0.20277032853403112,
+            "month": "2021-06-30",
+            "n": 800
+          },
+          {
+            "ic": 0.4107576244314921,
+            "month": "2021-07-30",
+            "n": 800
+          },
+          {
+            "ic": -0.11700695522184038,
+            "month": "2021-08-31",
+            "n": 799
+          },
+          {
+            "ic": 0.04472528664904508,
+            "month": "2021-09-30",
+            "n": 799
+          },
+          {
+            "ic": -0.2944992072757251,
+            "month": "2021-10-29",
+            "n": 799
+          },
+          {
+            "ic": 0.1897405253616997,
+            "month": "2021-11-30",
+            "n": 799
+          },
+          {
+            "ic": -0.1700437617317505,
+            "month": "2021-12-31",
+            "n": 800
+          },
+          {
+            "ic": -0.35524433931845967,
+            "month": "2022-01-28",
+            "n": 800
+          },
+          {
+            "ic": -0.10516414258690901,
+            "month": "2022-02-28",
+            "n": 800
+          },
+          {
+            "ic": -0.1516410468222638,
+            "month": "2022-03-31",
+            "n": 800
+          },
+          {
+            "ic": 0.1845231398447863,
+            "month": "2022-04-29",
+            "n": 800
+          },
+          {
+            "ic": -0.22945775590646114,
+            "month": "2022-05-31",
+            "n": 800
+          },
+          {
+            "ic": -0.03304854057510962,
+            "month": "2022-06-30",
+            "n": 800
+          },
+          {
+            "ic": -0.0421835024715002,
+            "month": "2022-07-29",
+            "n": 800
+          },
+          {
+            "ic": -0.07154472691917063,
+            "month": "2022-08-31",
+            "n": 800
+          },
+          {
+            "ic": -0.13547400212233263,
+            "month": "2022-09-30",
+            "n": 800
+          },
+          {
+            "ic": 0.31969638358943336,
+            "month": "2022-10-31",
+            "n": 800
+          },
+          {
+            "ic": 0.2684120091179187,
+            "month": "2022-11-30",
+            "n": 800
+          },
+          {
+            "ic": 0.1931427838906135,
+            "month": "2022-12-30",
+            "n": 800
+          },
+          {
+            "ic": 0.017374112416292546,
+            "month": "2023-01-31",
+            "n": 800
+          },
+          {
+            "ic": -0.23709910851268667,
+            "month": "2023-02-28",
+            "n": 800
+          },
+          {
+            "ic": -0.2684245712083122,
+            "month": "2023-03-31",
+            "n": 800
+          },
+          {
+            "ic": -0.3054835115019588,
+            "month": "2023-04-28",
+            "n": 800
+          },
+          {
+            "ic": 0.41777770064027486,
+            "month": "2023-05-31",
+            "n": 799
+          },
+          {
+            "ic": 0.11707392286201086,
+            "month": "2023-06-30",
+            "n": 800
+          },
+          {
+            "ic": -0.024861819406280076,
+            "month": "2023-07-31",
+            "n": 800
+          },
+          {
+            "ic": 0.17779655100364236,
+            "month": "2023-08-31",
+            "n": 800
+          },
+          {
+            "ic": -0.005702239905090837,
+            "month": "2023-09-28",
+            "n": 800
+          },
+          {
+            "ic": 0.06906598717713106,
+            "month": "2023-10-31",
+            "n": 800
+          },
+          {
+            "ic": -0.20769232334325466,
+            "month": "2023-11-30",
+            "n": 800
+          },
+          {
+            "ic": -0.17402435471698477,
+            "month": "2023-12-29",
+            "n": 800
+          },
+          {
+            "ic": -0.46221257663197685,
+            "month": "2024-01-31",
+            "n": 800
+          },
+          {
+            "ic": -0.20465002715707248,
+            "month": "2024-02-29",
+            "n": 800
+          },
+          {
+            "ic": 0.037109647232701694,
+            "month": "2024-03-29",
+            "n": 800
+          },
+          {
+            "ic": 0.024154271775819112,
+            "month": "2024-04-30",
+            "n": 800
+          },
+          {
+            "ic": -0.23102781750760945,
+            "month": "2024-05-31",
+            "n": 800
+          },
+          {
+            "ic": 0.07346819262846811,
+            "month": "2024-06-28",
+            "n": 800
+          },
+          {
+            "ic": -0.17663581151216542,
+            "month": "2024-07-31",
+            "n": 800
+          },
+          {
+            "ic": -0.34571668520281196,
+            "month": "2024-08-30",
+            "n": 800
+          },
+          {
+            "ic": -0.07662270054173642,
+            "month": "2024-09-30",
+            "n": 800
+          },
+          {
+            "ic": 0.3878429293524075,
+            "month": "2024-10-31",
+            "n": 800
+          },
+          {
+            "ic": 0.16848772401215653,
+            "month": "2024-11-29",
+            "n": 800
+          },
+          {
+            "ic": -0.12491086045276649,
+            "month": "2024-12-31",
+            "n": 800
+          },
+          {
+            "ic": 0.3300688386098228,
+            "month": "2025-01-27",
+            "n": 799
+          },
+          {
+            "ic": -0.04016063133279129,
+            "month": "2025-02-28",
+            "n": 798
+          },
+          {
+            "ic": -0.09558273033280483,
+            "month": "2025-03-31",
+            "n": 800
+          },
+          {
+            "ic": 0.26411283568938176,
+            "month": "2025-04-30",
+            "n": 800
+          },
+          {
+            "ic": 0.05308569145103095,
+            "month": "2025-05-30",
+            "n": 800
+          },
+          {
+            "ic": 0.23241319957542375,
+            "month": "2025-06-30",
+            "n": 800
+          },
+          {
+            "ic": 0.27644870657990706,
+            "month": "2025-07-31",
+            "n": 800
+          },
+          {
+            "ic": 0.2607274537894232,
+            "month": "2025-08-29",
+            "n": 799
+          },
+          {
+            "ic": 0.27273905488616523,
+            "month": "2025-09-30",
+            "n": 800
+          },
+          {
+            "ic": -0.2557227999981325,
+            "month": "2025-10-31",
+            "n": 800
+          },
+          {
+            "ic": -0.056341096210539024,
+            "month": "2025-11-28",
+            "n": 800
+          },
+          {
+            "ic": -0.1275393944913836,
+            "month": "2025-12-31",
+            "n": 800
+          },
+          {
+            "ic": 0.009513700628790984,
+            "month": "2026-01-30",
+            "n": 800
+          },
+          {
+            "ic": -0.1733060671091098,
+            "month": "2026-02-27",
+            "n": 800
+          },
+          {
+            "ic": -0.1923770156310079,
+            "month": "2026-03-31",
+            "n": 800
+          },
+          {
+            "ic": -0.08952010034511772,
+            "month": "2026-04-30",
+            "n": 800
+          },
+          {
+            "ic": 0.09088423483496925,
+            "month": "2026-05-29",
+            "n": 800
+          }
+        ],
+        "quintiles": {
+          "means": {
+            "1": 0.003028864593217203,
+            "2": 0.004611139806913449,
+            "3": 0.0041791800462112685,
+            "4": 0.0030111211130158314,
+            "5": 0.0024073057684010296
+          },
+          "monotonic_rank_corr": -0.7,
+          "months": 86,
+          "q5_excess_bootstrap": {
+            "ci_high": 0.0012280377959272865,
+            "ci_low": -0.003403368868029383,
+            "prob_positive": 0.191
+          },
+          "q5_excess_hac": {
+            "mean": -0.0010418917056039393,
+            "se": 0.001205231387410404,
+            "t": -0.8644744208351384
+          },
+          "q5_minus_all": -0.0010418917056039393,
+          "q5_minus_q1": -0.0006215588248161732
+        },
+        "valid_events": 68789,
+        "valid_months": 86,
+        "years": [
+          {
+            "mean_ic": 0.001138331908374035,
+            "months": 9,
+            "year": 2019
+          },
+          {
+            "mean_ic": 0.05197851218547452,
+            "months": 12,
+            "year": 2020
+          },
+          {
+            "mean_ic": 0.05495545661224244,
+            "months": 12,
+            "year": 2021
+          },
+          {
+            "mean_ic": -0.01316531168995457,
+            "months": 12,
+            "year": 2022
+          },
+          {
+            "mean_ic": -0.03534997120793468,
+            "months": 12,
+            "year": 2023
+          },
+          {
+            "mean_ic": -0.07755947616704884,
+            "months": 12,
+            "year": 2024
+          },
+          {
+            "mean_ic": 0.09285409401795862,
+            "months": 12,
+            "year": 2025
+          },
+          {
+            "mean_ic": -0.07096104952429504,
+            "months": 5,
+            "year": 2026
+          }
+        ]
+      },
+      "N20": {
+        "block_bootstrap": {
+          "ci_high": 0.04297474314093244,
+          "ci_low": -0.021142836382447544,
+          "prob_positive": 0.7212
+        },
+        "cross_section_observations": 67983,
+        "executable_only_ic_sensitivity": {
+          "hac": {
+            "mean": 0.010385146672475611,
+            "se": 0.016857422770097632,
+            "t": 0.6160577933002427
+          },
+          "valid_months": 85
+        },
+        "folds": [
+          {
+            "end": "2021-08-31",
+            "fold": 1,
+            "mean_ic": -0.00441359356413465,
+            "months": 29,
+            "start": "2019-04-30"
+          },
+          {
+            "end": "2023-12-29",
+            "fold": 2,
+            "mean_ic": 0.026543385973297452,
+            "months": 28,
+            "start": "2021-09-30"
+          },
+          {
+            "end": "2026-04-30",
+            "fold": 3,
+            "mean_ic": 0.008433287149176153,
+            "months": 28,
+            "start": "2024-01-31"
+          }
+        ],
+        "hac": {
+          "mean": 0.010015913341992429,
+          "se": 0.016690592373689372,
+          "t": 0.6000933410716603
+        },
+        "monthly": [
+          {
+            "ic": -0.01351214489296854,
+            "month": "2019-04-30",
+            "n": 799
+          },
+          {
+            "ic": 0.16469410665843567,
+            "month": "2019-05-31",
+            "n": 799
+          },
+          {
+            "ic": -0.06677684766742627,
+            "month": "2019-06-28",
+            "n": 799
+          },
+          {
+            "ic": -0.11583271891323842,
+            "month": "2019-07-31",
+            "n": 800
+          },
+          {
+            "ic": 0.11139915409998671,
+            "month": "2019-08-30",
+            "n": 800
+          },
+          {
+            "ic": -0.08250261437516986,
+            "month": "2019-09-30",
+            "n": 800
+          },
+          {
+            "ic": -0.015477666155987928,
+            "month": "2019-10-31",
+            "n": 800
+          },
+          {
+            "ic": -0.03778274958539279,
+            "month": "2019-11-29",
+            "n": 800
+          },
+          {
+            "ic": -0.0038904793050183626,
+            "month": "2019-12-31",
+            "n": 800
+          },
+          {
+            "ic": -0.18016741204069214,
+            "month": "2020-01-23",
+            "n": 800
+          },
+          {
+            "ic": 0.1528859736127492,
+            "month": "2020-02-28",
+            "n": 800
+          },
+          {
+            "ic": 0.05190388572003099,
+            "month": "2020-03-31",
+            "n": 800
+          },
+          {
+            "ic": -0.0837985707264194,
+            "month": "2020-04-30",
+            "n": 800
+          },
+          {
+            "ic": -0.03371623665241249,
+            "month": "2020-05-29",
+            "n": 800
+          },
+          {
+            "ic": 0.14533235458950777,
+            "month": "2020-06-30",
+            "n": 800
+          },
+          {
+            "ic": 0.08828572654355486,
+            "month": "2020-07-31",
+            "n": 800
+          },
+          {
+            "ic": -0.07235811215465765,
+            "month": "2020-08-31",
+            "n": 800
+          },
+          {
+            "ic": -0.10716099028103598,
+            "month": "2020-09-30",
+            "n": 800
+          },
+          {
+            "ic": -0.06492926391503706,
+            "month": "2020-10-30",
+            "n": 800
+          },
+          {
+            "ic": 0.013239010518650495,
+            "month": "2020-11-30",
+            "n": 800
+          },
+          {
+            "ic": -0.20563773329197707,
+            "month": "2020-12-31",
+            "n": 800
+          },
+          {
+            "ic": 0.2888645738745172,
+            "month": "2021-01-29",
+            "n": 800
+          },
+          {
+            "ic": -0.09266460467041492,
+            "month": "2021-02-26",
+            "n": 800
+          },
+          {
+            "ic": 0.1311833292431896,
+            "month": "2021-03-31",
+            "n": 800
+          },
+          {
+            "ic": 0.033254444909406884,
+            "month": "2021-04-30",
+            "n": 800
+          },
+          {
+            "ic": -0.058726857468317746,
+            "month": "2021-05-31",
+            "n": 800
+          },
+          {
+            "ic": -0.16024112398604778,
+            "month": "2021-06-30",
+            "n": 800
+          },
+          {
+            "ic": -0.1192763585313697,
+            "month": "2021-07-30",
+            "n": 800
+          },
+          {
+            "ic": 0.20541571148364984,
+            "month": "2021-08-31",
+            "n": 799
+          },
+          {
+            "ic": 0.1368758046735465,
+            "month": "2021-09-30",
+            "n": 799
+          },
+          {
+            "ic": 0.0199755372034165,
+            "month": "2021-10-29",
+            "n": 799
+          },
+          {
+            "ic": 0.20578649326318102,
+            "month": "2021-11-30",
+            "n": 799
+          },
+          {
+            "ic": -0.04768731893987962,
+            "month": "2021-12-31",
+            "n": 800
+          },
+          {
+            "ic": -0.1489221366087776,
+            "month": "2022-01-28",
+            "n": 800
+          },
+          {
+            "ic": -0.0864970796852352,
+            "month": "2022-02-28",
+            "n": 800
+          },
+          {
+            "ic": -0.06827541066198904,
+            "month": "2022-03-31",
+            "n": 800
+          },
+          {
+            "ic": 0.31640419777338463,
+            "month": "2022-04-29",
+            "n": 800
+          },
+          {
+            "ic": -0.12338814779655043,
+            "month": "2022-05-31",
+            "n": 800
+          },
+          {
+            "ic": 0.22146508410750182,
+            "month": "2022-06-30",
+            "n": 800
+          },
+          {
+            "ic": 0.030472317767185713,
+            "month": "2022-07-29",
+            "n": 800
+          },
+          {
+            "ic": -0.06571891248664577,
+            "month": "2022-08-31",
+            "n": 800
+          },
+          {
+            "ic": 0.23490535851956143,
+            "month": "2022-09-30",
+            "n": 800
+          },
+          {
+            "ic": 0.35791945654797863,
+            "month": "2022-10-31",
+            "n": 800
+          },
+          {
+            "ic": -0.09062660728429814,
+            "month": "2022-11-30",
+            "n": 800
+          },
+          {
+            "ic": 0.3169499947948628,
+            "month": "2022-12-30",
+            "n": 800
+          },
+          {
+            "ic": 0.17187182805502288,
+            "month": "2023-01-31",
+            "n": 800
+          },
+          {
+            "ic": -0.2308073965619044,
+            "month": "2023-02-28",
+            "n": 800
+          },
+          {
+            "ic": -0.0830811546531107,
+            "month": "2023-03-31",
+            "n": 800
+          },
+          {
+            "ic": -0.0976411329735206,
+            "month": "2023-04-28",
+            "n": 799
+          },
+          {
+            "ic": 0.13752489632889894,
+            "month": "2023-05-31",
+            "n": 799
+          },
+          {
+            "ic": 0.1370943702858117,
+            "month": "2023-06-30",
+            "n": 800
+          },
+          {
+            "ic": -0.3246325666126981,
+            "month": "2023-07-31",
+            "n": 800
+          },
+          {
+            "ic": -0.07640077518524686,
+            "month": "2023-08-31",
+            "n": 800
+          },
+          {
+            "ic": -0.10664532671505624,
+            "month": "2023-09-28",
+            "n": 800
+          },
+          {
+            "ic": 0.013237610471430059,
+            "month": "2023-10-31",
+            "n": 800
+          },
+          {
+            "ic": 0.10225595145147359,
+            "month": "2023-11-30",
+            "n": 800
+          },
+          {
+            "ic": -0.10920012782601478,
+            "month": "2023-12-29",
+            "n": 800
+          },
+          {
+            "ic": 0.29691507855665206,
+            "month": "2024-01-31",
+            "n": 800
+          },
+          {
+            "ic": -0.2589006544944515,
+            "month": "2024-02-29",
+            "n": 800
+          },
+          {
+            "ic": -0.08394467592313007,
+            "month": "2024-03-29",
+            "n": 800
+          },
+          {
+            "ic": -0.1411946792858788,
+            "month": "2024-04-30",
+            "n": 800
+          },
+          {
+            "ic": -0.2634315378709847,
+            "month": "2024-05-31",
+            "n": 800
+          },
+          {
+            "ic": -0.035599228014895935,
+            "month": "2024-06-28",
+            "n": 799
+          },
+          {
+            "ic": 0.07563822495228578,
+            "month": "2024-07-31",
+            "n": 800
+          },
+          {
+            "ic": 0.1907935280702288,
+            "month": "2024-08-30",
+            "n": 800
+          },
+          {
+            "ic": 0.032643673438390426,
+            "month": "2024-09-30",
+            "n": 800
+          },
+          {
+            "ic": 0.16835585814880627,
+            "month": "2024-10-31",
+            "n": 800
+          },
+          {
+            "ic": 0.08950216937675243,
+            "month": "2024-11-29",
+            "n": 800
+          },
+          {
+            "ic": 0.08904353474288437,
+            "month": "2024-12-31",
+            "n": 799
+          },
+          {
+            "ic": 0.30083244141993487,
+            "month": "2025-01-27",
+            "n": 798
+          },
+          {
+            "ic": 0.3679192567094117,
+            "month": "2025-02-28",
+            "n": 798
+          },
+          {
+            "ic": -0.1782144971899793,
+            "month": "2025-03-31",
+            "n": 800
+          },
+          {
+            "ic": 0.014820590707616777,
+            "month": "2025-04-30",
+            "n": 800
+          },
+          {
+            "ic": 0.06774465420108186,
+            "month": "2025-05-30",
+            "n": 800
+          },
+          {
+            "ic": -0.11347736148444675,
+            "month": "2025-06-30",
+            "n": 800
+          },
+          {
+            "ic": -0.07964716374169246,
+            "month": "2025-07-31",
+            "n": 799
+          },
+          {
+            "ic": -0.15881520866226218,
+            "month": "2025-08-29",
+            "n": 799
+          },
+          {
+            "ic": 0.28061237410336337,
+            "month": "2025-09-30",
+            "n": 800
+          },
+          {
+            "ic": -0.1609113309625173,
+            "month": "2025-10-31",
+            "n": 800
+          },
+          {
+            "ic": 0.0997865021917117,
+            "month": "2025-11-28",
+            "n": 800
+          },
+          {
+            "ic": -0.20869010955273828,
+            "month": "2025-12-31",
+            "n": 800
+          },
+          {
+            "ic": -0.0887657730477149,
+            "month": "2026-01-30",
+            "n": 800
+          },
+          {
+            "ic": -0.033737905511486685,
+            "month": "2026-02-27",
+            "n": 800
+          },
+          {
+            "ic": 0.13175216182856503,
+            "month": "2026-03-31",
+            "n": 800
+          },
+          {
+            "ic": -0.16489788252857426,
+            "month": "2026-04-30",
+            "n": 800
+          }
+        ],
+        "quintiles": {
+          "means": {
+            "1": 0.007304110908064121,
+            "2": 0.010155003166445228,
+            "3": 0.009398969695530968,
+            "4": 0.0065837547410677365,
+            "5": 0.005827836640939151
+          },
+          "monotonic_rank_corr": -0.7,
+          "months": 85,
+          "q5_excess_bootstrap": {
+            "ci_high": 0.0025282244270328066,
+            "ci_low": -0.00625970656374242,
+            "prob_positive": 0.1872
+          },
+          "q5_excess_hac": {
+            "mean": -0.0020284956837789327,
+            "se": 0.0022981175134042723,
+            "t": -0.882677091988242
+          },
+          "q5_minus_all": -0.0020284956837789327,
+          "q5_minus_q1": -0.0014762742671249702
+        },
+        "valid_events": 67983,
+        "valid_months": 85,
+        "years": [
+          {
+            "mean_ic": -0.00663132890408664,
+            "months": 9,
+            "year": 2019
+          },
+          {
+            "mean_ic": -0.024676780673144872,
+            "months": 12,
+            "year": 2020
+          },
+          {
+            "mean_ic": 0.04522996925457314,
+            "months": 12,
+            "year": 2021
+          },
+          {
+            "mean_ic": 0.07455734291558157,
+            "months": 12,
+            "year": 2022
+          },
+          {
+            "mean_ic": -0.03886865199457621,
+            "months": 12,
+            "year": 2023
+          },
+          {
+            "mean_ic": 0.01331844097472159,
+            "months": 12,
+            "year": 2024
+          },
+          {
+            "mean_ic": 0.019330012311623675,
+            "months": 12,
+            "year": 2025
+          },
+          {
+            "mean_ic": -0.0389123498148027,
+            "months": 4,
+            "year": 2026
+          }
+        ]
+      },
+      "N60": {
+        "block_bootstrap": {
+          "ci_high": 0.043888625625082625,
+          "ci_low": -0.02803633773918118,
+          "prob_positive": 0.6642
+        },
+        "cross_section_observations": 66372,
+        "executable_only_ic_sensitivity": {
+          "hac": {
+            "mean": 0.007775707740511726,
+            "se": 0.018445326648792094,
+            "t": 0.4215543529569819
+          },
+          "valid_months": 83
+        },
+        "folds": [
+          {
+            "end": "2021-07-30",
+            "fold": 1,
+            "mean_ic": -0.02672543899407199,
+            "months": 28,
+            "start": "2019-04-30"
+          },
+          {
+            "end": "2023-11-30",
+            "fold": 2,
+            "mean_ic": 0.05040089743843625,
+            "months": 28,
+            "start": "2021-08-31"
+          },
+          {
+            "end": "2026-02-27",
+            "fold": 3,
+            "mean_ic": -0.000830632026023727,
+            "months": 27,
+            "start": "2023-12-29"
+          }
+        ],
+        "hac": {
+          "mean": 0.007716696045054923,
+          "se": 0.018269793470269552,
+          "t": 0.42237456365406145
+        },
+        "monthly": [
+          {
+            "ic": -0.13093894619694285,
+            "month": "2019-04-30",
+            "n": 799
+          },
+          {
+            "ic": 0.001072287301714145,
+            "month": "2019-05-31",
+            "n": 799
+          },
+          {
+            "ic": -0.05260641606769686,
+            "month": "2019-06-28",
+            "n": 799
+          },
+          {
+            "ic": -0.15622014075358026,
+            "month": "2019-07-31",
+            "n": 800
+          },
+          {
+            "ic": 0.05335634525278443,
+            "month": "2019-08-30",
+            "n": 800
+          },
+          {
+            "ic": -0.187188962091336,
+            "month": "2019-09-30",
+            "n": 800
+          },
+          {
+            "ic": 0.0049434822921786215,
+            "month": "2019-10-31",
+            "n": 800
+          },
+          {
+            "ic": -0.0581818435369837,
+            "month": "2019-11-29",
+            "n": 800
+          },
+          {
+            "ic": 0.10032447282204564,
+            "month": "2019-12-31",
+            "n": 800
+          },
+          {
+            "ic": -0.11653279039464429,
+            "month": "2020-01-23",
+            "n": 800
+          },
+          {
+            "ic": 0.08088918132166692,
+            "month": "2020-02-28",
+            "n": 800
+          },
+          {
+            "ic": 0.1599620025953206,
+            "month": "2020-03-31",
+            "n": 800
+          },
+          {
+            "ic": -0.18008819933662454,
+            "month": "2020-04-30",
+            "n": 800
+          },
+          {
+            "ic": -0.113835194450183,
+            "month": "2020-05-29",
+            "n": 800
+          },
+          {
+            "ic": 0.18041818838548723,
+            "month": "2020-06-30",
+            "n": 800
+          },
+          {
+            "ic": 0.030246446229248047,
+            "month": "2020-07-31",
+            "n": 800
+          },
+          {
+            "ic": -0.08978473872600766,
+            "month": "2020-08-31",
+            "n": 800
+          },
+          {
+            "ic": -0.2208992473127824,
+            "month": "2020-09-30",
+            "n": 800
+          },
+          {
+            "ic": -0.30744593584238855,
+            "month": "2020-10-30",
+            "n": 800
+          },
+          {
+            "ic": -0.07414688192163645,
+            "month": "2020-11-30",
+            "n": 800
+          },
+          {
+            "ic": 0.08880172272940585,
+            "month": "2020-12-31",
+            "n": 800
+          },
+          {
+            "ic": 0.12303541285386758,
+            "month": "2021-01-29",
+            "n": 800
+          },
+          {
+            "ic": 0.07008790946252146,
+            "month": "2021-02-26",
+            "n": 800
+          },
+          {
+            "ic": 0.1454947649094212,
+            "month": "2021-03-31",
+            "n": 800
+          },
+          {
+            "ic": -0.05076902192274572,
+            "month": "2021-04-30",
+            "n": 800
+          },
+          {
+            "ic": -0.08009139515672885,
+            "month": "2021-05-31",
+            "n": 800
+          },
+          {
+            "ic": -0.07463032323983398,
+            "month": "2021-06-30",
+            "n": 799
+          },
+          {
+            "ic": 0.1064155289604376,
+            "month": "2021-07-30",
+            "n": 799
+          },
+          {
+            "ic": 0.2751365018450079,
+            "month": "2021-08-31",
+            "n": 799
+          },
+          {
+            "ic": 0.07512795136474952,
+            "month": "2021-09-30",
+            "n": 799
+          },
+          {
+            "ic": 0.19265354747576105,
+            "month": "2021-10-29",
+            "n": 799
+          },
+          {
+            "ic": 0.24490770961151206,
+            "month": "2021-11-30",
+            "n": 799
+          },
+          {
+            "ic": -0.06751900640954644,
+            "month": "2021-12-31",
+            "n": 800
+          },
+          {
+            "ic": -0.34363813024094786,
+            "month": "2022-01-28",
+            "n": 800
+          },
+          {
+            "ic": -0.1152704148331909,
+            "month": "2022-02-28",
+            "n": 800
+          },
+          {
+            "ic": 0.24666884331076924,
+            "month": "2022-03-31",
+            "n": 800
+          },
+          {
+            "ic": 0.3713824908872806,
+            "month": "2022-04-29",
+            "n": 800
+          },
+          {
+            "ic": -0.20365607656570106,
+            "month": "2022-05-31",
+            "n": 800
+          },
+          {
+            "ic": 0.31193177950322354,
+            "month": "2022-06-30",
+            "n": 800
+          },
+          {
+            "ic": -0.09520061471034268,
+            "month": "2022-07-29",
+            "n": 800
+          },
+          {
+            "ic": -0.032462983338547295,
+            "month": "2022-08-31",
+            "n": 800
+          },
+          {
+            "ic": 0.059789100829987674,
+            "month": "2022-09-30",
+            "n": 800
+          },
+          {
+            "ic": 0.3335839315250709,
+            "month": "2022-10-31",
+            "n": 800
+          },
+          {
+            "ic": -0.026626447800822895,
+            "month": "2022-11-30",
+            "n": 800
+          },
+          {
+            "ic": 0.1601385196149756,
+            "month": "2022-12-30",
+            "n": 800
+          },
+          {
+            "ic": 0.14954365035315065,
+            "month": "2023-01-31",
+            "n": 800
+          },
+          {
+            "ic": -0.20706727250393048,
+            "month": "2023-02-28",
+            "n": 799
+          },
+          {
+            "ic": -0.11799859431884571,
+            "month": "2023-03-31",
+            "n": 799
+          },
+          {
+            "ic": 0.06438186739426804,
+            "month": "2023-04-28",
+            "n": 799
+          },
+          {
+            "ic": 0.16432668710053489,
+            "month": "2023-05-31",
+            "n": 799
+          },
+          {
+            "ic": 0.10069619996130905,
+            "month": "2023-06-30",
+            "n": 800
+          },
+          {
+            "ic": -0.08297547925017414,
+            "month": "2023-07-31",
+            "n": 800
+          },
+          {
+            "ic": -0.07205252474262866,
+            "month": "2023-08-31",
+            "n": 800
+          },
+          {
+            "ic": -0.115630924205584,
+            "month": "2023-09-28",
+            "n": 800
+          },
+          {
+            "ic": 0.08353575407993508,
+            "month": "2023-10-31",
+            "n": 800
+          },
+          {
+            "ic": 0.05751906233894142,
+            "month": "2023-11-30",
+            "n": 800
+          },
+          {
+            "ic": -0.21769441341119114,
+            "month": "2023-12-29",
+            "n": 800
+          },
+          {
+            "ic": 0.0859618249606575,
+            "month": "2024-01-31",
+            "n": 800
+          },
+          {
+            "ic": -0.21839285841308845,
+            "month": "2024-02-29",
+            "n": 800
+          },
+          {
+            "ic": -0.2336425894932929,
+            "month": "2024-03-29",
+            "n": 800
+          },
+          {
+            "ic": -0.1557726865968783,
+            "month": "2024-04-30",
+            "n": 799
+          },
+          {
+            "ic": -0.1405505571261935,
+            "month": "2024-05-31",
+            "n": 799
+          },
+          {
+            "ic": 0.09031642102341768,
+            "month": "2024-06-28",
+            "n": 799
+          },
+          {
+            "ic": -0.13958431485352518,
+            "month": "2024-07-31",
+            "n": 800
+          },
+          {
+            "ic": 0.1837313849831644,
+            "month": "2024-08-30",
+            "n": 800
+          },
+          {
+            "ic": 0.09334236280114898,
+            "month": "2024-09-30",
+            "n": 800
+          },
+          {
+            "ic": 0.2887195973473372,
+            "month": "2024-10-31",
+            "n": 800
+          },
+          {
+            "ic": -0.0005882064361601463,
+            "month": "2024-11-29",
+            "n": 798
+          },
+          {
+            "ic": 0.11341311993604142,
+            "month": "2024-12-31",
+            "n": 798
+          },
+          {
+            "ic": 0.07934734406847169,
+            "month": "2025-01-27",
+            "n": 798
+          },
+          {
+            "ic": 0.32217510362531476,
+            "month": "2025-02-28",
+            "n": 798
+          },
+          {
+            "ic": -0.1406688824948826,
+            "month": "2025-03-31",
+            "n": 800
+          },
+          {
+            "ic": 0.2887191839302587,
+            "month": "2025-04-30",
+            "n": 800
+          },
+          {
+            "ic": 0.09791475437419148,
+            "month": "2025-05-30",
+            "n": 799
+          },
+          {
+            "ic": -0.30083310386512024,
+            "month": "2025-06-30",
+            "n": 799
+          },
+          {
+            "ic": -0.04904911713566487,
+            "month": "2025-07-31",
+            "n": 799
+          },
+          {
+            "ic": 0.040867204601959244,
+            "month": "2025-08-29",
+            "n": 799
+          },
+          {
+            "ic": 0.07408487270250098,
+            "month": "2025-09-30",
+            "n": 800
+          },
+          {
+            "ic": -0.11608765524828248,
+            "month": "2025-10-31",
+            "n": 800
+          },
+          {
+            "ic": -0.026979323721357265,
+            "month": "2025-11-28",
+            "n": 800
+          },
+          {
+            "ic": 0.011762222192664904,
+            "month": "2025-12-31",
+            "n": 800
+          },
+          {
+            "ic": -0.01864241825065287,
+            "month": "2026-01-30",
+            "n": 800
+          },
+          {
+            "ic": -0.03429633420347965,
+            "month": "2026-02-27",
+            "n": 800
+          }
+        ],
+        "quintiles": {
+          "means": {
+            "1": 0.02489348015910539,
+            "2": 0.0262869641722365,
+            "3": 0.02516098858776079,
+            "4": 0.020886468038374812,
+            "5": 0.019085493957830234
+          },
+          "monotonic_rank_corr": -0.7,
+          "months": 83,
+          "q5_excess_bootstrap": {
+            "ci_high": 0.004147849017692702,
+            "ci_low": -0.013018380195071153,
+            "prob_positive": 0.1712
+          },
+          "q5_excess_hac": {
+            "mean": -0.004178166398415923,
+            "se": 0.004520663841288463,
+            "t": -0.9242373565261773
+          },
+          "q5_minus_all": -0.004178166398415923,
+          "q5_minus_q1": -0.005807986201275157
+        },
+        "valid_events": 66372,
+        "valid_months": 83,
+        "years": [
+          {
+            "mean_ic": -0.047271080108646314,
+            "months": 9,
+            "year": 2019
+          },
+          {
+            "mean_ic": -0.046867953893594855,
+            "months": 12,
+            "year": 2020
+          },
+          {
+            "mean_ic": 0.07998746497953527,
+            "months": 12,
+            "year": 2021
+          },
+          {
+            "mean_ic": 0.0555533331818129,
+            "months": 12,
+            "year": 2022
+          },
+          {
+            "mean_ic": -0.016117998933684582,
+            "months": 12,
+            "year": 2023
+          },
+          {
+            "mean_ic": -0.0027538751556142695,
+            "months": 12,
+            "year": 2024
+          },
+          {
+            "mean_ic": 0.023437716919171195,
+            "months": 12,
+            "year": 2025
+          },
+          {
+            "mean_ic": -0.026469376227066257,
+            "months": 2,
+            "year": 2026
+          }
+        ]
+      }
+    },
+    "limit_up_fraction": 0.005146022008692998,
+    "signal": "reversal_20",
+    "unique_tickers": 1310
+  },
+  "protocol": {
+    "candidate": "REV20 = -(adjusted_close_t / adjusted_close_t_minus_20 - 1)",
+    "contamination": "C2-DIRECT: repository dates and related momentum/reversal results were previously inspected; any positive result is capped at paper candidate pending genuinely prospective evidence",
+    "controls": [
+      "N1",
+      "N60"
+    ],
+    "entry_limit_rule": "freeze quintiles at signal date; inferred next-open limit-up names keep their intended long-only weight in cash and are not replaced",
+    "execution_label": "first later tradestatus=1 open; N1 earliest legal T+1 close; N20/N60 first tradeable close at or after the frozen session target",
+    "formation": "complete month-end close and the adjusted close exactly 20 market sessions earlier",
+    "inference": "monthly Spearman rank IC, Newey-West lag 3, circular 6-month block bootstrap with 5000 draws",
+    "no_scan": [
+      "formation window",
+      "holding window",
+      "Top-N or quantile cutoff",
+      "February or holiday exclusion",
+      "size or volatility neutralization"
+    ],
+    "paper": "https://doi.org/10.1016/j.iref.2024.103653",
+    "primary_horizon": "N20",
+    "theory": "Zhang and Zhu (2024) report strong short-horizon contrarian effects in China and attribute them to the T+1 mechanism; their abstract also states that the winner reversal dominates and both winner and loser portfolios can fall, so this test requires an independently profitable past-loser long leg",
+    "universe": "latest B070 PIT 800-member snapshot visible at each month-end"
+  },
+  "study": "A-share monthly 20-session short-term reversal first-look"
+}
