@@ -1,0 +1,832 @@
+{
+  "research_id": "ashare_dividend_ep_data_readiness_2026_07_12",
+  "run_date": "2026-07-12",
+  "role": "evaluator_independent_strategy_research",
+  "capital_cny": 2100000.0,
+  "verdict": "DATA_NO_GO",
+  "returns_calculated": false,
+  "hypothesis": "Inside the official H30269 dividend-low-volatility membership, higher pure point-in-time earnings-to-price improves future compound return.",
+  "frozen_trial": {
+    "primary_window": "2013-12-31..2026-06-30",
+    "backcast_only_window": "2005-12-30..2013-12-18",
+    "universe": "Official effective H30269 historical constituents and weights at each annual review; current-member backfill and B070 substitution forbidden.",
+    "signal": "Four latest publicly visible as-filed single-quarter parent net profits divided by signal-date total market capitalization.",
+    "construction": "Within each PIT CSI level-1 industry, pair adjacent names by total market cap and transfer 50% of the lower-E/P name's baseline weight to the higher-E/P name, subject to the official 15% cap; industry weights remain exact.",
+    "execution": "Signal after official rebalance effectiveness; next tradeable open, 100-share lots, no leverage, historical fees/taxes, dividends, halts, limits, delistings and corporate actions; each order <=1% ADV60.",
+    "return_priority_gates_after_data_go": {
+      "post_publication_months": 120,
+      "net_cagr_delta": 0.02,
+      "sharpe_delta": 0.15,
+      "max_drawdown_deterioration_limit": 0.03,
+      "positive_chronological_folds": "at least 3 of 4",
+      "newey_west_t": 1.65,
+      "block_bootstrap_lower": "above zero"
+    }
+  },
+  "data_gates": {
+    "gates": {
+      "official_h30269_history_members_weights_2013_2026": false,
+      "actual_notice_dates_crosscheck_at_least_95pct": true,
+      "archived_as_filed_parent_profit_versions_available": false,
+      "standard_ttm_parent_profit_over_total_market_cap_available": false,
+      "h30269_pit_ep_coverage_each_rebalance_at_least_95pct": false,
+      "pit_industry_for_each_h30269_rebalance_available": false,
+      "execution_and_corporate_actions_cover_primary_window": false,
+      "all_required_inputs_reproducible_from_fresh_clone": false
+    },
+    "all_pass": false,
+    "verdict": "DATA_NO_GO",
+    "portfolio_backtest_allowed": false
+  },
+  "official_public_source_probe": {
+    "current_top10": {
+      "update_date": "2026-07-10",
+      "rows": [
+        {
+          "security_code": "601229",
+          "trade_date": "20260710",
+          "weight": 2.74
+        },
+        {
+          "security_code": "601009",
+          "trade_date": "20260710",
+          "weight": 2.74
+        },
+        {
+          "security_code": "600750",
+          "trade_date": "20260710",
+          "weight": 2.71
+        },
+        {
+          "security_code": "601838",
+          "trade_date": "20260710",
+          "weight": 2.63
+        },
+        {
+          "security_code": "000001",
+          "trade_date": "20260710",
+          "weight": 2.62
+        },
+        {
+          "security_code": "600350",
+          "trade_date": "20260710",
+          "weight": 2.42
+        },
+        {
+          "security_code": "000651",
+          "trade_date": "20260710",
+          "weight": 2.4
+        },
+        {
+          "security_code": "600919",
+          "trade_date": "20260710",
+          "weight": 2.37
+        },
+        {
+          "security_code": "601369",
+          "trade_date": "20260710",
+          "weight": 2.31
+        },
+        {
+          "security_code": "601857",
+          "trade_date": "20260710",
+          "weight": 2.3
+        }
+      ],
+      "canonical_data_sha256": "c46d1700f0e87b9f48b13d71857acacbf185691ba96eab8c25b658ae4a2f6d1c"
+    },
+    "historical_parameter_probe": {
+      "update_date": "2026-07-10",
+      "rows": [
+        {
+          "security_code": "601229",
+          "trade_date": "20260710",
+          "weight": 2.74
+        },
+        {
+          "security_code": "601009",
+          "trade_date": "20260710",
+          "weight": 2.74
+        },
+        {
+          "security_code": "600750",
+          "trade_date": "20260710",
+          "weight": 2.71
+        },
+        {
+          "security_code": "601838",
+          "trade_date": "20260710",
+          "weight": 2.63
+        },
+        {
+          "security_code": "000001",
+          "trade_date": "20260710",
+          "weight": 2.62
+        },
+        {
+          "security_code": "600350",
+          "trade_date": "20260710",
+          "weight": 2.42
+        },
+        {
+          "security_code": "000651",
+          "trade_date": "20260710",
+          "weight": 2.4
+        },
+        {
+          "security_code": "600919",
+          "trade_date": "20260710",
+          "weight": 2.37
+        },
+        {
+          "security_code": "601369",
+          "trade_date": "20260710",
+          "weight": 2.31
+        },
+        {
+          "security_code": "601857",
+          "trade_date": "20260710",
+          "weight": 2.3
+        }
+      ],
+      "canonical_data_sha256": "c46d1700f0e87b9f48b13d71857acacbf185691ba96eab8c25b658ae4a2f6d1c"
+    },
+    "requested_historical_trade_date": "2014-12-31",
+    "historical_parameter_ignored": true,
+    "current_sample_information_date": "2026-06-30",
+    "current_full_constituents": {
+      "rows": 50,
+      "as_of_date": "2026-07-10",
+      "distinct_constituents": 50,
+      "url": "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/file/autofile/cons/H30269cons.xls",
+      "sha256": "7b9a11460c57089c4cec12a3711b123415aa1cc781f1252d7ff5b310b2f3a8f0",
+      "last_modified": "Sun, 12 Jul 2026 14:35:20 GMT"
+    },
+    "latest_month_end_full_weights": {
+      "rows": 50,
+      "as_of_date": "2026-06-30",
+      "distinct_constituents": 50,
+      "weight_sum_pct": 99.998,
+      "url": "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/file/autofile/closeweight/H30269closeweight.xls",
+      "sha256": "5289b1f8b528a2b7886714513e0a939d0cab2d4f0f9d66d3a49ad932d95f8cb3",
+      "last_modified": "Wed, 01 Jul 2026 12:35:02 GMT"
+    },
+    "material_response_sha256": "f923e5b5f79826e96aae98a9e0f5f62cc495dbb34ebca9e31744ca772a1042e3",
+    "interpretation": "CSI publicly exposes the current full constituent list, latest month-end full weights and current top ten. The fixed file URLs roll forward, while supplying a past tradeDate returns the identical current top-ten payload; none of these endpoints supplies the 2013+ point-in-time archive.",
+    "urls": {
+      "top10": "https://www.csindex.com.cn/csindex-home/index/weight/top10new/H30269",
+      "sample_information_date": "https://www.csindex.com.cn/csindex-home/indexInfo/index-sample-information-trade-date-new",
+      "materials": "https://www.csindex.com.cn/csindex-home/indexInfo/index-details-data"
+    }
+  },
+  "repository_inventory": {
+    "h30269_component_files": [],
+    "h30269_history_validation": {
+      "candidate_files": [],
+      "complete_2013_2026": false,
+      "validated_effective_dates": 0,
+      "all_dates_have_50_constituents": false,
+      "all_dates_have_weights_summing_to_100pct": false,
+      "temporary_adjustments_covered": false,
+      "reason": "No versioned H30269 archive is present. A future archive must be parsed and validated across every effective date before this gate can pass."
+    },
+    "index_point_series_only": {
+      "price_index": {
+        "path": "data/research/b082/index_h30269.csv",
+        "rows": 4980,
+        "sha256": "f358d3542ad94d8be1f056e13320faa706b8b2fa162e85aa2e8fef391ebed331"
+      },
+      "total_return_index": {
+        "path": "data/research/b082/index_h20269.csv",
+        "rows": 4981,
+        "sha256": "7c80e9681084f17934f481fcb394af8173f82681cb9f5baea490f38f2bc913d1"
+      }
+    },
+    "b068_fundamentals": {
+      "rows": 13267,
+      "tickers": 393,
+      "report_dates": 27,
+      "first_report_date": "2017-08-31",
+      "last_report_date": "2026-04-30",
+      "report_month_days": [
+        "04-30",
+        "08-31",
+        "10-31"
+      ],
+      "duplicate_ticker_report_date_rows": 6602,
+      "duplicate_ticker_report_date_keys": 3301,
+      "earnings_yield_missing_fraction": 0.012059998492500189,
+      "ep_vs_inverse_pe_comparable_rows": 13107,
+      "ep_to_inverse_pe_median_ratio_by_quarter": {
+        "Q1": 0.23078999999999997,
+        "Q2": 0.514896,
+        "Q3": 0.787752,
+        "Q4": 0.9685329999999999
+      },
+      "ep_vs_inverse_pe_sign_mismatches": 752,
+      "actual_announcement_date_column_present": false,
+      "as_reported_version_column_present": false,
+      "parent_net_profit_column_present": false,
+      "total_market_cap_column_present": false,
+      "semantics": "The producer maps report_date to statutory deadlines and computes earnings_yield as cumulative basic EPS divided by a nearby price. It is not four as-filed single-quarter parent-profit values over total market cap."
+    },
+    "b068_to_b070_visible_ep_coverage": {
+      "union_tickers": 1310,
+      "covered_union_tickers": 296,
+      "union_coverage": 0.22595419847328244,
+      "per_date_min": 0.2075,
+      "per_date_median": 0.25125,
+      "per_date_max": 0.3175,
+      "per_date": [
+        {
+          "as_of_date": "2019-03-31",
+          "members": 800,
+          "covered": 166,
+          "coverage": 0.2075
+        },
+        {
+          "as_of_date": "2019-06-30",
+          "members": 800,
+          "covered": 167,
+          "coverage": 0.20875
+        },
+        {
+          "as_of_date": "2019-09-30",
+          "members": 800,
+          "covered": 167,
+          "coverage": 0.20875
+        },
+        {
+          "as_of_date": "2019-12-31",
+          "members": 800,
+          "covered": 173,
+          "coverage": 0.21625
+        },
+        {
+          "as_of_date": "2020-03-31",
+          "members": 800,
+          "covered": 173,
+          "coverage": 0.21625
+        },
+        {
+          "as_of_date": "2020-06-30",
+          "members": 800,
+          "covered": 173,
+          "coverage": 0.21625
+        },
+        {
+          "as_of_date": "2020-09-30",
+          "members": 800,
+          "covered": 173,
+          "coverage": 0.21625
+        },
+        {
+          "as_of_date": "2020-12-31",
+          "members": 800,
+          "covered": 181,
+          "coverage": 0.22625
+        },
+        {
+          "as_of_date": "2021-03-31",
+          "members": 800,
+          "covered": 181,
+          "coverage": 0.22625
+        },
+        {
+          "as_of_date": "2021-06-30",
+          "members": 800,
+          "covered": 181,
+          "coverage": 0.22625
+        },
+        {
+          "as_of_date": "2021-09-30",
+          "members": 799,
+          "covered": 189,
+          "coverage": 0.23654568210262827
+        },
+        {
+          "as_of_date": "2021-12-31",
+          "members": 800,
+          "covered": 190,
+          "coverage": 0.2375
+        },
+        {
+          "as_of_date": "2022-03-31",
+          "members": 800,
+          "covered": 195,
+          "coverage": 0.24375
+        },
+        {
+          "as_of_date": "2022-06-30",
+          "members": 800,
+          "covered": 201,
+          "coverage": 0.25125
+        },
+        {
+          "as_of_date": "2022-09-30",
+          "members": 800,
+          "covered": 201,
+          "coverage": 0.25125
+        },
+        {
+          "as_of_date": "2022-12-31",
+          "members": 800,
+          "covered": 201,
+          "coverage": 0.25125
+        },
+        {
+          "as_of_date": "2023-03-31",
+          "members": 800,
+          "covered": 212,
+          "coverage": 0.265
+        },
+        {
+          "as_of_date": "2023-06-30",
+          "members": 800,
+          "covered": 225,
+          "coverage": 0.28125
+        },
+        {
+          "as_of_date": "2023-09-30",
+          "members": 800,
+          "covered": 225,
+          "coverage": 0.28125
+        },
+        {
+          "as_of_date": "2023-12-31",
+          "members": 800,
+          "covered": 227,
+          "coverage": 0.28375
+        },
+        {
+          "as_of_date": "2024-03-31",
+          "members": 800,
+          "covered": 227,
+          "coverage": 0.28375
+        },
+        {
+          "as_of_date": "2024-06-30",
+          "members": 800,
+          "covered": 234,
+          "coverage": 0.2925
+        },
+        {
+          "as_of_date": "2024-09-30",
+          "members": 800,
+          "covered": 234,
+          "coverage": 0.2925
+        },
+        {
+          "as_of_date": "2024-12-31",
+          "members": 800,
+          "covered": 241,
+          "coverage": 0.30125
+        },
+        {
+          "as_of_date": "2025-03-31",
+          "members": 800,
+          "covered": 241,
+          "coverage": 0.30125
+        },
+        {
+          "as_of_date": "2025-06-30",
+          "members": 800,
+          "covered": 249,
+          "coverage": 0.31125
+        },
+        {
+          "as_of_date": "2025-09-30",
+          "members": 800,
+          "covered": 249,
+          "coverage": 0.31125
+        },
+        {
+          "as_of_date": "2025-12-31",
+          "members": 800,
+          "covered": 253,
+          "coverage": 0.31625
+        },
+        {
+          "as_of_date": "2026-03-31",
+          "members": 800,
+          "covered": 254,
+          "coverage": 0.3175
+        }
+      ]
+    },
+    "b070_universe": {
+      "rows": 23199,
+      "rebalance_dates": 29,
+      "first_rebalance": "2019-03-31",
+      "last_rebalance": "2026-03-31",
+      "union_tickers": 1310,
+      "members_per_date_min": 799,
+      "members_per_date_max": 800,
+      "current_control_tickers": 800,
+      "non_current_tickers": 536,
+      "non_current_with_b068_fundamentals": 45,
+      "placeholder_columns_zero_fraction": {
+        "market_cap": 1.0,
+        "avg_turnover": 1.0,
+        "composite_score": 1.0
+      },
+      "definition": "Quarterly point-in-time union of CSI 300, CSI 500 and SSE 50; it is not H30269 membership and contains no official H30269 weights."
+    },
+    "actual_notice_report_cache": {
+      "rows": 219633,
+      "tickers": 5542,
+      "first_report_period": "2014-03-31",
+      "last_report_period": "2025-12-31",
+      "first_notice_date": "2014-04-09",
+      "last_notice_date": "2026-07-10",
+      "parent_net_profit_missing_fraction": 5.9189648185837285e-05,
+      "notice_crosscheck": {
+        "requested": 12,
+        "comparable": 12,
+        "matches": 12,
+        "match_rate": 1.0,
+        "samples": [
+          {
+            "ticker": "600031.SH",
+            "report_date": "2018-12-31",
+            "notice_date": "2019-04-01",
+            "actual_publish_date": "2019-04-01",
+            "match": true
+          },
+          {
+            "ticker": "601888.SH",
+            "report_date": "2019-06-30",
+            "notice_date": "2019-08-31",
+            "actual_publish_date": "2019-08-31",
+            "match": true
+          },
+          {
+            "ticker": "000547.SZ",
+            "report_date": "2019-12-31",
+            "notice_date": "2020-04-30",
+            "actual_publish_date": "2020-04-30",
+            "match": true
+          },
+          {
+            "ticker": "600036.SH",
+            "report_date": "2020-12-31",
+            "notice_date": "2021-03-20",
+            "actual_publish_date": "2021-03-20",
+            "match": true
+          },
+          {
+            "ticker": "603708.SH",
+            "report_date": "2021-06-30",
+            "notice_date": "2021-08-27",
+            "actual_publish_date": "2021-08-27",
+            "match": true
+          },
+          {
+            "ticker": "000963.SZ",
+            "report_date": "2022-03-31",
+            "notice_date": "2022-04-28",
+            "actual_publish_date": "2022-04-28",
+            "match": true
+          },
+          {
+            "ticker": "002390.SZ",
+            "report_date": "2022-09-30",
+            "notice_date": "2022-10-29",
+            "actual_publish_date": "2022-10-29",
+            "match": true
+          },
+          {
+            "ticker": "601718.SH",
+            "report_date": "2023-06-30",
+            "notice_date": "2023-08-18",
+            "actual_publish_date": "2023-08-18",
+            "match": true
+          },
+          {
+            "ticker": "000703.SZ",
+            "report_date": "2023-12-31",
+            "notice_date": "2024-04-20",
+            "actual_publish_date": "2024-04-20",
+            "match": true
+          },
+          {
+            "ticker": "300765.SZ",
+            "report_date": "2024-09-30",
+            "notice_date": "2024-10-24",
+            "actual_publish_date": "2024-10-24",
+            "match": true
+          },
+          {
+            "ticker": "600998.SH",
+            "report_date": "2025-03-31",
+            "notice_date": "2025-04-29",
+            "actual_publish_date": "2025-04-29",
+            "match": true
+          },
+          {
+            "ticker": "688981.SH",
+            "report_date": "2025-09-30",
+            "notice_date": "2025-11-14",
+            "actual_publish_date": "2025-11-14",
+            "match": true
+          }
+        ]
+      },
+      "fresh_update_lag_days": {
+        "median": 365.0,
+        "p90": 377.0,
+        "after_120d_fraction": 0.9083212301164387,
+        "after_365d_fraction": 0.4111937820033013
+      },
+      "b070_report_coverage": {
+        "periods": 28,
+        "min": 0.94125,
+        "median": 0.9825,
+        "max": 0.99875,
+        "latest_available_report_period": "2025-12-31",
+        "later_unavailable_universe_periods": [
+          "2026-03-31"
+        ]
+      },
+      "b070_report_coverage_by_period": [
+        {
+          "report_period": "2019-03-31",
+          "members": 800,
+          "covered": 753,
+          "coverage": 0.94125
+        },
+        {
+          "report_period": "2019-06-30",
+          "members": 800,
+          "covered": 767,
+          "coverage": 0.95875
+        },
+        {
+          "report_period": "2019-09-30",
+          "members": 800,
+          "covered": 767,
+          "coverage": 0.95875
+        },
+        {
+          "report_period": "2019-12-31",
+          "members": 800,
+          "covered": 771,
+          "coverage": 0.96375
+        },
+        {
+          "report_period": "2020-03-31",
+          "members": 800,
+          "covered": 771,
+          "coverage": 0.96375
+        },
+        {
+          "report_period": "2020-06-30",
+          "members": 800,
+          "covered": 774,
+          "coverage": 0.9675
+        },
+        {
+          "report_period": "2020-09-30",
+          "members": 800,
+          "covered": 774,
+          "coverage": 0.9675
+        },
+        {
+          "report_period": "2020-12-31",
+          "members": 800,
+          "covered": 776,
+          "coverage": 0.97
+        },
+        {
+          "report_period": "2021-03-31",
+          "members": 800,
+          "covered": 776,
+          "coverage": 0.97
+        },
+        {
+          "report_period": "2021-06-30",
+          "members": 800,
+          "covered": 776,
+          "coverage": 0.97
+        },
+        {
+          "report_period": "2021-09-30",
+          "members": 799,
+          "covered": 781,
+          "coverage": 0.9774718397997497
+        },
+        {
+          "report_period": "2021-12-31",
+          "members": 800,
+          "covered": 782,
+          "coverage": 0.9775
+        },
+        {
+          "report_period": "2022-03-31",
+          "members": 800,
+          "covered": 784,
+          "coverage": 0.98
+        },
+        {
+          "report_period": "2022-06-30",
+          "members": 800,
+          "covered": 786,
+          "coverage": 0.9825
+        },
+        {
+          "report_period": "2022-09-30",
+          "members": 800,
+          "covered": 786,
+          "coverage": 0.9825
+        },
+        {
+          "report_period": "2022-12-31",
+          "members": 800,
+          "covered": 786,
+          "coverage": 0.9825
+        },
+        {
+          "report_period": "2023-03-31",
+          "members": 800,
+          "covered": 789,
+          "coverage": 0.98625
+        },
+        {
+          "report_period": "2023-06-30",
+          "members": 800,
+          "covered": 793,
+          "coverage": 0.99125
+        },
+        {
+          "report_period": "2023-09-30",
+          "members": 800,
+          "covered": 793,
+          "coverage": 0.99125
+        },
+        {
+          "report_period": "2023-12-31",
+          "members": 800,
+          "covered": 794,
+          "coverage": 0.9925
+        },
+        {
+          "report_period": "2024-03-31",
+          "members": 800,
+          "covered": 794,
+          "coverage": 0.9925
+        },
+        {
+          "report_period": "2024-06-30",
+          "members": 800,
+          "covered": 795,
+          "coverage": 0.99375
+        },
+        {
+          "report_period": "2024-09-30",
+          "members": 800,
+          "covered": 795,
+          "coverage": 0.99375
+        },
+        {
+          "report_period": "2024-12-31",
+          "members": 800,
+          "covered": 795,
+          "coverage": 0.99375
+        },
+        {
+          "report_period": "2025-03-31",
+          "members": 800,
+          "covered": 797,
+          "coverage": 0.99625
+        },
+        {
+          "report_period": "2025-06-30",
+          "members": 800,
+          "covered": 798,
+          "coverage": 0.9975
+        },
+        {
+          "report_period": "2025-09-30",
+          "members": 800,
+          "covered": 799,
+          "coverage": 0.99875
+        },
+        {
+          "report_period": "2025-12-31",
+          "members": 800,
+          "covered": 799,
+          "coverage": 0.99875
+        },
+        {
+          "report_period": "2026-03-31",
+          "members": 800,
+          "covered": 0,
+          "coverage": 0.0
+        }
+      ],
+      "archived_as_filed_values_available": false,
+      "revision_blocker": "NOTICE_DATE is independently cross-checked, but the cache stores one current historical value per ticker-period. Later corrections are not versioned, so current values cannot be assigned to the original notice date."
+    },
+    "b070_prices": {
+      "rows": 2467137,
+      "tickers": 1310,
+      "first_date": "2018-01-02",
+      "last_date": "2026-06-18",
+      "halted_rows": 16779,
+      "tickers_with_halts": 500,
+      "right_censored_tickers": 52,
+      "adj_close_equals_close_fraction": 1.0,
+      "corporate_action_fields_present": false
+    },
+    "b076_size": {
+      "rows": 122374,
+      "tickers": 1310,
+      "first_date": "2018-01-03",
+      "last_date": "2026-06-18",
+      "field": "circulating market capitalization inferred from turnover",
+      "standard_ep_total_market_cap_available": false
+    },
+    "gitignored_inputs": {
+      "data/research/b068/snapshots/fundamentals/unified/fundamentals.csv": true,
+      "data/research/b070/snapshots/universe/cn_pit_universe.csv": true,
+      "data/research/b070/snapshots/universe/cn_pit_universe_current_control.csv": true,
+      "data/research/b070/snapshots/prices/unified/prices_daily.csv": true,
+      "data/research/codex_quality_sue/raw_reports.csv.gz": true,
+      "data/research/codex_quality_sue/notice_crosscheck_v2.json": true,
+      "data/research/b076/cn_size.csv": true,
+      "data/research/b070/f002_universe_build.json": true,
+      "data/research/b082/index_h30269.csv": true,
+      "data/research/b082/index_h20269.csv": true
+    }
+  },
+  "external_source_assessment": {
+    "csi": {
+      "index_data_page": "https://www.csindex.com.cn/#/dataService/indexData",
+      "authorized_vendor_page": "https://www.csindex.com.cn/#/dataService/vendor",
+      "disclaimer": "https://www.csindex.com.cn/#/disclaimer",
+      "assessment": "CSI provides current full constituents and latest month-end weights at rolling fixed URLs. It identifies historical constituent weights, corporate actions and index divisors as static data distributed through its data-service platform or authorized vendors. Full historical H30269 weights require a licensed delivery rather than current-page scraping."
+    },
+    "cninfo": {
+      "announcement_search": "https://www.cninfo.com.cn/new/commonUrl/pageOfSearch?url=disclosure/list/search",
+      "public_query_api": "https://www.cninfo.com.cn/new/hisAnnouncement/query",
+      "commercial_api": "http://webapi.cninfo.com.cn/",
+      "assessment": "Public announcements preserve IDs, timestamps and PDFs, including corrections, but no verified free bulk structured as-filed TTM parent-profit feed exists. Large reproducible extraction requires a licensed API or a versioned PDF parsing and validation pipeline."
+    },
+    "market_cap": "Official exchange OHLCV does not close the denominator: historical total shares, adjustment factors and cross-exchange delisted coverage are still required from 2013 onward."
+  },
+  "source_evidence": {
+    "data/research/b068/snapshots/fundamentals/unified/fundamentals.csv": {
+      "sha256": "ff4d4eed8317ff6628475d2ad7cb5f5465c1025841fc6469e041bcedcd23abbd",
+      "gitignored": true
+    },
+    "data/research/b070/snapshots/universe/cn_pit_universe.csv": {
+      "sha256": "e37023eadbf5bed7b06b7428a4e204759aa897996f315dd767d11674898d518c",
+      "gitignored": true
+    },
+    "data/research/b070/snapshots/universe/cn_pit_universe_current_control.csv": {
+      "sha256": "fc291b498cee4001790fe30b62d349d459f826f3bb759ca81cbc10f414115082",
+      "gitignored": true
+    },
+    "data/research/b070/snapshots/prices/unified/prices_daily.csv": {
+      "sha256": "2352055310872ccdca38d50a76c51713fc4721c7e74cefc7955d9e2717c004ec",
+      "gitignored": true
+    },
+    "data/research/codex_quality_sue/raw_reports.csv.gz": {
+      "sha256": "4ba58c3e8fce429914a371327fa395cc400cf190332bb2ec2519c202556711c8",
+      "gitignored": true
+    },
+    "data/research/codex_quality_sue/notice_crosscheck_v2.json": {
+      "sha256": "50cbf3ae4b3e107a8e9a6726764713e167e5a17aa75c3411dbf978fde429718a",
+      "gitignored": true
+    },
+    "data/research/b076/cn_size.csv": {
+      "sha256": "a0c569542f2e9ccc3acb2dbaecb7cc5bd0f1da3de9623507211fd566d52b46b3",
+      "gitignored": true
+    },
+    "data/research/b070/f002_universe_build.json": {
+      "sha256": "3a4d18405e5b0fd5cef3b55ecb0e74155a9eaa6d4ae60ab91b064eabe606127b",
+      "gitignored": true
+    },
+    "data/research/b082/index_h30269.csv": {
+      "sha256": "f358d3542ad94d8be1f056e13320faa706b8b2fa162e85aa2e8fef391ebed331",
+      "gitignored": true
+    },
+    "data/research/b082/index_h20269.csv": {
+      "sha256": "7c80e9681084f17934f481fcb394af8173f82681cb9f5baea490f38f2bc913d1",
+      "gitignored": true
+    },
+    "workbench/backend/workbench_api/data_refresh/cn_fundamentals.py": {
+      "sha256": "def4307939e3a98c774d6809b96d39d9a460e7a5ceee201db5db593c2ae6f689",
+      "gitignored": false
+    },
+    "runner_sha256": "15d12689024c211cfb36d14a422dece52d0128f7c4ac76daf3e7527f5353d1e0"
+  },
+  "blocking_requirements": [
+    "Licensed H30269 effective historical constituents and weights from 2013 onward.",
+    "Versioned as-filed parent net profit with exact first-public timestamps.",
+    "PIT total shares/total market cap, industry and adjustment factors from 2013.",
+    "Raw executable OHLCV, halts, limits, dividends, corporate actions and delistings.",
+    "At least 95% member and E/P coverage at every rebalance, reproducible from a fresh clone."
+  ],
+  "decision": "Do not calculate or report pure E/P strategy returns. Current data would mix today's/restated financial values, a non-H30269 universe, circulating rather than total market cap, and a post-2018 execution panel, creating revision, membership, size and survivorship lookahead."
+}
