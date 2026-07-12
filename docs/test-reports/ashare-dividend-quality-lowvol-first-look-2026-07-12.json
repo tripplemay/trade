@@ -1,0 +1,722 @@
+{
+  "research_id": "ashare_dividend_quality_lowvol_first_look_2026_07_12",
+  "run_date": "2026-07-12",
+  "role": "evaluator_independent_strategy_research",
+  "research_only": true,
+  "no_broker_no_execution": true,
+  "target_capital_cny": 2100000.0,
+  "frozen_hypothesis": {
+    "baseline": {
+      "price_index_code": "H30269",
+      "total_return_index_code": "H20269",
+      "name": "中证红利低波动指数",
+      "publication_date": "2013-12-19",
+      "adjustment_frequency": "Annually",
+      "description": "CSI Dividend Low Volatility Index aims to reflect the performance of high and steady-cash dividend-paying companies with low volatility. The Index is weighted by dividend yield."
+    },
+    "candidate": {
+      "price_index_code": "931130",
+      "total_return_index_code": "H21130",
+      "name": "中证红利成长低波动指数",
+      "publication_date": "2018-12-04",
+      "adjustment_frequency": "Semiannually",
+      "description": "CSI Dividend Growth Low Volatility Index selects 50 securities which are characterized by continuous dividend-paying record, stable growth and low volatility as constituents. The Index is weighted by the expected dividend yield. It aims to reflect the performance of continuous dividend-paying record, stable growth and low volatility companies.",
+      "theory": "Continuous dividends plus stable profit growth filters dividend traps; low volatility retains the defensive mandate."
+    },
+    "selection_timing": "conversation-level freeze before the first candidate-return fetch; the repository has no independently timestamped preregistration artifact",
+    "parameter_search": false,
+    "primary_window": "last trading close in publication month through 2026-06-30",
+    "prepublication_history_role": "backcast_only",
+    "return_priority_gate": "post-launch CAGR delta >= 2 percentage points"
+  },
+  "official_sources": {
+    "H20269": {
+      "url": "https://www.csindex.com.cn/csindex-home/perf/index-perf",
+      "params": {
+        "indexCode": "H20269",
+        "startDate": "20051230",
+        "endDate": "20260630"
+      },
+      "records": 4977,
+      "first": "2005-12-30",
+      "last": "2026-06-30",
+      "canonical_data_sha256": "30a11921188ae8274a9959c7f0a5003363a6a0f113413fb5e91e1c2b95549222"
+    },
+    "H21130": {
+      "url": "https://www.csindex.com.cn/csindex-home/perf/index-perf",
+      "params": {
+        "indexCode": "H21130",
+        "startDate": "20051230",
+        "endDate": "20260630"
+      },
+      "records": 4976,
+      "first": "2005-12-30",
+      "last": "2026-06-30",
+      "canonical_data_sha256": "271edd72d9052f446e3ef12b37b5bbd57fabf52714dcd4cea8ea5251b76796b2"
+    },
+    "H30269": {
+      "url": "https://www.csindex.com.cn/csindex-home/indexInfo/index-basic-info/H30269",
+      "canonical_data_sha256": "b53255e433dd33b9c9243c4cd1ac253a45d218496cdcb2902c9714ae63b67fee"
+    },
+    "931130": {
+      "url": "https://www.csindex.com.cn/csindex-home/indexInfo/index-basic-info/931130",
+      "canonical_data_sha256": "8fff801f5dc09438416ac16c3f5e140e17336b0755369aecc6bbe566ef238709"
+    },
+    "tracking_status": {
+      "url": "https://www.csindex.com.cn/csindex-home/exportExcel/indexAll/CH",
+      "canonical_tracking_row_sha256": "d2e7325108e8e955f7c3ee3d320b3a50772a87dc52b40c2a7d82a1c389c0f97a",
+      "rows": 2343
+    }
+  },
+  "tracking_product": {
+    "index_code": "931130",
+    "short_name": "红利成长低波",
+    "full_name": "中证红利成长低波动指数",
+    "official_tracking_product_flag": "否",
+    "has_tracking_product": false,
+    "publication_date": "2018-12-04"
+  },
+  "official_index_comparison": {
+    "common_start": "2005-12-30",
+    "common_end": "2026-06-30",
+    "common_daily_observations": 4976,
+    "prepublication_backcast": {
+      "start": "2005-12-30",
+      "end": "2018-12-03",
+      "baseline": {
+        "start": "2005-12-30",
+        "end": "2018-12-03",
+        "daily_observations": 3142,
+        "months": 156,
+        "years": 12.92539356605065,
+        "total_return": 9.991879999999998,
+        "cagr": 0.2037732891640993,
+        "annualized_volatility": 0.28371712854546155,
+        "sharpe_rf0": 0.8210127332521893,
+        "max_drawdown": -0.6616550242281927,
+        "worst_month": -0.2439880713611372,
+        "ending_value_cny_at_2_1m": 23082947.999999996
+      },
+      "candidate": {
+        "start": "2005-12-30",
+        "end": "2018-12-03",
+        "daily_observations": 3142,
+        "months": 156,
+        "years": 12.92539356605065,
+        "total_return": 19.47006,
+        "cagr": 0.26309920491553407,
+        "annualized_volatility": 0.28355434905880605,
+        "sharpe_rf0": 0.9972697348115493,
+        "max_drawdown": -0.6506778352063987,
+        "worst_month": -0.25091132413344397,
+        "ending_value_cny_at_2_1m": 42987126.0
+      },
+      "delta": {
+        "cagr": 0.059325915751434755,
+        "sharpe_rf0": 0.17625700155936008,
+        "max_drawdown_improvement": 0.01097718902179401,
+        "ending_value_cny_at_2_1m": 19904178.000000004
+      }
+    },
+    "post_launch_primary": {
+      "start": "2018-12-28",
+      "end": "2026-06-30",
+      "baseline": {
+        "start": "2018-12-28",
+        "end": "2026-06-30",
+        "daily_observations": 1816,
+        "months": 90,
+        "years": 7.5044490075290895,
+        "total_return": 0.9929641050577338,
+        "cagr": 0.09624995654909752,
+        "annualized_volatility": 0.1694116271069263,
+        "sharpe_rf0": 0.6501848698707653,
+        "max_drawdown": -0.1966221842291691,
+        "worst_month": -0.08876604758737994,
+        "ending_value_cny_at_2_1m": 4185224.620621241
+      },
+      "candidate": {
+        "start": "2018-12-28",
+        "end": "2026-06-30",
+        "daily_observations": 1816,
+        "months": 90,
+        "years": 7.5044490075290895,
+        "total_return": 0.9936964552702301,
+        "cagr": 0.09630362770664891,
+        "annualized_volatility": 0.16289340077497722,
+        "sharpe_rf0": 0.6698262809854727,
+        "max_drawdown": -0.212450601161284,
+        "worst_month": -0.07173226149838363,
+        "ending_value_cny_at_2_1m": 4186762.556067483
+      },
+      "delta": {
+        "cagr": 5.367115755139373e-05,
+        "sharpe_rf0": 0.019641411114707408,
+        "max_drawdown_improvement": -0.015828416932114897,
+        "ending_value_cny_at_2_1m": 1537.9354462418705
+      }
+    },
+    "full_history_context": {
+      "start": "2005-12-30",
+      "end": "2026-06-30",
+      "baseline": {
+        "start": "2005-12-30",
+        "end": "2026-06-30",
+        "daily_observations": 4976,
+        "months": 246,
+        "years": 20.49828884325804,
+        "total_return": 20.47652,
+        "cagr": 0.16139318475727826,
+        "annualized_volatility": 0.2476856919626347,
+        "sharpe_rf0": 0.7520478504815868,
+        "max_drawdown": -0.6616550242281927,
+        "worst_month": -0.2439880713611372,
+        "ending_value_cny_at_2_1m": 45100692.0
+      },
+      "candidate": {
+        "start": "2005-12-30",
+        "end": "2026-06-30",
+        "daily_observations": 4976,
+        "months": 246,
+        "years": 20.49828884325804,
+        "total_return": 38.56369,
+        "cagr": 0.1965295289195792,
+        "annualized_volatility": 0.24601077864042858,
+        "sharpe_rf0": 0.8812499575423877,
+        "max_drawdown": -0.6506778352063987,
+        "worst_month": -0.25091132413344397,
+        "ending_value_cny_at_2_1m": 83083749.0
+      },
+      "delta": {
+        "cagr": 0.035136344162300936,
+        "sharpe_rf0": 0.12920210706080082,
+        "max_drawdown_improvement": 0.01097718902179401,
+        "ending_value_cny_at_2_1m": 37983057.0
+      }
+    },
+    "backcast_to_post_launch_cagr_delta_decay": -0.05927224459388336,
+    "paired_monthly_inference": {
+      "paired_months": 90,
+      "monthly_win_rate": 0.4888888888888889,
+      "monthly_return_correlation": 0.9295840913866015,
+      "annualized_arithmetic_excess_mean": -0.002395180660891594,
+      "newey_west_hac": {
+        "n": 90,
+        "lags": 3,
+        "mean": -0.00019959838840763282,
+        "annualized_mean": -0.002395180660891594,
+        "se": 0.001503163809624908,
+        "t": -0.132785520200516
+      },
+      "block_bootstrap_95": {
+        "n": 90,
+        "draws": 10000,
+        "block_months": 6,
+        "seed": 20260712,
+        "annualized_lower": -0.03536353549852749,
+        "annualized_upper": 0.03253972015419748
+      }
+    },
+    "chronological_folds": [
+      {
+        "fold": 1,
+        "start": "2019-01-31",
+        "end": "2020-11-30",
+        "months": 23,
+        "baseline_cagr": 0.15357905616323486,
+        "candidate_cagr": 0.12058351662742517,
+        "cagr_delta": -0.03299553953580969
+      },
+      {
+        "fold": 2,
+        "start": "2020-12-31",
+        "end": "2022-10-31",
+        "months": 23,
+        "baseline_cagr": 0.031041057665354588,
+        "candidate_cagr": 0.03331571165183789,
+        "cagr_delta": 0.0022746539864832993
+      },
+      {
+        "fold": 3,
+        "start": "2022-11-30",
+        "end": "2024-08-31",
+        "months": 22,
+        "baseline_cagr": 0.16339740548220982,
+        "candidate_cagr": 0.1690486577528767,
+        "cagr_delta": 0.005651252270666873
+      },
+      {
+        "fold": 4,
+        "start": "2024-09-30",
+        "end": "2026-06-30",
+        "months": 22,
+        "baseline_cagr": 0.04445119260128361,
+        "candidate_cagr": 0.06916839465639879,
+        "cagr_delta": 0.024717202055115184
+      }
+    ],
+    "annual_returns_post_launch": [
+      {
+        "year": 2019,
+        "months": 12,
+        "baseline": 0.209396288291666,
+        "candidate": 0.13762730927985212,
+        "delta": -0.0717689790118139
+      },
+      {
+        "year": 2020,
+        "months": 12,
+        "baseline": 0.019900005064199977,
+        "candidate": 0.03190004039774097,
+        "delta": 0.012000035333540993
+      },
+      {
+        "year": 2021,
+        "months": 12,
+        "baseline": 0.16337258247623954,
+        "candidate": 0.1996601945081664,
+        "delta": 0.036287612031926875
+      },
+      {
+        "year": 2022,
+        "months": 12,
+        "baseline": 0.03456577916081449,
+        "candidate": 0.003364952821242717,
+        "delta": -0.031200826339571774
+      },
+      {
+        "year": 2023,
+        "months": 12,
+        "baseline": 0.12231287899102794,
+        "candidate": 0.11654780474548998,
+        "delta": -0.00576507424553796
+      },
+      {
+        "year": 2024,
+        "months": 12,
+        "baseline": 0.24821663685112205,
+        "candidate": 0.311915564349605,
+        "delta": 0.06369892749848294
+      },
+      {
+        "year": 2025,
+        "months": 12,
+        "baseline": 0.05574898277806106,
+        "candidate": 0.05764941693002723,
+        "delta": 0.0019004341519661683
+      },
+      {
+        "year": 2026,
+        "months": 6,
+        "baseline": -0.09232215950754319,
+        "candidate": -0.08929172794460383,
+        "delta": 0.003030431562939362
+      }
+    ],
+    "stress_windows": {
+      "2022": {
+        "start": "2022-01-01",
+        "end": "2022-12-31",
+        "available": true,
+        "baseline": {
+          "return": 0.01797774686711362,
+          "max_drawdown": -0.13537787312007143
+        },
+        "candidate": {
+          "return": -0.013779195237036856,
+          "max_drawdown": -0.11231991161774402
+        },
+        "delta": {
+          "return": -0.031756942104150476,
+          "max_drawdown_improvement": 0.023057961502327418
+        }
+      },
+      "2024_jan_feb": {
+        "start": "2024-01-01",
+        "end": "2024-02-29",
+        "available": true,
+        "baseline": {
+          "return": 0.08890406157834185,
+          "max_drawdown": -0.05387689400868123
+        },
+        "candidate": {
+          "return": 0.05804826830556098,
+          "max_drawdown": -0.0443540479669029
+        },
+        "delta": {
+          "return": -0.030855793272780874,
+          "max_drawdown_improvement": 0.009522846041778332
+        }
+      },
+      "2025": {
+        "start": "2025-01-01",
+        "end": "2025-12-31",
+        "available": true,
+        "baseline": {
+          "return": 0.07925402183873609,
+          "max_drawdown": -0.06943103349605062
+        },
+        "candidate": {
+          "return": 0.0849479562871771,
+          "max_drawdown": -0.07861696617341896
+        },
+        "delta": {
+          "return": 0.005693934448441018,
+          "max_drawdown_improvement": -0.009185932677368336
+        }
+      }
+    },
+    "gates": {
+      "gates": {
+        "post_launch_months_at_least_60": true,
+        "cagr_delta_at_least_2pp": false,
+        "sharpe_delta_at_least_0_15": false,
+        "max_drawdown_not_worse": false,
+        "at_least_3_of_4_positive_folds": true,
+        "hac_t_at_least_1_65": false,
+        "bootstrap_95_lower_above_zero": false,
+        "stress_drawdown_not_worse_by_more_than_2pp": true,
+        "official_tracking_product_exists": false
+      },
+      "positive_folds": 3,
+      "all_pass": false,
+      "verdict": "NO_GO"
+    },
+    "verdict": "NO_GO"
+  },
+  "custom_component_route": {
+    "route": "custom constituent-level quality/value enhancement",
+    "coverage": {
+      "universe_rows": 23199,
+      "universe_dates": 29,
+      "universe_distinct_tickers": 1310,
+      "fundamental_rows": 13267,
+      "fundamental_distinct_tickers": 393,
+      "intersection_tickers": 296,
+      "union_ticker_coverage": 0.22595419847328244,
+      "per_date_coverage_min": 0.2075,
+      "per_date_coverage_max": 0.3175,
+      "per_date": [
+        {
+          "as_of_date": "2019-03-31",
+          "members": 800,
+          "covered": 166,
+          "coverage": 0.2075
+        },
+        {
+          "as_of_date": "2019-06-30",
+          "members": 800,
+          "covered": 167,
+          "coverage": 0.20875
+        },
+        {
+          "as_of_date": "2019-09-30",
+          "members": 800,
+          "covered": 167,
+          "coverage": 0.20875
+        },
+        {
+          "as_of_date": "2019-12-31",
+          "members": 800,
+          "covered": 173,
+          "coverage": 0.21625
+        },
+        {
+          "as_of_date": "2020-03-31",
+          "members": 800,
+          "covered": 173,
+          "coverage": 0.21625
+        },
+        {
+          "as_of_date": "2020-06-30",
+          "members": 800,
+          "covered": 173,
+          "coverage": 0.21625
+        },
+        {
+          "as_of_date": "2020-09-30",
+          "members": 800,
+          "covered": 173,
+          "coverage": 0.21625
+        },
+        {
+          "as_of_date": "2020-12-31",
+          "members": 800,
+          "covered": 181,
+          "coverage": 0.22625
+        },
+        {
+          "as_of_date": "2021-03-31",
+          "members": 800,
+          "covered": 181,
+          "coverage": 0.22625
+        },
+        {
+          "as_of_date": "2021-06-30",
+          "members": 800,
+          "covered": 181,
+          "coverage": 0.22625
+        },
+        {
+          "as_of_date": "2021-09-30",
+          "members": 799,
+          "covered": 189,
+          "coverage": 0.23654568210262827
+        },
+        {
+          "as_of_date": "2021-12-31",
+          "members": 800,
+          "covered": 190,
+          "coverage": 0.2375
+        },
+        {
+          "as_of_date": "2022-03-31",
+          "members": 800,
+          "covered": 195,
+          "coverage": 0.24375
+        },
+        {
+          "as_of_date": "2022-06-30",
+          "members": 800,
+          "covered": 201,
+          "coverage": 0.25125
+        },
+        {
+          "as_of_date": "2022-09-30",
+          "members": 800,
+          "covered": 201,
+          "coverage": 0.25125
+        },
+        {
+          "as_of_date": "2022-12-31",
+          "members": 800,
+          "covered": 201,
+          "coverage": 0.25125
+        },
+        {
+          "as_of_date": "2023-03-31",
+          "members": 800,
+          "covered": 212,
+          "coverage": 0.265
+        },
+        {
+          "as_of_date": "2023-06-30",
+          "members": 800,
+          "covered": 225,
+          "coverage": 0.28125
+        },
+        {
+          "as_of_date": "2023-09-30",
+          "members": 800,
+          "covered": 225,
+          "coverage": 0.28125
+        },
+        {
+          "as_of_date": "2023-12-31",
+          "members": 800,
+          "covered": 227,
+          "coverage": 0.28375
+        },
+        {
+          "as_of_date": "2024-03-31",
+          "members": 800,
+          "covered": 227,
+          "coverage": 0.28375
+        },
+        {
+          "as_of_date": "2024-06-30",
+          "members": 800,
+          "covered": 234,
+          "coverage": 0.2925
+        },
+        {
+          "as_of_date": "2024-09-30",
+          "members": 800,
+          "covered": 234,
+          "coverage": 0.2925
+        },
+        {
+          "as_of_date": "2024-12-31",
+          "members": 800,
+          "covered": 241,
+          "coverage": 0.30125
+        },
+        {
+          "as_of_date": "2025-03-31",
+          "members": 800,
+          "covered": 241,
+          "coverage": 0.30125
+        },
+        {
+          "as_of_date": "2025-06-30",
+          "members": 800,
+          "covered": 249,
+          "coverage": 0.31125
+        },
+        {
+          "as_of_date": "2025-09-30",
+          "members": 800,
+          "covered": 249,
+          "coverage": 0.31125
+        },
+        {
+          "as_of_date": "2025-12-31",
+          "members": 800,
+          "covered": 253,
+          "coverage": 0.31625
+        },
+        {
+          "as_of_date": "2026-03-31",
+          "members": 800,
+          "covered": 254,
+          "coverage": 0.3175
+        }
+      ]
+    },
+    "b070_build": {
+      "rebalance_count": 29,
+      "current_member_count": 800,
+      "union_ever_members": 1310,
+      "non_current_members": 536
+    },
+    "fundamental_report_date_month_days": [
+      "04-30",
+      "08-31",
+      "10-31"
+    ],
+    "duplicate_ticker_report_date_rows": 6602,
+    "fields": {
+      "roe": {
+        "present": true,
+        "missing_fraction": 0.01160774854903143
+      },
+      "gross_margin": {
+        "present": true,
+        "missing_fraction": 0.0031657496042812993
+      },
+      "fcf_yield": {
+        "present": true,
+        "missing_fraction": 0.018391497701062787
+      },
+      "debt_to_assets": {
+        "present": true,
+        "missing_fraction": 0.014170498228687722
+      },
+      "pe": {
+        "present": true,
+        "missing_fraction": 0.0
+      },
+      "pb": {
+        "present": true,
+        "missing_fraction": 0.0
+      },
+      "ev_ebitda": {
+        "present": true,
+        "missing_fraction": 1.0
+      },
+      "earnings_yield": {
+        "present": true,
+        "missing_fraction": 0.012059998492500189
+      },
+      "industry": {
+        "present": false,
+        "missing_fraction": null
+      },
+      "ttm_dividend_yield": {
+        "present": false,
+        "missing_fraction": null
+      },
+      "actual_announcement_date": {
+        "present": false,
+        "missing_fraction": null
+      },
+      "as_reported_version": {
+        "present": false,
+        "missing_fraction": null
+      }
+    },
+    "historical_h30269_component_files": [],
+    "gates": {
+      "historical_h30269_components_and_weights_present": false,
+      "minimum_visible_fundamental_coverage_at_least_90pct": false,
+      "industry_field_present": false,
+      "individual_dividend_field_present": false,
+      "actual_announcement_date_present": false
+    },
+    "verdict": "DATA_NO_GO",
+    "reason": "B070 is a different broad-index universe; B068 fundamentals cover only a current-survivor subset and the repository has no historical H30269 members."
+  },
+  "legacy_b082_baseline_audit": {
+    "verdict": "BASELINE_NOT_EXECUTION_GRADE",
+    "first_signal_date": "2007-01-31",
+    "first_execution_date": "2007-02-01",
+    "artifact_first_date": "2005-01-01",
+    "official_base_date": "2005-12-30",
+    "legacy_report_window": "2005-01-01..2026-07-03",
+    "issues": {
+      "B082-AUDIT-1": {
+        "severity": "high",
+        "finding": "reported buy-and-hold waits through the signal warm-up",
+        "legacy_reported_cagr": 0.1064024116055875,
+        "official_base_date_buy_hold_cagr": 0.16254133546553917,
+        "common_execution_start_buy_hold_cagr": 0.11847212955622188,
+        "common_execution_start_strategy_cagr": 0.08321706626232617
+      },
+      "B082-AUDIT-2": {
+        "severity": "high",
+        "finding": "ETF open execution loses the open-to-close P&L and can create leverage",
+        "observed_ending_value": 1000.0,
+        "expected_ending_value": 1200.0,
+        "observed_execution_day_weight": 1.2,
+        "pass": false
+      },
+      "B082-AUDIT-3": {
+        "severity": "medium",
+        "finding": "additive TR-minus-PR is a material approximation to relative growth",
+        "latest_additive_dividend_yield_pct": 4.696705839904958,
+        "latest_relative_dividend_yield_pct": 5.312673756287523,
+        "comparable_months": 235,
+        "different_tier_months": 55,
+        "different_tier_fraction": 0.23404255319148937
+      },
+      "B082-AUDIT-4": {
+        "severity": "high",
+        "finding": "unadjusted ETF series contains a corporate-action-like collapse",
+        "worst_month": "2021-10-31",
+        "worst_month_return": -0.5446320868516284
+      }
+    },
+    "rule_boundary": "The frozen B082 additive spread and 25/50/100 tiers remain the legacy control. Changing the dividend-yield formula is a separate timing hypothesis."
+  },
+  "overall_verdict": "NO_GO",
+  "decision": "Do not replace or augment B082 with the frozen dividend-growth low-vol candidate. Its post-launch return edge is absent, its drawdown is worse, and the official index currently has no tracking product. A bespoke Q/V route is DATA_NO_GO with the repository's current PIT coverage.",
+  "next_required_work": "Before any constituent-level Q/V strategy, acquire historical H30269 members/weights, actual announcement-date as-reported fundamentals, industry, individual dividends, and raw plus total-return execution data. Separately, B082's warm-up baseline and ETF open execution require generator remediation.",
+  "next_hypothesis_not_tested": {
+    "status": "preregistration_candidate_only",
+    "name": "H30269 constituent-level earnings-to-price value enhancement",
+    "rationale": "H30269 already contains dividend continuity, payout, dividend-growth, and low-volatility quality screens. Direct A-share evidence is stronger for earnings-to-price than for another overlapping profitability composite.",
+    "boundary": "This is a separate future trial after the component-data gate passes. It must not be selected as a winner inside the already-observed 931130 trial."
+  },
+  "limitations": [
+    "Official index histories before publication are vendor backcasts, not live OOS.",
+    "Index total returns are frictionless and cannot establish 2.1m execution capacity.",
+    "The frozen candidate has no official tracking product; no ETF cost ledger is possible.",
+    "All post-launch observations are historical and have now been inspected."
+  ],
+  "source_hashes": {
+    "runner_sha256": "3e57069fe1b1000503498c51400da0528b31fda8ebb578554c04b2fffc3719d9",
+    "local_files": {
+      "data/research/b068/snapshots/fundamentals/unified/fundamentals.csv": "ff4d4eed8317ff6628475d2ad7cb5f5465c1025841fc6469e041bcedcd23abbd",
+      "data/research/b070/snapshots/universe/cn_pit_universe.csv": "e37023eadbf5bed7b06b7428a4e204759aa897996f315dd767d11674898d518c",
+      "data/research/b070/f002_universe_build.json": "3a4d18405e5b0fd5cef3b55ecb0e74155a9eaa6d4ae60ab91b064eabe606127b",
+      "data/research/b082/index_h20269.csv": "7c80e9681084f17934f481fcb394af8173f82681cb9f5baea490f38f2bc913d1",
+      "data/research/b082/index_h30269.csv": "f358d3542ad94d8be1f056e13320faa706b8b2fa162e85aa2e8fef391ebed331",
+      "data/research/b082/cn_10y_yield.csv": "8587e49ce1cc905246d1bfd8b5d146f669cfa63d7b26c65cab443d182d6ab1bb",
+      "data/research/b082/etf_512890.csv": "a16ebccb393c5d5eb387c29774e9237d9f98755eb8da7a27aad4c406216846bf",
+      "data/research/b082/backtest_results.json": "12ff7b9425eb053c01b3a73eb09a5341158a10deb9428f53d45bba52398c8583",
+      "trade/strategies/cn_dividend_lowvol/signal.py": "bfdf16d436c3c1dc96134dde1bb14745ecf28ef4841a66cb2671d1a529008c3f",
+      "trade/backtest/cn_dividend_lowvol/engine.py": "83c728e19afe2814bf90a8c4d3de7a726bff4944071c63139db2f22dc1e87e9b",
+      "scripts/research/b082_dividend_lowvol_backtest.py": "6e0ed55f8f3dacafba32b406c0c5e92253d3425418df183d23d841c948ed5b4d"
+    }
+  }
+}
