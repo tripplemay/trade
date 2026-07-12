@@ -1,0 +1,510 @@
+{
+  "research_id": "ashare_dividend_value_first_look_2026_07_12",
+  "run_date": "2026-07-12",
+  "role": "evaluator_independent_strategy_research",
+  "capital_cny": 2100000.0,
+  "overall_verdict": "NO_GO",
+  "index_verdict": "NO_GO",
+  "implementation_verdict": "IMPLEMENTATION_NO_GO",
+  "hypothesis": "Within the same high-and-sustainable-dividend preselection, replacing the final low-volatility rank with the official BP/EP/CFP composite value rank materially improves return without unacceptable defense loss.",
+  "attribution_boundary": "H30270 is a multi-value alternative that replaces, rather than adds to, H30269's low-vol selector. This is not a pure E/P test.",
+  "preobservation_provenance": {
+    "status": "DIALOGUE_FROZEN_NOT_PRISTINE_REPOSITORY_PREREGISTRATION",
+    "detail": "The candidate pair was frozen before relative metrics were computed in this trial. Earlier reconnaissance had touched code availability and first/last values, so the repository cannot prove pristine preregistration. The runner performs no candidate enumeration, argmax, or parameter search."
+  },
+  "frozen_design": {
+    "baseline_price_index": "H30269",
+    "baseline_total_return_index": "H20269",
+    "candidate_price_index": "H30270",
+    "candidate_total_return_index": "H20270",
+    "common_publication_date": "2013-12-19",
+    "primary_start_rule": "last common trading close in publication month",
+    "primary_start": "2013-12-31",
+    "evidence_end": "2026-06-30",
+    "no_search": [
+      "no alternate-index scan",
+      "no window optimization",
+      "no blend-weight optimization",
+      "no timing-rule modification"
+    ]
+  },
+  "methodology": {
+    "shared": "CSI All Share universe; three consecutive annual cash dividends; size/liquidity filters; payout and DPS-growth sustainability filters; top 75 by three-year average after-tax dividend yield; dividend-yield weighting; annual December review.",
+    "baseline_final_selection": "50 lowest by one-year volatility",
+    "candidate_final_selection": "50 highest by composite BP, EP and CFP rank",
+    "unknowns": "The public methodology does not state the exact composite weights, normalization, or whether E excludes non-recurring items.",
+    "baseline_pdf": {
+      "url": "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/detail/files/zh_CN/H30269_Index_Methodology_cn.pdf",
+      "bytes": 343724,
+      "sha256": "9bc76f010ba39d87cabf6358cf53c791b6875b82aac0a048f1c2ea74f875c0c8"
+    },
+    "candidate_pdf": {
+      "url": "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/detail/files/zh_CN/1013_H30270_Index_Methodology_cn.pdf",
+      "bytes": 194903,
+      "sha256": "27b61efae534c5167bcd3b2c7c9fa3225692b0bef1e83df5c53fa5ed89e1bdfc"
+    }
+  },
+  "results": {
+    "pre_publication_backcast": {
+      "start": "2005-12-30",
+      "end": "2013-12-18",
+      "baseline": {
+        "start": "2005-12-30",
+        "end": "2013-12-18",
+        "daily_observations": 1932,
+        "months": 96,
+        "years": 7.967145790554415,
+        "total_return": 4.75833,
+        "cagr": 0.2457444878232653,
+        "annualized_volatility": 0.3105266460677394,
+        "sharpe_rf0": 0.8922801819380838,
+        "max_drawdown": -0.6616550242281927,
+        "worst_month": -0.2439880713611372,
+        "ending_value_cny_at_2_1m": 12092493.0
+      },
+      "candidate": {
+        "start": "2005-12-30",
+        "end": "2013-12-18",
+        "daily_observations": 1932,
+        "months": 96,
+        "years": 7.967145790554415,
+        "total_return": 4.30562,
+        "cagr": 0.23300714441686554,
+        "annualized_volatility": 0.32651088927996536,
+        "sharpe_rf0": 0.8315598931574169,
+        "max_drawdown": -0.7057251841541843,
+        "worst_month": -0.26876903093107896,
+        "ending_value_cny_at_2_1m": 11141802.0
+      },
+      "delta": {
+        "cagr": -0.01273734340639976,
+        "sharpe_rf0": -0.06072028878066693,
+        "max_drawdown_improvement": -0.044070159925991614,
+        "ending_value_cny_at_2_1m": -950691.0
+      }
+    },
+    "post_publication_primary": {
+      "start": "2013-12-31",
+      "end": "2026-06-30",
+      "baseline": {
+        "start": "2013-12-31",
+        "end": "2026-06-30",
+        "daily_observations": 3037,
+        "months": 150,
+        "years": 12.49555099247091,
+        "total_return": 2.773457472322616,
+        "cagr": 0.1121300726979535,
+        "annualized_volatility": 0.19762723327551507,
+        "sharpe_rf0": 0.6573498558175617,
+        "max_drawdown": -0.4249410231544901,
+        "worst_month": -0.18393934509280152,
+        "ending_value_cny_at_2_1m": 7924260.691877494
+      },
+      "candidate": {
+        "start": "2013-12-31",
+        "end": "2026-06-30",
+        "daily_observations": 3037,
+        "months": 150,
+        "years": 12.49555099247091,
+        "total_return": 2.737034091694903,
+        "cagr": 0.11126714001405658,
+        "annualized_volatility": 0.20742230643993884,
+        "sharpe_rf0": 0.6320176801438222,
+        "max_drawdown": -0.4099008965587996,
+        "worst_month": -0.18664941513544464,
+        "ending_value_cny_at_2_1m": 7847771.592559297
+      },
+      "delta": {
+        "cagr": -0.000862932683896922,
+        "sharpe_rf0": -0.025332175673739465,
+        "max_drawdown_improvement": 0.01504012659569054,
+        "ending_value_cny_at_2_1m": -76489.099318197
+      }
+    },
+    "full_history_mixed": {
+      "start": "2005-12-30",
+      "end": "2026-06-30",
+      "baseline": {
+        "start": "2005-12-30",
+        "end": "2026-06-30",
+        "daily_observations": 4977,
+        "months": 246,
+        "years": 20.49828884325804,
+        "total_return": 20.47652,
+        "cagr": 0.16139318475727826,
+        "annualized_volatility": 0.24766085354027426,
+        "sharpe_rf0": 0.7519721247496233,
+        "max_drawdown": -0.6616550242281927,
+        "worst_month": -0.2439880713611372,
+        "ending_value_cny_at_2_1m": 45100692.0
+      },
+      "candidate": {
+        "start": "2005-12-30",
+        "end": "2026-06-30",
+        "daily_observations": 4977,
+        "months": 246,
+        "years": 20.49828884325804,
+        "total_return": 18.454849999999997,
+        "cagr": 0.1558052375709178,
+        "annualized_volatility": 0.2601960529331263,
+        "sharpe_rf0": 0.708800936568851,
+        "max_drawdown": -0.7057251841541843,
+        "worst_month": -0.26876903093107896,
+        "ending_value_cny_at_2_1m": 40855184.99999999
+      },
+      "delta": {
+        "cagr": -0.005587947186360465,
+        "sharpe_rf0": -0.04317118818077226,
+        "max_drawdown_improvement": -0.044070159925991614,
+        "ending_value_cny_at_2_1m": -4245507.000000007
+      }
+    },
+    "inference": {
+      "paired_months": 150,
+      "monthly_win_rate": 0.48,
+      "monthly_return_correlation": 0.9721806944587357,
+      "annualized_arithmetic_excess_mean": 0.001095792784225651,
+      "newey_west_hac": {
+        "n": 150,
+        "lags": 3,
+        "mean": 9.131606535213758e-05,
+        "annualized_mean": 0.001095792784225651,
+        "se": 0.0009546294172136473,
+        "t": 0.09565603542646844
+      },
+      "block_bootstrap_95": {
+        "n": 150,
+        "draws": 10000,
+        "block_months": 6,
+        "seed": 20260712,
+        "annualized_lower": -0.018924760627314317,
+        "annualized_upper": 0.022647281322590484
+      }
+    },
+    "chronological_folds": [
+      {
+        "fold": 1,
+        "start": "2014-01-31",
+        "end": "2017-02-28",
+        "months": 38,
+        "baseline_cagr": 0.23197950690831526,
+        "candidate_cagr": 0.2428439684169923,
+        "cagr_delta": 0.010864461508677037
+      },
+      {
+        "fold": 2,
+        "start": "2017-03-31",
+        "end": "2020-04-30",
+        "months": 38,
+        "baseline_cagr": 0.020295678679580487,
+        "candidate_cagr": -0.0011798866463972324,
+        "cagr_delta": -0.02147556532597772
+      },
+      {
+        "fold": 3,
+        "start": "2020-05-31",
+        "end": "2023-05-31",
+        "months": 37,
+        "baseline_cagr": 0.14970106713172782,
+        "candidate_cagr": 0.14551724731225102,
+        "cagr_delta": -0.004183819819476797
+      },
+      {
+        "fold": 4,
+        "start": "2023-06-30",
+        "end": "2026-06-30",
+        "months": 37,
+        "baseline_cagr": 0.057916981093426356,
+        "candidate_cagr": 0.07211405189490594,
+        "cagr_delta": 0.014197070801479583
+      }
+    ],
+    "annual_returns": [
+      {
+        "year": 2014,
+        "months": 12,
+        "baseline": 0.5778436853747801,
+        "candidate": 0.654547864370836,
+        "delta": 0.07670417899605586
+      },
+      {
+        "year": 2015,
+        "months": 12,
+        "baseline": 0.16057348069374444,
+        "candidate": 0.1718556082247542,
+        "delta": 0.011282127531009767
+      },
+      {
+        "year": 2016,
+        "months": 12,
+        "baseline": 0.0008414697800089854,
+        "candidate": -0.02602293093079977,
+        "delta": -0.026864400710808756
+      },
+      {
+        "year": 2017,
+        "months": 12,
+        "baseline": 0.23567804076498855,
+        "candidate": 0.17402696742588808,
+        "delta": -0.06165107333910047
+      },
+      {
+        "year": 2018,
+        "months": 12,
+        "baseline": -0.16394905259139925,
+        "candidate": -0.1731389707156472,
+        "delta": -0.009189918124247964
+      },
+      {
+        "year": 2019,
+        "months": 12,
+        "baseline": 0.209396288291666,
+        "candidate": 0.2046349240278591,
+        "delta": -0.004761364263806911
+      },
+      {
+        "year": 2020,
+        "months": 12,
+        "baseline": 0.019900005064199977,
+        "candidate": 0.005155441744030265,
+        "delta": -0.014744563320169712
+      },
+      {
+        "year": 2021,
+        "months": 12,
+        "baseline": 0.16337258247623954,
+        "candidate": 0.15694461511302493,
+        "delta": -0.006427967363214604
+      },
+      {
+        "year": 2022,
+        "months": 12,
+        "baseline": 0.03456577916081449,
+        "candidate": 0.04335318699516555,
+        "delta": 0.008787407834351058
+      },
+      {
+        "year": 2023,
+        "months": 12,
+        "baseline": 0.12231287899102794,
+        "candidate": 0.15996300836613098,
+        "delta": 0.037650129375103036
+      },
+      {
+        "year": 2024,
+        "months": 12,
+        "baseline": 0.24821663685112205,
+        "candidate": 0.19947850614692753,
+        "delta": -0.04873813070419453
+      },
+      {
+        "year": 2025,
+        "months": 12,
+        "baseline": 0.05574898277806106,
+        "candidate": 0.060645844078422995,
+        "delta": 0.004896861300361932
+      },
+      {
+        "year": 2026,
+        "months": 6,
+        "baseline": -0.09232215950754319,
+        "candidate": -0.05490667769081636,
+        "delta": 0.037415481816726825
+      }
+    ],
+    "stress_windows": {
+      "2022": {
+        "start": "2022-01-01",
+        "end": "2022-12-31",
+        "anchor_date": "2021-12-31",
+        "available": true,
+        "baseline": {
+          "return": 0.03456577916081427,
+          "max_drawdown": -0.13537787312007143
+        },
+        "candidate": {
+          "return": 0.04335318699516599,
+          "max_drawdown": -0.1481110675660594
+        },
+        "delta": {
+          "return": 0.008787407834351724,
+          "max_drawdown_improvement": -0.012733194445987972
+        }
+      },
+      "2024_jan_feb": {
+        "start": "2024-01-01",
+        "end": "2024-02-29",
+        "anchor_date": "2023-12-29",
+        "available": true,
+        "baseline": {
+          "return": 0.10053612285044045,
+          "max_drawdown": -0.05387689400868123
+        },
+        "candidate": {
+          "return": 0.11564889459124705,
+          "max_drawdown": -0.04980172308954289
+        },
+        "delta": {
+          "return": 0.015112771740806608,
+          "max_drawdown_improvement": 0.004075170919138338
+        }
+      },
+      "2025_diagnostic_only": {
+        "start": "2025-01-01",
+        "end": "2025-12-31",
+        "anchor_date": "2024-12-31",
+        "available": true,
+        "baseline": {
+          "return": 0.055748982778061285,
+          "max_drawdown": -0.06943103349605062
+        },
+        "candidate": {
+          "return": 0.060645844078422995,
+          "max_drawdown": -0.0799450126210256
+        },
+        "delta": {
+          "return": 0.00489686130036171,
+          "max_drawdown_improvement": -0.010513979124974981
+        }
+      }
+    }
+  },
+  "index_gates": {
+    "gates": {
+      "post_publication_months_at_least_60": true,
+      "cagr_delta_at_least_2pp": false,
+      "sharpe_delta_at_least_0_15": false,
+      "max_drawdown_deterioration_within_3pp": true,
+      "at_least_3_of_4_positive_folds": false,
+      "hac_t_at_least_1_65": false,
+      "bootstrap_95_lower_above_zero": false,
+      "defense_drawdown_not_worse_by_more_than_2pp": true
+    },
+    "positive_folds": 2,
+    "all_pass": false,
+    "verdict": "NO_GO"
+  },
+  "product_layer": {
+    "official_product": {
+      "product_code": "563700",
+      "fund_name": "易方达中证红利价值交易型开放式指数证券投资基金",
+      "fund_type": "ETF",
+      "index_code": "H30270",
+      "inception_date": "2025-04-16",
+      "exchange": "上海证券交易所",
+      "aum_api_value": "4.08"
+    },
+    "official_sse_listing": {
+      "product_code": "563700",
+      "listing_date": "2025-04-28",
+      "index_code": "H30270",
+      "index_name": "中证红利价值指数",
+      "security_name": "红利价值ETF易方达",
+      "fund_company": "易方达基金管理有限公司"
+    },
+    "fund_manager_url": "https://www.efunds.com.cn/fund/563700.shtml",
+    "diagnostics": {
+      "inception_date": "2025-04-16",
+      "listing_date": "2025-04-28",
+      "evidence_end": "2026-06-30",
+      "live_full_months": 14,
+      "adv_days": 60,
+      "adv_start": "2026-04-01",
+      "adv_end": "2026-06-30",
+      "adv_cny_sse_official": 8453210.0,
+      "median_daily_trade_amount_cny_sse_official": 7919050.0,
+      "target_capital_cny": 2100000.0,
+      "target_participation_of_adv": 0.24842633745050696,
+      "one_percent_adv_cny": 84532.1,
+      "tencent_close_volume_crosscheck_max_relative_gap": 0.017190311782080882
+    },
+    "gates": {
+      "gates": {
+        "official_target_etf_exists": true,
+        "live_product_history_at_least_60_months": false,
+        "target_capital_at_most_1pct_adv": false
+      },
+      "all_pass": false,
+      "verdict": "IMPLEMENTATION_NO_GO"
+    },
+    "interpretation": "The ETF exists, but its live history is under 60 months and CNY 2.1m is far above the frozen 1% ADV limit. Index scaling is not an execution backtest."
+  },
+  "source_evidence": {
+    "baseline_total_return": {
+      "url": "https://www.csindex.com.cn/csindex-home/perf/index-perf",
+      "params": {
+        "indexCode": "H20269",
+        "startDate": "20051230",
+        "endDate": "20260630"
+      },
+      "records": 4977,
+      "first": "2005-12-30",
+      "last": "2026-06-30",
+      "canonical_data_sha256": "30a11921188ae8274a9959c7f0a5003363a6a0f113413fb5e91e1c2b95549222"
+    },
+    "candidate_total_return": {
+      "url": "https://www.csindex.com.cn/csindex-home/perf/index-perf",
+      "params": {
+        "indexCode": "H20270",
+        "startDate": "20051230",
+        "endDate": "20260630"
+      },
+      "records": 4977,
+      "first": "2005-12-30",
+      "last": "2026-06-30",
+      "canonical_data_sha256": "81647acb6c74539736d11cc737b0854839e1dd0c19301f87ec05219eb7e23d66"
+    },
+    "baseline_metadata": {
+      "url": "https://www.csindex.com.cn/csindex-home/indexInfo/index-basic-info/H30269",
+      "canonical_data_sha256": "b53255e433dd33b9c9243c4cd1ac253a45d218496cdcb2902c9714ae63b67fee"
+    },
+    "candidate_metadata": {
+      "url": "https://www.csindex.com.cn/csindex-home/indexInfo/index-basic-info/H30270",
+      "canonical_data_sha256": "cd092aa4f4008cd63b722b9956e9273b6f3294b858c8eb00f4e30b9ff82aa25b"
+    },
+    "official_products": {
+      "url": "https://www.csindex.com.cn/csindex-home/index-list/queryByIndexCode/H30270",
+      "product_count": 2,
+      "canonical_stable_rows_sha256": "9abeaaa78ffeaa9dd3edb554b321e6f60c7d2d17fa5af16202d44480fabfc4c1"
+    },
+    "official_sse_listing": {
+      "url": "https://query.sse.com.cn/commonSoaQuery.do",
+      "params": {
+        "isPagination": "false",
+        "sqlId": "FUND_LIST",
+        "fundCode": "563700",
+        "fundType": ""
+      },
+      "canonical_listing_sha256": "19c4b6f52bca8e7c2f6bc84e5879decc916cfcf635581773d2d842482a823a7c"
+    },
+    "etf_daily_market": {
+      "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get",
+      "params": {
+        "param": "sh563700,day,2026-04-01,2026-06-30,100,none"
+      },
+      "raw_rows": 60,
+      "canonical_daily_rows_sha256": "15492c6b8e904a157823f4c65c935836a01ca55b803b29a9a56da99aef58bfe3"
+    },
+    "official_sse_daily_trading": {
+      "url": "https://query.sse.com.cn/commonQuery.do",
+      "sql_id": "COMMON_SSE_CP_GPJCTPZ_GPLB_CJGK_MRGK_C",
+      "rows": 60,
+      "start": "2026-04-01",
+      "end": "2026-06-30",
+      "canonical_rows_sha256": "40d3294e234e0bf1e1de4f54825dba4f50d4a21f9eaa5162c743ceec47937fe8",
+      "units": {
+        "TRADE_AMT": "CNY 10,000",
+        "TRADE_VOL": "10,000 shares"
+      }
+    },
+    "runner_sha256": "ac3cc45aa7347c3e168d970e4d150986b776d8b3f224c5cb5142b21d75b91c7e",
+    "common_helper_sha256": "3e57069fe1b1000503498c51400da0528b31fda8ebb578554c04b2fffc3719d9"
+  },
+  "limitations": [
+    "Official index values are frictionless and allow fractional scaling.",
+    "No constituent history is available to isolate BP, EP and CFP contributions.",
+    "Official ADV measures traded value but does not model spread, premium, impact, lot rounding, fees, taxes, limit states or creation/redemption mechanics.",
+    "The ETF has too little live history for an implementation performance study."
+  ],
+  "decision": "Do not replace B082's dividend-low-volatility exposure with H30270/H20270. The frozen official value alternative does not improve post-publication return or Sharpe, lacks statistical support, and fails both live-history and target-capital liquidity gates."
+}
