@@ -1,0 +1,2935 @@
+{
+  "baseline_reproduction": {
+    "full_cagr": true,
+    "full_sharpe": true,
+    "legacy_oos_cagr": true,
+    "legacy_oos_sharpe": true
+  },
+  "benchmark_hs300_price_only": {
+    "final_cash_weight": 0.0,
+    "final_holding_count": 1,
+    "folds": {
+      "2019-2021": {
+        "annualized_volatility": 0.19945409719625182,
+        "cagr": 0.08232788504077138,
+        "calmar": 0.4526074465509507,
+        "cumulative_return": 0.24319640416233002,
+        "drawdown": {
+          "max_drawdown": -0.18189688585139885,
+          "peak_date": "2021-02-10",
+          "recovery_date": null,
+          "trough_date": "2021-07-27"
+        },
+        "end": "2021-12-31",
+        "ending_equity": 1243196.40416233,
+        "exit_count": 0,
+        "max_drawdown": -0.18189688585139882,
+        "observations": 672,
+        "rebalance_count": 0,
+        "sharpe": 0.5100497349248756,
+        "sortino": 0.6688583770445286,
+        "start": "2019-04-01",
+        "starting_equity": 1000000.0,
+        "total_cost": 0.0,
+        "turnover": 0.0
+      },
+      "2022-2023": {
+        "annualized_volatility": 0.17302803249216775,
+        "cagr": -0.16606603335440306,
+        "calmar": -0.5040377559193268,
+        "cumulative_return": -0.30230297706376774,
+        "drawdown": {
+          "max_drawdown": -0.32947141638528876,
+          "peak_date": "2022-01-04",
+          "recovery_date": null,
+          "trough_date": "2023-12-20"
+        },
+        "end": "2023-12-29",
+        "ending_equity": 863405.1749301951,
+        "exit_count": 0,
+        "max_drawdown": -0.3294714163852888,
+        "observations": 484,
+        "rebalance_count": 0,
+        "sharpe": -0.9986316300098399,
+        "sortino": -1.543038141954128,
+        "start": "2022-01-04",
+        "starting_equity": 1237507.3227295512,
+        "total_cost": 0.0,
+        "turnover": 0.0
+      },
+      "2024-2026": {
+        "annualized_volatility": 0.1820483136529602,
+        "cagr": 0.16616491810791123,
+        "calmar": 1.0608393296373828,
+        "cumulative_return": 0.4592691486295577,
+        "drawdown": {
+          "max_drawdown": -0.15663532965421811,
+          "peak_date": "2024-10-08",
+          "recovery_date": "2025-08-20",
+          "trough_date": "2025-04-07"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 1243504.9150362061,
+        "exit_count": 0,
+        "max_drawdown": -0.15663532965421814,
+        "observations": 594,
+        "rebalance_count": 0,
+        "sharpe": 0.9731287874529343,
+        "sortino": 1.4079308829372803,
+        "start": "2024-01-02",
+        "starting_equity": 852142.263272007,
+        "total_cost": 0.0,
+        "turnover": 0.0
+      }
+    },
+    "full": {
+      "annualized_volatility": 0.18664570803258101,
+      "cagr": 0.030669786680858957,
+      "calmar": 0.06725444061042424,
+      "cumulative_return": 0.24350491503620608,
+      "drawdown": {
+        "max_drawdown": -0.45602619548225387,
+        "peak_date": "2021-02-10",
+        "recovery_date": null,
+        "trough_date": "2024-09-13"
+      },
+      "end": "2026-06-18",
+      "ending_equity": 1243504.9150362061,
+      "exit_count": 0,
+      "max_drawdown": -0.45602619548225387,
+      "observations": 1750,
+      "rebalance_count": 0,
+      "sharpe": 0.26165938470330236,
+      "sortino": 0.3683487889795127,
+      "start": "2019-04-01",
+      "starting_equity": 1000000.0,
+      "total_cost": 0.0,
+      "turnover": 0.0
+    },
+    "legacy_oos": {
+      "annualized_volatility": 0.18444920961358513,
+      "cagr": 0.1620128176107214,
+      "calmar": 1.0343312582696023,
+      "cumulative_return": 0.38427817565231925,
+      "drawdown": {
+        "max_drawdown": -0.15663532965421811,
+        "peak_date": "2024-10-08",
+        "recovery_date": "2025-08-20",
+        "trough_date": "2025-04-07"
+      },
+      "end": "2026-06-18",
+      "ending_equity": 1243504.9150362061,
+      "exit_count": 0,
+      "max_drawdown": -0.15663532965421814,
+      "observations": 525,
+      "rebalance_count": 0,
+      "sharpe": 0.9399203989026897,
+      "sortino": 1.3250049963305446,
+      "start": "2024-04-18",
+      "starting_equity": 898305.6562675519,
+      "total_cost": 0.0,
+      "turnover": 0.0
+    },
+    "legacy_oos_split": "2024-04-18",
+    "regime_calls": {
+      "risk_off_calls": 0,
+      "risk_on_calls": 0
+    },
+    "regime_transition_evidence": [],
+    "stress_returns": {
+      "2022": -0.21272488620338703,
+      "2024_924_q4": 0.17393133286136342,
+      "2024_jan_feb": 0.03830995714562446
+    },
+    "worst_rolling_returns": {
+      "1": {
+        "end": "2021-07-31",
+        "return": -0.07903287895328548
+      },
+      "12": {
+        "end": "2022-10-31",
+        "return": -0.28521747810551323
+      },
+      "3": {
+        "end": "2022-10-31",
+        "return": -0.1586049933550786
+      },
+      "6": {
+        "end": "2024-01-31",
+        "return": -0.199091323484356
+      }
+    },
+    "yearly_returns": {
+      "2019": 0.03086467595789366,
+      "2020": 0.2550545596943916,
+      "2021": -0.062141709180332017,
+      "2022": -0.21272488620338703,
+      "2023": -0.11748993479511682,
+      "2024": 0.16199113382188268,
+      "2025": 0.21190086365415084,
+      "2026": 0.04744914202672201
+    }
+  },
+  "comparisons": {
+    "e1_partial_vs_e0_corrected_halt_mask": {
+      "all_gates_pass": false,
+      "delta": {
+        "cagr": -0.0013663595420434493,
+        "max_drawdown": -0.0163035063432192,
+        "sharpe": -0.008754118747133166,
+        "total_cost": 38630.90228841035,
+        "turnover": 17.924288964844493
+      },
+      "double_cost_delta_cagr": 0.004215691080535544,
+      "fold_delta_cagr": {
+        "2019-2021": 0.02552673219992796,
+        "2022-2023": -0.007110666912573449,
+        "2024-2026": -0.022602357040466092
+      },
+      "gates": {
+        "delta_cagr": false,
+        "delta_sharpe": false,
+        "double_cost_delta_cagr_positive": true,
+        "double_cost_max_drawdown_floor": false,
+        "max_drawdown_floor": false,
+        "not_2024q4_dominated": true,
+        "positive_folds": false
+      },
+      "historical_verdict": "NO_GO",
+      "paired_monthly_block_bootstrap": {
+        "block_months": 6.0,
+        "ci_2_5": -0.018943777715731105,
+        "ci_97_5": 0.017493540091291324,
+        "median": -0.0011966966737800705,
+        "probability_delta_positive": 0.445,
+        "samples": 10000.0
+      },
+      "positive_fold_count": 1,
+      "q4_contribution": {
+        "positive_improvement_share": null,
+        "total_log_improvement": -0.008830892754638567,
+        "window_log_improvement": 0.013342128718451696
+      }
+    },
+    "e1_partial_vs_e0_shipped_halt_mask": {
+      "all_gates_pass": false,
+      "delta": {
+        "cagr": -0.0012574532197189292,
+        "max_drawdown": -0.011992559241739142,
+        "sharpe": -0.008143253059324063,
+        "total_cost": 40496.24805206427,
+        "turnover": 18.782442944363027
+      },
+      "double_cost_delta_cagr": 0.004504314659875552,
+      "fold_delta_cagr": {
+        "2019-2021": 0.0256548542709647,
+        "2022-2023": -0.0054779975740057996,
+        "2024-2026": -0.024217103041024757
+      },
+      "gates": {
+        "delta_cagr": false,
+        "delta_sharpe": false,
+        "double_cost_delta_cagr_positive": true,
+        "double_cost_max_drawdown_floor": false,
+        "max_drawdown_floor": false,
+        "not_2024q4_dominated": true,
+        "positive_folds": false
+      },
+      "historical_verdict": "NO_GO",
+      "paired_monthly_block_bootstrap": {
+        "block_months": 6.0,
+        "ci_2_5": -0.01920129927405482,
+        "ci_97_5": 0.017468651321712388,
+        "median": -0.0010345946339983675,
+        "probability_delta_positive": 0.4539,
+        "samples": 10000.0
+      },
+      "positive_fold_count": 1,
+      "q4_contribution": {
+        "positive_improvement_share": null,
+        "total_log_improvement": -0.008127374781474683,
+        "window_log_improvement": 0.012496627857689284
+      }
+    },
+    "e2_regime_vs_e0_corrected_halt_mask": {
+      "all_gates_pass": false,
+      "delta": {
+        "cagr": -0.017078871211654745,
+        "max_drawdown": 0.16715485398617175,
+        "sharpe": 0.0008145559050245499,
+        "total_cost": -124045.14535255771,
+        "turnover": -66.25343798519333
+      },
+      "double_cost_delta_cagr": -0.009173311774132387,
+      "fold_delta_cagr": {
+        "2019-2021": -0.10269355977967587,
+        "2022-2023": 0.14911793748242963,
+        "2024-2026": -0.13312243175358396
+      },
+      "gates": {
+        "delta_cagr": false,
+        "delta_sharpe": false,
+        "double_cost_delta_cagr_positive": false,
+        "double_cost_max_drawdown_floor": false,
+        "max_drawdown_floor": false,
+        "not_2024q4_dominated": true,
+        "positive_folds": false
+      },
+      "historical_verdict": "NO_GO",
+      "paired_monthly_block_bootstrap": {
+        "block_months": 6.0,
+        "ci_2_5": -0.1603384443907206,
+        "ci_97_5": 0.11358730467381319,
+        "median": -0.01650355825270044,
+        "probability_delta_positive": 0.4059,
+        "samples": 10000.0
+      },
+      "positive_fold_count": 1,
+      "q4_contribution": {
+        "positive_improvement_share": null,
+        "total_log_improvement": -0.1111667222537242,
+        "window_log_improvement": -0.28124838441285527
+      }
+    },
+    "e2_regime_vs_e0_shipped_halt_mask": {
+      "all_gates_pass": false,
+      "delta": {
+        "cagr": -0.016659303506363576,
+        "max_drawdown": 0.17310531425310605,
+        "sharpe": 0.002082572065842503,
+        "total_cost": -125060.93997598244,
+        "turnover": -66.7452191994677
+      },
+      "double_cost_delta_cagr": -0.007161353868129661,
+      "fold_delta_cagr": {
+        "2019-2021": -0.10609881742502947,
+        "2022-2023": 0.15137002029469726,
+        "2024-2026": -0.13061885806965234
+      },
+      "gates": {
+        "delta_cagr": false,
+        "delta_sharpe": false,
+        "double_cost_delta_cagr_positive": false,
+        "double_cost_max_drawdown_floor": false,
+        "max_drawdown_floor": false,
+        "not_2024q4_dominated": true,
+        "positive_folds": false
+      },
+      "historical_verdict": "NO_GO",
+      "paired_monthly_block_bootstrap": {
+        "block_months": 6.0,
+        "ci_2_5": -0.16203120263557375,
+        "ci_97_5": 0.11465056622015693,
+        "median": -0.016421049825486672,
+        "probability_delta_positive": 0.4071,
+        "samples": 10000.0
+      },
+      "positive_fold_count": 1,
+      "q4_contribution": {
+        "positive_improvement_share": null,
+        "total_log_improvement": -0.10842518502911036,
+        "window_log_improvement": -0.2786613094077473
+      }
+    }
+  },
+  "engine_data_semantics": {
+    "halt_rows": 5781,
+    "halt_rows_with_non_null_adj_close": 5780,
+    "halt_rows_with_zero_volume": 2774,
+    "sensitivity_fix": "tradestatus == 1",
+    "shipped_mask_issue": "_real_bar_mask uses adj_close.notna, so carried-price halt rows are usually classified as tradeable",
+    "unresolved_lot_price_issue": "qfq prices are used for 100-share affordability and are not raw historical transaction prices",
+    "unresolved_price_limit_issue": "engine freezes both directions although up-limit should only block buys and down-limit should only block sells"
+  },
+  "metadata": {
+    "capital_cny": 1000000.0,
+    "contamination": "C2-DIRECT: 2019-2026 history was inspected in prior batches",
+    "git_head": "ca23d216b7c3db9489a14bd365dac9691f5e9042",
+    "hs300_crosscheck": {
+      "max_abs_close_difference": 0.0,
+      "overlap_rows": 5931
+    },
+    "input_checksums": {
+      "hs300_control_sha256": "6e472646fa2826615d879c658c2e9b810763106cacd6159d8cca572560fdb428",
+      "hs300_sha256": "769afb0b1ffd8b30c3bac0e03f1026c859678b78b5cae974a29923363f6ce146",
+      "pit_universe_sha256": "e37023eadbf5bed7b06b7428a4e204759aa897996f315dd767d11674898d518c",
+      "prices_pickle_sha256": "1da4d40a3506ef2da0f90f8ecef7378d070cbbd53688b8a897fe0791dadaeef3"
+    },
+    "positive_result_limit": "at most paper candidate; not deployable GO",
+    "research_boundary": "research-only/advisory-only/no broker/no real money",
+    "research_date": "2026-07-11",
+    "window": {
+      "end": "2026-06-18",
+      "start": "2019-04-01"
+    }
+  },
+  "protocol": {
+    "double_cost_multiplier": 2.0,
+    "e0": "pure_momentum/equal/Top25/full fidelity/20% aggregate band",
+    "e1": "E0 plus existing partial_rebalance=True and fixed 0.5% per-name threshold",
+    "e2": "E0 plus frozen monthly CSI300 close > MA200 exposure gate; risk-off cash",
+    "folds": [
+      {
+        "end": "2021-12-31",
+        "label": "2019-2021",
+        "start": "2019-04-01"
+      },
+      {
+        "end": "2023-12-31",
+        "label": "2022-2023",
+        "start": "2022-01-01"
+      },
+      {
+        "end": "2026-06-18",
+        "label": "2024-2026",
+        "start": "2024-01-01"
+      }
+    ],
+    "halt_semantics": "run both shipped adj_close-not-null mask and evaluator sensitivity tradestatus==1 mask",
+    "primary_cost_bps": {
+      "commission_bps": 2.5,
+      "slippage_bps": 5.0,
+      "stamp_duty_bps": 5.0
+    },
+    "verdict_gates": {
+      "max_2024q4_improvement_share": 0.5,
+      "max_drawdown_floor": -0.35,
+      "min_delta_cagr": 0.02,
+      "min_delta_sharpe": 0.15,
+      "min_positive_folds": 2
+    }
+  },
+  "regime": {
+    "first_source_date": "2019-03-29",
+    "last_source_date": "2026-05-29",
+    "risk_off_asset": "zero-return CNY cash",
+    "risk_off_states": 33,
+    "risk_on_states": 54,
+    "rule": "monthly CSI300 close > trailing 200 trading-day simple moving average",
+    "signal_timing": "month-end close; target executes through engine at T+1 open",
+    "states": 87,
+    "transitions": 12
+  },
+  "runs": {
+    "e0_baseline_1x": {
+      "final_cash_weight": 0.16521238532123514,
+      "final_holding_count": 24,
+      "folds": {
+        "2019-2021": {
+          "annualized_volatility": 0.31265550031131545,
+          "cagr": 0.2576685397435008,
+          "calmar": 0.9456235528493261,
+          "cumulative_return": 0.8791453713421074,
+          "drawdown": {
+            "max_drawdown": -0.27248532353821064,
+            "peak_date": "2021-02-10",
+            "recovery_date": "2021-06-25",
+            "trough_date": "2021-03-09"
+          },
+          "end": "2021-12-31",
+          "ending_equity": 1879145.3713421074,
+          "exit_count": 0,
+          "max_drawdown": -0.2724853235382106,
+          "observations": 672,
+          "rebalance_count": 0,
+          "sharpe": 0.9153668401316659,
+          "sortino": 1.2324032143845873,
+          "start": "2019-04-01",
+          "starting_equity": 1000000.0,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2022-2023": {
+          "annualized_volatility": 0.2597108312507539,
+          "cagr": -0.1940916239560727,
+          "calmar": -0.4905388526888866,
+          "cumulative_return": -0.34801278120650436,
+          "drawdown": {
+            "max_drawdown": -0.3956702367043107,
+            "peak_date": "2022-08-23",
+            "recovery_date": null,
+            "trough_date": "2023-10-25"
+          },
+          "end": "2023-12-29",
+          "ending_equity": 1181908.805845648,
+          "exit_count": 0,
+          "max_drawdown": -0.3956702367043106,
+          "observations": 484,
+          "rebalance_count": 0,
+          "sharpe": -0.7287607228863746,
+          "sortino": -1.0537901463880803,
+          "start": "2022-01-04",
+          "starting_equity": 1812779.1032971076,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2024-2026": {
+          "annualized_volatility": 0.31961573080959904,
+          "cagr": 0.3009785275700676,
+          "calmar": 1.2784096168347059,
+          "cumulative_return": 0.9096043548778441,
+          "drawdown": {
+            "max_drawdown": -0.2354319958224963,
+            "peak_date": "2024-10-08",
+            "recovery_date": "2025-08-15",
+            "trough_date": "2025-04-08"
+          },
+          "end": "2026-06-18",
+          "ending_equity": 2218779.9236968197,
+          "exit_count": 0,
+          "max_drawdown": -0.23543199582249633,
+          "observations": 594,
+          "rebalance_count": 0,
+          "sharpe": 1.0197004961761422,
+          "sortino": 1.655036589034407,
+          "start": "2024-01-02",
+          "starting_equity": 1161905.5633326482,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        }
+      },
+      "full": {
+        "annualized_volatility": 0.30181117074508207,
+        "cagr": 0.11680295575842226,
+        "calmar": 0.206911666537198,
+        "cumulative_return": 1.2187799236968195,
+        "drawdown": {
+          "max_drawdown": -0.5645063795251184,
+          "peak_date": "2021-09-14",
+          "recovery_date": null,
+          "trough_date": "2024-02-05"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 2218779.9236968197,
+        "exit_count": 0,
+        "max_drawdown": -0.5645063795251185,
+        "observations": 1750,
+        "rebalance_count": 844,
+        "sharpe": 0.5318028805352616,
+        "sortino": 0.7784180213601076,
+        "start": "2019-04-01",
+        "starting_equity": 1000000.0,
+        "total_cost": 326803.8083611845,
+        "turnover": 246.1675502790181
+      },
+      "legacy_oos": {
+        "annualized_volatility": 0.31099265954804894,
+        "cagr": 0.27129796415572915,
+        "calmar": 1.152341096238567,
+        "cumulative_return": 0.6817530790352542,
+        "drawdown": {
+          "max_drawdown": -0.2354319958224963,
+          "peak_date": "2024-10-08",
+          "recovery_date": "2025-08-15",
+          "trough_date": "2025-04-08"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 2218779.9236968197,
+        "exit_count": 0,
+        "max_drawdown": -0.23543199582249633,
+        "observations": 525,
+        "rebalance_count": 0,
+        "sharpe": 0.9593283270383066,
+        "sortino": 1.5014167336899322,
+        "start": "2024-04-18",
+        "starting_equity": 1319325.6200069713,
+        "total_cost": 0.0,
+        "turnover": 0.0
+      },
+      "legacy_oos_split": "2024-04-18",
+      "regime_calls": {
+        "risk_off_calls": 0,
+        "risk_on_calls": 0
+      },
+      "regime_transition_evidence": [],
+      "stress_returns": {
+        "2022": -0.2069977487013831,
+        "2024_924_q4": 0.08315482931379758,
+        "2024_jan_feb": 0.0669029509651553
+      },
+      "worst_rolling_returns": {
+        "1": {
+          "end": "2022-01-31",
+          "return": -0.1573335868756509
+        },
+        "12": {
+          "end": "2024-01-31",
+          "return": -0.3391900258338244
+        },
+        "3": {
+          "end": "2022-01-31",
+          "return": -0.21535444083483757
+        },
+        "6": {
+          "end": "2022-04-30",
+          "return": -0.2800117789487395
+        }
+      },
+      "yearly_returns": {
+        "2019": 0.06429606987274505,
+        "2020": 0.41658687861523647,
+        "2021": 0.1654297752940237,
+        "2022": -0.2069977487013831,
+        "2023": -0.19935590144963655,
+        "2024": 0.021564523328758023,
+        "2025": 0.3600085154182442,
+        "2026": 0.3837513284797063
+      }
+    },
+    "e0_baseline_2x": {
+      "final_cash_weight": 0.2364632709922554,
+      "final_holding_count": 23,
+      "folds": {
+        "2019-2021": {
+          "annualized_volatility": 0.3109295399531206,
+          "cagr": 0.22490162708971484,
+          "calmar": 0.831117263634658,
+          "cumulative_return": 0.7474872317788284,
+          "drawdown": {
+            "max_drawdown": -0.2706015588055176,
+            "peak_date": "2021-02-10",
+            "recovery_date": "2021-06-28",
+            "trough_date": "2021-03-09"
+          },
+          "end": "2021-12-31",
+          "ending_equity": 1747487.2317788284,
+          "exit_count": 0,
+          "max_drawdown": -0.2706015588055177,
+          "observations": 672,
+          "rebalance_count": 0,
+          "sharpe": 0.8308820916064849,
+          "sortino": 1.1227252158344254,
+          "start": "2019-04-01",
+          "starting_equity": 1000000.0,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2022-2023": {
+          "annualized_volatility": 0.258636233584217,
+          "cagr": -0.2129243771801248,
+          "calmar": -0.5187145753478296,
+          "cumulative_return": -0.37786674327205805,
+          "drawdown": {
+            "max_drawdown": -0.41048466208482004,
+            "peak_date": "2022-08-23",
+            "recovery_date": null,
+            "trough_date": "2023-12-26"
+          },
+          "end": "2023-12-29",
+          "ending_equity": 1048627.6841596141,
+          "exit_count": 0,
+          "max_drawdown": -0.4104846620848201,
+          "observations": 484,
+          "rebalance_count": 0,
+          "sharpe": -0.8273146610498633,
+          "sortino": -1.1927014703950507,
+          "start": "2022-01-04",
+          "starting_equity": 1685535.4906998286,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2024-2026": {
+          "annualized_volatility": 0.30771566715687027,
+          "cagr": 0.20981190822863094,
+          "calmar": 0.7686756595013909,
+          "cumulative_return": 0.5972367408908121,
+          "drawdown": {
+            "max_drawdown": -0.2729524548295539,
+            "peak_date": "2024-03-18",
+            "recovery_date": "2025-08-22",
+            "trough_date": "2025-04-08"
+          },
+          "end": "2026-06-18",
+          "ending_equity": 1647379.8210527757,
+          "exit_count": 0,
+          "max_drawdown": -0.2729524548295539,
+          "observations": 594,
+          "rebalance_count": 0,
+          "sharpe": 0.8001125172636239,
+          "sortino": 1.2986857273637422,
+          "start": "2024-01-02",
+          "starting_equity": 1031393.6430826139,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        }
+      },
+      "full": {
+        "annualized_volatility": 0.29659713173101776,
+        "cagr": 0.07164470227389974,
+        "calmar": 0.12019386188239493,
+        "cumulative_return": 0.6473798210527757,
+        "drawdown": {
+          "max_drawdown": -0.5960762151398489,
+          "peak_date": "2021-09-14",
+          "recovery_date": null,
+          "trough_date": "2025-04-08"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 1647379.8210527757,
+        "exit_count": 0,
+        "max_drawdown": -0.596076215139849,
+        "observations": 1750,
+        "rebalance_count": 903,
+        "sharpe": 0.39118422025972094,
+        "sortino": 0.5719496743027843,
+        "start": "2019-04-01",
+        "starting_equity": 1000000.0,
+        "total_cost": 620700.9878762275,
+        "turnover": 266.694065339302
+      },
+      "legacy_oos": {
+        "annualized_volatility": 0.29755350229664473,
+        "cagr": 0.17667034230047052,
+        "calmar": 0.6671776363273298,
+        "cumulative_return": 0.42237095363328936,
+        "drawdown": {
+          "max_drawdown": -0.26480255434370215,
+          "peak_date": "2024-04-18",
+          "recovery_date": "2025-08-22",
+          "trough_date": "2025-04-08"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 1647379.8210527757,
+        "exit_count": 0,
+        "max_drawdown": -0.26480255434370215,
+        "observations": 525,
+        "rebalance_count": 0,
+        "sharpe": 0.7179682588798917,
+        "sortino": 1.123392741906474,
+        "start": "2024-04-18",
+        "starting_equity": 1158192.8166099892,
+        "total_cost": 0.0,
+        "turnover": 0.0
+      },
+      "legacy_oos_split": "2024-04-18",
+      "regime_calls": {
+        "risk_off_calls": 0,
+        "risk_on_calls": 0
+      },
+      "regime_transition_evidence": [],
+      "stress_returns": {
+        "2022": -0.23203541861459231,
+        "2024_924_q4": 0.06417152770609036,
+        "2024_jan_feb": 0.0652169339223867
+      },
+      "worst_rolling_returns": {
+        "1": {
+          "end": "2022-01-31",
+          "return": -0.15885772995667524
+        },
+        "12": {
+          "end": "2024-01-31",
+          "return": -0.35001897826883543
+        },
+        "3": {
+          "end": "2022-01-31",
+          "return": -0.221641281758728
+        },
+        "6": {
+          "end": "2022-04-30",
+          "return": -0.29142769991923234
+        }
+      },
+      "yearly_returns": {
+        "2019": 0.04158915385366391,
+        "2020": 0.3873177318761185,
+        "2021": 0.1310572125143492,
+        "2022": -0.23203541861459231,
+        "2023": -0.21231117844574587,
+        "2024": -0.023446166073307073,
+        "2025": 0.23590733769871752,
+        "2026": 0.33550448642017083
+      }
+    },
+    "e0_baseline_corrected_halt_1x": {
+      "final_cash_weight": 0.16576694856931165,
+      "final_holding_count": 24,
+      "folds": {
+        "2019-2021": {
+          "annualized_volatility": 0.3119195630682607,
+          "cagr": 0.25587713760464625,
+          "calmar": 0.9258785678877152,
+          "cumulative_return": 0.8717897187500829,
+          "drawdown": {
+            "max_drawdown": -0.2763614435836875,
+            "peak_date": "2021-02-10",
+            "recovery_date": "2021-06-25",
+            "trough_date": "2021-03-09"
+          },
+          "end": "2021-12-31",
+          "ending_equity": 1871789.718750083,
+          "exit_count": 0,
+          "max_drawdown": -0.2763614435836876,
+          "observations": 672,
+          "rebalance_count": 0,
+          "sharpe": 0.9120605133317226,
+          "sortino": 1.2275665226526589,
+          "start": "2019-04-01",
+          "starting_equity": 1000000.0,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2022-2023": {
+          "annualized_volatility": 0.2597912783076648,
+          "cagr": -0.19220000638964851,
+          "calmar": -0.4877899239027967,
+          "cumulative_return": -0.34497584679827964,
+          "drawdown": {
+            "max_drawdown": -0.39402209223975027,
+            "peak_date": "2022-08-23",
+            "recovery_date": null,
+            "trough_date": "2023-10-25"
+          },
+          "end": "2023-12-29",
+          "ending_equity": 1182596.603063235,
+          "exit_count": 0,
+          "max_drawdown": -0.39402209223975027,
+          "observations": 484,
+          "rebalance_count": 0,
+          "sharpe": -0.7191310244987126,
+          "sortino": -1.0402968552443246,
+          "start": "2022-01-04",
+          "starting_equity": 1805424.421806083,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2024-2026": {
+          "annualized_volatility": 0.31881195288944375,
+          "cagr": 0.301017027573639,
+          "calmar": 1.2781376472423338,
+          "cumulative_return": 0.9097432955906306,
+          "drawdown": {
+            "max_drawdown": -0.23551221437151393,
+            "peak_date": "2024-10-08",
+            "recovery_date": "2025-08-18",
+            "trough_date": "2025-04-08"
+          },
+          "end": "2026-06-18",
+          "ending_equity": 2220254.8758089924,
+          "exit_count": 0,
+          "max_drawdown": -0.23551221437151396,
+          "observations": 594,
+          "rebalance_count": 0,
+          "sharpe": 1.0215714711348611,
+          "sortino": 1.6574213111181086,
+          "start": "2024-01-02",
+          "starting_equity": 1162593.3605502353,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        }
+      },
+      "full": {
+        "annualized_volatility": 0.3012479140639721,
+        "cagr": 0.11690583447659675,
+        "calmar": 0.20856335557207137,
+        "cumulative_return": 1.2202548758089926,
+        "drawdown": {
+          "max_drawdown": -0.5605291215033154,
+          "peak_date": "2021-09-14",
+          "recovery_date": null,
+          "trough_date": "2024-02-05"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 2220254.8758089924,
+        "exit_count": 0,
+        "max_drawdown": -0.5605291215033154,
+        "observations": 1750,
+        "rebalance_count": 850,
+        "sharpe": 0.5325529605439543,
+        "sortino": 0.7793713716393558,
+        "start": "2019-04-01",
+        "starting_equity": 1000000.0,
+        "total_cost": 327110.60014700895,
+        "turnover": 246.91327632812283
+      },
+      "legacy_oos": {
+        "annualized_volatility": 0.3100347973709904,
+        "cagr": 0.271448860533134,
+        "calmar": 1.1525893094654147,
+        "cumulative_return": 0.6821854036819281,
+        "drawdown": {
+          "max_drawdown": -0.23551221437151393,
+          "peak_date": "2024-10-08",
+          "recovery_date": "2025-08-18",
+          "trough_date": "2025-04-08"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 2220254.8758089924,
+        "exit_count": 0,
+        "max_drawdown": -0.23551221437151396,
+        "observations": 525,
+        "rebalance_count": 0,
+        "sharpe": 0.9617412853452607,
+        "sortino": 1.504373367514951,
+        "start": "2024-04-18",
+        "starting_equity": 1319863.3580753645,
+        "total_cost": 0.0,
+        "turnover": 0.0
+      },
+      "legacy_oos_split": "2024-04-18",
+      "regime_calls": {
+        "risk_off_calls": 0,
+        "risk_on_calls": 0
+      },
+      "regime_transition_evidence": [],
+      "stress_returns": {
+        "2022": -0.20418255200017987,
+        "2024_924_q4": 0.08284010169054268,
+        "2024_jan_feb": 0.066849504849668
+      },
+      "worst_rolling_returns": {
+        "1": {
+          "end": "2022-01-31",
+          "return": -0.15602349617042244
+        },
+        "12": {
+          "end": "2024-01-31",
+          "return": -0.33970744074761305
+        },
+        "3": {
+          "end": "2022-01-31",
+          "return": -0.21240388521578635
+        },
+        "6": {
+          "end": "2022-04-30",
+          "return": -0.27693298801490596
+        }
+      },
+      "yearly_returns": {
+        "2019": 0.0643805452740267,
+        "2020": 0.4236605305715073,
+        "2021": 0.15515775612215,
+        "2022": -0.20418255200017987,
+        "2023": -0.19972973836512642,
+        "2024": 0.02108242239660507,
+        "2025": 0.35963040496198695,
+        "2026": 0.38487863478953743
+      }
+    },
+    "e0_baseline_corrected_halt_2x": {
+      "final_cash_weight": 0.2379437846686207,
+      "final_holding_count": 23,
+      "folds": {
+        "2019-2021": {
+          "annualized_volatility": 0.31031986660306393,
+          "cagr": 0.22531297443601228,
+          "calmar": 0.8336125603424581,
+          "cumulative_return": 0.7491024271281042,
+          "drawdown": {
+            "max_drawdown": -0.27028500427518876,
+            "peak_date": "2021-02-10",
+            "recovery_date": "2021-06-28",
+            "trough_date": "2021-03-09"
+          },
+          "end": "2021-12-31",
+          "ending_equity": 1749102.4271281043,
+          "exit_count": 0,
+          "max_drawdown": -0.2702850042751887,
+          "observations": 672,
+          "rebalance_count": 0,
+          "sharpe": 0.833006989024073,
+          "sortino": 1.1271129446380947,
+          "start": "2019-04-01",
+          "starting_equity": 1000000.0,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2022-2023": {
+          "annualized_volatility": 0.2585271033267069,
+          "cagr": -0.2132072928281814,
+          "calmar": -0.5196245432892633,
+          "cumulative_return": -0.378309939029706,
+          "drawdown": {
+            "max_drawdown": -0.41031028187884055,
+            "peak_date": "2022-08-23",
+            "recovery_date": null,
+            "trough_date": "2023-12-26"
+          },
+          "end": "2023-12-29",
+          "ending_equity": 1048884.209152101,
+          "exit_count": 0,
+          "max_drawdown": -0.41031028187884055,
+          "observations": 484,
+          "rebalance_count": 0,
+          "sharpe": -0.8292104649887224,
+          "sortino": -1.194477075416606,
+          "start": "2022-01-04",
+          "starting_equity": 1687149.7149481042,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2024-2026": {
+          "annualized_volatility": 0.30756327601276956,
+          "cagr": 0.21064489353583138,
+          "calmar": 0.7717275790951339,
+          "cumulative_return": 0.5999419007443458,
+          "drawdown": {
+            "max_drawdown": -0.2729523982838824,
+            "peak_date": "2024-03-18",
+            "recovery_date": "2025-08-22",
+            "trough_date": "2025-04-08"
+          },
+          "end": "2026-06-18",
+          "ending_equity": 1650580.3308133008,
+          "exit_count": 0,
+          "max_drawdown": -0.27295239828388246,
+          "observations": 594,
+          "rebalance_count": 0,
+          "sharpe": 0.8026896985417165,
+          "sortino": 1.3053051288437343,
+          "start": "2024-01-02",
+          "starting_equity": 1031650.1680751009,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        }
+      },
+      "full": {
+        "annualized_volatility": 0.2962728526705006,
+        "cagr": 0.0719330541176253,
+        "calmar": 0.12059710185478582,
+        "cumulative_return": 0.6505803308133007,
+        "drawdown": {
+          "max_drawdown": -0.5964741524571777,
+          "peak_date": "2021-09-14",
+          "recovery_date": null,
+          "trough_date": "2025-04-08"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 1650580.3308133008,
+        "exit_count": 0,
+        "max_drawdown": -0.5964741524571776,
+        "observations": 1750,
+        "rebalance_count": 905,
+        "sharpe": 0.3922227649547725,
+        "sortino": 0.5740975259680864,
+        "start": "2019-04-01",
+        "starting_equity": 1000000.0,
+        "total_cost": 620238.007889704,
+        "turnover": 266.5275493565459
+      },
+      "legacy_oos": {
+        "annualized_volatility": 0.29736074194876017,
+        "cagr": 0.17772516946458672,
+        "calmar": 0.6711612263439877,
+        "cumulative_return": 0.4251337729858746,
+        "drawdown": {
+          "max_drawdown": -0.26480249825024593,
+          "peak_date": "2024-04-18",
+          "recovery_date": "2025-08-22",
+          "trough_date": "2025-04-08"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 1650580.3308133008,
+        "exit_count": 0,
+        "max_drawdown": -0.26480249825024593,
+        "observations": 525,
+        "rebalance_count": 0,
+        "sharpe": 0.7213728915138514,
+        "sortino": 1.1311983793689524,
+        "start": "2024-04-18",
+        "starting_equity": 1158193.2602404621,
+        "total_cost": 0.0,
+        "turnover": 0.0
+      },
+      "legacy_oos_split": "2024-04-18",
+      "regime_calls": {
+        "risk_off_calls": 0,
+        "risk_on_calls": 0
+      },
+      "regime_transition_evidence": [],
+      "stress_returns": {
+        "2022": -0.23227812924223712,
+        "2024_924_q4": 0.06417148089497449,
+        "2024_jan_feb": 0.06495249730327557
+      },
+      "worst_rolling_returns": {
+        "1": {
+          "end": "2022-01-31",
+          "return": -0.15882729730361178
+        },
+        "12": {
+          "end": "2024-01-31",
+          "return": -0.3505297043376875
+        },
+        "3": {
+          "end": "2022-01-31",
+          "return": -0.22153579830221393
+        },
+        "6": {
+          "end": "2022-04-30",
+          "return": -0.2920697361545048
+        }
+      },
+      "yearly_returns": {
+        "2019": 0.04176675224653592,
+        "2020": 0.3889164894263788,
+        "2021": 0.13067439047742346,
+        "2022": -0.23227812924223712,
+        "2023": -0.21266387566273015,
+        "2024": -0.023688595808864066,
+        "2025": 0.23819390388066597,
+        "2026": 0.33532800001795304
+      }
+    },
+    "e1_partial_1x": {
+      "final_cash_weight": 0.13434453039644023,
+      "final_holding_count": 24,
+      "folds": {
+        "2019-2021": {
+          "annualized_volatility": 0.3188387070769433,
+          "cagr": 0.2833233940144655,
+          "calmar": 1.0131705582956942,
+          "cumulative_return": 0.9865117941487482,
+          "drawdown": {
+            "max_drawdown": -0.27964037416469956,
+            "peak_date": "2021-02-10",
+            "recovery_date": "2021-06-25",
+            "trough_date": "2021-03-09"
+          },
+          "end": "2021-12-31",
+          "ending_equity": 1986511.7941487483,
+          "exit_count": 0,
+          "max_drawdown": -0.27964037416469956,
+          "observations": 672,
+          "rebalance_count": 0,
+          "sharpe": 0.9692986416343413,
+          "sortino": 1.3051041824311806,
+          "start": "2019-04-01",
+          "starting_equity": 1000000.0,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2022-2023": {
+          "annualized_volatility": 0.2624601695709643,
+          "cagr": -0.1995696215300785,
+          "calmar": -0.49754034605300335,
+          "cumulative_return": -0.35676808780454594,
+          "drawdown": {
+            "max_drawdown": -0.401112438645967,
+            "peak_date": "2022-08-23",
+            "recovery_date": null,
+            "trough_date": "2023-12-26"
+          },
+          "end": "2023-12-29",
+          "ending_equity": 1229289.2020491639,
+          "exit_count": 0,
+          "max_drawdown": -0.401112438645967,
+          "observations": 484,
+          "rebalance_count": 0,
+          "sharpe": -0.7452569302521104,
+          "sortino": -1.073906211383216,
+          "start": "2022-01-04",
+          "starting_equity": 1911113.5171347484,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2024-2026": {
+          "annualized_volatility": 0.32701983080273145,
+          "cagr": 0.27676142452904284,
+          "calmar": 1.0942936212599188,
+          "cumulative_return": 0.8233933956921404,
+          "drawdown": {
+            "max_drawdown": -0.2529133124347308,
+            "peak_date": "2024-10-08",
+            "recovery_date": "2025-08-18",
+            "trough_date": "2025-04-08"
+          },
+          "end": "2026-06-18",
+          "ending_equity": 2200820.1494671935,
+          "exit_count": 0,
+          "max_drawdown": -0.2529133124347308,
+          "observations": 594,
+          "rebalance_count": 0,
+          "sharpe": 0.9436992233795816,
+          "sortino": 1.5262568035123074,
+          "start": "2024-01-02",
+          "starting_equity": 1206991.401124268,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        }
+      },
+      "full": {
+        "annualized_volatility": 0.3076456093740492,
+        "cagr": 0.11554550253870333,
+        "calmar": 0.20042621897250562,
+        "cumulative_return": 1.2008201494671935,
+        "drawdown": {
+          "max_drawdown": -0.5764989387668576,
+          "peak_date": "2021-09-14",
+          "recovery_date": null,
+          "trough_date": "2024-02-05"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 2200820.1494671935,
+        "exit_count": 0,
+        "max_drawdown": -0.5764989387668576,
+        "observations": 1750,
+        "rebalance_count": 1704,
+        "sharpe": 0.5236596274759375,
+        "sortino": 0.7654006984465206,
+        "start": "2019-04-01",
+        "starting_equity": 1000000.0,
+        "total_cost": 367300.05641324876,
+        "turnover": 264.9499932233811
+      },
+      "legacy_oos": {
+        "annualized_volatility": 0.3186070256864424,
+        "cagr": 0.2480888817635838,
+        "calmar": 0.9809245680873676,
+        "cumulative_return": 0.6159694018612729,
+        "drawdown": {
+          "max_drawdown": -0.2529133124347308,
+          "peak_date": "2024-10-08",
+          "recovery_date": "2025-08-18",
+          "trough_date": "2025-04-08"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 2200820.1494671935,
+        "exit_count": 0,
+        "max_drawdown": -0.2529133124347308,
+        "observations": 525,
+        "rebalance_count": 0,
+        "sharpe": 0.8834913905739595,
+        "sortino": 1.3805277808782617,
+        "start": "2024-04-18",
+        "starting_equity": 1361919.444101039,
+        "total_cost": 0.0,
+        "turnover": 0.0
+      },
+      "legacy_oos_split": "2024-04-18",
+      "regime_calls": {
+        "risk_off_calls": 0,
+        "risk_on_calls": 0
+      },
+      "regime_transition_evidence": [],
+      "stress_returns": {
+        "2022": -0.2034205047252664,
+        "2024_924_q4": 0.09588595268193711,
+        "2024_jan_feb": 0.06716035170583856
+      },
+      "worst_rolling_returns": {
+        "1": {
+          "end": "2022-01-31",
+          "return": -0.16305505067068782
+        },
+        "12": {
+          "end": "2024-01-31",
+          "return": -0.3518427212726314
+        },
+        "3": {
+          "end": "2022-01-31",
+          "return": -0.22805407074490003
+        },
+        "6": {
+          "end": "2022-04-30",
+          "return": -0.280760259956905
+        }
+      },
+      "yearly_returns": {
+        "2019": 0.0679403231027873,
+        "2020": 0.4813168307044182,
+        "2021": 0.17320658718021975,
+        "2022": -0.2034205047252664,
+        "2023": -0.21333134224563965,
+        "2024": 0.017943985482455904,
+        "2025": 0.282531933967183,
+        "2026": 0.4061179415179097
+      }
+    },
+    "e1_partial_2x": {
+      "final_cash_weight": 0.12709794061052743,
+      "final_holding_count": 24,
+      "folds": {
+        "2019-2021": {
+          "annualized_volatility": 0.319081564259411,
+          "cagr": 0.23826779803116738,
+          "calmar": 0.839210834532482,
+          "cumulative_return": 0.800458147296679,
+          "drawdown": {
+            "max_drawdown": -0.2839188773866398,
+            "peak_date": "2021-02-10",
+            "recovery_date": "2021-06-29",
+            "trough_date": "2021-03-09"
+          },
+          "end": "2021-12-31",
+          "ending_equity": 1800458.147296679,
+          "exit_count": 0,
+          "max_drawdown": -0.28391887738663973,
+          "observations": 672,
+          "rebalance_count": 0,
+          "sharpe": 0.8530122558389969,
+          "sortino": 1.1450770657257463,
+          "start": "2019-04-01",
+          "starting_equity": 1000000.0,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2022-2023": {
+          "annualized_volatility": 0.2630130193603263,
+          "cagr": -0.2195171640557424,
+          "calmar": -0.512554076197451,
+          "cumulative_return": -0.3881538687504835,
+          "drawdown": {
+            "max_drawdown": -0.4282809838998879,
+            "peak_date": "2022-08-23",
+            "recovery_date": null,
+            "trough_date": "2023-12-26"
+          },
+          "end": "2023-12-29",
+          "ending_equity": 1061331.1917413047,
+          "exit_count": 0,
+          "max_drawdown": -0.4282809838998879,
+          "observations": 484,
+          "rebalance_count": 0,
+          "sharpe": -0.8422540127908203,
+          "sortino": -1.2144624864192888,
+          "start": "2022-01-04",
+          "starting_equity": 1734637.4154133273,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2024-2026": {
+          "annualized_volatility": 0.3185285810322837,
+          "cagr": 0.21935849702353627,
+          "calmar": 0.7806902500063887,
+          "cumulative_return": 0.628402728421422,
+          "drawdown": {
+            "max_drawdown": -0.28098019287642073,
+            "peak_date": "2024-03-18",
+            "recovery_date": "2025-08-25",
+            "trough_date": "2025-04-08"
+          },
+          "end": "2026-06-18",
+          "ending_equity": 1697990.0368624052,
+          "exit_count": 0,
+          "max_drawdown": -0.2809801928764208,
+          "observations": 594,
+          "rebalance_count": 0,
+          "sharpe": 0.8092991884478534,
+          "sortino": 1.3132502206745669,
+          "start": "2024-01-02",
+          "starting_equity": 1042733.4757099317,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        }
+      },
+      "full": {
+        "annualized_volatility": 0.30478562029978995,
+        "cagr": 0.0761490169337753,
+        "calmar": 0.1249536149231783,
+        "cumulative_return": 0.6979900368624052,
+        "drawdown": {
+          "max_drawdown": -0.6094182787796243,
+          "peak_date": "2021-09-14",
+          "recovery_date": null,
+          "trough_date": "2025-04-08"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 1697990.0368624052,
+        "exit_count": 0,
+        "max_drawdown": -0.6094182787796243,
+        "observations": 1750,
+        "rebalance_count": 1711,
+        "sharpe": 0.403090038485403,
+        "sortino": 0.5877183925587909,
+        "start": "2019-04-01",
+        "starting_equity": 1000000.0,
+        "total_cost": 674046.3602661132,
+        "turnover": 277.81396499793533
+      },
+      "legacy_oos": {
+        "annualized_volatility": 0.3085456371352261,
+        "cagr": 0.1880521718134771,
+        "calmar": 0.7001772447713296,
+        "cumulative_return": 0.4523349122693954,
+        "drawdown": {
+          "max_drawdown": -0.2685779539649178,
+          "peak_date": "2024-04-18",
+          "recovery_date": "2025-08-22",
+          "trough_date": "2025-04-08"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 1697990.0368624052,
+        "exit_count": 0,
+        "max_drawdown": -0.26857795396491774,
+        "observations": 525,
+        "rebalance_count": 0,
+        "sharpe": 0.7356346351441729,
+        "sortino": 1.1503059611651472,
+        "start": "2024-04-18",
+        "starting_equity": 1169144.955834707,
+        "total_cost": 0.0,
+        "turnover": 0.0
+      },
+      "legacy_oos_split": "2024-04-18",
+      "regime_calls": {
+        "risk_off_calls": 0,
+        "risk_on_calls": 0
+      },
+      "regime_transition_evidence": [],
+      "stress_returns": {
+        "2022": -0.2142027683964559,
+        "2024_924_q4": 0.07464878680586762,
+        "2024_jan_feb": 0.06607987029985174
+      },
+      "worst_rolling_returns": {
+        "1": {
+          "end": "2022-01-31",
+          "return": -0.16325245650310782
+        },
+        "12": {
+          "end": "2024-01-31",
+          "return": -0.37452055256474914
+        },
+        "3": {
+          "end": "2022-01-31",
+          "return": -0.23014879620444162
+        },
+        "6": {
+          "end": "2022-04-30",
+          "return": -0.2801141349430196
+        }
+      },
+      "yearly_returns": {
+        "2019": 0.0490856942596023,
+        "2020": 0.4188902966158703,
+        "2021": 0.12859888585866064,
+        "2022": -0.2142027683964559,
+        "2023": -0.24161059869666812,
+        "2024": -0.02385343583492383,
+        "2025": 0.231521831298801,
+        "2026": 0.37094315529082333
+      }
+    },
+    "e1_partial_corrected_halt_1x": {
+      "final_cash_weight": 0.13431078593168794,
+      "final_holding_count": 24,
+      "folds": {
+        "2019-2021": {
+          "annualized_volatility": 0.3180568810579588,
+          "cagr": 0.2814038698045742,
+          "calmar": 1.0050220990744931,
+          "cumulative_return": 0.9783468087267662,
+          "drawdown": {
+            "max_drawdown": -0.2799976936464522,
+            "peak_date": "2021-02-10",
+            "recovery_date": "2021-06-25",
+            "trough_date": "2021-03-09"
+          },
+          "end": "2021-12-31",
+          "ending_equity": 1978346.8087267661,
+          "exit_count": 0,
+          "max_drawdown": -0.27999769364645216,
+          "observations": 672,
+          "rebalance_count": 0,
+          "sharpe": 0.9660170511436232,
+          "sortino": 1.3018528023627762,
+          "start": "2019-04-01",
+          "starting_equity": 1000000.0,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2022-2023": {
+          "annualized_volatility": 0.26283543924661146,
+          "cagr": -0.19931067330222196,
+          "calmar": -0.5005051302374641,
+          "cumulative_return": -0.35635553998287306,
+          "drawdown": {
+            "max_drawdown": -0.39821904164630495,
+            "peak_date": "2022-08-23",
+            "recovery_date": null,
+            "trough_date": "2023-12-26"
+          },
+          "end": "2023-12-29",
+          "ending_equity": 1224827.1391675877,
+          "exit_count": 0,
+          "max_drawdown": -0.3982190416463049,
+          "observations": 484,
+          "rebalance_count": 0,
+          "sharpe": -0.742547856372921,
+          "sortino": -1.0708541139307028,
+          "start": "2022-01-04",
+          "starting_equity": 1902956.0809627662,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2024-2026": {
+          "annualized_volatility": 0.3269803415593862,
+          "cagr": 0.2784146705331729,
+          "calmar": 1.101689279960915,
+          "cumulative_return": 0.829203771597709,
+          "drawdown": {
+            "max_drawdown": -0.25271614746314885,
+            "peak_date": "2024-10-08",
+            "recovery_date": "2025-08-18",
+            "trough_date": "2025-04-08"
+          },
+          "end": "2026-06-18",
+          "ending_equity": 2200734.3617540593,
+          "exit_count": 0,
+          "max_drawdown": -0.2527161474631489,
+          "observations": 594,
+          "rebalance_count": 0,
+          "sharpe": 0.9479004793586162,
+          "sortino": 1.5361419960615643,
+          "start": "2024-01-02",
+          "starting_equity": 1203110.5533047523,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        }
+      },
+      "full": {
+        "annualized_volatility": 0.30740767266088626,
+        "cagr": 0.1155394749345533,
+        "calmar": 0.20029982590598602,
+        "cumulative_return": 1.2007343617540593,
+        "drawdown": {
+          "max_drawdown": -0.5768326278465346,
+          "peak_date": "2021-09-14",
+          "recovery_date": null,
+          "trough_date": "2024-02-05"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 2200734.3617540593,
+        "exit_count": 0,
+        "max_drawdown": -0.5768326278465346,
+        "observations": 1750,
+        "rebalance_count": 1703,
+        "sharpe": 0.5237988417968211,
+        "sortino": 0.7667217026698576,
+        "start": "2019-04-01",
+        "starting_equity": 1000000.0,
+        "total_cost": 365741.5024354193,
+        "turnover": 264.8375652929673
+      },
+      "legacy_oos": {
+        "annualized_volatility": 0.3185222490327681,
+        "cagr": 0.24919770190851365,
+        "calmar": 0.9860774802482761,
+        "cumulative_return": 0.6190801138969235,
+        "drawdown": {
+          "max_drawdown": -0.25271614746314885,
+          "peak_date": "2024-10-08",
+          "recovery_date": "2025-08-18",
+          "trough_date": "2025-04-08"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 2200734.3617540593,
+        "exit_count": 0,
+        "max_drawdown": -0.2527161474631489,
+        "observations": 525,
+        "rebalance_count": 0,
+        "sharpe": 0.8865358904704738,
+        "sortino": 1.3880253583780722,
+        "start": "2024-04-18",
+        "starting_equity": 1359249.825172126,
+        "total_cost": 0.0,
+        "turnover": 0.0
+      },
+      "legacy_oos_split": "2024-04-18",
+      "regime_calls": {
+        "risk_off_calls": 0,
+        "risk_on_calls": 0
+      },
+      "regime_transition_evidence": [],
+      "stress_returns": {
+        "2022": -0.20695691544619232,
+        "2024_924_q4": 0.09653752285198203,
+        "2024_jan_feb": 0.06843222883147448
+      },
+      "worst_rolling_returns": {
+        "1": {
+          "end": "2022-01-31",
+          "return": -0.16339209669878907
+        },
+        "12": {
+          "end": "2024-01-31",
+          "return": -0.3482545925500784
+        },
+        "3": {
+          "end": "2022-01-31",
+          "return": -0.22961518768570932
+        },
+        "6": {
+          "end": "2022-04-30",
+          "return": -0.28518797974296506
+        }
+      },
+      "yearly_returns": {
+        "2019": 0.06802486482038916,
+        "2020": 0.4810416101866488,
+        "2021": 0.1682364026554879,
+        "2022": -0.20695691544619232,
+        "2023": -0.20900527140092207,
+        "2024": 0.020324397119961812,
+        "2025": 0.2811348966551537,
+        "2026": 0.4088066744895198
+      }
+    },
+    "e1_partial_corrected_halt_2x": {
+      "final_cash_weight": 0.12709635048828608,
+      "final_holding_count": 24,
+      "folds": {
+        "2019-2021": {
+          "annualized_volatility": 0.31829575806023536,
+          "cagr": 0.2399876872309561,
+          "calmar": 0.8487473247424454,
+          "cumulative_return": 0.8073474123793178,
+          "drawdown": {
+            "max_drawdown": -0.2827551619132125,
+            "peak_date": "2021-02-10",
+            "recovery_date": "2021-06-29",
+            "trough_date": "2021-03-09"
+          },
+          "end": "2021-12-31",
+          "ending_equity": 1807347.412379318,
+          "exit_count": 0,
+          "max_drawdown": -0.2827551619132125,
+          "observations": 672,
+          "rebalance_count": 0,
+          "sharpe": 0.8588122230363296,
+          "sortino": 1.1550846089572404,
+          "start": "2019-04-01",
+          "starting_equity": 1000000.0,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2022-2023": {
+          "annualized_volatility": 0.2628010775395645,
+          "cagr": -0.22134627337753987,
+          "calmar": -0.5185171527586939,
+          "cumulative_return": -0.39099287749339284,
+          "drawdown": {
+            "max_drawdown": -0.4268832230523132,
+            "peak_date": "2022-08-23",
+            "recovery_date": null,
+            "trough_date": "2023-12-26"
+          },
+          "end": "2023-12-29",
+          "ending_equity": 1060376.917454051,
+          "exit_count": 0,
+          "max_drawdown": -0.42688322305231313,
+          "observations": 484,
+          "rebalance_count": 0,
+          "sharpe": -0.852372360169407,
+          "sortino": -1.2276144419644757,
+          "start": "2022-01-04",
+          "starting_equity": 1741156.8408094388,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2024-2026": {
+          "annualized_volatility": 0.31816380796604143,
+          "cagr": 0.21980950875170113,
+          "calmar": 0.783437203377282,
+          "cumulative_return": 0.6298839550168802,
+          "drawdown": {
+            "max_drawdown": -0.2805706798249238,
+            "peak_date": "2024-03-18",
+            "recovery_date": "2025-08-22",
+            "trough_date": "2025-04-08"
+          },
+          "end": "2026-06-18",
+          "ending_equity": 1697986.9437240907,
+          "exit_count": 0,
+          "max_drawdown": -0.28057067982492384,
+          "observations": 594,
+          "rebalance_count": 0,
+          "sharpe": 0.8110765607784566,
+          "sortino": 1.317771260304893,
+          "start": "2024-01-02",
+          "starting_equity": 1041783.9494017875,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        }
+      },
+      "full": {
+        "annualized_volatility": 0.30429621312092836,
+        "cagr": 0.07614874519816084,
+        "calmar": 0.12447448556009943,
+        "cumulative_return": 0.6979869437240906,
+        "drawdown": {
+          "max_drawdown": -0.6117618791956709,
+          "peak_date": "2021-09-14",
+          "recovery_date": null,
+          "trough_date": "2025-04-08"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 1697986.9437240907,
+        "exit_count": 0,
+        "max_drawdown": -0.6117618791956709,
+        "observations": 1750,
+        "rebalance_count": 1713,
+        "sharpe": 0.4032344335581932,
+        "sortino": 0.5886360980545734,
+        "start": "2019-04-01",
+        "starting_equity": 1000000.0,
+        "total_cost": 673324.1813100899,
+        "turnover": 277.6235652325145
+      },
+      "legacy_oos": {
+        "annualized_volatility": 0.3080816840275899,
+        "cagr": 0.18923991190823575,
+        "calmar": 0.7061510765933342,
+        "cumulative_return": 0.4554811528638769,
+        "drawdown": {
+          "max_drawdown": -0.26798785441379025,
+          "peak_date": "2024-04-18",
+          "recovery_date": "2025-08-22",
+          "trough_date": "2025-04-08"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 1697986.9437240907,
+        "exit_count": 0,
+        "max_drawdown": -0.2679878544137903,
+        "observations": 525,
+        "rebalance_count": 0,
+        "sharpe": 0.7396570345752341,
+        "sortino": 1.1580076714666752,
+        "start": "2024-04-18",
+        "starting_equity": 1166615.5486679077,
+        "total_cost": 0.0,
+        "turnover": 0.0
+      },
+      "legacy_oos_split": "2024-04-18",
+      "regime_calls": {
+        "risk_off_calls": 0,
+        "risk_on_calls": 0
+      },
+      "regime_transition_evidence": [],
+      "stress_returns": {
+        "2022": -0.2177740488441383,
+        "2024_924_q4": 0.07330045183573852,
+        "2024_jan_feb": 0.06513754811107808
+      },
+      "worst_rolling_returns": {
+        "1": {
+          "end": "2022-01-31",
+          "return": -0.16393300472345562
+        },
+        "12": {
+          "end": "2024-01-31",
+          "return": -0.3745823457267843
+        },
+        "3": {
+          "end": "2022-01-31",
+          "return": -0.2306760788967196
+        },
+        "6": {
+          "end": "2022-04-30",
+          "return": -0.2830302462941183
+        }
+      },
+      "yearly_returns": {
+        "2019": 0.049242570933791585,
+        "2020": 0.4238666328989562,
+        "2021": 0.1293596296298476,
+        "2022": -0.2177740488441383,
+        "2023": -0.2417489585941801,
+        "2024": -0.025706563378014025,
+        "2025": 0.23504898886338244,
+        "2026": 0.37094426367867084
+      }
+    },
+    "e2_regime_1x": {
+      "final_cash_weight": 0.14781279799375005,
+      "final_holding_count": 24,
+      "folds": {
+        "2019-2021": {
+          "annualized_volatility": 0.279980836564753,
+          "cagr": 0.15156972231847132,
+          "calmar": 0.5315657623302708,
+          "cumulative_return": 0.4744924157296311,
+          "drawdown": {
+            "max_drawdown": -0.2851382332338751,
+            "peak_date": "2020-02-25",
+            "recovery_date": "2021-01-21",
+            "trough_date": "2020-09-09"
+          },
+          "end": "2021-12-31",
+          "ending_equity": 1474492.415729631,
+          "exit_count": 0,
+          "max_drawdown": -0.28513823323387505,
+          "observations": 672,
+          "rebalance_count": 0,
+          "sharpe": 0.6620178644467543,
+          "sortino": 0.7808179742776721,
+          "start": "2019-04-01",
+          "starting_equity": 1000000.0,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2022-2023": {
+          "annualized_volatility": 0.1052951635618884,
+          "cagr": -0.04272160366137545,
+          "calmar": -0.2639193965477935,
+          "cumulative_return": -0.08290577295429302,
+          "drawdown": {
+            "max_drawdown": -0.1618736789345414,
+            "peak_date": "2023-03-01",
+            "recovery_date": null,
+            "trough_date": "2023-08-25"
+          },
+          "end": "2023-12-29",
+          "ending_equity": 1352248.482288323,
+          "exit_count": 0,
+          "max_drawdown": -0.16187367893454144,
+          "observations": 484,
+          "rebalance_count": 0,
+          "sharpe": -0.3762484169504891,
+          "sortino": -0.27796403332923364,
+          "start": "2022-01-04",
+          "starting_equity": 1474492.415729631,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2024-2026": {
+          "annualized_volatility": 0.26909046683933757,
+          "cagr": 0.17035966950041526,
+          "calmar": 0.5529171103831856,
+          "cumulative_return": 0.47220831178076295,
+          "drawdown": {
+            "max_drawdown": -0.3081106847685572,
+            "peak_date": "2024-05-10",
+            "recovery_date": "2025-08-25",
+            "trough_date": "2025-04-08"
+          },
+          "end": "2026-06-18",
+          "ending_equity": 1990791.455217791,
+          "exit_count": 0,
+          "max_drawdown": -0.30811068476855724,
+          "observations": 594,
+          "rebalance_count": 0,
+          "sharpe": 0.7457687676141386,
+          "sortino": 0.9555622063244718,
+          "start": "2024-01-02",
+          "starting_equity": 1352248.482288323,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        }
+      },
+      "full": {
+        "annualized_volatility": 0.24014497514922398,
+        "cagr": 0.10014365225205868,
+        "calmar": 0.2558594269089731,
+        "cumulative_return": 0.990791455217791,
+        "drawdown": {
+          "max_drawdown": -0.39140106527201246,
+          "peak_date": "2021-07-21",
+          "recovery_date": "2026-02-27",
+          "trough_date": "2025-04-08"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 1990791.455217791,
+        "exit_count": 0,
+        "max_drawdown": -0.39140106527201246,
+        "observations": 1750,
+        "rebalance_count": 580,
+        "sharpe": 0.5338854526011041,
+        "sortino": 0.5877540379664689,
+        "start": "2019-04-01",
+        "starting_equity": 1000000.0,
+        "total_cost": 201742.86838520205,
+        "turnover": 179.4223310795504
+      },
+      "legacy_oos": {
+        "annualized_volatility": 0.2862497380415931,
+        "cagr": 0.19553151608360442,
+        "calmar": 0.6346145257198119,
+        "cumulative_return": 0.47220831178076295,
+        "drawdown": {
+          "max_drawdown": -0.3081106847685572,
+          "peak_date": "2024-05-10",
+          "recovery_date": "2025-08-25",
+          "trough_date": "2025-04-08"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 1990791.455217791,
+        "exit_count": 0,
+        "max_drawdown": -0.30811068476855724,
+        "observations": 525,
+        "rebalance_count": 0,
+        "sharpe": 0.7933792029215887,
+        "sortino": 1.0813900541038393,
+        "start": "2024-04-18",
+        "starting_equity": 1352248.482288323,
+        "total_cost": 0.0,
+        "turnover": 0.0
+      },
+      "legacy_oos_split": "2024-04-18",
+      "regime_calls": {
+        "forced_cash_retry_calls": 0,
+        "risk_off_calls": 665,
+        "risk_on_calls": 1084
+      },
+      "regime_transition_evidence": [
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1125.9123050437497,
+            "date": "2020-04-01",
+            "turnover": 0.9034782084435445
+          },
+          "risk_on": false,
+          "signal_date": "2020-03-31",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 746.8740793035358,
+            "date": "2020-05-06",
+            "turnover": 0.9999999999999996
+          },
+          "risk_on": true,
+          "signal_date": "2020-04-30",
+          "target_count": 25
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1109.0556019475,
+            "date": "2020-06-01",
+            "turnover": 0.8945274057229966
+          },
+          "risk_on": false,
+          "signal_date": "2020-05-29",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 743.0619748966316,
+            "date": "2020-07-01",
+            "turnover": 0.9999999999999996
+          },
+          "risk_on": true,
+          "signal_date": "2020-06-30",
+          "target_count": 25
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1700.05045222375,
+            "date": "2021-08-02",
+            "turnover": 0.921316422442339
+          },
+          "risk_on": false,
+          "signal_date": "2021-07-30",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1105.8693117972232,
+            "date": "2023-02-01",
+            "turnover": 1.0
+          },
+          "risk_on": true,
+          "signal_date": "2023-01-31",
+          "target_count": 25
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1690.3516999987496,
+            "date": "2023-06-01",
+            "turnover": 0.9528536004345567
+          },
+          "risk_on": false,
+          "signal_date": "2023-05-31",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1063.125569615052,
+            "date": "2023-08-01",
+            "turnover": 1.0
+          },
+          "risk_on": true,
+          "signal_date": "2023-07-31",
+          "target_count": 25
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1628.0190830525003,
+            "date": "2023-09-01",
+            "turnover": 0.9619897125939855
+          },
+          "risk_on": false,
+          "signal_date": "2023-08-31",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1014.1863617162423,
+            "date": "2024-05-06",
+            "turnover": 1.0
+          },
+          "risk_on": true,
+          "signal_date": "2024-04-30",
+          "target_count": 25
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1567.58154977625,
+            "date": "2024-07-01",
+            "turnover": 0.9615440393123647
+          },
+          "risk_on": false,
+          "signal_date": "2024-06-28",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 742.5120402724486,
+            "date": "2024-10-08",
+            "turnover": 0.7599999999999998
+          },
+          "risk_on": true,
+          "signal_date": "2024-09-30",
+          "target_count": 25
+        }
+      ],
+      "stress_returns": {
+        "2022": 0.0,
+        "2024_924_q4": -0.15297470309401018,
+        "2024_jan_feb": 0.0
+      },
+      "worst_rolling_returns": {
+        "1": {
+          "end": "2020-03-31",
+          "return": -0.14719473465712296
+        },
+        "12": {
+          "end": "2025-04-30",
+          "return": -0.224876343614416
+        },
+        "3": {
+          "end": "2020-05-31",
+          "return": -0.16067748282120187
+        },
+        "6": {
+          "end": "2025-03-31",
+          "return": -0.1605213107986594
+        }
+      },
+      "yearly_returns": {
+        "2019": 0.06429606987274505,
+        "2020": 0.08638086822675639,
+        "2021": 0.1933060911970017,
+        "2022": 0.0,
+        "2023": -0.08290577295429302,
+        "2024": -0.1840406505714235,
+        "2025": 0.2927410084877071,
+        "2026": 0.40543553718426284
+      }
+    },
+    "e2_regime_2x": {
+      "final_cash_weight": 0.25533488089221884,
+      "final_holding_count": 23,
+      "folds": {
+        "2019-2021": {
+          "annualized_volatility": 0.2791507867920506,
+          "cagr": 0.11494938573264579,
+          "calmar": 0.3825254514255012,
+          "cumulative_return": 0.34903881182545704,
+          "drawdown": {
+            "max_drawdown": -0.3005012746322653,
+            "peak_date": "2020-02-25",
+            "recovery_date": "2021-01-25",
+            "trough_date": "2020-09-09"
+          },
+          "end": "2021-12-31",
+          "ending_equity": 1349038.811825457,
+          "exit_count": 0,
+          "max_drawdown": -0.3005012746322653,
+          "observations": 672,
+          "rebalance_count": 0,
+          "sharpe": 0.5434614150417061,
+          "sortino": 0.6412811363820127,
+          "start": "2019-04-01",
+          "starting_equity": 1000000.0,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2022-2023": {
+          "annualized_volatility": 0.10410843538113249,
+          "cagr": -0.05226473119974351,
+          "calmar": -0.30228311244959993,
+          "cumulative_return": -0.10093940488445952,
+          "drawdown": {
+            "max_drawdown": -0.17289993733426867,
+            "peak_date": "2023-03-01",
+            "recovery_date": null,
+            "trough_date": "2023-08-25"
+          },
+          "end": "2023-12-29",
+          "ending_equity": 1212867.636993757,
+          "exit_count": 0,
+          "max_drawdown": -0.17289993733426864,
+          "observations": 484,
+          "rebalance_count": 0,
+          "sharpe": -0.4812095879039535,
+          "sortino": -0.35197325866691914,
+          "start": "2022-01-04",
+          "starting_equity": 1349038.811825457,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2024-2026": {
+          "annualized_volatility": 0.2594393698236034,
+          "cagr": 0.11056381789030567,
+          "calmar": 0.33537509333571475,
+          "cumulative_return": 0.2941149172273605,
+          "drawdown": {
+            "max_drawdown": -0.329672119627649,
+            "peak_date": "2024-05-13",
+            "recovery_date": "2026-01-22",
+            "trough_date": "2025-04-08"
+          },
+          "end": "2026-06-18",
+          "ending_equity": 1569590.10165592,
+          "exit_count": 0,
+          "max_drawdown": -0.3296721196276489,
+          "observations": 594,
+          "rebalance_count": 0,
+          "sharpe": 0.5522908114955124,
+          "sortino": 0.7100165527130802,
+          "start": "2024-01-02",
+          "starting_equity": 1212867.636993757,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        }
+      },
+      "full": {
+        "annualized_volatility": 0.2359741639172566,
+        "cagr": 0.06448334840577008,
+        "calmar": 0.15225740867122545,
+        "cumulative_return": 0.56959010165592,
+        "drawdown": {
+          "max_drawdown": -0.42351534134546553,
+          "peak_date": "2021-07-21",
+          "recovery_date": "2026-05-13",
+          "trough_date": "2025-04-08"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 1569590.10165592,
+        "exit_count": 0,
+        "max_drawdown": -0.4235153413454655,
+        "observations": 1750,
+        "rebalance_count": 623,
+        "sharpe": 0.3938931604776453,
+        "sortino": 0.4333554469812576,
+        "start": "2019-04-01",
+        "starting_equity": 1000000.0,
+        "total_cost": 389901.5670300801,
+        "turnover": 195.00701444794169
+      },
+      "legacy_oos": {
+        "annualized_volatility": 0.27600135742941473,
+        "cagr": 0.12643017101859622,
+        "calmar": 0.383502769847186,
+        "cumulative_return": 0.2941149172273605,
+        "drawdown": {
+          "max_drawdown": -0.329672119627649,
+          "peak_date": "2024-05-13",
+          "recovery_date": "2026-01-22",
+          "trough_date": "2025-04-08"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 1569590.10165592,
+        "exit_count": 0,
+        "max_drawdown": -0.3296721196276489,
+        "observations": 525,
+        "rebalance_count": 0,
+        "sharpe": 0.5875108440040546,
+        "sortino": 0.8035110987764438,
+        "start": "2024-04-18",
+        "starting_equity": 1212867.636993757,
+        "total_cost": 0.0,
+        "turnover": 0.0
+      },
+      "legacy_oos_split": "2024-04-18",
+      "regime_calls": {
+        "forced_cash_retry_calls": 0,
+        "risk_off_calls": 665,
+        "risk_on_calls": 1084
+      },
+      "regime_transition_evidence": [
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 2201.222041875,
+            "date": "2020-04-01",
+            "turnover": 0.913071820564886
+          },
+          "risk_on": false,
+          "signal_date": "2020-03-31",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1443.1706079636867,
+            "date": "2020-05-06",
+            "turnover": 1.0000000000000004
+          },
+          "risk_on": true,
+          "signal_date": "2020-04-30",
+          "target_count": 25
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 2161.65748376,
+            "date": "2020-06-01",
+            "turnover": 0.9057561745985523
+          },
+          "risk_on": false,
+          "signal_date": "2020-05-29",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1428.7041310092375,
+            "date": "2020-07-01",
+            "turnover": 1.0
+          },
+          "risk_on": true,
+          "signal_date": "2020-06-30",
+          "target_count": 25
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 3081.1320695525,
+            "date": "2021-08-02",
+            "turnover": 0.9114966711242434
+          },
+          "risk_on": false,
+          "signal_date": "2021-07-30",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 2023.5582177381848,
+            "date": "2023-02-01",
+            "turnover": 0.9999999999999997
+          },
+          "risk_on": true,
+          "signal_date": "2023-01-31",
+          "target_count": 25
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 3037.286360475,
+            "date": "2023-06-01",
+            "turnover": 0.9503710464867579
+          },
+          "risk_on": false,
+          "signal_date": "2023-05-31",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1912.981250302646,
+            "date": "2023-08-01",
+            "turnover": 0.9999999999999994
+          },
+          "risk_on": true,
+          "signal_date": "2023-07-31",
+          "target_count": 25
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 2894.327094615,
+            "date": "2023-09-01",
+            "turnover": 0.9522676905870417
+          },
+          "risk_on": false,
+          "signal_date": "2023-08-31",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1819.3014554906351,
+            "date": "2024-05-06",
+            "turnover": 0.9999999999999998
+          },
+          "risk_on": true,
+          "signal_date": "2024-04-30",
+          "target_count": 25
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 2765.8638111899995,
+            "date": "2024-07-01",
+            "turnover": 0.956538298680708
+          },
+          "risk_on": false,
+          "signal_date": "2024-06-28",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1315.38679979743,
+            "date": "2024-10-08",
+            "turnover": 0.7600000000000003
+          },
+          "risk_on": true,
+          "signal_date": "2024-09-30",
+          "target_count": 25
+        }
+      ],
+      "stress_returns": {
+        "2022": 0.0,
+        "2024_924_q4": -0.16442799924334994,
+        "2024_jan_feb": 0.0
+      },
+      "worst_rolling_returns": {
+        "1": {
+          "end": "2020-03-31",
+          "return": -0.14882204647817854
+        },
+        "12": {
+          "end": "2025-04-30",
+          "return": -0.254640938324068
+        },
+        "3": {
+          "end": "2020-05-31",
+          "return": -0.16650374961115566
+        },
+        "6": {
+          "end": "2025-03-31",
+          "return": -0.18624266904996511
+        }
+      },
+      "yearly_returns": {
+        "2019": 0.04158915385366391,
+        "2020": 0.043159189312374835,
+        "2021": 0.16205923948276846,
+        "2022": 0.0,
+        "2023": -0.10093940488445952,
+        "2024": -0.2050879164300946,
+        "2025": 0.22691276299236707,
+        "2026": 0.3394271405323057
+      }
+    },
+    "e2_regime_corrected_halt_1x": {
+      "final_cash_weight": 0.14786613896251477,
+      "final_holding_count": 24,
+      "folds": {
+        "2019-2021": {
+          "annualized_volatility": 0.27931497800494015,
+          "cagr": 0.15318357782497038,
+          "calmar": 0.5431241890996885,
+          "cumulative_return": 0.48018521246657087,
+          "drawdown": {
+            "max_drawdown": -0.2820415310150255,
+            "peak_date": "2020-02-25",
+            "recovery_date": "2021-01-21",
+            "trough_date": "2020-09-09"
+          },
+          "end": "2021-12-31",
+          "ending_equity": 1480185.2124665708,
+          "exit_count": 0,
+          "max_drawdown": -0.28204153101502555,
+          "observations": 672,
+          "rebalance_count": 0,
+          "sharpe": 0.6680854773239365,
+          "sortino": 0.7903216895118734,
+          "start": "2019-04-01",
+          "starting_equity": 1000000.0,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2022-2023": {
+          "annualized_volatility": 0.10539602059514996,
+          "cagr": -0.043082068907218884,
+          "calmar": -0.2654594511160477,
+          "cumulative_return": -0.08359016841789968,
+          "drawdown": {
+            "max_drawdown": -0.16229246585907098,
+            "peak_date": "2023-03-01",
+            "recovery_date": null,
+            "trough_date": "2023-08-25"
+          },
+          "end": "2023-12-29",
+          "ending_equity": 1356456.2812668055,
+          "exit_count": 0,
+          "max_drawdown": -0.16229246585907095,
+          "observations": 484,
+          "rebalance_count": 0,
+          "sharpe": -0.3794861036784695,
+          "sortino": -0.2798640652088944,
+          "start": "2022-01-04",
+          "starting_equity": 1480185.2124665708,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2024-2026": {
+          "annualized_volatility": 0.26824061341072397,
+          "cagr": 0.16789459582005506,
+          "calmar": 0.5406192488859078,
+          "cumulative_return": 0.4645963162293645,
+          "drawdown": {
+            "max_drawdown": -0.3105597815210007,
+            "peak_date": "2024-05-10",
+            "recovery_date": "2025-08-28",
+            "trough_date": "2025-04-08"
+          },
+          "end": "2026-06-18",
+          "ending_equity": 1986660.872669546,
+          "exit_count": 0,
+          "max_drawdown": -0.3105597815210007,
+          "observations": 594,
+          "rebalance_count": 0,
+          "sharpe": 0.7390599863965585,
+          "sortino": 0.9476222649354857,
+          "start": "2024-01-02",
+          "starting_equity": 1356456.2812668055,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        }
+      },
+      "full": {
+        "annualized_volatility": 0.2395369738297925,
+        "cagr": 0.099826963264942,
+        "calmar": 0.2537709543001347,
+        "cumulative_return": 0.9866608726695458,
+        "drawdown": {
+          "max_drawdown": -0.39337426751714366,
+          "peak_date": "2021-07-21",
+          "recovery_date": "2026-02-27",
+          "trough_date": "2025-04-08"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 1986660.872669546,
+        "exit_count": 0,
+        "max_drawdown": -0.3933742675171436,
+        "observations": 1750,
+        "rebalance_count": 586,
+        "sharpe": 0.5333675164489788,
+        "sortino": 0.5883322936430966,
+        "start": "2019-04-01",
+        "starting_equity": 1000000.0,
+        "total_cost": 203065.45479445125,
+        "turnover": 180.6598383429295
+      },
+      "legacy_oos": {
+        "annualized_volatility": 0.2853464355533298,
+        "cagr": 0.19267320476742156,
+        "calmar": 0.6204061705085678,
+        "cumulative_return": 0.4645963162293645,
+        "drawdown": {
+          "max_drawdown": -0.3105597815210007,
+          "peak_date": "2024-05-10",
+          "recovery_date": "2025-08-28",
+          "trough_date": "2025-04-08"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 1986660.872669546,
+        "exit_count": 0,
+        "max_drawdown": -0.3105597815210007,
+        "observations": 525,
+        "rebalance_count": 0,
+        "sharpe": 0.7862400777803715,
+        "sortino": 1.0724045860815707,
+        "start": "2024-04-18",
+        "starting_equity": 1356456.2812668055,
+        "total_cost": 0.0,
+        "turnover": 0.0
+      },
+      "legacy_oos_split": "2024-04-18",
+      "regime_calls": {
+        "forced_cash_retry_calls": 0,
+        "risk_off_calls": 665,
+        "risk_on_calls": 1084
+      },
+      "regime_transition_evidence": [
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1131.5382015062498,
+            "date": "2020-04-01",
+            "turnover": 0.904236099113131
+          },
+          "risk_on": false,
+          "signal_date": "2020-03-31",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 749.9761824393928,
+            "date": "2020-05-06",
+            "turnover": 1.0000000000000002
+          },
+          "risk_on": true,
+          "signal_date": "2020-04-30",
+          "target_count": 25
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1113.8417840549998,
+            "date": "2020-06-01",
+            "turnover": 0.8946057136330817
+          },
+          "risk_on": false,
+          "signal_date": "2020-05-29",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 746.2032975442424,
+            "date": "2020-07-01",
+            "turnover": 1.0
+          },
+          "risk_on": true,
+          "signal_date": "2020-06-30",
+          "target_count": 25
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1762.7877842199996,
+            "date": "2021-08-02",
+            "turnover": 0.9516057426693417
+          },
+          "risk_on": false,
+          "signal_date": "2021-07-30",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1110.1389093499279,
+            "date": "2023-02-01",
+            "turnover": 0.9999999999999999
+          },
+          "risk_on": true,
+          "signal_date": "2023-01-31",
+          "target_count": 25
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1701.3905541812499,
+            "date": "2023-06-01",
+            "turnover": 0.9556005056514193
+          },
+          "risk_on": false,
+          "signal_date": "2023-05-31",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1066.9887041952518,
+            "date": "2023-08-01",
+            "turnover": 1.0
+          },
+          "risk_on": true,
+          "signal_date": "2023-07-31",
+          "target_count": 25
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1630.2646756937504,
+            "date": "2023-09-01",
+            "turnover": 0.960330359248121
+          },
+          "risk_on": false,
+          "signal_date": "2023-08-31",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1017.3422109501043,
+            "date": "2024-05-06",
+            "turnover": 1.0000000000000002
+          },
+          "risk_on": true,
+          "signal_date": "2024-04-30",
+          "target_count": 25
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1568.14877239875,
+            "date": "2024-07-01",
+            "turnover": 0.9594804202805779
+          },
+          "risk_on": false,
+          "signal_date": "2024-06-28",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 744.3801859139003,
+            "date": "2024-10-08",
+            "turnover": 0.7599999999999998
+          },
+          "risk_on": true,
+          "signal_date": "2024-09-30",
+          "target_count": 25
+        }
+      ],
+      "stress_returns": {
+        "2022": 0.0,
+        "2024_924_q4": -0.155332474673482,
+        "2024_jan_feb": 0.0
+      },
+      "worst_rolling_returns": {
+        "1": {
+          "end": "2020-03-31",
+          "return": -0.143789170035305
+        },
+        "12": {
+          "end": "2025-04-30",
+          "return": -0.22750137860701447
+        },
+        "3": {
+          "end": "2020-05-31",
+          "return": -0.15719860471633829
+        },
+        "6": {
+          "end": "2025-03-31",
+          "return": -0.16285847891328875
+        }
+      },
+      "yearly_returns": {
+        "2019": 0.0643805452740267,
+        "2020": 0.09109164063883535,
+        "2021": 0.19283625262745963,
+        "2022": 0.0,
+        "2023": -0.08359016841789968,
+        "2024": -0.1867951780701963,
+        "2025": 0.29275226211533734,
+        "2026": 0.40289514705424323
+      }
+    },
+    "e2_regime_corrected_halt_2x": {
+      "final_cash_weight": 0.2558416811987549,
+      "final_holding_count": 23,
+      "folds": {
+        "2019-2021": {
+          "annualized_volatility": 0.27867750048298123,
+          "cagr": 0.11457199103837734,
+          "calmar": 0.38356004647788794,
+          "cumulative_return": 0.34778274666237574,
+          "drawdown": {
+            "max_drawdown": -0.29870679204066264,
+            "peak_date": "2020-02-25",
+            "recovery_date": "2021-01-25",
+            "trough_date": "2020-09-09"
+          },
+          "end": "2021-12-31",
+          "ending_equity": 1347782.7466623758,
+          "exit_count": 0,
+          "max_drawdown": -0.2987067920406626,
+          "observations": 672,
+          "rebalance_count": 0,
+          "sharpe": 0.5426378092531536,
+          "sortino": 0.6414671811993329,
+          "start": "2019-04-01",
+          "starting_equity": 1000000.0,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2022-2023": {
+          "annualized_volatility": 0.104000379250779,
+          "cagr": -0.05212085898693597,
+          "calmar": -0.30210942689345077,
+          "cumulative_return": -0.10066884739396076,
+          "drawdown": {
+            "max_drawdown": -0.17252311363762307,
+            "peak_date": "2023-03-01",
+            "recovery_date": null,
+            "trough_date": "2023-08-25"
+          },
+          "end": "2023-12-29",
+          "ending_equity": 1212103.0110184078,
+          "exit_count": 0,
+          "max_drawdown": -0.17252311363762302,
+          "observations": 484,
+          "rebalance_count": 0,
+          "sharpe": -0.4803116395705575,
+          "sortino": -0.3521401578728342,
+          "start": "2022-01-04",
+          "starting_equity": 1347782.7466623758,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        },
+        "2024-2026": {
+          "annualized_volatility": 0.2580000565684722,
+          "cagr": 0.10557910867486586,
+          "calmar": 0.3190767082444419,
+          "cumulative_return": 0.27988074257616846,
+          "drawdown": {
+            "max_drawdown": -0.3308894254794137,
+            "peak_date": "2024-05-13",
+            "recovery_date": "2026-01-22",
+            "trough_date": "2025-04-08"
+          },
+          "end": "2026-06-18",
+          "ending_equity": 1551347.3018210495,
+          "exit_count": 0,
+          "max_drawdown": -0.33088942547941363,
+          "observations": 594,
+          "rebalance_count": 0,
+          "sharpe": 0.5356987529675107,
+          "sortino": 0.6901016076370747,
+          "start": "2024-01-02",
+          "starting_equity": 1212103.0110184078,
+          "total_cost": 0.0,
+          "turnover": 0.0
+        }
+      },
+      "full": {
+        "annualized_volatility": 0.23520923040371755,
+        "cagr": 0.06275974234349291,
+        "calmar": 0.14788341110400055,
+        "cumulative_return": 0.5513473018210495,
+        "drawdown": {
+          "max_drawdown": -0.4243866291355456,
+          "peak_date": "2021-07-21",
+          "recovery_date": "2026-05-13",
+          "trough_date": "2025-04-08"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 1551347.3018210495,
+        "exit_count": 0,
+        "max_drawdown": -0.4243866291355456,
+        "observations": 1750,
+        "rebalance_count": 627,
+        "sharpe": 0.38723443415586495,
+        "sortino": 0.4267579218930547,
+        "start": "2019-04-01",
+        "starting_equity": 1000000.0,
+        "total_cost": 390029.02142994915,
+        "turnover": 195.81272396927068
+      },
+      "legacy_oos": {
+        "annualized_volatility": 0.27447145877211626,
+        "cagr": 0.12069206719615311,
+        "calmar": 0.3647504510646926,
+        "cumulative_return": 0.27988074257616846,
+        "drawdown": {
+          "max_drawdown": -0.3308894254794137,
+          "peak_date": "2024-05-13",
+          "recovery_date": "2026-01-22",
+          "trough_date": "2025-04-08"
+        },
+        "end": "2026-06-18",
+        "ending_equity": 1551347.3018210495,
+        "exit_count": 0,
+        "max_drawdown": -0.33088942547941363,
+        "observations": 525,
+        "rebalance_count": 0,
+        "sharpe": 0.5698580038090583,
+        "sortino": 0.7809737658946284,
+        "start": "2024-04-18",
+        "starting_equity": 1212103.0110184078,
+        "total_cost": 0.0,
+        "turnover": 0.0
+      },
+      "legacy_oos_split": "2024-04-18",
+      "regime_calls": {
+        "forced_cash_retry_calls": 0,
+        "risk_off_calls": 665,
+        "risk_on_calls": 1084
+      },
+      "regime_transition_evidence": [
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 2206.8016281,
+            "date": "2020-04-01",
+            "turnover": 0.9135854733964327
+          },
+          "risk_on": false,
+          "signal_date": "2020-03-31",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1446.0133862281798,
+            "date": "2020-05-06",
+            "turnover": 1.0000000000000002
+          },
+          "risk_on": true,
+          "signal_date": "2020-04-30",
+          "target_count": 25
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 2161.65748376,
+            "date": "2020-06-01",
+            "turnover": 0.90390793356717
+          },
+          "risk_on": false,
+          "signal_date": "2020-05-29",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1431.6320647007556,
+            "date": "2020-07-01",
+            "turnover": 0.9999999999999996
+          },
+          "risk_on": true,
+          "signal_date": "2020-06-30",
+          "target_count": 25
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 3081.1320695525,
+            "date": "2021-08-02",
+            "turnover": 0.9123442022729321
+          },
+          "risk_on": false,
+          "signal_date": "2021-07-30",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 2021.674119993564,
+            "date": "2023-02-01",
+            "turnover": 1.0000000000000002
+          },
+          "risk_on": true,
+          "signal_date": "2023-01-31",
+          "target_count": 25
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 3037.286360475,
+            "date": "2023-06-01",
+            "turnover": 0.9509277731211968
+          },
+          "risk_on": false,
+          "signal_date": "2023-05-31",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1911.8586161229325,
+            "date": "2023-08-01",
+            "turnover": 1.0
+          },
+          "risk_on": true,
+          "signal_date": "2023-07-31",
+          "target_count": 25
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 2894.327094615,
+            "date": "2023-09-01",
+            "turnover": 0.9528669747079761
+          },
+          "risk_on": false,
+          "signal_date": "2023-08-31",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1818.154516527612,
+            "date": "2024-05-06",
+            "turnover": 1.0000000000000002
+          },
+          "risk_on": true,
+          "signal_date": "2024-04-30",
+          "target_count": 25
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 2765.8638111899995,
+            "date": "2024-07-01",
+            "turnover": 0.9572169521598209
+          },
+          "risk_on": false,
+          "signal_date": "2024-06-28",
+          "target_count": 0
+        },
+        {
+          "decision_rebalanced": true,
+          "first_execution_within_7_days": {
+            "cost": 1314.451973394726,
+            "date": "2024-10-08",
+            "turnover": 0.7599999999999997
+          },
+          "risk_on": true,
+          "signal_date": "2024-09-30",
+          "target_count": 25
+        }
+      ],
+      "stress_returns": {
+        "2022": 0.0,
+        "2024_924_q4": -0.16525678204435057,
+        "2024_jan_feb": 0.0
+      },
+      "worst_rolling_returns": {
+        "1": {
+          "end": "2020-03-31",
+          "return": -0.14738630884054482
+        },
+        "12": {
+          "end": "2025-04-30",
+          "return": -0.25597478346728897
+        },
+        "3": {
+          "end": "2024-12-31",
+          "return": -0.16525678204435057
+        },
+        "6": {
+          "end": "2025-03-31",
+          "return": -0.18748369923193364
+        }
+      },
+      "yearly_returns": {
+        "2019": 0.04176675224653592,
+        "2020": 0.042285855181034115,
+        "2021": 0.16172451648090513,
+        "2022": 0.0,
+        "2023": -0.10066884739396076,
+        "2024": -0.2059401441453741,
+        "2025": 0.22200427127084454,
+        "2026": 0.3314716343752073
+      }
+    }
+  },
+  "semantic_consensus": {
+    "e1_partial": "NO_GO",
+    "e2_regime": "NO_GO"
+  }
+}
