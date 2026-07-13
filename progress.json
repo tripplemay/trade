@@ -17,7 +17,7 @@
   ],
   "docs": {
     "spec": "docs/specs/B107-prod-migrate-deploysvr-spec.md",
-    "runbook": "docs/ops/deploysvr-trade-migration-runbook.md (F002 待建)",
+    "runbook": "docs/ops/deploysvr-trade-migration-runbook.md",
     "signoff": null,
     "framework_reviewed": false
   },
@@ -31,7 +31,7 @@
   ],
   "session_notes": {
     "planner": "2026-07-12 B107 planning(生产迁移,操盘负责人)。用户 /plan 授权后同意迁移方案。★关键架构差异 vs KOL(已迁,可参考 ~/project/joyce):trade 是原生 systemd 栈(37 units+venv,非 Docker)+SQLite(文件割接极简)+单用户(高停机容忍)+域名不变(会话/OAuth 保)。★实测目标机 deploysvr:磁盘 121G 空闲充足,但内存 7.8G/可用 5.4G/无 swap 且已托 kol+aigc+invoce → OOM 风险(H4 迁前加 swap),无 python3.11(需装),无 deploy 用户(需建),无 gcloud(GCS 备份必断→F001)。★老机 34.180.93.185 SSH host key 已变(strict check 拦下探测)→P0 须带外核实指纹修 known_hosts line 33 才能拉数据。★无 workflow 改写(workbench-deploy.yml 已读 secrets.DEPLOY_HOST+硬编 DEPLOY_USER=deploy,仅更 secret 值)。【续接】status=building,Generator 接 F001(备份改道,本地纯代码可测)→F002(runbook+P0-P6 受监督割接,🔴 门禁须用户 go/no-go;P0 provisioning/P2 演练 reversible,P3 数据/P4 DNS/P6 退役 irreversible)。F003 Codex 验收。★负责人纪律:验收结论 git 核实才采信(B104/B105 幻觉教训)。",
-    "generator": null,
+    "generator": "2026-07-12 F001 done+F002 runbook done。F001:备份 gcs|local 目标分派(真代码验:local prune 保 N 最新+存活快照 sqlite quick_check ok;deploysvr 无 sqlite3=P0 gap)。F002:runbook 落地 docs/ops/deploysvr-trade-migration-runbook.md,但 execution 停在 P0 边界待用户 go。★三个阻塞/门禁需用户:(a) R3 老机 host key 变→带外核实指纹修 known_hosts(否则 P3 拉数据阻塞);(b) P0 系统变更+翻 deploy secrets 须 go;(c) P3/P4/P6 三 🔴 逐个 go/no-go。★关键实测:deploysvr 磁盘 121G 足/内存 7.8G 无 swap 已托 3 栈(P0.2 加 6G swap)/无 py3.11/无 sqlite3/无 deploy 用户/无 gcloud。端口 8723+3003 不撞 kol。无 workflow 改写(仅翻 secret 值)。【续接】用户 go 后按 runbook P0→P2→P3🔴→P4🔴→P5→P6🔴 逐阶段,每 🔴 前停;完成回填 runbook 实测记录→交 F003 Codex 验收。",
     "evaluator": null
   }
 }
