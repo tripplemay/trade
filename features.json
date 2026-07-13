@@ -6,7 +6,8 @@
    "title": "备份改道：workbench-backup.sh/restore.sh 支持本地磁盘轮转目标（无 gcloud），default gcs 向后兼容",
    "priority": "high",
    "executor": "generator",
-   "status": "pending",
+   "status": "done",
+   "completed_note": "2026-07-12 Generator. workbench-backup.sh + workbench-restore.sh 增加 WORKBENCH_BACKUP_TARGET=gcs|local 分派(default gcs 行为不变):快照/gzip/prune 逻辑目标无关复用,仅 store_put/store_list/store_rm(+restore 的 src_exists/src_fetch/candidate_path)按 target 分派;local 写 WORKBENCH_BACKUP_DIR(默认 /var/backups/workbench)/{daily,monthly},零 gcloud 调用。README 增 deploysvr/local 段;service Description 更新。★验证(真代码跑,macOS+stat 垫片):seed 4 旧快照+retain=2→backup 后精确保留 2 最新(删 3 最旧),存活真快照 gunzip→sqlite PRAGMA quick_check=ok+行数=2;非法 target 退 64。bash -n 双通过;shellcheck 仅 1 条 pre-existing SC2034(未改的重试循环计数器)。★P0 gap 发现:deploysvr 无 sqlite3 CLI(backup .backup + restore quick_check 都需)→入 runbook P0 provisioning。restore 全量 swap 路径(systemd stop/start)留 P2 deploysvr rehearse 验(改动的 source-resolution 与 backup dispatch 同构已间接验)。",
    "acceptance": "【spec §4 F001】(1) workbench-backup.sh 增加目标分派 WORKBENCH_BACKUP_TARGET=gcs|local：default gcs（老机行为字节级不变，零回归）；local 写 WORKBENCH_BACKUP_DIR(默认 /var/backups/workbench)/{daily,monthly} 轮转，无任何 gcloud 调用。快照(.backup)+gzip+保留-prune 逻辑目标无关复用。(2) workbench-restore.sh 同样目标分派：local 从本地轮转目录 daily→monthly 解析恢复。(3) README 增补 deploysvr local target 安装/smoke/restore 段。(4) 边界：无 gcloud 时 local 路径全程不触发 gcloud；bash -n 语法通过；local 路径本机(或 deploysvr rehearse)实跑一次：造临时 DB → 备份落文件 → 触发一次 prune → restore 回读校验 PRAGMA quick_check。Gates：本批不改 trade/ python 包 → 无 mypy/pytest 冲击；shell 改动 bash -n + 实跑验证。",
    "design_decisions": [
     "单脚本目标分派（非新增 workbench-backup-local.sh）：快照/gzip/prune 是共同逻辑，DRY；仅存储 put/list/rm 三原子按 target 分派。",

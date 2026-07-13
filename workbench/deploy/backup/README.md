@@ -1,8 +1,17 @@
 # Workbench backup & restore
 
-Daily SQLite snapshot of `/var/lib/workbench/db/workbench.db` →
-`gs://trade-workbench-backups-gen-lang-client-0229748590/`. 30 daily +
+Daily SQLite snapshot of `/var/lib/workbench/db/workbench.db`. 30 daily +
 12 monthly retention. Restore is a one-command script.
+
+The backup **target is pluggable** via `WORKBENCH_BACKUP_TARGET`:
+
+| Target | Destination | Where used |
+|---|---|---|
+| `gcs` (default) | `gs://$WORKBENCH_BACKUP_BUCKET/{daily,monthly}/` | GCP VM — needs apt `gcloud` + SA `devstorage.read_write` |
+| `local` | `$WORKBENCH_BACKUP_DIR/{daily,monthly}/` (default `/var/backups/workbench`) | **deploysvr** (non-GCP, no gcloud) — B107 F001 |
+
+Both share the snapshot / gzip / retention logic; only the store put/list/rm
+primitives differ. See the "deploysvr / local target" section below.
 
 This directory ships:
 
@@ -52,6 +61,43 @@ sudo -u deploy gcloud storage rm \
   gs://trade-workbench-backups-gen-lang-client-0229748590/test.txt
 # both should succeed
 ```
+
+## deploysvr / local target (B107)
+
+deploysvr (194.238.26.173) is not a GCP host and has no `gcloud`, so the
+`gcs` target's upload step cannot run there. Set the target to `local` in
+`/etc/workbench/workbench.env`:
+
+```bash
+WORKBENCH_BACKUP_TARGET=local
+WORKBENCH_BACKUP_DIR=/var/backups/workbench   # optional; this is the default
+```
+
+The `local` target has **no manual prereq** — no service-account scope, no
+`gcloud`. Ensure the backup dir is writable by `deploy`:
+
+```bash
+sudo install -d -o deploy -g deploy -m 0750 /var/backups/workbench
+```
+
+Install / smoke / restore are identical to the gcs flow below, except the
+listing/verify commands read the filesystem instead of GCS:
+
+```bash
+# smoke: run once, then list what landed
+sudo systemctl start workbench-backup.service
+ls -l /var/backups/workbench/daily/
+tail /var/log/workbench/backup.log
+
+# restore from a local snapshot
+sudo -u deploy bash /srv/workbench/current/deploy/backup/workbench-restore.sh \
+  workbench-20260712T030000Z.db.gz          # WORKBENCH_BACKUP_TARGET=local from env
+```
+
+> Off-site durability: `local` keeps backups on the same 145G disk as the
+> DB. A follow-up (rclone → R2 / off-box scp) can add off-site copies; for
+> the migration cutover, local rotation unblocks retirement of the old
+> GCS-backed path.
 
 ## Install (one-time, on the VM)
 

@@ -1,33 +1,45 @@
 #!/usr/bin/env bash
-# Restore the workbench SQLite DB from a GCS-backed snapshot.
+# Restore the workbench SQLite DB from a backup snapshot.
 #
 # Usage:
 #   sudo -u deploy bash workbench-restore.sh <backup-filename> [--force]
 #
-# The <backup-filename> argument is the bare filename in
-# gs://$WORKBENCH_BACKUP_BUCKET/daily/ or /monthly/ (the script tries
-# both). The script:
+# Target is pluggable via WORKBENCH_BACKUP_TARGET (default `gcs`), matching
+# workbench-backup.sh:
+#   gcs   — source is gs://$WORKBENCH_BACKUP_BUCKET/{daily,monthly}/.
+#   local — source is $WORKBENCH_BACKUP_DIR/{daily,monthly}/ (deploysvr;
+#           default /var/backups/workbench). NO gcloud dependency (B107 F001).
 #
-#   1. Resolves the remote path (daily first, then monthly).
-#   2. Downloads + gunzips to /tmp/wb-restore-<ts>.db.
+# The <backup-filename> argument is the bare filename (the script tries
+# daily/ first, then monthly/). The script:
+#
+#   1. Resolves the path (daily first, then monthly).
+#   2. Downloads/copies + gunzips to /tmp/wb-restore-<ts>.db.
 #   3. Stops workbench-backend.service.
-#   4. Moves the live workbench.db aside (.bak suffix with a timestamp).
+#   4. Moves the live workbench.db aside (.pre-restore suffix with a timestamp).
 #   5. Moves the restored file into place.
 #   6. Starts workbench-backend.service.
 #   7. Polls /api/health for db_connectivity=ok before exiting 0.
 #
 # `--force` skips the interactive confirmation. Operators running this
-# from a runbook (Codex F006 L2 acceptance, post-incident recovery) pass
-# the flag; humans testing in a shell should not.
+# from a runbook (Codex L2 acceptance, post-incident recovery) pass the
+# flag; humans testing in a shell should not.
 #
 # Bash 3.2 compatible.
 
 set -euo pipefail
 
+TARGET="${WORKBENCH_BACKUP_TARGET:-gcs}"
 DB_PATH="${WORKBENCH_DB_PATH:-/var/lib/workbench/db/workbench.db}"
 BUCKET="${WORKBENCH_BACKUP_BUCKET:-trade-workbench-backups-gen-lang-client-0229748590}"
+LOCAL_DIR="${WORKBENCH_BACKUP_DIR:-/var/backups/workbench}"
 LOG_FILE="${WORKBENCH_BACKUP_LOG:-/var/log/workbench/backup.log}"
 HEALTH_URL="${WORKBENCH_HEALTHCHECK_URL:-https://trade.guangai.ai/api/health}"
+
+case "${TARGET}" in
+  gcs|local) ;;
+  *) echo "error: WORKBENCH_BACKUP_TARGET must be 'gcs' or 'local', got '${TARGET}'" >&2; exit 64 ;;
+esac
 
 FORCE=0
 BACKUP_FILE=""
@@ -62,21 +74,51 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# --- Target-agnostic source resolution + fetch. `src_exists` / `src_fetch`
+# take a full identifier (gs:// URL for gcs, filesystem path for local). ---
+
+src_exists() {
+  local candidate="$1"
+  case "${TARGET}" in
+    gcs)   gcloud storage ls "${candidate}" >/dev/null 2>&1 ;;
+    local) [[ -f "${candidate}" ]] ;;
+  esac
+}
+
+src_fetch() {  # <identifier> <dest_gz>
+  local candidate="$1" dest="$2"
+  case "${TARGET}" in
+    gcs)   gcloud storage cp "${candidate}" "${dest}" >/dev/null ;;
+    local) cp "${candidate}" "${dest}" ;;
+  esac
+}
+
+candidate_path() {  # <prefix>
+  case "${TARGET}" in
+    gcs)   echo "gs://${BUCKET}/$1/${BACKUP_FILE}" ;;
+    local) echo "${LOCAL_DIR}/$1/${BACKUP_FILE}" ;;
+  esac
+}
+
 REMOTE=""
 for prefix in daily monthly; do
-  candidate="gs://${BUCKET}/${prefix}/${BACKUP_FILE}"
-  if gcloud storage ls "${candidate}" >/dev/null 2>&1; then
+  candidate="$(candidate_path "${prefix}")"
+  if src_exists "${candidate}"; then
     REMOTE="${candidate}"
     break
   fi
 done
 
 if [[ -z "${REMOTE}" ]]; then
-  echo "error: ${BACKUP_FILE} not found in gs://${BUCKET}/daily/ or /monthly/" >&2
+  if [[ "${TARGET}" == "gcs" ]]; then
+    echo "error: ${BACKUP_FILE} not found in gs://${BUCKET}/daily/ or /monthly/" >&2
+  else
+    echo "error: ${BACKUP_FILE} not found in ${LOCAL_DIR}/daily/ or /monthly/" >&2
+  fi
   exit 65
 fi
 
-log "RESTORE source=${REMOTE} → ${DB_PATH}"
+log "RESTORE target=${TARGET} source=${REMOTE} → ${DB_PATH}"
 
 if (( FORCE != 1 )); then
   echo -n "About to overwrite ${DB_PATH} from ${REMOTE}. Continue? [y/N] " >&2
@@ -87,7 +129,7 @@ if (( FORCE != 1 )); then
   esac
 fi
 
-gcloud storage cp "${REMOTE}" "${STAGE_GZ}" >/dev/null
+src_fetch "${REMOTE}" "${STAGE_GZ}"
 gunzip "${STAGE_GZ}"
 
 # Sanity check: the restored file must be a real SQLite database before we

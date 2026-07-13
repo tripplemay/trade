@@ -1,9 +1,9 @@
 {
   "status": "building",
   "total_features": 3,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "F001",
+  "current_sprint": "F002",
   "last_updated": "2026-07-12",
   "user_goal": "B107 生产环境迁移:trade 从退役中 GCP VM(34.180.93.185)迁至 deploysvr(194.238.26.173)。trade 是老 VM 最后活租户(aigc+kol 已迁),迁完老 VM 整机退役。原生 systemd 栈照搬(不容器化,最低风险):backend 8723+frontend 3003+~19 timer+backtest-worker+SQLite DB+data 快照+备份。不变量:域名 trade.guangai.ai 不变(OAuth 回调不改)+NEXTAUTH_SECRET 复用同值(会话保)+单用户高停机容忍。3 features 2g+1c:F001 备份改道(GCS→本地轮转,无 gcloud)/F002 provisioning+runbook+P0-P6 受监督割接(🔴3 门禁 go/no-go)/F003 Codex 验收。spec docs/specs/B107-prod-migrate-deploysvr-spec.md。对标 KOL 已完成迁移(~/project/joyce)+本仓 B021 建机手册。",
   "reference_docs": [
