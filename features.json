@@ -1,42 +1,43 @@
 {
- "sprint": "B106-portfolio-layer-uplift",
+ "sprint": "B107-prod-migrate-deploysvr",
  "features": [
   {
    "id": "F001",
-   "title": "Master 组合层扩展:红利低波防守腿 sleeve + 权重方案参数化(fixed/风险平价/HRP)",
+   "title": "备份改道：workbench-backup.sh/restore.sh 支持本地磁盘轮转目标（无 gcloud），default gcs 向后兼容",
    "priority": "high",
    "executor": "generator",
-   "status": "done",
-   "acceptance": "【spec §2 F001】(1) cn_dividend_lowvol 作防守腿并入 Master sleeve(role=defensive_sleeve)组杠铃(进攻动量+防守红利低波),保权重和=1。(2) sleeve 层权重参数化:fixed(现状40/30/20/10 默认)/risk_parity(risk_parity_vol_target 波动率反比)/hrp(risk_parity_hrp)。(3) ★默认 fixed+现4 sleeve 与生产 Master byte-identical(零回归守门单测,master_portfolio paper 不破);新防守腿+新权重方案 opt-in 对照。正面证据:配置扩展+3 权重方案+默认零回归+各方案权重和=1。Gates(触 trade/ 全套): .venv/bin/mypy trade + 根 python -m ruff check . + root pytest 全量 + cd workbench/backend && .venv/bin/python -m pip install ../.. 重装 trade + backend pytest；CI 三条全绿。",
+   "status": "pending",
+   "acceptance": "【spec §4 F001】(1) workbench-backup.sh 增加目标分派 WORKBENCH_BACKUP_TARGET=gcs|local：default gcs（老机行为字节级不变，零回归）；local 写 WORKBENCH_BACKUP_DIR(默认 /var/backups/workbench)/{daily,monthly} 轮转，无任何 gcloud 调用。快照(.backup)+gzip+保留-prune 逻辑目标无关复用。(2) workbench-restore.sh 同样目标分派：local 从本地轮转目录 daily→monthly 解析恢复。(3) README 增补 deploysvr local target 安装/smoke/restore 段。(4) 边界：无 gcloud 时 local 路径全程不触发 gcloud；bash -n 语法通过；local 路径本机(或 deploysvr rehearse)实跑一次：造临时 DB → 备份落文件 → 触发一次 prune → restore 回读校验 PRAGMA quick_check。Gates：本批不改 trade/ python 包 → 无 mypy/pytest 冲击；shell 改动 bash -n + 实跑验证。",
    "design_decisions": [
-    "红利低波与动量负相关+削回撤,并入组杠铃是组合 Sharpe 最直接提升来源(uplift review §1)。",
-    "权重方案复用已有 risk_parity_vol_target/risk_parity_hrp 基建,不新造。",
-    "向后兼容铁律:默认配置生产字节级不破,新配置 opt-in——verdict GO 才改默认(B069/B076 先例)。"
+    "单脚本目标分派（非新增 workbench-backup-local.sh）：快照/gzip/prune 是共同逻辑，DRY；仅存储 put/list/rm 三原子按 target 分派。",
+    "default gcs 向后兼容：老机退役前仍在跑 GCS 备份，不得因本改动断掉；deploysvr 用 env 选 local。",
+    "本地轮转目录列表须 sort -r 按 ISO 时间戳文件名可排序（与 gcs 前缀等长约定一致），prune 逻辑两 target 复用。"
    ]
   },
   {
    "id": "F002",
-   "title": "组合回测对照(5 方案)+ verdict——Sharpe/回撤/复利提升量化",
+   "title": "deploysvr 原生栈 provisioning + 迁移 runbook + P0-P6 受监督割接实操（🔴 3 不可逆门禁 go/no-go）",
    "priority": "high",
    "executor": "generator",
-   "status": "done",
-   "acceptance": "【spec §2 F002】runner scripts/research/b106_portfolio_uplift_ab.py:去偏数据+真成本跑 5 方案对照(①现状基线②+防守腿fixed③+防守腿risk_parity④+防守腿hrp⑤+防守腿voltarget),产组合 NAV/Sharpe/CAGR/MaxDD/复利对照表落 docs/test-reports/B106-portfolio-uplift-ab.md。★重点:各方案 vs 基线 Sharpe/MaxDD 提升+红利低波与动量相关性(证分散)+2022/2024-02 回撤窗口杠铃缓冲+回撤复利量化。verdict-gating:显著优→建议改默认/都不优→诚实保持现状。基线与现状复现一致;登记 trial_registry。诚实标注跨市场币种/口径对齐(红利低波 A股 vs Master 美股/港股)。Gates(触 trade/ 全套): .venv/bin/mypy trade + 根 python -m ruff check . + root pytest 全量 + cd workbench/backend && .venv/bin/python -m pip install ../.. 重装 trade + backend pytest；CI 三条全绿。",
+   "status": "pending",
+   "acceptance": "【spec §4 F002 / §5】(1) 新增 docs/ops/deploysvr-trade-migration-runbook.md：P0 准备(核实老机 host key 指纹→修 known_hosts；deploysvr 加 4-8G swap；装 python3.11+build-essential；建 deploy 用户+/srv/workbench+/opt/workbench/.venv+/var/lib/workbench/{db,data}+/var/log/workbench；建 venv 预装 akshare/baostock rehearse；装 sudoers drop-in+workbench-install-unit wrapper；bootstrap-env workflow 落 /etc/workbench/workbench.env NEXTAUTH_SECRET 同值) / P2 起新栈(rsync release+deploy.sh→装 wheel+alembic+起 backend/frontend+timers；灌老库快照+data 演练；loopback 冒烟 /api/health+登录+recommendations+backtest) / P3🔴 数据终态割接(停老机 backend+全 timer+worker→sqlite .backup 一致快照+data→老机落文件 scp 老→新直传 H5→新机 alembic no-op+起栈→表行数 parity) / P4🔴 边缘割接(certbot DNS-01 预签 trade.guangai.ai→装 nginx vhost→Cloudflare A 34.180.93.185→194.238.26.173 TTL60→gh secret set DEPLOY_HOST/DEPLOY_SSH_KNOWN_HOSTS/DEPLOY_SSH_PRIVATE_KEY 指新机+deploy 公钥授权→手动 dispatch Deploy workflow 验 push-to-deploy；装 F001 local 备份 timer) / P5 观察+回滚就绪 / P6🔴 老 VM 整机退役. (2) 按 runbook 执行 P0-P5 受监督实操. (3) H2 三门禁执行前取用户显式 go/no-go. (4) H1 secrets 禁入仓. (5) H5 大文件直传勿经本机. (6) 割接完成回写 runbook 实测 live state/parity/rollback controls.",
    "design_decisions": [
-    "★跨市场组合口径:红利低波 A股(CNY)与 Master 美股/港股(USD)——回测须诚实处理币种/口径对齐(USD 统一或分市场 sub-portfolio),不能混算误导。",
-    "verdict-gating:提升是风险调整后(Sharpe/回撤)非绝对 alpha,不为'用上红利低波'硬改默认。",
-    "回撤复利价值量化=uplift review 核心(−40%只需+67%回本 vs −66%需+194%)。"
+    "保持原生 systemd 照搬（不容器化）：迁移期不重构=最低风险；deploysvr 首个非容器应用，与 docker 栈共存(端口/nginx server_name 隔离)。",
+    "新建 deploy 用户（非改用 root）：37 unit + sudoers + workflow 全 User=deploy，建同名用户改动最小、零代码改。",
+    "无 workflow 改写：workbench-deploy.yml 已读 secrets.DEPLOY_HOST + 硬编 DEPLOY_USER=deploy → 仅更 secret 值即可重指新机。",
+    "H5 KOL 教训：终态 DB/data 直传老→新，勿经本机 Mac（KOL 慢 28min 根因）。"
    ]
   },
   {
    "id": "F003",
-   "title": "Codex:独立验收(回测对照复算/提升真实性/相关性/默认零回归/verdict)+signoff",
+   "title": "Codex：独立验收 — 公网冒烟 + DB parity + push-to-deploy 打通 + 回滚就绪 + signoff",
    "priority": "high",
    "executor": "codex",
-   "status": "done",
-   "acceptance": "【spec §2 F003】L1 全门禁+新单测抽查(默认向后兼容 byte-identical 断言重点)。L2/研究:回测对照数字独立复算(抽 2 方案重跑)、组合 Sharpe/回撤提升真实性(非样本内乐观)、红利低波与动量相关性真实、回撤复利算术、verdict 与数字一致、★现有 Master 4-sleeve 默认零回归(master_portfolio 生产 paper 不破)、跨市场口径对齐诚实性、HEAD≡prod。边界:research-only/no-broker/不碰真金;signoff 逐条证据。",
+   "status": "pending",
+   "acceptance": "【spec §6】前置 F001+F002 完成、新栈已割接。(1) 公网 https://trade.guangai.ai/api/health 200+db_connectivity:ok+证书有效；根重定向+/api/* 401 活面双证(对标 B097)。(2) prod 账号登录会话正常(验 NEXTAUTH_SECRET 同值+OAuth 域不变)。(3) DB 关键表行数与老机冻结态逐表一致(零丢失)+alembic at head。(4) ≥1 次 recommendations precompute + 1 次 backtest 新机跑通(验 venv trade wheel+akshare/baostock+timer/worker)。(5) push-to-deploy 打通(手动 dispatch 或一次 main push→自动链式部署新机健康检查全绿)。(6) 回滚路径成立(Cloudflare A 可回 34.180.93.185+旧 secret+老机可拉起)，不真正回滚。(7) 边界 research-only/no-broker 不破。输出 docs/test-reports/B107-prod-migrate-deploysvr-signoff-YYYY-MM-DD.md 逐条命令/日志证据+PASS/FAIL。",
    "design_decisions": [
-    "验收主体:独立无实现上下文 agent 代 Codex(B079-B105 先例,用户全权授权下仍守铁律 4 独立性)。",
-    "★负责人自查:B104/B105 曾被幻觉 evaluator 消息误导→本批验收结论必须 git 核实(signoff 真落盘+status 真变+commit 真推)才采信。"
+    "验收主体：独立无实现上下文 agent 代 Codex（B079-B106 先例）。",
+    "★负责人纪律：验收结论 git 核实才采信（B104/B105 幻觉消息教训）——signoff 真落盘+status 真变+commit 真推。"
    ]
   }
  ]
