@@ -7,13 +7,15 @@ type: project
 ## 当前状态
 - **B107 生产迁移 🔨 building（2026-07-12, 2g+1c）** trade 从退役中 GCP VM（`34.180.93.185`）迁至 **deploysvr（`194.238.26.173`）**。trade 是老 VM 最后活租户（aigc+kol 已迁）→ 迁完老 VM 整机退役。原生 systemd 栈照搬（不容器化）；域名 `trade.guangai.ai` 不变（OAuth/会话保）；单用户高停机容忍。spec `docs/specs/B107-prod-migrate-deploysvr-spec.md`；runbook `docs/ops/deploysvr-trade-migration-runbook.md`。
 - **F001 ✅ done**：备份改道 `WORKBENCH_BACKUP_TARGET=gcs|local`（default gcs 不变；local=`/var/backups/workbench` 轮转，无 gcloud）。真代码验：local prune 保 N 最新+存活快照 sqlite quick_check ok。
-- **F002 🔨 runbook 已落地，execution 停在 P0 边界待用户 go**：P0 provisioning + P2 演练 + P3🔴 数据 + P4🔴 DNS + P5 观察 + P6🔴 退役。
-- **★实测 deploysvr**：磁盘 121G 足；内存 7.8G 无 swap 已托 kol/aigc/invoce（P0.2 加 6G swap 兜 OOM）；无 py3.11/sqlite3/deploy 用户/gcloud。端口 8723+3003 不撞 kol。无 workflow 改写（仅翻 DEPLOY_HOST 等 secret 值）。
-- **B106/B105/B104/B103/B102–B074 ✅**。活生产 API=`trade.guangai.ai`（当前仍老机服务）。
+- **F002 ✅ 割接完成（2026-07-13 ~07:26Z，用户「直接割接」go，P5 观察期中）**：P0 provisioning（swap/py3.11/node20/sqlite3/deploy 用户+目录+venv/sudoers/37 单元/env/CD secrets）→ P3 数据终态割接（**parity 18 表 DIFFS=0**）→ P4 DNS 切（Cloudflare A→194.238.26.173，proxied=false TTL60）→ F001 本地备份 smoke 过。runbook 实测已回填。
+- **★活生产已切 deploysvr**：`https://trade.guangai.ai` 命中 `194.238.26.173`（db-ok+活面双证+证书 CN 对）；老机 `34.180.93.185` 全栈**冻结作回滚点**（DB 未写=零丢失）。
+- **★关键坑（本机专属）**：本机 Mac 在 Clash fake-ip 代理后，连老机 `34.180.93.185` 会被路由到**错的机器**（host key mHOXFC≠真机 a6Hui）→ 一律 `ssh deploysvr` 再跳 `tripplezhou@34.180.93.185`（key `/root/.ssh/oldvm_migrate`）。data/DB 直传全走 deploysvr cloud-to-cloud（H5）。
+- **B106/B105/B104/B103/B102–B074 ✅**。
 
 ## 接续 / 待决策
-- **★F002 三阻塞/门禁需用户**：(a) **R3 老机 SSH host key 已变** → 带外核实指纹后修 `~/.ssh/known_hosts` line 33（否则 P3 拉数据阻塞）；(b) P0 系统变更+翻 deploy secrets 须 go；(c) P3 数据/P4 DNS/P6 退役三 🔴 逐个 go/no-go。用户 go 后按 runbook 逐阶段执行，每 🔴 前停 → 完成回填 runbook 实测 → 交 F003 Codex 验收。
-- **回滚值已记**：老 `DEPLOY_HOST=34.180.93.185`；Cloudflare A `34.180.93.185`。
+- **★F002 收尾**：push-to-deploy 验证（DNS 切后 CI deploy 应真绿）→ 交 F003 Codex 验收（公网冒烟/parity/回滚就绪/signoff）。
+- **★P6 🔴 老 VM 退役**：观察期后用户明确验收才做（老机仅 workbench 冻结，aigc+kol 早迁 → 拼图齐，可整机退役）。
+- **回滚值已记**：老 `DEPLOY_HOST=34.180.93.185`；Cloudflare `trade.guangai.ai` A 旧值 `34.180.93.185`（record `a910644a…`）；老机全栈可 `systemctl start` 拉起。
 - backlog 剩（迁移后再议）：A股聪明钱 ¥200 + residual-engine（B100 INCONCLUSIVE）+ B106-S3（4-sleeve risk_parity 无防守腿隔离测）。34+ learnings 待用户确认。★key 曾对话明文暴露→建议轮换。
 - **★负责人纪律**：验收结论 git 核实才采信（B104/B105 幻觉消息教训）。
 
