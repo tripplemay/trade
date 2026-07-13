@@ -110,9 +110,17 @@ ssh deploysvr '
 ```
 > ⚠️ DEPLOY_HOST 指向新机后，**迁移窗口内不要向 main 推产品码**（否则绿 CI 会把新机当部署目标）；仅推 paths-ignored 状态/文档文件（不触发 CI）。回滚值 `DEPLOY_HOST=34.180.93.185` 已记。
 
+### P0.7 装 backend/frontend systemd 单元（★实操发现：deploy.sh 不装）
+**deploy.sh 假设 backend/frontend `.service` 已由 B021 预装**——首次部署到全新机会在 `systemctl restart workbench-backend.service` 报 `Unit not found` 而 exit 5（deploy.sh 前段 wheel/alembic/price-prime 全成功）。首次 CI deploy 会把 release scp 到 `/srv/workbench/releases/<sha>/`，据此 root 装全部单元：
+```bash
+ssh deploysvr 'SYSD=/srv/workbench/current/systemd; for u in "$SYSD"/workbench-*.service "$SYSD"/workbench-*.timer; do install -m644 -o root -g root "$u" /etc/systemd/system/; done; systemctl daemon-reload; systemctl enable --now workbench-backend workbench-frontend workbench-backtest-worker; for t in "$SYSD"/workbench-*.timer; do systemctl enable --now "$(basename "$t")"; done'
+```
+
 ---
 
 ## P2 — 起新栈 + 演练（可逆，老机仍主服务，DNS 未切）
+
+> ⚠️ **DNS 切换前 CI deploy 注定红**：workflow 的 healthcheck/synthetic 探 public `trade.guangai.ai`，DNS 仍指老机 → synthetic check(3)「HEAD≡prod SHA」必不匹配 FAIL → 触发 rollback（首次无 prior release，no-op exit 66）→ workflow 红，**但 deploysvr 栈实际已起来**。P2 一律用 **loopback**（`curl 127.0.0.1:8723/api/health`）验收，不看 CI 红绿；P4 DNS 切后 CI deploy 才真绿。
 
 ### P2.1 首次部署到新机
 ```bash
