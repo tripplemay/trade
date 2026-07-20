@@ -36,12 +36,13 @@
    "title": "Codex：独立验收 — 公网冒烟 + DB parity + push-to-deploy 打通 + 回滚就绪 + signoff",
    "priority": "high",
    "executor": "codex",
-   "status": "pending",
+   "status": "waived",
    "acceptance": "【spec §6】前置 F001+F002 完成、新栈已割接。(1) 公网 https://trade.guangai.ai/api/health 200+db_connectivity:ok+证书有效；根重定向+/api/* 401 活面双证(对标 B097)。(2) prod 账号登录会话正常(验 NEXTAUTH_SECRET 同值+OAuth 域不变)。(3) DB 关键表行数与老机冻结态逐表一致(零丢失)+alembic at head。(4) ≥1 次 recommendations precompute + 1 次 backtest 新机跑通(验 venv trade wheel+akshare/baostock+timer/worker)。(5) push-to-deploy 打通(手动 dispatch 或一次 main push→自动链式部署新机健康检查全绿)。(6) 回滚路径成立(Cloudflare A 可回 34.180.93.185+旧 secret+老机可拉起)，不真正回滚。(7) 边界 research-only/no-broker 不破。输出 docs/test-reports/B107-prod-migrate-deploysvr-signoff-YYYY-MM-DD.md 逐条命令/日志证据+PASS/FAIL。",
    "design_decisions": [
     "验收主体：独立无实现上下文 agent 代 Codex（B079-B106 先例）。",
     "★负责人纪律：验收结论 git 核实才采信（B104/B105 幻觉消息教训）——signoff 真落盘+status 真变+commit 真推。"
-   ]
+   ],
+   "waived_note": "2026-07-20 用户手工裁定跳过 Codex 独立验收，B107 直接置 done。无 signoff 报告。★置 done 前 CLI 做了 live 核查（非独立验收，仅现场取证）：(1)✅ 公网 https://trade.guangai.ai/api/health = status:ok / db_connectivity:ok / uptime 605940s(~7d，对上 07-13 割接) / version=f9c56be。(3)✅ parity 已由 F002 记录 18 表 DIFFS=0（本次未复验）。(4)✅ 新机真跑通（本条 F003 最实质项，实测满足）：07-20 定时任务成功——cn_attack_quality_momentum saved=25 / cn_attack_pure_momentum saved=25 / cn_dividend_lowvol saved=1 / canonical-backtest Finished(耗 2min7s CPU)；backend+frontend+backtest-worker 三单元 active。(5)✅ push-to-deploy 已由 F002 记录真绿(run 29232395870)。(6)✅ 回滚控件在（老机冻结+Cloudflare 旧值 record a910644a+旧 DEPLOY_HOST 已记）。★未验证项：(2) prod 账号登录会话（需人工浏览器，未做）。★遗留发现1：workbench-advisor.service failed（402 Payment Required from aigc.guangai.ai）——非迁移缺陷，老机同样会失败；且 AIGC 账户余额 $22.34 非零、同日 07:52 其他 client 调用正常 → 是 trade 这把 key/project 的配额或权限问题，修在 aigc 侧不在 trade。★遗留发现2：Production(f9c56be) ≢ HEAD(c69da4c)，落后 4 个 docs/chore commit（paths-ignore 不触发 CI→不触发链式部署，harness §12.7 已知兜底路径）。"
   }
  ]
 }
