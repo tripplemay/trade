@@ -149,6 +149,40 @@ def test_every_dropped_row_lands_on_a_structured_reason() -> None:
     assert sum(funnel["drop_reasons"].values()) == funnel["panel_rows"] - funnel["usable"]
 
 
+def test_usable_rows_disclose_how_stale_their_backing_report_is() -> None:
+    """★可用率会把「有数」与「数够新」混为一谈。
+
+    2014 年实测：可用率 91% 看着健康，但 resolver 拿不到最新一期时会回退到更早期次
+    （as-of 语义正确），于是一行「可用」背后可能是一年前的报表。
+    """
+    rows = [
+        PanelRow("A", "20231231", "20230930", _fact(), _cap()),  # 92 天
+        PanelRow("B", "20231231", "20221231", _fact(), _cap()),  # 365 天
+        PanelRow("C", "20231231", "20220930", _fact(), _cap()),  # 457 天
+    ]
+    lag = build_funnel(rows, universe_size=3)["report_lag"]
+
+    assert lag["n"] == 3
+    assert lag["median_days"] == 365
+    assert lag["max_days"] == 457
+    assert lag["lag_le_180d"] == 1 / 3
+    assert lag["lag_le_450d"] == 2 / 3  # C 连年报都换代了
+
+
+def test_staleness_ignores_unusable_rows() -> None:
+    rows = [
+        PanelRow("A", "20231231", "20230930", _fact(), _cap()),
+        PanelRow("B", "20231231", "20200331", _fact(FactStatus.FACT_MISSING), _cap()),
+    ]
+    assert build_funnel(rows, universe_size=2)["report_lag"]["n"] == 1
+
+
+def test_row_without_an_end_date_has_no_lag_rather_than_a_bogus_zero() -> None:
+    row = PanelRow("A", "20231231", "", _fact(), _cap())
+    assert row.report_lag_days is None
+    assert build_funnel([row], universe_size=1)["report_lag"] == {"n": 0}
+
+
 def test_ambiguous_count_is_reported_separately_from_generic_drops() -> None:
     """fail-closed 的代价必须单独可见——它不是「缺数据」，是「有数据但分不清版本」。"""
     rows = [_row("A", fact=_fact(FactStatus.FACT_VERSION_AMBIGUOUS), cap=_cap())]
@@ -201,35 +235,66 @@ def test_all_four_mandatory_disclosures_are_present() -> None:
     assert disclosures["fact_version_ambiguous_count"] == 4
     # (2) 逐期 flag=0 保留率（且按期排序，便于逐期读）
     assert list(disclosures["flag0_retention_by_period"]) == ["20211231", "20231231"]
-    # (3) 修订率——★区间已撤回（见下条测试），但话必须说清楚而不是留空
-    assert "撤回" in disclosures["revision_rate_note"]
+    # (3) 修订率是区间不是点估计，且注明取自可信窗口
+    assert len(disclosures["revision_rate_bounds"]) == 2
+    assert "可信窗口" in disclosures["revision_rate_note"]
     # (4) FY 分量单独标风险
     assert "FY 分量" in disclosures["fy_component_risk_note"]
-    # 外推警告随附——2013-2020 是未测的洞
-    assert "不可外推" in disclosures["extrapolation_warning"]
+    # 外推警告随附——2013-2017 的率不可信
+    assert "不可信" in disclosures["extrapolation_warning"]
 
 
-def test_withdrawn_revision_rate_is_none_not_a_stale_number() -> None:
-    """★★回归：F001 的区间来自被静默截断的单次调用，分页重测后 2021FY 修订率
-    从 0.525% 跳到 1.325%（2.5 倍）。
+def test_revision_bounds_come_only_from_the_trusted_measurement_window() -> None:
+    """★★回归：区间必须取自 2018-2021（多版本 65%-91%，检出接近完全）。
 
-    留一个已知偏低的数比留空更糟——下游会把它当作已验证的事实引用。
-    修复前这里是硬编码的 (0.0047, 0.0088)。
+    修复前这里是 (0.0047, 0.0088)——来自被静默截断的单次调用。
+    若有人把 2013-2017 的低值并进区间，下界会被拉到 0.071%，
+    而那个低值是**测不出来**，不是**风险低**。
     """
     disclosures = mandatory_disclosures(
         fact_version_ambiguous=0, flag0_retention_by_period={}
     )
-    assert REVISION_RATE_BOUNDS is None
-    assert disclosures["revision_rate_bounds"] is None
-    assert disclosures["revision_rate_by_report_type"] is None
+    low, high = disclosures["revision_rate_bounds"]
+    assert [low, high] == list(REVISION_RATE_BOUNDS)
+    assert low < high
 
-    # 只列实际分页重测过的期次，不外推补全
-    remeasured = disclosures["revision_rate_remeasured_paged"]
-    assert remeasured["20211231"] == 0.01325
-    assert all(0.0 <= rate <= 1.0 for rate in remeasured.values())
+    trusted = disclosures["trusted_measurement_years"]
+    fy = disclosures["revision_rate_fy_by_year"]
+    assert low == min(fy[year] for year in trusted)
+    assert high == max(fy[year] for year in trusted)
+    # 不可信年份确实更低——正是不得并入区间的原因
+    assert fy["2013"] < low
 
-    # 元缺陷本身必须随每份报告出现——它比任何单个数字都重要
-    defect = disclosures["upstream_fetch_defect"]
+
+def test_untrusted_years_are_flagged_by_version_multiplicity_not_hidden() -> None:
+    """低多版本占比是「率不可信」的前置判据，必须与率并排出现。"""
+    disclosures = mandatory_disclosures(
+        fact_version_ambiguous=0, flag0_retention_by_period={}
+    )
+    multiplicity = disclosures["version_multiplicity_fy"]
+    for year in disclosures["trusted_measurement_years"]:
+        assert multiplicity[year] >= 0.6
+    for year in ("2013", "2015", "2017"):
+        assert multiplicity[year] < 0.2
+    assert "不可观测" in disclosures["version_multiplicity_note"]
+
+
+def test_refuted_hypotheses_are_recorded_not_quietly_dropped() -> None:
+    """★实测推翻的担忧要留档——否则下一个人会重新担心一遍并重新花钱测。"""
+    disclosures = mandatory_disclosures(
+        fact_version_ambiguous=0, flag0_retention_by_period={}
+    )
+    warning = disclosures["extrapolation_warning"]
+    assert "已推翻" in warning
+    assert "NOT_YET_PUBLISHED=0" in warning  # 覆盖洞假设被推翻
+    assert "91 天" in warning  # 陈旧假设被推翻
+
+
+def test_upstream_fetch_defect_travels_with_every_report() -> None:
+    """元缺陷比任何单个数字都重要——它决定所有数字能不能信。"""
+    defect = mandatory_disclosures(
+        fact_version_ambiguous=0, flag0_retention_by_period={}
+    )["upstream_fetch_defect"]
     assert "静默截断" in defect and "非均匀" in defect
 
 

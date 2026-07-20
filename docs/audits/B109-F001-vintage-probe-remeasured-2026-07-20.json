@@ -1,0 +1,1004 @@
+{
+  "by_report_type": [
+    {
+      "rate": 0.0074662204823841396,
+      "report_type": "FY",
+      "revised": 473,
+      "stocks": 63352
+    },
+    {
+      "rate": 0.0018121357046779255,
+      "report_type": "H1",
+      "revised": 97,
+      "stocks": 53528
+    },
+    {
+      "rate": 0.0007274931797514398,
+      "report_type": "Q1",
+      "revised": 36,
+      "stocks": 49485
+    },
+    {
+      "rate": 0.0008885027741031058,
+      "report_type": "Q3",
+      "revised": 45,
+      "stocks": 50647
+    }
+  ],
+  "fetch_audit": [
+    {
+      "failures": [],
+      "pages": 1,
+      "period": "20130331",
+      "rows": 2627,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 1,
+      "period": "20130630",
+      "rows": 2747,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 1,
+      "period": "20130930",
+      "rows": 2692,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 1,
+      "period": "20131231",
+      "rows": 4536,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 1,
+      "period": "20140331",
+      "rows": 2841,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 1,
+      "period": "20140630",
+      "rows": 3203,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 1,
+      "period": "20140930",
+      "rows": 2941,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 1,
+      "period": "20141231",
+      "rows": 4818,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 1,
+      "period": "20150331",
+      "rows": 3047,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 1,
+      "period": "20150630",
+      "rows": 3521,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 1,
+      "period": "20150930",
+      "rows": 3167,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 1,
+      "period": "20151231",
+      "rows": 4957,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 1,
+      "period": "20160331",
+      "rows": 3401,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 1,
+      "period": "20160630",
+      "rows": 4277,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 1,
+      "period": "20160930",
+      "rows": 3581,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20161231",
+      "rows": 5429,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 1,
+      "period": "20170331",
+      "rows": 3824,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 1,
+      "period": "20170630",
+      "rows": 4338,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 1,
+      "period": "20170930",
+      "rows": 3806,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20171231",
+      "rows": 5764,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 1,
+      "period": "20180331",
+      "rows": 4070,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20180630",
+      "rows": 5251,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20180930",
+      "rows": 7319,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20181231",
+      "rows": 8645,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 1,
+      "period": "20190331",
+      "rows": 4319,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20190630",
+      "rows": 6521,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20190930",
+      "rows": 7265,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 3,
+      "period": "20191231",
+      "rows": 10580,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20200331",
+      "rows": 8070,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20200630",
+      "rows": 9993,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20200930",
+      "rows": 9325,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 3,
+      "period": "20201231",
+      "rows": 10734,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20210331",
+      "rows": 5592,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20210630",
+      "rows": 5162,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20210930",
+      "rows": 7867,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 3,
+      "period": "20211231",
+      "rows": 10740,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20220331",
+      "rows": 8664,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20220630",
+      "rows": 5426,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20220930",
+      "rows": 5842,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 3,
+      "period": "20221231",
+      "rows": 10093,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20230331",
+      "rows": 5984,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20230630",
+      "rows": 8558,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20230930",
+      "rows": 6954,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20231231",
+      "rows": 6728,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20240331",
+      "rows": 6491,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20240630",
+      "rows": 6020,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20240930",
+      "rows": 6182,
+      "truncation_suspected": false
+    },
+    {
+      "failures": [],
+      "pages": 2,
+      "period": "20241231",
+      "rows": 6649,
+      "truncation_suspected": false
+    }
+  ],
+  "multi_page_periods": 28,
+  "observed_revision_rate_lower_bound": 0.0029998341105560984,
+  "per_period": [
+    {
+      "detected_by_flag_pair": 0,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9919847328244275,
+      "observed_revision_rate": 0.0,
+      "period": "20130331",
+      "rate_within_flag0_group": 0.0,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "Q1",
+      "revised": 0,
+      "stocks": 2620
+    },
+    {
+      "detected_by_flag_pair": 0,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9963045084996305,
+      "observed_revision_rate": 0.0,
+      "period": "20130630",
+      "rate_within_flag0_group": 0.0,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "H1",
+      "revised": 0,
+      "stocks": 2706
+    },
+    {
+      "detected_by_flag_pair": 0,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9921933085501858,
+      "observed_revision_rate": 0.0,
+      "period": "20130930",
+      "rate_within_flag0_group": 0.0,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "Q3",
+      "revised": 0,
+      "stocks": 2690
+    },
+    {
+      "detected_by_flag_pair": 3,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9587482219061166,
+      "observed_revision_rate": 0.0007112375533428165,
+      "period": "20131231",
+      "rate_within_flag0_group": 0.000741839762611276,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "FY",
+      "revised": 3,
+      "stocks": 4218
+    },
+    {
+      "detected_by_flag_pair": 0,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9901338971106413,
+      "observed_revision_rate": 0.0,
+      "period": "20140331",
+      "rate_within_flag0_group": 0.0,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "Q1",
+      "revised": 0,
+      "stocks": 2838
+    },
+    {
+      "detected_by_flag_pair": 0,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9939297124600639,
+      "observed_revision_rate": 0.0,
+      "period": "20140630",
+      "rate_within_flag0_group": 0.0,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "H1",
+      "revised": 0,
+      "stocks": 3130
+    },
+    {
+      "detected_by_flag_pair": 0,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9965741692360397,
+      "observed_revision_rate": 0.0,
+      "period": "20140930",
+      "rate_within_flag0_group": 0.0,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "Q3",
+      "revised": 0,
+      "stocks": 2919
+    },
+    {
+      "detected_by_flag_pair": 5,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9503147482014388,
+      "observed_revision_rate": 0.0011241007194244604,
+      "period": "20141231",
+      "rate_within_flag0_group": 0.0011828720132481666,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "FY",
+      "revised": 5,
+      "stocks": 4448
+    },
+    {
+      "detected_by_flag_pair": 0,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9848883048620236,
+      "observed_revision_rate": 0.0,
+      "period": "20150331",
+      "rate_within_flag0_group": 0.0,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "Q1",
+      "revised": 0,
+      "stocks": 3044
+    },
+    {
+      "detected_by_flag_pair": 0,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9376068376068376,
+      "observed_revision_rate": 0.0,
+      "period": "20150630",
+      "rate_within_flag0_group": 0.0,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "H1",
+      "revised": 0,
+      "stocks": 3510
+    },
+    {
+      "detected_by_flag_pair": 0,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9902084649399874,
+      "observed_revision_rate": 0.0,
+      "period": "20150930",
+      "rate_within_flag0_group": 0.0,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "Q3",
+      "revised": 0,
+      "stocks": 3166
+    },
+    {
+      "detected_by_flag_pair": 13,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9511328298533985,
+      "observed_revision_rate": 0.0028876055086628164,
+      "period": "20151231",
+      "rate_within_flag0_group": 0.003035964502568893,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "FY",
+      "revised": 13,
+      "stocks": 4502
+    },
+    {
+      "detected_by_flag_pair": 1,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9902884049440848,
+      "observed_revision_rate": 0.0002942907592701589,
+      "period": "20160331",
+      "rate_within_flag0_group": 0.00029717682020802375,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "Q1",
+      "revised": 1,
+      "stocks": 3398
+    },
+    {
+      "detected_by_flag_pair": 0,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9630089374379345,
+      "observed_revision_rate": 0.0,
+      "period": "20160630",
+      "rate_within_flag0_group": 0.0,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "H1",
+      "revised": 0,
+      "stocks": 4028
+    },
+    {
+      "detected_by_flag_pair": 0,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9913116591928252,
+      "observed_revision_rate": 0.0,
+      "period": "20160930",
+      "rate_within_flag0_group": 0.0,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "Q3",
+      "revised": 0,
+      "stocks": 3568
+    },
+    {
+      "detected_by_flag_pair": 12,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9505158980838071,
+      "observed_revision_rate": 0.002526847757422615,
+      "period": "20161231",
+      "rate_within_flag0_group": 0.002658396101019052,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "FY",
+      "revised": 12,
+      "stocks": 4749
+    },
+    {
+      "detected_by_flag_pair": 0,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9817498658078369,
+      "observed_revision_rate": 0.0,
+      "period": "20170331",
+      "rate_within_flag0_group": 0.0,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "Q1",
+      "revised": 0,
+      "stocks": 3726
+    },
+    {
+      "detected_by_flag_pair": 0,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9834227206240859,
+      "observed_revision_rate": 0.0,
+      "period": "20170630",
+      "rate_within_flag0_group": 0.0,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "H1",
+      "revised": 0,
+      "stocks": 4102
+    },
+    {
+      "detected_by_flag_pair": 0,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9844961240310077,
+      "observed_revision_rate": 0.0,
+      "period": "20170930",
+      "rate_within_flag0_group": 0.0,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "Q3",
+      "revised": 0,
+      "stocks": 3741
+    },
+    {
+      "detected_by_flag_pair": 21,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.8375024620839078,
+      "observed_revision_rate": 0.004136300965136892,
+      "period": "20171231",
+      "rate_within_flag0_group": 0.004938852304797742,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "FY",
+      "revised": 21,
+      "stocks": 5077
+    },
+    {
+      "detected_by_flag_pair": 0,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.976461655277145,
+      "observed_revision_rate": 0.0,
+      "period": "20180331",
+      "rate_within_flag0_group": 0.0,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "Q1",
+      "revised": 0,
+      "stocks": 3951
+    },
+    {
+      "detected_by_flag_pair": 1,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.940677966101695,
+      "observed_revision_rate": 0.000434593654932638,
+      "period": "20180630",
+      "rate_within_flag0_group": 0.000462000462000462,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "H1",
+      "revised": 2,
+      "stocks": 4602
+    },
+    {
+      "detected_by_flag_pair": 0,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9972088302461304,
+      "observed_revision_rate": 0.0,
+      "period": "20180930",
+      "rate_within_flag0_group": 0.0,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "Q3",
+      "revised": 0,
+      "stocks": 3941
+    },
+    {
+      "detected_by_flag_pair": 27,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.8001527008971178,
+      "observed_revision_rate": 0.005153655277724756,
+      "period": "20181231",
+      "rate_within_flag0_group": 0.006440839694656489,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "FY",
+      "revised": 27,
+      "stocks": 5239
+    },
+    {
+      "detected_by_flag_pair": 0,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9973216459702946,
+      "observed_revision_rate": 0.0,
+      "period": "20190331",
+      "rate_within_flag0_group": 0.0,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "Q1",
+      "revised": 0,
+      "stocks": 4107
+    },
+    {
+      "detected_by_flag_pair": 1,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9855006796556411,
+      "observed_revision_rate": 0.00022655188038060717,
+      "period": "20190630",
+      "rate_within_flag0_group": 0.00022988505747126436,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "H1",
+      "revised": 1,
+      "stocks": 4414
+    },
+    {
+      "detected_by_flag_pair": 0,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.7863070539419087,
+      "observed_revision_rate": 0.0,
+      "period": "20190930",
+      "rate_within_flag0_group": 0.0,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "Q3",
+      "revised": 0,
+      "stocks": 4338
+    },
+    {
+      "detected_by_flag_pair": 35,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9520658200679664,
+      "observed_revision_rate": 0.006260060812019317,
+      "period": "20191231",
+      "rate_within_flag0_group": 0.006575239526582754,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "FY",
+      "revised": 35,
+      "stocks": 5591
+    },
+    {
+      "detected_by_flag_pair": 3,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.841945945945946,
+      "observed_revision_rate": 0.0006486486486486486,
+      "period": "20200331",
+      "rate_within_flag0_group": 0.0007704160246533128,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "Q1",
+      "revised": 3,
+      "stocks": 4625
+    },
+    {
+      "detected_by_flag_pair": 0,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9737354085603113,
+      "observed_revision_rate": 0.0,
+      "period": "20200630",
+      "rate_within_flag0_group": 0.0,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "H1",
+      "revised": 0,
+      "stocks": 5140
+    },
+    {
+      "detected_by_flag_pair": 3,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9921129099211291,
+      "observed_revision_rate": 0.0006226650062266501,
+      "period": "20200930",
+      "rate_within_flag0_group": 0.0006276150627615063,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "Q3",
+      "revised": 3,
+      "stocks": 4818
+    },
+    {
+      "detected_by_flag_pair": 53,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.9462019660411082,
+      "observed_revision_rate": 0.009472743521000894,
+      "period": "20201231",
+      "rate_within_flag0_group": 0.010011333585190782,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "FY",
+      "revised": 53,
+      "stocks": 5595
+    },
+    {
+      "detected_by_flag_pair": 1,
+      "detected_by_multi_flag1": 1,
+      "flag0_retention": 0.11595911949685535,
+      "observed_revision_rate": 0.00039308176100628933,
+      "period": "20210331",
+      "rate_within_flag0_group": 0.001694915254237288,
+      "rate_without_flag0_group": 0.00022232103156958648,
+      "report_type": "Q1",
+      "revised": 2,
+      "stocks": 5088
+    },
+    {
+      "detected_by_flag_pair": 3,
+      "detected_by_multi_flag1": 1,
+      "flag0_retention": 0.06091370558375635,
+      "observed_revision_rate": 0.0008121827411167512,
+      "period": "20210630",
+      "rate_within_flag0_group": 0.01,
+      "rate_without_flag0_group": 0.00021621621621621621,
+      "report_type": "H1",
+      "revised": 4,
+      "stocks": 4925
+    },
+    {
+      "detected_by_flag_pair": 21,
+      "detected_by_multi_flag1": 2,
+      "flag0_retention": 0.5346057451320609,
+      "observed_revision_rate": 0.004434162328899171,
+      "period": "20210930",
+      "rate_within_flag0_group": 0.007573025604038947,
+      "rate_without_flag0_group": 0.0008285004142502071,
+      "report_type": "Q3",
+      "revised": 23,
+      "stocks": 5187
+    },
+    {
+      "detected_by_flag_pair": 68,
+      "detected_by_multi_flag1": 5,
+      "flag0_retention": 0.930719656283566,
+      "observed_revision_rate": 0.013247404224847834,
+      "period": "20211231",
+      "rate_within_flag0_group": 0.014041161761877283,
+      "rate_without_flag0_group": 0.002583979328165375,
+      "report_type": "FY",
+      "revised": 74,
+      "stocks": 5586
+    },
+    {
+      "detected_by_flag_pair": 23,
+      "detected_by_multi_flag1": 0,
+      "flag0_retention": 0.716676511124237,
+      "observed_revision_rate": 0.004528450482378421,
+      "period": "20220331",
+      "rate_within_flag0_group": 0.006318681318681319,
+      "rate_without_flag0_group": 0.0,
+      "report_type": "Q1",
+      "revised": 23,
+      "stocks": 5079
+    },
+    {
+      "detected_by_flag_pair": 0,
+      "detected_by_multi_flag1": 1,
+      "flag0_retention": 0.04045801526717557,
+      "observed_revision_rate": 0.00019083969465648855,
+      "period": "20220630",
+      "rate_within_flag0_group": 0.0,
+      "rate_without_flag0_group": 0.0001988862370723946,
+      "report_type": "H1",
+      "revised": 1,
+      "stocks": 5240
+    },
+    {
+      "detected_by_flag_pair": 3,
+      "detected_by_multi_flag1": 4,
+      "flag0_retention": 0.12953667953667955,
+      "observed_revision_rate": 0.0013513513513513514,
+      "period": "20220930",
+      "rate_within_flag0_group": 0.004470938897168405,
+      "rate_without_flag0_group": 0.0008871146595697493,
+      "report_type": "Q3",
+      "revised": 7,
+      "stocks": 5180
+    },
+    {
+      "detected_by_flag_pair": 93,
+      "detected_by_multi_flag1": 10,
+      "flag0_retention": 0.7015374331550802,
+      "observed_revision_rate": 0.017212566844919786,
+      "period": "20221231",
+      "rate_within_flag0_group": 0.022153406383992377,
+      "rate_without_flag0_group": 0.005599104143337066,
+      "report_type": "FY",
+      "revised": 103,
+      "stocks": 5984
+    },
+    {
+      "detected_by_flag_pair": 4,
+      "detected_by_multi_flag1": 1,
+      "flag0_retention": 0.1097716894977169,
+      "observed_revision_rate": 0.0009132420091324201,
+      "period": "20230331",
+      "rate_within_flag0_group": 0.0066555740432612314,
+      "rate_without_flag0_group": 0.0002051702913418137,
+      "report_type": "Q1",
+      "revised": 5,
+      "stocks": 5475
+    },
+    {
+      "detected_by_flag_pair": 25,
+      "detected_by_multi_flag1": 56,
+      "flag0_retention": 0.4469292389853137,
+      "observed_revision_rate": 0.013684913217623497,
+      "period": "20230630",
+      "rate_within_flag0_group": 0.009708737864077669,
+      "rate_without_flag0_group": 0.016898008449004225,
+      "report_type": "H1",
+      "revised": 82,
+      "stocks": 5992
+    },
+    {
+      "detected_by_flag_pair": 5,
+      "detected_by_multi_flag1": 1,
+      "flag0_retention": 0.2719060523938573,
+      "observed_revision_rate": 0.001084010840108401,
+      "period": "20230930",
+      "rate_within_flag0_group": 0.0033222591362126247,
+      "rate_without_flag0_group": 0.00024813895781637717,
+      "report_type": "Q3",
+      "revised": 6,
+      "stocks": 5535
+    },
+    {
+      "detected_by_flag_pair": 20,
+      "detected_by_multi_flag1": 44,
+      "flag0_retention": 0.10546686018384131,
+      "observed_revision_rate": 0.01032091598129334,
+      "period": "20231231",
+      "rate_within_flag0_group": 0.03058103975535168,
+      "rate_without_flag0_group": 0.007932215612042546,
+      "report_type": "FY",
+      "revised": 64,
+      "stocks": 6201
+    },
+    {
+      "detected_by_flag_pair": 0,
+      "detected_by_multi_flag1": 2,
+      "flag0_retention": 0.18033971810625227,
+      "observed_revision_rate": 0.0003614022406938923,
+      "period": "20240331",
+      "rate_within_flag0_group": 0.0,
+      "rate_without_flag0_group": 0.0004409171075837742,
+      "report_type": "Q1",
+      "revised": 2,
+      "stocks": 5534
+    },
+    {
+      "detected_by_flag_pair": 4,
+      "detected_by_multi_flag1": 3,
+      "flag0_retention": 0.07771388743683569,
+      "observed_revision_rate": 0.0012197246907126678,
+      "period": "20240630",
+      "rate_within_flag0_group": 0.008968609865470852,
+      "rate_without_flag0_group": 0.0005667863215567731,
+      "report_type": "H1",
+      "revised": 7,
+      "stocks": 5739
+    },
+    {
+      "detected_by_flag_pair": 4,
+      "detected_by_multi_flag1": 2,
+      "flag0_retention": 0.12293314162473042,
+      "observed_revision_rate": 0.0010783608914450035,
+      "period": "20240930",
+      "rate_within_flag0_group": 0.005847953216374269,
+      "rate_without_flag0_group": 0.0004098360655737705,
+      "report_type": "Q3",
+      "revised": 6,
+      "stocks": 5564
+    },
+    {
+      "detected_by_flag_pair": 18,
+      "detected_by_multi_flag1": 45,
+      "flag0_retention": 0.19214540733528077,
+      "observed_revision_rate": 0.010223953261927946,
+      "period": "20241231",
+      "rate_within_flag0_group": 0.016047297297297296,
+      "rate_without_flag0_group": 0.008838891120932101,
+      "report_type": "FY",
+      "revised": 63,
+      "stocks": 6162
+    }
+  ],
+  "periods_failed": [],
+  "periods_requested": [
+    "20130331",
+    "20130630",
+    "20130930",
+    "20131231",
+    "20140331",
+    "20140630",
+    "20140930",
+    "20141231",
+    "20150331",
+    "20150630",
+    "20150930",
+    "20151231",
+    "20160331",
+    "20160630",
+    "20160930",
+    "20161231",
+    "20170331",
+    "20170630",
+    "20170930",
+    "20171231",
+    "20180331",
+    "20180630",
+    "20180930",
+    "20181231",
+    "20190331",
+    "20190630",
+    "20190930",
+    "20191231",
+    "20200331",
+    "20200630",
+    "20200930",
+    "20201231",
+    "20210331",
+    "20210630",
+    "20210930",
+    "20211231",
+    "20220331",
+    "20220630",
+    "20220930",
+    "20221231",
+    "20230331",
+    "20230630",
+    "20230930",
+    "20231231",
+    "20240331",
+    "20240630",
+    "20240930",
+    "20241231"
+  ],
+  "reconstructability": {
+    "as_of_reconstructable": 646,
+    "f_ann_date_not_one_to_one": 1,
+    "not_reconstructable_same_f_ann_date": 4
+  },
+  "reconstructable_fraction": 0.9923195084485407,
+  "revision_rate_upper_bound": 0.0038615839857460616
+}

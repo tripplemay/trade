@@ -14,6 +14,7 @@ from __future__ import annotations
 import calendar
 from collections.abc import Iterable
 from dataclasses import dataclass
+from datetime import date
 from decimal import Decimal
 
 from scripts.research.ashare_pit.codes import (
@@ -23,30 +24,47 @@ from scripts.research.ashare_pit.codes import (
 )
 from scripts.research.ashare_pit.marketcap import MarketCapPoint
 
-# ★★2026-07-20 撤回原值 (0.0047, 0.0088)：F001 的探针走的是**单次调用**，
-# 而单次调用会被服务端静默截断（见 `fetch` 模块 docstring）。分页重测后：
-#
-#   2021FY 修订率 0.525% → 1.325%（2.5 倍）  flag=0 保留率 69.4% → 93.1%
-#   2022FY 修订率 1.534% → 1.721%            flag=0 保留率 60.1% → 70.2%
-#   2023FY / 2022H1 未触顶，数字不变
-#
-# 即 F001 报告的修订率区间**系统性低估**，且「保留率剧烈波动」部分是截断伪影而非机制。
-# 在 F001 用分页重测之前，这里**不提供任何区间**——给一个已知偏低的数比不给更糟，
-# 下游会拿它当作已验证的事实。
-REVISION_RATE_BOUNDS: tuple[float, float] | None = None
 
-# 已分页重测的期次（观测下界）。**只列实际重测过的**，不外推、不补全。
-REVISION_RATE_REMEASURED: dict[str, float] = {
-    "20211231": 0.01325,
-    "20221231": 0.01721,
-    "20231231": 0.01032,
-    "20220630": 0.00019,
+def _to_date(yyyymmdd: str) -> date | None:
+    try:
+        return date(int(yyyymmdd[:4]), int(yyyymmdd[4:6]), int(yyyymmdd[6:8]))
+    except (ValueError, IndexError):
+        return None
+
+# ★★2026-07-20 F001 分页重测（2013-2024 全 48 期）后的口径。原值 (0.0047, 0.0088)
+# 来自被静默截断的单次调用，已作废。详见
+# `docs/audits/B109-F001-vintage-probe-remeasured-2026-07-20.md`。
+#
+# ★区间**只取自可信窗口 2018-2021**：那四年 65%-91% 的证券存有多个版本，
+# 修订检出接近完全，故观测率接近无偏。2013-2017 只有 7%-14% 的证券有多版本，
+# 其近零修订率是**不可观测**而非**已证明为低**——不得并入区间。
+REVISION_RATE_BOUNDS: tuple[float, float] = (0.00515, 0.01325)
+
+# 年报（FY）逐期观测率。**只列实际分页测过的**，不外推、不补全。
+# ★2013-2017 一并列出但标注不可信，是为了让下游看见「低值来自看不见」而非「低风险」。
+REVISION_RATE_FY_BY_YEAR: dict[str, float] = {
+    "2013": 0.00071, "2014": 0.00112, "2015": 0.00289,  # ← 多版本仅 7%-10%，不可信
+    "2016": 0.00253, "2017": 0.00414,  # ← 多版本 13.5%，不可信
+    "2018": 0.00515, "2019": 0.00626, "2020": 0.00947, "2021": 0.01325,  # ← 可信窗口
+    "2022": 0.01721, "2023": 0.01032, "2024": 0.01022,
 }
 
-# ★方向性结论**未被推翻**：修订风险仍集中在年报分量（重测后 FY 三期均 >1%，
-# 而 2022H1 仅 0.019%），TTM 四分量风险非均匀这一点反而更强了。
-REVISION_RATE_BY_REPORT_TYPE: dict[str, float] | None = None
-"""F001 分页重测前不提供逐报告类型的率值——原值同样来自被截断的观测。"""
+# 版本多重度 = 该期有 >=2 个存档版本的证券占比。**这是修订率可信度的前置条件**：
+# 它低时，修订「测不出来」而不是「不存在」。实测三段式存储制度变迁。
+VERSION_MULTIPLICITY_FY: dict[str, float] = {
+    "2013": 0.073, "2015": 0.100, "2017": 0.135,
+    "2018": 0.648, "2019": 0.888, "2020": 0.914, "2021": 0.912,
+    "2022": 0.679, "2024": 0.074,
+}
+TRUSTED_MEASUREMENT_YEARS: tuple[str, ...] = ("2018", "2019", "2020", "2021")
+
+# ★修订风险集中在年报分量（重测后更强）。48 期分页实测的逐报告类型率。
+REVISION_RATE_BY_REPORT_TYPE: dict[str, float] = {
+    "FY": 0.00747,
+    "H1": 0.00181,
+    "Q3": 0.00089,
+    "Q1": 0.00073,
+}
 
 
 @dataclass(frozen=True)
@@ -62,6 +80,23 @@ class PanelRow:
     @property
     def is_usable(self) -> bool:
         return self.fact.is_usable and self.market_cap is not None and self.market_cap.is_usable
+
+    @property
+    def report_lag_days(self) -> int | None:
+        """形成日与所用报告期期末之间的天数。
+
+        ★这一项不能省：resolver 拿不到最新一期时会**回退到更早的报告期**
+        （as-of 语义上完全正确），于是漏斗里一行「可用」的背后可能是一年前的报表。
+        只报可用率会把「有数」与「数够新」混为一谈——2014 年实测正是如此：
+        可用率 91% 看着健康，实际大量行由更旧的期次支撑。
+        """
+        if not self.end_date or len(self.end_date) != 8:
+            return None
+        formation = _to_date(self.formation_date)
+        end = _to_date(self.end_date)
+        if formation is None or end is None:
+            return None
+        return (formation - end).days
 
     @property
     def drop_reason(self) -> str | None:
@@ -145,6 +180,33 @@ def build_funnel(rows: Iterable[PanelRow], *, universe_size: int) -> dict[str, o
             1 for item in items if item.fact.status is FactStatus.FACT_VERSION_AMBIGUOUS
         ),
         "superseded_later": sum(1 for item in items if item.fact.superseded_later),
+        **_staleness(usable),
+    }
+
+
+# 报告新鲜度分档。A 股季报法定披露上限约 1 个月、年报 4 个月，
+# 故 >270 天基本等同「跳过了至少一期」，>450 天则连年报都换代了。
+_STALENESS_BUCKETS: tuple[tuple[str, int], ...] = (
+    ("lag_le_180d", 180),
+    ("lag_le_270d", 270),
+    ("lag_le_450d", 450),
+)
+
+
+def _staleness(usable: list[PanelRow]) -> dict[str, object]:
+    """可用行的报告新鲜度分布。**只统计可用行**——不可用行的滞后无意义。"""
+    lags = sorted(lag for item in usable if (lag := item.report_lag_days) is not None)
+    if not lags:
+        return {"report_lag": {"n": 0}}
+    counts = {name: sum(1 for lag in lags if lag <= limit) for name, limit in _STALENESS_BUCKETS}
+    return {
+        "report_lag": {
+            "n": len(lags),
+            "median_days": lags[len(lags) // 2],
+            "p90_days": lags[int(len(lags) * 0.9)],
+            "max_days": lags[-1],
+            **{name: count / len(lags) for name, count in counts.items()},
+        }
     }
 
 
@@ -191,22 +253,33 @@ def mandatory_disclosures(
             "衡量的是修订**检出能力**而非修订本身；F001 实测 10.5%–95.4% 剧烈波动。"
             "『未检出修订』不等于『无修订』"
         ),
-        "revision_rate_bounds": REVISION_RATE_BOUNDS,
+        "revision_rate_bounds": list(REVISION_RATE_BOUNDS),
         "revision_rate_note": (
-            "★F001 原区间 0.47%-0.88% **已撤回**——探针走单次调用，被服务端静默截断。"
-            "分页重测后 2021FY 修订率 0.525%→1.325%（2.5 倍）。重测完成前不提供区间"
+            "★区间 0.515%-1.325% **只取自可信窗口 2018-2021**（该窗口 65%-91% 的证券"
+            "存有多版本，检出接近完全）。F001 原区间 0.47%-0.88% 已作废——"
+            "探针走单次调用被静默截断。一律以区间引用，禁作点估计"
         ),
-        "revision_rate_remeasured_paged": dict(REVISION_RATE_REMEASURED),
-        "revision_rate_by_report_type": REVISION_RATE_BY_REPORT_TYPE,
+        "revision_rate_fy_by_year": dict(REVISION_RATE_FY_BY_YEAR),
+        "revision_rate_by_report_type": dict(REVISION_RATE_BY_REPORT_TYPE),
         "fy_component_risk_note": (
-            "★修订风险集中在 FY 分量这一**方向性结论未被推翻**，重测后反而更强："
-            "FY 三期均 >1%，而 2022H1 仅 0.019%。TTM 由四个单季拼成，"
-            "其风险**非均匀**，不得用混合平均掩盖 FY 分量"
+            "★修订风险集中在 FY 分量，重测后更强：FY 0.747% vs Q1 0.073%（10.2 倍）。"
+            "TTM 由四个单季拼成，其风险**非均匀**，不得用混合平均掩盖 FY 分量"
         ),
-        # F001 的诚实限制随附，避免下游把 2021-2024 的结论外推到全样本
-        "measured_window": "2021-2024（report_type=1）；其中仅 4 期做过分页重测",
+        # ★★这一条决定上面那些率能不能信：多版本占比低时，修订是「测不出」而非「不存在」
+        "version_multiplicity_fy": dict(VERSION_MULTIPLICITY_FY),
+        "trusted_measurement_years": list(TRUSTED_MEASUREMENT_YEARS),
+        "version_multiplicity_note": (
+            "★存储制度三段式变迁：2013-2017 仅 7%-14% 的证券存有多版本 → "
+            "该窗口的近零修订率是**不可观测**，不是**已证明为低**，不得当作低风险引用；"
+            "2018-2021 达 65%-91%（可信窗口，区间取自此）；2022+ 回落但检出机制转为"
+            "『多条 flag=1 带不同 f_ann_date』，仍能工作"
+        ),
+        "measured_window": "2013-2024 全 48 期（report_type=1），分页重测；28/48 期需多页",
         "extrapolation_warning": (
-            "2013-2020 未测，且 2019/2020 的 flag=0 保留率模式与 2021+ 显著不同 → 不可外推"
+            "2013-2017 的修订率不可信（多版本占比 7%-14%）；★但实测**已推翻**两个担忧："
+            "2014 年面板既无覆盖洞（NOT_YET_PUBLISHED=0）也无陈旧问题"
+            "（报告滞后中位 91 天，与 2023 的 92 天相同）。该窗口真正的约束在**分母**："
+            "2014-06-30 有 8.7% 的证券缺 total_mv"
         ),
         # ★这一条是数据层的元缺陷，比任何单个数字都重要
         "upstream_fetch_defect": (

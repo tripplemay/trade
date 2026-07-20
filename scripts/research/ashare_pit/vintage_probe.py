@@ -26,7 +26,7 @@ from typing import Any
 
 import pandas as pd
 
-from scripts.research.ashare_pit.fetch import fetch_paged
+from scripts.research.ashare_pit.fetch import FetchReport, fetch_paged
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 ENV_FILE = REPO_ROOT / ".env.local"
@@ -38,8 +38,7 @@ CONSOLIDATED_REPORT_TYPE = "1"
 
 PERIOD_LABELS = {"0331": "Q1", "0630": "H1", "0930": "Q3", "1231": "FY"}
 
-_MAX_ATTEMPTS = 3
-_RETRY_SLEEP_SECONDS = 3.0
+# 重试与分页退避已下沉到 `fetch` 模块，本模块只保留期间之间的节流。
 _THROTTLE_SECONDS = 0.6
 
 
@@ -55,7 +54,7 @@ def load_token() -> str:
     raise RuntimeError(f"{ENV_FILE} 中未找到非空的 TUSHARE_TOKEN")
 
 
-def fetch_period(pro: Any, period: str) -> pd.DataFrame | None:
+def fetch_period(pro: Any, period: str) -> tuple[pd.DataFrame | None, FetchReport]:
     """拉一期全市场合并利润表。失败返回 None（由调用方显式记录，不静默跳过）。
 
     ★★2026-07-20 修复：原实现用**单次调用**，被服务端静默截断在 9000 行。
@@ -73,8 +72,11 @@ def fetch_period(pro: Any, period: str) -> pd.DataFrame | None:
     """
     df, report = fetch_paged(pro.income_vip, endpoint="income_vip", period=period, fields=FIELDS)
     if report.failures or df.empty:
-        return None
-    return df[df["report_type"] == CONSOLIDATED_REPORT_TYPE].dropna(subset=["n_income_attr_p"])
+        return None, report
+    filtered = df[df["report_type"] == CONSOLIDATED_REPORT_TYPE].dropna(
+        subset=["n_income_attr_p"]
+    )
+    return filtered, report
 
 
 def measure_period(df: pd.DataFrame, period: str) -> dict[str, Any]:
@@ -149,9 +151,21 @@ def run(years: list[int]) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     failed: list[str] = []
     kinds: Counter = Counter()
+    fetch_audit: list[dict[str, Any]] = []
 
     for period in periods:
-        df = fetch_period(pro, period)
+        df, report = fetch_period(pro, period)
+        # ★分页证据随每期留痕：没有 pages/rows，报告就无法自证「这次真的分页了」，
+        # 而上一版正是因为无人验证「拿到的是不是全量」才把截断数据当成了实测。
+        fetch_audit.append(
+            {
+                "period": period,
+                "pages": report.pages,
+                "rows": report.rows,
+                "truncation_suspected": report.truncation_suspected,
+                "failures": report.failures,
+            }
+        )
         if df is None:
             failed.append(period)  # 显式记录，不静默跳过（H4）
             continue
@@ -167,6 +181,8 @@ def run(years: list[int]) -> dict[str, Any]:
     return {
         "periods_requested": periods,
         "periods_failed": failed,
+        "fetch_audit": fetch_audit,
+        "multi_page_periods": sum(1 for item in fetch_audit if item["pages"] > 1),
         "per_period": rows,
         "by_report_type": (
             table.groupby("report_type")
@@ -207,6 +223,10 @@ def main(argv: list[str] | None = None) -> int:
     print(f"观测修订率（下界）: {result['observed_revision_rate_lower_bound']:.3%}")
     print(f"修订率上界（保守）: {result['revision_rate_upper_bound']:.2%}")
     print(f"已知修订可 as-of 重建比例: {result['reconstructable_fraction']:.1%}")
+    print(
+        f"分页证据: {result['multi_page_periods']}/{len(result['fetch_audit'])} 期需要多页"
+        "（单次调用会在这些期上静默截断）"
+    )
     if result["periods_failed"]:
         print(f"★ 拉取失败的期间（未计入统计）: {result['periods_failed']}")
     print(f"→ {args.out}")
