@@ -1,0 +1,222 @@
+{
+  "20150331": {
+    "endpoint": "income_vip",
+    "params": {
+      "period": "20150331",
+      "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p"
+    },
+    "pages": 1,
+    "rows": 3047,
+    "truncation_suspected": false,
+    "failures": []
+  },
+  "20150630": {
+    "endpoint": "income_vip",
+    "params": {
+      "period": "20150630",
+      "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p"
+    },
+    "pages": 1,
+    "rows": 3521,
+    "truncation_suspected": false,
+    "failures": []
+  },
+  "20150930": {
+    "endpoint": "income_vip",
+    "params": {
+      "period": "20150930",
+      "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p"
+    },
+    "pages": 1,
+    "rows": 3167,
+    "truncation_suspected": false,
+    "failures": []
+  },
+  "20151231": {
+    "endpoint": "income_vip",
+    "params": {
+      "period": "20151231",
+      "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p"
+    },
+    "pages": 1,
+    "rows": 4957,
+    "truncation_suspected": false,
+    "failures": []
+  },
+  "20180331": {
+    "endpoint": "income_vip",
+    "params": {
+      "period": "20180331",
+      "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p"
+    },
+    "pages": 1,
+    "rows": 4070,
+    "truncation_suspected": false,
+    "failures": []
+  },
+  "20180630": {
+    "endpoint": "income_vip",
+    "params": {
+      "period": "20180630",
+      "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p"
+    },
+    "pages": 2,
+    "rows": 5251,
+    "truncation_suspected": false,
+    "failures": []
+  },
+  "20180930": {
+    "endpoint": "income_vip",
+    "params": {
+      "period": "20180930",
+      "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p"
+    },
+    "pages": 2,
+    "rows": 7319,
+    "truncation_suspected": false,
+    "failures": []
+  },
+  "20181231": {
+    "endpoint": "income_vip",
+    "params": {
+      "period": "20181231",
+      "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p"
+    },
+    "pages": 2,
+    "rows": 8645,
+    "truncation_suspected": false,
+    "failures": []
+  },
+  "20210331": {
+    "endpoint": "income_vip",
+    "params": {
+      "period": "20210331",
+      "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p"
+    },
+    "pages": 2,
+    "rows": 5592,
+    "truncation_suspected": false,
+    "failures": []
+  },
+  "20210630": {
+    "endpoint": "income_vip",
+    "params": {
+      "period": "20210630",
+      "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p"
+    },
+    "pages": 2,
+    "rows": 5162,
+    "truncation_suspected": false,
+    "failures": []
+  },
+  "20210930": {
+    "endpoint": "income_vip",
+    "params": {
+      "period": "20210930",
+      "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p"
+    },
+    "pages": 2,
+    "rows": 7867,
+    "truncation_suspected": false,
+    "failures": []
+  },
+  "20211231": {
+    "endpoint": "income_vip",
+    "params": {
+      "period": "20211231",
+      "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p"
+    },
+    "pages": 3,
+    "rows": 10740,
+    "truncation_suspected": false,
+    "failures": []
+  },
+  "20230331": {
+    "endpoint": "income_vip",
+    "params": {
+      "period": "20230331",
+      "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p"
+    },
+    "pages": 2,
+    "rows": 5984,
+    "truncation_suspected": false,
+    "failures": []
+  },
+  "20230630": {
+    "endpoint": "income_vip",
+    "params": {
+      "period": "20230630",
+      "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p"
+    },
+    "pages": 2,
+    "rows": 8558,
+    "truncation_suspected": false,
+    "failures": []
+  },
+  "20230930": {
+    "endpoint": "income_vip",
+    "params": {
+      "period": "20230930",
+      "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p"
+    },
+    "pages": 2,
+    "rows": 6954,
+    "truncation_suspected": false,
+    "failures": []
+  },
+  "20231231": {
+    "endpoint": "income_vip",
+    "params": {
+      "period": "20231231",
+      "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p"
+    },
+    "pages": 2,
+    "rows": 6728,
+    "truncation_suspected": false,
+    "failures": []
+  },
+  "20250331": {
+    "endpoint": "income_vip",
+    "params": {
+      "period": "20250331",
+      "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p"
+    },
+    "pages": 2,
+    "rows": 7564,
+    "truncation_suspected": false,
+    "failures": []
+  },
+  "20250630": {
+    "endpoint": "income_vip",
+    "params": {
+      "period": "20250630",
+      "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p"
+    },
+    "pages": 2,
+    "rows": 7579,
+    "truncation_suspected": false,
+    "failures": []
+  },
+  "20250930": {
+    "endpoint": "income_vip",
+    "params": {
+      "period": "20250930",
+      "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p"
+    },
+    "pages": 2,
+    "rows": 7033,
+    "truncation_suspected": false,
+    "failures": []
+  },
+  "20251231": {
+    "endpoint": "income_vip",
+    "params": {
+      "period": "20251231",
+      "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p"
+    },
+    "pages": 2,
+    "rows": 6854,
+    "truncation_suspected": false,
+    "failures": []
+  }
+}

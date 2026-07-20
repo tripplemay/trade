@@ -1,0 +1,1852 @@
+{
+  "seed": 570193,
+  "quota_per_stratum": 2,
+  "n_selected": 119,
+  "n_excluded_burned": 246,
+  "items": [
+    {
+      "announcement_id": "1202265434",
+      "sec_code": "300016",
+      "year": 2015,
+      "report_type": "FY",
+      "title": "2015年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2016-04-29/1202265434.PDF"
+    },
+    {
+      "announcement_id": "1202265615",
+      "sec_code": "300429",
+      "year": 2015,
+      "report_type": "FY",
+      "title": "2015年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2016-04-29/1202265615.PDF"
+    },
+    {
+      "announcement_id": "1202274472",
+      "sec_code": "600331",
+      "year": 2015,
+      "report_type": "FY",
+      "title": "2015年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2016-04-29/1202274472.PDF"
+    },
+    {
+      "announcement_id": "1202274622",
+      "sec_code": "600656",
+      "year": 2015,
+      "report_type": "FY",
+      "title": "2015年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2016-04-29/1202274622.PDF"
+    },
+    {
+      "announcement_id": "1201521422",
+      "sec_code": "601633",
+      "year": 2015,
+      "report_type": "H1",
+      "title": "2015年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-08-29/1201521422.PDF"
+    },
+    {
+      "announcement_id": "1201523750",
+      "sec_code": "600900",
+      "year": 2015,
+      "report_type": "H1",
+      "title": "2015年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-08-31/1201523750.PDF"
+    },
+    {
+      "announcement_id": "1200946315",
+      "sec_code": "600295",
+      "year": 2015,
+      "report_type": "Q1",
+      "title": "2015年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-04-30/1200946315.PDF"
+    },
+    {
+      "announcement_id": "1200948471",
+      "sec_code": "600757",
+      "year": 2015,
+      "report_type": "Q1",
+      "title": "2015年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-04-30/1200948471.PDF"
+    },
+    {
+      "announcement_id": "1201745438",
+      "sec_code": "600303",
+      "year": 2015,
+      "report_type": "Q3",
+      "title": "2015年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-10-31/1201745438.PDF"
+    },
+    {
+      "announcement_id": "1201745930",
+      "sec_code": "603166",
+      "year": 2015,
+      "report_type": "Q3",
+      "title": "2015年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-10-31/1201745930.PDF"
+    },
+    {
+      "announcement_id": "1202265743",
+      "sec_code": "000565",
+      "year": 2015,
+      "report_type": "FY",
+      "title": "2015年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2016-04-29/1202265743.PDF"
+    },
+    {
+      "announcement_id": "1202281220",
+      "sec_code": "002312",
+      "year": 2015,
+      "report_type": "FY",
+      "title": "2015年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2016-04-30/1202281220.PDF"
+    },
+    {
+      "announcement_id": "1201518006",
+      "sec_code": "002431",
+      "year": 2015,
+      "report_type": "H1",
+      "title": "2015年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-08-31/1201518006.PDF"
+    },
+    {
+      "announcement_id": "1201518677",
+      "sec_code": "002724",
+      "year": 2015,
+      "report_type": "H1",
+      "title": "2015年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-08-31/1201518677.PDF"
+    },
+    {
+      "announcement_id": "1200946860",
+      "sec_code": "002024",
+      "year": 2015,
+      "report_type": "Q1",
+      "title": "2015年第一季度报告正文",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-04-30/1200946860.PDF"
+    },
+    {
+      "announcement_id": "1200948417",
+      "sec_code": "000673",
+      "year": 2015,
+      "report_type": "Q1",
+      "title": "2015年第一季度报告全文",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-04-30/1200948417.PDF"
+    },
+    {
+      "announcement_id": "1201744682",
+      "sec_code": "000973",
+      "year": 2015,
+      "report_type": "Q3",
+      "title": "2015年第三季度报告正文",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-10-31/1201744682.PDF"
+    },
+    {
+      "announcement_id": "1201745341",
+      "sec_code": "000036",
+      "year": 2015,
+      "report_type": "Q3",
+      "title": "2015年第三季度报告全文",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-10-31/1201745341.PDF"
+    },
+    {
+      "announcement_id": "1206164728",
+      "sec_code": "300362",
+      "year": 2018,
+      "report_type": "FY",
+      "title": "2018年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2019-04-30/1206164728.PDF"
+    },
+    {
+      "announcement_id": "1206164751",
+      "sec_code": "300028",
+      "year": 2018,
+      "report_type": "FY",
+      "title": "2018年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2019-04-30/1206164751.PDF"
+    },
+    {
+      "announcement_id": "1204829171",
+      "sec_code": "300156",
+      "year": 2018,
+      "report_type": "Q1",
+      "title": "2018年第一季度报告全文",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-04-28/1204829171.PDF"
+    },
+    {
+      "announcement_id": "1206165855",
+      "sec_code": "600487",
+      "year": 2018,
+      "report_type": "FY",
+      "title": "2018年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2019-04-30/1206165855.PDF"
+    },
+    {
+      "announcement_id": "1206166434",
+      "sec_code": "600645",
+      "year": 2018,
+      "report_type": "FY",
+      "title": "2018年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2019-04-30/1206166434.PDF"
+    },
+    {
+      "announcement_id": "1205362568",
+      "sec_code": "601021",
+      "year": 2018,
+      "report_type": "H1",
+      "title": "2018年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-08-31/1205362568.PDF"
+    },
+    {
+      "announcement_id": "1205363310",
+      "sec_code": "600469",
+      "year": 2018,
+      "report_type": "H1",
+      "title": "2018年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-08-31/1205363310.PDF"
+    },
+    {
+      "announcement_id": "1204828446",
+      "sec_code": "601898",
+      "year": 2018,
+      "report_type": "Q1",
+      "title": "2018年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-04-28/1204828446.PDF"
+    },
+    {
+      "announcement_id": "1204831502",
+      "sec_code": "600634",
+      "year": 2018,
+      "report_type": "Q1",
+      "title": "2018年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-04-28/1204831502.PDF"
+    },
+    {
+      "announcement_id": "1205561892",
+      "sec_code": "600540",
+      "year": 2018,
+      "report_type": "Q3",
+      "title": "2018年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-10-31/1205561892.PDF"
+    },
+    {
+      "announcement_id": "1205562248",
+      "sec_code": "603861",
+      "year": 2018,
+      "report_type": "Q3",
+      "title": "2018年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-10-31/1205562248.PDF"
+    },
+    {
+      "announcement_id": "1206164115",
+      "sec_code": "002464",
+      "year": 2018,
+      "report_type": "FY",
+      "title": "2018年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2019-04-30/1206164115.PDF"
+    },
+    {
+      "announcement_id": "1206164151",
+      "sec_code": "002701",
+      "year": 2018,
+      "report_type": "FY",
+      "title": "2018年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2019-04-30/1206164151.PDF"
+    },
+    {
+      "announcement_id": "1205362750",
+      "sec_code": "000792",
+      "year": 2018,
+      "report_type": "H1",
+      "title": "2018年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-08-31/1205362750.PDF"
+    },
+    {
+      "announcement_id": "1205363623",
+      "sec_code": "002024",
+      "year": 2018,
+      "report_type": "H1",
+      "title": "2018年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-08-31/1205363623.PDF"
+    },
+    {
+      "announcement_id": "1204828926",
+      "sec_code": "000982",
+      "year": 2018,
+      "report_type": "Q1",
+      "title": "2018年第一季度报告正文",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-04-28/1204828926.PDF"
+    },
+    {
+      "announcement_id": "1204829133",
+      "sec_code": "000669",
+      "year": 2018,
+      "report_type": "Q1",
+      "title": "2018年第一季度报告全文",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-04-28/1204829133.PDF"
+    },
+    {
+      "announcement_id": "1205561330",
+      "sec_code": "000410",
+      "year": 2018,
+      "report_type": "Q3",
+      "title": "2018年第三季度报告全文",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-10-31/1205561330.PDF"
+    },
+    {
+      "announcement_id": "1205562168",
+      "sec_code": "000036",
+      "year": 2018,
+      "report_type": "Q3",
+      "title": "2018年第三季度报告全文",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-10-31/1205562168.PDF"
+    },
+    {
+      "announcement_id": "1211434400",
+      "sec_code": "300418",
+      "year": 2021,
+      "report_type": "Q3",
+      "title": "2021年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-10-30/1211434400.PDF"
+    },
+    {
+      "announcement_id": "1211435262",
+      "sec_code": "300316",
+      "year": 2021,
+      "report_type": "Q3",
+      "title": "2021年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-10-30/1211435262.PDF"
+    },
+    {
+      "announcement_id": "1213270381",
+      "sec_code": "600793",
+      "year": 2021,
+      "report_type": "FY",
+      "title": "2021年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2022-04-30/1213270381.PDF"
+    },
+    {
+      "announcement_id": "1213271411",
+      "sec_code": "603111",
+      "year": 2021,
+      "report_type": "FY",
+      "title": "康尼机电2021年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2022-04-30/1213271411.PDF"
+    },
+    {
+      "announcement_id": "1210927017",
+      "sec_code": "600833",
+      "year": 2021,
+      "report_type": "H1",
+      "title": "上海第一医药股份有限公司2021年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-08-31/1210927017.PDF"
+    },
+    {
+      "announcement_id": "1210927294",
+      "sec_code": "601866",
+      "year": 2021,
+      "report_type": "H1",
+      "title": "中远海发2021年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-08-31/1210927294.PDF"
+    },
+    {
+      "announcement_id": "1209878932",
+      "sec_code": "600614",
+      "year": 2021,
+      "report_type": "Q1",
+      "title": "鹏起科技发展股份有限公司2021年一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-04-30/1209878932.PDF"
+    },
+    {
+      "announcement_id": "1209879238",
+      "sec_code": "600734",
+      "year": 2021,
+      "report_type": "Q1",
+      "title": "福建实达集团股份有限公司2021年第一季度报告正文",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-04-30/1209879238.PDF"
+    },
+    {
+      "announcement_id": "1211435315",
+      "sec_code": "600326",
+      "year": 2021,
+      "report_type": "Q3",
+      "title": "西藏天路2021年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-10-30/1211435315.PDF"
+    },
+    {
+      "announcement_id": "1211437748",
+      "sec_code": "600810",
+      "year": 2021,
+      "report_type": "Q3",
+      "title": "神马股份2021年三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-10-30/1211437748.PDF"
+    },
+    {
+      "announcement_id": "1213267652",
+      "sec_code": "000413",
+      "year": 2021,
+      "report_type": "FY",
+      "title": "2021年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2022-04-30/1213267652.PDF"
+    },
+    {
+      "announcement_id": "1213267662",
+      "sec_code": "002211",
+      "year": 2021,
+      "report_type": "FY",
+      "title": "2021年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2022-04-30/1213267662.PDF"
+    },
+    {
+      "announcement_id": "1211434249",
+      "sec_code": "002684",
+      "year": 2021,
+      "report_type": "Q3",
+      "title": "2021年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-10-30/1211434249.PDF"
+    },
+    {
+      "announcement_id": "1211434893",
+      "sec_code": "002955",
+      "year": 2021,
+      "report_type": "Q3",
+      "title": "2021年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-10-30/1211434893.PDF"
+    },
+    {
+      "announcement_id": "1213273372",
+      "sec_code": "688163",
+      "year": 2021,
+      "report_type": "FY",
+      "title": "赛伦生物：2021年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2022-04-30/1213273372.PDF"
+    },
+    {
+      "announcement_id": "1213273615",
+      "sec_code": "688329",
+      "year": 2021,
+      "report_type": "FY",
+      "title": "艾隆科技2021年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2022-04-30/1213273615.PDF"
+    },
+    {
+      "announcement_id": "1210927986",
+      "sec_code": "688021",
+      "year": 2021,
+      "report_type": "H1",
+      "title": "山东奥福环保科技股份有限公司2021年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-08-31/1210927986.PDF"
+    },
+    {
+      "announcement_id": "1210928265",
+      "sec_code": "688669",
+      "year": 2021,
+      "report_type": "H1",
+      "title": "2021年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-08-31/1210928265.PDF"
+    },
+    {
+      "announcement_id": "1209877590",
+      "sec_code": "688333",
+      "year": 2021,
+      "report_type": "Q1",
+      "title": "西安铂力特增材技术股份有限公司2021年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-04-30/1209877590.PDF"
+    },
+    {
+      "announcement_id": "1209880311",
+      "sec_code": "688321",
+      "year": 2021,
+      "report_type": "Q1",
+      "title": "深圳微芯生物科技股份有限公司2021年第一季度报告（正文）",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-04-30/1209880311.PDF"
+    },
+    {
+      "announcement_id": "1211434725",
+      "sec_code": "688701",
+      "year": 2021,
+      "report_type": "Q3",
+      "title": "2021年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-10-30/1211434725.PDF"
+    },
+    {
+      "announcement_id": "1211435429",
+      "sec_code": "688096",
+      "year": 2021,
+      "report_type": "Q3",
+      "title": "2021年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-10-30/1211435429.PDF"
+    },
+    {
+      "announcement_id": "1219924779",
+      "sec_code": "300518",
+      "year": 2023,
+      "report_type": "FY",
+      "title": "2023年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-04-30/1219924779.PDF"
+    },
+    {
+      "announcement_id": "1219927967",
+      "sec_code": "301152",
+      "year": 2023,
+      "report_type": "FY",
+      "title": "2023年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-04-30/1219927967.PDF"
+    },
+    {
+      "announcement_id": "1217716386",
+      "sec_code": "301308",
+      "year": 2023,
+      "report_type": "H1",
+      "title": "2023年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-08-31/1217716386.PDF"
+    },
+    {
+      "announcement_id": "1217717366",
+      "sec_code": "300639",
+      "year": 2023,
+      "report_type": "H1",
+      "title": "2023年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-08-31/1217717366.PDF"
+    },
+    {
+      "announcement_id": "1216702655",
+      "sec_code": "300094",
+      "year": 2023,
+      "report_type": "Q1",
+      "title": "2023年一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-04-29/1216702655.PDF"
+    },
+    {
+      "announcement_id": "1216703667",
+      "sec_code": "300427",
+      "year": 2023,
+      "report_type": "Q1",
+      "title": "2023年一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-04-29/1216703667.PDF"
+    },
+    {
+      "announcement_id": "1218203264",
+      "sec_code": "300280",
+      "year": 2023,
+      "report_type": "Q3",
+      "title": "2023年三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-10-31/1218203264.PDF"
+    },
+    {
+      "announcement_id": "1218216840",
+      "sec_code": "301269",
+      "year": 2023,
+      "report_type": "Q3",
+      "title": "2023年三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-10-31/1218216840.PDF"
+    },
+    {
+      "announcement_id": "1219921870",
+      "sec_code": "600143",
+      "year": 2023,
+      "report_type": "FY",
+      "title": "金发科技2023年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-04-30/1219921870.PDF"
+    },
+    {
+      "announcement_id": "1219927694",
+      "sec_code": "603003",
+      "year": 2023,
+      "report_type": "FY",
+      "title": "龙宇股份2023年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-04-30/1219927694.PDF"
+    },
+    {
+      "announcement_id": "1217716500",
+      "sec_code": "600048",
+      "year": 2023,
+      "report_type": "H1",
+      "title": "保利发展控股集团股份有限公司2023年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-08-31/1217716500.PDF"
+    },
+    {
+      "announcement_id": "1217717226",
+      "sec_code": "600808",
+      "year": 2023,
+      "report_type": "H1",
+      "title": "马鞍山钢铁股份有限公司2023年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-08-31/1217717226.PDF"
+    },
+    {
+      "announcement_id": "1216705601",
+      "sec_code": "600736",
+      "year": 2023,
+      "report_type": "Q1",
+      "title": "苏州高新2023年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-04-29/1216705601.PDF"
+    },
+    {
+      "announcement_id": "1216710974",
+      "sec_code": "605598",
+      "year": 2023,
+      "report_type": "Q1",
+      "title": "上海港湾2023年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-04-29/1216710974.PDF"
+    },
+    {
+      "announcement_id": "1218203944",
+      "sec_code": "600958",
+      "year": 2023,
+      "report_type": "Q3",
+      "title": "东方证券股份有限公司2023年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-10-31/1218203944.PDF"
+    },
+    {
+      "announcement_id": "1218205910",
+      "sec_code": "601319",
+      "year": 2023,
+      "report_type": "Q3",
+      "title": "中国人保2023年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-10-31/1218205910.PDF"
+    },
+    {
+      "announcement_id": "1219922003",
+      "sec_code": "002153",
+      "year": 2023,
+      "report_type": "FY",
+      "title": "2023年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-04-30/1219922003.PDF"
+    },
+    {
+      "announcement_id": "1219927822",
+      "sec_code": "001330",
+      "year": 2023,
+      "report_type": "FY",
+      "title": "2023年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-04-30/1219927822.PDF"
+    },
+    {
+      "announcement_id": "1217716238",
+      "sec_code": "000539",
+      "year": 2023,
+      "report_type": "H1",
+      "title": "2023年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-08-31/1217716238.PDF"
+    },
+    {
+      "announcement_id": "1217717838",
+      "sec_code": "002459",
+      "year": 2023,
+      "report_type": "H1",
+      "title": "2023年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-08-31/1217717838.PDF"
+    },
+    {
+      "announcement_id": "1216701924",
+      "sec_code": "000069",
+      "year": 2023,
+      "report_type": "Q1",
+      "title": "2023年一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-04-29/1216701924.PDF"
+    },
+    {
+      "announcement_id": "1216703704",
+      "sec_code": "002717",
+      "year": 2023,
+      "report_type": "Q1",
+      "title": "2023年一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-04-29/1216703704.PDF"
+    },
+    {
+      "announcement_id": "1218203039",
+      "sec_code": "002717",
+      "year": 2023,
+      "report_type": "Q3",
+      "title": "2023年三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-10-31/1218203039.PDF"
+    },
+    {
+      "announcement_id": "1218213768",
+      "sec_code": "002197",
+      "year": 2023,
+      "report_type": "Q3",
+      "title": "2023年三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-10-31/1218213768.PDF"
+    },
+    {
+      "announcement_id": "1219925951",
+      "sec_code": "688671",
+      "year": 2023,
+      "report_type": "FY",
+      "title": "2023年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-04-30/1219925951.PDF"
+    },
+    {
+      "announcement_id": "1222807924",
+      "sec_code": "688059",
+      "year": 2023,
+      "report_type": "FY",
+      "title": "2023年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-04-30/1222807924.pdf"
+    },
+    {
+      "announcement_id": "1217718351",
+      "sec_code": "688073",
+      "year": 2023,
+      "report_type": "H1",
+      "title": "2023年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-08-31/1217718351.PDF"
+    },
+    {
+      "announcement_id": "1217718367",
+      "sec_code": "688141",
+      "year": 2023,
+      "report_type": "H1",
+      "title": "2023年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-08-31/1217718367.PDF"
+    },
+    {
+      "announcement_id": "1216711097",
+      "sec_code": "688033",
+      "year": 2023,
+      "report_type": "Q1",
+      "title": "北京天宜上佳高新材料股份有限公司2023年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-04-29/1216711097.PDF"
+    },
+    {
+      "announcement_id": "1216711740",
+      "sec_code": "688227",
+      "year": 2023,
+      "report_type": "Q1",
+      "title": "2023年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-04-29/1216711740.PDF"
+    },
+    {
+      "announcement_id": "1218205364",
+      "sec_code": "688379",
+      "year": 2023,
+      "report_type": "Q3",
+      "title": "华光新材2023年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-10-31/1218205364.PDF"
+    },
+    {
+      "announcement_id": "1218205421",
+      "sec_code": "688486",
+      "year": 2023,
+      "report_type": "Q3",
+      "title": "龙迅股份2023年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-10-31/1218205421.PDF"
+    },
+    {
+      "announcement_id": "1225266244",
+      "sec_code": "300167",
+      "year": 2025,
+      "report_type": "FY",
+      "title": "2025年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2026-04-30/1225266244.PDF"
+    },
+    {
+      "announcement_id": "1225269635",
+      "sec_code": "300716",
+      "year": 2025,
+      "report_type": "FY",
+      "title": "2025年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2026-04-30/1225269635.PDF"
+    },
+    {
+      "announcement_id": "1223424224",
+      "sec_code": "300167",
+      "year": 2025,
+      "report_type": "Q1",
+      "title": "2025年一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-04-30/1223424224.pdf"
+    },
+    {
+      "announcement_id": "1224776170",
+      "sec_code": "300999",
+      "year": 2025,
+      "report_type": "Q3",
+      "title": "2025年三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-10-31/1224776170.PDF"
+    },
+    {
+      "announcement_id": "1225262558",
+      "sec_code": "603030",
+      "year": 2025,
+      "report_type": "FY",
+      "title": "全筑股份2025年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2026-04-30/1225262558.PDF"
+    },
+    {
+      "announcement_id": "1225264623",
+      "sec_code": "600643",
+      "year": 2025,
+      "report_type": "FY",
+      "title": "爱建集团2025年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2026-04-30/1225264623.PDF"
+    },
+    {
+      "announcement_id": "1224625758",
+      "sec_code": "603843",
+      "year": 2025,
+      "report_type": "H1",
+      "title": "正平股份2025年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-08-30/1224625758.PDF"
+    },
+    {
+      "announcement_id": "1224627810",
+      "sec_code": "600155",
+      "year": 2025,
+      "report_type": "H1",
+      "title": "华创云信2025年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-08-30/1224627810.PDF"
+    },
+    {
+      "announcement_id": "1223423281",
+      "sec_code": "603883",
+      "year": 2025,
+      "report_type": "Q1",
+      "title": "老百姓2025年一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-04-30/1223423281.PDF"
+    },
+    {
+      "announcement_id": "1223427097",
+      "sec_code": "603990",
+      "year": 2025,
+      "report_type": "Q1",
+      "title": "苏州麦迪斯顿医疗科技股份有限公司2025年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-04-30/1223427097.PDF"
+    },
+    {
+      "announcement_id": "1224776804",
+      "sec_code": "601456",
+      "year": 2025,
+      "report_type": "Q3",
+      "title": "国联民生证券股份有限公司2025年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-10-31/1224776804.PDF"
+    },
+    {
+      "announcement_id": "1224778564",
+      "sec_code": "600343",
+      "year": 2025,
+      "report_type": "Q3",
+      "title": "航天动力2025年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-10-31/1224778564.PDF"
+    },
+    {
+      "announcement_id": "1225261915",
+      "sec_code": "002602",
+      "year": 2025,
+      "report_type": "FY",
+      "title": "2025年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2026-04-30/1225261915.PDF"
+    },
+    {
+      "announcement_id": "1225273091",
+      "sec_code": "000858",
+      "year": 2025,
+      "report_type": "FY",
+      "title": "2025年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2026-04-30/1225273091.PDF"
+    },
+    {
+      "announcement_id": "1224626699",
+      "sec_code": "000425",
+      "year": 2025,
+      "report_type": "H1",
+      "title": "2025年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-08-30/1224626699.PDF"
+    },
+    {
+      "announcement_id": "1224626738",
+      "sec_code": "000851",
+      "year": 2025,
+      "report_type": "H1",
+      "title": "2025年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-08-30/1224626738.PDF"
+    },
+    {
+      "announcement_id": "1223416985",
+      "sec_code": "002193",
+      "year": 2025,
+      "report_type": "Q1",
+      "title": "2025年一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-04-30/1223416985.PDF"
+    },
+    {
+      "announcement_id": "1223417407",
+      "sec_code": "000415",
+      "year": 2025,
+      "report_type": "Q1",
+      "title": "2025年一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-04-30/1223417407.PDF"
+    },
+    {
+      "announcement_id": "1224775453",
+      "sec_code": "002845",
+      "year": 2025,
+      "report_type": "Q3",
+      "title": "2025年三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-10-31/1224775453.PDF"
+    },
+    {
+      "announcement_id": "1224776492",
+      "sec_code": "000301",
+      "year": 2025,
+      "report_type": "Q3",
+      "title": "2025年三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-10-31/1224776492.PDF"
+    },
+    {
+      "announcement_id": "1225261344",
+      "sec_code": "688075",
+      "year": 2025,
+      "report_type": "FY",
+      "title": "安旭生物2025年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2026-04-30/1225261344.PDF"
+    },
+    {
+      "announcement_id": "1225263032",
+      "sec_code": "688710",
+      "year": 2025,
+      "report_type": "FY",
+      "title": "2025年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2026-04-30/1225263032.PDF"
+    },
+    {
+      "announcement_id": "1224626053",
+      "sec_code": "688184",
+      "year": 2025,
+      "report_type": "H1",
+      "title": "浙江帕瓦新能源股份有限公司2025年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-08-30/1224626053.PDF"
+    },
+    {
+      "announcement_id": "1224626505",
+      "sec_code": "688355",
+      "year": 2025,
+      "report_type": "H1",
+      "title": "苏州明志科技股份有限公司2025年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-08-30/1224626505.PDF"
+    },
+    {
+      "announcement_id": "1223423646",
+      "sec_code": "688007",
+      "year": 2025,
+      "report_type": "Q1",
+      "title": "2025年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-04-30/1223423646.PDF"
+    },
+    {
+      "announcement_id": "1223423928",
+      "sec_code": "688082",
+      "year": 2025,
+      "report_type": "Q1",
+      "title": "2025年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-04-30/1223423928.PDF"
+    },
+    {
+      "announcement_id": "1224775373",
+      "sec_code": "688289",
+      "year": 2025,
+      "report_type": "Q3",
+      "title": "圣湘生物科技股份有限公司2025年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-10-31/1224775373.PDF"
+    },
+    {
+      "announcement_id": "1224778371",
+      "sec_code": "688115",
+      "year": 2025,
+      "report_type": "Q3",
+      "title": "2025年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-10-31/1224778371.PDF"
+    }
+  ],
+  "coverage": [
+    {
+      "year": 2015,
+      "board": "UNKNOWN",
+      "report_type": "FY",
+      "available": 1,
+      "selected": 0,
+      "quota": 0,
+      "quota_met": true,
+      "excluded_from_universe": true
+    },
+    {
+      "year": 2015,
+      "board": "UNKNOWN",
+      "report_type": "H1",
+      "available": 2,
+      "selected": 0,
+      "quota": 0,
+      "quota_met": true,
+      "excluded_from_universe": true
+    },
+    {
+      "year": 2015,
+      "board": "UNKNOWN",
+      "report_type": "Q3",
+      "available": 1,
+      "selected": 0,
+      "quota": 0,
+      "quota_met": true,
+      "excluded_from_universe": true
+    },
+    {
+      "year": 2015,
+      "board": "创业板",
+      "report_type": "FY",
+      "available": 9,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2015,
+      "board": "创业板",
+      "report_type": "H1",
+      "available": 2,
+      "selected": 0,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2015,
+      "board": "创业板",
+      "report_type": "Q1",
+      "available": 1,
+      "selected": 0,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2015,
+      "board": "创业板",
+      "report_type": "Q3",
+      "available": 0,
+      "selected": 0,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2015,
+      "board": "沪主板",
+      "report_type": "FY",
+      "available": 94,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2015,
+      "board": "沪主板",
+      "report_type": "H1",
+      "available": 111,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2015,
+      "board": "沪主板",
+      "report_type": "Q1",
+      "available": 241,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2015,
+      "board": "沪主板",
+      "report_type": "Q3",
+      "available": 170,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2015,
+      "board": "深主板",
+      "report_type": "FY",
+      "available": 55,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2015,
+      "board": "深主板",
+      "report_type": "H1",
+      "available": 26,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2015,
+      "board": "深主板",
+      "report_type": "Q1",
+      "available": 69,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2015,
+      "board": "深主板",
+      "report_type": "Q3",
+      "available": 139,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2015,
+      "board": "科创板",
+      "report_type": "FY",
+      "available": 0,
+      "selected": 0,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2015,
+      "board": "科创板",
+      "report_type": "H1",
+      "available": 0,
+      "selected": 0,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2015,
+      "board": "科创板",
+      "report_type": "Q1",
+      "available": 0,
+      "selected": 0,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2015,
+      "board": "科创板",
+      "report_type": "Q3",
+      "available": 0,
+      "selected": 0,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2018,
+      "board": "UNKNOWN",
+      "report_type": "Q1",
+      "available": 2,
+      "selected": 0,
+      "quota": 0,
+      "quota_met": true,
+      "excluded_from_universe": true
+    },
+    {
+      "year": 2018,
+      "board": "UNKNOWN",
+      "report_type": "Q3",
+      "available": 3,
+      "selected": 0,
+      "quota": 0,
+      "quota_met": true,
+      "excluded_from_universe": true
+    },
+    {
+      "year": 2018,
+      "board": "创业板",
+      "report_type": "FY",
+      "available": 6,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2018,
+      "board": "创业板",
+      "report_type": "H1",
+      "available": 1,
+      "selected": 0,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2018,
+      "board": "创业板",
+      "report_type": "Q1",
+      "available": 2,
+      "selected": 1,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2018,
+      "board": "创业板",
+      "report_type": "Q3",
+      "available": 0,
+      "selected": 0,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2018,
+      "board": "沪主板",
+      "report_type": "FY",
+      "available": 75,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2018,
+      "board": "沪主板",
+      "report_type": "H1",
+      "available": 90,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2018,
+      "board": "沪主板",
+      "report_type": "Q1",
+      "available": 280,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2018,
+      "board": "沪主板",
+      "report_type": "Q3",
+      "available": 184,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2018,
+      "board": "深主板",
+      "report_type": "FY",
+      "available": 52,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2018,
+      "board": "深主板",
+      "report_type": "H1",
+      "available": 47,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2018,
+      "board": "深主板",
+      "report_type": "Q1",
+      "available": 26,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2018,
+      "board": "深主板",
+      "report_type": "Q3",
+      "available": 133,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2018,
+      "board": "科创板",
+      "report_type": "FY",
+      "available": 0,
+      "selected": 0,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2018,
+      "board": "科创板",
+      "report_type": "H1",
+      "available": 0,
+      "selected": 0,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2018,
+      "board": "科创板",
+      "report_type": "Q1",
+      "available": 0,
+      "selected": 0,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2018,
+      "board": "科创板",
+      "report_type": "Q3",
+      "available": 0,
+      "selected": 0,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2021,
+      "board": "UNKNOWN",
+      "report_type": "Q1",
+      "available": 2,
+      "selected": 0,
+      "quota": 0,
+      "quota_met": true,
+      "excluded_from_universe": true
+    },
+    {
+      "year": 2021,
+      "board": "创业板",
+      "report_type": "FY",
+      "available": 0,
+      "selected": 0,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2021,
+      "board": "创业板",
+      "report_type": "H1",
+      "available": 0,
+      "selected": 0,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2021,
+      "board": "创业板",
+      "report_type": "Q1",
+      "available": 1,
+      "selected": 0,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2021,
+      "board": "创业板",
+      "report_type": "Q3",
+      "available": 9,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2021,
+      "board": "沪主板",
+      "report_type": "FY",
+      "available": 140,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2021,
+      "board": "沪主板",
+      "report_type": "H1",
+      "available": 131,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2021,
+      "board": "沪主板",
+      "report_type": "Q1",
+      "available": 209,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2021,
+      "board": "沪主板",
+      "report_type": "Q3",
+      "available": 143,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2021,
+      "board": "深主板",
+      "report_type": "FY",
+      "available": 7,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2021,
+      "board": "深主板",
+      "report_type": "H1",
+      "available": 0,
+      "selected": 0,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2021,
+      "board": "深主板",
+      "report_type": "Q1",
+      "available": 3,
+      "selected": 0,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2021,
+      "board": "深主板",
+      "report_type": "Q3",
+      "available": 148,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2021,
+      "board": "科创板",
+      "report_type": "FY",
+      "available": 21,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2021,
+      "board": "科创板",
+      "report_type": "H1",
+      "available": 25,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2021,
+      "board": "科创板",
+      "report_type": "Q1",
+      "available": 111,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2021,
+      "board": "科创板",
+      "report_type": "Q3",
+      "available": 31,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2023,
+      "board": "UNKNOWN",
+      "report_type": "Q3",
+      "available": 2,
+      "selected": 0,
+      "quota": 0,
+      "quota_met": true,
+      "excluded_from_universe": true
+    },
+    {
+      "year": 2023,
+      "board": "创业板",
+      "report_type": "FY",
+      "available": 13,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2023,
+      "board": "创业板",
+      "report_type": "H1",
+      "available": 7,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2023,
+      "board": "创业板",
+      "report_type": "Q1",
+      "available": 5,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2023,
+      "board": "创业板",
+      "report_type": "Q3",
+      "available": 5,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2023,
+      "board": "沪主板",
+      "report_type": "FY",
+      "available": 79,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2023,
+      "board": "沪主板",
+      "report_type": "H1",
+      "available": 82,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2023,
+      "board": "沪主板",
+      "report_type": "Q1",
+      "available": 241,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2023,
+      "board": "沪主板",
+      "report_type": "Q3",
+      "available": 139,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2023,
+      "board": "深主板",
+      "report_type": "FY",
+      "available": 62,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2023,
+      "board": "深主板",
+      "report_type": "H1",
+      "available": 53,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2023,
+      "board": "深主板",
+      "report_type": "Q1",
+      "available": 51,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2023,
+      "board": "深主板",
+      "report_type": "Q3",
+      "available": 100,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2023,
+      "board": "科创板",
+      "report_type": "FY",
+      "available": 21,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2023,
+      "board": "科创板",
+      "report_type": "H1",
+      "available": 17,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2023,
+      "board": "科创板",
+      "report_type": "Q1",
+      "available": 38,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2023,
+      "board": "科创板",
+      "report_type": "Q3",
+      "available": 92,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2025,
+      "board": "UNKNOWN",
+      "report_type": "H1",
+      "available": 2,
+      "selected": 0,
+      "quota": 0,
+      "quota_met": true,
+      "excluded_from_universe": true
+    },
+    {
+      "year": 2025,
+      "board": "UNKNOWN",
+      "report_type": "Q1",
+      "available": 2,
+      "selected": 0,
+      "quota": 0,
+      "quota_met": true,
+      "excluded_from_universe": true
+    },
+    {
+      "year": 2025,
+      "board": "创业板",
+      "report_type": "FY",
+      "available": 13,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2025,
+      "board": "创业板",
+      "report_type": "H1",
+      "available": 2,
+      "selected": 0,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2025,
+      "board": "创业板",
+      "report_type": "Q1",
+      "available": 5,
+      "selected": 1,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2025,
+      "board": "创业板",
+      "report_type": "Q3",
+      "available": 3,
+      "selected": 1,
+      "quota": 2,
+      "quota_met": false,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2025,
+      "board": "沪主板",
+      "report_type": "FY",
+      "available": 95,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2025,
+      "board": "沪主板",
+      "report_type": "H1",
+      "available": 87,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2025,
+      "board": "沪主板",
+      "report_type": "Q1",
+      "available": 204,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2025,
+      "board": "沪主板",
+      "report_type": "Q3",
+      "available": 176,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2025,
+      "board": "深主板",
+      "report_type": "FY",
+      "available": 24,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2025,
+      "board": "深主板",
+      "report_type": "H1",
+      "available": 52,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2025,
+      "board": "深主板",
+      "report_type": "Q1",
+      "available": 11,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2025,
+      "board": "深主板",
+      "report_type": "Q3",
+      "available": 104,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2025,
+      "board": "科创板",
+      "report_type": "FY",
+      "available": 36,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2025,
+      "board": "科创板",
+      "report_type": "H1",
+      "available": 22,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2025,
+      "board": "科创板",
+      "report_type": "Q1",
+      "available": 124,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    },
+    {
+      "year": 2025,
+      "board": "科创板",
+      "report_type": "Q3",
+      "available": 61,
+      "selected": 2,
+      "quota": 2,
+      "quota_met": true,
+      "excluded_from_universe": false
+    }
+  ]
+}

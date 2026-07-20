@@ -1,0 +1,201 @@
+{
+  "period": "20211231",
+  "n_revised_securities_in_period": 74,
+  "checked": [
+    {
+      "ts_code": "000159.SZ",
+      "f_ann_dates": [
+        "20220324",
+        "20220412"
+      ],
+      "before_formation": "20220324",
+      "before_value": "-9710494.21",
+      "before_status": "RESOLVED",
+      "after_formation": "20220412",
+      "after_value": "27662678.41",
+      "after_status": "RESOLVED",
+      "value_changed": true,
+      "invariance_holds": true,
+      "superseded_flag_before": true
+    },
+    {
+      "ts_code": "000622.SZ",
+      "f_ann_dates": [
+        "20220429",
+        "20230427"
+      ],
+      "before_formation": "20220429",
+      "before_value": "1786934.9",
+      "before_status": "RESOLVED",
+      "after_formation": "20230427",
+      "after_value": "1719590.99",
+      "after_status": "RESOLVED",
+      "value_changed": true,
+      "invariance_holds": true,
+      "superseded_flag_before": true
+    },
+    {
+      "ts_code": "000806.SZ",
+      "f_ann_dates": [
+        "20220430",
+        "20230429"
+      ],
+      "before_formation": "20220430",
+      "before_value": "-962324537.08",
+      "before_status": "RESOLVED",
+      "after_formation": "20230429",
+      "after_value": "-965753885.14",
+      "after_status": "RESOLVED",
+      "value_changed": true,
+      "invariance_holds": true,
+      "superseded_flag_before": true
+    },
+    {
+      "ts_code": "000976.SZ",
+      "f_ann_dates": [
+        "20220430",
+        "20230630"
+      ],
+      "before_formation": "20220430",
+      "before_value": "394745543.69",
+      "before_status": "RESOLVED",
+      "after_formation": "20230630",
+      "after_value": "281178890.38",
+      "after_status": "RESOLVED",
+      "value_changed": true,
+      "invariance_holds": true,
+      "superseded_flag_before": true
+    },
+    {
+      "ts_code": "002037.SZ",
+      "f_ann_dates": [
+        "20220430",
+        "20230428"
+      ],
+      "before_formation": "20220430",
+      "before_value": "103854780.76",
+      "before_status": "RESOLVED",
+      "after_formation": "20230428",
+      "after_value": "-59240219.04",
+      "after_status": "RESOLVED",
+      "value_changed": true,
+      "invariance_holds": true,
+      "superseded_flag_before": true
+    },
+    {
+      "ts_code": "002173.SZ",
+      "f_ann_dates": [
+        "20220430",
+        "20230428"
+      ],
+      "before_formation": "20220430",
+      "before_value": "-105225864.63",
+      "before_status": "RESOLVED",
+      "after_formation": "20230428",
+      "after_value": "-103464875.92",
+      "after_status": "RESOLVED",
+      "value_changed": true,
+      "invariance_holds": true,
+      "superseded_flag_before": true
+    },
+    {
+      "ts_code": "002261.SZ",
+      "f_ann_dates": [
+        "20220428",
+        "20230722"
+      ],
+      "before_formation": "20220428",
+      "before_value": "82529906.38",
+      "before_status": "RESOLVED",
+      "after_formation": "20230722",
+      "after_value": "81857382.97",
+      "after_status": "RESOLVED",
+      "value_changed": true,
+      "invariance_holds": true,
+      "superseded_flag_before": true
+    },
+    {
+      "ts_code": "002269.SZ",
+      "f_ann_dates": [
+        "20220430",
+        "20230429"
+      ],
+      "before_formation": "20220430",
+      "before_value": "-468465808.39",
+      "before_status": "RESOLVED",
+      "after_formation": "20230429",
+      "after_value": "-401569909.65",
+      "after_status": "RESOLVED",
+      "value_changed": true,
+      "invariance_holds": true,
+      "superseded_flag_before": true
+    },
+    {
+      "ts_code": "002309.SZ",
+      "f_ann_dates": [
+        "20220427",
+        "20230422"
+      ],
+      "before_formation": "20220427",
+      "before_value": "-3866402822.9",
+      "before_status": "RESOLVED",
+      "after_formation": "20230422",
+      "after_value": "-4188446098.14",
+      "after_status": "RESOLVED",
+      "value_changed": true,
+      "invariance_holds": true,
+      "superseded_flag_before": true
+    },
+    {
+      "ts_code": "002313.SZ",
+      "f_ann_dates": [
+        "20221031",
+        "20230417"
+      ],
+      "before_formation": "20221031",
+      "before_value": "-229849374.0",
+      "before_status": "RESOLVED",
+      "after_formation": "20230417",
+      "after_value": "-162829398.52",
+      "after_status": "RESOLVED",
+      "value_changed": true,
+      "invariance_holds": true,
+      "superseded_flag_before": true
+    },
+    {
+      "ts_code": "002338.SZ",
+      "f_ann_dates": [
+        "20220429",
+        "20230427"
+      ],
+      "before_formation": "20220429",
+      "before_value": "53266444.9",
+      "before_status": "RESOLVED",
+      "after_formation": "20230427",
+      "after_value": "46657302.23",
+      "after_status": "RESOLVED",
+      "value_changed": true,
+      "invariance_holds": true,
+      "superseded_flag_before": true
+    },
+    {
+      "ts_code": "002383.SZ",
+      "f_ann_dates": [
+        "20220415",
+        "20230831"
+      ],
+      "before_formation": "20220415",
+      "before_value": "-92704523.84",
+      "before_status": "RESOLVED",
+      "after_formation": "20230831",
+      "after_value": "201841454.67",
+      "after_status": "RESOLVED",
+      "value_changed": true,
+      "invariance_holds": true,
+      "superseded_flag_before": true
+    }
+  ],
+  "h1_f_ann_date_value": "100",
+  "h1_ann_date_status": "FACT_VERSION_AMBIGUOUS",
+  "h1_ann_date_value": "None"
+}

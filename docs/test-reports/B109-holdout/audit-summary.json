@@ -1,0 +1,12 @@
+{
+  "n_total": 119,
+  "n_adjudicable": 22,
+  "adjudicable_fraction": 0.18487394957983194,
+  "consistency_rate": 1.0,
+  "consistency_denominator": "adjudicable_cases",
+  "count_match": 22,
+  "count_mismatch": 0,
+  "count_tushare_unresolved": 0,
+  "count_anchor_unusable": 97,
+  "requires_adjudication": []
+}

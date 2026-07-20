@@ -1,0 +1,109 @@
+{
+  "identity": [
+    {
+      "trade_date": "20141231",
+      "n": 2345,
+      "pages": 1,
+      "within_0.5pct": 2345,
+      "within_0.5pct_frac": 1.0,
+      "severe_gt_5pct": 0,
+      "median_error": "0.00",
+      "p99_error": "1.821715639812384668754073217E-10",
+      "max_error": "3.308011096480635663883754549E-10",
+      "module_disagreements": 0,
+      "circ_mv_identity_would_pass": 790,
+      "circ_mv_identity_pass_frac": 0.3368869936034115
+    },
+    {
+      "trade_date": "20151231",
+      "n": 2545,
+      "pages": 1,
+      "within_0.5pct": 2545,
+      "within_0.5pct_frac": 1.0,
+      "severe_gt_5pct": 0,
+      "median_error": "2.578505732663353613625795872E-12",
+      "p99_error": "9.589481560811320091654087946E-11",
+      "max_error": "1.554389082161592822881736895E-10",
+      "module_disagreements": 0,
+      "circ_mv_identity_would_pass": 718,
+      "circ_mv_identity_pass_frac": 0.2821218074656189
+    },
+    {
+      "trade_date": "20181228",
+      "n": 3551,
+      "pages": 1,
+      "within_0.5pct": 3551,
+      "within_0.5pct_frac": 1.0,
+      "severe_gt_5pct": 0,
+      "median_error": "9.210469015765061264755044884E-12",
+      "p99_error": "2.718715417568189159138244900E-10",
+      "max_error": "4.236676577612448770835002297E-10",
+      "module_disagreements": 0,
+      "circ_mv_identity_would_pass": 906,
+      "circ_mv_identity_pass_frac": 0.25513939735285834
+    },
+    {
+      "trade_date": "20201231",
+      "n": 4119,
+      "pages": 1,
+      "within_0.5pct": 4119,
+      "within_0.5pct_frac": 1.0,
+      "severe_gt_5pct": 0,
+      "median_error": "8.347023429800803172135698042E-12",
+      "p99_error": "2.504283627502720695924653984E-10",
+      "max_error": "5.095749879112251680350275324E-10",
+      "module_disagreements": 0,
+      "circ_mv_identity_would_pass": 1359,
+      "circ_mv_identity_pass_frac": 0.3299344501092498
+    },
+    {
+      "trade_date": "20211231",
+      "n": 4669,
+      "pages": 1,
+      "within_0.5pct": 4669,
+      "within_0.5pct_frac": 1.0,
+      "severe_gt_5pct": 0,
+      "median_error": "7.968996571026442200460455396E-12",
+      "p99_error": "2.342809884406510958794691787E-10",
+      "max_error": "6.535678195786819983873622532E-10",
+      "module_disagreements": 0,
+      "circ_mv_identity_would_pass": 1352,
+      "circ_mv_identity_pass_frac": 0.2895695009638038
+    },
+    {
+      "trade_date": "20231229",
+      "n": 5329,
+      "pages": 2,
+      "within_0.5pct": 5329,
+      "within_0.5pct_frac": 1.0,
+      "severe_gt_5pct": 0,
+      "median_error": "1.326248391819935460969025297E-11",
+      "p99_error": "2.426564965954862688567484494E-10",
+      "max_error": "1.390955927477400957932221610E-9",
+      "module_disagreements": 0,
+      "circ_mv_identity_would_pass": 1760,
+      "circ_mv_identity_pass_frac": 0.33026834302871083
+    },
+    {
+      "trade_date": "20250630",
+      "n": 5405,
+      "pages": 2,
+      "within_0.5pct": 5405,
+      "within_0.5pct_frac": 1.0,
+      "severe_gt_5pct": 0,
+      "median_error": "1.479551647360024222083274913E-11",
+      "p99_error": "2.060081794759982611819020687E-10",
+      "max_error": "6.895215865226317554762353864E-10",
+      "module_disagreements": 0,
+      "circ_mv_identity_would_pass": 2250,
+      "circ_mv_identity_pass_frac": 0.4162812210915819
+    }
+  ],
+  "h1_real_data": {
+    "formation_date": "20220630",
+    "period": "20211231",
+    "checked": 5586,
+    "differ_under_ann_date": 225,
+    "ambiguous_under_ann_date": 53
+  }
+}

@@ -1,0 +1,892 @@
+{
+  "single_source": [
+    {
+      "announcement_id": "1202265434",
+      "ts_code": "300016.SZ",
+      "end_date": "20151231",
+      "report_type": "FY",
+      "anchor": "32579244.19",
+      "tushare": "32579244.19",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1201521422",
+      "ts_code": "601633.SH",
+      "end_date": "20150630",
+      "report_type": "H1",
+      "anchor": "4717052784.60",
+      "tushare": "4717052784.6",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1200946315",
+      "ts_code": "600295.SH",
+      "end_date": "20150331",
+      "report_type": "Q1",
+      "anchor": "106063823.34",
+      "tushare": "106063823.34",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1201745930",
+      "ts_code": "603166.SH",
+      "end_date": "20150930",
+      "report_type": "Q3",
+      "anchor": "35412317.67",
+      "tushare": "35412317.67",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1202265743",
+      "ts_code": "000565.SZ",
+      "end_date": "20151231",
+      "report_type": "FY",
+      "anchor": "144573659.62",
+      "tushare": "144573659.62",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1201518006",
+      "ts_code": "002431.SZ",
+      "end_date": "20150630",
+      "report_type": "H1",
+      "anchor": "128033227.35",
+      "tushare": "128033227.35",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1201518677",
+      "ts_code": "002724.SZ",
+      "end_date": "20150630",
+      "report_type": "H1",
+      "anchor": "-15561251.85",
+      "tushare": "-15561251.85",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1200946860",
+      "ts_code": "002024.SZ",
+      "end_date": "20150331",
+      "report_type": "Q1",
+      "anchor": "-331923000",
+      "tushare": "-331923000.0",
+      "rel_err": "0.0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1201744682",
+      "ts_code": "000973.SZ",
+      "end_date": "20150930",
+      "report_type": "Q3",
+      "anchor": "36393027.18",
+      "tushare": "36393027.18",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1206166434",
+      "ts_code": "600645.SH",
+      "end_date": "20181231",
+      "report_type": "FY",
+      "anchor": "59252904.30",
+      "tushare": "59252904.3",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1205362568",
+      "ts_code": "601021.SH",
+      "end_date": "20180630",
+      "report_type": "H1",
+      "anchor": "726742750",
+      "tushare": "726742750.0",
+      "rel_err": "0.0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1204828446",
+      "ts_code": "601898.SH",
+      "end_date": "20180331",
+      "report_type": "Q1",
+      "anchor": "1410828000",
+      "tushare": "1410828000.0",
+      "rel_err": "0.0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1206164151",
+      "ts_code": "002701.SZ",
+      "end_date": "20181231",
+      "report_type": "FY",
+      "anchor": "225384074",
+      "tushare": "225384074.0",
+      "rel_err": "0.0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1205362750",
+      "ts_code": "000792.SZ",
+      "end_date": "20180630",
+      "report_type": "H1",
+      "anchor": "-1179156727.08",
+      "tushare": "-1179156727.08",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1205363623",
+      "ts_code": "002024.SZ",
+      "end_date": "20180630",
+      "report_type": "H1",
+      "anchor": "6003107000",
+      "tushare": "6003107000.0",
+      "rel_err": "0.0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1204828926",
+      "ts_code": "000982.SZ",
+      "end_date": "20180331",
+      "report_type": "Q1",
+      "anchor": "-165887725.05",
+      "tushare": "-165887725.05",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1211434400",
+      "ts_code": "300418.SZ",
+      "end_date": "20210930",
+      "report_type": "Q3",
+      "anchor": "2245592018.21",
+      "tushare": "2245592018.21",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1213270381",
+      "ts_code": "600793.SH",
+      "end_date": "20211231",
+      "report_type": "FY",
+      "anchor": "28324212.66",
+      "tushare": "28324212.66",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1213271411",
+      "ts_code": "603111.SH",
+      "end_date": "20211231",
+      "report_type": "FY",
+      "anchor": "370396645.41",
+      "tushare": "370396645.41",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1210927017",
+      "ts_code": "600833.SH",
+      "end_date": "20210630",
+      "report_type": "H1",
+      "anchor": "25950829.29",
+      "tushare": "25950829.29",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1209879238",
+      "ts_code": "600734.SH",
+      "end_date": "20210331",
+      "report_type": "Q1",
+      "anchor": "-72920739.23",
+      "tushare": "-72920739.23",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1211435315",
+      "ts_code": "600326.SH",
+      "end_date": "20210930",
+      "report_type": "Q3",
+      "anchor": "49340964.48",
+      "tushare": "49340964.48",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1213273372",
+      "ts_code": "688163.SH",
+      "end_date": "20211231",
+      "report_type": "FY",
+      "anchor": "76482795.73",
+      "tushare": "76482795.73",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1210927986",
+      "ts_code": "688021.SH",
+      "end_date": "20210630",
+      "report_type": "H1",
+      "anchor": "44584855.61",
+      "tushare": "44584855.61",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1210928265",
+      "ts_code": "688669.SH",
+      "end_date": "20210630",
+      "report_type": "H1",
+      "anchor": "53880494.64",
+      "tushare": "53880494.64",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1211434725",
+      "ts_code": "688701.SH",
+      "end_date": "20210930",
+      "report_type": "Q3",
+      "anchor": "15485197.30",
+      "tushare": "15485197.3",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1211435429",
+      "ts_code": "688096.SH",
+      "end_date": "20210930",
+      "report_type": "Q3",
+      "anchor": "32894236.14",
+      "tushare": "32894236.14",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1219924779",
+      "ts_code": "300518.SZ",
+      "end_date": "20231231",
+      "report_type": "FY",
+      "anchor": "-255232286.46",
+      "tushare": "-255232286.46",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1217716386",
+      "ts_code": "301308.SZ",
+      "end_date": "20230630",
+      "report_type": "H1",
+      "anchor": "-595949896.64",
+      "tushare": "-595949896.64",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1217716500",
+      "ts_code": "600048.SH",
+      "end_date": "20230630",
+      "report_type": "H1",
+      "anchor": "12222473400.00",
+      "tushare": "12222473408.33",
+      "rel_err": "6.815314479901296441555127511E-10",
+      "agree": true
+    },
+    {
+      "announcement_id": "1217717226",
+      "ts_code": "600808.SH",
+      "end_date": "20230630",
+      "report_type": "H1",
+      "anchor": "-2235498496",
+      "tushare": "-2235498496.0",
+      "rel_err": "0.0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1216705601",
+      "ts_code": "600736.SH",
+      "end_date": "20230331",
+      "report_type": "Q1",
+      "anchor": "101884918.38",
+      "tushare": "101884918.38",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1216710974",
+      "ts_code": "605598.SH",
+      "end_date": "20230331",
+      "report_type": "Q1",
+      "anchor": "28527981.37",
+      "tushare": "28527981.37",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1218203944",
+      "ts_code": "600958.SH",
+      "end_date": "20230930",
+      "report_type": "Q3",
+      "anchor": "955727300.80",
+      "tushare": "2857177459.49",
+      "rel_err": "0.6654994957958980758779708484",
+      "agree": false
+    },
+    {
+      "announcement_id": "1219922003",
+      "ts_code": "002153.SZ",
+      "end_date": "20231231",
+      "report_type": "FY",
+      "anchor": "10264892.40",
+      "tushare": "-104622631.62",
+      "rel_err": "1.098113498399496672878662962",
+      "agree": false
+    },
+    {
+      "announcement_id": "1217716238",
+      "ts_code": "000539.SZ",
+      "end_date": "20230630",
+      "report_type": "H1",
+      "anchor": "856538633",
+      "tushare": "856538633.0",
+      "rel_err": "0.0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1217717838",
+      "ts_code": "002459.SZ",
+      "end_date": "20230630",
+      "report_type": "H1",
+      "anchor": "4813328825.46",
+      "tushare": "4813328825.46",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1219925951",
+      "ts_code": "688671.SH",
+      "end_date": "20231231",
+      "report_type": "FY",
+      "anchor": "23371981.23",
+      "tushare": "23371981.23",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1222807924",
+      "ts_code": "688059.SH",
+      "end_date": "20231231",
+      "report_type": "FY",
+      "anchor": "24108277.75",
+      "tushare": "157906595.78",
+      "rel_err": "0.8473257077646816964392670032",
+      "agree": false
+    },
+    {
+      "announcement_id": "1217718351",
+      "ts_code": "688073.SH",
+      "end_date": "20230630",
+      "report_type": "H1",
+      "anchor": "83810379.15",
+      "tushare": "83810379.15",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1217718367",
+      "ts_code": "688141.SH",
+      "end_date": "20230630",
+      "report_type": "H1",
+      "anchor": "-190810294.69",
+      "tushare": "-190810294.69",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1218205421",
+      "ts_code": "688486.SH",
+      "end_date": "20230930",
+      "report_type": "Q3",
+      "anchor": "70415590.76",
+      "tushare": "70415590.76",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1225269635",
+      "ts_code": "300716.SZ",
+      "end_date": "20251231",
+      "report_type": "FY",
+      "anchor": "-221420844.08",
+      "tushare": "-221420844.08",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1224625758",
+      "ts_code": "603843.SH",
+      "end_date": "20250630",
+      "report_type": "H1",
+      "anchor": "-88122079.37",
+      "tushare": "-88122079.37",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1224627810",
+      "ts_code": "600155.SH",
+      "end_date": "20250630",
+      "report_type": "H1",
+      "anchor": "78852120.36",
+      "tushare": "78852120.36",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1223423281",
+      "ts_code": "603883.SH",
+      "end_date": "20250331",
+      "report_type": "Q1",
+      "anchor": "250636310",
+      "tushare": "250636310.0",
+      "rel_err": "0.0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1223427097",
+      "ts_code": "603990.SH",
+      "end_date": "20250331",
+      "report_type": "Q1",
+      "anchor": "23595895.17",
+      "tushare": "23595895.17",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1224778564",
+      "ts_code": "600343.SH",
+      "end_date": "20250930",
+      "report_type": "Q3",
+      "anchor": "-109252544.99",
+      "tushare": "-109252544.99",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1224626699",
+      "ts_code": "000425.SZ",
+      "end_date": "20250630",
+      "report_type": "H1",
+      "anchor": "4358409242.35",
+      "tushare": "4358409242.35",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1224626738",
+      "ts_code": "000851.SZ",
+      "end_date": "20250630",
+      "report_type": "H1",
+      "anchor": "-140340907.67",
+      "tushare": "-140340907.67",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1225263032",
+      "ts_code": "688710.SH",
+      "end_date": "20251231",
+      "report_type": "FY",
+      "anchor": "-30515861.65",
+      "tushare": "-30515861.65",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1224626053",
+      "ts_code": "688184.SH",
+      "end_date": "20250630",
+      "report_type": "H1",
+      "anchor": "-158430651.56",
+      "tushare": "-158430651.56",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1224626505",
+      "ts_code": "688355.SH",
+      "end_date": "20250630",
+      "report_type": "H1",
+      "anchor": "43607017.00",
+      "tushare": "43607017.0",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1223423646",
+      "ts_code": "688007.SH",
+      "end_date": "20250331",
+      "report_type": "Q1",
+      "anchor": "-21359576.96",
+      "tushare": "-21359576.96",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1223423928",
+      "ts_code": "688082.SH",
+      "end_date": "20250331",
+      "report_type": "Q1",
+      "anchor": "246333965.84",
+      "tushare": "246333965.84",
+      "rel_err": "0",
+      "agree": true
+    },
+    {
+      "announcement_id": "1224775373",
+      "ts_code": "688289.SH",
+      "end_date": "20250930",
+      "report_type": "Q3",
+      "anchor": "191321355.95",
+      "tushare": "191321355.95",
+      "rel_err": "0",
+      "agree": true
+    }
+  ],
+  "source_conflict": [
+    {
+      "announcement_id": "1202265615",
+      "ts_code": "300429.SZ",
+      "end_date": "20151231",
+      "report_type": "FY",
+      "tushare": "86513791.75",
+      "candidates": {
+        "86513791.75": "S2",
+        "22371024.47": "S2"
+      },
+      "tushare_matches_a_candidate": true,
+      "matched_source": [
+        "S2"
+      ]
+    },
+    {
+      "announcement_id": "1202274622",
+      "ts_code": "600656.SH",
+      "end_date": "20151231",
+      "report_type": "FY",
+      "tushare": "-22012406.32",
+      "candidates": {
+        "-22012406.32": "S1",
+        "-6205711.8": "S2"
+      },
+      "tushare_matches_a_candidate": true,
+      "matched_source": [
+        "S1"
+      ]
+    },
+    {
+      "announcement_id": "1202281220",
+      "ts_code": "002312.SZ",
+      "end_date": "20151231",
+      "report_type": "FY",
+      "tushare": "-37927928.0",
+      "candidates": {
+        "-37927928.00": "S2",
+        "-41700806.65": "S2"
+      },
+      "tushare_matches_a_candidate": true,
+      "matched_source": [
+        "S2"
+      ]
+    },
+    {
+      "announcement_id": "1201745341",
+      "ts_code": "000036.SZ",
+      "end_date": "20150930",
+      "report_type": "Q3",
+      "tushare": "-2042877.17",
+      "candidates": {
+        "13586950.24": "S1",
+        "-2042877.17": "S2"
+      },
+      "tushare_matches_a_candidate": true,
+      "matched_source": [
+        "S2"
+      ]
+    },
+    {
+      "announcement_id": "1206164728",
+      "ts_code": "300362.SZ",
+      "end_date": "20181231",
+      "report_type": "FY",
+      "tushare": "-1744232911.57",
+      "candidates": {
+        "-1744232911.57": "S2",
+        "4837138.76": "S2"
+      },
+      "tushare_matches_a_candidate": true,
+      "matched_source": [
+        "S2"
+      ]
+    },
+    {
+      "announcement_id": "1206164751",
+      "ts_code": "300028.SZ",
+      "end_date": "20181231",
+      "report_type": "FY",
+      "tushare": "-23206775.83",
+      "candidates": {
+        "-23206775.83": "S2",
+        "-4095312.10": "S2"
+      },
+      "tushare_matches_a_candidate": true,
+      "matched_source": [
+        "S2"
+      ]
+    },
+    {
+      "announcement_id": "1206165855",
+      "ts_code": "600487.SH",
+      "end_date": "20181231",
+      "report_type": "FY",
+      "tushare": "2531587053.2",
+      "candidates": {
+        "2531587053.20": "S2",
+        "481742024.82": "S2"
+      },
+      "tushare_matches_a_candidate": true,
+      "matched_source": [
+        "S2"
+      ]
+    },
+    {
+      "announcement_id": "1205562248",
+      "ts_code": "603861.SH",
+      "end_date": "20180930",
+      "report_type": "Q3",
+      "tushare": "111107220.71",
+      "candidates": {
+        "35239224.43": "S1",
+        "111107220.71": "S2"
+      },
+      "tushare_matches_a_candidate": true,
+      "matched_source": [
+        "S2"
+      ]
+    },
+    {
+      "announcement_id": "1206164115",
+      "ts_code": "002464.SZ",
+      "end_date": "20181231",
+      "report_type": "FY",
+      "tushare": "100427273.82",
+      "candidates": {
+        "100427273.82": "S2",
+        "61382483.12": "S2"
+      },
+      "tushare_matches_a_candidate": true,
+      "matched_source": [
+        "S2"
+      ]
+    },
+    {
+      "announcement_id": "1205561330",
+      "ts_code": "000410.SZ",
+      "end_date": "20180930",
+      "report_type": "Q3",
+      "tushare": "-175341773.5",
+      "candidates": {
+        "-200589774.44": "S1",
+        "-175341773.50": "S2"
+      },
+      "tushare_matches_a_candidate": true,
+      "matched_source": [
+        "S2"
+      ]
+    },
+    {
+      "announcement_id": "1205562168",
+      "ts_code": "000036.SZ",
+      "end_date": "20180930",
+      "report_type": "Q3",
+      "tushare": "738235883.59",
+      "candidates": {
+        "357862313.43": "S1",
+        "738235883.59": "S2"
+      },
+      "tushare_matches_a_candidate": true,
+      "matched_source": [
+        "S2"
+      ]
+    },
+    {
+      "announcement_id": "1213267652",
+      "ts_code": "000413.SZ",
+      "end_date": "20211231",
+      "report_type": "FY",
+      "tushare": "-2800338882.78",
+      "candidates": {
+        "-2800338882.78": "S2",
+        "-467248931.50": "S2"
+      },
+      "tushare_matches_a_candidate": true,
+      "matched_source": [
+        "S2"
+      ]
+    },
+    {
+      "announcement_id": "1219921870",
+      "ts_code": "600143.SH",
+      "end_date": "20231231",
+      "report_type": "FY",
+      "tushare": "316725788.87",
+      "candidates": {
+        "1991899230.86": "S2",
+        "298633388.72": "S2"
+      },
+      "tushare_matches_a_candidate": false,
+      "matched_source": []
+    },
+    {
+      "announcement_id": "1219927694",
+      "ts_code": "603003.SH",
+      "end_date": "20231231",
+      "report_type": "FY",
+      "tushare": "65952868.33",
+      "candidates": {
+        "65952868.33": "S2",
+        "9604664.97": "S2"
+      },
+      "tushare_matches_a_candidate": true,
+      "matched_source": [
+        "S2"
+      ]
+    },
+    {
+      "announcement_id": "1219927822",
+      "ts_code": "001330.SZ",
+      "end_date": "20231231",
+      "report_type": "FY",
+      "tushare": "-552633602.19",
+      "candidates": {
+        "-552633602.19": "S2",
+        "-108201384.36": "S2"
+      },
+      "tushare_matches_a_candidate": true,
+      "matched_source": [
+        "S2"
+      ]
+    },
+    {
+      "announcement_id": "1225266244",
+      "ts_code": "300167.SZ",
+      "end_date": "20251231",
+      "report_type": "FY",
+      "tushare": "-9318436.13",
+      "candidates": {
+        "-9318436.13": "S2",
+        "-1287164.10": "S2"
+      },
+      "tushare_matches_a_candidate": true,
+      "matched_source": [
+        "S2"
+      ]
+    },
+    {
+      "announcement_id": "1224776170",
+      "ts_code": "300999.SZ",
+      "end_date": "20250930",
+      "report_type": "Q3",
+      "tushare": "2748723000.0",
+      "candidates": {
+        "2748723000": "S1",
+        "2748723": "S2"
+      },
+      "tushare_matches_a_candidate": true,
+      "matched_source": [
+        "S1"
+      ]
+    },
+    {
+      "announcement_id": "1225262558",
+      "ts_code": "603030.SH",
+      "end_date": "20251231",
+      "report_type": "FY",
+      "tushare": "-290119935.74",
+      "candidates": {
+        "-290119935.74": "S2",
+        "-19159820.90": "S2"
+      },
+      "tushare_matches_a_candidate": true,
+      "matched_source": [
+        "S2"
+      ]
+    },
+    {
+      "announcement_id": "1225264623",
+      "ts_code": "600643.SH",
+      "end_date": "20251231",
+      "report_type": "FY",
+      "tushare": "-1921967251.03",
+      "candidates": {
+        "-1921967251.03": "S2",
+        "92800973.25": "S2"
+      },
+      "tushare_matches_a_candidate": true,
+      "matched_source": [
+        "S2"
+      ]
+    },
+    {
+      "announcement_id": "1225273091",
+      "ts_code": "000858.SZ",
+      "end_date": "20251231",
+      "report_type": "FY",
+      "tushare": "8954257202.51",
+      "candidates": {
+        "31853172533.98": "S2",
+        "207537666.72": "S2"
+      },
+      "tushare_matches_a_candidate": false,
+      "matched_source": []
+    },
+    {
+      "announcement_id": "1225261344",
+      "ts_code": "688075.SH",
+      "end_date": "20251231",
+      "report_type": "FY",
+      "tushare": "69421291.74",
+      "candidates": {
+        "69421291.74": "S2",
+        "34029618.77": "S2"
+      },
+      "tushare_matches_a_candidate": true,
+      "matched_source": [
+        "S2"
+      ]
+    },
+    {
+      "announcement_id": "1224778371",
+      "ts_code": "688115.SH",
+      "end_date": "20250930",
+      "report_type": "Q3",
+      "tushare": "-8433200.33",
+      "candidates": {
+        "-8433200.33": "S2",
+        "-270.96": "S2"
+      },
+      "tushare_matches_a_candidate": true,
+      "matched_source": [
+        "S2"
+      ]
+    }
+  ]
+}

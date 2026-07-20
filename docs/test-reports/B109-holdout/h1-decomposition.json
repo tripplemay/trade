@@ -1,0 +1,10 @@
+{
+  "formation_date": "20220630",
+  "kinds": {
+    "identical": 5361,
+    "RESOLVED->FACT_VERSION_AMBIGUOUS": 53,
+    "NOT_YET_PUBLISHED->RESOLVED": 171,
+    "NOT_YET_PUBLISHED->FACT_VERSION_AMBIGUOUS": 1
+  },
+  "examples": []
+}

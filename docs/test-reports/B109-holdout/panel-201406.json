@@ -1,0 +1,218 @@
+{
+  "disclosures": {
+    "extrapolation_warning": "2013-2017 的修订率不可信（多版本占比 7%-14%）；★但实测**已推翻**两个担忧：2014 年面板既无覆盖洞（NOT_YET_PUBLISHED=0）也无陈旧问题（报告滞后中位 91 天，与 2023 的 92 天相同）。该窗口真正的约束在**分母**：2014-06-30 有 8.7% 的证券缺 total_mv",
+    "fact_version_ambiguous_count": 0,
+    "fact_version_ambiguous_note": "fail-closed 拦下的『有数据但无法分辨版本先后』，不同于缺数据；禁止按 update_flag 或行序任选一条（上游禁令 #13）",
+    "flag0_retention_by_period": {
+      "20130331": 0.9916254282451465,
+      "20130630": 0.9963072378138847,
+      "20130930": 0.992196209587514,
+      "20131231": 0.958323466729813,
+      "20140331": 0.9901373723141952
+    },
+    "flag0_retention_note": "衡量的是修订**检出能力**而非修订本身；F001 实测 10.5%–95.4% 剧烈波动。『未检出修订』不等于『无修订』",
+    "fy_component_risk_note": "★修订风险集中在 FY 分量，重测后更强：FY 0.747% vs Q1 0.073%（10.2 倍）。TTM 由四个单季拼成，其风险**非均匀**，不得用混合平均掩盖 FY 分量",
+    "measured_window": "2013-2024 全 48 期（report_type=1），分页重测；28/48 期需多页",
+    "revision_rate_bounds": [
+      0.00515,
+      0.01325
+    ],
+    "revision_rate_by_report_type": {
+      "FY": 0.00747,
+      "H1": 0.00181,
+      "Q1": 0.00073,
+      "Q3": 0.00089
+    },
+    "revision_rate_fy_by_year": {
+      "2013": 0.00071,
+      "2014": 0.00112,
+      "2015": 0.00289,
+      "2016": 0.00253,
+      "2017": 0.00414,
+      "2018": 0.00515,
+      "2019": 0.00626,
+      "2020": 0.00947,
+      "2021": 0.01325,
+      "2022": 0.01721,
+      "2023": 0.01032,
+      "2024": 0.01022
+    },
+    "revision_rate_note": "★区间 0.515%-1.325% **只取自可信窗口 2018-2021**（该窗口 65%-91% 的证券存有多版本，检出接近完全）。F001 原区间 0.47%-0.88% 已作废——探针走单次调用被静默截断。一律以区间引用，禁作点估计",
+    "trusted_measurement_years": [
+      "2018",
+      "2019",
+      "2020",
+      "2021"
+    ],
+    "upstream_fetch_defect": "Tushare 单次调用静默截断（income_vip 9000 行 / namechange 10000 行，无错误、无标志位）。截断**非均匀**：2022FY 漏掉的行里 update_flag=0 占 18.7%、flag=1 仅 5.2%，即被砍掉的恰恰富集 vintage 记录。所有走单次调用得出的 vintage 结论均须以分页重测复核",
+    "version_multiplicity_fy": {
+      "2013": 0.073,
+      "2015": 0.1,
+      "2017": 0.135,
+      "2018": 0.648,
+      "2019": 0.888,
+      "2020": 0.914,
+      "2021": 0.912,
+      "2022": 0.679,
+      "2024": 0.074
+    },
+    "version_multiplicity_note": "★存储制度三段式变迁：2013-2017 仅 7%-14% 的证券存有多版本 → 该窗口的近零修订率是**不可观测**，不是**已证明为低**，不得当作低风险引用；2018-2021 达 65%-91%（可信窗口，区间取自此）；2022+ 回落但检出机制转为『多条 flag=1 带不同 f_ann_date』，仍能工作"
+  },
+  "fetch_failures": [],
+  "fetch_reports": [
+    {
+      "endpoint": "stock_basic:L",
+      "failures": [],
+      "pages": 1,
+      "params": {
+        "fields": "ts_code,symbol,name,list_status,list_date,delist_date",
+        "list_status": "L"
+      },
+      "rows": 5528,
+      "truncation_suspected": false
+    },
+    {
+      "endpoint": "stock_basic:D",
+      "failures": [],
+      "pages": 1,
+      "params": {
+        "fields": "ts_code,symbol,name,list_status,list_date,delist_date",
+        "list_status": "D"
+      },
+      "rows": 338,
+      "truncation_suspected": false
+    },
+    {
+      "endpoint": "stock_basic:P",
+      "failures": [],
+      "pages": 1,
+      "params": {
+        "fields": "ts_code,symbol,name,list_status,list_date,delist_date",
+        "list_status": "P"
+      },
+      "rows": 0,
+      "truncation_suspected": false
+    },
+    {
+      "endpoint": "income_vip",
+      "failures": [],
+      "pages": 1,
+      "params": {
+        "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p",
+        "period": "20140331"
+      },
+      "rows": 2841,
+      "truncation_suspected": false
+    },
+    {
+      "endpoint": "income_vip",
+      "failures": [],
+      "pages": 1,
+      "params": {
+        "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p",
+        "period": "20131231"
+      },
+      "rows": 4536,
+      "truncation_suspected": false
+    },
+    {
+      "endpoint": "income_vip",
+      "failures": [],
+      "pages": 1,
+      "params": {
+        "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p",
+        "period": "20130930"
+      },
+      "rows": 2692,
+      "truncation_suspected": false
+    },
+    {
+      "endpoint": "income_vip",
+      "failures": [],
+      "pages": 1,
+      "params": {
+        "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p",
+        "period": "20130630"
+      },
+      "rows": 2747,
+      "truncation_suspected": false
+    },
+    {
+      "endpoint": "income_vip",
+      "failures": [],
+      "pages": 1,
+      "params": {
+        "fields": "ts_code,ann_date,f_ann_date,end_date,report_type,update_flag,n_income_attr_p",
+        "period": "20130331"
+      },
+      "rows": 2627,
+      "truncation_suspected": false
+    },
+    {
+      "endpoint": "daily_basic",
+      "failures": [],
+      "pages": 1,
+      "params": {
+        "fields": "ts_code,trade_date,close,total_share,total_mv",
+        "trade_date": "20140630"
+      },
+      "rows": 2301,
+      "truncation_suspected": false
+    }
+  ],
+  "panel": {
+    "by_formation_date": [
+      {
+        "drop_reasons": {
+          "FACT_MISSING": 1,
+          "TOTAL_MARKET_CAP_MISSING": 220
+        },
+        "fact_version_ambiguous": 0,
+        "market_cap": {
+          "identity_pass_fraction": 1.0,
+          "isolated": 0,
+          "median_identity_error": "0.00",
+          "n": 2301,
+          "non_positive": 0,
+          "severe_outliers": 0
+        },
+        "no_record_at_all": 0,
+        "panel_rows": 2519,
+        "report_lag": {
+          "lag_le_180d": 0.995213228894691,
+          "lag_le_270d": 0.9986945169712794,
+          "lag_le_450d": 1.0,
+          "max_days": 273,
+          "median_days": 91,
+          "n": 2298,
+          "p90_days": 91
+        },
+        "superseded_later": 0,
+        "universe": {
+          "count_already_delisted": 82,
+          "count_in_universe": 2519,
+          "count_list_date_missing": 0,
+          "count_not_yet_listed": 3265,
+          "formation_date": "20140630",
+          "in_universe": 2519,
+          "in_universe_delisted_later": 225,
+          "total_securities": 5866
+        },
+        "universe_size": 2519,
+        "usable": 2298,
+        "usable_fraction": 0.9122667725287813
+      }
+    ],
+    "median_month_usable_fraction": 0.9122667725287813,
+    "n_formation_dates": 1,
+    "pooled_usable_fraction": 0.9122667725287813,
+    "total_fact_version_ambiguous": 0,
+    "worst_month_usable_fraction": 0.9122667725287813
+  },
+  "params": {
+    "end": "201406",
+    "lookback_quarters": 5,
+    "start": "201406"
+  },
+  "truncation_suspected": []
+}
