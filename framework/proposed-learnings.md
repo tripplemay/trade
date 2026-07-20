@@ -533,3 +533,13 @@
 **建议写入：** `framework/README.md` §经验教训（外部数据源完整性不可假设）+ `framework/harness/generator.md`（分页接口拉取纪律 + 失效常量撤回方式）
 
 **状态：** 待确认
+
+## [2026-07-20] Claude CLI — 来源：B109 F003 fix 轮 fix_rounds 被重复计数
+
+**类型：** 模板修订 / 规则歧义
+
+**内容：** `harness-rules.md` §状态流转写「`fixing`：修复完成 → `reverifying`，fix_rounds +1」，**未指明由谁加**。B109 实测后果：evaluator 在 verifying→fixing 时加了一次（0→1），Generator 在 fixing→reverifying 时又加了一次（1→2），实际只有一轮修复却记成两轮。★危害不在数字本身，而在 fix_rounds 是**批次质量的对外读数**——「需要 2 轮修复」比「1 轮」读起来差一档，会误导后续的框架复盘与批次难度评估。建议把规则明确为「**fix_rounds 由 Generator 在 fixing→reverifying 时唯一递增**；evaluator 置 fixing 时不得触碰该字段」，并在 `scripts/check_state_json.py` 加一条校验：同一 commit 内 status 从 fixing→reverifying 才允许 fix_rounds 变化。
+
+**建议写入：** `harness-rules.md` §状态流转（明确唯一递增方）+ `framework/harness/evaluator.md`（置 fixing 时不碰 fix_rounds）
+
+**状态：** 待确认
