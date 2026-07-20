@@ -1,23 +1,21 @@
 {
-  "status": "done",
+  "status": "building",
   "total_features": 3,
-  "completed_features": 3,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "B107",
+  "current_sprint": "F001",
   "last_updated": "2026-07-20",
-  "user_goal": "B107 生产环境迁移:trade 从退役中 GCP VM(34.180.93.185)迁至 deploysvr(194.238.26.173)。trade 是老 VM 最后活租户(aigc+kol 已迁),迁完老 VM 整机退役。原生 systemd 栈照搬(不容器化,最低风险):backend 8723+frontend 3003+~19 timer+backtest-worker+SQLite DB+data 快照+备份。不变量:域名 trade.guangai.ai 不变(OAuth 回调不改)+NEXTAUTH_SECRET 复用同值(会话保)+单用户高停机容忍。3 features 2g+1c:F001 备份改道(GCS→本地轮转,无 gcloud)/F002 provisioning+runbook+P0-P6 受监督割接(🔴3 门禁 go/no-go)/F003 Codex 验收。spec docs/specs/B107-prod-migrate-deploysvr-spec.md。对标 KOL 已完成迁移(~/project/joyce)+本仓 B021 建机手册。",
+  "user_goal": "B108 巨潮 PDF parser 自检重构 + 独立样本重评。起因:复核 as-filed pilot 的 65.789% NO_GO 裁定,发现 13 份失败里 >=10 份是本仓 parser 自身 bug(附注列误认/单位跨表错绑/硬编码列位/旧模板断行),四类同源=抽取器无任何自检;且对照物是 Eastmoney 当前快照非人工真值。采购决策:先不花钱,先验证『免费源+自建 parser』天花板再决定是否买 Tushare(¥500/5000积分)或商业源。3 features 2g+1c:F001 多源交叉验证抽取器(S1合并利润表/S2主要会计数据/S3 EPS×股本哨兵,不一致返 None+7 个 failure code)/F002 确定性分层抽样 CLI(seed 可复现,只产 manifest)/F003 Codex 独立抽 holdout 评测。★核心指标拆分:confirmed precision >=99% 硬门(自信的错值污染研究),confirmed coverage 只报告不设门。spec docs/specs/B108-cninfo-parser-selfcheck-spec.md。不改 DATA_NO_GO 裁定,不算 E/P,不采购。",
   "reference_docs": [
-    "docs/specs/B107-prod-migrate-deploysvr-spec.md",
-    "docs/dev/B021-vm-setup-runbook.md",
-    "workbench/deploy/backup/workbench-backup.sh",
-    "workbench/deploy/backup/workbench-restore.sh",
-    "workbench/deploy/scripts/deploy.sh",
-    ".github/workflows/workbench-deploy.yml",
-    ".github/workflows/bootstrap-env.yml"
+    "docs/specs/B108-cninfo-parser-selfcheck-spec.md",
+    "docs/audits/ashare-pure-ep-data-foundation-implementation-handoff-2026-07-13.md",
+    "docs/audits/ashare-as-filed-data-pilot-2026-07-12.md",
+    "scripts/test/ashare_as_filed_data_pilot.py",
+    "docs/test-reports/ashare-as-filed-data-pilot-2026-07-12.json"
   ],
   "docs": {
-    "spec": "docs/specs/B107-prod-migrate-deploysvr-spec.md",
-    "runbook": "docs/ops/deploysvr-trade-migration-runbook.md",
+    "spec": "docs/specs/B108-cninfo-parser-selfcheck-spec.md",
+    "runbook": null,
     "signoff": null,
     "framework_reviewed": false
   },
@@ -30,7 +28,7 @@
     "F003"
   ],
   "session_notes": {
-    "planner": "2026-07-20 B107 手工置 done（用户裁定）。F001✅ F002✅ F003=waived（Codex 独立验收未跑，无 signoff——git 历史里不要把它当通过读）。置 done 前 CLI live 取证：公网 health ok/db ok/uptime~7d、三单元 active、07-20 定时任务真跑通（cn_attack×2 saved=25、dividend_lowvol saved=1、canonical-backtest Finished）、F001 本地备份工作中（最近 6.9h 前 10MB）。★两条遗留（均非迁移缺陷，未修）：(a) workbench-advisor.service failed = aigc.guangai.ai 402，但 AIGC 余额 $22.34 非零且同日其他 client 正常 → trade 这把 key 的配额/权限问题，修在 aigc 侧；(b) Production(f9c56be) ≢ HEAD(c69da4c)，落后 4 个 docs/chore commit，需手动 dispatch Deploy 才对齐（§12.7 兜底）。★P6 老 VM 退役仍 🔴 未做，老机全栈冻结作回滚点。【下一步】用户已选定新方向：修巨潮 cninfo PDF parser（A股纯 E/P 数据地基前置）。根因已诊断（scripts/test/ashare_as_filed_data_pilot.py）：extract_parent_profit 取 numbers[0] 无自检 → ①附注列误认(600436 抽出 1 元) ②_unit_scale 取 matches[-1] 跨表错绑(601113 差 10^4) ③selected_index 硬编码列号 ④单行匹配'归属于母公'旧模板断行失配。拟修法=文档内多源交叉验证(合并利润表 vs 主要会计数据 vs EPS×股本)，不依赖外部对照物，不一致返 NEEDS_REVIEW。★纪律：原 50 份已被看过=样本内，重评必须新抽样本。",
+    "planner": "2026-07-20 B108 planning。★上游链条:用户读 pure-ep handoff(2026-07-13)→问采购→CLI 调研发现 Tushare 从未实测(仓库零集成/无 token/全是二手文档调研,实跑是 akshare+baostock)→提出两个改变判断的发现:①报告用来论证必须建 vintage 底座的『90.83% 在 120 天后仍更新/中位数 365 天』测的是记录被 touch 时间不是数值被改比例,且中位数正好 365/P90 377=年度批量重刷特征,真实修订率从未被测过;②巨潮 65.789% NO_GO 里 >=10/13 是自家 parser bug,且对照物非真值→用户裁定『先修巨潮 parser』(不花钱先探天花板)。★B107 同日手工置 done(F003 waived,无 signoff)。★spec 关键设计:(a)多源交叉验证取代猜值,冲突返 None;(b)S3(EPS×股本)只否决不确认——基本 EPS 用加权平均股本有真实百分比偏差作确认源会误报,但对 10^n 极敏感作哨兵恰好;(c)四类 bug 修法全锚在表头文字+列结构不锚数值幅度,这是 H1『修类别不修样本』可被客观审查的唯一方式;(d)F002/F003 切开=Generator 造抽样工具但不得抽样本(抽了就进上下文=烧掉,违 H2/H3);(e)precision 设硬门 coverage 不设门。★现有 select_regular_sample 取巨潮返回顺序前 4 个,不可复现且非随机,不可用于 holdout,F002 必须换 seed 化分层抽样。【续接】status=building,Generator 接 F001(纯本地逻辑,合成 fixture 单测,可全离线)→F002(抽样 CLI,同 seed 两跑 sha256 一致须实测)。F003 交 Codex。★遗留(非本批):workbench-advisor 402=aigc 侧 key 配额问题(余额 $22.34 非零);Production f9c56be 落后 HEAD 4 个 chore commit;P6 老 VM 退役未做;600787/601992 两份需用户人工翻 PDF 裁定。",
     "generator": null,
     "evaluator": null
   }
