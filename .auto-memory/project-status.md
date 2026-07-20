@@ -5,31 +5,30 @@ type: project
 ---
 
 ## 当前状态
-- **B108 巨潮 parser 自检重构 🔴 fixing（2026-07-20, fix round 1 复验 FAIL）** F001✅ F002✅ → **F003 复验 FAIL**。报告 `docs/test-reports/B108-cninfo-parser-selfcheck-reverify-2026-07-20.md`。
-  - **★样本争议已裁定：换新 seed 重抽**（依据：修复代码注释/单测直接点名 300432/002670/002605/002382，grep 可复现 = 照着样本写的；spec H2 自身判据即认定已烧掉）。实测印证 **样本内 26.3% vs 样本外 16.7%，相对高估 57%**。
-  - **新 holdout 实测（seed 5590431，120 份，排除 50+76=126 交集 0，PDF 字节已冻结）**：CONFIRMED **20/120=16.7%**（首轮 5.3%）；EXTRACTION_FAILED **20.8%**（首轮 48.7%）；单源 54.2%；冲突 7.5%。
-  - **precision 硬门 PASS（字面）**：**20/20=100%**、10ⁿ 错误=0，acceptance(3) 的 ≥20 份首次可执行。**★但 n=20 的 95% 下界仅 86.1%**，断言 ≥99% 需 n≥299（≈1794 份）——**勿读成「已证明 ≥99%」**。
-  - **★★仍 FAIL 三条**：(1)**N01 阻断 = 本轮新引入 10ⁿ 错值**——E03 表头带吞掉「单位：万元/千元」行、header_line 抬到声明之上，E04 的 resolve_unit 只向上扫 → 本表单位不可达；601186/601187 **带值返回缩小 10³**；已**对拍旧实现 8c85f03 证明三例均本轮引入**。(2) 冲突误报 40%→**66.7%**（主因换成 S2 命中「分季度主要财务指标」取单季度格，E07 表格优先规则对它无效）。(3) **N02 违 spec §3.1**——S1 实际取自**所有者权益变动表**非合并利润表，30 份走此路径，≥3 份口径不同（000835 差 0.401% 返错值）。
-  - **★N03：年报 FY 0/34 CONFIRMED**（首轮 0/18，**未泛化**）。根因行级定位：锚点词表 `_HEADER_TOKENS` 不含裸年份，而年报表头是「2018 年/2017 年/本年比上年增减」→ 列模型永远建不起。**H1 半年报 53.6%（20 份 CONFIRMED 里 15 份是半年报）、Q1 11.1%、Q3 6.5%、FY 0% — parser 实质只在半年报上工作。**
-  - **E01-E11**：E01/E05/E06/E07/E09/E10/E11 **七条干净 FIXED**；E02 FIXED 但 tail_appended 误伤多段折行标签；E03 PARTIALLY（失败率减半、盲区消除，但裸年份未解且是 N01 成因）；**E04 REGRESSED**（002670 已修正但反方向打开）。首轮 11 条点名反例**全部解决**。
-  - **★采购结论：仍不够用，仍不判「免费源天花板已到」**——缺陷是实现问题非数据源问题，三条主缺陷都有结构化修法。统计差距**从 5681 份降到 1794 份 / 约 5.5 小时机时**。**★新增判断：自建 parser 真实成本 = 每轮修复都需一次独立 holdout 验收**（N01 是 E03×E04 跨模块相互作用，单看 diff 发现不了），验收成本与开发成本同量级，与 Tushare ¥500 相比经济性优势没想象中大。Tushare 仍从未实测。
-- **B107 生产迁移 ✅ done（手工置 done，F003=waived 无 signoff）**。活生产 `https://trade.guangai.ai` 在 deploysvr（`194.238.26.173`），**version 已对齐 HEAD**，db-ok，三单元 active，定时任务真跑通，F001 本地备份工作中。老机 `34.180.93.185` 全栈**冻结作回滚点**。
+- **B109 Tushare PIT 数据层 v0 🔨 building（2026-07-20, 2g+1c）** spec `docs/specs/B109-tushare-pit-foundation-spec.md`。F001 追加 vintage 探针 → F002 PIT 数据层（`f_ann_date` as-of resolver + `daily_basic` 分母 + B108 框架转巨潮对拍审计器）→ F003 Codex 对拍验收。
+- **★★三问探针实测（¥500 + 15 分钟；`docs/audits/tushare-three-question-probe-2026-07-20.md`）——本仓第一次实测 Tushare：**
+  - **归母净利润真实修订率 = 0.712%**（7 个年报期 / 38,207 股票-期 / 272 个被改）。★上游 handoff 报告用「90.83% 记录在 120 天后仍更新／中位 365 天」论证的**重装三时钟 bitemporal 底座，必要性未被实测支持**——那衡量的是记录被 touch 时间，不是数值被改比例。**但修订稀有 ≠ 可忽略：61% 幅度 >1%、22% >10%、2018 年 p90 达 101.79%** → 需「记录已知修订并能重放」，不需整套版本链。
+  - **as-of 只需两个字段**：取 `f_ann_date <= 形成日` 中最大的一条。`update_flag=0` 保首次披露值、`=1` 的 `f_ann_date` 标修正可知日（滞后中位 372 天，70/87 为此干净形态）。★**未决**：`flag=0` 保留率随期间波动 **10.5%–95.4%**（2019/2020 保留 95%/91% 却近零修订 → 低修订率是**真的**；2023 仅保 10.5% → 该期是**下界**）。
+  - **`total_mv` 身份校验 100.000% 在 0.5% 内、中位误差 0.00000%**（2015/2020/2023 三日）→ **分母问题直接解决**，修掉 B076 `b076_fetch_pit_marketcap.py:83` 用换手率反推**流通市值**（禁令 #6）。
+  - 退市名 **338 只**（263 只在 2013 年后）→ 幸存者偏差可解（禁令 #11）。
+  - **★许可证：用户 2026-07-20 确认允许内部长期归档** → 上游报告 §10 的 snapshot/hydrate/离线复现契约**首次有合规基础**。
+- **B108 巨潮 parser ⏹ 转向收尾**：F001/F002 done，**★F003=superseded — 硬门从未通过，不得读作验收通过**。两轮独立验收均 FAIL（首轮 5.3% coverage / 11 缺陷 E01-E11；复验 16.7% / 新引入 10³ 错值 N01-N05）。★**年报三轮仍 1/34**，parser 实质只在半年报工作。**就获取归母净利润而言性价比输给 Tushare**；巨潮回归 **truth anchor** 定位（上游 §8.1 原本的 P0 角色），代码转审计工具入 B109。
+- **B107 生产迁移 ✅ done**（手工置 done，F003=waived）。生产在 deploysvr（`194.238.26.173`），健康，version 对齐 HEAD。老机冻结作回滚点。
 - **B106–B074 ✅**。
 
 ## 接续 / 待决策
-- **★F003 fix round 2（Generator）**：修 **N01（阻断，10³ 错值；建议 resolve_unit 从表头带**末行**起扫，或表头带排除「单位：」行）→ N03（裸年份加进 `_HEADER_TOKENS` 锚点，与 `select_target_column` 兜底对齐）→ N02（S1 限定合并利润表，或「加：本期…」降为独立第四来源）→ 冲突误报（排除分季度主要财务指标表）→ N04/N05**。★**复评必须再换新 seed**，排除清单扩到 50+76+120=**246 份**（`docs/test-reports/B108-holdout-r2/exclude-merged.json` 是可直接扩充的格式）——本轮 120 份自复验报告发布起即已烧掉。
-- **三处偏离首轮已裁定**：S3 区间方向 ACCEPT / manifest 拆 provenance ACCEPT / 无 pdf_sha256 ACCEPT 且 E11 已补（`build_pdf_freeze` 本轮实跑 120/0 缺失）。
-- **★F001 诚实限制**：bug ④（旧模板断行）单测**非差分回归**——旧 parser 同样能过该 fixture，真实失败样本（600843/600639/600688）无原始 PDF 不可复现，**本批次内无法自证**，须 F003 在 holdout 上检验。
-- **★用户人工事项**：`600787`(0.87%) / `601992`(29.28%) 需翻原始 PDF 裁定属真实修订、口径差异还是 parser 错。
-- **★遗留（非本批）**：`workbench-advisor.service` failed = `aigc.guangai.ai` **402**，但 AIGC 余额 **$22.34 非零**、同日其他 client 正常 → **trade 这把 key/project 的配额或权限问题，修在 aigc 侧**。**P6 🔴 老 VM 退役**未做。
-- **★关键坑（本机专属）**：本机 Mac 在 Clash fake-ip 代理后连老机会被路由到**错的机器** → 一律 `ssh deploysvr` 再跳。
-- backlog 剩：A股聪明钱 ¥200 + residual-engine（B100 INCONCLUSIVE）+ B106-S3。34+ learnings 待用户确认。★key 曾对话明文暴露→建议轮换。
+- **F001 先行的理由**：`flag=0` 保留率波动是唯一能推翻 F002 设计的未知数；且三问探针**只测了年报**，而 TTM 需四个连续单季——**季报 vintage 若显著更差，PIT 分子直接不成立**。
+- **★Tushare token 建议轮换**（用户对话中明文提供，已提出未执行）。当前存 `.env.local`（600、`.gitignore` `.env.*` 覆盖、已 `git check-ignore` 验证未入仓）。
+- **★遗留（非本批）**：`600787`(0.87%)/`601992`(29.28%) 两份人工裁定；`workbench-advisor.service` **402** = **aigc 侧 key 配额/权限问题**（AIGC 余额 $22.34 非零、同日其他 client 正常）；**P6 🔴 老 VM 退役**未做。
+- **★关键坑（本机专属）**：Clash fake-ip 代理下连老机会路由到**错的机器** → 一律 `ssh deploysvr` 再跳。
+- backlog 剩：residual-engine（B100 INCONCLUSIVE）+ B106-S3。34+ learnings 待用户确认。
 - **★负责人纪律**：验收结论 git 核实才采信（B104/B105 幻觉教训）。
 
 ## 永久硬边界
 - research-safe / no-broker / no-AI 预测 / no 自动下单；**hk_china 仍 ETF proxy（B093 NO-GO）**。红利低波留 A股本土组合才兑现负相关分散。
 - cn_attack 研究态/OOS 红卡不可配资。冻结再验证 pipeline **永不** validated→True。golden 只进测试 fixture seam。**smart-money 免费信号 first-look 均 research-only（0 产品码）无一切入生产。**
-- **A股 PIT 数据禁令**（`docs/audits/ashare-pure-ep-data-foundation-implementation-handoff-2026-07-13.md` §14）：禁 `(ticker,quarter)` latest-wins / 禁法定截止日代公告日 / 禁流通市值代总市值 / 禁当前股本×历史价 / 禁只拉 `list_status=L`。当前裁定 `DATA_NO_GO`，**B108 不改变该裁定**。
+- **A股 PIT 数据禁令**（handoff §14）：禁 `(ticker,quarter)` latest-wins / 禁法定截止日代公告日 / 禁流通市值代总市值 / 禁当前股本×历史价 / 禁只拉 `list_status=L`。**当前仍 `DATA_NO_GO`，B109 不改变该裁定。**
+- **★B108 沉淀的方法论纪律（跨批次适用）**：最终测量必须在**全新 seed** 的 holdout 上（两轮都出现「在已看过的语料上调参」，样本内 26.3% vs 样本外 16.7% = 高估 57%）；Generator 不得抽评测样本；**被规则挡住不等于被验证过**（E01 联网路径因 H3 禁止而零执行却标了 done）；**每轮修复都可能引入同类新缺陷**，跨模块相互作用（N01 = E03×E04）只有独立 holdout + 对拍旧实现才暴露。
 
 ## Framework 状态（最新 3 版）
 - **P5-F2**（c5694f7, 2026-07-06）：evaluator.md §33 固化独立对抗评审触发点。
@@ -37,4 +36,4 @@ type: project
 - **v0.9.53**（B077）：§36 §23 派生字段 measured-not-assumed / §37 first-look 覆盖-门控裁定 / evaluator.md §31 date-bomb。
 
 ## 已知 gap
-- 本机 python3=3.9.6，用 `.venv/bin/python`；ruff 本地须 `python -m ruff check .`。backend 测试跑前需 `cd workbench/backend && .venv/bin/python -m pip install ../..`（改 trade/ 后须重装）。scipy 本机未装，独立复算自写 Pearson/秩相关。
+- 本机 python3=3.9.6，用 `.venv/bin/python`；ruff 本地须 `python -m ruff check .`。backend 测试跑前需 `cd workbench/backend && .venv/bin/python -m pip install ../..`（改 trade/ 后须重装）。scipy 未装。**`tushare` 1.4.29 已装入 `.venv`。**
