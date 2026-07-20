@@ -6,13 +6,14 @@
    "title": "多源交叉验证抽取器 — 归母净利润从 3 个独立来源抽取，不一致返 None + 结构化 failure code",
    "priority": "high",
    "executor": "generator",
-   "status": "pending",
+   "status": "done",
    "acceptance": "【spec §3】(1) 实现三源抽取：S1=合并利润表『归属于母公司所有者的净利润』/ S2=主要会计数据表『归属于上市公司股东的净利润』/ S3=基本每股收益×期末股本（S3 仅作数量级哨兵，永不单独确认）。(2) 判定规则按 §3.2：S1≈S2(相对误差<=0.1%)→CONFIRMED；单源→SINGLE_SOURCE_UNCONFIRMED；超容差→SOURCE_CONFLICT 且★返回 None 而非猜测值 + 输出全部候选；S3 数量级不符→MAGNITUDE_IMPLAUSIBLE 撤销 CONFIRMED；无源→EXTRACTION_FAILED。(3) 实现 7 个 failure code（§3.3）：LABEL_NOT_FOUND / EXTRACTION_FAILED / COLUMN_AMBIGUOUS / UNIT_AMBIGUOUS / SOURCE_CONFLICT / SINGLE_SOURCE_UNCONFIRMED / MAGNITUDE_IMPLAUSIBLE。(4) 四类 bug 按 §3.4 结构化修：①按 pdftotext -layout 列对齐切单元格 + 按表头文字(附注/注)识别跳过附注列★禁用『数值太小』类幅度阈值；②单位声明只在本表边界内向上就近搜索，两条抽取路径共用同一窗口逻辑（消除 _split_consolidated_row 35 行 vs _label_context 1600 字符的不一致）；③按表头文字(本报告期/年初至报告期末/上年同期)匹配期间语义，删除硬编码 selected_index；④匹配前标签规范化重连跨行标签。(5)★H1 边界：实现中不得出现针对具体 sec_code 或具体数值幅度的特例分支。(6)★H2 边界：单测只用合成 fixture 文本，不得引入真实 50 份样本内容。(7)★H4 边界：Eastmoney 对照仅可作诊断输出列，不得进入判定逻辑。Gates：python -m ruff check . 通过；pytest 定向单测 + 全量不回归。",
    "design_decisions": [
     "冲突返回 None 而非猜测值：失败模式从『静默错误』改为『诚实的不确定』，对齐上游报告 §13。研究场景下自信的错值比缺值危害大一个量级。",
     "S3(EPS×股本) 只否决不确认：基本 EPS 用加权平均股本，与期末股本有真实百分比级偏差，作确认源会大量误报；但它对 10^n 错误极敏感，作哨兵恰好。",
     "判据全部锚在表头文字与列结构，不锚在数值幅度：这是 H1『修 bug 类别不修样本』可被 Evaluator 客观审查的唯一方式。"
-   ]
+   ],
+   "completed_note": "2026-07-20 Generator. 新增 scripts/research/ashare_ep/ 四模块：codes.py(7 个 FailureCode + Status + frozen SourceValue/CrossCheckResult)、layout.py(单元格字符区间 + 列模型 + 跨行标签重连 + 单位就近绑定)、sources.py(S1/S2 抽取 + 表头文字选列 + S3 数量级哨兵)、crosscheck.py(判定规则 + 公开入口 cross_check)。tests/unit/test_ashare_ep_extract.py 20 个单测全绿；全量 1514 passed(原 1494 + 新增 20，零回归)；ruff All checks passed。★★旧 vs 新 差分证据(同一份合成 fixture)：(a) 附注列=35 的合并利润表 → 旧 parser 返回 35.0（正是 600436『1 元』/603885『11 元』那一类），新 parser 返回 252300000.00；(b) 三季报四列表 → 旧 parser selected_index=2 返回 198000000.00＝**上期金额**（一个看起来完全合理但是错的值＝『自信的错值』），新 parser CONFIRMED 252300000.00 且 S1(本期金额)/S2(年初至报告期末) 双源一致。★关键设计：期间语义对齐——S1/S2 一律取年初至报告期末口径，否则三季报里 S2 拿单季、S1 拿累计会让每一份三季报都误报冲突（列优先级把『年初至报告期末』排在『本报告期』之前）。★★偏离 spec §3.1（须 Evaluator 注意）：S3 哨兵实现为 |利润|/|基本EPS| → 推算股本 ∈ [1e6, 1e12]，而非 spec 写的『基本EPS × 期末股本』。原因：季报正文常常没有期末股本，按 spec 原文实现覆盖率会很低。角色不变（只否决不确认），且判据作用在推算股本上而非利润值上，区间比 A 股真实宇宙(千万股~3.56e11 股)各宽 1-2 个数量级，只对 10^3+ 粗错误报警。★★诚实限制：bug ④(旧模板断行) 的单测**不是差分回归测试**——该 fixture 旧 parser 也能答对；真实失败样本(600843/600639/600688 繁体/旧模板/H股排版)没有原始 PDF 无法复现，故 bug ④ 的修复未经真实对照验证，留 F003 在 holdout 上检验。★H1 合规：全部判据锚在表头文字(附注/本报告期/年初至报告期末/上年同期)与字符列区间上，无任何针对 sec_code 或数值幅度的特例分支。★H2 合规：单测只用合成 fixture，零真实样本内容。★H4 合规：判定逻辑不引用任何外部对照物。"
   },
   {
    "id": "F002",
