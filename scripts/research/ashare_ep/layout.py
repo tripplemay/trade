@@ -54,9 +54,8 @@ _NOTE_HEADER_TOKENS: tuple[str, ...] = ("附注", "注释")
 # 标签跨行最多向后并入几行（bug ④）。给一个小上限防止把相邻行误并。
 _MAX_LABEL_CONTINUATION_LINES = 3
 
-# 单位向上就近搜索时，视为「本表范围」的行数上限（bug ②）。
-# 超出即认为跨到了上一张表，只能降级为文档级声明。
-_TABLE_SCOPE_LOOKBACK_LINES = 12
+# 表头带向上/向下最多延伸几行（E03）。真实财报的多层表头一般 2-4 行。
+_HEADER_BAND_LINES = 4
 
 
 @dataclass(frozen=True)
@@ -154,9 +153,21 @@ def build_rows(lines: list[str]) -> list[Row]:
     pending_cells: list[Cell] = []
     pending_line: int | None = None
     continuation = 0
+    # ★E02 修复的关键状态：挂起行是否由「标签+数值」同行启动。
+    # 由标签+数值启动的行**已经是一个完整的表格行**，后面的纯标签行是**下一行**的开头，
+    # 不是它的折行后半截。缺了这个区分，B108 F003 实测到 300432 把
+    # 「营业收入（元）」和「归属于上市公司股东的净利润（元）」并成一行，
+    # 且营业收入的单元格排在前面 → 返回营业收入当归母净利润（看似合理的错值）。
+    started_with_numbers = False
+    # ★同样来自 F003 实测：真实季报的主要数据表是「标签头 / 数字 / 标签尾」三物理行一组，
+    # 连续排布。数字到达后只允许再接**一段**标签尾；第二段一定是下一行的标签头。
+    # 缺这个约束，300432 会把「经营活动产生的现金/流量净额」和「基本每股收益」并成一行，
+    # 于是 EPS 抽成 5.05 亿的经营现金流，S3 哨兵反过来否决正确的归母净利润。
+    tail_appended = False
 
     def flush() -> None:
         nonlocal label_parts, pending_cells, pending_line, continuation
+        nonlocal started_with_numbers, tail_appended
         if pending_line is not None and label_parts:
             rows.append(
                 Row(
@@ -169,6 +180,8 @@ def build_rows(lines: list[str]) -> list[Row]:
         pending_cells = []
         pending_line = None
         continuation = 0
+        started_with_numbers = False
+        tail_appended = False
 
     for index, line in enumerate(lines):
         cells = split_cells(line)
@@ -181,25 +194,41 @@ def build_rows(lines: list[str]) -> list[Row]:
         has_numbers = any(cell.is_number for cell in cells)
 
         if label_like and has_numbers:
-            # 一个自带数值的新行——先结掉上一行
+            # 一个自带数值的完整行——先结掉上一行
             flush()
             label_parts = [head.text]
             pending_cells = list(cells[1:])
             pending_line = index
+            started_with_numbers = True
+            tail_appended = False
         elif label_like:
-            # 纯标签行。只有当挂起行**已经收到数字**时，它才可能是折行标签的后半截；
-            # 否则前一个挂起行不过是个没有数值的标题行（「单位：元」「项目」「合并利润表」），
-            # 应当丢弃重开——否则标题会被一路粘进标签里。
-            if pending_cells and continuation < _MAX_LABEL_CONTINUATION_LINES:
+            # 纯标签行。只有当挂起行是**由纯标签启动、已收到数字、且尚未接过标签尾**时，
+            # 它才是折行标签的后半截。其余情况一律是下一个表格行的开头。
+            continuable = (
+                pending_cells
+                and not started_with_numbers
+                and not tail_appended
+                and continuation < _MAX_LABEL_CONTINUATION_LINES
+            )
+            if continuable:
                 label_parts.append(head.text)
                 continuation += 1
+                tail_appended = True
             else:
                 flush()
                 label_parts = [head.text]
                 pending_cells = []
                 pending_line = index
-        elif has_numbers and pending_line is not None:
-            # 纯数字行：并入当前挂起的标签
+                started_with_numbers = False
+                tail_appended = False
+        elif (
+            has_numbers
+            and pending_line is not None
+            and not started_with_numbers
+            and not tail_appended
+        ):
+            # 纯数字行：只并入「由纯标签启动、尚未收尾」的折行挂起行。
+            # 已完整的行不再吸收后续数字——那是下一行的数据。
             pending_cells.extend(cells)
             continuation += 1
         else:
@@ -209,20 +238,92 @@ def build_rows(lines: list[str]) -> list[Row]:
     return rows
 
 
-def find_header_columns(lines: list[str], before_line: int) -> tuple[tuple[Column, ...], int]:
-    """向上就近找表头行，返回 ``(列定义, 表头行号)``。找不到返回 ``((), -1)``。
+def is_data_row(line: str) -> bool:
+    """一行是否是表格数据行（含 2 个以上数值单元格）。
 
-    「就近」很重要：一份季报里有多张表，用错表头就会用错列语义。
-    表头行号还要交给 :func:`resolve_unit` 界定「本表范围」——单位声明贴着表头走，
-    不贴着数据行走，所以必须用表头行号而不是数据行号做锚点。
+    用来界定表边界：从表头向上走，一旦撞见数据行就说明已经进了上一张表。
     """
+    return sum(cell.is_number for cell in split_cells(line)) >= 2
+
+
+def _merge_spans(cells: list[Cell]) -> tuple[Column, ...]:
+    """把跨行的表头单元格按字符区间重叠合并成列。
+
+    区间重叠的碎片属于同一列，文字按出现顺序拼接：
+    「上年同期」(第 1 行) + 「调整前」(第 3 行) → 一列「上年同期调整前」，
+    于是 ``_EXCLUDED_HEADERS`` 里的「上年」照样能把它排除掉。
+    """
+    groups: list[list[Cell]] = []
+    for cell in sorted(cells, key=lambda item: item.start):
+        for group in groups:
+            if cell.start < max(item.end for item in group) and cell.end > min(
+                item.start for item in group
+            ):
+                group.append(cell)
+                break
+        else:
+            groups.append([cell])
+
+    columns: list[Column] = []
+    for group in groups:
+        ordered = sorted(group, key=lambda item: (item.start, item.end))
+        columns.append(
+            Column(
+                header="".join(item.text for item in ordered),
+                start=min(item.start for item in group),
+                end=max(item.end for item in group),
+            )
+        )
+    return tuple(columns)
+
+
+def find_header_columns(lines: list[str], before_line: int) -> tuple[tuple[Column, ...], int]:
+    """向上就近找表头**带**，返回 ``(列定义, 表头起始行号)``。找不到返回 ``((), -1)``。
+
+    ★真实财报的表头本身就是跨物理行的，例如::
+
+         176|                       上年同期            本报告期比上年同期增减
+         177|        本报告期
+         178|                  调整前        调整后          调整后
+
+    只认单物理行的实现会拿到 L176，而真正需要的「本报告期」在 L177，
+    于是所有列都被排除、返回 ``COLUMN_AMBIGUOUS``。B108 F003 实测这一条命中 76 次，
+    是 48.7% 抽取失败的第一主因。因此这里先定位锚点行，再把相邻的非数据行并成一条表头带。
+    """
+    anchor = -1
     for index in range(before_line - 1, max(-1, before_line - 40) - 1, -1):
-        cells = split_cells(lines[index])
-        if len(cells) < 2:
+        line = lines[index]
+        if not line.strip() or is_data_row(line):
             continue
-        if sum(any(token in cell.text for token in _HEADER_TOKENS) for cell in cells) >= 2:
-            return tuple(Column(cell.text, cell.start, cell.end) for cell in cells), index
-    return (), -1
+        cells = split_cells(line)
+        if any(any(token in cell.text for token in _HEADER_TOKENS) for cell in cells):
+            anchor = index
+            break
+    if anchor < 0:
+        return (), -1
+
+    start = anchor
+    while start - 1 >= 0 and anchor - (start - 1) <= _HEADER_BAND_LINES:
+        candidate = lines[start - 1]
+        if not candidate.strip() or is_data_row(candidate):
+            break
+        start -= 1
+
+    end = anchor
+    while end + 1 < before_line and (end + 1) - anchor <= _HEADER_BAND_LINES:
+        candidate = lines[end + 1]
+        if not candidate.strip() or is_data_row(candidate):
+            break
+        end += 1
+
+    band: list[Cell] = []
+    for index in range(start, end + 1):
+        band.extend(split_cells(lines[index]))
+
+    columns = _merge_spans(band)
+    if len(columns) < 2:
+        return (), -1
+    return columns, start
 
 
 def assign_column(cell: Cell, columns: tuple[Column, ...]) -> Column | None:
@@ -253,24 +354,30 @@ def resolve_unit(lines: list[str], header_line: int) -> tuple[str, str, bool]:
     就近命中**；本表范围内出现互相矛盾的声明才算歧义。
     """
     for index in range(header_line, -1, -1):
-        matches = _UNIT_PATTERN.findall(lines[index])
-        if not matches:
-            continue
+        line = lines[index]
+        matches = _UNIT_PATTERN.findall(line)
+        if matches:
+            # 命中行所在的**连续块**——块内出现互相矛盾的声明才叫歧义。
+            # 边界同样是空行**或数据行**：越过数据行的声明属于上一张表，
+            # 不构成本表的歧义（否则两张相邻的不同单位的表会互相污染）。
+            block = list(matches)
+            for above in range(index - 1, -1, -1):
+                if not lines[above].strip() or is_data_row(lines[above]):
+                    break
+                block.extend(_UNIT_PATTERN.findall(lines[above]))
+            return matches[-1], "table", len(set(block)) > 1
 
-        # 命中行所在的**连续非空块**——块内出现互相矛盾的声明才叫歧义。
-        # 隔着空行的上一张表的声明不参与：那是另一张表的事。
-        block = list(matches)
-        for above in range(index - 1, -1, -1):
-            if not lines[above].strip():
-                break
-            block.extend(_UNIT_PATTERN.findall(lines[above]))
+        # ★E04 修复：撞见数据行 = 已经走进上一张表，本表没有自己的单位声明，停止。
+        #
+        # 原实现只是把越界的命中改个标签叫 "document"，然后照样乘倍数——
+        # B108 F003 实测 002670 2018 年报的「单位：万元」在表头之外 612 行，
+        # 仍被绑定到合并利润表，把 -544,272,818.63 放大成 -5,442,728,186,300.00。
+        # spec §3.4 要求的是「遇到表边界即停」，不是「越界了打个标签」。
+        if index < header_line and is_data_row(line):
+            break
 
-        unit = matches[-1]
-        origin = "table" if header_line - index <= _TABLE_SCOPE_LOOKBACK_LINES else "document"
-        return unit, origin, len(set(block)) > 1
-
-    # 全文无声明：中文财报默认以元计。这不是猜数值，是语言约定的默认单位；
-    # 若默认错了，S1/S2 分处不同表、单位声明各自独立，交叉验证会抓到。
+    # 本表范围内无声明：中文财报默认以元计。这是语言约定的默认单位，不是猜数值；
+    # 真要用万元的表，声明一定紧贴表头，不会藏在上一张表后面。
     return "元", "default", False
 
 

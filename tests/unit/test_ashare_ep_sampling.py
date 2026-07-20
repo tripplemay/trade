@@ -18,14 +18,17 @@ import pytest
 
 from scripts.research.ashare_ep.manifest import (
     build_manifest,
+    build_pdf_freeze,
     load_excluded_ids,
     manifest_sha256,
+    write_manifest,
 )
 from scripts.research.ashare_ep.sample_cli import main
 from scripts.research.ashare_ep.sampling import (
     Candidate,
     classify_board,
     coverage_report,
+    expected_strata,
     select_stratified,
 )
 
@@ -255,3 +258,78 @@ def test_cli_is_deterministic_across_processes(tmp_path: Path) -> None:
         digests.append(hashlib.sha256(out.read_bytes()).hexdigest())
 
     assert digests[0] == digests[1], "跨进程 manifest 不一致——检查是否用了加盐的内置 hash()"
+
+
+# --- B108 F003 验收缺陷回归（E08 / E09 / E10 / E11）---
+
+
+def test_manifest_hash_equals_file_bytes_hash(tmp_path: Path) -> None:
+    """★E09 回归：返回的 sha256 必须等于 ``shasum -a 256 <file>``。
+
+    原实现写文件时补了 ``\\n``、算哈希用不含 ``\\n`` 的规范串，两者不等。
+    这个值唯一的用途就是「冻结后核验」，不等价意味着核验动作本身在骗人。
+    """
+    manifest = build_manifest(
+        select_stratified(_pool(), quota_per_stratum=2, seed=3),
+        seed=3,
+        quota_per_stratum=2,
+        years=_YEARS,
+        report_types=_TYPES,
+    )
+    path = tmp_path / "m.json"
+    returned = write_manifest(manifest, path)
+    assert returned == hashlib.sha256(path.read_bytes()).hexdigest()
+    assert returned == manifest_sha256(manifest)
+
+
+def test_unknown_board_is_excluded_from_sampling() -> None:
+    """★E10 回归：B 股/北交所不在本项目宇宙内（上游报告 §2.1），不得占配额。"""
+    pool = [
+        *_pool(),
+        Candidate(
+            announcement_id="bshare-1",
+            sec_code="900953",
+            title="2015年报告",
+            year=2015,
+            report_type="Q1",
+            url="https://example.invalid/900953.pdf",
+        ),
+    ]
+    selected = select_stratified(pool, quota_per_stratum=99, seed=3)
+    assert all(item.board != "UNKNOWN" for item in selected)
+    assert "bshare-1" not in {item.announcement_id for item in selected}
+
+
+def test_coverage_report_surfaces_strata_with_zero_candidates() -> None:
+    """★E08 回归：候选数为 0 的整层必须出现在报告里。
+
+    原实现只遍历候选池里存在的层，于是「一份都没抓到」——最严重的缺口——
+    表现为报告里安静地少一行，no-silent-caps 恰好对最该保护的情形失效。
+    """
+    pool = [item for item in _pool() if item.year == 2015 and item.report_type == "Q1"]
+    selected = select_stratified(pool, quota_per_stratum=2, seed=3)
+    expected = expected_strata(_YEARS, _TYPES)
+    rows = coverage_report(pool, selected, quota_per_stratum=2, expected=expected)
+
+    assert len(rows) == len(expected)
+    empty = [row for row in rows if row["available"] == 0]
+    assert empty, "候选数为 0 的层没有出现在覆盖报告里"
+    assert all(row["quota_met"] is False for row in empty)
+
+
+def test_pdf_freeze_records_hashes_and_reports_missing(tmp_path: Path) -> None:
+    """★E11 回归：冻结被评测的 PDF 字节；缺文件必须显式记为 missing 而非静默跳过。"""
+    selected = select_stratified(_pool(), quota_per_stratum=1, seed=3)
+    manifest = build_manifest(
+        selected, seed=3, quota_per_stratum=1, years=_YEARS, report_types=_TYPES
+    )
+    pdf_dir = tmp_path / "pdf"
+    pdf_dir.mkdir()
+    present = selected[0].announcement_id
+    (pdf_dir / f"{present}.pdf").write_bytes(b"%PDF-1.4 fake")
+
+    freeze = build_pdf_freeze(manifest, pdf_dir)
+    assert freeze["pdf_count"] == 1
+    assert freeze["missing_count"] == len(selected) - 1
+    assert freeze["pdfs"][0]["sha256"] == hashlib.sha256(b"%PDF-1.4 fake").hexdigest()
+    assert present not in freeze["missing"]

@@ -89,8 +89,23 @@ def cross_check(
             notes=(*notes, "同一来源内部多行取值不一致"),
         )
 
+    basic_eps = extract_basic_eps(text.splitlines(), rows)
+
     if not s1_values or not s2_values:
+        # ★E05 修复：单源路径同样要过 S3 哨兵。
+        #
+        # 原实现在这里直接 return，哨兵只在 CONFIRMED 路径上跑，对 39.5% 的单源结果
+        # 结构性不可达——而单源恰恰是最需要兜底的一类（没有第二个来源可对照）。
+        # B108 F003 实测：接上哨兵当场能抓到 6 份错抽，含 002670 的 ×10⁴ 单位错绑。
         single = found[0]
+        if magnitude_is_plausible(single.value, basic_eps) is False:
+            return CrossCheckResult(
+                status=Status.MAGNITUDE_IMPLAUSIBLE,
+                value=None,
+                failure_code=FailureCode.MAGNITUDE_IMPLAUSIBLE,
+                sources=tuple(found),
+                notes=(*notes, f"单源值未过数量级哨兵（基本EPS={basic_eps}）"),
+            )
         return CrossCheckResult(
             status=Status.SINGLE_SOURCE_UNCONFIRMED,
             value=single.value,
@@ -115,7 +130,6 @@ def cross_check(
     confirmed = s1_values[0].value
 
     # S3 哨兵：只否决，不确认
-    basic_eps = extract_basic_eps(text.splitlines(), rows)
     plausible = magnitude_is_plausible(confirmed, basic_eps)
     if plausible is False:
         return CrossCheckResult(

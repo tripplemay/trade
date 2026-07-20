@@ -26,6 +26,12 @@ _BOARD_PREFIXES: tuple[tuple[str, tuple[str, ...]], ...] = (
 
 REPORT_TYPES: tuple[str, ...] = ("Q1", "H1", "Q3", "FY")
 
+UNKNOWN_BOARD = "UNKNOWN"
+
+# 参与分层的板块。UNKNOWN（B 股 200xxx/900xxx、北交所）不在本项目宇宙内，
+# 见上游报告 §2.1「暂不纳入：北京证券交易所、B 股、基金、ETF、债券、优先股、存托凭证」。
+TARGET_BOARDS: tuple[str, ...] = tuple(board for board, _ in _BOARD_PREFIXES)
+
 
 @dataclass(frozen=True)
 class Candidate:
@@ -56,7 +62,7 @@ def classify_board(sec_code: str) -> str:
     for board, prefixes in _BOARD_PREFIXES:
         if sec_code.startswith(prefixes):
             return board
-    return "UNKNOWN"
+    return UNKNOWN_BOARD
 
 
 def _derive_seed(seed: int, stratum: tuple[int, str, str]) -> int:
@@ -88,8 +94,16 @@ def select_stratified(
     """按层抽样。返回结果按 ``(层键, announcement_id)`` 排序，保证字节级可复现。
 
     每层用独立派生的子 seed，因此增删某一层不会扰动其它层的抽样结果。
+
+    ★E10 修复：``UNKNOWN`` 板块不参与抽样。B 股（``200xxx``/``900xxx``）与北交所
+    不在本项目宇宙内（上游报告 §2.1「暂不纳入」），原实现却让 ``UNKNOWN`` 作为
+    第 5 个板块照常占配额，等于把宇宙外的证券塞进 holdout。
     """
-    pool = [item for item in candidates if item.announcement_id not in exclude_ids]
+    pool = [
+        item
+        for item in candidates
+        if item.announcement_id not in exclude_ids and item.board != UNKNOWN_BOARD
+    ]
     selected: list[Candidate] = []
 
     for stratum, members in sorted(group_by_stratum(pool).items()):
@@ -102,20 +116,40 @@ def select_stratified(
     return sorted(selected, key=lambda item: (item.stratum, item.announcement_id))
 
 
+def expected_strata(
+    years: tuple[int, ...],
+    report_types: tuple[str, ...] = REPORT_TYPES,
+    boards: tuple[str, ...] = TARGET_BOARDS,
+) -> set[tuple[int, str, str]]:
+    """按参数枚举**应当存在**的全部层，与候选池里实际有什么无关。"""
+    return {
+        (year, board, report_type)
+        for year in years
+        for board in boards
+        for report_type in report_types
+    }
+
+
 def coverage_report(
     candidates: list[Candidate],
     selected: list[Candidate],
     *,
     quota_per_stratum: int,
+    expected: set[tuple[int, str, str]] | None = None,
 ) -> list[dict[str, object]]:
     """逐层报告候选数与实际抽中数。
 
     配额没满必须显式暴露——静默少抽会让下游把「这一层不好抽」误读成「这一层没问题」。
+
+    ★E08 修复：必须传 ``expected``，否则**候选数为 0 的整层根本不会出现在报告里**。
+    原实现只遍历候选池里存在的层，于是「这一层一份都没抓到」——恰恰是最严重的缺口——
+    表现为报告里安静地少一行，no-silent-caps 对最该保护的情形失效。
     """
     available = group_by_stratum(candidates)
     taken = group_by_stratum(selected)
+    strata = set(available) | set(taken) | (expected or set())
     rows: list[dict[str, object]] = []
-    for stratum in sorted(set(available) | set(taken)):
+    for stratum in sorted(strata):
         year, board, report_type = stratum
         got = len(taken.get(stratum, []))
         rows.append(

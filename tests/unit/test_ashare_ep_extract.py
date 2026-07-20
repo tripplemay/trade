@@ -13,7 +13,13 @@ from decimal import Decimal
 
 from scripts.research.ashare_ep.codes import FailureCode, Status
 from scripts.research.ashare_ep.crosscheck import cross_check, relative_error
-from scripts.research.ashare_ep.layout import build_rows, parse_number, resolve_unit, split_cells
+from scripts.research.ashare_ep.layout import (
+    build_rows,
+    find_header_columns,
+    parse_number,
+    resolve_unit,
+    split_cells,
+)
 from scripts.research.ashare_ep.sources import (
     extract_s1,
     extract_s2,
@@ -132,10 +138,31 @@ def test_unit_binds_to_nearest_declaration_above_table() -> None:
     assert (unit, origin, ambiguous) == ("元", "table", False)
 
 
-def test_unit_falls_back_to_document_scope_when_table_has_none() -> None:
-    lines = ["单位：万元", *["填充行"] * 20, "项目            本期金额        上期金额"]
-    unit, origin, ambiguous = resolve_unit(lines, header_line=21)
-    assert (unit, origin) == ("万元", "document")
+def test_unit_search_stops_at_previous_table_data_row() -> None:
+    """★E04 回归：单位搜索必须在表边界停，而不是一路向上找到别的表的声明。
+
+    F003 实测 002670 2018 年报：「单位：万元」在合并利润表表头之外 612 行、
+    隔着整张主要会计数据表，仍被绑定，把 -544,272,818.63 放大成 -5,442,728,186,300.00。
+    原实现只是把越界命中改了个标签叫 document，然后照乘不误。
+    """
+    lines = [
+        "三、其他重要事项",
+        "   单位：万元",
+        "项目          本期金额        上期金额",
+        "营业收入      1,234.00        1,100.00",  # ← 上一张表的数据行 = 表边界
+        "",
+        "合并利润表",
+        "项目          本期金额        上期金额",
+    ]
+    unit, origin, ambiguous = resolve_unit(lines, header_line=6)
+    assert (unit, origin, ambiguous) == ("元", "default", False)
+
+
+def test_unit_declaration_directly_above_table_still_binds() -> None:
+    """边界停止不能误伤正常情形：声明紧贴表头时必须照常生效。"""
+    lines = ["合并利润表", "   单位：万元", "项目          本期金额        上期金额"]
+    unit, origin, _ = resolve_unit(lines, header_line=2)
+    assert (unit, origin) == ("万元", "table")
 
 
 def test_conflicting_units_in_table_scope_are_flagged_ambiguous() -> None:
@@ -285,3 +312,120 @@ def test_cross_check_revokes_confirmation_on_implausible_magnitude() -> None:
 def test_relative_error_is_guarded_near_zero() -> None:
     assert relative_error(Decimal(0), Decimal(0)) == Decimal(0)
     assert relative_error(Decimal("0.4"), Decimal("0.5")) <= Decimal("0.1")
+
+
+# --- B108 F003 验收缺陷回归（E02 / E03 / E05 / E07）---
+#
+# 以下 fixture 全部取自 F003 signoff 已公开点名的版面形态。这些文档已在报告中披露，
+# 因此用作回归 fixture 不额外消耗 holdout；但**最终复评必须换新 seed 重抽**，
+# 不能在这批上测精确率。
+
+
+_WRAPPED_MAIN_TABLE = "\n".join(
+    [
+        "单位：元",
+        "项目                        本报告期              上年同期增减        年初至报告期末",
+        "营业收入（元）        1,856,031,630.20             -8.37%        4,178,189,526.43",
+        "归属于上市公司股东",
+        "                       -79,024,133.16           -132.14%          -402,092,072.05",
+        "的净利润（元）",
+        "经营活动产生的现金",
+        "                                   --                 --           505,156,643.19",
+        "流量净额（元）",
+        "基本每股收益（元/",
+        "                              -0.0649           -131.81%                  -0.3309",
+        "股）",
+    ]
+)
+
+
+def test_label_rejoin_does_not_swallow_the_next_table_row() -> None:
+    """★E02 回归：标签重连不得跨越已完成的表格行。
+
+    F003 实测 300432：`营业收入（元）` 与 `归属于上市公司股东的净利润（元）` 被并成一行，
+    且营业收入的单元格排在前面 → 返回营业收入 41.8 亿当归母净利润（真值 -4.02 亿）。
+    这是本批次立项要消灭的「自信的错值」，而且比原 bug 更隐蔽。
+    """
+    rows = build_rows(_WRAPPED_MAIN_TABLE.splitlines())
+    merged = [
+        row.label
+        for row in rows
+        if "营业收入" in row.label and "归属于上市公司股东的净利润" in row.label
+    ]
+    assert not merged, f"标签跨行合并了相邻表格行：{merged}"
+
+    values, _ = extract_s2(_WRAPPED_MAIN_TABLE.splitlines(), rows)
+    assert values[0].value == Decimal("-402092072.05")
+
+
+def test_label_rejoin_stops_after_one_tail_segment() -> None:
+    """数字到达后只允许接**一段**标签尾——第二段是下一行的标签头。
+
+    缺这条约束时，`经营活动产生的现金/流量净额` 会继续吞掉 `基本每股收益（元/`，
+    于是 EPS 抽成 5.05 亿的经营现金流，S3 哨兵反过来否决正确的归母净利润。
+    """
+    rows = build_rows(_WRAPPED_MAIN_TABLE.splitlines())
+    eps_rows = [row for row in rows if "基本每股收益" in row.label]
+    assert eps_rows, "基本每股收益行丢失"
+    assert "经营活动" not in eps_rows[0].label
+
+
+def test_multiline_header_band_is_merged_into_columns() -> None:
+    """★E03 回归：真实财报表头跨物理行，只认单行会让列模型整个建不起来。
+
+    F003 实测这一条命中 76 次，是 48.7% EXTRACTION_FAILED 的第一主因。
+    """
+    lines = [
+        "单位：元",
+        "                          上年同期              本报告期比上年同期增减",
+        "          本报告期",
+        "                     调整前          调整后          调整后",
+        "归属于上市公司股东的净利润   1,000.00      900.00        950.00        5.26%",
+    ]
+    columns, header_line = find_header_columns(lines, before_line=4)
+    assert columns, "跨行表头未被识别"
+    assert header_line >= 0
+    assert any("本报告期" in column.header for column in columns)
+
+
+def test_sentinel_also_guards_the_single_source_path() -> None:
+    """★E05 回归：S3 哨兵原先只在 CONFIRMED 路径跑，对单源结构性不可达。
+
+    单源恰恰最需要兜底——没有第二个来源可对照。
+    """
+    text = "\n".join(
+        [
+            "单位：万元",
+            _income_row("项目", "附注", "本期金额", "上期金额"),
+            _income_row("  归属于母公司所有者的净利润", "35", "544,272,818.63", "58,064,247.02"),
+            "单位：元",
+            "项目                        本报告期",
+            "基本每股收益（元/股）              0.28",
+        ]
+    )
+    result = cross_check(text)
+    # 万元 × 5.44 亿 = 5.44 万亿，配 0.28 元 EPS → 推算股本 1.9e13，远超真实宇宙
+    assert result.status is Status.MAGNITUDE_IMPLAUSIBLE
+    assert result.value is None
+
+
+def test_narrative_hit_yields_to_tabled_hit() -> None:
+    """★E07 回归：业绩预告/MD&A 的叙述文字命中不得触发假冲突。
+
+    F003 实测 40% 的 SOURCE_CONFLICT 是这样来的，把本来抽对的值也毁掉。
+    """
+    text = "\n".join(
+        [
+            "单位：元",
+            "二、管理层讨论与分析",
+            "报告期内归属于上市公司股东的净利润 12345.00 万元，同比大幅增长。",
+            "",
+            "一、主要会计数据",
+            "项目                        本报告期              上年同期",
+            "归属于上市公司股东的净利润    252,300,000.00      198,000,000.00",
+        ]
+    )
+    values, _ = extract_s2(text.splitlines(), parse_document(text))
+    assert len(values) == 1
+    assert values[0].value == Decimal("252300000.00")
+    assert values[0].column_header != "<single-value-row>"

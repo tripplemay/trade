@@ -67,14 +67,25 @@ def build_manifest(
     }
 
 
+def manifest_bytes(manifest: dict[str, Any]) -> bytes:
+    """manifest 的最终字节形态——**写文件和算哈希必须用同一个来源**。"""
+    return (_canonical_json(manifest) + "\n").encode("utf-8")
+
+
 def manifest_sha256(manifest: dict[str, Any]) -> str:
-    return hashlib.sha256(_canonical_json(manifest).encode("utf-8")).hexdigest()
+    """manifest 文件的 sha256，等于 ``shasum -a 256 <file>`` 的结果。
+
+    ★E09 修复：原实现写文件时补了 ``\\n``、算哈希时却用不含 ``\\n`` 的规范串，
+    于是 CLI 打印的 sha256 与文件实际哈希不等——偏偏这个值的唯一用途就是
+    「冻结后核验」，不等价意味着核验动作本身在骗人。
+    """
+    return hashlib.sha256(manifest_bytes(manifest)).hexdigest()
 
 
 def write_manifest(manifest: dict[str, Any], path: Path) -> str:
-    """写出 manifest，返回其 sha256。同输入必然同字节。"""
+    """写出 manifest，返回其 sha256（与文件字节一致）。同输入必然同字节。"""
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(_canonical_json(manifest) + "\n", encoding="utf-8")
+    path.write_bytes(manifest_bytes(manifest))
     return manifest_sha256(manifest)
 
 
@@ -102,6 +113,47 @@ def load_excluded_ids(path: Path) -> frozenset[str]:
             "排除清单为空会让已烧掉的样本重新进入 holdout，拒绝继续"
         )
     return frozenset(ids)
+
+
+def build_pdf_freeze(
+    manifest: dict[str, Any],
+    pdf_dir: Path,
+    *,
+    suffix: str = ".pdf",
+) -> dict[str, Any]:
+    """把已下载 PDF 的字节哈希冻结成记录。
+
+    ★E11 修复：抽样 manifest 只锁定「抽了哪些公告」，不锁定「评测的是哪些字节」。
+    巨潮同一公告 ID 换 hash 是上游报告 §4.3 明确要求报警的情形；没有这一层，
+    复评时无法证明用的还是同一批文件。抽样阶段拿不到哈希（不下载），
+    所以这一步由下载方（F003）在下载后调用。
+
+    缺文件不是静默跳过——记为 ``missing``，让复评方看得见。
+    """
+    entries: list[dict[str, Any]] = []
+    missing: list[str] = []
+    for item in manifest.get("items", []):
+        announcement_id = str(item["announcement_id"])
+        path = pdf_dir / f"{announcement_id}{suffix}"
+        if not path.exists():
+            missing.append(announcement_id)
+            continue
+        payload = path.read_bytes()
+        entries.append(
+            {
+                "announcement_id": announcement_id,
+                "sec_code": item.get("sec_code"),
+                "bytes": len(payload),
+                "sha256": hashlib.sha256(payload).hexdigest(),
+            }
+        )
+    return {
+        "manifest_sha256": manifest_sha256(manifest),
+        "pdf_count": len(entries),
+        "missing_count": len(missing),
+        "missing": sorted(missing),
+        "pdfs": sorted(entries, key=lambda entry: str(entry["announcement_id"])),
+    }
 
 
 def build_provenance(

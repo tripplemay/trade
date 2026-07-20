@@ -37,6 +37,7 @@ from scripts.research.ashare_ep.sampling import (
     REPORT_TYPES,
     Candidate,
     coverage_report,
+    expected_strata,
     select_stratified,
 )
 
@@ -94,7 +95,12 @@ def discover_candidates(
     diagnostics: list[dict[str, Any]] = []
     seen: set[str] = set()
 
-    with CninfoClient() as client:
+    # ★E01 修复：CninfoClient 没有实现上下文管理器协议，原来的 `with CninfoClient()`
+    # 第一行就抛 TypeError。这条是 F003 唯一必走的路径，交付时却从未被执行过——
+    # 因为 H3 禁止 Generator 跑联网路径，而离线路径绕开了它。
+    # 教训：被规则挡住不等于被验证过；无法执行的路径必须显式标注为未验证。
+    client = CninfoClient()
+    try:
         for year in years:
             for report_type in report_types:
                 spec = _QUERY_SPECS[report_type]
@@ -103,8 +109,11 @@ def discover_candidates(
                 end = f"{query_year}-{spec['end']}"
                 rows_seen = 0
                 found = 0
+                pages_used = 0
+                exhausted = False
 
                 for page in range(1, max_pages + 1):
+                    pages_used = page
                     payload = client.query(
                         page=page, start=start, end=end, category=str(spec["category"])
                     )
@@ -132,6 +141,7 @@ def discover_candidates(
                         )
                         found += 1
                     if not payload.get("hasMore"):
+                        exhausted = True
                         break
 
                 diagnostics.append(
@@ -142,8 +152,15 @@ def discover_candidates(
                         "query_end": end,
                         "rows_seen": rows_seen,
                         "eligible": found,
+                        "pages_used": pages_used,
+                        # ★no-silent-caps：撞到翻页上限意味着候选池被截断，
+                        # 该层的抽样不是从完整总体里抽的，必须显式披露。
+                        "pagination_exhausted": exhausted,
+                        "hit_page_cap": not exhausted and pages_used >= max_pages,
                     }
                 )
+    finally:
+        client.session.close()
 
     return candidates, diagnostics
 
@@ -240,7 +257,13 @@ def main(argv: list[str] | None = None) -> int:
     )
     digest = write_manifest(manifest, args.out)
 
-    coverage = coverage_report(candidates, selected, quota_per_stratum=args.quota)
+    coverage = coverage_report(
+        candidates,
+        selected,
+        quota_per_stratum=args.quota,
+        # 传入应有的层，让候选数为 0 的整层也出现在报告里（E08）
+        expected=expected_strata(years, report_types),
+    )
     if args.provenance_out:
         write_provenance(
             build_provenance(
