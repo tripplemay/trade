@@ -1,5 +1,20 @@
 #!/usr/bin/env python
-"""B076 F001 — fetch PIT circulating market cap for the B070 de-biased universe.
+"""⛔ 已弃用（B109 F002 退役）—— 本脚本算的是**流通市值**，违反上游禁令 #6。
+
+**替代品：** ``scripts/research/ashare_pit/marketcap.py``，用 Tushare `daily_basic` 的
+``total_mv``（**总市值**）并做 ``close × total_share`` 身份复算。B109 F003 独立验收实测
+**27,963 个证券-日 100.0000% 通过**身份校验。
+
+**为什么必须退役而不只是「有了更好的」：** 归母净利润是**全公司**口径，其分母必须是
+**总市值**。用流通市值当分母会系统性高估限售股比例高的公司的 E/P——这不是精度问题，
+是口径错误。B109 F003 实测反证：``circ_mv`` 只有 **33.7%–41.6%** 的证券能通过同一
+身份校验，即约六成证券的流通市值 ≠ 总市值。
+
+本文件保留**仅供复现 B076 的历史产物**。任何新工作不得使用 :func:`circ_mv_from_bar`。
+
+---
+
+B076 F001 — fetch PIT circulating market cap for the B070 de-biased universe.
 
 The size-tilt factor (``small_cap_score``) ranks names by circulating market cap, but
 the B070 survivorship-free universe includes **delisted** names whose market cap the
@@ -38,6 +53,7 @@ import argparse
 import csv
 import json
 import logging
+import warnings
 from datetime import date
 from pathlib import Path
 
@@ -79,11 +95,23 @@ def union_tickers(universe_csv: Path) -> list[str]:
 
 
 def circ_mv_from_bar(close: str, volume: str, turn: str) -> float | None:
-    """``close * volume * 100 / turn`` (circulating market cap), or None if unusable.
+    """⛔ 已弃用 —— 返回**流通市值**，违上游禁令 #6。见模块 docstring。
+
+    调用即发 :class:`DeprecationWarning`：此路径在仓库里仍可达只为复现 B076 历史产物，
+    **不得**用于任何新工作。需要市值分母时用
+    ``scripts.research.ashare_pit.marketcap.build_point``（总市值 + 身份复算）。
+
+    ``close * volume * 100 / turn`` (circulating market cap), or None if unusable.
 
     A suspended / no-turnover bar (``turn`` or ``volume`` zero/blank) cannot yield a
     cap and returns None so it is simply skipped (never written as a 0-cap row, which
     would poison the cross-sectional size rank)."""
+    warnings.warn(
+        "circ_mv_from_bar 返回流通市值，违上游禁令 #6，已由 B109 "
+        "scripts/research/ashare_pit/marketcap.py（总市值）取代；仅供复现 B076 历史产物",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     try:
         close_f = float(close)
         volume_f = float(volume)

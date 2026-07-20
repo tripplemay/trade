@@ -5,14 +5,21 @@
     resolve(ts_code, end_date, formation_date)
       = 取 f_ann_date <= formation_date 的行中 f_ann_date 最大的一条
 
-依据：410 个已知修订中 **98.8%** 可用该语义正确还原当时可见的版本；
-修正相对首版的滞后 **100% 为正**（中位 244 天），不存在会破坏 as-of 查询的时间倒挂。
+依据（**F001 分页重测版**，`docs/audits/B109-F001-vintage-probe-remeasured-2026-07-20.md`）：
+已知修订中 **99.2%** 可用该语义正确还原当时可见的版本；修正相对首版的滞后 **100% 为正**，
+不存在会破坏 as-of 查询的时间倒挂。
 
 **上游 handoff 报告 §4.4/§5 的重装设计**（`filing_version` + `financial_fact_version`
 + 版本链 + UPSERT/RETRACT + 追加式 QA decision + 三时钟 resolver）**在本数据源上不必要**——
-Tushare 的 `f_ann_date` 已经承载了「市场可知时间」这一轴，而修订率只有 0.47%–0.88%。
+`f_ann_date` 已经承载了「市场可知时间」这一轴，而修订率量级有限
+（见 :data:`~scripts.research.ashare_pit.pipeline.REVISION_RATE_BOUNDS`，
+现行口径 0.515%–1.325%，只取自可信窗口 2018-2021）。
 
-但「轻量」不等于「可以省掉失败码」：剩下的 1.2% 无法按 `f_ann_date` 分辨先后，
+★不要在此复述具体数字：早先这里写的 98.8% / 0.47%–0.88% 来自**被静默截断的单次调用**
+（见 `fetch` 模块 docstring），已作废。设计理由引用常量而非硬编码，
+就是为了避免同一个数字在多处各自漂移——**本模块正是漏改的那一处**。
+
+但「轻量」不等于「可以省掉失败码」：剩下不到 1% 无法按 `f_ann_date` 分辨先后，
 必须 fail closed（见 :func:`resolve_as_of`）。
 """
 
