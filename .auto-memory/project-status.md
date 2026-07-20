@@ -5,12 +5,14 @@ type: project
 ---
 
 ## 当前状态
-- **B108 巨潮 parser 自检重构 🔍 verifying（2026-07-20, 2g+1c）** F001✅ F002✅ → **F003 交 Codex**。spec `docs/specs/B108-cninfo-parser-selfcheck-spec.md`。
-  - **起因**：复核 as-filed pilot 的 65.789% `NO_GO`，发现 13 份失败里 **≥10 份是本仓 parser 自身 bug**（附注列误认/单位跨表错绑/硬编码列位/旧模板断行，四类同源＝抽取器无任何自检），且对照物是 Eastmoney 当前快照**非人工真值**。
-  - **采购决策：先不花钱**，先验证「免费源+自建 parser」天花板，再决定是否买 Tushare（¥500/5000 积分）。★调研确认 **Tushare 在本仓从未实测**（零集成/无 token，实跑是 akshare+baostock），报告里 13 个 P1 接口全是二手文档调研。
-  - **F001 ✅**：`scripts/research/ashare_ep/` 多源交叉验证抽取器（S1 合并利润表 / S2 主要会计数据 / S3 数量级哨兵），冲突返 `None` 而非猜测值 + 7 个 failure code。★差分证据：旧 parser 在附注列 fixture 返回 **35.0**、在三季报四列 fixture 返回**上期金额** 198000000.00；新 parser 分别 252300000.00 / CONFIRMED（双源一致）。
-  - **F002 ✅**：seed 化分层抽样 CLI。★实测同 seed 两跑 sha256 `47aede26…21d6` 字节相同；`--exclude-manifest` 从 pilot 报告解析出**恰好 50 个** ID。
-  - 40 新单测，全量 **1534 passed 零回归**，ruff 净。
+- **B108 巨潮 parser 自检重构 🔴 fixing（2026-07-20, 2g+1c）** F001✅ F002✅ → **F003 验收 FAIL**。signoff `docs/test-reports/B108-cninfo-parser-selfcheck-signoff-2026-07-20.md`。
+  - **holdout 实测（seed 4172639，76 份，与已烧掉 50 份交集 0）**：CONFIRMED 仅 **4/76 = 5.3%**；EXTRACTION_FAILED **48.7%**；单源 39.5%；冲突 6.6%。**年报 FY 0/18**、沪主板/科创板/B股/2015 全年各 0 CONFIRMED。
+  - **precision 硬门 = NOT MEASURABLE**：全量人工裁定 4/4=100% 且 10ⁿ 错误=0，但 acceptance 要 ≥20 份只有 4 份；n=4 的 95% 下界仅 47.3%，要断言 ≥99% 需 n≥299（≈5681 份文档）。
+  - **冲突误报率 40%**（5 份里真抓 3 / 误报 2；误报因 S1/S2 命中业绩预告叙述文字）。
+  - **★四类 bug 三类未真正解决**：bug ②（单位跨表）**未修**——`resolve_unit` 无表边界停止，002670 单位声明在 612 行外仍绑定 → 抽出 -5.44 万亿元（真值 -5.44 亿）；bug ④ 修复**引入回归**——标签重连过度合并，300432 返回营业收入 41.8 亿而非归母 -4.02 亿，单源结果 ≥43% 是错值；bug ③ 修法**大面积失效**——表头跨物理行时列模型建不起来，76 次命中，是 48.7% 失败第一主因。bug ①（附注列）本次既未证实也未证伪。
+  - **E01 阻断**：`sample_cli` 联网抽样路径崩溃（`with CninfoClient()` 但该类无上下文管理器协议），F003 唯一必走路径交付时零执行。共 11 条缺陷 E01-E11。
+  - **三处偏离裁定**：S3 区间 = 方向 ACCEPT（不违 H1；变异测试实测 ×10⁴ 检出 88-94%、×10³ 仅 19% 放大向）但**位置 REJECT**（只在 CONFIRMED 路径跑，对 39.5% 单源不可达，接上可当场抓 6 份错抽）；manifest 拆 provenance = ACCEPT；无 pdf_sha256 = ACCEPT 但冻结 PDF 字节掉缝。
+  - **★采购结论：当前不够用，但★不据此判「免费源天花板已到」**——测的是这一版实现非免费源上限，三主缺陷都有结构化修法且不需外部数据。**先修再用同一 holdout 复评（PDF 已落盘，零下载成本），拿到数字再谈采购**。Tushare 同样从未实测——两边都没测过。
 - **B107 生产迁移 ✅ done（手工置 done，F003=waived 无 signoff）**。活生产 `https://trade.guangai.ai` 在 deploysvr（`194.238.26.173`），**version 已对齐 HEAD**，db-ok，三单元 active，定时任务真跑通，F001 本地备份工作中。老机 `34.180.93.185` 全栈**冻结作回滚点**。
 - **B106–B074 ✅**。
 

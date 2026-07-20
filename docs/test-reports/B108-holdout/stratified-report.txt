@@ -1,0 +1,89 @@
+总样本 N = 76
+
+== 状态分布 ==
+  EXTRACTION_FAILED             37   48.7%
+  SINGLE_SOURCE_UNCONFIRMED     30   39.5%
+  SOURCE_CONFLICT                5    6.6%
+  CONFIRMED                      4    5.3%
+
+== failure_code 分布 ==
+  EXTRACTION_FAILED             34   44.7%
+  SINGLE_SOURCE_UNCONFIRMED     30   39.5%
+  SOURCE_CONFLICT                5    6.6%
+  -                              4    5.3%
+  LABEL_NOT_FOUND                3    3.9%
+
+== 按 year 分层 ==
+  层            N  CONF  SINGLE  CONFLICT  MAGN  FAIL  ERR
+  2015        14     0       6         0     0     8    0
+  2018        13     1       8         2     0     2    0
+  2021        14     1       6         0     0     7    0
+  2023        17     1       5         3     0     8    0
+  2025        18     1       5         0     0    12    0
+
+== 按 board 分层 ==
+  层            N  CONF  SINGLE  CONFLICT  MAGN  FAIL  ERR
+  UNKNOWN      9     0       4         0     0     5    0
+  创业板         16     2       6         0     0     8    0
+  沪主板         20     0       8         2     0    10    0
+  深主板         19     2       9         2     0     6    0
+  科创板         12     0       3         1     0     8    0
+
+== 按 report_type 分层 ==
+  层            N  CONF  SINGLE  CONFLICT  MAGN  FAIL  ERR
+  FY          18     0       3         0     0    15    0
+  H1          18     1       4         2     0    11    0
+  Q1          21     3      11         0     0     7    0
+  Q3          19     0      12         3     0     4    0
+
+== 单位来源分布（bug ② 相关） ==
+  unit=元     source=table      18
+  unit=元     source=default    16
+  unit=元     source=document   14
+  unit=万元    source=document    1
+
+== CONFIRMED 明细 ==
+  300063 2018-H1 创业板      77113928.99
+  300495 2021-Q1 创业板      20850270.43
+  000046 2023-Q1 深主板      -1307800923.63
+  000002 2025-Q1 深主板      -6246208543.03
+
+== SOURCE_CONFLICT 明细 ==
+  002605 2018-H1 深主板
+      S2=44423937.08(raw=44423937.08,unit=元/default,col=本报告期,line=229) | S2=5132.83(raw=5132.83,unit=元/document,col=<single-value-row>,line=1266)
+      note: EXTRACTION_FAILED
+      note: EXTRACTION_FAILED
+      note: EXTRACTION_FAILED
+      note: EXTRACTION_FAILED
+      note: EXTRACTION_FAILED
+      note: EXTRACTION_FAILED
+      note: COLUMN_AMBIGUOUS
+      note: COLUMN_AMBIGUOUS
+      note: EXTRACTION_FAILED
+      note: EXTRACTION_FAILED
+      note: EXTRACTION_FAILED
+      note: COLUMN_AMBIGUOUS
+      note: 同一来源内部多行取值不一致
+  002382 2018-Q3 深主板
+      S2=260606202.35(raw=260606202.35,unit=元/default,col=年初至报告期末,line=86) | S2=20086.43(raw=20086.43,unit=元/document,col=<single-value-row>,line=1818)
+      note: COLUMN_AMBIGUOUS
+      note: COLUMN_AMBIGUOUS
+      note: EXTRACTION_FAILED
+      note: EXTRACTION_FAILED
+      note: COLUMN_AMBIGUOUS
+      note: 同一来源内部多行取值不一致
+  600900 2023-H1 沪主板
+      S1=81875582795.77(raw=81875582795.77,unit=元/table,col=本期,line=7216) | S2=30974895019.62(raw=30974895019.62,unit=元/table,col=本报告期,line=195)
+      note: S1=81875582795.77 S2=30974895019.62 相对误差=0.6216833644178923711000159712
+  603027 2023-Q3 沪主板
+      S2=48.45(raw=48.45,unit=元/table,col=年初至报告期末,line=36) | S2=106.61(raw=106.61,unit=元/document,col=<single-value-row>,line=190)
+      note: LABEL_NOT_FOUND
+      note: 同一来源内部多行取值不一致
+  688185 2023-Q3 科创板
+      S2=92.93(raw=92.93,unit=元/table,col=年初至报告期末,line=42) | S2=-70.49(raw=-70.49,unit=元/document,col=<single-value-row>,line=132)
+      note: COLUMN_AMBIGUOUS
+      note: 同一来源内部多行取值不一致
+
+== MAGNITUDE_IMPLAUSIBLE 明细 ==
+
+== PIPELINE_ERROR 明细 ==
