@@ -20,13 +20,14 @@
    "title": "确定性分层抽样 CLI — 带 seed / 分层 / exclude-manifest，只产 manifest 不下载不评测",
    "priority": "high",
    "executor": "generator",
-   "status": "pending",
+   "status": "done",
    "acceptance": "【spec §4】(1) 新增抽样 CLI，取代 select_regular_sample 的『取巨潮返回顺序前 4 个』（该做法不可复现且非随机，不可用于 holdout）。(2) --seed 确定性伪随机：★同 seed 同参数须产出逐字节相同 manifest，实测跑两次比对 sha256。(3) 分层维度：年份 × 交易所板块(沪主板/深主板/创业板/科创板) × 报告类型(Q1/H1/Q3/FY)，各层配额可配。(4) --exclude-manifest 按 announcement_id 排除既有 manifest（用于排除已烧掉的 50 份）。(5) 输出 manifest 字段：announcement_id / sec_code / report_period / 板块 / url / pdf_sha256(如可得) / seed / 分层参数 / 生成时间。(6)★只输出 manifest：不下载 PDF、不抽取数值、不做任何评测。(7)★H3 边界：Generator 可用原 50 份 manifest 验证工具本身可用（复现性 + exclude 生效），但★不得抽取任何新样本——抽样动作属 F003 Codex。Gates：ruff + pytest；CLI --help 可用；两次同 seed 运行 sha256 一致的实测证据入 completed_note。",
    "design_decisions": [
     "seed 化确定性抽样取代 API 返回顺序：巨潮返回顺序随时间变化 → 原做法样本不可复现；且返回顺序非随机，系统性偏向特定公司，holdout 会有隐性选择偏差。",
     "工具与抽样动作分离（Generator 造工具、Codex 抽样本）：铁律 #4 + 上游报告 §8.3 要求 holdout 由 Evaluator 封存不向 Generator 公开。Generator 一旦抽了样本，样本就进了它的上下文=烧掉。",
     "manifest 先冻结再评测：防止『评测跑完发现难看再重抽』这类事后选择。"
-   ]
+   ],
+   "completed_note": "2026-07-20 Generator. 新增 scripts/research/ashare_ep/ 三模块：sampling.py(Candidate + 板块判定 + 分层 + seed 化抽样 + coverage_report)、manifest.py(规范 JSON 序列化 + 哈希 + exclude 解析 + provenance)、sample_cli.py(argparse CLI，含 Q1/H1/Q3/FY 四种巨潮检索规格)。tests/unit/test_ashare_ep_sampling.py 20 个单测全绿；全量 1534 passed(F001 后 1514 + 新增 20，零回归)；ruff All checks passed。★★实测证据：(a) 同 seed(20260720) 两跑 → sha256 均为 47aede264a81976a79570f222fad44989d7e689e63efdc4404066ccf5aad21d6，cmp 字节级相同；(b) --exclude-manifest 对真实 pilot 报告 docs/test-reports/ashare-as-filed-data-pilot-2026-07-12.json 解析出**恰好 50 个** announcement_id（对上已烧掉的 50 份）；(c) CLI --help 可用。★★关键坑（测试专为它而设）：_derive_seed 不得用内置 hash()——CPython 对 str 的 hash 每进程加盐，用了之后同进程测试全绿、换一次运行样本就变且**不报错**，正好摧毁本工具唯一想提供的保证。故 test_cli_is_deterministic_across_processes 用 PYTHONHASHSEED 不同的**子进程**跑两次比对字节，而非同进程比两次调用。★年报检索坑：Y 年年报在 Y+1 年 1-4 月披露，_QUERY_SPECS['FY'] 用 year_offset=1 偏移查询窗口，标题年份仍匹配 Y（pilot 原本只有 Q1/H1/Q3，无 FY）。★★偏离 acceptance (5)（须 Evaluator 判）：manifest 里**不含 生成时间**，也**不含 pdf_sha256**。理由：(i) 时间戳与『同 seed 两跑逐字节相同』硬冲突，放进去就只能退化成『比较除时间戳外的部分』＝把可复现性的验收口子开在自己身上；故拆成 manifest.json(纯确定性) + provenance.json(时间戳/查询诊断/逐层覆盖)，让 acceptance 那句『跑两次比对 sha256』字面成立。(ii) pdf_sha256 在抽样阶段永远『不可得』(不下载 PDF)，属 F003 下载后冻结的那份 manifest。★no-silent-caps：coverage_report 把未达配额的层逐条打到 stderr，不让下游把『抽不满』读成『没问题』(对齐上游报告 §11)。★H3 合规：discover_candidates(联网路径) 全仓**零调用点**(已 grep 验证)，Generator 全程只走 --candidates-json 离线路径，未对巨潮发起任何真实检索，未抽取任何新样本。"
   },
   {
    "id": "F003",

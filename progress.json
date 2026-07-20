@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 3,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
-  "current_sprint": "F002",
+  "current_sprint": "F003",
   "last_updated": "2026-07-20",
   "user_goal": "B108 巨潮 PDF parser 自检重构 + 独立样本重评。起因:复核 as-filed pilot 的 65.789% NO_GO 裁定,发现 13 份失败里 >=10 份是本仓 parser 自身 bug(附注列误认/单位跨表错绑/硬编码列位/旧模板断行),四类同源=抽取器无任何自检;且对照物是 Eastmoney 当前快照非人工真值。采购决策:先不花钱,先验证『免费源+自建 parser』天花板再决定是否买 Tushare(¥500/5000积分)或商业源。3 features 2g+1c:F001 多源交叉验证抽取器(S1合并利润表/S2主要会计数据/S3 EPS×股本哨兵,不一致返 None+7 个 failure code)/F002 确定性分层抽样 CLI(seed 可复现,只产 manifest)/F003 Codex 独立抽 holdout 评测。★核心指标拆分:confirmed precision >=99% 硬门(自信的错值污染研究),confirmed coverage 只报告不设门。spec docs/specs/B108-cninfo-parser-selfcheck-spec.md。不改 DATA_NO_GO 裁定,不算 E/P,不采购。",
   "reference_docs": [
@@ -29,7 +29,7 @@
   ],
   "session_notes": {
     "planner": "2026-07-20 B108 planning。★上游链条:用户读 pure-ep handoff(2026-07-13)→问采购→CLI 调研发现 Tushare 从未实测(仓库零集成/无 token/全是二手文档调研,实跑是 akshare+baostock)→提出两个改变判断的发现:①报告用来论证必须建 vintage 底座的『90.83% 在 120 天后仍更新/中位数 365 天』测的是记录被 touch 时间不是数值被改比例,且中位数正好 365/P90 377=年度批量重刷特征,真实修订率从未被测过;②巨潮 65.789% NO_GO 里 >=10/13 是自家 parser bug,且对照物非真值→用户裁定『先修巨潮 parser』(不花钱先探天花板)。★B107 同日手工置 done(F003 waived,无 signoff)。★spec 关键设计:(a)多源交叉验证取代猜值,冲突返 None;(b)S3(EPS×股本)只否决不确认——基本 EPS 用加权平均股本有真实百分比偏差作确认源会误报,但对 10^n 极敏感作哨兵恰好;(c)四类 bug 修法全锚在表头文字+列结构不锚数值幅度,这是 H1『修类别不修样本』可被客观审查的唯一方式;(d)F002/F003 切开=Generator 造抽样工具但不得抽样本(抽了就进上下文=烧掉,违 H2/H3);(e)precision 设硬门 coverage 不设门。★现有 select_regular_sample 取巨潮返回顺序前 4 个,不可复现且非随机,不可用于 holdout,F002 必须换 seed 化分层抽样。【续接】status=building,Generator 接 F001(纯本地逻辑,合成 fixture 单测,可全离线)→F002(抽样 CLI,同 seed 两跑 sha256 一致须实测)。F003 交 Codex。★遗留(非本批):workbench-advisor 402=aigc 侧 key 配额问题(余额 $22.34 非零);Production f9c56be 落后 HEAD 4 个 chore commit;P6 老 VM 退役未做;600787/601992 两份需用户人工翻 PDF 裁定。",
-    "generator": "2026-07-20 F001 done。scripts/research/ashare_ep/ 四模块 + 20 单测，全量 1514 passed 零回归，ruff 净。★差分证据：旧 parser 在附注列 fixture 上返回 35.0、在三季报四列 fixture 上返回上期金额 198000000.00；新 parser 分别返回 252300000.00 / CONFIRMED 252300000.00(双源一致)。★S3 实现偏离 spec §3.1：用 |利润|/|EPS|→推算股本∈[1e6,1e12] 取代『EPS×期末股本』(季报正文常无期末股本)，角色不变(只否决不确认)，已记 completed_note 待 Evaluator 确认。★bug ④ 单测非差分(旧 parser 同样能过)，真实失败样本无 PDF 不可复现，留 F003 holdout 检验。【续接】F002 抽样 CLI：必须 --seed 确定性(同 seed 两跑 sha256 一致须实测)、分层(年份×板块×报告类型)、--exclude-manifest 排除已烧的 50 份、只产 manifest 不下载不抽取。★H3 铁律：Generator 造工具但**不得抽任何新样本**，抽样动作属 F003 Codex。",
+    "generator": "2026-07-20 F001+F002 done，交 F003 Codex。scripts/research/ashare_ep/ 共 7 模块：codes/layout/sources/crosscheck(F001) + sampling/manifest/sample_cli(F002)。40 新单测，全量 1534 passed 零回归，ruff 净，CI 绿(F001 已验，F002 待验)。★F001 差分证据：旧 parser 在附注列 fixture 返回 35.0、在三季报四列 fixture 返回上期金额 198000000.00；新 parser 分别 252300000.00 / CONFIRMED 252300000.00(双源一致)。★F002 实测：同 seed 两跑 sha256=47aede26...21d6 字节相同；exclude 从 pilot 报告解析出恰好 50 个 ID。★★三处偏离待 Codex 判：(1) F001 S3 用 |利润|/|EPS|→推算股本∈[1e6,1e12] 取代 spec §3.1 的『EPS×期末股本』(季报常无期末股本)；(2) F002 manifest 不含生成时间(与逐字节复现硬冲突，拆 provenance 旁文件)；(3) F002 manifest 不含 pdf_sha256(抽样阶段不可得，属 F003)。★★F001 诚实限制：bug ④(旧模板断行)单测非差分回归——旧 parser 同样能过该 fixture，真实失败样本(600843/600639/600688)无原始 PDF 不可复现，该类修复**本批次内无法自证**，须由 F003 在 holdout 上检验。【交接 F003】Codex 自选 seed，用 sample_cli --exclude-manifest docs/test-reports/ashare-as-filed-data-pilot-2026-07-12.json 抽 >=60 份 holdout，manifest+hash 先冻结再评测。硬门：confirmed precision>=99% 且 CONFIRMED 中 10^n 错误=0；coverage 只报告不设门。另须做冲突有效性检查(真抓到 bug vs 误报)。",
     "evaluator": null
   }
 }
