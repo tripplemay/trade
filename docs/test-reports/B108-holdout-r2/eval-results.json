@@ -1,0 +1,3883 @@
+{
+  "results": [
+    {
+      "announcement_id": "1202280610",
+      "board": "创业板",
+      "report_period": "2015-FY",
+      "report_type": "FY",
+      "sec_code": "300142",
+      "title": "2015年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2016-04-30/1202280610.PDF",
+      "year": 2015,
+      "pdf_bytes": 4594527,
+      "txt_chars": 594085,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "EXTRACTION_FAILED",
+      "sources": [],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1202282650",
+      "board": "创业板",
+      "report_period": "2015-FY",
+      "report_type": "FY",
+      "sec_code": "300318",
+      "title": "2015年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2016-04-30/1202282650.PDF",
+      "year": 2015,
+      "pdf_bytes": 2647321,
+      "txt_chars": 459923,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "11882008.30",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "11882008.30",
+          "raw_value": "11882008.30",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 6254
+        }
+      ],
+      "notes": [
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1201516733",
+      "board": "创业板",
+      "report_period": "2015-H1",
+      "report_type": "H1",
+      "sec_code": "300418",
+      "title": "2015年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-08-31/1201516733.PDF",
+      "year": 2015,
+      "pdf_bytes": 767889,
+      "txt_chars": 352638,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "194825145.94",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "194825145.94",
+          "raw_value": "194825145.94",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 6867
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1202268897",
+      "board": "沪主板",
+      "report_period": "2015-FY",
+      "report_type": "FY",
+      "sec_code": "600297",
+      "title": "2015年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2016-04-29/1202268897.PDF",
+      "year": 2015,
+      "pdf_bytes": 2007604,
+      "txt_chars": 599834,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "EXTRACTION_FAILED",
+      "sources": [],
+      "notes": [
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1202283369",
+      "board": "沪主板",
+      "report_period": "2015-FY",
+      "report_type": "FY",
+      "sec_code": "600677",
+      "title": "2015年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2016-04-30/1202283369.PDF",
+      "year": 2015,
+      "pdf_bytes": 3161136,
+      "txt_chars": 463003,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "EXTRACTION_FAILED",
+      "sources": [],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "LABEL_NOT_FOUND"
+      ]
+    },
+    {
+      "announcement_id": "1201523647",
+      "board": "沪主板",
+      "report_period": "2015-H1",
+      "report_type": "H1",
+      "sec_code": "600575",
+      "title": "2015年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-08-31/1201523647.PDF",
+      "year": 2015,
+      "pdf_bytes": 2449055,
+      "txt_chars": 389169,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "EXTRACTION_FAILED",
+      "sources": [],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "LABEL_NOT_FOUND"
+      ]
+    },
+    {
+      "announcement_id": "1201523759",
+      "board": "沪主板",
+      "report_period": "2015-H1",
+      "report_type": "H1",
+      "sec_code": "601186",
+      "title": "2015年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-08-31/1201523759.PDF",
+      "year": 2015,
+      "pdf_bytes": 3239368,
+      "txt_chars": 570939,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "5330703",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "5330703",
+          "raw_value": "5330703",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "（1－6月）会计数据和财务指标摘要本报告期",
+          "line_index": 263
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1200946935",
+      "board": "沪主板",
+      "report_period": "2015-Q1",
+      "report_type": "Q1",
+      "sec_code": "600048",
+      "title": "2015年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-04-30/1200946935.PDF",
+      "year": 2015,
+      "pdf_bytes": 480392,
+      "txt_chars": 43812,
+      "status": "CONFIRMED",
+      "value": "1293008156.02",
+      "failure_code": null,
+      "sources": [
+        {
+          "source": "S1",
+          "value": "1293008156.02",
+          "raw_value": "1293008156.02",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于母公司所有者的净利润",
+          "column_header": "本期金额币种:人民币",
+          "line_index": 550
+        },
+        {
+          "source": "S2",
+          "value": "1293008156.02",
+          "raw_value": "1293008156.02",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "年初至报告期末(1-3 月)",
+          "line_index": 65
+        }
+      ],
+      "notes": []
+    },
+    {
+      "announcement_id": "1200947175",
+      "board": "沪主板",
+      "report_period": "2015-Q1",
+      "report_type": "Q1",
+      "sec_code": "600711",
+      "title": "2015年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-04-30/1200947175.PDF",
+      "year": 2015,
+      "pdf_bytes": 1060835,
+      "txt_chars": 87342,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-10658644.37",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-10658644.37",
+          "raw_value": "-10658644.37",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于母公司所有者的净利润",
+          "column_header": "单位：元币种:人民币审计类型：未经审计本期金额",
+          "line_index": 1541
+        }
+      ],
+      "notes": [
+        "LABEL_NOT_FOUND"
+      ]
+    },
+    {
+      "announcement_id": "1201745292",
+      "board": "沪主板",
+      "report_period": "2015-Q3",
+      "report_type": "Q3",
+      "sec_code": "600416",
+      "title": "2015年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-10-31/1201745292.PDF",
+      "year": 2015,
+      "pdf_bytes": 521137,
+      "txt_chars": 43899,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "LABEL_NOT_FOUND",
+      "sources": [],
+      "notes": [
+        "LABEL_NOT_FOUND",
+        "LABEL_NOT_FOUND"
+      ]
+    },
+    {
+      "announcement_id": "1201745821",
+      "board": "沪主板",
+      "report_period": "2015-Q3",
+      "report_type": "Q3",
+      "sec_code": "600728",
+      "title": "2015年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-10-31/1201745821.PDF",
+      "year": 2015,
+      "pdf_bytes": 587453,
+      "txt_chars": 64664,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "LABEL_NOT_FOUND",
+      "sources": [],
+      "notes": [
+        "LABEL_NOT_FOUND",
+        "LABEL_NOT_FOUND"
+      ]
+    },
+    {
+      "announcement_id": "1202283795",
+      "board": "深主板",
+      "report_period": "2015-FY",
+      "report_type": "FY",
+      "sec_code": "000687",
+      "title": "2015年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2016-04-30/1202283795.PDF",
+      "year": 2015,
+      "pdf_bytes": 3175227,
+      "txt_chars": 580922,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-273176455.51",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-273176455.51",
+          "raw_value": "-273176455.51",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 10337
+        }
+      ],
+      "notes": [
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1202280087",
+      "board": "深主板",
+      "report_period": "2015-FY",
+      "report_type": "FY",
+      "sec_code": "002200",
+      "title": "2015年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2016-04-30/1202280087.PDF",
+      "year": 2015,
+      "pdf_bytes": 2962521,
+      "txt_chars": 469688,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "EXTRACTION_FAILED",
+      "sources": [],
+      "notes": [
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1201518977",
+      "board": "深主板",
+      "report_period": "2015-H1",
+      "report_type": "H1",
+      "sec_code": "000639",
+      "title": "2015年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-08-31/1201518977.PDF",
+      "year": 2015,
+      "pdf_bytes": 1793246,
+      "txt_chars": 234740,
+      "status": "CONFIRMED",
+      "value": "72291870.38",
+      "failure_code": null,
+      "sources": [
+        {
+          "source": "S1",
+          "value": "72291870.38",
+          "raw_value": "72291870.38",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 4495
+        },
+        {
+          "source": "S2",
+          "value": "72291870.38",
+          "raw_value": "72291870.38",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "本报告期",
+          "line_index": 195
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1201518721",
+      "board": "深主板",
+      "report_period": "2015-H1",
+      "report_type": "H1",
+      "sec_code": "000659",
+      "title": "2015年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-08-31/1201518721.PDF",
+      "year": 2015,
+      "pdf_bytes": 1053379,
+      "txt_chars": 435551,
+      "status": "CONFIRMED",
+      "value": "3905456.44",
+      "failure_code": null,
+      "sources": [
+        {
+          "source": "S1",
+          "value": "3905456.44",
+          "raw_value": "3905456.44",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 7027
+        },
+        {
+          "source": "S2",
+          "value": "3905456.44",
+          "raw_value": "3905456.44",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "本报告期",
+          "line_index": 254
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "S3 哨兵不适用（基本EPS 缺失或过于接近零）"
+      ]
+    },
+    {
+      "announcement_id": "1200946789",
+      "board": "深主板",
+      "report_period": "2015-Q1",
+      "report_type": "Q1",
+      "sec_code": "000157",
+      "title": "2015年第一季度报告正文",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-04-30/1200946789.PDF",
+      "year": 2015,
+      "pdf_bytes": 292562,
+      "txt_chars": 29173,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-383355266.05",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "-383355266.05",
+          "raw_value": "-383355266.05",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "本报告期",
+          "line_index": 51
+        }
+      ],
+      "notes": [
+        "LABEL_NOT_FOUND"
+      ]
+    },
+    {
+      "announcement_id": "1200958683",
+      "board": "深主板",
+      "report_period": "2015-Q1",
+      "report_type": "Q1",
+      "sec_code": "000972",
+      "title": "2015年第一季度报告正文",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-05-04/1200958683.PDF",
+      "year": 2015,
+      "pdf_bytes": 265929,
+      "txt_chars": 21047,
+      "status": "CONFIRMED",
+      "value": "-8769262.02",
+      "failure_code": null,
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-8769262.02",
+          "raw_value": "-8769262.02",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于母公司股东的净利润",
+          "column_header": "本期金额",
+          "line_index": 226
+        },
+        {
+          "source": "S2",
+          "value": "-8769262.02",
+          "raw_value": "-8769262.02",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "本报告期",
+          "line_index": 51
+        }
+      ],
+      "notes": []
+    },
+    {
+      "announcement_id": "1201745192",
+      "board": "深主板",
+      "report_period": "2015-Q3",
+      "report_type": "Q3",
+      "sec_code": "002417",
+      "title": "2015年第三季度报告全文",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-10-31/1201745192.PDF",
+      "year": 2015,
+      "pdf_bytes": 646387,
+      "txt_chars": 80710,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "17235621.87",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "17235621.87",
+          "raw_value": "17235621.87",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "年初至报告期末",
+          "line_index": 61
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1201745860",
+      "board": "深主板",
+      "report_period": "2015-Q3",
+      "report_type": "Q3",
+      "sec_code": "002432",
+      "title": "2015年第三季度报告全文",
+      "url": "https://static.cninfo.com.cn/finalpage/2015-10-31/1201745860.PDF",
+      "year": 2015,
+      "pdf_bytes": 640709,
+      "txt_chars": 64794,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-66419138.74",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "-66419138.74",
+          "raw_value": "-66419138.74",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "年初至报告期末",
+          "line_index": 61
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1206166266",
+      "board": "创业板",
+      "report_period": "2018-FY",
+      "report_type": "FY",
+      "sec_code": "300116",
+      "title": "2018年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2019-04-30/1206166266.PDF",
+      "year": 2018,
+      "pdf_bytes": 9802867,
+      "txt_chars": 1475891,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-3924895211.55",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-3924895211.55",
+          "raw_value": "-3924895211.55",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 25108
+        }
+      ],
+      "notes": [
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1206166332",
+      "board": "创业板",
+      "report_period": "2018-FY",
+      "report_type": "FY",
+      "sec_code": "300147",
+      "title": "2018年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2019-04-30/1206166332.PDF",
+      "year": 2018,
+      "pdf_bytes": 14395296,
+      "txt_chars": 663225,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "EXTRACTION_FAILED",
+      "sources": [],
+      "notes": [
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1206167518",
+      "board": "沪主板",
+      "report_period": "2018-FY",
+      "report_type": "FY",
+      "sec_code": "600265",
+      "title": "2018年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2019-04-30/1206167518.PDF",
+      "year": 2018,
+      "pdf_bytes": 2493703,
+      "txt_chars": 391528,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "EXTRACTION_FAILED",
+      "sources": [],
+      "notes": [
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1206167664",
+      "board": "沪主板",
+      "report_period": "2018-FY",
+      "report_type": "FY",
+      "sec_code": "600960",
+      "title": "2018年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2019-04-30/1206167664.PDF",
+      "year": 2018,
+      "pdf_bytes": 3391730,
+      "txt_chars": 502646,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "EXTRACTION_FAILED",
+      "sources": [],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "LABEL_NOT_FOUND"
+      ]
+    },
+    {
+      "announcement_id": "1205363162",
+      "board": "沪主板",
+      "report_period": "2018-H1",
+      "report_type": "H1",
+      "sec_code": "600199",
+      "title": "2018年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-08-31/1205363162.PDF",
+      "year": 2018,
+      "pdf_bytes": 1925819,
+      "txt_chars": 290522,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "6005822.59",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "6005822.59",
+          "raw_value": "6005822.59",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "（1－6月）本报告期",
+          "line_index": 187
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1205363308",
+      "board": "沪主板",
+      "report_period": "2018-H1",
+      "report_type": "H1",
+      "sec_code": "600477",
+      "title": "2018年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-08-31/1205363308.PDF",
+      "year": 2018,
+      "pdf_bytes": 2843120,
+      "txt_chars": 413958,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "352824117.52",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "352824117.52",
+          "raw_value": "352824117.52",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "（1－6月）本报告期",
+          "line_index": 291
+        }
+      ],
+      "notes": [
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1204830021",
+      "board": "沪主板",
+      "report_period": "2018-Q1",
+      "report_type": "Q1",
+      "sec_code": "600290",
+      "title": "2018年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-04-28/1204830021.PDF",
+      "year": 2018,
+      "pdf_bytes": 479178,
+      "txt_chars": 41077,
+      "status": "CONFIRMED",
+      "value": "4430568.96",
+      "failure_code": null,
+      "sources": [
+        {
+          "source": "S1",
+          "value": "4430568.96",
+          "raw_value": "4430568.96",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于母公司股东的净利润",
+          "column_header": "本期数",
+          "line_index": 258
+        },
+        {
+          "source": "S1",
+          "value": "4430568.96",
+          "raw_value": "4430568.96",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "2.归属于母公司股东的净利润",
+          "column_header": "2018 年 1—3 月合并利润表单位：元 币种:人民币 审计类型：未经审计本期金额",
+          "line_index": 592
+        },
+        {
+          "source": "S2",
+          "value": "4430568.96",
+          "raw_value": "4430568.96",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "年初至报告期末",
+          "line_index": 76
+        }
+      ],
+      "notes": [
+        "S3 哨兵不适用（基本EPS 缺失或过于接近零）"
+      ]
+    },
+    {
+      "announcement_id": "1204830525",
+      "board": "沪主板",
+      "report_period": "2018-Q1",
+      "report_type": "Q1",
+      "sec_code": "600778",
+      "title": "2018年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-04-28/1204830525.PDF",
+      "year": 2018,
+      "pdf_bytes": 609691,
+      "txt_chars": 63417,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "39546606.15",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "39546606.15",
+          "raw_value": "39546606.15",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "年初至报告期末",
+          "line_index": 65
+        }
+      ],
+      "notes": [
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1205562116",
+      "board": "沪主板",
+      "report_period": "2018-Q3",
+      "report_type": "Q3",
+      "sec_code": "600122",
+      "title": "2018年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-10-31/1205562116.PDF",
+      "year": 2018,
+      "pdf_bytes": 569039,
+      "txt_chars": 58886,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "LABEL_NOT_FOUND",
+      "sources": [],
+      "notes": [
+        "LABEL_NOT_FOUND",
+        "LABEL_NOT_FOUND"
+      ]
+    },
+    {
+      "announcement_id": "1205561918",
+      "board": "沪主板",
+      "report_period": "2018-Q3",
+      "report_type": "Q3",
+      "sec_code": "600360",
+      "title": "2018年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-10-31/1205561918.PDF",
+      "year": 2018,
+      "pdf_bytes": 521096,
+      "txt_chars": 44121,
+      "status": "CONFIRMED",
+      "value": "78144953.51",
+      "failure_code": null,
+      "sources": [
+        {
+          "source": "S1",
+          "value": "78144953.51",
+          "raw_value": "78144953.51",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "归属于母公司所有者的净利润",
+          "column_header": "本期数",
+          "line_index": 305
+        },
+        {
+          "source": "S2",
+          "value": "78144953.51",
+          "raw_value": "78144953.51",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "年初至报告期末（1-9 月）",
+          "line_index": 81
+        }
+      ],
+      "notes": [
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1206165605",
+      "board": "深主板",
+      "report_period": "2018-FY",
+      "report_type": "FY",
+      "sec_code": "000835",
+      "title": "2018年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2019-04-30/1206165605.PDF",
+      "year": 2018,
+      "pdf_bytes": 11525815,
+      "txt_chars": 592743,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-446867884.85",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-446867884.85",
+          "raw_value": "-446867884.85",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 10532
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1206166691",
+      "board": "深主板",
+      "report_period": "2018-FY",
+      "report_type": "FY",
+      "sec_code": "002356",
+      "title": "2018年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2019-04-30/1206166691.PDF",
+      "year": 2018,
+      "pdf_bytes": 13740686,
+      "txt_chars": 653701,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-1614788367.21",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-1614788367.21",
+          "raw_value": "-1614788367.21",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 9547
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1205363658",
+      "board": "深主板",
+      "report_period": "2018-H1",
+      "report_type": "H1",
+      "sec_code": "000061",
+      "title": "2018年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-08-31/1205363658.PDF",
+      "year": 2018,
+      "pdf_bytes": 12799079,
+      "txt_chars": 560944,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "EXTRACTION_FAILED",
+      "sources": [],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1205363531",
+      "board": "深主板",
+      "report_period": "2018-H1",
+      "report_type": "H1",
+      "sec_code": "000610",
+      "title": "2018年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-08-31/1205363531.PDF",
+      "year": 2018,
+      "pdf_bytes": 4437120,
+      "txt_chars": 292316,
+      "status": "CONFIRMED",
+      "value": "-6707135.58",
+      "failure_code": null,
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-6707135.58",
+          "raw_value": "-6707135.58",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 5183
+        },
+        {
+          "source": "S2",
+          "value": "-6707135.58",
+          "raw_value": "-6707135.58",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "本报告期",
+          "line_index": 189
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1205562166",
+      "board": "深主板",
+      "report_period": "2018-Q3",
+      "report_type": "Q3",
+      "sec_code": "000425",
+      "title": "2018年第三季度报告正文",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-10-31/1205562166.PDF",
+      "year": 2018,
+      "pdf_bytes": 344213,
+      "txt_chars": 21340,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "1507901402.78",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "1507901402.78",
+          "raw_value": "1507901402.78",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "年初至报告期末",
+          "line_index": 46
+        }
+      ],
+      "notes": [
+        "LABEL_NOT_FOUND"
+      ]
+    },
+    {
+      "announcement_id": "1205562153",
+      "board": "深主板",
+      "report_period": "2018-Q3",
+      "report_type": "Q3",
+      "sec_code": "002004",
+      "title": "2018年第三季度报告全文",
+      "url": "https://static.cninfo.com.cn/finalpage/2018-10-31/1205562153.PDF",
+      "year": 2018,
+      "pdf_bytes": 1677009,
+      "txt_chars": 64367,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "478218395.25",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "478218395.25",
+          "raw_value": "478218395.25",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "年初至报告期末",
+          "line_index": 70
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1211438703",
+      "board": "创业板",
+      "report_period": "2021-Q3",
+      "report_type": "Q3",
+      "sec_code": "300201",
+      "title": "2021年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-10-30/1211438703.PDF",
+      "year": 2021,
+      "pdf_bytes": 471907,
+      "txt_chars": 52558,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "47830553.06",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "47830553.06",
+          "raw_value": "47830553.06",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "年初至报告期末",
+          "line_index": 36
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1211437237",
+      "board": "创业板",
+      "report_period": "2021-Q3",
+      "report_type": "Q3",
+      "sec_code": "300264",
+      "title": "2021年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-10-30/1211437237.PDF",
+      "year": 2021,
+      "pdf_bytes": 518805,
+      "txt_chars": 38821,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-37026944.36",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "-37026944.36",
+          "raw_value": "-37026944.36",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "年初至报告期末",
+          "line_index": 36
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1213270533",
+      "board": "沪主板",
+      "report_period": "2021-FY",
+      "report_type": "FY",
+      "sec_code": "600870",
+      "title": "2021年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2022-04-30/1213270533.PDF",
+      "year": 2021,
+      "pdf_bytes": 3422844,
+      "txt_chars": 400705,
+      "status": "SOURCE_CONFLICT",
+      "value": null,
+      "failure_code": "SOURCE_CONFLICT",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-4737609.51",
+          "raw_value": "-4737609.51",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 5545
+        },
+        {
+          "source": "S2",
+          "value": "-1268548.49",
+          "raw_value": "-1268548.49",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "2021年",
+          "line_index": 231
+        }
+      ],
+      "notes": [
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "S1=-4737609.51 S2=-1268548.49 相对误差=0.7322386981615122602200281382"
+      ]
+    },
+    {
+      "announcement_id": "1213271817",
+      "board": "沪主板",
+      "report_period": "2021-FY",
+      "report_type": "FY",
+      "sec_code": "603399",
+      "title": "吉翔股份2021年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2022-04-30/1213271817.PDF",
+      "year": 2021,
+      "pdf_bytes": 3684534,
+      "txt_chars": 494470,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "16461460.74",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "16461460.74",
+          "raw_value": "16461460.74",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 7576
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1210927496",
+      "board": "沪主板",
+      "report_period": "2021-H1",
+      "report_type": "H1",
+      "sec_code": "603288",
+      "title": "海天味业2021年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-08-31/1210927496.PDF",
+      "year": 2021,
+      "pdf_bytes": 2796251,
+      "txt_chars": 365116,
+      "status": "CONFIRMED",
+      "value": "3352632667.99",
+      "failure_code": null,
+      "sources": [
+        {
+          "source": "S1",
+          "value": "3352632667.99",
+          "raw_value": "3352632667.99",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 4819
+        },
+        {
+          "source": "S2",
+          "value": "3352632667.99",
+          "raw_value": "3352632667.99",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "（1－6月）本报告期",
+          "line_index": 211
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1210927959",
+      "board": "沪主板",
+      "report_period": "2021-H1",
+      "report_type": "H1",
+      "sec_code": "605368",
+      "title": "蓝天燃气2021年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-08-31/1210927959.PDF",
+      "year": 2021,
+      "pdf_bytes": 2985794,
+      "txt_chars": 382231,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "193062567.06",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "193062567.06",
+          "raw_value": "193062567.06",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "（1－6月）本报告期",
+          "line_index": 332
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1209878008",
+      "board": "沪主板",
+      "report_period": "2021-Q1",
+      "report_type": "Q1",
+      "sec_code": "600185",
+      "title": "2021年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-04-30/1209878008.PDF",
+      "year": 2021,
+      "pdf_bytes": 628366,
+      "txt_chars": 42654,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "EXTRACTION_FAILED",
+      "sources": [],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "LABEL_NOT_FOUND"
+      ]
+    },
+    {
+      "announcement_id": "1209879408",
+      "board": "沪主板",
+      "report_period": "2021-Q1",
+      "report_type": "Q1",
+      "sec_code": "600827",
+      "title": "百联股份2021年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-04-30/1209879408.PDF",
+      "year": 2021,
+      "pdf_bytes": 786995,
+      "txt_chars": 54629,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "EXTRACTION_FAILED",
+      "sources": [],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "LABEL_NOT_FOUND"
+      ]
+    },
+    {
+      "announcement_id": "1211436585",
+      "board": "沪主板",
+      "report_period": "2021-Q3",
+      "report_type": "Q3",
+      "sec_code": "600789",
+      "title": "鲁抗医药2021年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-10-30/1211436585.PDF",
+      "year": 2021,
+      "pdf_bytes": 370518,
+      "txt_chars": 28495,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "EXTRACTION_FAILED",
+      "sources": [],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1211435689",
+      "board": "沪主板",
+      "report_period": "2021-Q3",
+      "report_type": "Q3",
+      "sec_code": "601919",
+      "title": "中远海控2021年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-10-30/1211435689.PDF",
+      "year": 2021,
+      "pdf_bytes": 622984,
+      "txt_chars": 57614,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "67590339184.65",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "67590339184.65",
+          "raw_value": "67590339184.65",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "年初至报告期末",
+          "line_index": 50
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1213274256",
+      "board": "深主板",
+      "report_period": "2021-FY",
+      "report_type": "FY",
+      "sec_code": "000004",
+      "title": "2021年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2022-04-30/1213274256.PDF",
+      "year": 2021,
+      "pdf_bytes": 3861443,
+      "txt_chars": 659624,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-509107298.88",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-509107298.88",
+          "raw_value": "-509107298.88",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 10814
+        }
+      ],
+      "notes": [
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1213271122",
+      "board": "深主板",
+      "report_period": "2021-FY",
+      "report_type": "FY",
+      "sec_code": "000070",
+      "title": "2021年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2022-04-30/1213271122.PDF",
+      "year": 2021,
+      "pdf_bytes": 1301142,
+      "txt_chars": 788614,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-618453267.57",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-618453267.57",
+          "raw_value": "-618453267.57",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 12738
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1209891394",
+      "board": "深主板",
+      "report_period": "2021-Q1",
+      "report_type": "Q1",
+      "sec_code": "002411",
+      "title": "2021年第一季度报告正文",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-04-30/1209891394.PDF",
+      "year": 2021,
+      "pdf_bytes": 296340,
+      "txt_chars": 48646,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "113778242.68",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "113778242.68",
+          "raw_value": "113778242.68",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "本报告期",
+          "line_index": 58
+        }
+      ],
+      "notes": [
+        "LABEL_NOT_FOUND"
+      ]
+    },
+    {
+      "announcement_id": "1209892038",
+      "board": "深主板",
+      "report_period": "2021-Q1",
+      "report_type": "Q1",
+      "sec_code": "002640",
+      "title": "2021年第一季度报告全文",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-04-30/1209892038.PDF",
+      "year": 2021,
+      "pdf_bytes": 506298,
+      "txt_chars": 45506,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "47747180.99",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "47747180.99",
+          "raw_value": "47747180.99",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "本报告期",
+          "line_index": 78
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1211436670",
+      "board": "深主板",
+      "report_period": "2021-Q3",
+      "report_type": "Q3",
+      "sec_code": "002163",
+      "title": "2021年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-10-30/1211436670.PDF",
+      "year": 2021,
+      "pdf_bytes": 420959,
+      "txt_chars": 40226,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "84571863.74",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "84571863.74",
+          "raw_value": "84571863.74",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "年初至报告期末",
+          "line_index": 42
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1211436547",
+      "board": "深主板",
+      "report_period": "2021-Q3",
+      "report_type": "Q3",
+      "sec_code": "002375",
+      "title": "2021年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-10-30/1211436547.PDF",
+      "year": 2021,
+      "pdf_bytes": 575564,
+      "txt_chars": 68731,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "254557779.72",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "254557779.72",
+          "raw_value": "254557779.72",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "年初至报告期末",
+          "line_index": 37
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1213273395",
+      "board": "科创板",
+      "report_period": "2021-FY",
+      "report_type": "FY",
+      "sec_code": "688165",
+      "title": "埃夫特2021年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2022-04-30/1213273395.PDF",
+      "year": 2021,
+      "pdf_bytes": 5481469,
+      "txt_chars": 842446,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-193422882.07",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-193422882.07",
+          "raw_value": "-193422882.07",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 12481
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1213273749",
+      "board": "科创板",
+      "report_period": "2021-FY",
+      "report_type": "FY",
+      "sec_code": "688555",
+      "title": "2021年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2022-04-30/1213273749.PDF",
+      "year": 2021,
+      "pdf_bytes": 3722481,
+      "txt_chars": 510407,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "46074184.85",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "46074184.85",
+          "raw_value": "46074184.85",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 8254
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1211054668",
+      "board": "科创板",
+      "report_period": "2021-H1",
+      "report_type": "H1",
+      "sec_code": "688108",
+      "title": "赛诺医疗科学技术股份有限公司2021年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-09-15/1211054668.PDF",
+      "year": 2021,
+      "pdf_bytes": 3025538,
+      "txt_chars": 448504,
+      "status": "CONFIRMED",
+      "value": "-81542212.35",
+      "failure_code": null,
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-81542212.35",
+          "raw_value": "-81542212.35",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 7097
+        },
+        {
+          "source": "S2",
+          "value": "-81542212.35",
+          "raw_value": "-81542212.35",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "本报告期（1－6月）",
+          "line_index": 244
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1210928220",
+      "board": "科创板",
+      "report_period": "2021-H1",
+      "report_type": "H1",
+      "sec_code": "688586",
+      "title": "江航装备2021年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-08-31/1210928220.PDF",
+      "year": 2021,
+      "pdf_bytes": 3110650,
+      "txt_chars": 499817,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "128169027.35",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "128169027.35",
+          "raw_value": "128169027.35",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "（1－6月）本报告期",
+          "line_index": 243
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1209880324",
+      "board": "科创板",
+      "report_period": "2021-Q1",
+      "report_type": "Q1",
+      "sec_code": "688329",
+      "title": "艾隆科技2021年第一季度报告全文",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-04-30/1209880324.PDF",
+      "year": 2021,
+      "pdf_bytes": 753768,
+      "txt_chars": 55272,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "5894796.45",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "5894796.45",
+          "raw_value": "5894796.45",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "年初至报告期末",
+          "line_index": 77
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1209887752",
+      "board": "科创板",
+      "report_period": "2021-Q1",
+      "report_type": "Q1",
+      "sec_code": "689009",
+      "title": "九号有限公司2021年第一季度报告正文",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-04-30/1209887752.PDF",
+      "year": 2021,
+      "pdf_bytes": 275389,
+      "txt_chars": 23188,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "25407584.42",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "25407584.42",
+          "raw_value": "25407584.42",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "年初至报告期末",
+          "line_index": 56
+        }
+      ],
+      "notes": [
+        "LABEL_NOT_FOUND"
+      ]
+    },
+    {
+      "announcement_id": "1211435409",
+      "board": "科创板",
+      "report_period": "2021-Q3",
+      "report_type": "Q3",
+      "sec_code": "688077",
+      "title": "大地熊2021年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-10-30/1211435409.PDF",
+      "year": 2021,
+      "pdf_bytes": 404407,
+      "txt_chars": 30564,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "EXTRACTION_FAILED",
+      "sources": [],
+      "notes": [
+        "LABEL_NOT_FOUND",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1211435723",
+      "board": "科创板",
+      "report_period": "2021-Q3",
+      "report_type": "Q3",
+      "sec_code": "688128",
+      "title": "中国电研2021年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-10-30/1211435723.PDF",
+      "year": 2021,
+      "pdf_bytes": 587964,
+      "txt_chars": 33651,
+      "status": "MAGNITUDE_IMPLAUSIBLE",
+      "value": null,
+      "failure_code": "MAGNITUDE_IMPLAUSIBLE",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "8280.16",
+          "raw_value": "8280.16",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "本报告期",
+          "line_index": 41
+        }
+      ],
+      "notes": [
+        "LABEL_NOT_FOUND",
+        "单源值未过数量级哨兵（基本EPS=0.20）"
+      ]
+    },
+    {
+      "announcement_id": "1219927801",
+      "board": "创业板",
+      "report_period": "2023-FY",
+      "report_type": "FY",
+      "sec_code": "300020",
+      "title": "2023年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-04-30/1219927801.PDF",
+      "year": 2023,
+      "pdf_bytes": 4223276,
+      "txt_chars": 722710,
+      "status": "SOURCE_CONFLICT",
+      "value": null,
+      "failure_code": "SOURCE_CONFLICT",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-233950957.59",
+          "raw_value": "-233950957.59",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 11387
+        },
+        {
+          "source": "S2",
+          "value": "84552491.98",
+          "raw_value": "84552491.98",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "数）更正前（未审 更正后（未审1,052,120,132.年初至报告期末数）",
+          "line_index": 283
+        },
+        {
+          "source": "S2",
+          "value": "107347929.24",
+          "raw_value": "107347929.24",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "数）更正前（未审1,540,225,726.年初至报告期末",
+          "line_index": 312
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "同一来源内部多行取值不一致"
+      ]
+    },
+    {
+      "announcement_id": "1219926715",
+      "board": "创业板",
+      "report_period": "2023-FY",
+      "report_type": "FY",
+      "sec_code": "300262",
+      "title": "2023年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-04-30/1219926715.PDF",
+      "year": 2023,
+      "pdf_bytes": 5752934,
+      "txt_chars": 776930,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-107818420.93",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-107818420.93",
+          "raw_value": "-107818420.93",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 12196
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1217718597",
+      "board": "创业板",
+      "report_period": "2023-H1",
+      "report_type": "H1",
+      "sec_code": "300423",
+      "title": "2023年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-08-31/1217718597.PDF",
+      "year": 2023,
+      "pdf_bytes": 2617525,
+      "txt_chars": 448170,
+      "status": "SOURCE_CONFLICT",
+      "value": null,
+      "failure_code": "SOURCE_CONFLICT",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-511734367.75",
+          "raw_value": "-511734367.75",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 7104
+        },
+        {
+          "source": "S2",
+          "value": "-513828980.25",
+          "raw_value": "-513828980.25",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "本报告期",
+          "line_index": 211
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "S1=-511734367.75 S2=-513828980.25 相对误差=0.004076477934313631972298627467"
+      ]
+    },
+    {
+      "announcement_id": "1217717557",
+      "board": "创业板",
+      "report_period": "2023-H1",
+      "report_type": "H1",
+      "sec_code": "300458",
+      "title": "2023年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-08-31/1217717557.PDF",
+      "year": 2023,
+      "pdf_bytes": 3861536,
+      "txt_chars": 449253,
+      "status": "CONFIRMED",
+      "value": "-16987459.52",
+      "failure_code": null,
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-16987459.52",
+          "raw_value": "-16987459.52",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 6420
+        },
+        {
+          "source": "S2",
+          "value": "-16987459.52",
+          "raw_value": "-16987459.52",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "本报告期",
+          "line_index": 277
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1216707963",
+      "board": "创业板",
+      "report_period": "2023-Q1",
+      "report_type": "Q1",
+      "sec_code": "300089",
+      "title": "2023年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-04-29/1216707963.PDF",
+      "year": 2023,
+      "pdf_bytes": 536106,
+      "txt_chars": 45305,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-20601515.14",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "-20601515.14",
+          "raw_value": "-20601515.14",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "□是 否公司是否需追溯调整或重述以前年度会计数据本报告期",
+          "line_index": 62
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1218247680",
+      "board": "创业板",
+      "report_period": "2023-Q3",
+      "report_type": "Q3",
+      "sec_code": "300282",
+      "title": "三盛智慧教育科技股份有限公司2023年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-11-04/1218247680.PDF",
+      "year": 2023,
+      "pdf_bytes": 476114,
+      "txt_chars": 29200,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-39457979.65",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "-39457979.65",
+          "raw_value": "-39457979.65",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "年初至报告期末",
+          "line_index": 47
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1218247682",
+      "board": "创业板",
+      "report_period": "2023-Q3",
+      "report_type": "Q3",
+      "sec_code": "300282",
+      "title": "三盛智慧教育科技股份有限公司2023年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-11-04/1218247682.PDF",
+      "year": 2023,
+      "pdf_bytes": 476170,
+      "txt_chars": 29286,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-39457979.65",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "-39457979.65",
+          "raw_value": "-39457979.65",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "年初至报告期末",
+          "line_index": 47
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1219925002",
+      "board": "沪主板",
+      "report_period": "2023-FY",
+      "report_type": "FY",
+      "sec_code": "600225",
+      "title": "天津卓朗信息科技股份有限公司2023年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-04-30/1219925002.PDF",
+      "year": 2023,
+      "pdf_bytes": 6369096,
+      "txt_chars": 655721,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "EXTRACTION_FAILED",
+      "sources": [],
+      "notes": [
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1219927575",
+      "board": "沪主板",
+      "report_period": "2023-FY",
+      "report_type": "FY",
+      "sec_code": "600277",
+      "title": "2023年年度报告全文",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-04-30/1219927575.PDF",
+      "year": 2023,
+      "pdf_bytes": 5133401,
+      "txt_chars": 704468,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-541820569.13",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "-541820569.13",
+          "raw_value": "-541820569.13",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "2023年",
+          "line_index": 234
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1217718885",
+      "board": "沪主板",
+      "report_period": "2023-H1",
+      "report_type": "H1",
+      "sec_code": "600016",
+      "title": "中国民生银行2023年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-08-31/1217718885.PDF",
+      "year": 2023,
+      "pdf_bytes": 7058428,
+      "txt_chars": 795985,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "LABEL_NOT_FOUND",
+      "sources": [],
+      "notes": [
+        "LABEL_NOT_FOUND",
+        "LABEL_NOT_FOUND"
+      ]
+    },
+    {
+      "announcement_id": "1217717756",
+      "board": "沪主板",
+      "report_period": "2023-H1",
+      "report_type": "H1",
+      "sec_code": "601618",
+      "title": "中国中冶2023年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-08-31/1217717756.PDF",
+      "year": 2023,
+      "pdf_bytes": 4750762,
+      "txt_chars": 743869,
+      "status": "SOURCE_CONFLICT",
+      "value": null,
+      "failure_code": "SOURCE_CONFLICT",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "7215560",
+          "raw_value": "7215560",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于母公司股东的净利润",
+          "column_header": "截至 2023 年 6 月 30 日止六个月期间2022 年 12 月 31 日/会计政策变更前本期发生额",
+          "line_index": 6056
+        },
+        {
+          "source": "S1",
+          "value": "5871055",
+          "raw_value": "5871055",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于母公司股东的净利润",
+          "column_header": "2021 年 12 月 31 日/本期发生额",
+          "line_index": 6067
+        },
+        {
+          "source": "S2",
+          "value": "7217536",
+          "raw_value": "7217536",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "（1－6月）本报告期",
+          "line_index": 369
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "同一来源内部多行取值不一致"
+      ]
+    },
+    {
+      "announcement_id": "1216706645",
+      "board": "沪主板",
+      "report_period": "2023-Q1",
+      "report_type": "Q1",
+      "sec_code": "600893",
+      "title": "中国航发动力股份有限公司2023年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-04-29/1216706645.PDF",
+      "year": 2023,
+      "pdf_bytes": 596441,
+      "txt_chars": 40167,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "87968047.05",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "87968047.05",
+          "raw_value": "87968047.05",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "本报告期",
+          "line_index": 35
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1216710007",
+      "board": "沪主板",
+      "report_period": "2023-Q1",
+      "report_type": "Q1",
+      "sec_code": "603630",
+      "title": "2023年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-04-29/1216710007.PDF",
+      "year": 2023,
+      "pdf_bytes": 483018,
+      "txt_chars": 33650,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "EXTRACTION_FAILED",
+      "sources": [],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1218205796",
+      "board": "沪主板",
+      "report_period": "2023-Q3",
+      "report_type": "Q3",
+      "sec_code": "600031",
+      "title": "三一重工股份有限公司2023年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-10-31/1218205796.PDF",
+      "year": 2023,
+      "pdf_bytes": 444297,
+      "txt_chars": 46677,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "4047535000",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "4047535000",
+          "raw_value": "4047535",
+          "unit": "千元",
+          "unit_source": "table",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "年初至报告期末",
+          "line_index": 43
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1218205956",
+      "board": "沪主板",
+      "report_period": "2023-Q3",
+      "report_type": "Q3",
+      "sec_code": "603028",
+      "title": "2023年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-10-31/1218205956.PDF",
+      "year": 2023,
+      "pdf_bytes": 418322,
+      "txt_chars": 36442,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "EXTRACTION_FAILED",
+      "sources": [],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1219927129",
+      "board": "深主板",
+      "report_period": "2023-FY",
+      "report_type": "FY",
+      "sec_code": "002620",
+      "title": "2023年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-04-30/1219927129.PDF",
+      "year": 2023,
+      "pdf_bytes": 5276688,
+      "txt_chars": 705973,
+      "status": "SOURCE_CONFLICT",
+      "value": null,
+      "failure_code": "SOURCE_CONFLICT",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-372593261.90",
+          "raw_value": "-372593261.90",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 12129
+        },
+        {
+          "source": "S2",
+          "value": "1112082.06",
+          "raw_value": "1112082.06",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "2023 年",
+          "line_index": 318
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "S1=-372593261.90 S2=1112082.06 相对误差=1.002984707920720452513368439"
+      ]
+    },
+    {
+      "announcement_id": "1219927425",
+      "board": "深主板",
+      "report_period": "2023-FY",
+      "report_type": "FY",
+      "sec_code": "002713",
+      "title": "2023年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-04-30/1219927425.PDF",
+      "year": 2023,
+      "pdf_bytes": 1280715,
+      "txt_chars": 683632,
+      "status": "SOURCE_CONFLICT",
+      "value": null,
+      "failure_code": "SOURCE_CONFLICT",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-201268903.76",
+          "raw_value": "-201268903.76",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 10232
+        },
+        {
+          "source": "S2",
+          "value": "-90293705.79",
+          "raw_value": "-90293705.79",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "2023 年",
+          "line_index": 323
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "S1=-201268903.76 S2=-90293705.79 相对误差=0.5513777632650628593059516349"
+      ]
+    },
+    {
+      "announcement_id": "1217719203",
+      "board": "深主板",
+      "report_period": "2023-H1",
+      "report_type": "H1",
+      "sec_code": "000157",
+      "title": "2023年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-08-31/1217719203.PDF",
+      "year": 2023,
+      "pdf_bytes": 5135893,
+      "txt_chars": 686006,
+      "status": "CONFIRMED",
+      "value": "2040104177.20",
+      "failure_code": null,
+      "sources": [
+        {
+          "source": "S1",
+          "value": "2040104177.20",
+          "raw_value": "2040104177.20",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 11211
+        },
+        {
+          "source": "S2",
+          "value": "2040104177.20",
+          "raw_value": "2040104177.20",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "本报告期",
+          "line_index": 208
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1217718837",
+      "board": "深主板",
+      "report_period": "2023-H1",
+      "report_type": "H1",
+      "sec_code": "002046",
+      "title": "2023年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-08-31/1217718837.PDF",
+      "year": 2023,
+      "pdf_bytes": 4472330,
+      "txt_chars": 640304,
+      "status": "CONFIRMED",
+      "value": "196027618.60",
+      "failure_code": null,
+      "sources": [
+        {
+          "source": "S1",
+          "value": "196027618.60",
+          "raw_value": "196027618.60",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 8092
+        },
+        {
+          "source": "S2",
+          "value": "196027618.60",
+          "raw_value": "196027618.60",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "本报告期",
+          "line_index": 274
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1216706298",
+      "board": "深主板",
+      "report_period": "2023-Q1",
+      "report_type": "Q1",
+      "sec_code": "000584",
+      "title": "2023年一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-04-29/1216706298.PDF",
+      "year": 2023,
+      "pdf_bytes": 487034,
+      "txt_chars": 40525,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "EXTRACTION_FAILED",
+      "sources": [],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1216706235",
+      "board": "深主板",
+      "report_period": "2023-Q1",
+      "report_type": "Q1",
+      "sec_code": "002002",
+      "title": "2023年一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-04-29/1216706235.PDF",
+      "year": 2023,
+      "pdf_bytes": 535503,
+      "txt_chars": 32841,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "EXTRACTION_FAILED",
+      "sources": [],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1218204983",
+      "board": "深主板",
+      "report_period": "2023-Q3",
+      "report_type": "Q3",
+      "sec_code": "000638",
+      "title": "2023年三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-10-31/1218204983.PDF",
+      "year": 2023,
+      "pdf_bytes": 518291,
+      "txt_chars": 36605,
+      "status": "CONFIRMED",
+      "value": "-11898094.18",
+      "failure_code": null,
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-11898094.18",
+          "raw_value": "-11898094.18",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "1.归属于母公司股东的净利润（净亏损以“-”号填列）",
+          "column_header": "本期发生额",
+          "line_index": 522
+        },
+        {
+          "source": "S2",
+          "value": "-11898094.18",
+          "raw_value": "-11898094.18",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "年初至报告期末",
+          "line_index": 48
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "S3 哨兵不适用（基本EPS 缺失或过于接近零）"
+      ]
+    },
+    {
+      "announcement_id": "1218205225",
+      "board": "深主板",
+      "report_period": "2023-Q3",
+      "report_type": "Q3",
+      "sec_code": "002068",
+      "title": "2023年三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-10-31/1218205225.PDF",
+      "year": 2023,
+      "pdf_bytes": 441011,
+      "txt_chars": 29641,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-263273482.14",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "-263273482.14",
+          "raw_value": "-263273482.14",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "年初至报告期末",
+          "line_index": 40
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1222807926",
+      "board": "科创板",
+      "report_period": "2023-FY",
+      "report_type": "FY",
+      "sec_code": "688113",
+      "title": "江苏联测机电科技股份有限公司2023年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-04-30/1222807926.pdf",
+      "year": 2023,
+      "pdf_bytes": 2366265,
+      "txt_chars": 711782,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "90659004.67",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "90659004.67",
+          "raw_value": "90659004.67",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "2023年",
+          "line_index": 326
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1219924134",
+      "board": "科创板",
+      "report_period": "2023-FY",
+      "report_type": "FY",
+      "sec_code": "688596",
+      "title": "上海正帆科技股份有限公司2023年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-04-30/1219924134.PDF",
+      "year": 2023,
+      "pdf_bytes": 5611296,
+      "txt_chars": 748645,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "401342163.20",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "401342163.20",
+          "raw_value": "401342163.20",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 10737
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1217718396",
+      "board": "科创板",
+      "report_period": "2023-H1",
+      "report_type": "H1",
+      "sec_code": "688211",
+      "title": "中科微至2023年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-08-31/1217718396.PDF",
+      "year": 2023,
+      "pdf_bytes": 3514652,
+      "txt_chars": 577967,
+      "status": "CONFIRMED",
+      "value": "59771623.39",
+      "failure_code": null,
+      "sources": [
+        {
+          "source": "S1",
+          "value": "59771623.39",
+          "raw_value": "59771623.39",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "1.归属于母公司股东的净利润",
+          "column_header": "<single-value-row>",
+          "line_index": 4522
+        },
+        {
+          "source": "S2",
+          "value": "59771623.39",
+          "raw_value": "59771623.39",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "（1－6月）本报告期",
+          "line_index": 227
+        }
+      ],
+      "notes": [
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1217719062",
+      "board": "科创板",
+      "report_period": "2023-H1",
+      "report_type": "H1",
+      "sec_code": "688567",
+      "title": "孚能科技（赣州）股份有限公司2023年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-08-31/1217719062.PDF",
+      "year": 2023,
+      "pdf_bytes": 3260475,
+      "txt_chars": 497702,
+      "status": "CONFIRMED",
+      "value": "-797106019.20",
+      "failure_code": null,
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-797106019.20",
+          "raw_value": "-797106019.20",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 7423
+        },
+        {
+          "source": "S2",
+          "value": "-797106019.20",
+          "raw_value": "-797106019.20",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "（1－6月）本报告期",
+          "line_index": 275
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1216711134",
+      "board": "科创板",
+      "report_period": "2023-Q1",
+      "report_type": "Q1",
+      "sec_code": "688051",
+      "title": "罗克佳华科技集团股份有限公司2023年一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-04-29/1216711134.PDF",
+      "year": 2023,
+      "pdf_bytes": 374713,
+      "txt_chars": 25541,
+      "status": "SOURCE_CONFLICT",
+      "value": null,
+      "failure_code": "SOURCE_CONFLICT",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-29289733.54",
+          "raw_value": "-29289733.54",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "1.归属于母公司股东的净利润（净亏",
+          "column_header": "<single-value-row>",
+          "line_index": 458
+        },
+        {
+          "source": "S2",
+          "value": "-2928.97",
+          "raw_value": "-2928.97",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "本报告期",
+          "line_index": 44
+        }
+      ],
+      "notes": [
+        "S1=-29289733.54 S2=-2928.97 相对误差=0.9999000001145111134391016382"
+      ]
+    },
+    {
+      "announcement_id": "1216711664",
+      "board": "科创板",
+      "report_period": "2023-Q1",
+      "report_type": "Q1",
+      "sec_code": "688190",
+      "title": "2023年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-04-29/1216711664.PDF",
+      "year": 2023,
+      "pdf_bytes": 347601,
+      "txt_chars": 23522,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "EXTRACTION_FAILED",
+      "sources": [],
+      "notes": [
+        "LABEL_NOT_FOUND",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1218206298",
+      "board": "科创板",
+      "report_period": "2023-Q3",
+      "report_type": "Q3",
+      "sec_code": "688418",
+      "title": "2023年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-10-31/1218206298.PDF",
+      "year": 2023,
+      "pdf_bytes": 537177,
+      "txt_chars": 29926,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-42093702.35",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "-42093702.35",
+          "raw_value": "-42093702.35",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "年初至报告期末单位：元 币种：人民币",
+          "line_index": 41
+        }
+      ],
+      "notes": [
+        "LABEL_NOT_FOUND"
+      ]
+    },
+    {
+      "announcement_id": "1218206306",
+      "board": "科创板",
+      "report_period": "2023-Q3",
+      "report_type": "Q3",
+      "sec_code": "688621",
+      "title": "2023年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-10-31/1218206306.PDF",
+      "year": 2023,
+      "pdf_bytes": 607402,
+      "txt_chars": 28796,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "171076571.46",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "171076571.46",
+          "raw_value": "171076571.46",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "年初至报告期末",
+          "line_index": 50
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1225269131",
+      "board": "创业板",
+      "report_period": "2025-FY",
+      "report_type": "FY",
+      "sec_code": "300029",
+      "title": "2025年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2026-04-30/1225269131.PDF",
+      "year": 2025,
+      "pdf_bytes": 1150268,
+      "txt_chars": 489805,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-6270524.61",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "-6270524.61",
+          "raw_value": "-6270524.61",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "2025 年",
+          "line_index": 355
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1225268221",
+      "board": "创业板",
+      "report_period": "2025-FY",
+      "report_type": "FY",
+      "sec_code": "300094",
+      "title": "2025年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2026-04-30/1225268221.PDF",
+      "year": 2025,
+      "pdf_bytes": 4012968,
+      "txt_chars": 596844,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "6028415.05",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "6028415.05",
+          "raw_value": "6028415.05",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "2025 年",
+          "line_index": 298
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1224628546",
+      "board": "创业板",
+      "report_period": "2025-H1",
+      "report_type": "H1",
+      "sec_code": "301536",
+      "title": "2025年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-08-30/1224628546.PDF",
+      "year": 2025,
+      "pdf_bytes": 816880,
+      "txt_chars": 411573,
+      "status": "CONFIRMED",
+      "value": "119932481.95",
+      "failure_code": null,
+      "sources": [
+        {
+          "source": "S1",
+          "value": "119932481.95",
+          "raw_value": "119932481.95",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 6021
+        },
+        {
+          "source": "S2",
+          "value": "119932481.95",
+          "raw_value": "119932481.95",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "本报告期",
+          "line_index": 246
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "S3 哨兵不适用（基本EPS 缺失或过于接近零）"
+      ]
+    },
+    {
+      "announcement_id": "1223425478",
+      "board": "创业板",
+      "report_period": "2025-Q1",
+      "report_type": "Q1",
+      "sec_code": "300326",
+      "title": "2025年一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-04-30/1223425478.PDF",
+      "year": 2025,
+      "pdf_bytes": 616626,
+      "txt_chars": 34402,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "21756525.35",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "21756525.35",
+          "raw_value": "21756525.35",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "本报告期",
+          "line_index": 67
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1223423913",
+      "board": "创业板",
+      "report_period": "2025-Q1",
+      "report_type": "Q1",
+      "sec_code": "300379",
+      "title": "2025年一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-04-30/1223423913.PDF",
+      "year": 2025,
+      "pdf_bytes": 345422,
+      "txt_chars": 32859,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-30543067.59",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "-30543067.59",
+          "raw_value": "-30543067.59",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "本报告期",
+          "line_index": 47
+        }
+      ],
+      "notes": [
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1224778187",
+      "board": "创业板",
+      "report_period": "2025-Q3",
+      "report_type": "Q3",
+      "sec_code": "301059",
+      "title": "2025年三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-10-31/1224778187.PDF",
+      "year": 2025,
+      "pdf_bytes": 170991,
+      "txt_chars": 34989,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "53253719.67",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "53253719.67",
+          "raw_value": "53253719.67",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "年初至报告期末",
+          "line_index": 48
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1225264448",
+      "board": "沪主板",
+      "report_period": "2025-FY",
+      "report_type": "FY",
+      "sec_code": "600328",
+      "title": "中盐化工2025年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2026-04-30/1225264448.PDF",
+      "year": 2025,
+      "pdf_bytes": 1941024,
+      "txt_chars": 773720,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "73949395.49",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "73949395.49",
+          "raw_value": "73949395.49",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 10804
+        }
+      ],
+      "notes": [
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1225266446",
+      "board": "沪主板",
+      "report_period": "2025-FY",
+      "report_type": "FY",
+      "sec_code": "601187",
+      "title": "厦门银行股份有限公司2025年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2026-04-30/1225266446.PDF",
+      "year": 2025,
+      "pdf_bytes": 2836374,
+      "txt_chars": 812355,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "2634763",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "2634763",
+          "raw_value": "2634763",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于母公司股东的净利润",
+          "column_header": "2025年",
+          "line_index": 315
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1224628365",
+      "board": "沪主板",
+      "report_period": "2025-H1",
+      "report_type": "H1",
+      "sec_code": "600238",
+      "title": "*ST椰岛2025年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-08-30/1224628365.PDF",
+      "year": 2025,
+      "pdf_bytes": 1100164,
+      "txt_chars": 411333,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-15764999.74",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "-15764999.74",
+          "raw_value": "-15764999.74",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "（1－6月）本报告期",
+          "line_index": 173
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1224627413",
+      "board": "沪主板",
+      "report_period": "2025-H1",
+      "report_type": "H1",
+      "sec_code": "601088",
+      "title": "中国神华2025年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-08-30/1224627413.PDF",
+      "year": 2025,
+      "pdf_bytes": 6630207,
+      "txt_chars": 623096,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "EXTRACTION_FAILED",
+      "sources": [],
+      "notes": [
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1223419761",
+      "board": "沪主板",
+      "report_period": "2025-Q1",
+      "report_type": "Q1",
+      "sec_code": "600301",
+      "title": "广西华锡有色金属股份有限公司2025年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-04-30/1223419761.PDF",
+      "year": 2025,
+      "pdf_bytes": 162552,
+      "txt_chars": 30468,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "153440396.76",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "153440396.76",
+          "raw_value": "153440396.76",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "本报告期",
+          "line_index": 42
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1223426336",
+      "board": "沪主板",
+      "report_period": "2025-Q1",
+      "report_type": "Q1",
+      "sec_code": "600774",
+      "title": "汉商集团2025年一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-04-30/1223426336.PDF",
+      "year": 2025,
+      "pdf_bytes": 198801,
+      "txt_chars": 43580,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "2761438.28",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "2761438.28",
+          "raw_value": "2761438.28",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "本报告期",
+          "line_index": 41
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1224778112",
+      "board": "沪主板",
+      "report_period": "2025-Q3",
+      "report_type": "Q3",
+      "sec_code": "600567",
+      "title": "2025年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-10-31/1224778112.PDF",
+      "year": 2025,
+      "pdf_bytes": 182444,
+      "txt_chars": 32563,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-289640915.48",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "-289640915.48",
+          "raw_value": "-289640915.48",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "年初至报告期末",
+          "line_index": 45
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1224777491",
+      "board": "沪主板",
+      "report_period": "2025-Q3",
+      "report_type": "Q3",
+      "sec_code": "600658",
+      "title": "电子城2025年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-10-31/1224777491.PDF",
+      "year": 2025,
+      "pdf_bytes": 209154,
+      "txt_chars": 43017,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-376619733.25",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "-376619733.25",
+          "raw_value": "-376619733.25",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "年初至报告期末单位：元",
+          "line_index": 46
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1225265922",
+      "board": "深主板",
+      "report_period": "2025-FY",
+      "report_type": "FY",
+      "sec_code": "002198",
+      "title": "2025年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2026-04-30/1225265922.PDF",
+      "year": 2025,
+      "pdf_bytes": 1308617,
+      "txt_chars": 636582,
+      "status": "SOURCE_CONFLICT",
+      "value": null,
+      "failure_code": "SOURCE_CONFLICT",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "30477433.06",
+          "raw_value": "30477433.06",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 10264
+        },
+        {
+          "source": "S2",
+          "value": "4679302.30",
+          "raw_value": "4679302.30",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "2024 年",
+          "line_index": 492
+        }
+      ],
+      "notes": [
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "S1=30477433.06 S2=4679302.30 相对误差=0.8464666531860475522606233558"
+      ]
+    },
+    {
+      "announcement_id": "1225274273",
+      "board": "深主板",
+      "report_period": "2025-FY",
+      "report_type": "FY",
+      "sec_code": "002898",
+      "title": "2025年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2026-04-30/1225274273.PDF",
+      "year": 2025,
+      "pdf_bytes": 1525353,
+      "txt_chars": 706503,
+      "status": "SOURCE_CONFLICT",
+      "value": null,
+      "failure_code": "SOURCE_CONFLICT",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-121170018.81",
+          "raw_value": "-121170018.81",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 11286
+        },
+        {
+          "source": "S2",
+          "value": "-1038505.28",
+          "raw_value": "-1038505.28",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "2025 年",
+          "line_index": 437
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "S1=-121170018.81 S2=-1038505.28 相对误差=0.9914293544706927655877616514"
+      ]
+    },
+    {
+      "announcement_id": "1224626959",
+      "board": "深主板",
+      "report_period": "2025-H1",
+      "report_type": "H1",
+      "sec_code": "000517",
+      "title": "2025年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-08-30/1224626959.PDF",
+      "year": 2025,
+      "pdf_bytes": 902225,
+      "txt_chars": 419291,
+      "status": "CONFIRMED",
+      "value": "36450786.55",
+      "failure_code": null,
+      "sources": [
+        {
+          "source": "S1",
+          "value": "36450786.55",
+          "raw_value": "36450786.55",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 5194
+        },
+        {
+          "source": "S2",
+          "value": "36450786.55",
+          "raw_value": "36450786.55",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "本报告期",
+          "line_index": 170
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1224626927",
+      "board": "深主板",
+      "report_period": "2025-H1",
+      "report_type": "H1",
+      "sec_code": "002717",
+      "title": "2025年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-08-30/1224626927.PDF",
+      "year": 2025,
+      "pdf_bytes": 1326788,
+      "txt_chars": 677412,
+      "status": "CONFIRMED",
+      "value": "-128274147.62",
+      "failure_code": null,
+      "sources": [
+        {
+          "source": "S1",
+          "value": "-128274147.62",
+          "raw_value": "-128274147.62",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 8907
+        },
+        {
+          "source": "S2",
+          "value": "-128274147.62",
+          "raw_value": "-128274147.62",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "本报告期",
+          "line_index": 248
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "S3 哨兵不适用（基本EPS 缺失或过于接近零）"
+      ]
+    },
+    {
+      "announcement_id": "1223432250",
+      "board": "深主板",
+      "report_period": "2025-Q1",
+      "report_type": "Q1",
+      "sec_code": "000889",
+      "title": "2025年一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-04-30/1223432250.pdf",
+      "year": 2025,
+      "pdf_bytes": 132996,
+      "txt_chars": 25442,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-5642431.49",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "-5642431.49",
+          "raw_value": "-5642431.49",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "本报告期",
+          "line_index": 49
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1223419937",
+      "board": "深主板",
+      "report_period": "2025-Q1",
+      "report_type": "Q1",
+      "sec_code": "002336",
+      "title": "2025年一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-04-30/1223419937.PDF",
+      "year": 2025,
+      "pdf_bytes": 372678,
+      "txt_chars": 33637,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-79616688.11",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "-79616688.11",
+          "raw_value": "-79616688.11",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "本报告期",
+          "line_index": 47
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1224777372",
+      "board": "深主板",
+      "report_period": "2025-Q3",
+      "report_type": "Q3",
+      "sec_code": "000166",
+      "title": "2025年三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-10-31/1224777372.PDF",
+      "year": 2025,
+      "pdf_bytes": 723917,
+      "txt_chars": 39695,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "3731977330.66",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "3731977330.66",
+          "raw_value": "3731977330.66",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "本报告期",
+          "line_index": 56
+        }
+      ],
+      "notes": [
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1224779001",
+      "board": "深主板",
+      "report_period": "2025-Q3",
+      "report_type": "Q3",
+      "sec_code": "001330",
+      "title": "2025年三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-10-31/1224779001.PDF",
+      "year": 2025,
+      "pdf_bytes": 394685,
+      "txt_chars": 36881,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "-1109553692.80",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "-1109553692.80",
+          "raw_value": "-1109553692.80",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润（元）",
+          "column_header": "年初至报告期末",
+          "line_index": 48
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1225265594",
+      "board": "科创板",
+      "report_period": "2025-FY",
+      "report_type": "FY",
+      "sec_code": "688333",
+      "title": "西安铂力特增材技术股份有限公司2025年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2026-04-30/1225265594.PDF",
+      "year": 2025,
+      "pdf_bytes": 1560395,
+      "txt_chars": 740608,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "203795259.24",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "203795259.24",
+          "raw_value": "203795259.24",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 10861
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1225265339",
+      "board": "科创板",
+      "report_period": "2025-FY",
+      "report_type": "FY",
+      "sec_code": "688484",
+      "title": "2025年年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2026-04-30/1225265339.PDF",
+      "year": 2025,
+      "pdf_bytes": 1730159,
+      "txt_chars": 853372,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "238600177.76",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S1",
+          "value": "238600177.76",
+          "raw_value": "238600177.76",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 13155
+        }
+      ],
+      "notes": [
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1224627769",
+      "board": "科创板",
+      "report_period": "2025-H1",
+      "report_type": "H1",
+      "sec_code": "688008",
+      "title": "澜起科技2025年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-08-30/1224627769.PDF",
+      "year": 2025,
+      "pdf_bytes": 3055874,
+      "txt_chars": 487593,
+      "status": "CONFIRMED",
+      "value": "1159070379.72",
+      "failure_code": null,
+      "sources": [
+        {
+          "source": "S1",
+          "value": "1159070379.72",
+          "raw_value": "1159070379.72",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 7350
+        },
+        {
+          "source": "S2",
+          "value": "1159070379.72",
+          "raw_value": "1159070379.72",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "（1－6月）本报告期",
+          "line_index": 537
+        },
+        {
+          "source": "S2",
+          "value": "1159070379.72",
+          "raw_value": "1159070379.72",
+          "unit": "元",
+          "unit_source": "table",
+          "label": "会计指标：归属于上市公司股东的净利润",
+          "column_header": "（1－6月）本报告期",
+          "line_index": 644
+        }
+      ],
+      "notes": [
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1224627731",
+      "board": "科创板",
+      "report_period": "2025-H1",
+      "report_type": "H1",
+      "sec_code": "688379",
+      "title": "华光新材2025年半年度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-08-30/1224627731.PDF",
+      "year": 2025,
+      "pdf_bytes": 1623686,
+      "txt_chars": 531464,
+      "status": "CONFIRMED",
+      "value": "123211716.56",
+      "failure_code": null,
+      "sources": [
+        {
+          "source": "S1",
+          "value": "123211716.56",
+          "raw_value": "123211716.56",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "加：本期归属于母公司所有者的净利润",
+          "column_header": "本期",
+          "line_index": 7261
+        },
+        {
+          "source": "S2",
+          "value": "123211716.56",
+          "raw_value": "123211716.56",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "（1－6月）本报告期",
+          "line_index": 235
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED"
+      ]
+    },
+    {
+      "announcement_id": "1223423795",
+      "board": "科创板",
+      "report_period": "2025-Q1",
+      "report_type": "Q1",
+      "sec_code": "688065",
+      "title": "2025年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-04-30/1223423795.PDF",
+      "year": 2025,
+      "pdf_bytes": 161161,
+      "txt_chars": 28648,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "136950113.57",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "136950113.57",
+          "raw_value": "136950113.57",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "本报告期",
+          "line_index": 42
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1223423801",
+      "board": "科创板",
+      "report_period": "2025-Q1",
+      "report_type": "Q1",
+      "sec_code": "688075",
+      "title": "安旭生物2025年第一季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-04-30/1223423801.PDF",
+      "year": 2025,
+      "pdf_bytes": 191408,
+      "txt_chars": 34184,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "34029618.77",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "34029618.77",
+          "raw_value": "34029618.77",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "本报告期",
+          "line_index": 38
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "COLUMN_AMBIGUOUS"
+      ]
+    },
+    {
+      "announcement_id": "1224778294",
+      "board": "科创板",
+      "report_period": "2025-Q3",
+      "report_type": "Q3",
+      "sec_code": "688576",
+      "title": "重庆西山科技股份有限公司2025年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-10-31/1224778294.PDF",
+      "year": 2025,
+      "pdf_bytes": 210002,
+      "txt_chars": 34549,
+      "status": "EXTRACTION_FAILED",
+      "value": null,
+      "failure_code": "LABEL_NOT_FOUND",
+      "sources": [],
+      "notes": [
+        "LABEL_NOT_FOUND",
+        "LABEL_NOT_FOUND"
+      ]
+    },
+    {
+      "announcement_id": "1224776829",
+      "board": "科创板",
+      "report_period": "2025-Q3",
+      "report_type": "Q3",
+      "sec_code": "688696",
+      "title": "2025年第三季度报告",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-10-31/1224776829.PDF",
+      "year": 2025,
+      "pdf_bytes": 191824,
+      "txt_chars": 31103,
+      "status": "SINGLE_SOURCE_UNCONFIRMED",
+      "value": "79650077.65",
+      "failure_code": "SINGLE_SOURCE_UNCONFIRMED",
+      "sources": [
+        {
+          "source": "S2",
+          "value": "79650077.65",
+          "raw_value": "79650077.65",
+          "unit": "元",
+          "unit_source": "default",
+          "label": "归属于上市公司股东的净利润",
+          "column_header": "年初至报告期末",
+          "line_index": 45
+        }
+      ],
+      "notes": [
+        "COLUMN_AMBIGUOUS",
+        "EXTRACTION_FAILED",
+        "EXTRACTION_FAILED"
+      ]
+    }
+  ]
+}

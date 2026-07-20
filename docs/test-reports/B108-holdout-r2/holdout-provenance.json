@@ -1,0 +1,1003 @@
+{
+  "candidate_pool_size": 3126,
+  "generated_at": "2026-07-20T11:29:01.205652+00:00",
+  "manifest_sha256": "92f427cb55b2b21acc1dadecc063e445f27faef96358491bb37aefeb008ddd12",
+  "query_diagnostics": [
+    {
+      "eligible": 200,
+      "hit_page_cap": true,
+      "pages_used": 8,
+      "pagination_exhausted": false,
+      "query_end": "2015-05-10",
+      "query_start": "2015-04-01",
+      "report_type": "Q1",
+      "rows_seen": 240,
+      "year": 2015
+    },
+    {
+      "eligible": 81,
+      "hit_page_cap": true,
+      "pages_used": 8,
+      "pagination_exhausted": false,
+      "query_end": "2015-09-30",
+      "query_start": "2015-07-01",
+      "report_type": "H1",
+      "rows_seen": 240,
+      "year": 2015
+    },
+    {
+      "eligible": 201,
+      "hit_page_cap": true,
+      "pages_used": 8,
+      "pagination_exhausted": false,
+      "query_end": "2015-11-15",
+      "query_start": "2015-10-01",
+      "report_type": "Q3",
+      "rows_seen": 240,
+      "year": 2015
+    },
+    {
+      "eligible": 102,
+      "hit_page_cap": true,
+      "pages_used": 8,
+      "pagination_exhausted": false,
+      "query_end": "2016-04-30",
+      "query_start": "2016-01-01",
+      "report_type": "FY",
+      "rows_seen": 240,
+      "year": 2015
+    },
+    {
+      "eligible": 197,
+      "hit_page_cap": true,
+      "pages_used": 8,
+      "pagination_exhausted": false,
+      "query_end": "2018-05-10",
+      "query_start": "2018-04-01",
+      "report_type": "Q1",
+      "rows_seen": 240,
+      "year": 2018
+    },
+    {
+      "eligible": 79,
+      "hit_page_cap": true,
+      "pages_used": 8,
+      "pagination_exhausted": false,
+      "query_end": "2018-09-30",
+      "query_start": "2018-07-01",
+      "report_type": "H1",
+      "rows_seen": 240,
+      "year": 2018
+    },
+    {
+      "eligible": 209,
+      "hit_page_cap": true,
+      "pages_used": 8,
+      "pagination_exhausted": false,
+      "query_end": "2018-11-15",
+      "query_start": "2018-10-01",
+      "report_type": "Q3",
+      "rows_seen": 240,
+      "year": 2018
+    },
+    {
+      "eligible": 94,
+      "hit_page_cap": true,
+      "pages_used": 8,
+      "pagination_exhausted": false,
+      "query_end": "2019-04-30",
+      "query_start": "2019-01-01",
+      "report_type": "FY",
+      "rows_seen": 240,
+      "year": 2018
+    },
+    {
+      "eligible": 210,
+      "hit_page_cap": true,
+      "pages_used": 8,
+      "pagination_exhausted": false,
+      "query_end": "2021-05-10",
+      "query_start": "2021-04-01",
+      "report_type": "Q1",
+      "rows_seen": 240,
+      "year": 2021
+    },
+    {
+      "eligible": 98,
+      "hit_page_cap": true,
+      "pages_used": 8,
+      "pagination_exhausted": false,
+      "query_end": "2021-09-30",
+      "query_start": "2021-07-01",
+      "report_type": "H1",
+      "rows_seen": 240,
+      "year": 2021
+    },
+    {
+      "eligible": 217,
+      "hit_page_cap": true,
+      "pages_used": 8,
+      "pagination_exhausted": false,
+      "query_end": "2021-11-15",
+      "query_start": "2021-10-01",
+      "report_type": "Q3",
+      "rows_seen": 240,
+      "year": 2021
+    },
+    {
+      "eligible": 111,
+      "hit_page_cap": true,
+      "pages_used": 8,
+      "pagination_exhausted": false,
+      "query_end": "2022-04-30",
+      "query_start": "2022-01-01",
+      "report_type": "FY",
+      "rows_seen": 240,
+      "year": 2021
+    },
+    {
+      "eligible": 219,
+      "hit_page_cap": true,
+      "pages_used": 8,
+      "pagination_exhausted": false,
+      "query_end": "2023-05-10",
+      "query_start": "2023-04-01",
+      "report_type": "Q1",
+      "rows_seen": 240,
+      "year": 2023
+    },
+    {
+      "eligible": 100,
+      "hit_page_cap": true,
+      "pages_used": 8,
+      "pagination_exhausted": false,
+      "query_end": "2023-09-30",
+      "query_start": "2023-07-01",
+      "report_type": "H1",
+      "rows_seen": 240,
+      "year": 2023
+    },
+    {
+      "eligible": 222,
+      "hit_page_cap": true,
+      "pages_used": 8,
+      "pagination_exhausted": false,
+      "query_end": "2023-11-15",
+      "query_start": "2023-10-01",
+      "report_type": "Q3",
+      "rows_seen": 240,
+      "year": 2023
+    },
+    {
+      "eligible": 114,
+      "hit_page_cap": true,
+      "pages_used": 8,
+      "pagination_exhausted": false,
+      "query_end": "2024-04-30",
+      "query_start": "2024-01-01",
+      "report_type": "FY",
+      "rows_seen": 240,
+      "year": 2023
+    },
+    {
+      "eligible": 227,
+      "hit_page_cap": true,
+      "pages_used": 8,
+      "pagination_exhausted": false,
+      "query_end": "2025-05-10",
+      "query_start": "2025-04-01",
+      "report_type": "Q1",
+      "rows_seen": 240,
+      "year": 2025
+    },
+    {
+      "eligible": 106,
+      "hit_page_cap": true,
+      "pages_used": 8,
+      "pagination_exhausted": false,
+      "query_end": "2025-09-30",
+      "query_start": "2025-07-01",
+      "report_type": "H1",
+      "rows_seen": 240,
+      "year": 2025
+    },
+    {
+      "eligible": 228,
+      "hit_page_cap": true,
+      "pages_used": 8,
+      "pagination_exhausted": false,
+      "query_end": "2025-11-15",
+      "query_start": "2025-10-01",
+      "report_type": "Q3",
+      "rows_seen": 240,
+      "year": 2025
+    },
+    {
+      "eligible": 111,
+      "hit_page_cap": true,
+      "pages_used": 8,
+      "pagination_exhausted": false,
+      "query_end": "2026-04-30",
+      "query_start": "2026-01-01",
+      "report_type": "FY",
+      "rows_seen": 240,
+      "year": 2025
+    }
+  ],
+  "stratum_coverage": [
+    {
+      "available": 1,
+      "board": "UNKNOWN",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "FY",
+      "selected": 0,
+      "year": 2015
+    },
+    {
+      "available": 1,
+      "board": "UNKNOWN",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "H1",
+      "selected": 0,
+      "year": 2015
+    },
+    {
+      "available": 1,
+      "board": "UNKNOWN",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "Q3",
+      "selected": 0,
+      "year": 2015
+    },
+    {
+      "available": 5,
+      "board": "创业板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "FY",
+      "selected": 2,
+      "year": 2015
+    },
+    {
+      "available": 2,
+      "board": "创业板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "H1",
+      "selected": 1,
+      "year": 2015
+    },
+    {
+      "available": 0,
+      "board": "创业板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "Q1",
+      "selected": 0,
+      "year": 2015
+    },
+    {
+      "available": 0,
+      "board": "创业板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "Q3",
+      "selected": 0,
+      "year": 2015
+    },
+    {
+      "available": 68,
+      "board": "沪主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "FY",
+      "selected": 2,
+      "year": 2015
+    },
+    {
+      "available": 52,
+      "board": "沪主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "H1",
+      "selected": 2,
+      "year": 2015
+    },
+    {
+      "available": 168,
+      "board": "沪主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q1",
+      "selected": 2,
+      "year": 2015
+    },
+    {
+      "available": 133,
+      "board": "沪主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q3",
+      "selected": 2,
+      "year": 2015
+    },
+    {
+      "available": 28,
+      "board": "深主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "FY",
+      "selected": 2,
+      "year": 2015
+    },
+    {
+      "available": 26,
+      "board": "深主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "H1",
+      "selected": 2,
+      "year": 2015
+    },
+    {
+      "available": 32,
+      "board": "深主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q1",
+      "selected": 2,
+      "year": 2015
+    },
+    {
+      "available": 67,
+      "board": "深主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q3",
+      "selected": 2,
+      "year": 2015
+    },
+    {
+      "available": 0,
+      "board": "科创板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "FY",
+      "selected": 0,
+      "year": 2015
+    },
+    {
+      "available": 0,
+      "board": "科创板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "H1",
+      "selected": 0,
+      "year": 2015
+    },
+    {
+      "available": 0,
+      "board": "科创板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "Q1",
+      "selected": 0,
+      "year": 2015
+    },
+    {
+      "available": 0,
+      "board": "科创板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "Q3",
+      "selected": 0,
+      "year": 2015
+    },
+    {
+      "available": 1,
+      "board": "UNKNOWN",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "Q1",
+      "selected": 0,
+      "year": 2018
+    },
+    {
+      "available": 4,
+      "board": "创业板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "FY",
+      "selected": 2,
+      "year": 2018
+    },
+    {
+      "available": 1,
+      "board": "创业板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "H1",
+      "selected": 0,
+      "year": 2018
+    },
+    {
+      "available": 0,
+      "board": "创业板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "Q1",
+      "selected": 0,
+      "year": 2018
+    },
+    {
+      "available": 0,
+      "board": "创业板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "Q3",
+      "selected": 0,
+      "year": 2018
+    },
+    {
+      "available": 69,
+      "board": "沪主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "FY",
+      "selected": 2,
+      "year": 2018
+    },
+    {
+      "available": 58,
+      "board": "沪主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "H1",
+      "selected": 2,
+      "year": 2018
+    },
+    {
+      "available": 196,
+      "board": "沪主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q1",
+      "selected": 2,
+      "year": 2018
+    },
+    {
+      "available": 145,
+      "board": "沪主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q3",
+      "selected": 2,
+      "year": 2018
+    },
+    {
+      "available": 21,
+      "board": "深主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "FY",
+      "selected": 2,
+      "year": 2018
+    },
+    {
+      "available": 20,
+      "board": "深主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "H1",
+      "selected": 2,
+      "year": 2018
+    },
+    {
+      "available": 0,
+      "board": "深主板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "Q1",
+      "selected": 0,
+      "year": 2018
+    },
+    {
+      "available": 64,
+      "board": "深主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q3",
+      "selected": 2,
+      "year": 2018
+    },
+    {
+      "available": 0,
+      "board": "科创板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "FY",
+      "selected": 0,
+      "year": 2018
+    },
+    {
+      "available": 0,
+      "board": "科创板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "H1",
+      "selected": 0,
+      "year": 2018
+    },
+    {
+      "available": 0,
+      "board": "科创板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "Q1",
+      "selected": 0,
+      "year": 2018
+    },
+    {
+      "available": 0,
+      "board": "科创板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "Q3",
+      "selected": 0,
+      "year": 2018
+    },
+    {
+      "available": 0,
+      "board": "创业板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "FY",
+      "selected": 0,
+      "year": 2021
+    },
+    {
+      "available": 0,
+      "board": "创业板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "H1",
+      "selected": 0,
+      "year": 2021
+    },
+    {
+      "available": 1,
+      "board": "创业板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "Q1",
+      "selected": 0,
+      "year": 2021
+    },
+    {
+      "available": 7,
+      "board": "创业板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q3",
+      "selected": 2,
+      "year": 2021
+    },
+    {
+      "available": 87,
+      "board": "沪主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "FY",
+      "selected": 2,
+      "year": 2021
+    },
+    {
+      "available": 73,
+      "board": "沪主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "H1",
+      "selected": 2,
+      "year": 2021
+    },
+    {
+      "available": 162,
+      "board": "沪主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q1",
+      "selected": 2,
+      "year": 2021
+    },
+    {
+      "available": 82,
+      "board": "沪主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q3",
+      "selected": 2,
+      "year": 2021
+    },
+    {
+      "available": 3,
+      "board": "深主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "FY",
+      "selected": 2,
+      "year": 2021
+    },
+    {
+      "available": 0,
+      "board": "深主板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "H1",
+      "selected": 0,
+      "year": 2021
+    },
+    {
+      "available": 3,
+      "board": "深主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q1",
+      "selected": 2,
+      "year": 2021
+    },
+    {
+      "available": 110,
+      "board": "深主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q3",
+      "selected": 2,
+      "year": 2021
+    },
+    {
+      "available": 21,
+      "board": "科创板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "FY",
+      "selected": 2,
+      "year": 2021
+    },
+    {
+      "available": 25,
+      "board": "科创板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "H1",
+      "selected": 2,
+      "year": 2021
+    },
+    {
+      "available": 44,
+      "board": "科创板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q1",
+      "selected": 2,
+      "year": 2021
+    },
+    {
+      "available": 18,
+      "board": "科创板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q3",
+      "selected": 2,
+      "year": 2021
+    },
+    {
+      "available": 1,
+      "board": "UNKNOWN",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "Q3",
+      "selected": 0,
+      "year": 2023
+    },
+    {
+      "available": 11,
+      "board": "创业板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "FY",
+      "selected": 2,
+      "year": 2023
+    },
+    {
+      "available": 4,
+      "board": "创业板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "H1",
+      "selected": 2,
+      "year": 2023
+    },
+    {
+      "available": 1,
+      "board": "创业板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "Q1",
+      "selected": 1,
+      "year": 2023
+    },
+    {
+      "available": 3,
+      "board": "创业板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q3",
+      "selected": 2,
+      "year": 2023
+    },
+    {
+      "available": 45,
+      "board": "沪主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "FY",
+      "selected": 2,
+      "year": 2023
+    },
+    {
+      "available": 46,
+      "board": "沪主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "H1",
+      "selected": 2,
+      "year": 2023
+    },
+    {
+      "available": 177,
+      "board": "沪主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q1",
+      "selected": 2,
+      "year": 2023
+    },
+    {
+      "available": 84,
+      "board": "沪主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q3",
+      "selected": 2,
+      "year": 2023
+    },
+    {
+      "available": 46,
+      "board": "深主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "FY",
+      "selected": 2,
+      "year": 2023
+    },
+    {
+      "available": 33,
+      "board": "深主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "H1",
+      "selected": 2,
+      "year": 2023
+    },
+    {
+      "available": 3,
+      "board": "深主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q1",
+      "selected": 2,
+      "year": 2023
+    },
+    {
+      "available": 50,
+      "board": "深主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q3",
+      "selected": 2,
+      "year": 2023
+    },
+    {
+      "available": 12,
+      "board": "科创板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "FY",
+      "selected": 2,
+      "year": 2023
+    },
+    {
+      "available": 17,
+      "board": "科创板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "H1",
+      "selected": 2,
+      "year": 2023
+    },
+    {
+      "available": 38,
+      "board": "科创板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q1",
+      "selected": 2,
+      "year": 2023
+    },
+    {
+      "available": 84,
+      "board": "科创板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q3",
+      "selected": 2,
+      "year": 2023
+    },
+    {
+      "available": 2,
+      "board": "UNKNOWN",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "H1",
+      "selected": 0,
+      "year": 2025
+    },
+    {
+      "available": 11,
+      "board": "创业板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "FY",
+      "selected": 2,
+      "year": 2025
+    },
+    {
+      "available": 1,
+      "board": "创业板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "H1",
+      "selected": 1,
+      "year": 2025
+    },
+    {
+      "available": 5,
+      "board": "创业板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q1",
+      "selected": 2,
+      "year": 2025
+    },
+    {
+      "available": 1,
+      "board": "创业板",
+      "quota": 2,
+      "quota_met": false,
+      "report_type": "Q3",
+      "selected": 1,
+      "year": 2025
+    },
+    {
+      "available": 60,
+      "board": "沪主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "FY",
+      "selected": 2,
+      "year": 2025
+    },
+    {
+      "available": 55,
+      "board": "沪主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "H1",
+      "selected": 2,
+      "year": 2025
+    },
+    {
+      "available": 152,
+      "board": "沪主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q1",
+      "selected": 2,
+      "year": 2025
+    },
+    {
+      "available": 116,
+      "board": "沪主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q3",
+      "selected": 2,
+      "year": 2025
+    },
+    {
+      "available": 18,
+      "board": "深主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "FY",
+      "selected": 2,
+      "year": 2025
+    },
+    {
+      "available": 34,
+      "board": "深主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "H1",
+      "selected": 2,
+      "year": 2025
+    },
+    {
+      "available": 5,
+      "board": "深主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q1",
+      "selected": 2,
+      "year": 2025
+    },
+    {
+      "available": 71,
+      "board": "深主板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q3",
+      "selected": 2,
+      "year": 2025
+    },
+    {
+      "available": 22,
+      "board": "科创板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "FY",
+      "selected": 2,
+      "year": 2025
+    },
+    {
+      "available": 14,
+      "board": "科创板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "H1",
+      "selected": 2,
+      "year": 2025
+    },
+    {
+      "available": 65,
+      "board": "科创板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q1",
+      "selected": 2,
+      "year": 2025
+    },
+    {
+      "available": 40,
+      "board": "科创板",
+      "quota": 2,
+      "quota_met": true,
+      "report_type": "Q3",
+      "selected": 2,
+      "year": 2025
+    }
+  ]
+}

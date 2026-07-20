@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import time
@@ -18,7 +19,8 @@ import requests
 
 from scripts.research.ashare_ep.crosscheck import cross_check
 
-ROOT = Path("data/research/b108")
+# 复评（fix round 1）需要把新 holdout 的产物与首轮分开落盘，故根目录可由环境变量覆盖。
+ROOT = Path(os.environ.get("B108_EVAL_ROOT", "data/research/b108"))
 PDF_DIR = ROOT / "pdf"
 TXT_DIR = ROOT / "txt"
 
