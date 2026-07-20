@@ -26,6 +26,8 @@ from typing import Any
 
 import pandas as pd
 
+from scripts.research.ashare_pit.fetch import fetch_paged
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 ENV_FILE = REPO_ROOT / ".env.local"
 
@@ -54,17 +56,25 @@ def load_token() -> str:
 
 
 def fetch_period(pro: Any, period: str) -> pd.DataFrame | None:
-    """拉一期全市场合并利润表。失败返回 None（由调用方显式记录，不静默跳过）。"""
-    for attempt in range(_MAX_ATTEMPTS):
-        try:
-            df = pro.income_vip(period=period, fields=FIELDS)
-            return df[df["report_type"] == CONSOLIDATED_REPORT_TYPE].dropna(
-                subset=["n_income_attr_p"]
-            )
-        except Exception:  # noqa: BLE001 - 有界重试，最终以 None 显式暴露
-            if attempt + 1 < _MAX_ATTEMPTS:
-                time.sleep(_RETRY_SLEEP_SECONDS * (attempt + 1))
-    return None
+    """拉一期全市场合并利润表。失败返回 None（由调用方显式记录，不静默跳过）。
+
+    ★★2026-07-20 修复：原实现用**单次调用**，被服务端静默截断在 9000 行。
+    这不是无害的少几行——截断**富集 vintage 记录**，直接压低本探针要测的两个量：
+
+    ==========  ==================  ==================
+    期间         flag=0 保留率        观测修订率
+    ==========  ==================  ==================
+    2021FY      69.4% → **93.1%**   0.525% → **1.325%**
+    2022FY      60.1% → **70.2%**   1.534% → **1.721%**
+    ==========  ==================  ==================
+
+    即本探针在修复前**系统性低估修订率**，且把截断伪影报成了「保留率剧烈波动」。
+    ``docs/audits/B109-F001-vintage-probe-2026-07-20.md`` 中的数字据此全部作废，须重测。
+    """
+    df, report = fetch_paged(pro.income_vip, endpoint="income_vip", period=period, fields=FIELDS)
+    if report.failures or df.empty:
+        return None
+    return df[df["report_type"] == CONSOLIDATED_REPORT_TYPE].dropna(subset=["n_income_attr_p"])
 
 
 def measure_period(df: pd.DataFrame, period: str) -> dict[str, Any]:

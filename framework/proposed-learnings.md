@@ -523,3 +523,13 @@
 <!-- 2026-07-07: v0.9.55 沉淀完成（B080-B098 队列清扫,用户 2026-07-07「沉淀 learnings,全批准」）：9 条正式写入 + 1 条（P5-F2）先行已在 evaluator.md §33 仅归档。①B080 F002 + B081 F001 合并 → generator.md §41(a)(b)（trade/-edit 门禁 family,子集绿≠全绿）;②B080 F004 → generator.md §42（api.ts required 字段同 commit 补前端 fixture）;③B080 F005 → generator.md §43 + planner.md §种子数据落地路径（种子数据走 data-migration/部署链,勿只 bootstrap CLI）;④B081 F002/F003 → generator.md §44（执行限制 loop-level freeze/restore）;⑤B081 F004 → generator.md §45（慢真机跑 resumable+pickle 抗 kill）+ README §经验教训「回测保真度」（★F005 更正版:容量下限非分数股假象,lot@10M 保留 99% edge）;⑥B083 F002 → evaluator.md §34（改动面 vs 红测面物理关联判 flake,rerun 不清=race 须真修,修正 §27）;⑦B087+B090 + B098 F002 planner 部分合并 → planner.md §done 收尾/开批前置 gate（signoff 落地 + 写入序列化）;⑧B098 F002 → harness-rules.md §启动流程（clone 后装 pre-commit 钩子）;⑨P5-F2 已在 evaluator.md §33 仅归档。归档 framework/archive/proposed-learnings-archive-v0.9.55.md。CHANGELOG v0.9.55。**活跃候选队列=空。** -->
 
 <!-- 当前活动候选（v0.9.55 后）：无。 -->
+
+## [2026-07-20] Claude CLI — 来源：B109 F002 实测发现 Tushare 单次调用静默截断
+
+**类型：** 新坑 / 铁律补充
+
+**内容：** **「调用成功返回」不等于「拿到了全部」。** Tushare 单次 API 调用会静默截断（`income_vip` 恰好 9000 行 / `namechange` 恰好 10000 行），**不报错、不抛异常、不置任何标志位**——唯一线索是行数恰好是整数。★致命之处在于**截断非均匀**：2022FY 漏掉的 1093 行里 `update_flag=0` 占 18.7%、`flag=1` 仅 5.2%，即被砍掉的恰恰富集 vintage 记录，而那正是修订率/保留率指标的计算依据。后果：**B109 F001 已交付报告的核心数字全部作废**——分页重测后 2021FY 修订率 0.525%→1.325%（2.5 倍）、`flag=0` 保留率 69.4%→93.1%；未触顶的期次数字完全不变，反证偏差源就是截断。F001 的**设计裁定**（轻量两字段 resolver）未被推翻（它取决于可重建性而非修订率高低），但**测量数字**须重跑。与 B108 E01「被规则挡住不等于被验证过」同族：**凡分页接口，要么分页拉取，要么显式证明未触顶，不存在第三种可接受状态**。修复见 `scripts/research/ashare_pit/fetch.py`（短页才是最后一页 + 触顶守卫 + FetchReport 留痕）+ 审计报告 `docs/audits/B109-F002-tushare-silent-truncation-2026-07-20.md`。★次生教训：撤回失效常量时**留 `None` 而非留旧值**——一个已知偏低的数比留空更危险，下游会把它当已验证事实引用。
+
+**建议写入：** `framework/README.md` §经验教训（外部数据源完整性不可假设）+ `framework/harness/generator.md`（分页接口拉取纪律 + 失效常量撤回方式）
+
+**状态：** 待确认

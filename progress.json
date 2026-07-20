@@ -1,9 +1,9 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 3,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
-  "current_sprint": "F002",
+  "current_sprint": "F003",
   "last_updated": "2026-07-20",
   "user_goal": "B109 Tushare PIT 数据层 v0 + 巨潮对拍审计。起因:三问探针(¥500/15分钟)实测改变路线判断——归母净利润真实修订率仅 0.712%(38207 股票-期/272 被改),上游 handoff 报告据以论证重装三时钟 bitemporal 底座的『90.83% 在 120 天后仍更新』衡量的是记录被 touch 时间而非数值被改比例;update_flag 提供 as-filed 能力(flag=0 保首次值+flag=1 的 f_ann_date 标修正可知日)但保留率随期间波动 10.5%-95.4%;total_mv 身份校验 100.000% 通过直接解决分母;退市名 338 只。用户裁定:B108 转向审计工具/追加探针/许可证允许内部归档。3 features 2g+1c:F001 追加 vintage 探针(flag=0 保留率机制+季报+as-filed 可重建覆盖率,决定 F002 设计)/F002 PIT 数据层 v0(f_ann_date as-of resolver+daily_basic 分母修 B076+B108 框架转巨潮对拍审计器)/F003 Codex 对拍验收。spec docs/specs/B109-tushare-pit-foundation-spec.md。不建全量底座,不算 E/P,不改 DATA_NO_GO。",
   "reference_docs": [
@@ -12,7 +12,8 @@
     "docs/audits/ashare-pure-ep-data-foundation-implementation-handoff-2026-07-13.md",
     "docs/test-reports/B108-cninfo-parser-selfcheck-reverify-2026-07-20.md",
     "scripts/research/ashare_ep/",
-    "scripts/research/b076_fetch_pit_marketcap.py"
+    "scripts/research/b076_fetch_pit_marketcap.py",
+    "docs/audits/B109-F002-tushare-silent-truncation-2026-07-20.md"
   ],
   "docs": {
     "spec": "docs/specs/B109-tushare-pit-foundation-spec.md",
@@ -30,7 +31,7 @@
   ],
   "session_notes": {
     "planner": "2026-07-20 B109 planning。承接用户三条裁定(B108 转向/追加探针/许可证允许)。★许可证允许内部长期归档 = 上游报告 §10 的 snapshot/hydrate/离线复现契约有合规基础，这是本项目第一次拿到这个前提。★核心设计转变：上游 handoff 报告的 Phase B-G 重装底座**其必要性未被实测支持**——as-of 语义实测只需两个字段(f_ann_date 比较)，分母只需一次 daily_basic 调用。但**不等于修订可忽略**：272 次修订中 61% 幅度>1%、22% >10%、2018 年 p90 达 101.79%，必须记录已知修订并能重放，只是不需要建整套 bitemporal 版本链。★F001 先行的理由：flag=0 保留率波动 10.5%-95.4% 是唯一能推翻 F002 设计的未知数；且三问探针**只测了年报**，而 TTM 需要四个连续单季——季报 vintage 若显著更差，PIT 分子不成立。★F002 的审计工具复用 B108 的 scripts/research/ashare_ep/：B108 真实产出是交叉验证/holdout/failure-code 纪律而非 parser 本身；巨潮转 truth anchor 后只需抽样使用，不需要高覆盖。【续接】status=building，Generator 接 F001(纯 API 测量，无需 F002)→F002。F003 交 Codex。★token 在 .env.local(600/gitignored/已验证)；★用户建议已提出轮换，未执行。★遗留(非本批)：600787/601992 两份人工裁定；workbench-advisor 402(aigc 侧 key 配额)；P6 老 VM 退役。",
-    "generator": "2026-07-20 B109 F002 **进行中未完成**（status 仍 pending，勿读作完成）。已落地 codes/resolver/marketcap 三模块 + 12 单测，全量 1566 passed 零回归，ruff 净。★真实数据验证通过：修订不变性零泄漏（3000 例注入）；FACT_VERSION_AMBIGUOUS 在真实数据触发 4/50450，其中 603607.SH 两版差 66%——证明 fail-closed 拦下的是真实错值而非理论情形。【续接 F002 剩余三块】(1) universe: stock_basic 全状态 + namechange 含退市名；(2) audit: ashare_ep 框架转巨潮对拍器（巨潮 truth anchor / Tushare 被审计方）；(3) pipeline: resolver 接月末面板 + 覆盖漏斗（须含 F001 的四项披露要求）。★H3 纪律：审计工具交付后 Generator **不得抽取 F003 的评测样本**。★F001 已定的四项不得省略：FACT_VERSION_AMBIGUOUS 计数 / 逐期 flag=0 保留率披露 / 修订率标区间 0.47%-0.88% 禁点估计 / FY 分量单独标风险。",
+    "generator": "2026-07-20 B109 F002 **已完成**，status→verifying 交 Codex 做 F003。★★本次最重要的产出不是三个模块，而是一个计划外发现：**Tushare 单次调用静默截断且非均匀富集 vintage 记录** → F001 报告的核心数字全部作废（设计裁定仍成立）。详见 docs/audits/B109-F002-tushare-silent-truncation-2026-07-20.md。【交给 F003 的三条前置警告】(1) ★G-A 门有统计效力问题：B108 已烧语料实测可裁定率仅 16.7%，60 份样本约剩 10 份可裁定，在 10 份上谈『一致率>=99%』无意义——F003 须先扩样本量或先承认该门降级；audit_summary 已强制输出 adjudicable_fraction 供判断。(2) ★审计器的 PDF 下载 + build_pdf_freeze 路径 **Generator 未执行过**（H3 禁止抽样，端到端验证走的是 B108 已烧结果）——按 B108 E01 教训不得默认可用，F003 首次执行须留意。(3) select_audit_sample 的 seed 无默认值，由 F003 自选（H3）。【待用户裁定】F001 是否用分页重跑 16 期；是否扩测 2013-2020。★F001 重测与 F003 对拍**正交**，F003 不必等。",
     "evaluator": null
   }
 }
