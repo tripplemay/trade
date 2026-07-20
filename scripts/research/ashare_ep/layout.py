@@ -51,11 +51,34 @@ _HEADER_TOKENS: tuple[str, ...] = (
 # 附注列表头（该列承载的是报表附注编号，不是金额）——bug ① 的结构化判据
 _NOTE_HEADER_TOKENS: tuple[str, ...] = ("附注", "注释")
 
+# 裸年份表头（「2018 年」「2017年」）。★N03 修复：年报的主要会计数据表表头就是裸年份 +
+# 「本年比上年增减」，一个 _HEADER_TOKENS 都不命中 → 锚点找不到 → 列模型建不起来 →
+# 年报两轮 0/34 CONFIRMED。sources.select_target_column 本就有裸年份兜底，
+# 但锚点认不出来，兜底永远等不到被调用。**锚点词表必须与列选择词表覆盖同一批表头形态。**
+_YEAR_HEADER_PATTERN = re.compile(r"^\d{4}\s*年?$")
+
+
+def is_header_cell(text: str) -> bool:
+    """一个单元格文字是否可作表头锚点。"""
+    stripped = text.strip()
+    if _YEAR_HEADER_PATTERN.match(stripped):
+        return True
+    return any(token in stripped for token in _HEADER_TOKENS)
+
 # 标签跨行最多向后并入几行（bug ④）。给一个小上限防止把相邻行误并。
 _MAX_LABEL_CONTINUATION_LINES = 3
 
 # 表头带向上/向下最多延伸几行（E03）。真实财报的多层表头一般 2-4 行。
 _HEADER_BAND_LINES = 4
+
+# 向上找表头锚点的最大行数。
+#
+# ★原值 40 是拍脑袋定的，而合并利润表是**长表**：B108 复验语料实测 S1 行到最近表头行的
+# 距离中位数 58 行、p90 79 行、max 297 行，**只有 25.2% 落在 40 行内**——
+# 于是 113 次 COLUMN_AMBIGUOUS，列模型对长表整体建不起来。
+# 取 120 覆盖实测的 98.1%，留出余量而不至于跨到很远的无关表。
+# 注：该分布测自 r2 语料，对本轮属样本内；独立复评应重新核这个覆盖率。
+_HEADER_LOOKBACK_LINES = 120
 
 
 @dataclass(frozen=True)
@@ -194,11 +217,30 @@ def build_rows(lines: list[str]) -> list[Row]:
         has_numbers = any(cell.is_number for cell in cells)
 
         if label_like and has_numbers:
-            # 一个自带数值的完整行——先结掉上一行
-            flush()
-            label_parts = [head.text]
+            # ★N04 修复：标签头也可能折在数字**之前**的一行::
+            #
+            #     归属于上市公司股东
+            #     的净利润（元）    -79,024,133.16   ...
+            #
+            # 此时挂起行是一个「纯标签、还没收到任何数字」的行，且紧邻本行。
+            # 直接 flush 会把标签头整个丢掉，剩下「的净利润（元）」匹配不上任何来源。
+            #
+            # 只在挂起行**确实像数据行标签头**时才并入：紧邻、无单元格、
+            # 且本身不是表头词或单位声明——否则表头/表标题会被吸进第一行数据。
+            adjacent_head = (
+                pending_line == index - 1
+                and not pending_cells
+                and label_parts
+                and not is_header_cell(label_parts[-1])
+                and not _UNIT_PATTERN.search(label_parts[-1])
+            )
+            if adjacent_head:
+                label_parts.append(head.text)
+            else:
+                flush()
+                label_parts = [head.text]
+                pending_line = index
             pending_cells = list(cells[1:])
-            pending_line = index
             started_with_numbers = True
             tail_appended = False
         elif label_like:
@@ -277,8 +319,16 @@ def _merge_spans(cells: list[Cell]) -> tuple[Column, ...]:
     return tuple(columns)
 
 
-def find_header_columns(lines: list[str], before_line: int) -> tuple[tuple[Column, ...], int]:
-    """向上就近找表头**带**，返回 ``(列定义, 表头起始行号)``。找不到返回 ``((), -1)``。
+def find_header_columns(lines: list[str], before_line: int) -> tuple[tuple[Column, ...], int, int]:
+    """向上就近找表头**带**，返回 ``(列定义, 带起始行号, 带结束行号)``。
+
+    找不到返回 ``((), -1, -1)``。
+
+    ★为什么要返回带**结束**行号（B108 复验 N01）：单位声明常常夹在表头带内部
+    （「合并利润表 / 单位：千元 / 项目 本期金额 上期金额」）。若拿带**起始**行号去做
+    单位解析，而解析又只向上扫，声明就落在了扫描起点之下，结构性不可达——
+    601186 的「单位:千元」在 L2971、带起点在 L2969，于是单位丢失、值缩小 10³。
+    单位解析必须从带**末端**起扫，才能覆盖整条带。
 
     ★真实财报的表头本身就是跨物理行的，例如::
 
@@ -291,16 +341,16 @@ def find_header_columns(lines: list[str], before_line: int) -> tuple[tuple[Colum
     是 48.7% 抽取失败的第一主因。因此这里先定位锚点行，再把相邻的非数据行并成一条表头带。
     """
     anchor = -1
-    for index in range(before_line - 1, max(-1, before_line - 40) - 1, -1):
+    for index in range(before_line - 1, max(-1, before_line - _HEADER_LOOKBACK_LINES) - 1, -1):
         line = lines[index]
         if not line.strip() or is_data_row(line):
             continue
         cells = split_cells(line)
-        if any(any(token in cell.text for token in _HEADER_TOKENS) for cell in cells):
+        if any(is_header_cell(cell.text) for cell in cells):
             anchor = index
             break
     if anchor < 0:
-        return (), -1
+        return (), -1, -1
 
     start = anchor
     while start - 1 >= 0 and anchor - (start - 1) <= _HEADER_BAND_LINES:
@@ -322,8 +372,8 @@ def find_header_columns(lines: list[str], before_line: int) -> tuple[tuple[Colum
 
     columns = _merge_spans(band)
     if len(columns) < 2:
-        return (), -1
-    return columns, start
+        return (), -1, -1
+    return columns, start, end
 
 
 def assign_column(cell: Cell, columns: tuple[Column, ...]) -> Column | None:

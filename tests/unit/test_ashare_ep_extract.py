@@ -382,10 +382,71 @@ def test_multiline_header_band_is_merged_into_columns() -> None:
         "                     调整前          调整后          调整后",
         "归属于上市公司股东的净利润   1,000.00      900.00        950.00        5.26%",
     ]
-    columns, header_line = find_header_columns(lines, before_line=4)
+    columns, band_start, band_end = find_header_columns(lines, before_line=4)
     assert columns, "跨行表头未被识别"
-    assert header_line >= 0
+    assert 0 <= band_start <= band_end
     assert any("本报告期" in column.header for column in columns)
+
+
+def test_unit_declaration_inside_header_band_is_still_found() -> None:
+    """★N01 回归：单位声明夹在表头带内部时必须仍能绑定。
+
+    复验实测 601186 的「单位:千元」在 L2971、表头带起点在 L2969——
+    从带**起点**向上扫，声明落在扫描起点之下，结构性不可达 → 单位丢失 → 值缩小 10³。
+    修法是从带**末端**起扫，覆盖整条带。
+    """
+    lines = [
+        "合并利润表",
+        "单位:千元 币种:人民币",
+        "项目                    本期金额            上期金额",
+        "归属于母公司所有者的净利润     5,330,703.00      4,100,000.00",
+    ]
+    columns, band_start, band_end = find_header_columns(lines, before_line=3)
+    assert columns
+    # 声明在带内部：起点在它之上，末端在它之下
+    assert band_start <= 1 <= band_end
+
+    values, _ = extract_s1(lines, parse_document("\n".join(lines)))
+    assert values[0].unit == "千元"
+    assert values[0].value == Decimal("5330703000.00")
+
+
+def test_bare_year_header_anchors_the_column_model() -> None:
+    """★N03 回归：年报主要会计数据表的表头是裸年份，必须能作锚点。
+
+    两轮验收年报都是 0 CONFIRMED，根因是锚点词表不含裸年份 →
+    列模型建不起来 → select_target_column 里的裸年份兜底永远等不到被调用。
+    锚点词表必须与列选择词表覆盖同一批表头形态。
+    """
+    lines = [
+        "单位：元",
+        "                        2018 年              2017 年       本年比上年增减",
+        "归属于上市公司股东的净利润   252,300,000.00   198,000,000.00        27.42%",
+    ]
+    columns, band_start, _ = find_header_columns(lines, before_line=2)
+    assert columns, "裸年份表头未能作为锚点"
+    assert band_start >= 0
+
+    values, _ = extract_s2(lines, parse_document("\n".join(lines)))
+    assert values[0].value == Decimal("252300000.00")
+    assert "2018" in values[0].column_header
+
+
+def test_equity_statement_rows_are_not_treated_as_income_statement() -> None:
+    """★N02 回归：所有者权益变动表的「加：本期归属于母公司所有者的净利润」不是 S1。
+
+    复验实测 S1 的 47 次命中里 37 次来自权益变动表。这不只违反 spec §3.1，
+    更动摇交叉验证前提——S1/S2 本应是两个独立位置，实测已有 >=3 份两表真的不等。
+    """
+    lines = [
+        "单位：元",
+        "合并所有者权益变动表",
+        "项目                          本期金额            上期金额",
+        "加：本期归属于母公司所有者的净利润   194,825,145.94    150,000,000.00",
+    ]
+    values, failures = extract_s1(lines, parse_document("\n".join(lines)))
+    assert not values, f"权益变动表行被当成了合并利润表：{[v.label for v in values]}"
+    assert FailureCode.LABEL_NOT_FOUND in failures
 
 
 def test_sentinel_also_guards_the_single_source_path() -> None:

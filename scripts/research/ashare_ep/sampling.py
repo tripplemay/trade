@@ -152,6 +152,9 @@ def coverage_report(
     for stratum in sorted(strata):
         year, board, report_type = stratum
         got = len(taken.get(stratum, []))
+        # ★N05 修复：UNKNOWN 是 E10 **故意**排除的宇宙外证券（B股/北交所），
+        # 报成「未达配额」会把一个有意的设计决策伪装成缺陷，淹没真正的缺口。
+        out_of_universe = board == UNKNOWN_BOARD
         rows.append(
             {
                 "year": year,
@@ -159,8 +162,9 @@ def coverage_report(
                 "report_type": report_type,
                 "available": len(available.get(stratum, [])),
                 "selected": got,
-                "quota": quota_per_stratum,
-                "quota_met": got >= quota_per_stratum,
+                "quota": 0 if out_of_universe else quota_per_stratum,
+                "quota_met": True if out_of_universe else got >= quota_per_stratum,
+                "excluded_from_universe": out_of_universe,
             }
         )
     return rows

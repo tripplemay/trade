@@ -64,6 +64,17 @@ _LABEL_EXCLUSIONS: tuple[str, ...] = (
     "少数股东",
     "现金流量",
     "每股",
+    # ★N02 修复：「加：」「减：」是**所有者权益变动表**的结构性前缀（该表用增减项描述权益变动）。
+    #
+    # 「加：本期归属于母公司所有者的净利润」是权益变动表的行，不是合并利润表的行。
+    # B108 复验实测：S1 的 47 次命中里 37 次来自这里，只有 10 次来自真正的利润表——
+    # 这不只违反 spec §3.1，更动摇交叉验证的前提：S1/S2 本应是两个独立位置，
+    # 若 S1 实为权益变动表，两者相等只是「通常如此」，实测已有 >=3 份真的不等
+    # （000835 差 0.401%、300423、002713）。权益变动表是宽表，取错列就得到未分配利润列。
+    "加：",
+    "加:",
+    "减：",
+    "减:",
 )
 
 _BASIC_EPS_LABELS: tuple[str, ...] = ("基本每股收益",)
@@ -124,9 +135,12 @@ def _row_value(
     if not numeric:
         return None, FailureCode.EXTRACTION_FAILED
 
-    columns, header_line = find_header_columns(lines, row.line_index)
-    if header_line < 0:
-        header_line = row.line_index
+    columns, band_start, band_end = find_header_columns(lines, row.line_index)
+    # ★N01 修复：单位解析从表头带**末端**起扫，而不是带起点。
+    # 单位声明常夹在带内部（「合并利润表 / 单位：千元 / 项目 本期金额 上期金额」），
+    # 从带起点向上扫会把声明落在扫描起点之下，结构性不可达 → 单位丢失 → 值缩小 10³。
+    unit_anchor = band_end if band_end >= 0 else row.line_index
+    del band_start
 
     if columns:
         target = select_target_column(columns)
@@ -151,7 +165,7 @@ def _row_value(
     if raw is None:
         return None, FailureCode.EXTRACTION_FAILED
 
-    unit, unit_origin, ambiguous = resolve_unit(lines, header_line)
+    unit, unit_origin, ambiguous = resolve_unit(lines, unit_anchor)
     if ambiguous:
         return None, FailureCode.UNIT_AMBIGUOUS
 
