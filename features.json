@@ -26,7 +26,8 @@
     "★as-of 只用 f_ann_date 两字段语义：三问探针实测 70/87 修订样本为干净形态(flag=0 保首次值、flag=1 的 f_ann_date 标修正可知日，滞后中位 372 天)，这比上游报告设想的三时钟双时间模型简单一个数量级。",
     "分母直接用 daily_basic：三问探针实测 total_mv vs close×total_share 在 2015/2020/2023 三日均 100.000% 落在 0.5% 内、中位误差 0.00000%，上游 G4 门槛以满分通过——不需要建 §4.5 整套每日证券状态版本表。",
     "★复用 B108 框架而非重写：B108 的真实产出不是 parser 而是交叉验证/holdout/failure-code 纪律；巨潮转为 truth anchor 后只需抽样使用，不需要高覆盖率，B108 已知缺陷(S2 多行冲突等)不构成阻碍。"
-   ]
+   ],
+   "progress_note": "2026-07-20 Generator ——★F002 未完成，本条仅记录已落地部分，status 保持 pending。【已完成】scripts/research/ashare_pit/ 三模块：codes.py(FactStatus/MarketCapStatus + frozen FactVersion/ResolvedFact)、resolver.py(as-of resolver 按 f_ann_date 语义 + build_versions 规范化 + 丢弃计数)、marketcap.py(万元→CNY 一次性转换 + 身份复算 + 隔离计数 + summarize)。12 个纯逻辑单测；全量 1566 passed（原 1554，零回归）；ruff 净。★★真实数据验证（非仅单测——B108 教训：合成 fixture 编码的是实现者自己的假设）：(a) 2022 年报 9000 行→5673 证券，规范化零丢弃；(b) 形成日 20230630/20240630/20251231 的 RESOLVED 为 94.01%/98.43%/100%，NOT_YET_PUBLISHED 随形成日推进收敛（2023-06-30 时 2022 年报确有 6% 未披露完）；(c)★修订不变性实测：注入 3000 个 f_ann_date=20991231 的伪未来版本，旧形成日结果改变数 = 0，零泄漏。(d)★★FACT_VERSION_AMBIGUOUS 在**真实数据**上确会触发：扫 9 期共 50,450 个证券-期，命中 4 个(0.008%)。最刺眼的 603607.SH 2022Q1 同一 f_ann_date 下 update_flag=0→99,560,159.82 / =1→33,997,964.70，**差 66%**——按 update_flag 静默挑一条（最自然的实现方式）代价就是这个错值。fail-closed 非理论洁癖。【未完成，仍属 F002 范围】(1) 宇宙：stock_basic 全状态 L/D/P + namechange（含退市名，禁令 #11）；(2) 审计工具：B108 ashare_ep 框架转 Tushare vs 巨潮对拍器（复用 seed 化分层抽样 + build_pdf_freeze + 结构化 failure code）；(3) 拉取/落盘管线：把 resolver 接到实际月末面板，输出覆盖漏斗（须含 F001 要求的四项：FACT_VERSION_AMBIGUOUS 计数 / 逐期 flag=0 保留率 / 修订率标区间禁点估计 / FY 分量单独标风险）。"
   },
   {
    "id": "F003",
