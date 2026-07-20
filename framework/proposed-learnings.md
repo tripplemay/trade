@@ -534,12 +534,34 @@
 
 **状态：** 待确认
 
-## [2026-07-20] Claude CLI — 来源：B109 F003 fix 轮 fix_rounds 被重复计数
+## [2026-07-20] Claude CLI — 来源：B109 F003 fix_rounds 重复计数（★根因已由 evaluator 更正）
 
-**类型：** 模板修订 / 规则歧义
+**类型：** 模板修订 / 分层加载的可发现性缺陷
 
-**内容：** `harness-rules.md` §状态流转写「`fixing`：修复完成 → `reverifying`，fix_rounds +1」，**未指明由谁加**。B109 实测后果：evaluator 在 verifying→fixing 时加了一次（0→1），Generator 在 fixing→reverifying 时又加了一次（1→2），实际只有一轮修复却记成两轮。★危害不在数字本身，而在 fix_rounds 是**批次质量的对外读数**——「需要 2 轮修复」比「1 轮」读起来差一档，会误导后续的框架复盘与批次难度评估。建议把规则明确为「**fix_rounds 由 Generator 在 fixing→reverifying 时唯一递增**；evaluator 置 fixing 时不得触碰该字段」，并在 `scripts/check_state_json.py` 加一条校验：同一 commit 内 status 从 fixing→reverifying 才允许 fix_rounds 变化。
+**内容：** B109 实测：evaluator 在 verifying→fixing 时把 fix_rounds 0→1，Generator 在 fixing→reverifying 时又 1→2，实际只有一轮修复却记成两轮。
 
-**建议写入：** `harness-rules.md` §状态流转（明确唯一递增方）+ `framework/harness/evaluator.md`（置 fixing 时不碰 fix_rounds）
+★**我最初把根因判为「`harness-rules.md` §状态流转未指明由谁加 → 规则真空」，这是错的**，已由 evaluator 更正并经我 git 核实：规则**早已存在**于 `framework/harness/generator.md:196`（「fixing 模式：…… status 改为 reverifying，fix_rounds +1」写在 **Generator** 的完成标准下），`framework/harness/evaluator.md:25` 反向印证（evaluator 见到 reverifying 时该字段「**已更新**」）。责任方是 evaluator 未按 `harness-rules.md` §第三步「按需查阅 framework/harness/」，不是双方。
+
+★**真正值得沉淀的是分层加载的可发现性缺陷**：v0.9.28 把规则分成「短版必读（`.auto-memory/role-context/`）+ 长版按需（`framework/harness/`）」以省 context window，代价是**主文件 `harness-rules.md` 的状态流转表复述了「fix_rounds +1」却丢了「由谁加」这个限定**——读主文件的人会以为自己已经读完了这条规则，不会意识到需要去查长版。**分层的风险不在信息缺失，而在主文件给出「看起来完整」的半条规则。**
+
+**建议：** (1) `harness-rules.md` §状态流转把递增方补进去（凡主文件复述深层规则，必须复述完整或显式标注「详见 framework/harness/X」）；(2) `scripts/check_state_json.py` 加校验：fix_rounds 变化仅允许发生在 status fixing→reverifying 的同一 commit 内——把口头规则变成有牙齿的门禁。
+
+**建议写入：** `harness-rules.md` §状态流转 + `scripts/check_state_json.py`
+
+**状态：** 待确认
+
+## [2026-07-20] Codex(evaluator 代) — 来源：B109 F003 复验时自我更正「删除违禁路径」的建议
+
+**类型：** 新规律（退役判据）
+
+**内容：** F003 首轮建议「(b) 直接删除 `b076_fetch_pit_marketcap.py` 及其测试」，**复验时追 provenance 发现该建议是错的**：该脚本产出的 `data/research/b076/cn_size.csv` 正被**生产策略** `trade/strategies/cn_attack_momentum_quality/size.py` 与 B080 拥挤度监控读取（已 git 核实）。删除等于切断一份**生产在读 CSV 的 provenance**，反而抬高「未来有人重新手搓一个错版本」的风险。Generator 选的「保留本体 + ⛔弃用横幅 + 运行时 `DeprecationWarning` + **测试固化禁令**」才是正确解。
+
+★**退役判据应是「让误用不可能悄悄发生」，不是「让代码消失」**：退役前必须先查消费者；存在合法消费者时，目标态就该是「警示但可用」而非删除。「可用」与「该用」是两件事。
+
+★配套的验证手法值得沉淀：**变异测试验证弃用契约有牙齿**——注释掉 `warnings.warn` 后 4/7 测试 FAIL，证明禁令由测试守住而非注释里的君子协定；另须实证 `DeprecationWarning` 在**默认 filter** 下可见（库代码中它默认被隐藏，不能想当然）。
+
+★**同类防误报**：`size.py` 用 `circ_mv` **不违禁令 #6**——#6 射程是 E/P 的**分母**（全公司归母利润须配总市值），而 size.py 是**规模因子排序量**（规模因子惯用流通/自由流通市值）。禁令有射程，跨射程套用会制造假缺陷。
+
+**建议写入：** `framework/README.md` §经验教训（退役判据 + 禁令射程）+ `framework/harness/evaluator.md`（提删除建议前必须查消费者；变异测试验证契约）
 
 **状态：** 待确认
