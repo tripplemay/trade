@@ -47,7 +47,7 @@ from scripts.research.ashare_pit.ep_panel import (
     funnel_closes,
     funnel_to_csv_row,
 )
-from scripts.research.ashare_pit.fetch import FetchReport, fetch_paged
+from scripts.research.ashare_pit.fetch import DEFAULT_PAGE_SIZE, FetchReport, fetch_paged
 from scripts.research.ashare_pit.marketcap import build_point
 from scripts.research.ashare_pit.marketcap import summarize as summarize_marketcap
 from scripts.research.ashare_pit.pipeline import (
@@ -225,6 +225,7 @@ def _fetch_cached(
         return hit
 
     last_reason = ""
+    seen_multiple: int | None = None
     for backoff in (0.0, *_LONG_BACKOFF_SECONDS):
         if backoff:
             time.sleep(backoff)
@@ -237,11 +238,29 @@ def _fetch_cached(
             # ★绝不缓存空表/短表：一旦落盘，后续重跑会把这个洞变成「事实」。
             last_reason = f"rows={len(frame)} < min_rows={min_rows}（疑似静默空表）"
             continue
+        if len(frame) and len(frame) % DEFAULT_PAGE_SIZE == 0:
+            # ★★分页在**整页边界**停下。`fetch_paged` 的终止条件是短页，所以这只有
+            # 两种可能：(a) 下一页真的是空的（数据恰好是页大小的整数倍），
+            # (b) 下一页遭遇静默空响应 → **数据被悄悄截断**。
+            # 实测 (b) 真实发生过 14 次（含 `daily_basic` 两日，把 2023 年初的
+            # 分母砍到 5,000 只、覆盖率从 ~90% 压到 67.6%）。
+            # 判别法：重取。随机截断重取会变，真整数倍则稳定不变。
+            if seen_multiple == len(frame):
+                break  # 两次一致 → 认定为真整数倍，接受并在 ledger 里留痕
+            seen_multiple = len(frame)
+            last_reason = f"rows={len(frame)} 恰为页大小整数倍（疑似分页被静默截断）"
+            continue
         frame = _normalize(frame)
         _store(cache_dir, name, frame)
         time.sleep(_THROTTLE)
         return frame
 
+    if seen_multiple is not None and len(frame) == seen_multiple:
+        # 稳定的整数倍：接受，但必须可被 Codex 看见。
+        report.truncation_suspected = True
+        frame = _normalize(frame)
+        _store(cache_dir, name, frame)
+        return frame
     if on_shortfall == _MIN_ROWS_DISCLOSE:
         return pd.DataFrame()
     raise RuntimeError(f"拉取失败，拒绝用残缺数据继续: {name} {last_reason}")
