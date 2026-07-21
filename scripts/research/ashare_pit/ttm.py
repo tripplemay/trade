@@ -46,6 +46,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
+from datetime import date
 from decimal import Decimal
 from enum import StrEnum
 
@@ -65,7 +66,13 @@ PERIOD_LABELS: dict[str, str] = {"0331": "Q1", "0630": "H1", "0930": "Q3", "1231
 
 
 class TTMStatus(StrEnum):
-    """TTM 的结构化状态。★每一种「算不出来」都必须能和别的区分开。"""
+    """TTM 的结构化状态。★每一种「算不出来」都必须能和别的区分开。
+
+    ★为什么 ``COMPONENT_*`` 拆成三个而不是一个 ``COMPONENT_UNRESOLVED``：合并会把
+    「数据缺陷」读成「经济事实」，也会把「我们窗口开小了」读成「数据缺失」。实测
+    FY2021 有 5 只公司从无年报（全部是强制退市名）——那是数据缺陷，与「新股还没
+    四个季度」性质完全不同，与「当时确实还没披露」更是相反。
+    """
 
     RESOLVED = "RESOLVED"
     #: 形成日看不到该证券的任何定期报告（IPO 前 / 早于数据起点）。
@@ -73,17 +80,56 @@ class TTMStatus(StrEnum):
     #: 最新可见期同一 f_ann_date 下有多个不同值（B109 FACT_VERSION_AMBIGUOUS）。
     #: ★不得退到更早的期次假装成功——静默降级正是错值来源。
     ANCHOR_AMBIGUOUS = "ANCHOR_AMBIGUOUS"
-    #: 必需的累计期存在记录但在形成日不可用（尚未披露 / 版本歧义）。
-    COMPONENT_UNRESOLVED = "COMPONENT_UNRESOLVED"
-    #: 必需的更早期次**根本没有记录** = 上市历史不足四个连续单季。
+    #: 有记录但 f_ann_date > 形成日：**当时市场真的不知道**。这是合法的 PIT 不可得。
+    COMPONENT_NOT_YET_PUBLISHED = "COMPONENT_NOT_YET_PUBLISHED"
+    #: 该证券上市后的某个必需期**根本没有行** = 数据缺陷（或公司未按期披露）。
+    COMPONENT_MISSING = "COMPONENT_MISSING"
+    #: 分量自身版本歧义（同 f_ann_date 多值）。fail-closed 的代价，不是「缺数据」。
+    COMPONENT_AMBIGUOUS = "COMPONENT_AMBIGUOUS"
+    #: 必需期早于该证券上市日 = 上市历史不足四个连续单季。**禁止**季度年化填补。
     INSUFFICIENT_HISTORY = "INSUFFICIENT_HISTORY"
     #: ★必需期次不在本次抓取范围内 —— 这是**我们的覆盖缺陷**，不是数据特征。
-    #: 与 INSUFFICIENT_HISTORY 混为一谈会把抓取 bug 伪装成「新股历史不足」。
+    #: 与 COMPONENT_MISSING 混为一谈会把抓取 bug 伪装成「数据源的固有覆盖限制」，
+    #: 且只打早年（早年迟报多、锚点更常向后滑）→ 直接放大覆盖污染项。
     PERIOD_NOT_FETCHED = "PERIOD_NOT_FETCHED"
+    #: 必需期不连续（元数据层判据，不看数值）。
+    PERIOD_NOT_CONTIGUOUS = "PERIOD_NOT_CONTIGUOUS"
+    #: R2：累计差分出的单季与 ``report_type=2`` 单季直报不符 = **已知错值**。
+    CUMULATIVE_BASIS_BREAK = "CUMULATIVE_BASIS_BREAK"
     #: 两式不一致。见模块 docstring：精确算术下这只可能来自实现 bug。
     EQUIVALENCE_MISMATCH = "EQUIVALENCE_MISMATCH"
     #: 非公历财年 → 累计期不可比（handoff §6：财年变更返回 null + 原因码）。
+    #: 实测 A 股不可达（《会计法》第十一条强制日历年度），保留作断言分支。
     FISCAL_CALENDAR_IRREGULAR = "FISCAL_CALENDAR_IRREGULAR"
+    #: 非人民币计价（实测 5,867/5,867 全 CNY，保留作断言分支）。
+    CURRENCY_NOT_CNY = "CURRENCY_NOT_CNY"
+
+
+class CrosscheckStatus(StrEnum):
+    """R2 单季直报对拍的结果。★``UNAVAILABLE`` 不是通过。"""
+
+    MATCH = "MATCH"
+    BREAK = "BREAK"
+    UNAVAILABLE = "CROSSCHECK_UNAVAILABLE"
+
+
+#: 失败码优先级：数字越小越先报。★工程缺陷排在数据事实前面，
+#: 这样自己的 bug 不会被淹没在「数据源就是这样」里。
+_FAILURE_PRIORITY: dict[TTMStatus, int] = {
+    TTMStatus.PERIOD_NOT_FETCHED: 0,
+    TTMStatus.PERIOD_NOT_CONTIGUOUS: 1,
+    TTMStatus.COMPONENT_AMBIGUOUS: 2,
+    TTMStatus.COMPONENT_MISSING: 3,
+    TTMStatus.COMPONENT_NOT_YET_PUBLISHED: 4,
+    TTMStatus.INSUFFICIENT_HISTORY: 5,
+}
+
+#: R2 对拍容差：相对 0.1% + 绝对 1000 元。分位差与四舍五入不该触发 BREAK。
+SQ_CROSSCHECK_REL_TOL = Decimal("0.001")
+SQ_CROSSCHECK_ABS_TOL = Decimal("1000")
+
+#: ``f_ann_date - ann_date`` 超过该天数即标记（**只标记，不 fail-closed**，见附录 D5）。
+VINTAGE_GAP_MAX_DAYS = 90
 
 
 # --- 报告期算术 ---
@@ -171,6 +217,28 @@ class CumulativeFact:
         """B109 实测的该报表类型修订率。FY 0.747% 是 Q1 0.073% 的 10.2 倍。"""
         return REVISION_RATE_BY_REPORT_TYPE.get(self.period_label, 0.0)
 
+    @property
+    def vintage_gap_days(self) -> int | None:
+        """``f_ann_date - ann_date``。>0 表示 Tushare 用重述版覆盖了原始 vintage。
+
+        ★方向是「更晚才可见」= 保守，**不是前视泄漏**，故只披露不 fail-closed
+        （见 `docs/specs/B110-frozen-conventions-addendum.md` D5）。
+        """
+        selected = self.resolved.selected
+        if selected is None:
+            return None
+        left, right = _to_date(selected.f_ann_date), _to_date(selected.ann_date)
+        if left is None or right is None:
+            return None
+        return (left - right).days
+
+
+def _to_date(yyyymmdd: str) -> date | None:
+    try:
+        return date(int(yyyymmdd[:4]), int(yyyymmdd[4:6]), int(yyyymmdd[6:8]))
+    except (ValueError, IndexError):
+        return None
+
 
 @dataclass(frozen=True)
 class QuarterComponent:
@@ -182,6 +250,22 @@ class QuarterComponent:
     value: Decimal | None
     minuend: CumulativeFact
     subtrahend: CumulativeFact | None
+    #: R2：``report_type=2`` 单季直报（同样 as-of 解析，见 :func:`compute_ttm`）。
+    direct: CumulativeFact | None = None
+
+    @property
+    def crosscheck_delta(self) -> Decimal | None:
+        if self.value is None or self.direct is None or self.direct.value is None:
+            return None
+        return self.value - self.direct.value
+
+    @property
+    def crosscheck_status(self) -> CrosscheckStatus:
+        delta = self.crosscheck_delta
+        if delta is None or self.direct is None or self.direct.value is None:
+            return CrosscheckStatus.UNAVAILABLE
+        tolerance = abs(self.direct.value) * SQ_CROSSCHECK_REL_TOL + SQ_CROSSCHECK_ABS_TOL
+        return CrosscheckStatus.MATCH if abs(delta) <= tolerance else CrosscheckStatus.BREAK
 
     @property
     def sources(self) -> tuple[CumulativeFact, ...]:
@@ -274,14 +358,26 @@ def compute_ttm(
     versions_by_period: Mapping[str, Iterable[FactVersion]],
     lookback_periods: Sequence[str],
     fiscal_year_end: str = CALENDAR_FISCAL_YEAR_END,
+    list_date: str = "",
+    currency: str = "CNY",
+    direct_versions_by_period: Mapping[str, Iterable[FactVersion]] | None = None,
 ) -> TTMResult:
     """在 ``formation_date`` 这个知识截止日上算该证券的 PIT TTM 归母净利润。
 
     ``lookback_periods`` 是**本次抓取实际覆盖的报告期集合**（该语义很重要：
-    必需期次落在集合外 → :attr:`TTMStatus.PERIOD_NOT_FETCHED`，是覆盖缺陷；
-    落在集合内但无记录 → :attr:`TTMStatus.INSUFFICIENT_HISTORY`，是数据事实）。
+    必需期次落在集合外 → :attr:`TTMStatus.PERIOD_NOT_FETCHED`，是**我们的**覆盖缺陷；
+    落在集合内但无记录 → :attr:`TTMStatus.COMPONENT_MISSING` 或
+    :attr:`TTMStatus.INSUFFICIENT_HISTORY`，是数据事实）。
 
     ``versions_by_period`` 只含**这一只证券**的版本，按报告期分组。
+
+    ``list_date`` 用于区分「上市前本就没有」（``INSUFFICIENT_HISTORY``）与
+    「上市后该报的却没有」（``COMPONENT_MISSING``）。实测 FY2021 有 5 只**已上市**
+    公司从无年报，全部是强制退市名——那是数据缺陷，不是新股历史不足。
+
+    ``direct_versions_by_period`` 是 ``report_type=2`` 的单季直报版本（R2 对拍源）。
+    ★它**同样走 as-of 解析**，不是拿最新值来判——否则「2015 年的一行是否被丢弃」
+    会取决于 2023 年才发生的重述，那是把前视偷偷放进了**样本选择**里。
     """
 
     def failed(
@@ -307,11 +403,15 @@ def compute_ttm(
             superseded_later=superseded,
         )
 
+    # ★元数据门必须最先。这一层的判据全部是日期 / 报表类型 / 币种，
+    # **没有任何一条看数值**（附录 §5 铁律：以数值为条件的置空一律禁止）。
     if fiscal_year_end != CALENDAR_FISCAL_YEAR_END:
         return failed(
             TTMStatus.FISCAL_CALENDAR_IRREGULAR,
             [f"FISCAL_YEAR_END:{fiscal_year_end}"],
         )
+    if currency and currency != "CNY":
+        return failed(TTMStatus.CURRENCY_NOT_CNY, [f"CURRENCY:{currency}"])
 
     fetched = {period for period in lookback_periods if quarter_index(period) is not None}
     if not fetched:
@@ -338,6 +438,12 @@ def compute_ttm(
         )
 
     required = periods_required_for(anchor)
+    if not _is_contiguous(required, anchor):
+        return failed(
+            TTMStatus.PERIOD_NOT_CONTIGUOUS,
+            [f"PERIOD_NOT_CONTIGUOUS:{anchor}"],
+            anchor=anchor,
+        )
     not_fetched = [period for period in required if period not in fetched]
     if not_fetched:
         return failed(
@@ -349,36 +455,49 @@ def compute_ttm(
     # ★每个必需累计期在同一 formation_date 上**各自独立**重新解析。
     cumulatives: dict[str, CumulativeFact] = {}
     failures: list[str] = []
+    codes: list[TTMStatus] = []
     for period in required:
         resolved = resolve_as_of(versions_by_period.get(period, ()), formation_date)
         cumulatives[period] = CumulativeFact(period, label_of(period), resolved)
         if not resolved.is_usable:
-            failures.append(f"{resolved.status}:{period}")
+            code = _classify_component(resolved.status, period, list_date)
+            codes.append(code)
+            failures.append(f"{code}:{period}")
 
     ordered = tuple(cumulatives[period] for period in required)
     superseded = any(item.resolved.superseded_later for item in ordered)
 
-    if failures:
-        missing = [item for item in ordered if item.resolved.status is FactStatus.FACT_MISSING]
-        # 全部失败都是「压根没这条记录」→ 上市历史不足；只要有一条是「有记录但当时看不到 /
-        # 版本歧义」，就是 PIT 不可用，两者的下游含义完全不同。
-        status = (
-            TTMStatus.INSUFFICIENT_HISTORY
-            if len(missing) == len(failures)
-            else TTMStatus.COMPONENT_UNRESOLVED
-        )
+    if codes:
+        # ★优先级而非「先到先得」：工程缺陷与 fail-closed 代价排在数据事实之前，
+        # 免得自己的 bug 被淹没在「数据源就是这样」里。
+        status = min(codes, key=lambda item: _FAILURE_PRIORITY[item])
         return failed(status, failures, anchor=anchor, cumulatives=ordered, superseded=superseded)
 
+    direct = _resolve_direct(direct_versions_by_period, required, formation_date)
     components = tuple(
-        _build_component(fiscal_year, quarter, cumulatives)
+        _build_component(fiscal_year, quarter, cumulatives, direct)
         for fiscal_year, quarter in quarter_window(anchor)
     )
+
+    # R2：累计差分 vs report_type=2 单季直报。★这是分子唯一有鉴别力的交叉验证
+    # （等价式是恒等式，见模块 docstring）。UNAVAILABLE 不算通过，单独计数。
+    broken = [item for item in components if item.crosscheck_status is CrosscheckStatus.BREAK]
+    if broken:
+        return failed(
+            TTMStatus.CUMULATIVE_BASIS_BREAK,
+            [f"CUMULATIVE_BASIS_BREAK:{item.role}@{item.end_date}" for item in broken],
+            anchor=anchor,
+            cumulatives=ordered,
+            components=components,
+            superseded=superseded,
+        )
+
     path_a = sum_single_quarters(components)
     path_b = equivalence_ttm(anchor, cumulatives)
 
     if path_a is None or path_b is None:
         return failed(
-            TTMStatus.COMPONENT_UNRESOLVED,
+            TTMStatus.COMPONENT_MISSING,
             ["PATH_A_NULL" if path_a is None else "PATH_B_NULL"],
             anchor=anchor,
             cumulatives=ordered,
@@ -413,8 +532,59 @@ def compute_ttm(
     )
 
 
+def _is_contiguous(required: Sequence[str], anchor: str) -> bool:
+    """必需期是否构成以锚点收尾的连续季度序列（纯元数据判据，不看数值）。"""
+    expected = {period_of(year, quarter) for year, quarter in quarter_window(anchor)}
+    expected |= {
+        period_of(year, quarter - 1)
+        for year, quarter in quarter_window(anchor)
+        if quarter > 1
+    }
+    return set(required) == expected
+
+
+def _classify_component(status: FactStatus, period: str, list_date: str) -> TTMStatus:
+    """把 B109 的事实状态映射成 TTM 层的失败码。
+
+    ★``FACT_MISSING`` 的两种含义必须分开：上市前本就没有（历史不足，良性）
+    vs 上市后该报却没有（数据缺陷，实测 FY2021 有 5 只已上市公司从无年报）。
+    """
+    if status is FactStatus.NOT_YET_PUBLISHED:
+        return TTMStatus.COMPONENT_NOT_YET_PUBLISHED
+    if status is FactStatus.FACT_VERSION_AMBIGUOUS:
+        return TTMStatus.COMPONENT_AMBIGUOUS
+    if list_date and period < list_date:
+        return TTMStatus.INSUFFICIENT_HISTORY
+    return TTMStatus.COMPONENT_MISSING
+
+
+def _resolve_direct(
+    direct_versions_by_period: Mapping[str, Iterable[FactVersion]] | None,
+    required: Sequence[str],
+    formation_date: str,
+) -> dict[str, CumulativeFact]:
+    """R2 对拍源（``report_type=2`` 单季直报）的 as-of 解析。
+
+    ★与主分量走**同一个** ``formation_date``。用最新值来判会让样本选择依赖未来。
+    """
+    if not direct_versions_by_period:
+        return {}
+    resolved: dict[str, CumulativeFact] = {}
+    for period in required:
+        versions = direct_versions_by_period.get(period)
+        if not versions:
+            continue
+        fact = resolve_as_of(versions, formation_date)
+        if fact.is_usable:
+            resolved[period] = CumulativeFact(period, label_of(period), fact)
+    return resolved
+
+
 def _build_component(
-    fiscal_year: int, quarter: int, cumulatives: Mapping[str, CumulativeFact]
+    fiscal_year: int,
+    quarter: int,
+    cumulatives: Mapping[str, CumulativeFact],
+    direct: Mapping[str, CumulativeFact],
 ) -> QuarterComponent:
     end_date = period_of(fiscal_year, quarter)
     minuend = cumulatives[end_date]
@@ -433,7 +603,30 @@ def _build_component(
         value=value,
         minuend=minuend,
         subtrahend=subtrahend,
+        direct=direct.get(end_date),
     )
+
+
+def step_without_filing(
+    previous: TTMResult | None, current: TTMResult, *, previous_formation_date: str
+) -> bool:
+    """R1：TTM 变了，却没有任何一个分量在两个形成日之间**新可见**。
+
+    ★这是本设计里**唯一直接检验 PIT 性**的检查（等价式是恒等式，见模块 docstring）。
+    违反意味着：as-of 漏进了未来 vintage、锚点抖动、或缓存串期。
+    """
+    if previous is None or not previous.is_usable or not current.is_usable:
+        return False
+    if previous.value == current.value:
+        return False
+    for component in current.components:
+        for source in component.sources:
+            selected = source.resolved.selected
+            if selected is None:
+                continue
+            if previous_formation_date < selected.f_ann_date <= current.formation_date:
+                return False
+    return True
 
 
 def component_lineage(result: TTMResult) -> list[dict[str, object]]:
@@ -468,6 +661,19 @@ def component_lineage(result: TTMResult) -> list[dict[str, object]]:
                 "source_candidate_counts": tuple(
                     len(item.resolved.candidates) for item in component.sources
                 ),
+                # D5：只披露不 fail-closed。>0 表示 Tushare 用重述版覆盖了原始 vintage，
+                # 方向是「更晚才可见」= 保守。
+                "source_vintage_gap_days": tuple(
+                    item.vintage_gap_days for item in component.sources
+                ),
+                "vintage_gap_gt_max": any(
+                    (gap := item.vintage_gap_days) is not None and gap > VINTAGE_GAP_MAX_DAYS
+                    for item in component.sources
+                ),
+                # R2：分子唯一有鉴别力的交叉验证。UNAVAILABLE ≠ 通过。
+                "sq_direct_rt2": component.direct.value if component.direct is not None else None,
+                "crosscheck_delta": component.crosscheck_delta,
+                "crosscheck_status": str(component.crosscheck_status),
                 "revision_rate_exposure": component.revision_rate_exposure,
                 "superseded_later": component.superseded_later,
                 "anchor_end_date": result.anchor_end_date,

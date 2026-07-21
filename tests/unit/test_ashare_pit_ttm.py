@@ -27,6 +27,7 @@ from scripts.research.ashare_pit.codes import FactStatus, FactVersion
 from scripts.research.ashare_pit.ttm import (
     FORMULA_VERSION,
     STANDARD_QUARTER_ENDS,
+    CrosscheckStatus,
     CumulativeFact,
     TTMResult,
     TTMStatus,
@@ -34,6 +35,7 @@ from scripts.research.ashare_pit.ttm import (
     compute_ttm,
     periods_required_for,
     quarter_window,
+    step_without_filing,
 )
 
 # --- 构造辅助（沿用 B109 测试的 `_` 前缀 + 关键字可选参数约定）---
@@ -327,10 +329,65 @@ def test_missing_history_for_a_newly_listed_company_is_insufficient_history() ->
         formation_date="20230630",
         versions_by_period=panel,
         lookback_periods=("20230331", "20221231", "20220930", "20220630", "20220331"),
+        list_date="20230201",
     )
     assert result.status is TTMStatus.INSUFFICIENT_HISTORY
     assert result.value is None
     assert "20221231" in " ".join(result.failures)
+
+
+def test_a_listed_company_with_no_row_for_a_required_period_is_a_data_defect() -> None:
+    """★已上市却缺某期 ≠ 新股历史不足。
+
+    实测 FY2021 有 5 只**已上市**公司从无年报（全部是强制退市名）。把这类记成
+    「历史不足」会让数据缺陷伪装成良性的新股效应，而它们恰恰富集在退市端。
+    """
+    panel = _panel(_cumulative("20230331", "100"))
+    result = compute_ttm(
+        ts_code="000001.SZ",
+        formation_date="20230630",
+        versions_by_period=panel,
+        lookback_periods=("20230331", "20221231", "20220930", "20220630", "20220331"),
+        list_date="20100101",
+    )
+    assert result.status is TTMStatus.COMPONENT_MISSING
+    assert result.value is None
+
+
+def test_a_component_visible_only_in_the_future_is_not_yet_published_not_missing() -> None:
+    """有记录但 f_ann_date > 形成日 = 当时市场真的不知道，与「没有这条记录」不同。"""
+    panel = {
+        **_full_year_panel(2022, "80", "200", "320", "500"),
+        **_panel(
+            _cumulative("20230331", "100"),
+            _cumulative("20230630", "250"),
+            _cumulative("20230930", "400", f_ann="20231020"),
+        ),
+    }
+    # 把 2022 年报改成很晚才可见 → 锚点仍是 2023Q3，但 SQ4(2022) 需要的 FY 看不到
+    panel["20221231"] = [_version("500", f_ann="20250101", end_date="20221231")]
+    result = compute_ttm(
+        ts_code="000001.SZ",
+        formation_date="20231130",
+        versions_by_period=panel,
+        lookback_periods=("20230930", "20230630", "20230331", "20221231", "20220930"),
+        list_date="20100101",
+    )
+    assert result.status is TTMStatus.COMPONENT_NOT_YET_PUBLISHED
+    assert result.value is None
+
+
+def test_a_non_cny_reporting_currency_fails_closed() -> None:
+    panel = _full_year_panel(2023, "100", "250", "400", "600")
+    result = compute_ttm(
+        ts_code="900001.SH",
+        formation_date="20240630",
+        versions_by_period=panel,
+        lookback_periods=("20231231", "20230930", "20230630", "20230331"),
+        currency="USD",
+    )
+    assert result.status is TTMStatus.CURRENCY_NOT_CNY
+    assert result.value is None
 
 
 def test_a_period_never_fetched_is_a_coverage_defect_not_a_data_fact() -> None:
@@ -452,6 +509,142 @@ def test_the_two_paths_are_algebraically_identical_by_construction() -> None:
             assert result.status is TTMStatus.RESOLVED, (anchor, result.failures)
             assert result.anchor_end_date == anchor
             assert result.value == result.equivalence_value
+
+
+# --- ★R2：report_type=2 单季直报对拍（分子唯一有鉴别力的交叉验证）---
+
+
+def _direct(year: int, sq1: str, sq2: str, sq3: str, sq4: str) -> dict[str, list[FactVersion]]:
+    values = {"0331": sq1, "0630": sq2, "0930": sq3, "1231": sq4}
+    return {
+        f"{year}{end}": [
+            _version(value, f_ann=_plus_days(f"{year}{end}", 20), end_date=f"{year}{end}")
+        ]
+        for end, value in values.items()
+    }
+
+
+def test_matching_direct_single_quarters_leave_the_ttm_resolved() -> None:
+    panel = _full_year_panel(2023, "100", "250", "400", "600")
+    result = compute_ttm(
+        ts_code="000001.SZ",
+        formation_date="20240630",
+        versions_by_period=panel,
+        lookback_periods=("20231231", "20230930", "20230630", "20230331"),
+        direct_versions_by_period=_direct(2023, "100", "150", "150", "200"),
+    )
+    assert result.status is TTMStatus.RESOLVED
+    assert all(
+        item.crosscheck_status is CrosscheckStatus.MATCH for item in result.components
+    )
+
+
+def test_a_cumulative_basis_break_fails_closed() -> None:
+    """★累计差分 ≠ 单季直报 = **已知错值**（不是可疑值）。实测 2021Q3 占 0.489%。
+
+    这些 SQ 不是任何真实季度的利润 —— 通常源于报表范围或重述基准变化使累计差分
+    不可比，正是 handoff §6 唯一允许失败的那一类。
+    """
+    panel = _full_year_panel(2023, "100", "250", "400", "600")
+    result = compute_ttm(
+        ts_code="000001.SZ",
+        formation_date="20240630",
+        versions_by_period=panel,
+        lookback_periods=("20231231", "20230930", "20230630", "20230331"),
+        direct_versions_by_period=_direct(2023, "100", "150", "150", "999999999"),
+    )
+    assert result.status is TTMStatus.CUMULATIVE_BASIS_BREAK
+    assert result.value is None
+    assert "SQ4" in " ".join(result.failures)
+
+
+def test_a_missing_direct_series_is_unavailable_not_a_pass() -> None:
+    """★没有对拍源 ≠ 对拍通过。必须单独计数，否则「无法检验」会被读成「已检验」。"""
+    panel = _full_year_panel(2023, "100", "250", "400", "600")
+    result = compute_ttm(
+        ts_code="000001.SZ",
+        formation_date="20240630",
+        versions_by_period=panel,
+        lookback_periods=("20231231", "20230930", "20230630", "20230331"),
+    )
+    assert result.status is TTMStatus.RESOLVED
+    assert all(
+        item.crosscheck_status is CrosscheckStatus.UNAVAILABLE for item in result.components
+    )
+
+
+def test_the_direct_crosscheck_is_resolved_as_of_the_same_formation_date() -> None:
+    """★对拍源必须走同一个知识截止日。
+
+    若拿「最新」的 rt=2 值来判，则「2015 年的这一行要不要丢」会取决于 2023 年才
+    发生的重述 —— 前视就从**样本选择**这个后门进来了。
+    """
+    panel = _full_year_panel(2023, "100", "250", "400", "600")
+    future_only = {
+        "20231231": [_version("999999999", f_ann="20250101", end_date="20231231")]
+    }
+    result = compute_ttm(
+        ts_code="000001.SZ",
+        formation_date="20240630",
+        versions_by_period=panel,
+        lookback_periods=("20231231", "20230930", "20230630", "20230331"),
+        direct_versions_by_period=future_only,
+    )
+    # 形成日看不到那个未来的对拍值 → UNAVAILABLE，而不是 BREAK
+    assert result.status is TTMStatus.RESOLVED
+    by_role = {item.role: item.crosscheck_status for item in result.components}
+    assert by_role["SQ4"] is CrosscheckStatus.UNAVAILABLE
+
+
+# --- ★R1：TTM 阶跃性（唯一直接检验 PIT 性的检查）---
+
+
+def test_ttm_changing_without_any_new_filing_is_flagged() -> None:
+    """★TTM 变了却没有任何分量在两个形成日之间新可见 → as-of 漏进了未来。"""
+    old = _full_year_panel(2023, "100", "250", "400", "600")
+    args = {
+        "ts_code": "000001.SZ",
+        "versions_by_period": old,
+        "lookback_periods": ("20231231", "20230930", "20230630", "20230331"),
+    }
+    previous = compute_ttm(formation_date="20240531", **args)  # type: ignore[arg-type]
+    current = compute_ttm(formation_date="20240630", **args)  # type: ignore[arg-type]
+    assert previous.value == current.value
+    assert not step_without_filing(previous, current, previous_formation_date="20240531")
+
+    tampered = TTMResult(
+        ts_code=current.ts_code,
+        formation_date=current.formation_date,
+        status=current.status,
+        value=Decimal("777"),  # 值被改了，但分量的 f_ann_date 都在 2024-05-31 之前
+        anchor_end_date=current.anchor_end_date,
+        components=current.components,
+        cumulatives=current.cumulatives,
+        equivalence_value=current.equivalence_value,
+    )
+    # 值不同而窗口内无新披露 —— 无论哪一侧被篡改都必须被标出（判据是对称的）
+    assert step_without_filing(previous, tampered, previous_formation_date="20240531") is True
+    assert step_without_filing(tampered, current, previous_formation_date="20240531") is True
+
+
+def test_a_genuine_new_filing_between_formation_dates_is_not_flagged() -> None:
+    panel = {
+        **_full_year_panel(2022, "80", "200", "320", "500"),
+        **_panel(
+            _cumulative("20230331", "100"),
+            _cumulative("20230630", "250"),
+            _cumulative("20230930", "400", f_ann="20231020"),
+        ),
+    }
+    args = {
+        "ts_code": "000001.SZ",
+        "versions_by_period": panel,
+        "lookback_periods": ("20230930", "20230630", "20230331", "20221231", "20220930"),
+    }
+    previous = compute_ttm(formation_date="20230930", **args)  # type: ignore[arg-type]
+    current = compute_ttm(formation_date="20231031", **args)  # type: ignore[arg-type]
+    assert previous.value != current.value  # Q3 报表在 10-20 落地
+    assert not step_without_filing(previous, current, previous_formation_date="20230930")
 
 
 # --- ★lineage：四分量各自的版本与风险，不得混合平均 ---
