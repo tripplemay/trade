@@ -1,25 +1,23 @@
 {
-  "status": "done",
-  "total_features": 3,
-  "completed_features": 3,
-  "fix_rounds": 1,
-  "current_sprint": "F003",
+  "status": "building",
+  "total_features": 4,
+  "completed_features": 0,
+  "fix_rounds": 0,
+  "current_sprint": "F001",
   "last_updated": "2026-07-20",
-  "user_goal": "B109 Tushare PIT 数据层 v0 + 巨潮对拍审计。起因:三问探针(¥500/15分钟)实测改变路线判断——归母净利润真实修订率仅 0.712%(38207 股票-期/272 被改),上游 handoff 报告据以论证重装三时钟 bitemporal 底座的『90.83% 在 120 天后仍更新』衡量的是记录被 touch 时间而非数值被改比例;update_flag 提供 as-filed 能力(flag=0 保首次值+flag=1 的 f_ann_date 标修正可知日)但保留率随期间波动 10.5%-95.4%;total_mv 身份校验 100.000% 通过直接解决分母;退市名 338 只。用户裁定:B108 转向审计工具/追加探针/许可证允许内部归档。3 features 2g+1c:F001 追加 vintage 探针(flag=0 保留率机制+季报+as-filed 可重建覆盖率,决定 F002 设计)/F002 PIT 数据层 v0(f_ann_date as-of resolver+daily_basic 分母修 B076+B108 框架转巨潮对拍审计器)/F003 Codex 对拍验收。spec docs/specs/B109-tushare-pit-foundation-spec.md。不建全量底座,不算 E/P,不改 DATA_NO_GO。",
+  "user_goal": "B110 纯 E/P first-look — 回答『纯 E/P 在 A 股的 long-only 信号强度是否值得继续投入 handoff 剩下的 9 道 gate』。起因:B109 把数据地基做到分子分母都可信,但离 handoff 完整要求还差 6 道 gate 完全未动(G1/G3b/G5/G7/G8/G9),继续建代价很大,而至今没有任何证据表明纯 E/P 有 edge。上一条路(机构跟随 B103-B105)正是投入之后才发现 long-only edge≈0。本批次存在意义=不重复那个顺序:先花小代价看信号再决定要不要建地基。★★最重要设计:从第一天就拆腿——主判据是 long-only 顶层组合相对全宇宙等权的超额,IC 仅作辅助诊断(IC 高而多头腿无超额=NO-GO 而非 INCONCLUSIVE)。★用户批次启动前已冻结:三档阈值 3.0%/1.0%(留交易成本空间,A股月度调仓五分位组合成本约1-2%/年)、负 TTM 双口径(主口径不剔除为裁定依据+剔除对照组仅作稳健性)、API 直接全量跑144月不设中间确认。4 features 3g+1c。★裁定权归 Codex 不归 Generator。产出是一个裁定不是策略;不改 DATA_NO_GO,0 行生产代码。",
   "reference_docs": [
-    "docs/specs/B109-tushare-pit-foundation-spec.md",
-    "docs/audits/tushare-three-question-probe-2026-07-20.md",
+    "docs/specs/B110-pure-ep-first-look-spec.md",
     "docs/audits/ashare-pure-ep-data-foundation-implementation-handoff-2026-07-13.md",
-    "docs/test-reports/B108-cninfo-parser-selfcheck-reverify-2026-07-20.md",
-    "scripts/research/ashare_ep/",
-    "scripts/research/b076_fetch_pit_marketcap.py",
+    "docs/audits/B109-F001-vintage-probe-remeasured-2026-07-20.md",
     "docs/audits/B109-F002-tushare-silent-truncation-2026-07-20.md",
-    "docs/audits/B109-F001-vintage-probe-remeasured-2026-07-20.md"
+    "docs/test-reports/B109-tushare-pit-foundation-signoff-2026-07-20.md",
+    "scripts/research/ashare_pit/"
   ],
   "docs": {
-    "spec": "docs/specs/B109-tushare-pit-foundation-spec.md",
+    "spec": "docs/specs/B110-pure-ep-first-look-spec.md",
     "runbook": null,
-    "signoff": "docs/test-reports/B109-tushare-pit-foundation-signoff-2026-07-20.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
@@ -28,11 +26,12 @@
   "features": [
     "F001",
     "F002",
-    "F003"
+    "F003",
+    "F004"
   ],
   "session_notes": {
-    "planner": "2026-07-20 B109 planning。承接用户三条裁定(B108 转向/追加探针/许可证允许)。★许可证允许内部长期归档 = 上游报告 §10 的 snapshot/hydrate/离线复现契约有合规基础，这是本项目第一次拿到这个前提。★核心设计转变：上游 handoff 报告的 Phase B-G 重装底座**其必要性未被实测支持**——as-of 语义实测只需两个字段(f_ann_date 比较)，分母只需一次 daily_basic 调用。但**不等于修订可忽略**：272 次修订中 61% 幅度>1%、22% >10%、2018 年 p90 达 101.79%，必须记录已知修订并能重放，只是不需要建整套 bitemporal 版本链。★F001 先行的理由：flag=0 保留率波动 10.5%-95.4% 是唯一能推翻 F002 设计的未知数；且三问探针**只测了年报**，而 TTM 需要四个连续单季——季报 vintage 若显著更差，PIT 分子不成立。★F002 的审计工具复用 B108 的 scripts/research/ashare_ep/：B108 真实产出是交叉验证/holdout/failure-code 纪律而非 parser 本身；巨潮转 truth anchor 后只需抽样使用，不需要高覆盖。【续接】status=building，Generator 接 F001(纯 API 测量，无需 F002)→F002。F003 交 Codex。★token 在 .env.local(600/gitignored/已验证)；★用户建议已提出轮换，未执行。★遗留(非本批)：600787/601992 两份人工裁定；workbench-advisor 402(aigc 侧 key 配额)；P6 老 VM 退役。",
-    "generator": "2026-07-20 B109 fix_round 1 完成，status→reverifying。★D1 已修：resolver.py 模块 docstring 的 98.8% → 99.2%、0.47%-0.88% → 改为**引用 pipeline.REVISION_RATE_BOUNDS 常量**而非硬编码（根因就是同一数字在多处各自漂移），并留下『★不要在此复述具体数字』的告诫说明本模块正是漏改的那一处。★D2 已修（比建议(a)更进一步）：(1) b076 模块 docstring 首行改为 ⛔已弃用 横幅，指明违禁令 #6 + 指向 ashare_pit/marketcap.py + 引用 F003 实测的 circ_mv 仅 33.7%-41.6% 过身份校验作反证；(2) circ_mv_from_bar **调用即发 DeprecationWarning**；(3) ★关键——把 test_b076_size_fetch.py 的 6 个断言全部改为经 _deprecated_cap() 包装、**强制 pytest.warns(DeprecationWarning)**，另加一条断言告警文案必须含替代品路径。评审指出这些测试原本『给被禁路径盖绿色印章』，现在禁令被测试固化而非仅写在注释里。已 grep 确认无外部调用点、代码中无作废数字残留（仅剩两处显式『已作废』声明）。Gates：全量 **1621 passed**（原 1620，+1 为新增弃用契约测试），零回归，ruff 净。★★【未处理，须用户/Planner 裁定】I1 门异议：G-A 的『一致率>=99%』字面阈值不可证实——n=22 只支持 >=87.27%、n=100 支持 >=97.05%，要断言 >=99% 需 n>=299 可裁定（约 1617 份 PDF），与 spec §6『不继续投入 B108 的 PDF 覆盖率』直接冲突。**Generator 改代码解决不了**。验收方倾向『重述门为 >=N 份可裁定样本 0 不一致 + 100% 人工裁定』+『结论记为 >=97.05%(95%置信,n=100)』。 ★状态修正：fix_rounds 曾被重复计数（evaluator 置 fixing 时 0→1，Generator 转 reverifying 时又 1→2），实际只有**一轮**修复，已改回 1。根因是 harness-rules.md §状态流转只写『fixing：修复完成 → reverifying，fix_rounds +1』，未指明由谁加 → 两边都加。已提 framework/proposed-learnings.md。",
-    "evaluator": "2026-07-20 F003 首轮验收 + fix_round 1 复验，**批次 PASS → done**。首轮：四门 G-A/G-B/G-C/G-D 全过、六边界 H1-H6 全守、Generator 12 项可测声称全复现无夸大；留 D1（resolver.py 作废数字）+ D2（b076 违禁路径未退役）两条 MEDIUM + I1 门异议。复验：D1/D2 均已修，门禁我自跑 **1621 passed / ruff 净 / PIT 73 / b076 7**。★★【本轮最重要的自我更正 —— 建议沉淀】**我首轮建议的『(b) 直接删除 b076 脚本』是错的。**复验时追 provenance 才发现：该脚本产出的 `data/research/b076/cn_size.csv` 正被**生产策略代码 `trade/strategies/cn_attack_momentum_quality/size.py`** 与 **B080 拥挤度监控** 读取，删除等于切断一份生产在读 CSV 的 provenance，反而抬高「未来有人重新手搓一个错版本」的风险。Generator 选的「保留本体 + ⛔横幅 + 运行时 DeprecationWarning + 测试固化」才是正确解。→ **判据应是『让误用不可能悄悄发生』，不是『让代码消失』**；退役前必须先查消费者，「可用」与「该用」是两件事，有合法消费者时目标态就该是「警示但可用」。★复验方法：(1) **变异测试**验证弃用契约有牙齿——注释掉 warnings.warn 后 4/7 测试 FAIL，证明禁令由测试守住而非注释里的君子协定；(2) 实证 DeprecationWarning 在**默认 filter** 下确实可见（库代码中 DeprecationWarning 默认被隐藏，不能想当然）；(3) D1 行为中立性用 diff hunk 落点（@@ -5,14 +5,21 @@ 全在 docstring 第 1-24 行内）+ 6 项离线语义回归双证。★同类漏网扫描无新违规，但**记录一条防误报**：`size.py` 用 `circ_mv` **不违禁令 #6** —— #6 射程是 E/P 的**分母**（全公司归母利润须配总市值），而 size.py 是**规模因子排序量**（规模因子惯用流通/自由流通市值），且 size_tilt_weight 生产默认 0。★★【我的操作错误，已在 signoff §11.5 认领】fix_rounds 重复计数**不是对称的规则真空**：`framework/harness/generator.md:196` 已明确由 **Generator** 递增，`evaluator.md:25` 亦反向印证（evaluator 见到 reverifying 时该字段「已更新」），而 harness-rules.md §第三步要求 evaluator **按需查阅**该文件。是我置 fixing 时多加了一次。proposed-learnings 条目仍值得采纳（把规则从深层库上提到主文件 + 加 check_state_json 校验），但其「根因」段建议改写为『规则写在深层库未在主文件复述 + evaluator 未查阅』，责任方是 evaluator 而非双方。★I1（G-A 门统计效力）**仍未决，移交用户/Planner**，不阻断签收：补充建议把门的措辞与代码对齐——代码层 audit_summary 强制以 n_adjudicable 为分母是对的，缺的是门说「≥60 份样本」而代码说「以可裁定为分母」，口径不一致才让「119 份 / 实际 22 份」有空子。★全部产物 + 10 个可重跑脚本在 docs/test-reports/B109-holdout/；signoff §1-§10 为首轮原文未回填，§11 为复验段。"
+    "planner": "2026-07-20 B110 planning。承接用户『同意』先做 first-look 再决定建不建地基。★批次设计的核心是两条防线:(1)**拆腿写进 spec §2 冻结口径**,不是留到验收才想起来——B103-B105 的教训是 IC~0.15 看着好但 90-107% 收益在不可做空的短腿,只看 IC 会得出完全相反结论;(2)**裁定权归 Codex(F004)不归 Generator(F003)**,F003 的 acceptance 明写『产物与报告中不得出现 GO/NO-GO/值得投入/有 edge 一类措辞』(H7)——first-look 的产出是决定大额工程投入的开关,实施方下裁定=自己批准自己的后续工作。★预注册三档阈值已由用户在**看到任何结果前**冻结(3.0%/1.0%),F004 须 git 追溯核查阈值未被事后调整。★诚实限制(spec §5)是硬性随附项:无行业中性/无停牌涨跌停可执行性/无交易成本/无公司行动处置 → 任何正向结果都是**上界不是可实现收益**,结论只能用于『值不值得继续建地基』这一个决策。★B109 可直接复用的:resolve_as_of(可重建性99.2%+12/12修订不变性)、marketcap.py(G4 27963证券-日 100.0000%)、universe.py(幸存者偏差8.91%已消除)、fetch.py(必用,静默截断)、pipeline.py 漏斗。★遗留(非本批):Tushare token 建议轮换(用户明文提供过,未执行);proposed-learnings 积 38 条待确认;I1(B109 G-A 门统计效力异议)待裁定。",
+    "generator": null,
+    "evaluator": null
   }
 }
