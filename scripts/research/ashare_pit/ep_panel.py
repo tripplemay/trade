@@ -142,6 +142,7 @@ def build_ep_funnel(
     rows: Iterable[EpPanelRow],
     *,
     universe_size: int,
+    formation_date: str = "",
     malformed_security_rows: int = 0,
     price_trade_date: str = "",
     exit_trade_date: str = "",
@@ -198,6 +199,9 @@ def build_ep_funnel(
 
     return {
         **base,
+        # ★B109 的 build_funnel 不带形成日（它由调用方按顺序持有）。B110 的 CSV 要让
+        # Codex 逐行断言「144 个月无断档」，形成日必须落在行里而不是靠行序推断。
+        "formation_date": formation_date or (items[0].formation_date if items else ""),
         "price_trade_date_t": price_trade_date,
         "price_trade_date_t1": exit_trade_date,
         "d_security_row_malformed": malformed_security_rows,

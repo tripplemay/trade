@@ -158,15 +158,32 @@ def _normalize(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def _cached(cache_dir: Path, name: str) -> pd.DataFrame | None:
+    """读缓存。★损坏或空的缓存一律当作未命中并就地删除。
+
+    进程被中断时 `_store` 可能留下半截文件；把它读成「这一期没有数据」是
+    本模块最不该犯的错误（见 `_LONG_BACKOFF_SECONDS` 上方对静默空表的说明）。
+    """
     path = cache_dir / f"{name}.csv.gz"
     if not path.exists():
         return None
-    return _normalize(pd.read_csv(path, dtype=str, keep_default_na=False))
+    try:
+        frame = pd.read_csv(path, dtype=str, keep_default_na=False)
+    except (pd.errors.EmptyDataError, OSError, EOFError):
+        path.unlink(missing_ok=True)
+        return None
+    if frame.empty:
+        path.unlink(missing_ok=True)
+        return None
+    return _normalize(frame)
 
 
 def _store(cache_dir: Path, name: str, frame: pd.DataFrame) -> None:
+    """★原子落盘：先写临时文件再改名，中断不会留下半截缓存。"""
     cache_dir.mkdir(parents=True, exist_ok=True)
-    frame.to_csv(cache_dir / f"{name}.csv.gz", index=False, compression="gzip")
+    target = cache_dir / f"{name}.csv.gz"
+    staging = target.with_suffix(".tmp")
+    frame.to_csv(staging, index=False, compression="gzip")
+    staging.replace(target)
 
 
 #: ★★2026-07-21 B110 F002 实测的**新静默失败模式**（与 B109 的静默截断同型、方向相反）：
@@ -485,6 +502,7 @@ def run(
         funnel = build_ep_funnel(
             rows_out,
             universe_size=len(in_universe),
+            formation_date=formation_date,
             malformed_security_rows=malformed if seq == 1 else 0,
             price_trade_date=grid_trade[formation_date],
             exit_trade_date=grid_trade[ahead[0]] if ahead else "",
@@ -538,6 +556,13 @@ def run(
     }
 
 
+def _shift_days(yyyymmdd: str, days: int) -> str:
+    from datetime import date, timedelta  # noqa: PLC0415 - 局部使用
+
+    base = date(int(yyyymmdd[:4]), int(yyyymmdd[4:6]), int(yyyymmdd[6:8]))
+    return (base + timedelta(days=days)).strftime("%Y%m%d")
+
+
 def _next_month(yyyymm: str) -> str:
     year, month = int(yyyymm[:4]), int(yyyymm[4:6])
     return f"{year + 1}01" if month == 12 else f"{year}{month + 1:02d}"
@@ -568,6 +593,10 @@ def _fetch_terminal_prices(
             continue
         if security.ts_code not in last_factor:
             continue  # 网格上从未出现过 → 与本窗口无关
+        # ★只要最后一根成交，不必拉全历史（实测全历史每股 2-10 秒 × 338 只）。
+        # 「最后交易日 → 退市日」实测中位 7 天、最长 71 天，90 天窗口有充分余量；
+        # 窗口内为空时回落到全历史，避免为省调用而丢掉终值。
+        window_start = _shift_days(security.delist_date, -90)
         frame = _fetch_cached(
             pro,
             "daily",
@@ -575,9 +604,20 @@ def _fetch_terminal_prices(
             name=f"daily_terminal_{security.ts_code}",
             ledger=ledger,
             ts_code=security.ts_code,
-            start_date="20120101",
-            end_date="20250630",
+            start_date=window_start,
+            end_date=security.delist_date,
         )
+        if frame.empty:
+            frame = _fetch_cached(
+                pro,
+                "daily",
+                cache_dir=cache_dir,
+                name=f"daily_terminal_full_{security.ts_code}",
+                ledger=ledger,
+                ts_code=security.ts_code,
+                start_date="20120101",
+                end_date="20250630",
+            )
         if frame.empty:
             continue
         last = frame.sort_values("trade_date").iloc[-1]
