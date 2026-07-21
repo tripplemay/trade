@@ -36,13 +36,21 @@ from scripts.research.ashare_pit.pipeline import month_end_dates
 # --- 期次与网格算术 ---
 
 
-def test_period_range_covers_2011q3_through_2024fy() -> None:
-    """★54 期不是 48 期。滑窗 5 期会让每年 1-3 月的形成日系统性 null，且只打早年。"""
+def test_period_range_reaches_back_well_before_the_first_formation_date() -> None:
+    """★60 期，下界 2010Q1 —— 不是 48 期，也不是「刚好够用」的 54 期。
+
+    形成日 `20130131` 若碰上停报多期的证券，锚点会落到 2011Q3 甚至更早，其 TTM
+    还要再往前四个季度。实测下界取 20110930 时，`PERIOD_NOT_FETCHED` 在
+    2013-01 至 2014-02 累计 51 次——数量小，但它按定义是**我们自己的覆盖缺陷**，
+    且**只打早年**，正是最容易被误读成「数据源固有限制」的形态。
+    """
     periods = quarter_ends()
-    assert len(periods) == 54
-    assert periods[0] == "20110930"
+    assert len(periods) == 60
+    assert periods[0] == "20100331"
     assert periods[-1] == "20241231"
     assert periods == sorted(periods)
+    # 首个形成日之前至少留出 11 个季度的回溯余量
+    assert periods.index("20121231") >= 11
 
 
 def test_the_formation_grid_is_144_and_the_price_grid_is_145() -> None:

@@ -90,10 +90,17 @@ CONSOLIDATED = "1"
 DIRECT_QUARTER = "2"
 
 #: 期次范围。★不是 48 期——见模块 docstring 第 1 点。
-FIRST_PERIOD = "20110930"
+#: ★下界取 2010Q1 而非 2011Q3：形成日 20130131 若碰上**停报多期**的证券，
+#: 锚点会落到 2011Q3 甚至更早，其 TTM 又要再往前四个季度。实测取 20110930 时
+#: `PERIOD_NOT_FETCHED` 在 2013-01 至 2014-02 累计 51 次——数量小，但它按定义是
+#: **我们自己的覆盖缺陷**，且**只打早年**，正是最容易被误读成「数据源限制」的形态。
+#: 多拉 6 期的代价约 14 次调用。
+FIRST_PERIOD = "20100331"
 LAST_PERIOD = "20241231"
 
 _THROTTLE = 0.3
+#: 价格网格尾部余量（月）。见 `run()` 中的说明。
+_GRID_TAIL_MONTHS = 4
 #: `report_type=1` 占比闸门。裸 `== "1"` 在分页 concat 后 dtype 漂成 int64 时会**整期
 #: 静默归零**（返回空表不是 None，不进 failures）。实测不传 report_type 时占比 100%。
 _RT1_SHARE_FLOOR = 0.30
@@ -363,7 +370,13 @@ def run(
 
     # --- 网格：144 个形成日 + 1 个只用于取退出价的月末 ---
     formation_dates = month_end_dates(start, end)
-    grid_natural = month_end_dates(start, _next_month(end))
+    # ★价格网格比形成日多出 `_GRID_TAIL_MONTHS` 个月：末月形成日需要 t+1 价，
+    # 而**末月前后停牌**的证券要更靠后的网格日才能结清。实测只多 1 个月时，
+    # 最后一个形成日留下 10 条 FWD_MISSING（兜底码，按定义应为 0）。
+    grid_end = end
+    for _ in range(_GRID_TAIL_MONTHS):
+        grid_end = _next_month(grid_end)
+    grid_natural = month_end_dates(start, grid_end)
     grid_trade: dict[str, str] = {}
     for natural in grid_natural:
         resolved = last_trade_date_on_or_before(open_days, natural)

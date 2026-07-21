@@ -1,0 +1,482 @@
+{
+  "adjudication_口径": {
+    "control_variant_not_for_adjudication": "excl_negative_stub_0.00",
+    "frozen_by": "docs/specs/B110-frozen-conventions-addendum.md (2026-07-21)",
+    "primary_variant": "main_stub_0.00",
+    "sensitivity_variants": [
+      "main_stub_-0.30",
+      "main_stub_-1.00"
+    ]
+  },
+  "generator_boundary": "H7：本产物只含原始统计，不含任何裁定。三档预注册判据的应用与裁定归 F004 的 Codex（铁律 #4：不得自己评估自己）。主口径与对照组的差异中有一部分只是分位切点位移（负 TTM 占比 12-16%），不是「剔除亏损股改善了信号」。",
+  "honest_limits": [
+    "无行业中性 / 规模中性（handoff §4.6 的 PIT 行业根本不存在）",
+    "无停牌 / 涨跌停 / ST 可执行性检查（handoff G3b 未建）→ 有些「买入」实际买不到",
+    "无交易成本、无冲击成本、无换手率约束",
+    "无公司行动处置（handoff §4.7 未建）→ 退市证券最终现金去向以最后成交价近似",
+    "不是 handoff 的 G5/G9 级 lineage 与连续面板",
+    "★因此任何正向结果都是**上界**，不是可实现收益；结论只能用于「值不值得继续建地基」这一个决策，不得外推为收益预期。"
+  ],
+  "variants": {
+    "excl_negative_stub_0.00": {
+      "ann_benchmark_scored_geometric": 0.11859324012207995,
+      "ann_benchmark_wide_geometric": 0.13510745815522762,
+      "ann_top_geometric": 0.12583361607244647,
+      "ci95_ann": [
+        -0.059309984991047435,
+        0.07379073689178049
+      ],
+      "coverage_composition_effect": -0.016514218033147676,
+      "delisted_later_by_group_total": {
+        "Q1": 4387,
+        "Q2": 2558,
+        "Q3": 2260,
+        "Q4": 2030,
+        "Q5": 2854
+      },
+      "excess_ann_arithmetic_vs_scored": -0.005241039039355764,
+      "excess_ann_geometric_vs_scored": 0.007240375950366529,
+      "excess_ann_geometric_vs_wide": -0.009273842082781147,
+      "group_median_mv_last": {
+        "Q1": "4826711078.0000",
+        "Q2": "4801937280.000",
+        "Q3": "5275724125.0000",
+        "Q4": "5958844470.000",
+        "Q5": "10733526993.0000"
+      },
+      "honest_limits": [
+        "无行业中性 / 规模中性（handoff §4.6 的 PIT 行业根本不存在）",
+        "无停牌 / 涨跌停 / ST 可执行性检查（handoff G3b 未建）→ 有些「买入」实际买不到",
+        "无交易成本、无冲击成本、无换手率约束",
+        "无公司行动处置（handoff §4.7 未建）→ 退市证券最终现金去向以最后成交价近似",
+        "不是 handoff 的 G5/G9 级 lineage 与连续面板",
+        "★因此任何正向结果都是**上界**，不是可实现收益；结论只能用于「值不值得继续建地基」这一个决策，不得外推为收益预期。"
+      ],
+      "ic_ir": 0.21456369635091355,
+      "ic_mean": 0.03523921253448339,
+      "ic_role": "diagnostic_only_ic_high_with_flat_long_leg_is_not_inconclusive",
+      "ic_std": 0.1642366026210256,
+      "label": "excl_negative_stub_0.00",
+      "legs": {
+        "a_long_ann": -0.005241039039355764,
+        "a_short_ann": 0.03148342682337496,
+        "long_short_ann_arithmetic": 0.026242387784019196,
+        "monthly_identity_max_residual": 1.0408340855860843e-17,
+        "n_months": 144,
+        "note": "拆腿占比对 long-only 判据**没有投票权**：决策变量是 a_long_ann 单独一个数。须防的反向误用是「空头腿只占 40%，说明多头腿也不错」——不成立，a_long_ann 是绝对值判据。★带符号占比 >100% 等价于多头腿 alpha 为负。",
+        "role": "diagnostic_only_not_a_criterion",
+        "share_short": 1.1997165457080623,
+        "share_short_unavailable_reason": null
+      },
+      "monotonicity": {
+        "group_annual_geometric": {
+          "Q1": 0.07141502024077462,
+          "Q2": 0.11259370849487538,
+          "Q3": 0.1263062317478536,
+          "Q4": 0.1447194733154542,
+          "Q5": 0.12583361607244647
+        },
+        "note": "相邻五分位年化差的 SE 约 2.5%/年（组间相关 ρ≈0.95），字面单调性判据在统计上功效极低。字面结果与统计诊断必须并排呈现，由 Codex 裁定。",
+        "slope_n_months": 144,
+        "slope_t_stat": 0.5596833327641784,
+        "strictly_monotone_literal": false,
+        "top_group_is_best_literal": false,
+        "top_vs_group": {
+          "Q1": {
+            "mean_ann": 0.026242387784019196,
+            "se_ann": 0.05021833007915275,
+            "significantly_inverted": false
+          },
+          "Q2": {
+            "mean_ann": -0.010185936746275217,
+            "se_ann": 0.050359898832283014,
+            "significantly_inverted": false
+          },
+          "Q3": {
+            "mean_ann": -0.016113076731778593,
+            "se_ann": 0.042276233564539294,
+            "significantly_inverted": false
+          },
+          "Q4": {
+            "mean_ann": -0.026158578681159804,
+            "se_ann": 0.030667855723976192,
+            "significantly_inverted": false
+          }
+        }
+      },
+      "n_months": 144,
+      "negative_overlay": {
+        "ann_geometric": null,
+        "mean_count": 0.0,
+        "months_with_negative_names": 0
+      },
+      "se_ann": 0.0339542657864357,
+      "t_stat": 0.21323906680553134,
+      "yearly_excess": {
+        "by_year_arithmetic": {
+          "2013": -0.22643371509264787,
+          "2014": 0.06575070839011031,
+          "2015": -0.1336905014721502,
+          "2016": 0.026476387733560626,
+          "2017": 0.24916477663223524,
+          "2018": 0.0017716341627818243,
+          "2019": -0.107878461409519,
+          "2020": -0.03188762012329105,
+          "2021": -0.0068171602078119595,
+          "2022": 0.01782242778676095,
+          "2023": 0.11799693181864176,
+          "2024": -0.03516787669093977
+        },
+        "n_positive_years": 6,
+        "n_years": 12,
+        "null_hypothesis_note": "纯噪声下 P(≥8/12 年为正) = 794/4096 = 19.4%；该档与年化档正相关，不构成独立确认。",
+        "positive_fraction": 0.5
+      }
+    },
+    "main_stub_-0.30": {
+      "ann_benchmark_scored_geometric": 0.11679234830700169,
+      "ann_benchmark_wide_geometric": 0.13395998936500364,
+      "ann_top_geometric": 0.12699329492198275,
+      "ci95_ann": [
+        -0.05158942883694704,
+        0.07199132206690914
+      ],
+      "coverage_composition_effect": -0.017167641058001948,
+      "delisted_later_by_group_total": {
+        "Q1": 10425,
+        "Q2": 3757,
+        "Q3": 2749,
+        "Q4": 2355,
+        "Q5": 3162
+      },
+      "excess_ann_arithmetic_vs_scored": -0.0026946570748896496,
+      "excess_ann_geometric_vs_scored": 0.010200946614981055,
+      "excess_ann_geometric_vs_wide": -0.006966694443020893,
+      "group_median_mv_last": {
+        "Q1": "3508311721.0000",
+        "Q2": "4743654585.0000",
+        "Q3": "5090001472.5000",
+        "Q4": "5293876522.5000",
+        "Q5": "9853266410.5000"
+      },
+      "honest_limits": [
+        "无行业中性 / 规模中性（handoff §4.6 的 PIT 行业根本不存在）",
+        "无停牌 / 涨跌停 / ST 可执行性检查（handoff G3b 未建）→ 有些「买入」实际买不到",
+        "无交易成本、无冲击成本、无换手率约束",
+        "无公司行动处置（handoff §4.7 未建）→ 退市证券最终现金去向以最后成交价近似",
+        "不是 handoff 的 G5/G9 级 lineage 与连续面板",
+        "★因此任何正向结果都是**上界**，不是可实现收益；结论只能用于「值不值得继续建地基」这一个决策，不得外推为收益预期。"
+      ],
+      "ic_ir": 0.21798543403345447,
+      "ic_mean": 0.030540844009441046,
+      "ic_role": "diagnostic_only_ic_high_with_flat_long_leg_is_not_inconclusive",
+      "ic_std": 0.14010497602676475,
+      "label": "main_stub_-0.30",
+      "legs": {
+        "a_long_ann": -0.0026946570748896496,
+        "a_short_ann": 0.00882558298313901,
+        "long_short_ann_arithmetic": 0.00613092590824936,
+        "monthly_identity_max_residual": 7.806255641895632e-18,
+        "n_months": 144,
+        "note": "拆腿占比对 long-only 判据**没有投票权**：决策变量是 a_long_ann 单独一个数。须防的反向误用是「空头腿只占 40%，说明多头腿也不错」——不成立，a_long_ann 是绝对值判据。★带符号占比 >100% 等价于多头腿 alpha 为负。",
+        "role": "diagnostic_only_not_a_criterion",
+        "share_short": null,
+        "share_short_unavailable_reason": "SHORT_SHARE_DENOMINATOR_NEAR_ZERO"
+      },
+      "monotonicity": {
+        "group_annual_geometric": {
+          "Q1": 0.09753554771980877,
+          "Q2": 0.08389271953498545,
+          "Q3": 0.12073494142973318,
+          "Q4": 0.1425200566932845,
+          "Q5": 0.12699329492198275
+        },
+        "note": "相邻五分位年化差的 SE 约 2.5%/年（组间相关 ρ≈0.95），字面单调性判据在统计上功效极低。字面结果与统计诊断必须并排呈现，由 Codex 裁定。",
+        "slope_n_months": 144,
+        "slope_t_stat": 0.5092500335953619,
+        "strictly_monotone_literal": false,
+        "top_group_is_best_literal": false,
+        "top_vs_group": {
+          "Q1": {
+            "mean_ann": 0.00613092590824936,
+            "se_ann": 0.042089143102180517,
+            "significantly_inverted": false
+          },
+          "Q2": {
+            "mean_ann": 0.016398392263265806,
+            "se_ann": 0.048599941620498244,
+            "significantly_inverted": false
+          },
+          "Q3": {
+            "mean_ann": -0.01181269151404532,
+            "se_ann": 0.04302960178281264,
+            "significantly_inverted": false
+          },
+          "Q4": {
+            "mean_ann": -0.024183685761165287,
+            "se_ann": 0.03136781625865182,
+            "significantly_inverted": false
+          }
+        }
+      },
+      "n_months": 144,
+      "negative_overlay": {
+        "ann_geometric": 0.1062812676255891,
+        "mean_count": 546.7708333333334,
+        "months_with_negative_names": 144
+      },
+      "se_ann": 0.031525701761187803,
+      "t_stat": 0.3235755604190779,
+      "yearly_excess": {
+        "by_year_arithmetic": {
+          "2013": -0.19005369284830412,
+          "2014": 0.028646661596564177,
+          "2015": -0.12823147928061085,
+          "2016": 0.012558150382976644,
+          "2017": 0.24987116061266512,
+          "2018": 0.010773807487036007,
+          "2019": -0.08873551617528444,
+          "2020": 0.001459720107789718,
+          "2021": -0.025325798032169708,
+          "2022": 0.004868406812444461,
+          "2023": 0.10143188285553684,
+          "2024": -0.0095991884173196
+        },
+        "n_positive_years": 7,
+        "n_years": 12,
+        "null_hypothesis_note": "纯噪声下 P(≥8/12 年为正) = 794/4096 = 19.4%；该档与年化档正相关，不构成独立确认。",
+        "positive_fraction": 0.5833333333333334
+      }
+    },
+    "main_stub_-1.00": {
+      "ann_benchmark_scored_geometric": 0.11425070823812811,
+      "ann_benchmark_wide_geometric": 0.131285559552343,
+      "ann_top_geometric": 0.12583689483366944,
+      "ci95_ann": [
+        -0.05017002578489613,
+        0.0733423989759788
+      ],
+      "coverage_composition_effect": -0.017034851314214894,
+      "delisted_later_by_group_total": {
+        "Q1": 10425,
+        "Q2": 3757,
+        "Q3": 2749,
+        "Q4": 2355,
+        "Q5": 3162
+      },
+      "excess_ann_arithmetic_vs_scored": -0.0014300765642039181,
+      "excess_ann_geometric_vs_scored": 0.011586186595541337,
+      "excess_ann_geometric_vs_wide": -0.005448664718673557,
+      "group_median_mv_last": {
+        "Q1": "3508311721.0000",
+        "Q2": "4743654585.0000",
+        "Q3": "5090001472.5000",
+        "Q4": "5293876522.5000",
+        "Q5": "9853266410.5000"
+      },
+      "honest_limits": [
+        "无行业中性 / 规模中性（handoff §4.6 的 PIT 行业根本不存在）",
+        "无停牌 / 涨跌停 / ST 可执行性检查（handoff G3b 未建）→ 有些「买入」实际买不到",
+        "无交易成本、无冲击成本、无换手率约束",
+        "无公司行动处置（handoff §4.7 未建）→ 退市证券最终现金去向以最后成交价近似",
+        "不是 handoff 的 G5/G9 级 lineage 与连续面板",
+        "★因此任何正向结果都是**上界**，不是可实现收益；结论只能用于「值不值得继续建地基」这一个决策，不得外推为收益预期。"
+      ],
+      "ic_ir": 0.21805026894896762,
+      "ic_mean": 0.030547540780803684,
+      "ic_role": "diagnostic_only_ic_high_with_flat_long_leg_is_not_inconclusive",
+      "ic_std": 0.14009402936326126,
+      "label": "main_stub_-1.00",
+      "legs": {
+        "a_long_ann": -0.0014300765642039181,
+        "a_short_ann": 0.014916918441423037,
+        "long_short_ann_arithmetic": 0.013486841877219116,
+        "monthly_identity_max_residual": 1.0408340855860843e-17,
+        "n_months": 144,
+        "note": "拆腿占比对 long-only 判据**没有投票权**：决策变量是 a_long_ann 单独一个数。须防的反向误用是「空头腿只占 40%，说明多头腿也不错」——不成立，a_long_ann 是绝对值判据。★带符号占比 >100% 等价于多头腿 alpha 为负。",
+        "role": "diagnostic_only_not_a_criterion",
+        "share_short": 1.1060349470411963,
+        "share_short_unavailable_reason": null
+      },
+      "monotonicity": {
+        "group_annual_geometric": {
+          "Q1": 0.08839411087426585,
+          "Q2": 0.08309151352650468,
+          "Q3": 0.119900275211968,
+          "Q4": 0.141887310163209,
+          "Q5": 0.12583689483366944
+        },
+        "note": "相邻五分位年化差的 SE 约 2.5%/年（组间相关 ρ≈0.95），字面单调性判据在统计上功效极低。字面结果与统计诊断必须并排呈现，由 Codex 裁定。",
+        "slope_n_months": 144,
+        "slope_t_stat": 0.6513640076459124,
+        "strictly_monotone_literal": false,
+        "top_group_is_best_literal": false,
+        "top_vs_group": {
+          "Q1": {
+            "mean_ann": 0.013486841877219116,
+            "se_ann": 0.042125311588849905,
+            "significantly_inverted": false
+          },
+          "Q2": {
+            "mean_ann": 0.016080301358128032,
+            "se_ann": 0.04856974931146837,
+            "significantly_inverted": false
+          },
+          "Q3": {
+            "mean_ann": -0.012089850204638281,
+            "se_ann": 0.043021655358312504,
+            "significantly_inverted": false
+          },
+          "Q4": {
+            "mean_ann": -0.024617851635995985,
+            "se_ann": 0.0313140941372942,
+            "significantly_inverted": false
+          }
+        }
+      },
+      "n_months": 144,
+      "negative_overlay": {
+        "ann_geometric": 0.09581263520034389,
+        "mean_count": 546.7708333333334,
+        "months_with_negative_names": 144
+      },
+      "se_ann": 0.031508271622672175,
+      "t_stat": 0.36771888773500194,
+      "yearly_excess": {
+        "by_year_arithmetic": {
+          "2013": -0.19047307282555243,
+          "2014": 0.02921640453708888,
+          "2015": -0.12801887843094567,
+          "2016": 0.013122311515918424,
+          "2017": 0.2506881407288927,
+          "2018": 0.01069446571945095,
+          "2019": -0.08954920570593775,
+          "2020": 0.003539022266907538,
+          "2021": -0.023683255654642098,
+          "2022": 0.007842314425137943,
+          "2023": 0.10555961555529456,
+          "2024": -0.006098780902060102
+        },
+        "n_positive_years": 7,
+        "n_years": 12,
+        "null_hypothesis_note": "纯噪声下 P(≥8/12 年为正) = 794/4096 = 19.4%；该档与年化档正相关，不构成独立确认。",
+        "positive_fraction": 0.5833333333333334
+      }
+    },
+    "main_stub_0.00": {
+      "ann_benchmark_scored_geometric": 0.1178827525422419,
+      "ann_benchmark_wide_geometric": 0.13510745815522762,
+      "ann_top_geometric": 0.12748884171148434,
+      "ci95_ann": [
+        -0.052201768936770976,
+        0.07141394727525585
+      ],
+      "coverage_composition_effect": -0.017224705612985725,
+      "delisted_later_by_group_total": {
+        "Q1": 10425,
+        "Q2": 3757,
+        "Q3": 2749,
+        "Q4": 2355,
+        "Q5": 3162
+      },
+      "excess_ann_arithmetic_vs_scored": -0.0032366201508978194,
+      "excess_ann_geometric_vs_scored": 0.009606089169242438,
+      "excess_ann_geometric_vs_wide": -0.007618616443743287,
+      "group_median_mv_last": {
+        "Q1": "3508311721.0000",
+        "Q2": "4743654585.0000",
+        "Q3": "5090001472.5000",
+        "Q4": "5293876522.5000",
+        "Q5": "9853266410.5000"
+      },
+      "honest_limits": [
+        "无行业中性 / 规模中性（handoff §4.6 的 PIT 行业根本不存在）",
+        "无停牌 / 涨跌停 / ST 可执行性检查（handoff G3b 未建）→ 有些「买入」实际买不到",
+        "无交易成本、无冲击成本、无换手率约束",
+        "无公司行动处置（handoff §4.7 未建）→ 退市证券最终现金去向以最后成交价近似",
+        "不是 handoff 的 G5/G9 级 lineage 与连续面板",
+        "★因此任何正向结果都是**上界**，不是可实现收益；结论只能用于「值不值得继续建地基」这一个决策，不得外推为收益预期。"
+      ],
+      "ic_ir": 0.21553289237807735,
+      "ic_mean": 0.03019632765787121,
+      "ic_role": "diagnostic_only_ic_high_with_flat_long_leg_is_not_inconclusive",
+      "ic_std": 0.14010078612457108,
+      "label": "main_stub_0.00",
+      "legs": {
+        "a_long_ann": -0.0032366201508978194,
+        "a_short_ann": 0.006215010643874428,
+        "long_short_ann_arithmetic": 0.002978390492976607,
+        "monthly_identity_max_residual": 1.3877787807814457e-17,
+        "n_months": 144,
+        "note": "拆腿占比对 long-only 判据**没有投票权**：决策变量是 a_long_ann 单独一个数。须防的反向误用是「空头腿只占 40%，说明多头腿也不错」——不成立，a_long_ann 是绝对值判据。★带符号占比 >100% 等价于多头腿 alpha 为负。",
+        "role": "diagnostic_only_not_a_criterion",
+        "share_short": null,
+        "share_short_unavailable_reason": "SHORT_SHARE_DENOMINATOR_NEAR_ZERO"
+      },
+      "monotonicity": {
+        "group_annual_geometric": {
+          "Q1": 0.10146459241132266,
+          "Q2": 0.08423588567965878,
+          "Q3": 0.12109238699340108,
+          "Q4": 0.14279107737904329,
+          "Q5": 0.12748884171148434
+        },
+        "note": "相邻五分位年化差的 SE 约 2.5%/年（组间相关 ρ≈0.95），字面单调性判据在统计上功效极低。字面结果与统计诊断必须并排呈现，由 Codex 裁定。",
+        "slope_n_months": 144,
+        "slope_t_stat": 0.44811072330666857,
+        "strictly_monotone_literal": false,
+        "top_group_is_best_literal": false,
+        "top_vs_group": {
+          "Q1": {
+            "mean_ann": 0.002978390492976607,
+            "se_ann": 0.042092126205612534,
+            "significantly_inverted": false
+          },
+          "Q2": {
+            "mean_ann": 0.01653471693689628,
+            "se_ann": 0.04861414149872095,
+            "significantly_inverted": false
+          },
+          "Q3": {
+            "mean_ann": -0.011693909218076908,
+            "se_ann": 0.0430344704386886,
+            "significantly_inverted": false
+          },
+          "Q4": {
+            "mean_ann": -0.023997614671952126,
+            "se_ann": 0.03139255005935438,
+            "significantly_inverted": false
+          }
+        }
+      },
+      "n_months": 144,
+      "negative_overlay": {
+        "ann_geometric": 0.11078336849771753,
+        "mean_count": 546.7708333333334,
+        "months_with_negative_names": 144
+      },
+      "se_ann": 0.031534621482659904,
+      "t_stat": 0.30462040505304894,
+      "yearly_excess": {
+        "by_year_arithmetic": {
+          "2013": -0.18987395857234057,
+          "2014": 0.028402486050625016,
+          "2015": -0.12832259393046735,
+          "2016": 0.01231636704028731,
+          "2017": 0.24952102627713899,
+          "2018": 0.010807811101715317,
+          "2019": -0.08838679209071873,
+          "2020": 0.0005685906110249381,
+          "2021": -0.026029744765395827,
+          "2022": 0.0035938749784329683,
+          "2023": 0.09966285455564067,
+          "2024": -0.011099363066716529
+        },
+        "n_positive_years": 7,
+        "n_years": 12,
+        "null_hypothesis_note": "纯噪声下 P(≥8/12 年为正) = 794/4096 = 19.4%；该档与年化档正相关，不构成独立确认。",
+        "positive_fraction": 0.5833333333333334
+      }
+    }
+  }
+}

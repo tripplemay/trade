@@ -6,7 +6,7 @@
    "title": "PIT TTM 分子 — handoff §6 唯一算法 + 四分量独立 as-of + lineage",
    "priority": "high",
    "executor": "generator",
-   "status": "pending",
+   "status": "done",
    "acceptance": "【spec §3.1】(1) 按 handoff §6 唯一算法：SQ1=C_Q1 / SQ2=C_H1-C_Q1 / SQ3=C_Q3-C_H1 / SQ4=C_FY-C_Q3，TTM=最近连续四个 SQ 之和。(2)★四个分量必须**各自独立 as-of**（同一 formation_date 重新解析），禁止混用不同知识截止日。(3) 等价式交叉验证 FY(y-1)+YTD(y)-YTD(y-1)；两式不一致 → 结构化失败码，**禁止取其一**。(4) 财年变更/IPO 历史不足/期间不可比 → 返回 null + 原因码；**禁止**用最新年报、线性插值、季度年化填补（handoff §6 明令）。(5) ep_feature_component lineage：逐条记录四个分量各自的 FactVersion，★F001(B109) 实测修订风险集中在 FY 分量（0.747% vs Q1 0.073%，10.2 倍），**必须能区分四分量各自风险，不得用混合平均掩盖**。(6) 全程 Decimal，导出前才转浮点。Gates：ruff + pytest 全量不回归 + 新增单测；★真实数据验证（B108 教训：合成 fixture 只编码实现者自己的假设）。",
    "design_decisions": [
     "★复用 B109 的 resolve_as_of 而非新写：as-of 语义已由 F001/F003 双重验证（可重建性 99.2%，12/12 修订不变性 sha256 逐字节不变）。",
@@ -19,7 +19,7 @@
    "title": "2013-01 至 2024-12 连续 144 月末 E/P 面板落盘 + 覆盖漏斗",
    "priority": "high",
    "executor": "generator",
-   "status": "pending",
+   "status": "done",
    "acceptance": "【spec §3.2-3.4】(1) 分母直接复用 B109 marketcap.py（G4 已独立验收：27,963 证券-日 100.0000% 通过身份校验）；**禁流通市值**（禁令 #6）。(2) 宇宙复用 universe.py 全状态 L/D/P 含退市名（禁令 #11；B109 实测幸存者偏差 8.91%）。(3) 形成日 = 2013-01 至 2024-12 **连续 144 个自然月末**，**不得向后滑动起点**。(4)★双口径落盘：主口径**不剔除**负 TTM（单独成组披露）+ 剔除对照组；两者并排，**主口径为裁定依据**，禁事后挑选。(5) 逐月覆盖漏斗复用 B109 pipeline.py 的漏斗与四项强制披露；H4 禁静默 dropna。(6) H5：分页一律走 fetch.py（B109 实测静默截断 income_vip 9000 / namechange 10000，非均匀富集 vintage 记录）。(7)★如实记录**实际 API 调用量与耗时**入产物——用户已裁定不设中间确认门，但不等于不留痕，下批次成本估算靠这份数据。Gates：ruff + pytest 不回归 + 新增单测；144 个月无断档须可核验。",
    "design_decisions": [
     "★连续 144 月不得滑动起点：handoff G9 明令『不向后滑动起点』，起点滑动是掩盖早期覆盖问题的经典手法。",
@@ -32,7 +32,7 @@
    "title": "信号统计计算工具 — IC / 分组 / 单调性 / ★拆腿归因（只算不裁）",
    "priority": "high",
    "executor": "generator",
-   "status": "pending",
+   "status": "done",
    "acceptance": "【spec §2 §6】(1) 计算 long-only top-quintile 等权、月度调仓，相对**全宇宙等权基准**的超额（主判据量）。(2) 分组收益 + ★**单调性**检查（B077 驼峰教训：禁据 top-bottom 同号即称方向真实）。(3) IC（Spearman，E/P vs 前向 1M 收益）作**辅助诊断**。(4)★★**拆腿归因计算器**：多空收益必须能拆成『多头腿相对基准』+『空头腿相对基准』并给出空头腿贡献占比——B103-B105 正是靠拆腿才发现纸面 edge 的 90-107% 在 A股不可做空的短腿上。(5) 分年超额序列（供『正超额年份 ≥60%』判据用）。(6)★★★**H7 硬边界：只产出原始统计，不下裁定**。产物与报告中**不得出现** GO / NO-GO / 『值得投入』/『有 edge』一类结论性措辞——裁定权归 F004（铁律 #4：不得自己评估自己）。(7) 诚实限制（spec §5）须随任何统计产物一同呈现：无行业中性/无停牌涨跌停可执行性/无交易成本/无公司行动处置 → 任何正向结果都是**上界**。Gates：ruff + pytest 不回归 + 新增单测（拆腿算术须有独立单测，含『全部收益来自空头腿』的极端 fixture）。",
    "design_decisions": [
     "★★Generator 提供计算器、Codex 下判决，是有意的分工：B103-B105 正是 Codex 在验收阶段拆腿才推翻了纸面结论。让实施方既算信号又下裁定 = 自己评自己（铁律 #4）。",

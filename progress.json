@@ -1,17 +1,20 @@
 {
-  "status": "building",
+  "status": "verifying",
   "total_features": 4,
-  "completed_features": 0,
+  "completed_features": 3,
   "fix_rounds": 0,
-  "current_sprint": "F001",
-  "last_updated": "2026-07-20",
+  "current_sprint": "F004",
+  "last_updated": "2026-07-21",
   "user_goal": "B110 纯 E/P first-look — 回答『纯 E/P 在 A 股的 long-only 信号强度是否值得继续投入 handoff 剩下的 9 道 gate』。起因:B109 把数据地基做到分子分母都可信,但离 handoff 完整要求还差 6 道 gate 完全未动(G1/G3b/G5/G7/G8/G9),继续建代价很大,而至今没有任何证据表明纯 E/P 有 edge。上一条路(机构跟随 B103-B105)正是投入之后才发现 long-only edge≈0。本批次存在意义=不重复那个顺序:先花小代价看信号再决定要不要建地基。★★最重要设计:从第一天就拆腿——主判据是 long-only 顶层组合相对全宇宙等权的超额,IC 仅作辅助诊断(IC 高而多头腿无超额=NO-GO 而非 INCONCLUSIVE)。★用户批次启动前已冻结:三档阈值 3.0%/1.0%(留交易成本空间,A股月度调仓五分位组合成本约1-2%/年)、负 TTM 双口径(主口径不剔除为裁定依据+剔除对照组仅作稳健性)、API 直接全量跑144月不设中间确认。4 features 3g+1c。★裁定权归 Codex 不归 Generator。产出是一个裁定不是策略;不改 DATA_NO_GO,0 行生产代码。",
   "reference_docs": [
     "docs/specs/B110-pure-ep-first-look-spec.md",
-    "docs/audits/ashare-pure-ep-data-foundation-implementation-handoff-2026-07-13.md",
-    "docs/audits/B109-F001-vintage-probe-remeasured-2026-07-20.md",
-    "docs/audits/B109-F002-tushare-silent-truncation-2026-07-20.md",
-    "docs/test-reports/B109-tushare-pit-foundation-signoff-2026-07-20.md",
+    "docs/specs/B110-frozen-conventions-addendum.md",
+    "docs/audits/B110-preflight-probes-2026-07-21.json",
+    "docs/audits/B110-F001-real-data-validation-2026-07-21.md",
+    "docs/audits/B110-F002-tushare-silent-empty-response-2026-07-21.md",
+    "docs/audits/B110-F002-monthly-funnel.csv",
+    "docs/audits/B110-F002-panel.json",
+    "docs/audits/B110-F003-signal-stats.json",
     "scripts/research/ashare_pit/"
   ],
   "docs": {
@@ -22,7 +25,7 @@
   },
   "role_assignments": null,
   "evaluator_feedback": null,
-  "generator_handoff": null,
+  "generator_handoff": "F001-F003 done。★裁定权归 F004，本次交付**不含任何裁定**（H7 已由单测机器判据锁住）。★★交付前必读 docs/specs/B110-frozen-conventions-addendum.md：D1-D8 口径在**任何信号统计存在之前**由用户锁死（commit e4206b6，git 可追溯，其时仓库无任何 E/P 值）。★等价式经代数展开 + 穷举单测证明为**恒等式**，鉴别力为零，禁止转述为「数据已交叉验证」；分子的真校验是 R1 阶跃性（144 月 0 违规）与 R2 单季直报对拍（MATCH 大量 / BREAK 7949，已 fail-closed）。★★F002 全量跑第一版曾被**整页边界静默截断**污染（14 个缓存文件恰 5000 行），表现为 2022 年 COMPONENT_MISSING 11561、2023-02 覆盖率 67.6%——修复后分别降到 4 与 ~94%。详见 docs/audits/B110-F002-tushare-silent-empty-response-2026-07-21.md §2.4。Codex 应独立复核：产物是否来自修复后的那一版（判据：逐年 TTM 损失应平滑无年份尖峰）。★成本留痕（spec §8）：首次全量 537 次/105.8 万行/3159s；后续三次增量 49/31/24 次（其余走 data/research/B110/ 缓存，863 个文件）。原 spec 粗估 450 次，实测口径见附录 §6。★★偏离设计备忘一处（已写入 returns.py docstring）：停牌期收益算到下一个有价网格日而非记 0，因为截面框架里停牌股随后各月进不了任何组合，记 0 会让崩塌永不落地、方向偏乐观。",
   "features": [
     "F001",
     "F002",
@@ -31,7 +34,7 @@
   ],
   "session_notes": {
     "planner": "2026-07-20 B110 planning。承接用户『同意』先做 first-look 再决定建不建地基。★批次设计的核心是两条防线:(1)**拆腿写进 spec §2 冻结口径**,不是留到验收才想起来——B103-B105 的教训是 IC~0.15 看着好但 90-107% 收益在不可做空的短腿,只看 IC 会得出完全相反结论;(2)**裁定权归 Codex(F004)不归 Generator(F003)**,F003 的 acceptance 明写『产物与报告中不得出现 GO/NO-GO/值得投入/有 edge 一类措辞』(H7)——first-look 的产出是决定大额工程投入的开关,实施方下裁定=自己批准自己的后续工作。★预注册三档阈值已由用户在**看到任何结果前**冻结(3.0%/1.0%),F004 须 git 追溯核查阈值未被事后调整。★诚实限制(spec §5)是硬性随附项:无行业中性/无停牌涨跌停可执行性/无交易成本/无公司行动处置 → 任何正向结果都是**上界不是可实现收益**,结论只能用于『值不值得继续建地基』这一个决策。★B109 可直接复用的:resolve_as_of(可重建性99.2%+12/12修订不变性)、marketcap.py(G4 27963证券-日 100.0000%)、universe.py(幸存者偏差8.91%已消除)、fetch.py(必用,静默截断)、pipeline.py 漏斗。★遗留(非本批):Tushare token 建议轮换(用户明文提供过,未执行);proposed-learnings 积 38 条待确认;I1(B109 G-A 门统计效力异议)待裁定。",
-    "generator": null,
+    "generator": "2026-07-21 B110 building 完成 F001-F003。★本会话最重要的事不是写代码，是**发现并修掉一个会毁掉整批结论的污染**：全量跑第一版产出后按 Codex 断言逐列自查，发现 350 个缓存文件中 14 个行数恰为 5000（=页大小）——分页在整页边界被静默空响应打断。它伪装成「数据源固有覆盖限制」且**只打 2019-2022**，所有仪表全绿（漏斗闭合/身份校验 100%/等价式一致率 100%）。修复后 2022 年 COMPONENT_MISSING 从 11561 降到 4。★另两个自查失败项（period_not_fetched=51 只打 2013-2014、fwd_missing=10 在末月）也已修（期次下界推到 2010Q1 共 60 期、价格网格尾部多留 4 个月），现 7/7 断言 PASS。★三个前置探针（¥17 次调用）中 P1 最关键：total_share 是真 PIT，若不是则分母作废、全部调用白跑，而 B109 的身份校验对它零功率。★遗留给 F004：CUMULATIVE_BASIS_BREAK 7949 例的经济成因未查（已按 D4 fail-closed，方向保守）；人工复算只做了 3 只×1 形成日，F004 须自选 ≥50 个证券-形成日。★B109 遗留缺陷两处记在附录 §7：panel_cli.py:99 用 fetch_single_checked 拉 stock_basic（对空响应零防护，一旦命中宇宙退化为只剩 338 只退市名）；universe.py:69 静默丢弃畸形行。",
     "evaluator": null
   }
 }
