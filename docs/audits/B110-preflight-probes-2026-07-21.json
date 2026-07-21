@@ -1,0 +1,246 @@
+{
+  "P1_total_share_pit": {
+    "verdict": "VARIES_OVER_TIME",
+    "n_constant_series": 0,
+    "findings": [
+      {
+        "ts_code": "600519.SH",
+        "n_rows": 2914,
+        "distinct_total_share": 3,
+        "first_total_share": 103818.0,
+        "last_total_share": 125619.78,
+        "n_jumps": 2,
+        "n_jumps_on_adj_factor_change_day": 2,
+        "n_adj_factor_changes": 21,
+        "first_5_jumps": [
+          {
+            "date": "20140625",
+            "from": 103818.0,
+            "to": 114199.8,
+            "ratio": 1.1
+          },
+          {
+            "date": "20150717",
+            "from": 114199.8,
+            "to": 125619.78,
+            "ratio": 1.1
+          }
+        ]
+      },
+      {
+        "ts_code": "000002.SZ",
+        "n_rows": 2768,
+        "distinct_total_share": 23,
+        "first_total_share": 1099521.0218,
+        "last_total_share": 1193070.9471,
+        "n_jumps": 6,
+        "n_jumps_on_adj_factor_change_day": 0,
+        "n_adj_factor_changes": 17,
+        "first_5_jumps": [
+          {
+            "date": "20130426",
+            "from": 1099555.3118,
+            "to": 1100675.7559,
+            "ratio": 1.001
+          },
+          {
+            "date": "20150122",
+            "from": 1101502.7119,
+            "to": 1104061.0569,
+            "ratio": 1.0023
+          },
+          {
+            "date": "20160704",
+            "from": 1105052.5,
+            "to": 1103915.2001,
+            "ratio": 0.999
+          },
+          {
+            "date": "20190408",
+            "from": 1103915.2001,
+            "to": 1130214.3001,
+            "ratio": 1.0238
+          },
+          {
+            "date": "20200612",
+            "from": 1130214.3001,
+            "to": 1161773.2201,
+            "ratio": 1.0279
+          }
+        ]
+      },
+      {
+        "ts_code": "002714.SZ",
+        "n_rows": 2633,
+        "distinct_total_share": 69,
+        "first_total_share": 24200.0,
+        "last_total_share": 546276.4343,
+        "n_jumps": 12,
+        "n_jumps_on_adj_factor_change_day": 5,
+        "n_adj_factor_changes": 18,
+        "first_5_jumps": [
+          {
+            "date": "20150610",
+            "from": 24200.0,
+            "to": 48400.0,
+            "ratio": 2.0
+          },
+          {
+            "date": "20151231",
+            "from": 48400.0,
+            "to": 51687.3109,
+            "ratio": 1.0679
+          },
+          {
+            "date": "20160708",
+            "from": 51687.3109,
+            "to": 103374.6218,
+            "ratio": 2.0
+          },
+          {
+            "date": "20170424",
+            "from": 103374.6218,
+            "to": 115846.3457,
+            "ratio": 1.1206
+          },
+          {
+            "date": "20180703",
+            "from": 115846.3457,
+            "to": 208523.4222,
+            "ratio": 1.8
+          }
+        ]
+      },
+      {
+        "ts_code": "600036.SH",
+        "n_rows": 2903,
+        "distinct_total_share": 3,
+        "first_total_share": 2157660.8885,
+        "last_total_share": 2521984.5601,
+        "n_jumps": 4,
+        "n_jumps_on_adj_factor_change_day": 1,
+        "n_adj_factor_changes": 20,
+        "first_5_jumps": [
+          {
+            "date": "20130905",
+            "from": 2157660.8885,
+            "to": 2453942.2429,
+            "ratio": 1.1373
+          },
+          {
+            "date": "20130909",
+            "from": 2453942.2429,
+            "to": 2157660.8885,
+            "ratio": 0.8793
+          },
+          {
+            "date": "20130911",
+            "from": 2157660.8885,
+            "to": 2453942.2429,
+            "ratio": 1.1373
+          },
+          {
+            "date": "20131008",
+            "from": 2453942.2429,
+            "to": 2521984.5601,
+            "ratio": 1.0277
+          }
+        ]
+      },
+      {
+        "ts_code": "000651.SZ",
+        "n_rows": 2756,
+        "distinct_total_share": 5,
+        "first_total_share": 300786.5439,
+        "last_total_share": 560140.5741,
+        "n_jumps": 4,
+        "n_jumps_on_adj_factor_change_day": 1,
+        "n_adj_factor_changes": 23,
+        "first_5_jumps": [
+          {
+            "date": "20150703",
+            "from": 300786.5439,
+            "to": 601573.0878,
+            "ratio": 2.0
+          },
+          {
+            "date": "20211111",
+            "from": 601573.0878,
+            "to": 591446.904,
+            "ratio": 0.9832
+          },
+          {
+            "date": "20220707",
+            "from": 591446.904,
+            "to": 563140.5741,
+            "ratio": 0.9521
+          },
+          {
+            "date": "20241021",
+            "from": 563140.5741,
+            "to": 560140.5741,
+            "ratio": 0.9947
+          }
+        ]
+      },
+      {
+        "ts_code": "601398.SH",
+        "n_rows": 2914,
+        "distinct_total_share": 15,
+        "first_total_share": 34932124.4671,
+        "last_total_share": 35640625.7089,
+        "n_jumps": 5,
+        "n_jumps_on_adj_factor_change_day": 0,
+        "n_adj_factor_changes": 18,
+        "first_5_jumps": [
+          {
+            "date": "20131009",
+            "from": 34964885.9375,
+            "to": 35057119.6382,
+            "ratio": 1.0026
+          },
+          {
+            "date": "20140106",
+            "from": 35057119.6382,
+            "to": 35138867.2946,
+            "ratio": 1.0023
+          },
+          {
+            "date": "20150107",
+            "from": 35151195.088,
+            "to": 35349421.382,
+            "ratio": 1.0056
+          },
+          {
+            "date": "20150206",
+            "from": 35349421.382,
+            "to": 35480912.534,
+            "ratio": 1.0037
+          },
+          {
+            "date": "20150216",
+            "from": 35480912.534,
+            "to": 35640625.7089,
+            "ratio": 1.0045
+          }
+        ]
+      }
+    ]
+  },
+  "P2_income_vip_report_type": {
+    "accepted": true,
+    "rows": 5560,
+    "report_type_distribution": {
+      "2": 5560
+    },
+    "pages": 2
+  },
+  "P3_universe": {
+    "raw_rows": 5867,
+    "securities": 5867,
+    "in_universe_20130131": 2472,
+    "in_universe_20241231": 5383,
+    "delisted_flagged": 338
+  },
+  "total_api_pages": 17
+}
