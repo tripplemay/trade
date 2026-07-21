@@ -503,7 +503,10 @@ def run(
         funnels.append(funnel)
 
         for row in rows_out:
-            if row.has_ep:
+            # ★有 E/P 的、以及**无 E/P 但有前向收益**的都要落盘：后者是 D1 的
+            # B-wide 基准样本。少了它就算不出 coverage_composition_effect，
+            # 而那个数 >1.0pp 时 spec §4 的 INCONCLUSIVE_COVERAGE_LIMITED 档要触发。
+            if row.has_ep or (row.forward is not None and row.forward.is_usable):
                 detail_sink.write(_detail_row(row))
 
     detail_sink.close()
@@ -595,7 +598,8 @@ def _detail_row(row: EpPanelRow) -> dict[str, Any]:
     detail: dict[str, Any] = {
         "ts_code": row.ts_code,
         "formation_date": row.formation_date,
-        "ep": str(row.ep),
+        # ★无 E/P 的行留空串而不是 "None"：下游用非空判定是否进入五分位样本池。
+        "ep": "" if row.ep is None else str(row.ep),
         "ttm_cny": str(row.ttm.value),
         "total_mv_cny": str(row.market_cap.total_mv_cny) if row.market_cap else "",
         "anchor_end_date": row.ttm.anchor_end_date,
