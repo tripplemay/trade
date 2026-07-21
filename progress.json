@@ -1,7 +1,7 @@
 {
-  "status": "verifying",
+  "status": "done",
   "total_features": 4,
-  "completed_features": 3,
+  "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "F004",
   "last_updated": "2026-07-21",
@@ -20,8 +20,8 @@
   "docs": {
     "spec": "docs/specs/B110-pure-ep-first-look-spec.md",
     "runbook": null,
-    "signoff": null,
-    "framework_reviewed": false
+    "signoff": "docs/test-reports/B110-pure-ep-first-look-signoff-2026-07-21.md",
+    "framework_reviewed": true
   },
   "role_assignments": null,
   "evaluator_feedback": null,
@@ -35,6 +35,6 @@
   "session_notes": {
     "planner": "2026-07-20 B110 planning。承接用户『同意』先做 first-look 再决定建不建地基。★批次设计的核心是两条防线:(1)**拆腿写进 spec §2 冻结口径**,不是留到验收才想起来——B103-B105 的教训是 IC~0.15 看着好但 90-107% 收益在不可做空的短腿,只看 IC 会得出完全相反结论;(2)**裁定权归 Codex(F004)不归 Generator(F003)**,F003 的 acceptance 明写『产物与报告中不得出现 GO/NO-GO/值得投入/有 edge 一类措辞』(H7)——first-look 的产出是决定大额工程投入的开关,实施方下裁定=自己批准自己的后续工作。★预注册三档阈值已由用户在**看到任何结果前**冻结(3.0%/1.0%),F004 须 git 追溯核查阈值未被事后调整。★诚实限制(spec §5)是硬性随附项:无行业中性/无停牌涨跌停可执行性/无交易成本/无公司行动处置 → 任何正向结果都是**上界不是可实现收益**,结论只能用于『值不值得继续建地基』这一个决策。★B109 可直接复用的:resolve_as_of(可重建性99.2%+12/12修订不变性)、marketcap.py(G4 27963证券-日 100.0000%)、universe.py(幸存者偏差8.91%已消除)、fetch.py(必用,静默截断)、pipeline.py 漏斗。★遗留(非本批):Tushare token 建议轮换(用户明文提供过,未执行);proposed-learnings 积 38 条待确认;I1(B109 G-A 门统计效力异议)待裁定。",
     "generator": "2026-07-21 B110 building 完成 F001-F003。★本会话最重要的事不是写代码，是**发现并修掉一个会毁掉整批结论的污染**：全量跑第一版产出后按 Codex 断言逐列自查，发现 350 个缓存文件中 14 个行数恰为 5000（=页大小）——分页在整页边界被静默空响应打断。它伪装成「数据源固有覆盖限制」且**只打 2019-2022**，所有仪表全绿（漏斗闭合/身份校验 100%/等价式一致率 100%）。修复后 2022 年 COMPONENT_MISSING 从 11561 降到 4。★另两个自查失败项（period_not_fetched=51 只打 2013-2014、fwd_missing=10 在末月）也已修（期次下界推到 2010Q1 共 60 期、价格网格尾部多留 4 个月），现 7/7 断言 PASS。★三个前置探针（¥17 次调用）中 P1 最关键：total_share 是真 PIT，若不是则分母作废、全部调用白跑，而 B109 的身份校验对它零功率。★遗留给 F004：CUMULATIVE_BASIS_BREAK 7949 例的经济成因未查（已按 D4 fail-closed，方向保守）；人工复算只做了 3 只×1 形成日，F004 须自选 ≥50 个证券-形成日。★B109 遗留缺陷两处记在附录 §7：panel_cli.py:99 用 fetch_single_checked 拉 stock_basic（对空响应零防护，一旦命中宇宙退化为只剩 338 只退市名）；universe.py:69 静默丢弃畸形行。",
-    "evaluator": null
+    "evaluator": "2026-07-21 B110 F004 首轮验收 PASS。独立脚本 scripts/test/b110_f004_verify.py 直接读取 raw income_rt1/rt2 缓存，自选每年5个、共60个证券-形成日；四分量 as-of、path A/B、E/P 逐字匹配，240/240 个 rt=2 对拍 MATCH、0 BREAK。独立拆腿复算144月：a_long=-0.323662%/年、a_short=+0.621501%/年、算术多空=+0.297839%，月度恒等式残差3e-29。144月漏斗 seq/端点/闭合/负TTM/period_not_fetched/畸形行全过，最差联合覆盖71.6906%、中位90.5592%；R1=0，恰5000行缓存=0。主口径几何超额0.9606%、正超额7/12、Q5非最优；D1构成差绝对值1.7225pp、D6 stub跨1.0%边界，按冻结附录保守裁定 INCONCLUSIVE_COVERAGE_LIMITED。报告 docs/test-reports/B110-pure-ep-first-look-signoff-2026-07-21.md；evidence docs/test-reports/B110-F004-evidence-2026-07-21.json。相关单测93 passed，验收脚本ruff通过；未改产品码/DATA_NO_GO。软观察：NO-GO与D1/D6 INCONCLUSIVE优先级、D1 signed/absolute语义待后续冻结明确。"
   }
 }

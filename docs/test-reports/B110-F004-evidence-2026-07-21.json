@@ -1,0 +1,2623 @@
+{
+  "seed": "B110-F004-codex-independent-sample-v1",
+  "sample_count": 60,
+  "sample_year_counts": {
+    "2013": 5,
+    "2014": 5,
+    "2015": 5,
+    "2016": 5,
+    "2017": 5,
+    "2018": 5,
+    "2019": 5,
+    "2020": 5,
+    "2021": 5,
+    "2022": 5,
+    "2023": 5,
+    "2024": 5
+  },
+  "direct_match_count": 240,
+  "direct_break_count": 0,
+  "funnel": {
+    "months": 144,
+    "formation_seq": "1..144",
+    "first_formation_date": "20130131",
+    "last_formation_date": "20241231",
+    "min_joint_coverage": "0.7169064748201439",
+    "median_joint_coverage": "0.9055915721231766",
+    "min_negative_ttm_count": 187,
+    "period_not_fetched_total": 0,
+    "malformed_security_rows_total": 0
+  },
+  "checks": [
+    {
+      "ts_code": "600330.SH",
+      "formation_date": "20130430",
+      "anchor_end_date": "20130331",
+      "components": [
+        {
+          "role": "SQ1",
+          "period": "20130331",
+          "value": "-9926342.04",
+          "cumulative_f_ann_date": "20130427",
+          "direct_value": "-9926342.04",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20121231",
+          "value": "-117803718.17",
+          "cumulative_f_ann_date": "20130427",
+          "direct_value": "-117803718.17",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20120930",
+          "value": "-30081460.2",
+          "cumulative_f_ann_date": "20121031",
+          "direct_value": "-30081460.2",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20120630",
+          "value": "-16264140.97",
+          "cumulative_f_ann_date": "20120822",
+          "direct_value": "-16264140.97",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "-174075661.38",
+      "path_b_equivalence_cny": "-174075661.38",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "300297.SZ",
+      "formation_date": "20130930",
+      "anchor_end_date": "20130630",
+      "components": [
+        {
+          "role": "SQ2",
+          "period": "20130630",
+          "value": "-5828219.08",
+          "cumulative_f_ann_date": "20130826",
+          "direct_value": "-5828219.08",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20130331",
+          "value": "14098305.58",
+          "cumulative_f_ann_date": "20130422",
+          "direct_value": "14098305.58",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20121231",
+          "value": "24597350.24",
+          "cumulative_f_ann_date": "20130422",
+          "direct_value": "24597350.24",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20120930",
+          "value": "8835051.40",
+          "cumulative_f_ann_date": "20121022",
+          "direct_value": "8835051.4",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "41702488.14",
+      "path_b_equivalence_cny": "41702488.14",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "002113.SZ",
+      "formation_date": "20130831",
+      "anchor_end_date": "20130630",
+      "components": [
+        {
+          "role": "SQ2",
+          "period": "20130630",
+          "value": "1190605.88",
+          "cumulative_f_ann_date": "20130822",
+          "direct_value": "1190605.88",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20130331",
+          "value": "1358248.93",
+          "cumulative_f_ann_date": "20130420",
+          "direct_value": "1358248.93",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20121231",
+          "value": "-1312744.43",
+          "cumulative_f_ann_date": "20130309",
+          "direct_value": "-1312744.43",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20120930",
+          "value": "2820162.65",
+          "cumulative_f_ann_date": "20121020",
+          "direct_value": "2820162.65",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "4056273.03",
+      "path_b_equivalence_cny": "4056273.03",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "600778.SH",
+      "formation_date": "20131031",
+      "anchor_end_date": "20130930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20130930",
+          "value": "65112248.16",
+          "cumulative_f_ann_date": "20131030",
+          "direct_value": "65112248.16",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20130630",
+          "value": "220231914.62",
+          "cumulative_f_ann_date": "20130803",
+          "direct_value": "220231914.62",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20130331",
+          "value": "41982401.53",
+          "cumulative_f_ann_date": "20130427",
+          "direct_value": "41982401.53",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20121231",
+          "value": "190210694.04",
+          "cumulative_f_ann_date": "20130418",
+          "direct_value": "190210694.04",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "517537258.35",
+      "path_b_equivalence_cny": "517537258.35",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "002220.SZ",
+      "formation_date": "20131031",
+      "anchor_end_date": "20130930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20130930",
+          "value": "48480809.63",
+          "cumulative_f_ann_date": "20131025",
+          "direct_value": "48480809.63",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20130630",
+          "value": "51285619.28",
+          "cumulative_f_ann_date": "20130822",
+          "direct_value": "51285619.28",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20130331",
+          "value": "19338890.84",
+          "cumulative_f_ann_date": "20130423",
+          "direct_value": "19338890.84",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20121231",
+          "value": "38038124.47",
+          "cumulative_f_ann_date": "20130328",
+          "direct_value": "38038124.47",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "157143444.22",
+      "path_b_equivalence_cny": "157143444.22",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "600764.SH",
+      "formation_date": "20141031",
+      "anchor_end_date": "20140930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20140930",
+          "value": "3970706.01",
+          "cumulative_f_ann_date": "20141028",
+          "direct_value": "3970706.01",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20140630",
+          "value": "944660.98",
+          "cumulative_f_ann_date": "20140826",
+          "direct_value": "944660.98",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20140331",
+          "value": "-297135.92",
+          "cumulative_f_ann_date": "20140430",
+          "direct_value": "-297135.92",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20131231",
+          "value": "-5535686.88",
+          "cumulative_f_ann_date": "20140401",
+          "direct_value": "-5535686.88",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "-917455.81",
+      "path_b_equivalence_cny": "-917455.81",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "601333.SH",
+      "formation_date": "20141031",
+      "anchor_end_date": "20140930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20140930",
+          "value": "321057504.0",
+          "cumulative_f_ann_date": "20141030",
+          "direct_value": "321057504.0",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20140630",
+          "value": "231541322.0",
+          "cumulative_f_ann_date": "20140822",
+          "direct_value": "231541322.0",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20140331",
+          "value": "97179218.0",
+          "cumulative_f_ann_date": "20140425",
+          "direct_value": "97179218.0",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20131231",
+          "value": "293262809.0",
+          "cumulative_f_ann_date": "20140328",
+          "direct_value": "293262809.0",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "943040853.0",
+      "path_b_equivalence_cny": "943040853.0",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "000803.SZ",
+      "formation_date": "20140930",
+      "anchor_end_date": "20140630",
+      "components": [
+        {
+          "role": "SQ2",
+          "period": "20140630",
+          "value": "5472223.41",
+          "cumulative_f_ann_date": "20140809",
+          "direct_value": "5472223.41",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20140331",
+          "value": "-3955268.92",
+          "cumulative_f_ann_date": "20140429",
+          "direct_value": "-3955268.92",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20131231",
+          "value": "24921657.35",
+          "cumulative_f_ann_date": "20140424",
+          "direct_value": "24921657.35",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20130930",
+          "value": "-7016346.87",
+          "cumulative_f_ann_date": "20131022",
+          "direct_value": "-7016346.87",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "19422264.97",
+      "path_b_equivalence_cny": "19422264.97",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "600897.SH",
+      "formation_date": "20140131",
+      "anchor_end_date": "20130930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20130930",
+          "value": "121287886.41",
+          "cumulative_f_ann_date": "20131025",
+          "direct_value": "121287886.41",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20130630",
+          "value": "110974708.61",
+          "cumulative_f_ann_date": "20130823",
+          "direct_value": "110974708.61",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20130331",
+          "value": "95928206.3",
+          "cumulative_f_ann_date": "20130426",
+          "direct_value": "95928206.3",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20121231",
+          "value": "99343310.37",
+          "cumulative_f_ann_date": "20130418",
+          "direct_value": "99343310.37",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "427534111.69",
+      "path_b_equivalence_cny": "427534111.69",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "002387.SZ",
+      "formation_date": "20140430",
+      "anchor_end_date": "20140331",
+      "components": [
+        {
+          "role": "SQ1",
+          "period": "20140331",
+          "value": "6468278.83",
+          "cumulative_f_ann_date": "20140426",
+          "direct_value": "6468278.83",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20131231",
+          "value": "12333671.19",
+          "cumulative_f_ann_date": "20140408",
+          "direct_value": "12333671.19",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20130930",
+          "value": "1916799.15",
+          "cumulative_f_ann_date": "20131026",
+          "direct_value": "1916799.15",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20130630",
+          "value": "-10990762.10",
+          "cumulative_f_ann_date": "20130827",
+          "direct_value": "-10990762.1",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "9727987.07",
+      "path_b_equivalence_cny": "9727987.07",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "300052.SZ",
+      "formation_date": "20150430",
+      "anchor_end_date": "20150331",
+      "components": [
+        {
+          "role": "SQ1",
+          "period": "20150331",
+          "value": "6051428.86",
+          "cumulative_f_ann_date": "20150422",
+          "direct_value": "6051428.86",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20141231",
+          "value": "-49949626.00",
+          "cumulative_f_ann_date": "20150422",
+          "direct_value": "-49949626.0",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20140930",
+          "value": "8813064.00",
+          "cumulative_f_ann_date": "20141021",
+          "direct_value": "8813064.0",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20140630",
+          "value": "11604557.33",
+          "cumulative_f_ann_date": "20140809",
+          "direct_value": "11604557.33",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "-23480575.81",
+      "path_b_equivalence_cny": "-23480575.81",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "603988.SH",
+      "formation_date": "20150630",
+      "anchor_end_date": "20150331",
+      "components": [
+        {
+          "role": "SQ1",
+          "period": "20150331",
+          "value": "14432986.62",
+          "cumulative_f_ann_date": "20150428",
+          "direct_value": "14432986.62",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20141231",
+          "value": "11663422.91",
+          "cumulative_f_ann_date": "20150331",
+          "direct_value": "11663422.91",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20140930",
+          "value": "12037363.07",
+          "cumulative_f_ann_date": "20141103",
+          "direct_value": "12037363.07",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20140630",
+          "value": "24547680.18",
+          "cumulative_f_ann_date": "20141016",
+          "direct_value": "24547680.18",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "62681452.78",
+      "path_b_equivalence_cny": "62681452.78",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "600283.SH",
+      "formation_date": "20150131",
+      "anchor_end_date": "20140930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20140930",
+          "value": "-170193.63",
+          "cumulative_f_ann_date": "20141030",
+          "direct_value": "-170193.63",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20140630",
+          "value": "7184370.57",
+          "cumulative_f_ann_date": "20140830",
+          "direct_value": "7184370.57",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20140331",
+          "value": "2461254.66",
+          "cumulative_f_ann_date": "20140430",
+          "direct_value": "2461254.66",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20131231",
+          "value": "11834122.46",
+          "cumulative_f_ann_date": "20140319",
+          "direct_value": "11834122.46",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "21309554.06",
+      "path_b_equivalence_cny": "21309554.06",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "000667.SZ",
+      "formation_date": "20150731",
+      "anchor_end_date": "20150630",
+      "components": [
+        {
+          "role": "SQ2",
+          "period": "20150630",
+          "value": "24271959.83",
+          "cumulative_f_ann_date": "20150711",
+          "direct_value": "24271959.83",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20150331",
+          "value": "12222125.16",
+          "cumulative_f_ann_date": "20150421",
+          "direct_value": "12222125.16",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20141231",
+          "value": "47199233.59",
+          "cumulative_f_ann_date": "20150217",
+          "direct_value": "47199233.59",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20140930",
+          "value": "-11783042.33",
+          "cumulative_f_ann_date": "20141021",
+          "direct_value": "-11783042.33",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "71910276.25",
+      "path_b_equivalence_cny": "71910276.25",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "002706.SZ",
+      "formation_date": "20150228",
+      "anchor_end_date": "20140930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20140930",
+          "value": "36170266.05",
+          "cumulative_f_ann_date": "20141025",
+          "direct_value": "36170266.05",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20140630",
+          "value": "30864286.03",
+          "cumulative_f_ann_date": "20140816",
+          "direct_value": "30864286.03",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20140331",
+          "value": "16065356.55",
+          "cumulative_f_ann_date": "20140423",
+          "direct_value": "16065356.55",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20131231",
+          "value": "20345966.22",
+          "cumulative_f_ann_date": "20140322",
+          "direct_value": "20345966.22",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "103445874.85",
+      "path_b_equivalence_cny": "103445874.85",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "600550.SH",
+      "formation_date": "20160930",
+      "anchor_end_date": "20160630",
+      "components": [
+        {
+          "role": "SQ2",
+          "period": "20160630",
+          "value": "50506093.00",
+          "cumulative_f_ann_date": "20160818",
+          "direct_value": "50506093.0",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20160331",
+          "value": "13176327.22",
+          "cumulative_f_ann_date": "20160429",
+          "direct_value": "13176327.22",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20151231",
+          "value": "-135384956.44",
+          "cumulative_f_ann_date": "20160426",
+          "direct_value": "-135384956.44",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20150930",
+          "value": "-4817963.99",
+          "cumulative_f_ann_date": "20151031",
+          "direct_value": "-4817963.99",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "-76520500.21",
+      "path_b_equivalence_cny": "-76520500.21",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "600310.SH",
+      "formation_date": "20160331",
+      "anchor_end_date": "20151231",
+      "components": [
+        {
+          "role": "SQ4",
+          "period": "20151231",
+          "value": "-27174813.06",
+          "cumulative_f_ann_date": "20160330",
+          "direct_value": "-27174813.06",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20150930",
+          "value": "11927533.73",
+          "cumulative_f_ann_date": "20151030",
+          "direct_value": "11927533.73",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20150630",
+          "value": "441715772.29",
+          "cumulative_f_ann_date": "20150812",
+          "direct_value": "441715772.29",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20150331",
+          "value": "-50554951.19",
+          "cumulative_f_ann_date": "20150429",
+          "direct_value": "-50554951.19",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "375913541.77",
+      "path_b_equivalence_cny": "375913541.77",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "002693.SZ",
+      "formation_date": "20160331",
+      "anchor_end_date": "20150930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20150930",
+          "value": "14976011.28",
+          "cumulative_f_ann_date": "20151028",
+          "direct_value": "14976011.28",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20150630",
+          "value": "17431062.74",
+          "cumulative_f_ann_date": "20150803",
+          "direct_value": "17431062.74",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20150331",
+          "value": "4873894.02",
+          "cumulative_f_ann_date": "20150414",
+          "direct_value": "4873894.02",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20141231",
+          "value": "21015747.22",
+          "cumulative_f_ann_date": "20150130",
+          "direct_value": "21015747.22",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "58296715.26",
+      "path_b_equivalence_cny": "58296715.26",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "600531.SH",
+      "formation_date": "20160229",
+      "anchor_end_date": "20151231",
+      "components": [
+        {
+          "role": "SQ4",
+          "period": "20151231",
+          "value": "54149753.58",
+          "cumulative_f_ann_date": "20160204",
+          "direct_value": "54149753.58",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20150930",
+          "value": "-48699679.28",
+          "cumulative_f_ann_date": "20151031",
+          "direct_value": "-48699679.28",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20150630",
+          "value": "2752775.74",
+          "cumulative_f_ann_date": "20150807",
+          "direct_value": "2752775.74",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20150331",
+          "value": "4302513.9",
+          "cumulative_f_ann_date": "20150429",
+          "direct_value": "4302513.9",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "12505363.94",
+      "path_b_equivalence_cny": "12505363.94",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "000619.SZ",
+      "formation_date": "20161031",
+      "anchor_end_date": "20160930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20160930",
+          "value": "34371507.00",
+          "cumulative_f_ann_date": "20161018",
+          "direct_value": "34371507.0",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20160630",
+          "value": "46122491.50",
+          "cumulative_f_ann_date": "20160823",
+          "direct_value": "46122491.5",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20160331",
+          "value": "10508822.82",
+          "cumulative_f_ann_date": "20160420",
+          "direct_value": "10508822.82",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20151231",
+          "value": "20602861.47",
+          "cumulative_f_ann_date": "20160322",
+          "direct_value": "20602861.47",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "111605682.79",
+      "path_b_equivalence_cny": "111605682.79",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "600241.SH",
+      "formation_date": "20171130",
+      "anchor_end_date": "20170930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20170930",
+          "value": "19130714.55",
+          "cumulative_f_ann_date": "20171031",
+          "direct_value": "19130714.55",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20170630",
+          "value": "6754766.19",
+          "cumulative_f_ann_date": "20170819",
+          "direct_value": "6754766.19",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20170331",
+          "value": "-8473180.37",
+          "cumulative_f_ann_date": "20170429",
+          "direct_value": "-8473180.37",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20161231",
+          "value": "-68932238.23",
+          "cumulative_f_ann_date": "20170427",
+          "direct_value": "-68932238.23",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "-51519937.86",
+      "path_b_equivalence_cny": "-51519937.86",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "002411.SZ",
+      "formation_date": "20170331",
+      "anchor_end_date": "20160930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20160930",
+          "value": "204649209.28",
+          "cumulative_f_ann_date": "20161028",
+          "direct_value": "204649209.28",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20160630",
+          "value": "252072408.83",
+          "cumulative_f_ann_date": "20160826",
+          "direct_value": "252072408.83",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20160331",
+          "value": "232810527.85",
+          "cumulative_f_ann_date": "20160426",
+          "direct_value": "232810527.85",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20151231",
+          "value": "588031594.04",
+          "cumulative_f_ann_date": "20160426",
+          "direct_value": "588031594.04",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "1277563740.00",
+      "path_b_equivalence_cny": "1277563740.00",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "603833.SH",
+      "formation_date": "20171031",
+      "anchor_end_date": "20170930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20170930",
+          "value": "530442886.24",
+          "cumulative_f_ann_date": "20171028",
+          "direct_value": "530442886.24",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20170630",
+          "value": "358569256.68",
+          "cumulative_f_ann_date": "20170829",
+          "direct_value": "358569256.68",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20170331",
+          "value": "55520958.91",
+          "cumulative_f_ann_date": "20170429",
+          "direct_value": "55520958.91",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20161231",
+          "value": "234923835.51",
+          "cumulative_f_ann_date": "20170307",
+          "direct_value": "234923835.51",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "1179456937.34",
+      "path_b_equivalence_cny": "1179456937.34",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "600298.SH",
+      "formation_date": "20170930",
+      "anchor_end_date": "20170630",
+      "components": [
+        {
+          "role": "SQ2",
+          "period": "20170630",
+          "value": "207960394.51",
+          "cumulative_f_ann_date": "20170713",
+          "direct_value": "207960394.51",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20170331",
+          "value": "212949009.03",
+          "cumulative_f_ann_date": "20170419",
+          "direct_value": "212949009.03",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20161231",
+          "value": "152312852.76",
+          "cumulative_f_ann_date": "20170316",
+          "direct_value": "152312852.76",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20160930",
+          "value": "123062002.14",
+          "cumulative_f_ann_date": "20161019",
+          "direct_value": "123062002.14",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "696284258.44",
+      "path_b_equivalence_cny": "696284258.44",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "300035.SZ",
+      "formation_date": "20170731",
+      "anchor_end_date": "20170331",
+      "components": [
+        {
+          "role": "SQ1",
+          "period": "20170331",
+          "value": "10835857.75",
+          "cumulative_f_ann_date": "20170427",
+          "direct_value": "10835857.75",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20161231",
+          "value": "1632741.67",
+          "cumulative_f_ann_date": "20170331",
+          "direct_value": "1632741.67",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20160930",
+          "value": "5510367.09",
+          "cumulative_f_ann_date": "20161022",
+          "direct_value": "5510367.09",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20160630",
+          "value": "10017768.04",
+          "cumulative_f_ann_date": "20160827",
+          "direct_value": "10017768.04",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "27996734.55",
+      "path_b_equivalence_cny": "27996734.55",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "603616.SH",
+      "formation_date": "20180930",
+      "anchor_end_date": "20180630",
+      "components": [
+        {
+          "role": "SQ2",
+          "period": "20180630",
+          "value": "1476932.08",
+          "cumulative_f_ann_date": "20180817",
+          "direct_value": "1476932.08",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20180331",
+          "value": "2384597.32",
+          "cumulative_f_ann_date": "20180428",
+          "direct_value": "2384597.32",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20171231",
+          "value": "-33286980.19",
+          "cumulative_f_ann_date": "20180428",
+          "direct_value": "-33286980.19",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20170930",
+          "value": "2719445.44",
+          "cumulative_f_ann_date": "20171027",
+          "direct_value": "2719445.44",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "-26706005.35",
+      "path_b_equivalence_cny": "-26706005.35",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "002328.SZ",
+      "formation_date": "20181231",
+      "anchor_end_date": "20180930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20180930",
+          "value": "16835724.43",
+          "cumulative_f_ann_date": "20181024",
+          "direct_value": "16835724.43",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20180630",
+          "value": "37352360.49",
+          "cumulative_f_ann_date": "20180824",
+          "direct_value": "37352360.49",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20180331",
+          "value": "18659885.23",
+          "cumulative_f_ann_date": "20180423",
+          "direct_value": "18659885.23",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20171231",
+          "value": "21324820.35",
+          "cumulative_f_ann_date": "20180423",
+          "direct_value": "21324820.35",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "94172790.50",
+      "path_b_equivalence_cny": "94172790.50",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "002896.SZ",
+      "formation_date": "20180630",
+      "anchor_end_date": "20180331",
+      "components": [
+        {
+          "role": "SQ1",
+          "period": "20180331",
+          "value": "12668694.71",
+          "cumulative_f_ann_date": "20180427",
+          "direct_value": "12668694.71",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20171231",
+          "value": "13969492.41",
+          "cumulative_f_ann_date": "20180330",
+          "direct_value": "13969492.41",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20170930",
+          "value": "17194218.61",
+          "cumulative_f_ann_date": "20171027",
+          "direct_value": "17194218.61",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20170630",
+          "value": "18305427.79",
+          "cumulative_f_ann_date": "20170816",
+          "direct_value": "18305427.79",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "62137833.52",
+      "path_b_equivalence_cny": "62137833.52",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "002478.SZ",
+      "formation_date": "20181231",
+      "anchor_end_date": "20180930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20180930",
+          "value": "161691978.52",
+          "cumulative_f_ann_date": "20181026",
+          "direct_value": "161691978.52",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20180630",
+          "value": "159088560.47",
+          "cumulative_f_ann_date": "20180824",
+          "direct_value": "159088560.47",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20180331",
+          "value": "47153406.0",
+          "cumulative_f_ann_date": "20180425",
+          "direct_value": "47153406.0",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20171231",
+          "value": "48341941.29",
+          "cumulative_f_ann_date": "20180420",
+          "direct_value": "48341941.29",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "416275886.28",
+      "path_b_equivalence_cny": "416275886.28",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "603331.SH",
+      "formation_date": "20181231",
+      "anchor_end_date": "20180930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20180930",
+          "value": "17486924.64",
+          "cumulative_f_ann_date": "20181030",
+          "direct_value": "17486924.64",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20180630",
+          "value": "21131533.82",
+          "cumulative_f_ann_date": "20180824",
+          "direct_value": "21131533.82",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20180331",
+          "value": "19266750.68",
+          "cumulative_f_ann_date": "20180423",
+          "direct_value": "19266750.68",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20171231",
+          "value": "11880488.92",
+          "cumulative_f_ann_date": "20180420",
+          "direct_value": "11880488.92",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "69765698.06",
+      "path_b_equivalence_cny": "69765698.06",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "600530.SH",
+      "formation_date": "20191130",
+      "anchor_end_date": "20190930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20190930",
+          "value": "19302014.23",
+          "cumulative_f_ann_date": "20191029",
+          "direct_value": "19302014.23",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20190630",
+          "value": "-3080575.03",
+          "cumulative_f_ann_date": "20190824",
+          "direct_value": "-3080575.03",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20190331",
+          "value": "76783603.67",
+          "cumulative_f_ann_date": "20190430",
+          "direct_value": "76783603.67",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20181231",
+          "value": "-588962985.38",
+          "cumulative_f_ann_date": "20190420",
+          "direct_value": "-588962985.38",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "-495957942.51",
+      "path_b_equivalence_cny": "-495957942.51",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "600743.SH",
+      "formation_date": "20190131",
+      "anchor_end_date": "20180930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20180930",
+          "value": "232199802.33",
+          "cumulative_f_ann_date": "20181031",
+          "direct_value": "232199802.33",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20180630",
+          "value": "59990353.44",
+          "cumulative_f_ann_date": "20180829",
+          "direct_value": "59990353.44",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20180331",
+          "value": "-415694.51",
+          "cumulative_f_ann_date": "20180428",
+          "direct_value": "-415694.51",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20171231",
+          "value": "345444492.16",
+          "cumulative_f_ann_date": "20180411",
+          "direct_value": "345444492.16",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "637218953.42",
+      "path_b_equivalence_cny": "637218953.42",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "600376.SH",
+      "formation_date": "20190331",
+      "anchor_end_date": "20180930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20180930",
+          "value": "351339251.35",
+          "cumulative_f_ann_date": "20181031",
+          "direct_value": "351339251.35",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20180630",
+          "value": "1051051876.85",
+          "cumulative_f_ann_date": "20180830",
+          "direct_value": "1051051876.85",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20180331",
+          "value": "329194799.91",
+          "cumulative_f_ann_date": "20180428",
+          "direct_value": "329194799.91",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20171231",
+          "value": "1449612626.50",
+          "cumulative_f_ann_date": "20180414",
+          "direct_value": "1449612626.5",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "3181198554.61",
+      "path_b_equivalence_cny": "3181198554.61",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "601611.SH",
+      "formation_date": "20190531",
+      "anchor_end_date": "20190331",
+      "components": [
+        {
+          "role": "SQ1",
+          "period": "20190331",
+          "value": "190583278.57",
+          "cumulative_f_ann_date": "20190429",
+          "direct_value": "190583278.57",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20181231",
+          "value": "383478076.39",
+          "cumulative_f_ann_date": "20190426",
+          "direct_value": "383478076.39",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20180930",
+          "value": "242661486.93",
+          "cumulative_f_ann_date": "20181031",
+          "direct_value": "242661486.93",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20180630",
+          "value": "205197720.67",
+          "cumulative_f_ann_date": "20180829",
+          "direct_value": "205197720.67",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "1021920562.56",
+      "path_b_equivalence_cny": "1021920562.56",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "300462.SZ",
+      "formation_date": "20191031",
+      "anchor_end_date": "20190930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20190930",
+          "value": "13157009.26",
+          "cumulative_f_ann_date": "20191030",
+          "direct_value": "13157009.26",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20190630",
+          "value": "17630263.35",
+          "cumulative_f_ann_date": "20190830",
+          "direct_value": "17630263.35",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20190331",
+          "value": "15228471.81",
+          "cumulative_f_ann_date": "20190426",
+          "direct_value": "15228471.81",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20181231",
+          "value": "10193319.51",
+          "cumulative_f_ann_date": "20190426",
+          "direct_value": "10193319.51",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "56209063.93",
+      "path_b_equivalence_cny": "56209063.93",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "002151.SZ",
+      "formation_date": "20200930",
+      "anchor_end_date": "20200630",
+      "components": [
+        {
+          "role": "SQ2",
+          "period": "20200630",
+          "value": "43233941.53",
+          "cumulative_f_ann_date": "20200817",
+          "direct_value": "43233941.53",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20200331",
+          "value": "20991075.45",
+          "cumulative_f_ann_date": "20200429",
+          "direct_value": "20991075.45",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20191231",
+          "value": "-654091478.06",
+          "cumulative_f_ann_date": "20200428",
+          "direct_value": "-654091478.06",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20190930",
+          "value": "46163763.27",
+          "cumulative_f_ann_date": "20191029",
+          "direct_value": "46163763.27",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "-543702697.81",
+      "path_b_equivalence_cny": "-543702697.81",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "600029.SH",
+      "formation_date": "20200331",
+      "anchor_end_date": "20191231",
+      "components": [
+        {
+          "role": "SQ4",
+          "period": "20191231",
+          "value": "-1427000000.0",
+          "cumulative_f_ann_date": "20200331",
+          "direct_value": "-1427000000.0",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20190930",
+          "value": "2388000000.0",
+          "cumulative_f_ann_date": "20191031",
+          "direct_value": "2388000000.0",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20190630",
+          "value": "-959000000.0",
+          "cumulative_f_ann_date": "20190828",
+          "direct_value": "-959000000.0",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20190331",
+          "value": "2649000000.0",
+          "cumulative_f_ann_date": "20190430",
+          "direct_value": "2649000000.0",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "2651000000.0",
+      "path_b_equivalence_cny": "2651000000.0",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "002348.SZ",
+      "formation_date": "20200930",
+      "anchor_end_date": "20200630",
+      "components": [
+        {
+          "role": "SQ2",
+          "period": "20200630",
+          "value": "-20214285.14",
+          "cumulative_f_ann_date": "20200828",
+          "direct_value": "-20214285.14",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20200331",
+          "value": "-12095929.64",
+          "cumulative_f_ann_date": "20200828",
+          "direct_value": "-12095929.64",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20191231",
+          "value": "-352297864.64",
+          "cumulative_f_ann_date": "20200530",
+          "direct_value": "-352297864.64",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20190930",
+          "value": "18584055.30",
+          "cumulative_f_ann_date": "20191025",
+          "direct_value": "18583613.51",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "-366024024.12",
+      "path_b_equivalence_cny": "-366024024.12",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "002881.SZ",
+      "formation_date": "20201231",
+      "anchor_end_date": "20200930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20200930",
+          "value": "-1953336.05",
+          "cumulative_f_ann_date": "20201030",
+          "direct_value": "-1953336.05",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20200630",
+          "value": "10047153.53",
+          "cumulative_f_ann_date": "20200828",
+          "direct_value": "10047153.53",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20200331",
+          "value": "4225072.41",
+          "cumulative_f_ann_date": "20200428",
+          "direct_value": "4225072.41",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20191231",
+          "value": "9047420.60",
+          "cumulative_f_ann_date": "20200428",
+          "direct_value": "9047420.6",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "21366310.49",
+      "path_b_equivalence_cny": "21366310.49",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "002461.SZ",
+      "formation_date": "20200531",
+      "anchor_end_date": "20200331",
+      "components": [
+        {
+          "role": "SQ1",
+          "period": "20200331",
+          "value": "20409551.97",
+          "cumulative_f_ann_date": "20200424",
+          "direct_value": "20409551.97",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20191231",
+          "value": "43109211.12",
+          "cumulative_f_ann_date": "20200325",
+          "direct_value": "43109211.12",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20190930",
+          "value": "242476273.06",
+          "cumulative_f_ann_date": "20191022",
+          "direct_value": "242476273.06",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20190630",
+          "value": "182294543.59",
+          "cumulative_f_ann_date": "20190822",
+          "direct_value": "182294543.59",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "488289579.74",
+      "path_b_equivalence_cny": "488289579.74",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "603991.SH",
+      "formation_date": "20210731",
+      "anchor_end_date": "20210331",
+      "components": [
+        {
+          "role": "SQ1",
+          "period": "20210331",
+          "value": "-4464651.88",
+          "cumulative_f_ann_date": "20210427",
+          "direct_value": "-4464651.88",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20201231",
+          "value": "-12299847.55",
+          "cumulative_f_ann_date": "20210427",
+          "direct_value": "-12299847.55",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20200930",
+          "value": "-9694105.38",
+          "cumulative_f_ann_date": "20201029",
+          "direct_value": "-9694105.38",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20200630",
+          "value": "-13425691.89",
+          "cumulative_f_ann_date": "20200826",
+          "direct_value": "-13425691.89",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "-39884296.70",
+      "path_b_equivalence_cny": "-39884296.70",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "300703.SZ",
+      "formation_date": "20210131",
+      "anchor_end_date": "20191231",
+      "components": [
+        {
+          "role": "SQ4",
+          "period": "20191231",
+          "value": "22375851.35",
+          "cumulative_f_ann_date": "20200418",
+          "direct_value": "22375851.35",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20190930",
+          "value": "46718397.20",
+          "cumulative_f_ann_date": "20191028",
+          "direct_value": "46718397.2",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20190630",
+          "value": "39949354.26",
+          "cumulative_f_ann_date": "20190816",
+          "direct_value": "39949354.26",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20190331",
+          "value": "8927070.16",
+          "cumulative_f_ann_date": "20190426",
+          "direct_value": "8927070.16",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "117970672.97",
+      "path_b_equivalence_cny": "117970672.97",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "002071.SZ",
+      "formation_date": "20210430",
+      "anchor_end_date": "20210331",
+      "components": [
+        {
+          "role": "SQ1",
+          "period": "20210331",
+          "value": "-31317096.6",
+          "cumulative_f_ann_date": "20210429",
+          "direct_value": "-31317096.6",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20201231",
+          "value": "-175814771.54",
+          "cumulative_f_ann_date": "20210429",
+          "direct_value": "-175814771.54",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20200930",
+          "value": "-26487701.99",
+          "cumulative_f_ann_date": "20201031",
+          "direct_value": "-26487701.99",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20200630",
+          "value": "-23174242.53",
+          "cumulative_f_ann_date": "20200827",
+          "direct_value": "-23174242.53",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "-256793812.66",
+      "path_b_equivalence_cny": "-256793812.66",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "600661.SH",
+      "formation_date": "20210630",
+      "anchor_end_date": "20210331",
+      "components": [
+        {
+          "role": "SQ1",
+          "period": "20210331",
+          "value": "51596095.58",
+          "cumulative_f_ann_date": "20210429",
+          "direct_value": "51596095.58",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20201231",
+          "value": "-177364607.93",
+          "cumulative_f_ann_date": "20210429",
+          "direct_value": "-177364607.93",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20200930",
+          "value": "9052556.21",
+          "cumulative_f_ann_date": "20201030",
+          "direct_value": "9052556.21",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20200630",
+          "value": "-62003292.29",
+          "cumulative_f_ann_date": "20200829",
+          "direct_value": "-62003292.29",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "-178719248.43",
+      "path_b_equivalence_cny": "-178719248.43",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "002039.SZ",
+      "formation_date": "20210228",
+      "anchor_end_date": "20200930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20200930",
+          "value": "292339960.18",
+          "cumulative_f_ann_date": "20201028",
+          "direct_value": "292339960.18",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20200630",
+          "value": "108470997.25",
+          "cumulative_f_ann_date": "20200827",
+          "direct_value": "108470997.25",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20200331",
+          "value": "51589151.58",
+          "cumulative_f_ann_date": "20200424",
+          "direct_value": "51589151.58",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20191231",
+          "value": "4459141.04",
+          "cumulative_f_ann_date": "20200327",
+          "direct_value": "4459141.04",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "456859250.05",
+      "path_b_equivalence_cny": "456859250.05",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "300331.SZ",
+      "formation_date": "20220430",
+      "anchor_end_date": "20220331",
+      "components": [
+        {
+          "role": "SQ1",
+          "period": "20220331",
+          "value": "-23246017.11",
+          "cumulative_f_ann_date": "20220428",
+          "direct_value": "-23246017.11",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20211231",
+          "value": "-402179199.12",
+          "cumulative_f_ann_date": "20220427",
+          "direct_value": "-402179199.12",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20210930",
+          "value": "817875.04",
+          "cumulative_f_ann_date": "20211028",
+          "direct_value": "817875.04",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20210630",
+          "value": "36706217.49",
+          "cumulative_f_ann_date": "20210828",
+          "direct_value": "36706217.49",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "-387901123.70",
+      "path_b_equivalence_cny": "-387901123.70",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "603657.SH",
+      "formation_date": "20220430",
+      "anchor_end_date": "20220331",
+      "components": [
+        {
+          "role": "SQ1",
+          "period": "20220331",
+          "value": "14916908.26",
+          "cumulative_f_ann_date": "20220426",
+          "direct_value": "14916908.26",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20211231",
+          "value": "20804690.60",
+          "cumulative_f_ann_date": "20220412",
+          "direct_value": "20804690.6",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20210930",
+          "value": "24220576.24",
+          "cumulative_f_ann_date": "20211030",
+          "direct_value": "24220576.24",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20210630",
+          "value": "33286036.42",
+          "cumulative_f_ann_date": "20210810",
+          "direct_value": "33286036.42",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "93228211.52",
+      "path_b_equivalence_cny": "93228211.52",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "300950.SZ",
+      "formation_date": "20220731",
+      "anchor_end_date": "20220331",
+      "components": [
+        {
+          "role": "SQ1",
+          "period": "20220331",
+          "value": "5402006.96",
+          "cumulative_f_ann_date": "20220423",
+          "direct_value": "5402006.96",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20211231",
+          "value": "18195464.31",
+          "cumulative_f_ann_date": "20220423",
+          "direct_value": "18195464.31",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20210930",
+          "value": "6856262.57",
+          "cumulative_f_ann_date": "20211028",
+          "direct_value": "6856262.57",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20210630",
+          "value": "9229787.78",
+          "cumulative_f_ann_date": "20210820",
+          "direct_value": "9229787.78",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "39683521.62",
+      "path_b_equivalence_cny": "39683521.62",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "300674.SZ",
+      "formation_date": "20220430",
+      "anchor_end_date": "20220331",
+      "components": [
+        {
+          "role": "SQ1",
+          "period": "20220331",
+          "value": "1597402.05",
+          "cumulative_f_ann_date": "20220429",
+          "direct_value": "1597402.05",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20211231",
+          "value": "240515327.57",
+          "cumulative_f_ann_date": "20220331",
+          "direct_value": "240515327.57",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20210930",
+          "value": "21729556.62",
+          "cumulative_f_ann_date": "20211029",
+          "direct_value": "21729556.62",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20210630",
+          "value": "159912269.83",
+          "cumulative_f_ann_date": "20210821",
+          "direct_value": "159912269.83",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "423754556.07",
+      "path_b_equivalence_cny": "423754556.07",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "603507.SH",
+      "formation_date": "20220531",
+      "anchor_end_date": "20220331",
+      "components": [
+        {
+          "role": "SQ1",
+          "period": "20220331",
+          "value": "18402361.68",
+          "cumulative_f_ann_date": "20220430",
+          "direct_value": "18402361.68",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20211231",
+          "value": "48451895.07",
+          "cumulative_f_ann_date": "20220422",
+          "direct_value": "48451895.07",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20210930",
+          "value": "42859043.94",
+          "cumulative_f_ann_date": "20211225",
+          "direct_value": "42859043.94",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20210630",
+          "value": "61222220.92",
+          "cumulative_f_ann_date": "20210813",
+          "direct_value": "61222220.92",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "170935521.61",
+      "path_b_equivalence_cny": "170935521.61",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "000826.SZ",
+      "formation_date": "20230930",
+      "anchor_end_date": "20230630",
+      "components": [
+        {
+          "role": "SQ2",
+          "period": "20230630",
+          "value": "-82111061.56",
+          "cumulative_f_ann_date": "20230824",
+          "direct_value": "-82111061.56",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20230331",
+          "value": "-77500795.44",
+          "cumulative_f_ann_date": "20230427",
+          "direct_value": "-77500795.44",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20221231",
+          "value": "-782021508.09",
+          "cumulative_f_ann_date": "20230427",
+          "direct_value": "-782021508.09",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20220930",
+          "value": "55815847.98",
+          "cumulative_f_ann_date": "20221028",
+          "direct_value": "55815847.98",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "-885817517.11",
+      "path_b_equivalence_cny": "-885817517.11",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "601198.SH",
+      "formation_date": "20231031",
+      "anchor_end_date": "20230930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20230930",
+          "value": "119847424.35",
+          "cumulative_f_ann_date": "20231031",
+          "direct_value": "119847424.35",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20230630",
+          "value": "130465330.31",
+          "cumulative_f_ann_date": "20230811",
+          "direct_value": "130465330.31",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20230331",
+          "value": "219437640.17",
+          "cumulative_f_ann_date": "20230428",
+          "direct_value": "219437640.17",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20221231",
+          "value": "-29902519.97",
+          "cumulative_f_ann_date": "20230331",
+          "direct_value": "-29902519.97",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "439847874.86",
+      "path_b_equivalence_cny": "439847874.86",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "600720.SH",
+      "formation_date": "20230831",
+      "anchor_end_date": "20230630",
+      "components": [
+        {
+          "role": "SQ2",
+          "period": "20230630",
+          "value": "227205479.95",
+          "cumulative_f_ann_date": "20230822",
+          "direct_value": "227205479.95",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20230331",
+          "value": "10651353.92",
+          "cumulative_f_ann_date": "20230426",
+          "direct_value": "10651353.92",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20221231",
+          "value": "-83719199.99",
+          "cumulative_f_ann_date": "20230322",
+          "direct_value": "-83719199.99",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20220930",
+          "value": "339816822.09",
+          "cumulative_f_ann_date": "20221029",
+          "direct_value": "339816822.09",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "493954455.97",
+      "path_b_equivalence_cny": "493954455.97",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "002692.SZ",
+      "formation_date": "20230831",
+      "anchor_end_date": "20230630",
+      "components": [
+        {
+          "role": "SQ2",
+          "period": "20230630",
+          "value": "13819029.57",
+          "cumulative_f_ann_date": "20230822",
+          "direct_value": "13819029.57",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20230331",
+          "value": "5497629.92",
+          "cumulative_f_ann_date": "20230425",
+          "direct_value": "5497629.92",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20221231",
+          "value": "32042770.54",
+          "cumulative_f_ann_date": "20230425",
+          "direct_value": "32042770.54",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20220930",
+          "value": "7549184.79",
+          "cumulative_f_ann_date": "20221026",
+          "direct_value": "7549184.79",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "58908614.82",
+      "path_b_equivalence_cny": "58908614.82",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "300661.SZ",
+      "formation_date": "20230331",
+      "anchor_end_date": "20220930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20220930",
+          "value": "210713466.10",
+          "cumulative_f_ann_date": "20221029",
+          "direct_value": "210713466.1",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20220630",
+          "value": "279704686.47",
+          "cumulative_f_ann_date": "20220825",
+          "direct_value": "279704686.47",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20220331",
+          "value": "260347302.3",
+          "cumulative_f_ann_date": "20220423",
+          "direct_value": "260347302.3",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20211231",
+          "value": "248202312.17",
+          "cumulative_f_ann_date": "20220423",
+          "direct_value": "248202312.17",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "998967767.04",
+      "path_b_equivalence_cny": "998967767.04",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "301176.SZ",
+      "formation_date": "20241130",
+      "anchor_end_date": "20240930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20240930",
+          "value": "-17215799.50",
+          "cumulative_f_ann_date": "20241026",
+          "direct_value": "-17215799.5",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20240630",
+          "value": "4844714.82",
+          "cumulative_f_ann_date": "20240827",
+          "direct_value": "4844714.82",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20240331",
+          "value": "-1822501.71",
+          "cumulative_f_ann_date": "20240424",
+          "direct_value": "-1822501.71",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20231231",
+          "value": "-17862733.46",
+          "cumulative_f_ann_date": "20240423",
+          "direct_value": "-17862733.46",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "-32056319.85",
+      "path_b_equivalence_cny": "-32056319.85",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "688539.SH",
+      "formation_date": "20240930",
+      "anchor_end_date": "20240630",
+      "components": [
+        {
+          "role": "SQ2",
+          "period": "20240630",
+          "value": "11839675.39",
+          "cumulative_f_ann_date": "20240828",
+          "direct_value": "11839675.39",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20240331",
+          "value": "18780658.79",
+          "cumulative_f_ann_date": "20240427",
+          "direct_value": "18780658.79",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20231231",
+          "value": "35664818.04",
+          "cumulative_f_ann_date": "20240427",
+          "direct_value": "35664818.04",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20230930",
+          "value": "20375653.66",
+          "cumulative_f_ann_date": "20231031",
+          "direct_value": "20375653.66",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "86660805.88",
+      "path_b_equivalence_cny": "86660805.88",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "601528.SH",
+      "formation_date": "20241031",
+      "anchor_end_date": "20240930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20240930",
+          "value": "599059000.0",
+          "cumulative_f_ann_date": "20241031",
+          "direct_value": "599059000.0",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20240630",
+          "value": "444867000.0",
+          "cumulative_f_ann_date": "20240828",
+          "direct_value": "444867000.0",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20240331",
+          "value": "397694000.0",
+          "cumulative_f_ann_date": "20240427",
+          "direct_value": "397694000.0",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20231231",
+          "value": "468804000.0",
+          "cumulative_f_ann_date": "20240328",
+          "direct_value": "468804000.0",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "1910424000.0",
+      "path_b_equivalence_cny": "1910424000.0",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "301022.SZ",
+      "formation_date": "20241031",
+      "anchor_end_date": "20240930",
+      "components": [
+        {
+          "role": "SQ3",
+          "period": "20240930",
+          "value": "23192181.50",
+          "cumulative_f_ann_date": "20241029",
+          "direct_value": "23192181.5",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20240630",
+          "value": "7286115.64",
+          "cumulative_f_ann_date": "20240830",
+          "direct_value": "7286115.64",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ1",
+          "period": "20240331",
+          "value": "238396.91",
+          "cumulative_f_ann_date": "20240423",
+          "direct_value": "238396.91",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20231231",
+          "value": "-7627033.49",
+          "cumulative_f_ann_date": "20240423",
+          "direct_value": "-7627033.49",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "23089660.56",
+      "path_b_equivalence_cny": "23089660.56",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    },
+    {
+      "ts_code": "920212.BJ",
+      "formation_date": "20240531",
+      "anchor_end_date": "20240331",
+      "components": [
+        {
+          "role": "SQ1",
+          "period": "20240331",
+          "value": "770202.8",
+          "cumulative_f_ann_date": "20240427",
+          "direct_value": "770202.8",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ4",
+          "period": "20231231",
+          "value": "1641324.49",
+          "cumulative_f_ann_date": "20240427",
+          "direct_value": "1641324.49",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ3",
+          "period": "20230930",
+          "value": "4519358.98",
+          "cumulative_f_ann_date": "20231028",
+          "direct_value": "4519358.98",
+          "direct_status": "MATCH"
+        },
+        {
+          "role": "SQ2",
+          "period": "20230630",
+          "value": "7238894.56",
+          "cumulative_f_ann_date": "20230819",
+          "direct_value": "7238894.56",
+          "direct_status": "MATCH"
+        }
+      ],
+      "path_a_ttm_cny": "14169780.83",
+      "path_b_equivalence_cny": "14169780.83",
+      "n_direct_match": 4,
+      "n_direct_break": 0
+    }
+  ],
+  "leg_recompute_main_stub_0.00": {
+    "n_months": 144,
+    "a_long_ann": -0.00323662015089782,
+    "a_short_ann": 0.006215010643874427,
+    "long_short_ann_arithmetic": 0.0029783904929766075,
+    "monthly_identity_max_residual": 3e-29,
+    "ann_top_geometric": 0.12748884171148434,
+    "ann_benchmark_scored_geometric": 0.11788275254224195,
+    "excess_ann_geometric_vs_scored": 0.009606089169242382
+  }
+}

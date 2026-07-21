@@ -45,7 +45,7 @@
    "title": "Codex：独立验收 + ★执行拆腿 + 下预注册裁定 + signoff",
    "priority": "high",
    "executor": "codex",
-   "status": "pending",
+   "status": "done",
    "acceptance": "【spec §4 §6】前置 F001-F003 完成。(1)★**TTM 人工复算 ≥50 个证券-形成日**，逐个核对四分量各自的 as-of 取值与等价式；须自选样本（Generator 不得抽）。(2)★★**由 Codex 亲自执行拆腿归因**并核验 F003 计算器的拆腿算术正确——B103-B105 先例：这一步是推翻纸面结论的唯一防线。(3)★★**下预注册裁定**，严格按 spec §4 冻结的三档：GO（年化超额 ≥3.0% + 分年正超额 ≥60% + 五分组单调）/ NO-GO（≤1.0% 或显著非单调）/ INCONCLUSIVE_COVERAGE_LIMITED（1.0%-3.0% 且方向一致，或联合覆盖 <50%）。★**以主口径（不剔除负 TTM）为准**，对照组仅作稳健性。(4)★核查裁定是否被结果反推——即检查 Generator 是否在实施过程中改动过任何阈值或口径定义（git 追溯 spec 与代码常量）。(5) 边界逐条审 H1-H7，★特别是 H7（Generator 报告中不得出现结论性措辞）。(6) 覆盖漏斗与 144 月连续性独立核验。(7) 输出 docs/test-reports/B110-pure-ep-first-look-signoff-YYYY-MM-DD.md，★每个数字必须能追到实际跑过的命令（B104/B105 幻觉教训 + B108/B109 先例）。(8)★诚实限制（spec §5）必须写进 signoff 结论段，裁定不得脱离限制单独引用。",
    "design_decisions": [
     "验收主体：独立无实现上下文 agent 代 Codex（B079-B109 先例）。",

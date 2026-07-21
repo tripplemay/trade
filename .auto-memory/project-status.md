@@ -1,48 +1,29 @@
 ---
 name: project-status
-description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留、永久硬边界、Framework 状态
+description: 项目当前状态快照（覆盖写，≤30 行）
 type: project
 ---
 
 ## 当前状态
-- **B110 纯 E/P first-look ⏳ verifying（2026-07-21）** F001-F003 done，F004（Codex 裁定）pending。产物：`docs/audits/B110-F002-monthly-funnel.csv`（144 行）/ `B110-F002-panel.json` / `B110-F003-signal-stats.json`（四口径原始统计，**不含裁定**）。明细在 `data/research/B110/ep_panel.csv.gz`（863 缓存文件，重跑零 API 成本）。
-- **★★B110 冻结口径附录 `docs/specs/B110-frozen-conventions-addendum.md`（commit e4206b6）**：D1-D8 在**任何信号统计存在之前**由用户锁死，git 可追溯（其时仓库无任何 E/P 值）。D1 基准=B-scored / D2 几何年化 / D3 负 TTM 参与排序+overlay / D6 退市终值=最后成交价+{0,-30%,-100%} 三档全跑。
-- **★★B110 最重要的实测发现 — Tushare 静默空响应**（`docs/audits/B110-F002-tushare-silent-empty-response-2026-07-21.md`）：限流下**返回空表而不抛异常**。最严重形态是**空响应落在第二页** → 分页在整页边界停下，14 个缓存文件恰 5000 行。污染表现为「数据源固有覆盖限制」且**只打 2019-2022**（2022 年 COMPONENT_MISSING 11561、2023-02 覆盖率 67.6%），而漏斗闭合/身份校验 100%/等价式一致率 100% **全部照常通过**。修复后分别降到 4 与 ~94%。防线=行数下限+长退避+**绝不缓存空表**+**整页边界重取**+原子落盘。★**B109 `panel_cli.py:99` 对该模式零防护**（`fetch_single_checked` 拉 stock_basic，一旦命中宇宙退化为只剩 338 只退市名）。
-- **★★B110 等价式的诚实结论**：spec §3.1 的「等价式交叉验证」经代数展开+穷举单测证明为**恒等式**，鉴别力为零，**禁止转述为「数据已交叉验证」**（同型于 B109 审计器「可裁定 16.7% 却报一致率 100%」）。分子的真校验是 **R1 阶跃性**（144 月 **0** 违规）与 **R2 单季直报对拍**（rt=2，MATCH 大量 / BREAK 7949 已 fail-closed）。
-- **B110 F001 真实数据验证通过**（`docs/audits/B110-F001-real-data-validation-2026-07-21.md`）：茅台/万科/格力三只逐分量与公开年报**逐字相符**；★万科 SQ4(2023)=121.63-136.21=**-14.59 亿**，累计值回落是真实单季亏损，**未被置空** —— 附录 §5 铁律（禁以数值为条件的置空）在实测上确认。
-- **B110 自查 7/7 PASS**：144 行形成日逐字相符 / seq 1..144 / period_not_fetched=0 / fwd_missing=0 / delisted_later min=49 / fiscal_irregular=0 / n_neg_ttm min=187。覆盖率合并 90.18%、中位 90.56%、最差月 **71.69%（2015-06~09 股灾停牌，与备忘实测吻合）**，逐年 TTM 损失 4.5-9.9% 平滑无尖峰。成本：首次全量 **537 次/105.8 万行/3159s**（原 spec 粗估 450 次）。
-- **B109 Tushare PIT 数据层 v0 ✅ done（fix_round 1）** signoff `docs/test-reports/B109-tushare-pit-foundation-signoff-2026-07-20.md`。四门 G-A/G-B/G-C/G-D 全过、六边界 H1-H6 全守。★**对上游 handoff 的实测差距：10 道 gate 只 G4 完全通过**，G1/G3b/G5/G7/G8/G9 六道完全未动（无 TTM、无行业、无公司行动、无 snapshot/hydrate、无连续面板）；八类数据 §4.6/§4.7 完全没有，§4.2/§4.3 近乎没有。**交付的是 research-grade 脚本不是可运维数据层**（无落盘、无增量、无 snapshot）。`DATA_NO_GO` 不变。
-- **★★★B109 F002 发现 — Tushare 单次调用静默截断**（`docs/audits/B109-F002-tushare-silent-truncation-2026-07-20.md`）：`income_vip` 恰 9000 行 / `namechange` 恰 10000 行，**不报错不抛异常不置标志位**。★**截断非均匀**：2022FY 漏掉的行里 `update_flag=0` 占 **18.7%**、`flag=1` 仅 5.2%——被砍掉的恰恰**富集 vintage 记录**。已修 `scripts/research/ashare_pit/fetch.py`（分页 + 触顶守卫 + FetchReport 留痕）。**凡分页接口一律走该模块。**
-- **★★B109 F001 已重测**（用户裁定「重跑+扩测」，`docs/audits/B109-F001-vintage-probe-remeasured-2026-07-20.md` 取代原报告）：**2013-2024 全 48 期分页**，28/48 期需多页。★**最重要产出=存储制度三段式变迁**：判据是**版本多重度**（≥2 版本的证券占比），它低时修订是**测不出**而非**不存在**——2013-2017 仅 **7.3%-13.5%**（不可信）／2018-2021 **64.8%-91.4%**（唯一可信窗口）／2022+ 回落但存第二版恰在修订时。★修订率 **0.515%-1.325%**（只取可信窗口；原 0.47%-0.88% 作废）。★FY 0.747% / H1 0.181% / Q3 0.089% / Q1 0.073% → **FY 是 Q1 的 10.2 倍**（原 6.9 倍，方向性结论更强）。★可重建性 **99.2%** → **轻量两字段 resolver 裁定不变**。★**两个担忧被实测推翻**：2014 面板 `NOT_YET_PUBLISHED`=0、报告滞后中位 **91 天**（2023 为 92 天）→ **2013-2020 可用**；真正瓶颈在**分母**（2014 有 8.7% 缺 `total_mv`，2023 仅 0.1%）。
-- **B109 F002 实测**：幸存者偏差量化 **8.91%**（2013-12-31 全状态 2468 只 vs 只拉 L 2248 只）；月末面板 2023-09/10 覆盖 99.87%/99.96%、分母身份 **100.0000%** 通过；★审计器端到端（B108 已烧 120 份语料，H3 合规）**可裁定仅 16.7%、一致率 100%** = 自欺陷阱真实实例 → **F003 的 G-A 门（一致率≥99%）在约 10 份可裁定样本上统计意义极弱，须先扩样本或降级该门**。
-- **★★三问探针实测（¥500 + 15 分钟；`docs/audits/tushare-three-question-probe-2026-07-20.md`）——本仓第一次实测 Tushare：**
-  - **归母净利润真实修订率 = 0.712%**（7 个年报期 / 38,207 股票-期 / 272 个被改）。★上游 handoff 报告用「90.83% 记录在 120 天后仍更新／中位 365 天」论证的**重装三时钟 bitemporal 底座，必要性未被实测支持**——那衡量的是记录被 touch 时间，不是数值被改比例。**但修订稀有 ≠ 可忽略：61% 幅度 >1%、22% >10%、2018 年 p90 达 101.79%** → 需「记录已知修订并能重放」，不需整套版本链。
-  - **as-of 只需两个字段**：取 `f_ann_date <= 形成日` 中最大的一条。`update_flag=0` 保首次披露值、`=1` 的 `f_ann_date` 标修正可知日（滞后中位 372 天，70/87 为此干净形态）。★**未决**：`flag=0` 保留率随期间波动 **10.5%–95.4%**（2019/2020 保留 95%/91% 却近零修订 → 低修订率是**真的**；2023 仅保 10.5% → 该期是**下界**）。
-  - **`total_mv` 身份校验 100.000% 在 0.5% 内、中位误差 0.00000%**（2015/2020/2023 三日）→ **分母问题直接解决**，修掉 B076 `b076_fetch_pit_marketcap.py:83` 用换手率反推**流通市值**（禁令 #6）。
-  - 退市名 **338 只**（263 只在 2013 年后）→ 幸存者偏差可解（禁令 #11）。
-  - **★许可证：用户 2026-07-20 确认允许内部长期归档** → 上游报告 §10 的 snapshot/hydrate/离线复现契约**首次有合规基础**。
-- **B108 巨潮 parser ⏹ 转向收尾**：F001/F002 done，**★F003=superseded — 硬门从未通过，不得读作验收通过**。两轮独立验收均 FAIL（首轮 5.3% coverage / 11 缺陷 E01-E11；复验 16.7% / 新引入 10³ 错值 N01-N05）。★**年报三轮仍 1/34**，parser 实质只在半年报工作。**就获取归母净利润而言性价比输给 Tushare**；巨潮回归 **truth anchor** 定位（上游 §8.1 原本的 P0 角色），代码转审计工具入 B109。
-- **B107 生产迁移 ✅ done**（手工置 done，F003=waived）。生产在 deploysvr（`194.238.26.173`），健康，version 对齐 HEAD。老机冻结作回滚点。
-- **B106–B074 ✅**。
+- **B110 纯 E/P first-look ✅ done（2026-07-21）**：F001-F004 验收通过；F004 Codex 裁定 `INCONCLUSIVE_COVERAGE_LIMITED`。
+- 签收：`docs/test-reports/B110-pure-ep-first-look-signoff-2026-07-21.md`；独立证据：`docs/test-reports/B110-F004-evidence-2026-07-21.json`。
+- 主口径几何超额 0.9606%/年、7/12 正超额年份、Q5 非最优；D1 构成差绝对值 1.7225pp，D6 stub 跨越 1.0% 边界。
+- 独立复核：60 个证券-形成日、240/240 rt=2 对拍 MATCH、144 月拆腿复算；最差联合覆盖 71.69%、R1=0、period_not_fetched=0。
+- B110 F002 已修复 Tushare 空响应/整页边界截断；863 缓存恰 5,000 行文件为 0，逐年 TTM 损失无尖峰。
+- 统计等价式是 Decimal 下的代数恒等式，不能称为独立交叉验证；真校验为 R1 + R2，R2 断裂 fail-closed。
+- 本批次不改产品代码、策略 readiness 或 `DATA_NO_GO`；研究结论不是可交易策略或收益承诺。
 
 ## 接续 / 待决策
-- **F001 先行的理由**：`flag=0` 保留率波动是唯一能推翻 F002 设计的未知数；且三问探针**只测了年报**，而 TTM 需四个连续单季——**季报 vintage 若显著更差，PIT 分子直接不成立**。
-- **★Tushare token 建议轮换**（用户对话中明文提供，已提出未执行）。当前存 `.env.local`（600、`.gitignore` `.env.*` 覆盖、已 `git check-ignore` 验证未入仓）。
-- **★遗留（非本批）**：`600787`(0.87%)/`601992`(29.28%) 两份人工裁定；`workbench-advisor.service` **402** = **aigc 侧 key 配额/权限问题**（AIGC 余额 $22.34 非零、同日其他 client 正常）；**P6 🔴 老 VM 退役**未做。
-- **★关键坑（本机专属）**：Clash fake-ip 代理下连老机会路由到**错的机器** → 一律 `ssh deploysvr` 再跳。
-- backlog 剩：residual-engine（B100 INCONCLUSIVE）+ B106-S3。34+ learnings 待用户确认。
-- **★负责人纪律**：验收结论 git 核实才采信（B104/B105 幻觉教训）。
+- B110 后续 handoff gate 暂不因本批次自动推进；先由用户决定是否接受 coverage/stub 不确定性并补测。
+- 下一 first-look 前明确 NO-GO 与 D1/D6 INCONCLUSIVE 的优先级，以及 D1 构成差使用 signed 还是 absolute。
+- Tushare token 建议轮换（用户曾明文提供，未执行）；residual-engine（B100）与 B106-S3 在 backlog。
+- B109 遗留：`panel_cli.py` 空响应防护、`universe.py` 畸形行披露、PIT 数据层仍 `DATA_NO_GO`。
 
-## 永久硬边界
-- research-safe / no-broker / no-AI 预测 / no 自动下单；**hk_china 仍 ETF proxy（B093 NO-GO）**。红利低波留 A股本土组合才兑现负相关分散。
-- cn_attack 研究态/OOS 红卡不可配资。冻结再验证 pipeline **永不** validated→True。golden 只进测试 fixture seam。**smart-money 免费信号 first-look 均 research-only（0 产品码）无一切入生产。**
-- **A股 PIT 数据禁令**（handoff §14）：禁 `(ticker,quarter)` latest-wins / 禁法定截止日代公告日 / 禁流通市值代总市值 / 禁当前股本×历史价 / 禁只拉 `list_status=L`。**当前仍 `DATA_NO_GO`，B109 不改变该裁定。**
-- **★B108 沉淀的方法论纪律（跨批次适用）**：最终测量必须在**全新 seed** 的 holdout 上（两轮都出现「在已看过的语料上调参」，样本内 26.3% vs 样本外 16.7% = 高估 57%）；Generator 不得抽评测样本；**被规则挡住不等于被验证过**（E01 联网路径因 H3 禁止而零执行却标了 done）；**每轮修复都可能引入同类新缺陷**，跨模块相互作用（N01 = E03×E04）只有独立 holdout + 对拍旧实现才暴露。
+## 永久边界
+- research-safe / no-broker / no-AI 预测 / no 自动下单；A 股 PIT 禁 latest-wins、法定截止日冒充公告日、流通市值代总市值、当前股本回填历史、只拉 L。
+- 冻结再验证 pipeline 永不 validated；golden 只进测试 fixture seam；smart-money first-look 全部 research-only。
+- B108 方法纪律：独立 holdout、被规则挡住不等于验证过、每轮修复后必须重新审查跨模块交互。
 
-## Framework 状态（最新 3 版）
-- **P5-F2**（c5694f7, 2026-07-06）：evaluator.md §33 固化独立对抗评审触发点。
-- **v0.9.55**（f67332e, 2026-07-06）：B080-B098 队列 9 条 learnings 沉淀。
-- **v0.9.53**（B077）：§36 §23 派生字段 measured-not-assumed / §37 first-look 覆盖-门控裁定 / evaluator.md §31 date-bomb。
-
-## 已知 gap
-- 本机 python3=3.9.6，用 `.venv/bin/python`；ruff 本地须 `python -m ruff check .`。backend 测试跑前需 `cd workbench/backend && .venv/bin/python -m pip install ../..`（改 trade/ 后须重装）。scipy 未装。**`tushare` 1.4.29 已装入 `.venv`。**
+## Framework / 环境
+- Framework 最新状态：P5-F2、v0.9.55；B110 S1/S2/S3 见 signoff，待 Planner/用户确认后沉淀。
+- 本机测试使用 `.venv/bin/python`；生产活面 `https://trade.guangai.ai`，真 VM `34.180.93.185`（本批次未做 L2）。
