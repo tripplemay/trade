@@ -175,15 +175,29 @@ def quality_score(fundamentals: pd.DataFrame, as_of: date) -> pd.Series:
 def _trailing_log_return_vol(
     wide_prices: pd.DataFrame, window: int
 ) -> pd.Series:
-    """Annualized stdev of daily log returns over the trailing ``window`` days."""
+    """Annualized stdev of daily log returns over the trailing ``window`` days.
+
+    Computed per ticker over each ticker's OWN trading days (``dropna``), so a
+    foreign-calendar hole in the shared pivot cannot break the rolling window
+    and NaN-out an otherwise-healthy US name (P0-2, diagnosis §3/§6 F2 — the
+    ``min_periods=window`` guard went all-NaN when the US/CN calendars were
+    unioned). No-op on a dense US-only frame (``dropna`` removes nothing), so
+    the validated low-vol factor is unchanged."""
 
     if window <= 1:
         raise FactorInputError("low_vol window must be > 1")
-    log_returns = np.log(wide_prices).diff()
-    rolling_std = log_returns.rolling(window=window, min_periods=window).std()
-    if rolling_std.empty:
+    if wide_prices.empty:
         return pd.Series(dtype=float)
-    return rolling_std.iloc[-1] * np.sqrt(TRADING_DAYS_PER_YEAR)
+    vols: dict[str, float] = {}
+    scale = np.sqrt(TRADING_DAYS_PER_YEAR)
+    for ticker in wide_prices.columns:
+        series = wide_prices[ticker].dropna()
+        if len(series) <= window:
+            vols[ticker] = np.nan
+            continue
+        log_returns = np.log(series).diff()
+        vols[ticker] = float(log_returns.iloc[-window:].std()) * scale
+    return pd.Series(vols, index=list(wide_prices.columns), dtype=float)
 
 
 def low_vol_score(
@@ -269,6 +283,40 @@ def value_score(fundamentals: pd.DataFrame, as_of: date) -> pd.Series:
 # ---------------------------------------------------------------------------
 
 
+def _latest_trend_levels(
+    wide: pd.DataFrame, ma_short: int, ma_long: int, slope_window: int
+) -> tuple[pd.Series, pd.Series, pd.Series, pd.Series]:
+    """Per-ticker latest close, MA_short, MA_long and MA_long slope, each
+    computed over that ticker's OWN trading days (``dropna``) so a
+    foreign-calendar hole in the shared pivot cannot NaN-out the rolling MAs
+    of a healthy US name (P0-2, diagnosis §3/§6 F2). No-op on a dense US-only
+    frame, so the validated trend factor is unchanged."""
+
+    columns = list(wide.columns)
+    closes: dict[str, float] = {}
+    ma_s: dict[str, float] = {}
+    ma_l: dict[str, float] = {}
+    slopes: dict[str, float] = {}
+    for ticker in columns:
+        series = wide[ticker].dropna()
+        if series.empty:
+            closes[ticker] = ma_s[ticker] = ma_l[ticker] = slopes[ticker] = np.nan
+            continue
+        closes[ticker] = float(series.iloc[-1])
+        ma_short_full = series.rolling(window=ma_short, min_periods=ma_short).mean()
+        ma_long_full = series.rolling(window=ma_long, min_periods=ma_long).mean()
+        slope_full = ma_long_full.diff(slope_window) / float(slope_window)
+        ma_s[ticker] = float(ma_short_full.iloc[-1])
+        ma_l[ticker] = float(ma_long_full.iloc[-1])
+        slopes[ticker] = float(slope_full.iloc[-1])
+    return (
+        pd.Series(closes, index=columns, dtype=float),
+        pd.Series(ma_s, index=columns, dtype=float),
+        pd.Series(ma_l, index=columns, dtype=float),
+        pd.Series(slopes, index=columns, dtype=float),
+    )
+
+
 def trend_score(
     prices: pd.DataFrame,
     as_of: date,
@@ -295,17 +343,9 @@ def trend_score(
     wide = _wide_adjusted_close(prices, as_of)
     if wide.empty:
         return pd.Series(dtype=float)
-    ma_short_series = wide.rolling(window=ma_short, min_periods=ma_short).mean()
-    ma_long_series = wide.rolling(window=ma_long, min_periods=ma_long).mean()
-    ma_long_slope_series = ma_long_series.diff(slope_window) / float(slope_window)
-
-    if ma_long_series.empty:
-        return pd.Series(dtype=float)
-
-    latest_close = wide.iloc[-1]
-    latest_ma_short = ma_short_series.iloc[-1]
-    latest_ma_long = ma_long_series.iloc[-1]
-    latest_slope = ma_long_slope_series.iloc[-1]
+    latest_close, latest_ma_short, latest_ma_long, latest_slope = _latest_trend_levels(
+        wide, ma_short, ma_long, slope_window
+    )
 
     cond_close = latest_close > latest_ma_long
     cond_short = latest_ma_short > latest_ma_long

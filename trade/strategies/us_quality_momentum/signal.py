@@ -63,6 +63,22 @@ class SignalResult:
         return self.portfolio.earnings_decisions
 
 
+def _restrict_to_universe(frame: pd.DataFrame, tickers: frozenset[str]) -> pd.DataFrame:
+    """Keep only rows whose ticker is in the us_quality universe (P0-2 fix).
+
+    Diagnosis §3/§6 F2: production loads the *unified* prices/fundamentals CSV,
+    which since B06x also carries ~1490 A-share rows. Computing the factors over
+    that mixed set makes the pivot index the UNION of the US and CN trading
+    calendars — ``low_vol`` / ``trend`` then hit NaN holes on CN-only days and go
+    all-NaN (0 holdings → silent SGOV fall-back), while ``momentum`` / ``quality``
+    / ``value`` percent-rank against the wrong ~1500-name cross-section.
+    Restricting to the universe *before* the factor pivots restores the US-only
+    calendar and the correct peer set. No-op on the US-only B025 fixture (its
+    tickers are exactly the universe), so validated behaviour is unchanged."""
+
+    return frame[frame["ticker"].isin(tickers)]
+
+
 def _compute_factor_contributions(
     factor_scores: Mapping[str, pd.Series],
     parameters: UsQualityMomentumParameters,
@@ -108,8 +124,11 @@ def generate_signal(
     """
 
     universe = load_universe(as_of=as_of_date)
-    prices = load_prices(as_of=as_of_date)
-    fundamentals = load_fundamentals(as_of=as_of_date)
+    universe_tickers = frozenset(entry.ticker for entry in universe)
+    prices = _restrict_to_universe(load_prices(as_of=as_of_date), universe_tickers)
+    fundamentals = _restrict_to_universe(
+        load_fundamentals(as_of=as_of_date), universe_tickers
+    )
     earnings = load_earnings_calendar()  # forward-looking; no as_of filter
     factor_scores = {
         "momentum": momentum_12_1(prices, as_of_date),

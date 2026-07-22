@@ -19,7 +19,7 @@
    "title": "P0-2 us_quality 数据隔离 + ★静默回落改为显式 fallback（20% 仓位）",
    "priority": "high",
    "executor": "generator",
-   "status": "pending",
+   "status": "done",
    "acceptance": "【spec 工作流 A / 诊断 §6 F2】(1) 因子管道**先按 universe 过滤再 pivot**（27 股票池），滚动窗口对中美日历并集的孔洞给出显式策略（US 日历重索引）。(2)★★**空持仓回落 SGOV 时 `sleeve_status` 必须标 `fallback` 并告警，禁止再报 `scored`/`real`** —— 该缺陷的性质是「算不出来却报告成算出来了」，与 B109/B110 的静默截断/静默空表/静默回落同族，H4 已把它升格为通用规则。(3) 回归测试：混入 A 股行情后 `low_vol`/`trend` 非 NaN 数 > 0；构造全 NaN 场景断言 status=fallback 且告警触发。Gates: 同 F001。",
    "design_decisions": [
     "★静默失败是本仓反复吃亏的同一族问题：B109 静默截断、B110 静默空表、此处静默回落。修复必须让它**可见**，不只是让它**不发生**。",

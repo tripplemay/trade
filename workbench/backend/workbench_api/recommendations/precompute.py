@@ -61,6 +61,14 @@ logger = logging.getLogger(__name__)
 
 _SLEEVE_STATUS_STUBBED = "stubbed_data_unavailable"
 _SLEEVE_STATUS_SCORED = "scored"
+# B111 F002 (P0-2) — a sleeve whose scoring code RAN but resolved to 100% the
+# defensive asset (zero risk exposure): us_quality's factors went all-NaN on the
+# unioned US/CN calendar → 0 holdings → silent SGOV fall-back, yet the metadata
+# still said ``scored`` / ``data_source: real`` and monitoring stayed blind for
+# 7 weeks. Marking this ``fallback`` (never ``scored``) + a warning makes the
+# empty/parked sleeve visible, whatever the cause (unavailable data, an all-NaN
+# factor, or a regional gate parking the whole sleeve in cash — diagnosis §3/§4.4).
+_SLEEVE_STATUS_FALLBACK = "fallback"
 _PRICES_SOURCE_REAL = "real"
 _PRICES_SOURCE_FIXTURE = "fixture"
 # B071 F003 — committed golden real-data fixture injected via fixture_dir.
@@ -182,7 +190,6 @@ def score_master_target(
                 us_quality_params=us_quality,
                 hk_china_params=hk_china,
             )
-            sleeve_status[sleeve.sleeve_id] = _SLEEVE_STATUS_SCORED
         except Exception as exc:  # noqa: BLE001 — sleeve input data unavailable on host
             logger.warning(
                 "recommendations_precompute_sleeve_unavailable",
@@ -190,6 +197,22 @@ def score_master_target(
             )
             child_weights = {params.defensive_asset: 1.0}
             sleeve_status[sleeve.sleeve_id] = _SLEEVE_STATUS_STUBBED
+        else:
+            # P0-2 honesty: a sleeve that ran but parked 100% in the defensive
+            # asset is a fall-back, NOT a real ``scored`` allocation. Flag it so
+            # monitoring can see the empty/degraded sleeve instead of it hiding
+            # behind a ``scored`` / ``real`` label (the 7-week P0-2 blind spot).
+            if _resolved_to_pure_defensive(child_weights, params.defensive_asset):
+                sleeve_status[sleeve.sleeve_id] = _SLEEVE_STATUS_FALLBACK
+                logger.warning(
+                    "recommendations_precompute_sleeve_fallback",
+                    extra={
+                        "sleeve": sleeve.sleeve_id,
+                        "defensive_asset": params.defensive_asset,
+                    },
+                )
+            else:
+                sleeve_status[sleeve.sleeve_id] = _SLEEVE_STATUS_SCORED
 
         for symbol, weight in child_weights.items():
             contribution = round(
@@ -283,17 +306,33 @@ def _load_scoring_records(
     return snapshot.records, _PRICES_SOURCE_FIXTURE
 
 
+def _resolved_to_pure_defensive(
+    child_weights: dict[str, float], defensive_asset: str
+) -> bool:
+    """True when a sleeve resolved to 100% the defensive asset (zero risk
+    exposure) — the P0-2 state that must never be reported as ``scored``."""
+
+    risk_weight = sum(
+        weight
+        for symbol, weight in child_weights.items()
+        if symbol != defensive_asset and weight > 0
+    )
+    return risk_weight <= 0.0
+
+
 def _classify_data_source(prices_source: str, sleeve_status: dict[str, str]) -> str:
     """Honest top-level provenance from the price source + per-sleeve outcome.
 
     * fixture prices → ``fixture`` (everything fixture-derived).
-    * real prices, every implemented sleeve scored → ``real``.
-    * real prices, ≥1 sleeve stubbed (its data was unavailable) → ``mixed``.
+    * real prices, every implemented sleeve scored with real holdings → ``real``.
+    * real prices, ≥1 sleeve stubbed (data unavailable) OR fell back to 100%
+      defensive (P0-2) → ``mixed`` — the run is not fully real-scored.
     """
 
     if prices_source != _PRICES_SOURCE_REAL:
         return DATA_SOURCE_FIXTURE
-    if any(status == _SLEEVE_STATUS_STUBBED for status in sleeve_status.values()):
+    degraded = (_SLEEVE_STATUS_STUBBED, _SLEEVE_STATUS_FALLBACK)
+    if any(status in degraded for status in sleeve_status.values()):
         return DATA_SOURCE_MIXED
     return DATA_SOURCE_REAL
 

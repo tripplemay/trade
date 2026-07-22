@@ -29,6 +29,7 @@ from workbench_api.db.repositories.recommendation_snapshot import (
 )
 from workbench_api.recommendations.precompute import (
     _PRICES_SOURCE_REAL,
+    _SLEEVE_STATUS_FALLBACK,
     _SLEEVE_STATUS_SCORED,
     _SLEEVE_STATUS_STUBBED,
     MasterTargetResult,
@@ -213,7 +214,15 @@ def test_score_master_target_invokes_hk_china_sleeve() -> None:
     result = score_master_target()
     status = result.master_meta["sleeve_status"]
     assert "satellite_hk_china" in status  # auto-invoked by the sleeve loop
-    assert status["satellite_hk_china"] in {_SLEEVE_STATUS_SCORED, _SLEEVE_STATUS_STUBBED}
+    # On the bundled 4-ETF fixture the master records don't cover the HK-China
+    # tickers, so the sleeve honestly falls back to the defensive asset (B111
+    # F002) — distinct from ``scored`` (real holdings) and ``stubbed`` (its data
+    # load raised). All three are valid per-sleeve outcomes here.
+    assert status["satellite_hk_china"] in {
+        _SLEEVE_STATUS_SCORED,
+        _SLEEVE_STATUS_STUBBED,
+        _SLEEVE_STATUS_FALLBACK,
+    }
 
 
 def test_data_source_real_when_all_four_sleeves_scored() -> None:

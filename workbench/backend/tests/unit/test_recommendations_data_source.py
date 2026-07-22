@@ -16,6 +16,7 @@ Two halves:
 from __future__ import annotations
 
 import csv
+import logging
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -37,10 +38,12 @@ from workbench_api.db.models.recommendation_snapshot import (
 from workbench_api.recommendations.precompute import (
     _PRICES_SOURCE_FIXTURE,
     _PRICES_SOURCE_REAL,
+    _SLEEVE_STATUS_FALLBACK,
     _SLEEVE_STATUS_SCORED,
     _SLEEVE_STATUS_STUBBED,
     _classify_data_source,
     _load_scoring_records,
+    _resolved_to_pure_defensive,
     score_master_target,
 )
 
@@ -82,6 +85,32 @@ def test_classify_mixed_when_real_prices_but_a_sleeve_stubbed() -> None:
         "satellite_us_quality": _SLEEVE_STATUS_STUBBED,
     }
     assert _classify_data_source(_PRICES_SOURCE_REAL, status) == DATA_SOURCE_MIXED
+
+
+def test_classify_mixed_when_real_prices_but_a_sleeve_fell_back() -> None:
+    """B111 F002 — a sleeve that ran but parked 100% in the defensive asset
+    (P0-2) degrades the run to ``mixed``; the metadata must never say ``real``
+    while a sleeve holds 0 risk exposure."""
+
+    status = {
+        "momentum": _SLEEVE_STATUS_SCORED,
+        "risk_parity": _SLEEVE_STATUS_SCORED,
+        "satellite_us_quality": _SLEEVE_STATUS_FALLBACK,
+        "satellite_hk_china": _SLEEVE_STATUS_SCORED,
+    }
+    assert _classify_data_source(_PRICES_SOURCE_REAL, status) == DATA_SOURCE_MIXED
+
+
+def test_resolved_to_pure_defensive_detects_defensive_only_sleeve() -> None:
+    # 100% the defensive asset → a fall-back (zero risk exposure).
+    assert _resolved_to_pure_defensive({"SGOV": 1.0}, "SGOV") is True
+    assert _resolved_to_pure_defensive({}, "SGOV") is True
+    assert _resolved_to_pure_defensive({"SGOV": 1.0, "SPY": 0.0}, "SGOV") is True
+    # Any real risk holding → a genuine allocation, not a fall-back.
+    assert _resolved_to_pure_defensive({"SGOV": 0.5, "SPY": 0.5}, "SGOV") is False
+    # A sleeve's own non-master defensive (e.g. momentum → AGG bonds) is a real
+    # position from the master's perspective, not a defensive park.
+    assert _resolved_to_pure_defensive({"AGG": 1.0}, "SGOV") is False
 
 
 # ---------------------------------------------------------------------------
@@ -214,7 +243,17 @@ def test_score_master_target_full_real_reaches_data_source_real(
     # daily ETF bars (last 250 fixture dates) so risk_parity has vol history.
     body = list(csv.reader((DEFAULT_FIXTURE_DIR / "prices_daily.csv").open(encoding="utf-8")))
     header, rows = body[0], body[1:]
-    fixture_days = sorted({r[0] for r in rows})[-250:]
+    # Production's refresh job prices only ``price_universe()`` = ETFs + the 27
+    # real ``equity_universe`` tickers; the synthetic ZQ* padding names in the
+    # B025 fixture universe are NOT priced on the VM (so us_quality never picks
+    # them there). Drop their price rows here so the synthetic unified CSV
+    # matches production — otherwise us_quality could select a ZQ* name absent
+    # from the master records and the whole sleeve would (correctly) fall back.
+    rows = [r for r in rows if not r[1].startswith("ZQ")]
+    # A wide window so every sleeve has full history at the (earlier) quarter-end
+    # signal date — hk_china's regional gate needs a 200-day MA, so the last 250
+    # days alone leave its ~Q3 signal date short of history.
+    fixture_days = sorted({r[0] for r in rows})[-600:]
     unified_prices = tmp_path.joinpath(*UNIFIED_PRICES_RELPATH)
     unified_prices.parent.mkdir(parents=True, exist_ok=True)
     with unified_prices.open("w", encoding="utf-8", newline="") as fh:
@@ -224,6 +263,13 @@ def test_score_master_target_full_real_reaches_data_source_real(
         for offset, symbol in enumerate(_ETF_UNIVERSE):
             for i, day in enumerate(fixture_days):
                 px = 100 + offset + (i % 5)
+                writer.writerow([day, symbol, px, px + 1, px - 1, px, px, 1_000_000])
+        # HK-China ETFs, steadily up-trending so the regional gate (price >
+        # 200D MA + positive composite momentum) passes and the sleeve holds
+        # real tickers → all four sleeves score → data_source can reach 'real'.
+        for offset, symbol in enumerate(("MCHI", "FXI", "KWEB", "ASHR")):
+            for i, day in enumerate(fixture_days):
+                px = 50 + offset + i * 0.2
                 writer.writerow([day, symbol, px, px + 1, px - 1, px, px, 1_000_000])
 
     # Unified fundamentals = the B025 fixture fundamentals (real us_quality ratios).
@@ -241,3 +287,53 @@ def test_score_master_target_full_real_reaches_data_source_real(
     assert status["satellite_us_quality"] == _SLEEVE_STATUS_SCORED
     assert _SLEEVE_STATUS_STUBBED not in status.values()
     assert result.master_meta["data_source"] == DATA_SOURCE_REAL
+
+
+@pytest.mark.skipif(
+    not _FIXTURE_AVAILABLE,
+    reason="B025 fixture absent (trade wheel-installed without data/fixtures); "
+    "the real-price fall-back path is L2-verified on the VM",
+)
+def test_score_master_target_marks_fallback_not_scored_on_real_prices(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """B111 F002 (P0-2) — a sleeve that RUNS on real prices but resolves to 100%
+    the defensive asset (here hk_china, whose ETFs are absent from the unified
+    CSV → empty signal → SGOV) must be marked ``fallback`` (never ``scored``),
+    emit a warning, and drag ``data_source`` off ``real`` to ``mixed``. This is
+    the exact P0-2 blind spot: 0-holdings reported as scored/real."""
+
+    monkeypatch.delenv("FORCE_FIXTURE_PATH", raising=False)
+    body = list(csv.reader((DEFAULT_FIXTURE_DIR / "prices_daily.csv").open(encoding="utf-8")))
+    header, rows = body[0], body[1:]
+    rows = [r for r in rows if not r[1].startswith("ZQ")]
+    fixture_days = sorted({r[0] for r in rows})[-600:]
+    # Real prices for the ETF universe + us_quality equities, but NO HK-China
+    # ETF rows → the hk_china sleeve runs and falls back to the defensive asset.
+    unified_prices = tmp_path.joinpath(*UNIFIED_PRICES_RELPATH)
+    unified_prices.parent.mkdir(parents=True, exist_ok=True)
+    with unified_prices.open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.writer(fh)
+        writer.writerow(header)
+        writer.writerows(rows)
+        for offset, symbol in enumerate(_ETF_UNIVERSE):
+            for i, day in enumerate(fixture_days):
+                px = 100 + offset + (i % 5)
+                writer.writerow([day, symbol, px, px + 1, px - 1, px, px, 1_000_000])
+    unified_fund = tmp_path.joinpath(*UNIFIED_FUNDAMENTALS_RELPATH)
+    unified_fund.parent.mkdir(parents=True, exist_ok=True)
+    unified_fund.write_bytes((DEFAULT_FIXTURE_DIR / "fundamentals.csv").read_bytes())
+    monkeypatch.setenv(DATA_ROOT_ENV, str(tmp_path))
+
+    with caplog.at_level(logging.WARNING):
+        result = score_master_target()
+
+    status = result.master_meta["sleeve_status"]
+    assert result.master_meta["prices_source"] == _PRICES_SOURCE_REAL
+    # The empty sleeve is a fall-back, NOT a scored allocation.
+    assert status["satellite_hk_china"] == _SLEEVE_STATUS_FALLBACK
+    assert status["satellite_hk_china"] != _SLEEVE_STATUS_SCORED
+    # A warning is emitted so monitoring can see the parked sleeve.
+    assert "recommendations_precompute_sleeve_fallback" in caplog.text
+    # Real prices + a fall-back sleeve → mixed, never real.
+    assert result.master_meta["data_source"] == DATA_SOURCE_MIXED
