@@ -44,6 +44,11 @@ DEFAULT_INITIAL_CAPITAL = 100_000.0
 DEFAULT_BASE_CURRENCY = "USD"
 DEFAULT_FEE_BPS = 5.0
 DEFAULT_SLIPPAGE_BPS = 5.0
+# B111 F004 — minimum per-name trade size as a fraction of equity. 0.1% of a
+# $100k book = $100, which suppresses the $17-dust rebalance orders the live
+# master book churned (diagnosis §1.4/§6 F5) without blocking real position
+# changes. Kept as a service constant (no per-account column / migration).
+DEFAULT_MIN_TRADE_FRACTION = 0.001
 
 # B080 F004 fix ② — per-strategy base currency. The A-share attack modes trade
 # CNY-denominated names, so their paper book is kept in CNY; everything else
@@ -106,6 +111,7 @@ def _apply_rebalance(
         marks=marks,
         fee_bps=float(account.fee_bps),
         slippage_bps=float(account.slippage_bps),
+        min_trade_fraction=DEFAULT_MIN_TRADE_FRACTION,
     )
 
     new_rows = [

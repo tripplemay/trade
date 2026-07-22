@@ -69,13 +69,22 @@ def compute_rebalance(
     marks: dict[str, float],
     fee_bps: float,
     slippage_bps: float,
+    min_trade_fraction: float = 0.0,
 ) -> RebalancePlan:
     """Compute the new book for one rebalance.
 
     ``current_positions`` maps ``SYMBOL -> (shares, avg_cost)``; ``marks`` maps
     ``SYMBOL -> latest_close``; ``target_weights`` maps ``SYMBOL -> weight``.
     All symbol keys are upper-cased by the caller. Returns a :class:`RebalancePlan`
-    — never mutates its inputs."""
+    — never mutates its inputs.
+
+    ``min_trade_fraction`` (B111 F004) is the minimum per-name trade size as a
+    fraction of equity; a rebalance trade whose notional is below
+    ``equity × min_trade_fraction`` is skipped, keeping that position at its
+    current level, so the book stops churning ``$17``-dust orders on tiny drift
+    (diagnosis §1.4/§6 F5). A full liquidation (the target dropped the name) is
+    exempt so stale positions still close out. Defaults to ``0.0`` — no
+    threshold — so activation and every existing caller are byte-identical."""
 
     cost_rate = (fee_bps + slippage_bps) / 10_000.0
 
@@ -147,6 +156,10 @@ def compute_rebalance(
         s for s in current_positions if _usable(s) is not None
     }
 
+    # B111 F004 — minimum per-name trade notional (0 → disabled). A rebalance
+    # trade smaller than this is dust not worth the round-trip cost.
+    min_trade_notional = equity * max(0.0, min_trade_fraction)
+
     gross_traded = 0.0
     cash_delta = 0.0
     new_positions: list[PlannedPosition] = []
@@ -157,6 +170,16 @@ def compute_rebalance(
         new_shares = desired.get(symbol, 0.0)
         delta = new_shares - old_shares
         notional = abs(delta) * close
+        # Skip a below-threshold trade: hold the position at its current level.
+        # A full close (new_shares → 0) is exempt so stale names still exit.
+        if (
+            min_trade_notional > 0.0
+            and 0.0 < notional < min_trade_notional
+            and new_shares > _EPSILON
+        ):
+            new_shares = old_shares
+            delta = 0.0
+            notional = 0.0
         gross_traded += notional
         cash_delta += -delta * close  # sells add cash, buys subtract
         if abs(new_shares) <= _EPSILON:

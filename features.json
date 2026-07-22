@@ -43,7 +43,7 @@
    "title": "成本对齐 + 最小交易阈值（★修完 P0 后成本会上升，必须同批落地）",
    "priority": "high",
    "executor": "generator",
-   "status": "pending",
+   "status": "done",
    "acceptance": "【spec 工作流 A / 诊断 §6 F5】(1) paper 与回测统一执行/成本假设，并**量化二者差距**——★席位指出回测系统性乐观：回测假设 1bp+2bp 单边，paper 收 5+5bps，信号 T→T+1 open vs paper 当日收盘；实盘实测 5 周 9 次调仓 $419 ≈ 0.42% NAV（年化约 5%）。(2) 调仓加最小交易阈值（drift band 已有，补 min-trade），杜绝 $17 级碎单。(3)★产出一份「回测 vs 实盘成本口径差」的数字，供后续给历史裁定重新定标。Gates: 同 F001。",
    "design_decisions": [
     "★修完 P0 后 Master 会真正持仓 → 成本上升是**预期内**的，不是新缺陷；不同批落地 min-trade 等于把一个 bug 换成另一个问题。",
