@@ -1,16 +1,19 @@
 [Unit]
-Description=Monthly timer for workbench regime-adaptive target precompute (B057, research-state, read-only)
-Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B057-strategy-mode-framework-spec.md
+Description=Daily timer for workbench regime-adaptive target precompute + crisis eval (B057/B111 F003, research-state, read-only)
+Documentation=https://github.com/tripplemay/trade/blob/main/docs/specs/B111-p0-fixes-and-lowvol-first-look-spec.md
 
 [Timer]
-# Monthly (1st of the month, 04:15 UTC) — after the daily data-refresh (00:30)
-# and recommendations (03:00) timers, so the regime target is recomputed once
-# the month's read-only prices have landed. The regime mode re-evaluates monthly
-# (B057): its target is stable within a month and only flips when the monthly
-# signal advances. Persistent=true catches up a missed run after a VM reboot;
-# the precompute is idempotent (RecommendationSnapshotRepository.save_batch
-# overwrites the (regime_adaptive, as_of_date) set).
-OnCalendar=*-*-01 04:15:00
+# Daily (04:15 UTC) — after the daily data-refresh (00:30) and recommendations
+# (03:00) timers, so the regime job re-runs once each day's read-only prices
+# have landed. B111 F003 (P0-3): the crisis DETECTOR now re-evaluates every day
+# on the latest data (评估≠交易), while the published REBALANCE target still
+# advances only monthly (compute_regime_target takes the last COMPLETE month), so
+# a crisis forming mid-month is surfaced within a day instead of the strategy
+# going 7 weeks without looking at the market. Persistent=true catches up a
+# missed run after a VM reboot / the B107-style migration gap that froze the
+# July target; the precompute is idempotent (save_batch overwrites the
+# (regime_adaptive, as_of_date) set).
+OnCalendar=*-*-* 04:15:00
 Persistent=true
 Unit=workbench-regime-precompute.service
 

@@ -19,6 +19,7 @@ from pathlib import Path
 
 from sqlalchemy.orm import Session
 
+from workbench_api.data_refresh.freshness import latest_recommendation_as_of
 from workbench_api.db.repositories.monitoring_metric import MonitoringMetricRepository
 from workbench_api.db.repositories.paper_account import (
     PaperAccountRepository,
@@ -35,6 +36,7 @@ from workbench_api.monitoring.ic import (
     holdings_ic_for_date,
     rolling_ic,
 )
+from workbench_api.monitoring.staleness import assess_target_staleness
 from workbench_api.monitoring.tracking import (
     STRATEGY_BENCHMARK,
     tracking_error,
@@ -46,28 +48,39 @@ logger = logging.getLogger(__name__)
 # The synthetic cash row the CN modes persist — never part of an IC/exposure cross-section.
 CASH_SYMBOL = "CASH"
 
+# Cash / defensive symbols across the funded USD accounts + the CN synthetic cash
+# row — their combined weight is a sleeve's "parked in cash" share (P0-3: the
+# regime/us_quality/hk_china sleeves silently sat 44-55% in SGOV).
+_CASH_SYMBOLS = frozenset({"SGOV", "BIL", "SHY", CASH_SYMBOL})
+
 
 def monitored_strategy_ids() -> tuple[str, ...]:
-    """The research-state CN modes this weekly job monitors, derived from the registry.
+    """The strategies this monitoring job covers, derived from the registry.
 
-    B082 F003 generalised what was a hardcoded ``("cn_attack_quality_momentum",
-    "cn_attack_pure_momentum")`` tuple: a new CN research mode is now picked up by
-    appending its registry row (B057 platform promise). Scoped to the CSI300-benchmarked
-    research cohort so the funded flagship (Master) and the SPY-benchmarked regime mode
-    keep their existing zero-monitoring behaviour (Master/regime zero-regression) — the
-    monitoring job only reads CN inputs (cn_csi300 / cn_size), so the CN cohort is the
-    right set. Registry selector order is preserved (quality+momentum first), so the two
-    cn_attack modes stay byte-identical and cn_dividend_lowvol appends after them.
+    The CSI300-benchmarked CN research cohort (IC + paper metrics) PLUS the
+    USD accounts ``master_portfolio`` and ``regime_adaptive`` (B111 F003). Those
+    two were previously excluded — that exclusion is exactly why the three P0s
+    (frozen regime target, poisoned us_quality sleeve, momentum data bug) ran for
+    7 weeks with zero alerts. They now get the staleness + sleeve-cash metrics
+    (``_account_health_metrics``) that would have caught the freeze; the IC /
+    paper-tracking metrics still degrade to a no-op when their CN-shaped inputs
+    are absent. Registry selector order is preserved (the CN modes first), so the
+    existing CN cohort stays byte-identical and master/regime append after.
     """
 
-    from workbench_api.strategy_modes.registry import list_modes
+    from workbench_api.strategy_modes.registry import (
+        MASTER_STRATEGY_ID,
+        REGIME_STRATEGY_ID,
+        list_modes,
+    )
 
-    return tuple(
+    cn_cohort = tuple(
         mode.strategy_id
         for mode in list_modes()
         if mode.is_research_state
         and STRATEGY_BENCHMARK.get(mode.strategy_id) == "CSI300"
     )
+    return (*cn_cohort, MASTER_STRATEGY_ID, REGIME_STRATEGY_ID)
 
 
 def _load_size_rows(path: Path | None) -> list[tuple[date, str, float]]:
@@ -230,6 +243,89 @@ def _paper_metrics(
     return written
 
 
+def _account_health_metrics(
+    session: Session,
+    metric_repo: MonitoringMetricRepository,
+    strategy_id: str,
+    as_of: date,
+    computed_at: datetime,
+) -> int:
+    """B111 F003 (P0-3) — target staleness, sleeve-cash %, and NAV drawdown.
+
+    These are precisely the signals whose ABSENCE let the three P0s run for 7
+    weeks: a published target that stopped advancing (staleness → alert), a
+    sleeve parked 100% in cash (cash %), and account drawdown. Each degrades to a
+    skipped metric when its input is absent; the staleness metric emits a WARNING
+    the timer's journal surfaces when the target is stale (> 45 days)."""
+
+    written = 0
+
+    # 1) Target staleness — the P0-3 frozen-target detector, with an alert.
+    published_as_of = latest_recommendation_as_of(session, strategy_id)
+    verdict = assess_target_staleness(strategy_id, published_as_of, as_of)
+    metric_repo.upsert_metric(
+        strategy_id=strategy_id, as_of=as_of, metric="target_staleness_days",
+        value=(float(verdict.age_days) if verdict.age_days is not None else None),
+        meta={
+            "is_stale": verdict.is_stale,
+            "threshold_days": verdict.threshold_days,
+            "as_of_published": published_as_of.isoformat() if published_as_of else None,
+            "reason": verdict.reason,
+        },
+        computed_at=computed_at,
+    )
+    written += 1
+    if verdict.is_stale:
+        logger.warning(
+            "monitoring_target_stale",
+            extra={
+                "strategy_id": strategy_id,
+                "age_days": verdict.age_days,
+                "threshold_days": verdict.threshold_days,
+                "as_of_published": published_as_of.isoformat() if published_as_of else None,
+            },
+        )
+
+    # 2) Sleeve cash % from the latest published target (44-55% SGOV was the P0 tell).
+    rows = RecommendationSnapshotRepository(session).latest_snapshot(strategy_id)
+    if rows:
+        cash_pct = sum(
+            float(r.target_weight) for r in rows if r.symbol in _CASH_SYMBOLS
+        )
+        metric_repo.upsert_metric(
+            strategy_id=strategy_id, as_of=as_of, metric="sleeve_cash_pct",
+            value=cash_pct,
+            meta={
+                "cash_symbols": sorted({r.symbol for r in rows if r.symbol in _CASH_SYMBOLS}),
+                "n_positions": len(rows),
+            },
+            computed_at=computed_at,
+        )
+        written += 1
+
+    # 3) NAV drawdown vs peak (when the account has a NAV history).
+    account = PaperAccountRepository(session).get_by_strategy(strategy_id)
+    if account is not None:
+        navs = [
+            float(n.nav)
+            for n in sorted(
+                PaperNavHistoryRepository(session).list_by_account(account.id),
+                key=lambda n: n.as_of_date,
+            )
+        ]
+        if navs:
+            peak = max(navs)
+            drawdown = (navs[-1] - peak) / peak if peak > 0 else 0.0
+            metric_repo.upsert_metric(
+                strategy_id=strategy_id, as_of=as_of, metric="nav_drawdown",
+                value=drawdown,
+                meta={"peak_nav": peak, "current_nav": navs[-1]},
+                computed_at=computed_at,
+            )
+            written += 1
+    return written
+
+
 def run_monitoring(
     session: Session,
     *,
@@ -251,6 +347,9 @@ def run_monitoring(
             written += _paper_metrics(
                 session, metric_repo, strategy_id, as_of, stamp,
                 cn_size_path=cn_size_path, cn_csi300_path=cn_csi300_path,
+            )
+            written += _account_health_metrics(
+                session, metric_repo, strategy_id, as_of, stamp
             )
         except Exception:  # noqa: BLE001 — one strategy's gap must not fail the job
             logger.warning("monitoring_metrics_failed", extra={"strategy_id": strategy_id})

@@ -732,6 +732,35 @@ def test_regime_timer_runs_and_pulls_service() -> None:
     assert "WantedBy=timers.target" in text
 
 
+def test_all_timers_are_persistent() -> None:
+    """B111 F003 (P0-3): every shipped timer MUST set ``Persistent=true`` so a
+    run missed while the VM was down / mid-migration is caught up on next boot
+    instead of silently skipped. The P0-3 freeze happened because the regime
+    timer was only installed on 07-13 (a B107 migration), missing July's run;
+    Persistent is the guard, so pin it on every unit to stop a regression from
+    shipping a fire-and-forget timer."""
+
+    timers = sorted(SYSTEMD_DIR.glob("workbench-*.timer"))
+    assert timers, "no workbench timer units found"
+    missing = [
+        t.name
+        for t in timers
+        if "Persistent=true" not in t.read_text(encoding="utf-8")
+    ]
+    assert not missing, f"timers missing Persistent=true: {missing}"
+
+
+def test_regime_timer_evaluates_daily_for_crisis_detection() -> None:
+    """B111 F003 (P0-3): the regime timer runs DAILY so the crisis detector
+    re-evaluates every day (评估≠交易 — the published rebalance target still
+    advances only monthly). A monthly-only timer is what let the strategy go 7
+    weeks without looking at the market."""
+
+    text = REGIME_TIMER_UNIT.read_text(encoding="utf-8")
+    assert "OnCalendar=*-*-* 04:15:00" in text  # daily, not *-*-01 (monthly)
+    assert "*-*-01" not in text
+
+
 def test_regime_timer_wired_by_dry_loop() -> None:
     """B057 timer installs via the B037-OPS1 workbench-*.timer loop — zero
     deploy.sh change, no hardcoded enable literal."""

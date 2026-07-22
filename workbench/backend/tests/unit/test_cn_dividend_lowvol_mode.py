@@ -93,17 +93,20 @@ def test_refresh_worker_dispatch_includes_dividend_lowvol() -> None:
     assert CN_DIVIDEND_LOWVOL_STRATEGY_ID in _DISPATCH
 
 
-def test_monitored_cohort_adds_dividend_lowvol_keeps_master_regime_out() -> None:
+def test_monitored_cohort_adds_master_and_regime_after_cn_modes() -> None:
     cohort = monitored_strategy_ids()
-    # The two cn_attack modes stay (byte-identical order: quality first), dividend_lowvol
-    # is appended, and the funded / SPY modes are excluded (Master/regime zero-regression).
+    # B111 F003 (P0-3): the CN cohort is preserved byte-identical and in order
+    # (quality first, dividend_lowvol appended), then master + regime are added —
+    # their previous EXCLUSION is exactly why the three P0s ran 7 weeks unmonitored.
     assert cohort == (
         "cn_attack_quality_momentum",
         "cn_attack_pure_momentum",
         CN_DIVIDEND_LOWVOL_STRATEGY_ID,
+        "master_portfolio",
+        "regime_adaptive",
     )
-    assert "master_portfolio" not in cohort
-    assert "regime_adaptive" not in cohort
+    assert "master_portfolio" in cohort
+    assert "regime_adaptive" in cohort
 
 
 # --------------------------------------------------------------------------- #

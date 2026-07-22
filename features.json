@@ -31,7 +31,7 @@
    "title": "P0-3 regime 刷新 + 监控扩到 USD 账户",
    "priority": "high",
    "executor": "generator",
-   "status": "pending",
+   "status": "done",
    "acceptance": "【spec 工作流 A / 诊断 §6 F3+F4】(1) 补跑 regime precompute（QQQ 历史已具备）；月度 timer 加 `Persistent=true` 校验 + 失败告警；★危机检测信号改**每日评估**（调仓仍月度，评估≠交易）。(2) B080 指标（NAV vs 基准/滚动超额/回撤/sleeve 现金占比/目标 staleness 天数）**覆盖 master + regime**（现 metrics_job 明确把二者排除 → 三个 P0 全程零告警）。(3)★`as_of_date` 超过 45 天未前进 → 告警。Gates: 同 F001 + 告警可触发须有测试。",
    "design_decisions": [
     "★目标冻结 7 周而无任何告警，根因是监控本身把这两个账户排除了 —— 修 P0-3 不修监控等于下次照样发现不了。",

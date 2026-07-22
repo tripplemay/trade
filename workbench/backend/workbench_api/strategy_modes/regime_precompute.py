@@ -63,6 +63,11 @@ _MIN_WEIGHT = 1e-6
 ERROR_KIND_DATA_NOT_COVERED = "data_not_covered"
 ERROR_KIND_SCORING = "scoring_error"
 
+# The crisis label the regime detector emits (mirrors
+# trade.strategies.regime_adaptive.regime.REGIME_CRISIS without a top-level trade
+# import — this module imports trade lazily inside the scoring functions).
+_REGIME_CRISIS = "CRISIS"
+
 
 class RegimePrecomputeError(RuntimeError):
     """Regime scoring could not produce a target (e.g. insufficient history).
@@ -212,11 +217,31 @@ def compute_regime_target(
     symbol_sleeve = {
         symbol: category_by_symbol.get(symbol, "regime") for symbol in target_weights
     }
+
+    # B111 F003 (P0-3) — daily crisis RE-EVALUATION on the LATEST (possibly
+    # partial-month) data, using the current target as the held book. The
+    # published rebalance target above is still the last COMPLETE month
+    # (调仓仍月度); this evaluation NEVER advances it — it only surfaces a crisis
+    # forming mid-month via meta + a WARNING, so a daily timer catches it instead
+    # of the strategy going 7 weeks without looking at the market (评估≠交易).
+    current_state = evaluate_current_regime(records, target_weights, config, as_of=last_date)
+    if current_state.regime == _REGIME_CRISIS:
+        logger.warning(
+            "regime_current_crisis_detected",
+            extra={
+                "as_of": last_date.isoformat(),
+                "fast_slow_ratio": current_state.fast_slow_ratio,
+                "spy_trend_signal": current_state.spy_trend_signal,
+            },
+        )
+
     meta: dict[str, Any] = {
         "data_source": prices_source,
         "prices_source": prices_source,
         "signal_date": final.signal_date.isoformat(),
         "regime": final.regime_state.regime,
+        "current_regime": current_state.regime,
+        "current_regime_as_of": last_date.isoformat(),
         "cadence": "monthly",
         "universe_symbols": sorted(category_by_symbol),
         "defensive_asset": config.defensive_symbol,
@@ -230,6 +255,32 @@ def compute_regime_target(
         symbol_sleeve=symbol_sleeve,
         meta=meta,
     )
+
+
+def evaluate_current_regime(
+    records: tuple[PriceBar, ...],
+    prior_weights: dict[str, float],
+    config: Any,
+    *,
+    as_of: date | None = None,
+) -> Any:
+    """Detect the CURRENT regime from the latest data — a read-only crisis check.
+
+    B111 F003 (P0-3): the regime detector classifies NORMAL / BEAR / CRISIS from
+    the *held* portfolio's fast/slow volatility + the SPY 200-day trend as of the
+    latest observed date (including the current, incomplete month). This is the
+    "evaluate daily" half of "evaluate ≠ trade": it reuses the unchanged, tested
+    ``detect_regime`` and never rebalances — the caller keeps the monthly target.
+    Returns the engine's ``RegimeState``."""
+
+    from trade.strategies.regime_adaptive.regime import (  # type: ignore[import-untyped]
+        detect_regime,
+    )
+
+    if not records:
+        raise RegimePrecomputeError("no price records for current-regime evaluation")
+    latest = as_of or max(record.date for record in records)
+    return detect_regime(records, prior_weights, config, latest)
 
 
 def run_regime_precompute(
