@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import logging
 from datetime import date, timedelta
+from typing import Any
 
 import pytest
 from sqlalchemy.orm import Session
@@ -63,7 +64,7 @@ def test_staleness_missing_target_is_stale() -> None:
 # ── daily crisis evaluation (evaluate ≠ trade) ──────────────────────────────
 
 
-def _spy_records(series: list[float], symbol: str):
+def _spy_records(series: list[float], symbol: str) -> tuple[Any, ...]:
     from trade.data.loader import PriceBar  # type: ignore[import-untyped]
 
     start = date(2024, 1, 1)
@@ -102,7 +103,7 @@ def test_evaluate_current_regime_flags_crisis_on_latest_data() -> None:
 
 
 def test_evaluate_current_regime_normal_on_uptrend() -> None:
-    from trade.strategies.regime_adaptive.config import (  # type: ignore[import-untyped]
+    from trade.strategies.regime_adaptive.config import (
         default_regime_adaptive_config,
     )
 
@@ -119,7 +120,9 @@ def test_evaluate_current_regime_normal_on_uptrend() -> None:
 # ── monitoring covers master/regime: staleness metric + alert ───────────────
 
 
-def _seed_target(session: Session, strategy_id: str, as_of: date, rows: list[dict]) -> None:
+def _seed_target(
+    session: Session, strategy_id: str, as_of: date, rows: list[dict[str, Any]]
+) -> None:
     RecommendationSnapshotRepository(session).save_batch(
         strategy_id=strategy_id, as_of_date=as_of, rows=rows, master_meta={}
     )

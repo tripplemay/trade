@@ -262,7 +262,7 @@ def test_score_master_target_full_real_reaches_data_source_real(
         writer.writerows(rows)
         for offset, symbol in enumerate(_ETF_UNIVERSE):
             for i, day in enumerate(fixture_days):
-                px = 100 + offset + (i % 5)
+                px = 100.0 + offset + (i % 5)
                 writer.writerow([day, symbol, px, px + 1, px - 1, px, px, 1_000_000])
         # HK-China ETFs, steadily up-trending so the regional gate (price >
         # 200D MA + positive composite momentum) passes and the sleeve holds
