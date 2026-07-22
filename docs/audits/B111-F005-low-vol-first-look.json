@@ -1,0 +1,627 @@
+{
+  "generator_boundary": "H7：本产物只含原始统计，不含任何裁定。主判据（σ 比 ≤0.90 且 ≥11/12 年）与副判据（几何超额>0 且 bootstrap P(>0)≥0.90）的施加、以及 G1/G2 硬门的判读，全部归 F007 的 Codex（铁律 #4）。已观测点估计是背景不作证据（§B.0）。",
+  "hard_gates": {
+    "G1_lag_one_month": {
+      "rationale": "规模因子头条 >50% 死在这一刀下（lag0→1 断崖）；须实测不得推理。",
+      "threshold_geometric_excess_pp": 1.0,
+      "variant": "g1_lag1_stub_0.00"
+    },
+    "G2_liquidity_filter": {
+      "drop_fraction": 0.3,
+      "rationale": "低波溢价若住在流动性尾部，则对任何实盘规模不可执行。",
+      "status": "executed",
+      "threshold_geometric_excess_pp": 1.0,
+      "variant": "g2_liquidity_stub_0.00"
+    },
+    "role": "★这两个尚未执行的证伪是本方向唯一有信息量的部分（§B.2）：答案未知，阈值 +1.0pp 几何超额；施加与裁定归 F007（H7）。"
+  },
+  "honest_limits": [
+    "无行业中性 / 规模中性（handoff §4.6 的 PIT 行业根本不存在）",
+    "无停牌 / 涨跌停 / ST 可执行性检查（handoff G3b 未建）→ 有些「买入」实际买不到",
+    "无交易成本、无冲击成本、无换手率约束",
+    "无公司行动处置（handoff §4.7 未建）→ 退市证券最终现金去向以最后成交价近似",
+    "不是 handoff 的 G5/G9 级 lineage 与连续面板",
+    "★因此任何正向结果都是**上界**，不是可实现收益；结论只能用于「值不值得继续建地基」这一个决策，不得外推为收益预期。",
+    "★数据层可信度分层：B110 统计层已被两路零-import 独立复算逐位证实；但数据层（PIT total_mv 的 PIT 性、复权/退市终值构造、宇宙幸存者偏差）仍只有 B110 F004 单方证据且其半数检查已被证明无鉴别力。本方向建立在同一面板上，继承该不确定性。",
+    "★窗口敏感性：B110 实测窗口杠杆（10.89pp）大于数据质量杠杆（2.05~3.96pp）。本方向窗口冻结 2013-01～2024-12 全区间；分段结果并排披露但不用于挑选。"
+  ],
+  "honesty_statement": "本方向不是干净的预注册：下列点估计在起草 spec 前已被看到，故为背景不作证据；判据信息量在 G1（排序滞后一月）/ G2（流动性）两个尚未执行的证伪上。已观测数字不得作为本方向成立的依据。",
+  "variants": {
+    "g1_lag1_stub_0.00": {
+      "ann_benchmark_scored_geometric": 0.10667600283930456,
+      "ann_v1_geometric": 0.12877442198360023,
+      "arithmetic_side_by_side": {
+        "ci95_ann_analytical": [
+          -0.028611856698459497,
+          0.07280869498705084
+        ],
+        "excess_ann_arithmetic": 0.00975298172746927,
+        "monthly_excess_t_newey_west_lag6": 0.44160564173496586,
+        "monthly_excess_t_simple": 0.3769619444610218,
+        "role": "disclosed_not_relied_upon_this_design_does_not_depend_on_it",
+        "se_ann": 0.02587258971569141
+      },
+      "bootstrap_geometric_excess": {
+        "ci95": [
+          -0.03981000532084811,
+          0.07302058883772333
+        ],
+        "n_boot": 2000,
+        "n_effective": 2000,
+        "p_positive": 0.7715,
+        "seed": 20260721
+      },
+      "criterion_thresholds": {
+        "hard_gate_excess_min_pp": 1.0,
+        "main_risk_sigma_ratio_max": 0.9,
+        "main_risk_years_required": 11,
+        "main_risk_years_total": 12,
+        "note": "阈值为陈述值，独立于观测；施加与裁定归 F007（H7）。",
+        "secondary_bootstrap_p_positive_min": 0.9,
+        "secondary_geometric_excess_min": 0.0
+      },
+      "excess_ann_geometric_vs_scored": 0.022098419144295667,
+      "group_annual_geometric": {
+        "V1": 0.12877442198360023,
+        "V2": 0.13069392175294725,
+        "V3": 0.12217895174164939,
+        "V4": 0.10161713007915618,
+        "V5": 0.04211124432511615
+      },
+      "honest_limits": [
+        "无行业中性 / 规模中性（handoff §4.6 的 PIT 行业根本不存在）",
+        "无停牌 / 涨跌停 / ST 可执行性检查（handoff G3b 未建）→ 有些「买入」实际买不到",
+        "无交易成本、无冲击成本、无换手率约束",
+        "无公司行动处置（handoff §4.7 未建）→ 退市证券最终现金去向以最后成交价近似",
+        "不是 handoff 的 G5/G9 级 lineage 与连续面板",
+        "★因此任何正向结果都是**上界**，不是可实现收益；结论只能用于「值不值得继续建地基」这一个决策，不得外推为收益预期。",
+        "★数据层可信度分层：B110 统计层已被两路零-import 独立复算逐位证实；但数据层（PIT total_mv 的 PIT 性、复权/退市终值构造、宇宙幸存者偏差）仍只有 B110 F004 单方证据且其半数检查已被证明无鉴别力。本方向建立在同一面板上，继承该不确定性。",
+        "★窗口敏感性：B110 实测窗口杠杆（10.89pp）大于数据质量杠杆（2.05~3.96pp）。本方向窗口冻结 2013-01～2024-12 全区间；分段结果并排披露但不用于挑选。"
+      ],
+      "label": "g1_lag1_stub_0.00",
+      "n_months": 131,
+      "realized_sigma": {
+        "by_year": {
+          "2014": {
+            "sigma_benchmark": 0.04926549519289884,
+            "sigma_v1": 0.04857313018793415,
+            "v1_lower": true
+          },
+          "2015": {
+            "sigma_benchmark": 0.17324409835939505,
+            "sigma_v1": 0.14664137637486763,
+            "v1_lower": true
+          },
+          "2016": {
+            "sigma_benchmark": 0.06263603464669779,
+            "sigma_v1": 0.04373339416994733,
+            "v1_lower": true
+          },
+          "2017": {
+            "sigma_benchmark": 0.039402911639985806,
+            "sigma_v1": 0.030142698250938273,
+            "v1_lower": true
+          },
+          "2018": {
+            "sigma_benchmark": 0.05073380534999914,
+            "sigma_v1": 0.04735692770048287,
+            "v1_lower": true
+          },
+          "2019": {
+            "sigma_benchmark": 0.0757085711369231,
+            "sigma_v1": 0.0642310785931005,
+            "v1_lower": true
+          },
+          "2020": {
+            "sigma_benchmark": 0.05832918774829396,
+            "sigma_v1": 0.05642201154840649,
+            "v1_lower": true
+          },
+          "2021": {
+            "sigma_benchmark": 0.049422354292564676,
+            "sigma_v1": 0.0458069525747919,
+            "v1_lower": true
+          },
+          "2022": {
+            "sigma_benchmark": 0.07915864027152819,
+            "sigma_v1": 0.06248771591204925,
+            "v1_lower": true
+          },
+          "2023": {
+            "sigma_benchmark": 0.05884468607528542,
+            "sigma_v1": 0.04995355033787389,
+            "v1_lower": true
+          },
+          "2024": {
+            "sigma_benchmark": 0.0847016021934544,
+            "sigma_v1": 0.07027815255961019,
+            "v1_lower": true
+          }
+        },
+        "n_years": 11,
+        "n_years_v1_lower": 11,
+        "sigma_benchmark": 0.07901116539538103,
+        "sigma_ratio": 0.8513193694735297,
+        "sigma_v1": 0.06726373550576455
+      }
+    },
+    "g2_liquidity_stub_0.00": {
+      "ann_benchmark_scored_geometric": 0.05167904323311889,
+      "ann_v1_geometric": 0.09273500270509594,
+      "arithmetic_side_by_side": {
+        "ci95_ann_analytical": [
+          -0.012105511900969299,
+          0.09421743084492339
+        ],
+        "excess_ann_arithmetic": 0.02795266594973536,
+        "monthly_excess_t_newey_west_lag6": 1.3267670890178571,
+        "monthly_excess_t_simple": 1.0305814313740442,
+        "role": "disclosed_not_relied_upon_this_design_does_not_depend_on_it",
+        "se_ann": 0.027123199680074664
+      },
+      "bootstrap_geometric_excess": {
+        "ci95": [
+          -0.018325851347892996,
+          0.09340713556205138
+        ],
+        "n_boot": 2000,
+        "n_effective": 2000,
+        "p_positive": 0.9145,
+        "seed": 20260721
+      },
+      "criterion_thresholds": {
+        "hard_gate_excess_min_pp": 1.0,
+        "main_risk_sigma_ratio_max": 0.9,
+        "main_risk_years_required": 11,
+        "main_risk_years_total": 12,
+        "note": "阈值为陈述值，独立于观测；施加与裁定归 F007（H7）。",
+        "secondary_bootstrap_p_positive_min": 0.9,
+        "secondary_geometric_excess_min": 0.0
+      },
+      "excess_ann_geometric_vs_scored": 0.041055959471977044,
+      "group_annual_geometric": {
+        "V1": 0.09273500270509594,
+        "V2": 0.07926461123914308,
+        "V3": 0.060190619208066565,
+        "V4": 0.035801355002595514,
+        "V5": -0.01784200884533893
+      },
+      "honest_limits": [
+        "无行业中性 / 规模中性（handoff §4.6 的 PIT 行业根本不存在）",
+        "无停牌 / 涨跌停 / ST 可执行性检查（handoff G3b 未建）→ 有些「买入」实际买不到",
+        "无交易成本、无冲击成本、无换手率约束",
+        "无公司行动处置（handoff §4.7 未建）→ 退市证券最终现金去向以最后成交价近似",
+        "不是 handoff 的 G5/G9 级 lineage 与连续面板",
+        "★因此任何正向结果都是**上界**，不是可实现收益；结论只能用于「值不值得继续建地基」这一个决策，不得外推为收益预期。",
+        "★数据层可信度分层：B110 统计层已被两路零-import 独立复算逐位证实；但数据层（PIT total_mv 的 PIT 性、复权/退市终值构造、宇宙幸存者偏差）仍只有 B110 F004 单方证据且其半数检查已被证明无鉴别力。本方向建立在同一面板上，继承该不确定性。",
+        "★窗口敏感性：B110 实测窗口杠杆（10.89pp）大于数据质量杠杆（2.05~3.96pp）。本方向窗口冻结 2013-01～2024-12 全区间；分段结果并排披露但不用于挑选。"
+      ],
+      "label": "g2_liquidity_stub_0.00",
+      "n_months": 132,
+      "realized_sigma": {
+        "by_year": {
+          "2014": {
+            "sigma_benchmark": 0.04500973876627956,
+            "sigma_v1": 0.04492250035037522,
+            "v1_lower": true
+          },
+          "2015": {
+            "sigma_benchmark": 0.16937716430809766,
+            "sigma_v1": 0.14557349336856196,
+            "v1_lower": true
+          },
+          "2016": {
+            "sigma_benchmark": 0.061722520634614156,
+            "sigma_v1": 0.04290605200400692,
+            "v1_lower": true
+          },
+          "2017": {
+            "sigma_benchmark": 0.03787379512155652,
+            "sigma_v1": 0.02694273998176557,
+            "v1_lower": true
+          },
+          "2018": {
+            "sigma_benchmark": 0.048580067212217276,
+            "sigma_v1": 0.04545404803544883,
+            "v1_lower": true
+          },
+          "2019": {
+            "sigma_benchmark": 0.07918882694113434,
+            "sigma_v1": 0.06437776795093546,
+            "v1_lower": true
+          },
+          "2020": {
+            "sigma_benchmark": 0.06009495928383805,
+            "sigma_v1": 0.056961722057991486,
+            "v1_lower": true
+          },
+          "2021": {
+            "sigma_benchmark": 0.05230356790099203,
+            "sigma_v1": 0.043924049220405714,
+            "v1_lower": true
+          },
+          "2022": {
+            "sigma_benchmark": 0.07899025161327065,
+            "sigma_v1": 0.0595942857516236,
+            "v1_lower": true
+          },
+          "2023": {
+            "sigma_benchmark": 0.05738094960734948,
+            "sigma_v1": 0.04549275209494922,
+            "v1_lower": true
+          },
+          "2024": {
+            "sigma_benchmark": 0.08512686593663546,
+            "sigma_v1": 0.06876000223222352,
+            "v1_lower": true
+          }
+        },
+        "n_years": 11,
+        "n_years_v1_lower": 11,
+        "sigma_benchmark": 0.0779220130686084,
+        "sigma_ratio": 0.8428560423001104,
+        "sigma_v1": 0.06567703954306475
+      }
+    },
+    "main_stub_-0.30": {
+      "ann_benchmark_scored_geometric": 0.10808398611509129,
+      "ann_v1_geometric": 0.13925739099242218,
+      "arithmetic_side_by_side": {
+        "ci95_ann_analytical": [
+          -0.018816185264450704,
+          0.08116299501911248
+        ],
+        "excess_ann_arithmetic": 0.018238475928214214,
+        "monthly_excess_t_newey_west_lag6": 0.827545162393372,
+        "monthly_excess_t_simple": 0.7150971375822895,
+        "role": "disclosed_not_relied_upon_this_design_does_not_depend_on_it",
+        "se_ann": 0.025504892929480407
+      },
+      "bootstrap_geometric_excess": {
+        "ci95": [
+          -0.025552926829865985,
+          0.08331671674916263
+        ],
+        "n_boot": 2000,
+        "n_effective": 2000,
+        "p_positive": 0.865,
+        "seed": 20260721
+      },
+      "criterion_thresholds": {
+        "hard_gate_excess_min_pp": 1.0,
+        "main_risk_sigma_ratio_max": 0.9,
+        "main_risk_years_required": 11,
+        "main_risk_years_total": 12,
+        "note": "阈值为陈述值，独立于观测；施加与裁定归 F007（H7）。",
+        "secondary_bootstrap_p_positive_min": 0.9,
+        "secondary_geometric_excess_min": 0.0
+      },
+      "excess_ann_geometric_vs_scored": 0.03117340487733089,
+      "group_annual_geometric": {
+        "V1": 0.13925739099242218,
+        "V2": 0.13444389435877824,
+        "V3": 0.12780771780208533,
+        "V4": 0.09599038030967888,
+        "V5": 0.03488689277622803
+      },
+      "honest_limits": [
+        "无行业中性 / 规模中性（handoff §4.6 的 PIT 行业根本不存在）",
+        "无停牌 / 涨跌停 / ST 可执行性检查（handoff G3b 未建）→ 有些「买入」实际买不到",
+        "无交易成本、无冲击成本、无换手率约束",
+        "无公司行动处置（handoff §4.7 未建）→ 退市证券最终现金去向以最后成交价近似",
+        "不是 handoff 的 G5/G9 级 lineage 与连续面板",
+        "★因此任何正向结果都是**上界**，不是可实现收益；结论只能用于「值不值得继续建地基」这一个决策，不得外推为收益预期。",
+        "★数据层可信度分层：B110 统计层已被两路零-import 独立复算逐位证实；但数据层（PIT total_mv 的 PIT 性、复权/退市终值构造、宇宙幸存者偏差）仍只有 B110 F004 单方证据且其半数检查已被证明无鉴别力。本方向建立在同一面板上，继承该不确定性。",
+        "★窗口敏感性：B110 实测窗口杠杆（10.89pp）大于数据质量杠杆（2.05~3.96pp）。本方向窗口冻结 2013-01～2024-12 全区间；分段结果并排披露但不用于挑选。"
+      ],
+      "label": "main_stub_-0.30",
+      "n_months": 132,
+      "realized_sigma": {
+        "by_year": {
+          "2014": {
+            "sigma_benchmark": 0.047264276839954,
+            "sigma_v1": 0.04678503263754508,
+            "v1_lower": true
+          },
+          "2015": {
+            "sigma_benchmark": 0.1734151000547748,
+            "sigma_v1": 0.14890283841406307,
+            "v1_lower": true
+          },
+          "2016": {
+            "sigma_benchmark": 0.06304370217639149,
+            "sigma_v1": 0.04511350936769729,
+            "v1_lower": true
+          },
+          "2017": {
+            "sigma_benchmark": 0.03949801074377799,
+            "sigma_v1": 0.02999272496144886,
+            "v1_lower": true
+          },
+          "2018": {
+            "sigma_benchmark": 0.05072754299415259,
+            "sigma_v1": 0.04703959605230701,
+            "v1_lower": true
+          },
+          "2019": {
+            "sigma_benchmark": 0.07590566551595677,
+            "sigma_v1": 0.06418051480168842,
+            "v1_lower": true
+          },
+          "2020": {
+            "sigma_benchmark": 0.058308841899739214,
+            "sigma_v1": 0.056650773097652575,
+            "v1_lower": true
+          },
+          "2021": {
+            "sigma_benchmark": 0.04945993022547423,
+            "sigma_v1": 0.04494073726750214,
+            "v1_lower": true
+          },
+          "2022": {
+            "sigma_benchmark": 0.07930653730280914,
+            "sigma_v1": 0.0617712607795846,
+            "v1_lower": true
+          },
+          "2023": {
+            "sigma_benchmark": 0.05894717597699148,
+            "sigma_v1": 0.05069335894477182,
+            "v1_lower": true
+          },
+          "2024": {
+            "sigma_benchmark": 0.08467225645058042,
+            "sigma_v1": 0.07040131641843021,
+            "v1_lower": true
+          }
+        },
+        "n_years": 11,
+        "n_years_v1_lower": 11,
+        "sigma_benchmark": 0.07883352301064692,
+        "sigma_ratio": 0.8573249310172546,
+        "sigma_v1": 0.06758594467695002
+      }
+    },
+    "main_stub_-1.00": {
+      "ann_benchmark_scored_geometric": 0.10733580859678349,
+      "ann_v1_geometric": 0.13924161659499235,
+      "arithmetic_side_by_side": {
+        "ci95_ann_analytical": [
+          -0.018080530580957523,
+          0.08189214657737523
+        ],
+        "excess_ann_arithmetic": 0.01890279186908841,
+        "monthly_excess_t_newey_west_lag6": 0.8556436668203408,
+        "monthly_excess_t_simple": 0.7411919559728464,
+        "role": "disclosed_not_relied_upon_this_design_does_not_depend_on_it",
+        "se_ann": 0.025503233968962438
+      },
+      "bootstrap_geometric_excess": {
+        "ci95": [
+          -0.02484016228438435,
+          0.08388645964236585
+        ],
+        "n_boot": 2000,
+        "n_effective": 2000,
+        "p_positive": 0.8675,
+        "seed": 20260721
+      },
+      "criterion_thresholds": {
+        "hard_gate_excess_min_pp": 1.0,
+        "main_risk_sigma_ratio_max": 0.9,
+        "main_risk_years_required": 11,
+        "main_risk_years_total": 12,
+        "note": "阈值为陈述值，独立于观测；施加与裁定归 F007（H7）。",
+        "secondary_bootstrap_p_positive_min": 0.9,
+        "secondary_geometric_excess_min": 0.0
+      },
+      "excess_ann_geometric_vs_scored": 0.03190580799820886,
+      "group_annual_geometric": {
+        "V1": 0.13924161659499235,
+        "V2": 0.13426044992636266,
+        "V3": 0.12749305466077598,
+        "V4": 0.0954624011030969,
+        "V5": 0.03234572951727088
+      },
+      "honest_limits": [
+        "无行业中性 / 规模中性（handoff §4.6 的 PIT 行业根本不存在）",
+        "无停牌 / 涨跌停 / ST 可执行性检查（handoff G3b 未建）→ 有些「买入」实际买不到",
+        "无交易成本、无冲击成本、无换手率约束",
+        "无公司行动处置（handoff §4.7 未建）→ 退市证券最终现金去向以最后成交价近似",
+        "不是 handoff 的 G5/G9 级 lineage 与连续面板",
+        "★因此任何正向结果都是**上界**，不是可实现收益；结论只能用于「值不值得继续建地基」这一个决策，不得外推为收益预期。",
+        "★数据层可信度分层：B110 统计层已被两路零-import 独立复算逐位证实；但数据层（PIT total_mv 的 PIT 性、复权/退市终值构造、宇宙幸存者偏差）仍只有 B110 F004 单方证据且其半数检查已被证明无鉴别力。本方向建立在同一面板上，继承该不确定性。",
+        "★窗口敏感性：B110 实测窗口杠杆（10.89pp）大于数据质量杠杆（2.05~3.96pp）。本方向窗口冻结 2013-01～2024-12 全区间；分段结果并排披露但不用于挑选。"
+      ],
+      "label": "main_stub_-1.00",
+      "n_months": 132,
+      "realized_sigma": {
+        "by_year": {
+          "2014": {
+            "sigma_benchmark": 0.04730733719404005,
+            "sigma_v1": 0.04678503263754508,
+            "v1_lower": true
+          },
+          "2015": {
+            "sigma_benchmark": 0.1734151000547748,
+            "sigma_v1": 0.14890283841406307,
+            "v1_lower": true
+          },
+          "2016": {
+            "sigma_benchmark": 0.06304370217639149,
+            "sigma_v1": 0.04511350936769729,
+            "v1_lower": true
+          },
+          "2017": {
+            "sigma_benchmark": 0.03949801074377799,
+            "sigma_v1": 0.02999272496144886,
+            "v1_lower": true
+          },
+          "2018": {
+            "sigma_benchmark": 0.05071811101867264,
+            "sigma_v1": 0.04703959605230701,
+            "v1_lower": true
+          },
+          "2019": {
+            "sigma_benchmark": 0.07591202835679473,
+            "sigma_v1": 0.06418051480168842,
+            "v1_lower": true
+          },
+          "2020": {
+            "sigma_benchmark": 0.05829732015218365,
+            "sigma_v1": 0.056650773097652575,
+            "v1_lower": true
+          },
+          "2021": {
+            "sigma_benchmark": 0.049466315947005436,
+            "sigma_v1": 0.04494073726750214,
+            "v1_lower": true
+          },
+          "2022": {
+            "sigma_benchmark": 0.07925866068594746,
+            "sigma_v1": 0.06179664956318057,
+            "v1_lower": true
+          },
+          "2023": {
+            "sigma_benchmark": 0.05890651708122497,
+            "sigma_v1": 0.05069335894477182,
+            "v1_lower": true
+          },
+          "2024": {
+            "sigma_benchmark": 0.08472960002938887,
+            "sigma_v1": 0.07040131641843021,
+            "v1_lower": true
+          }
+        },
+        "n_years": 11,
+        "n_years_v1_lower": 11,
+        "sigma_benchmark": 0.07883760481042505,
+        "sigma_ratio": 0.8573057447564454,
+        "sigma_v1": 0.06758793150681577
+      }
+    },
+    "main_stub_0.00": {
+      "ann_benchmark_scored_geometric": 0.10840468736735165,
+      "ann_v1_geometric": 0.1392641507798995,
+      "arithmetic_side_by_side": {
+        "ci95_ann_analytical": [
+          -0.019132085994500635,
+          0.08085101281959636
+        ],
+        "excess_ann_arithmetic": 0.01795376909641101,
+        "monthly_excess_t_newey_west_lag6": 0.815438585505328,
+        "monthly_excess_t_simple": 0.7039067171621629,
+        "role": "disclosed_not_relied_upon_this_design_does_not_depend_on_it",
+        "se_ann": 0.02550589255461658
+      },
+      "bootstrap_geometric_excess": {
+        "ci95": [
+          -0.025928595458716508,
+          0.08307585838359532
+        ],
+        "n_boot": 2000,
+        "n_effective": 2000,
+        "p_positive": 0.862,
+        "seed": 20260721
+      },
+      "criterion_thresholds": {
+        "hard_gate_excess_min_pp": 1.0,
+        "main_risk_sigma_ratio_max": 0.9,
+        "main_risk_years_required": 11,
+        "main_risk_years_total": 12,
+        "note": "阈值为陈述值，独立于观测；施加与裁定归 F007（H7）。",
+        "secondary_bootstrap_p_positive_min": 0.9,
+        "secondary_geometric_excess_min": 0.0
+      },
+      "excess_ann_geometric_vs_scored": 0.03085946341254786,
+      "group_annual_geometric": {
+        "V1": 0.1392641507798995,
+        "V2": 0.13452248495587882,
+        "V3": 0.12794254424402252,
+        "V4": 0.09621654121905587,
+        "V5": 0.03597632877017487
+      },
+      "honest_limits": [
+        "无行业中性 / 规模中性（handoff §4.6 的 PIT 行业根本不存在）",
+        "无停牌 / 涨跌停 / ST 可执行性检查（handoff G3b 未建）→ 有些「买入」实际买不到",
+        "无交易成本、无冲击成本、无换手率约束",
+        "无公司行动处置（handoff §4.7 未建）→ 退市证券最终现金去向以最后成交价近似",
+        "不是 handoff 的 G5/G9 级 lineage 与连续面板",
+        "★因此任何正向结果都是**上界**，不是可实现收益；结论只能用于「值不值得继续建地基」这一个决策，不得外推为收益预期。",
+        "★数据层可信度分层：B110 统计层已被两路零-import 独立复算逐位证实；但数据层（PIT total_mv 的 PIT 性、复权/退市终值构造、宇宙幸存者偏差）仍只有 B110 F004 单方证据且其半数检查已被证明无鉴别力。本方向建立在同一面板上，继承该不确定性。",
+        "★窗口敏感性：B110 实测窗口杠杆（10.89pp）大于数据质量杠杆（2.05~3.96pp）。本方向窗口冻结 2013-01～2024-12 全区间；分段结果并排披露但不用于挑选。"
+      ],
+      "label": "main_stub_0.00",
+      "n_months": 132,
+      "realized_sigma": {
+        "by_year": {
+          "2014": {
+            "sigma_benchmark": 0.0472458902621622,
+            "sigma_v1": 0.04678503263754508,
+            "v1_lower": true
+          },
+          "2015": {
+            "sigma_benchmark": 0.1734151000547748,
+            "sigma_v1": 0.14890283841406307,
+            "v1_lower": true
+          },
+          "2016": {
+            "sigma_benchmark": 0.06304370217639149,
+            "sigma_v1": 0.04511350936769729,
+            "v1_lower": true
+          },
+          "2017": {
+            "sigma_benchmark": 0.03949801074377799,
+            "sigma_v1": 0.02999272496144886,
+            "v1_lower": true
+          },
+          "2018": {
+            "sigma_benchmark": 0.05073163035295199,
+            "sigma_v1": 0.04703959605230701,
+            "v1_lower": true
+          },
+          "2019": {
+            "sigma_benchmark": 0.0759029518122123,
+            "sigma_v1": 0.06418051480168842,
+            "v1_lower": true
+          },
+          "2020": {
+            "sigma_benchmark": 0.05831380508889629,
+            "sigma_v1": 0.056650773097652575,
+            "v1_lower": true
+          },
+          "2021": {
+            "sigma_benchmark": 0.04945722994225241,
+            "sigma_v1": 0.04494073726750214,
+            "v1_lower": true
+          },
+          "2022": {
+            "sigma_benchmark": 0.07932742099560519,
+            "sigma_v1": 0.06176038413623076,
+            "v1_lower": true
+          },
+          "2023": {
+            "sigma_benchmark": 0.0589648825954393,
+            "sigma_v1": 0.05069335894477182,
+            "v1_lower": true
+          },
+          "2024": {
+            "sigma_benchmark": 0.08464777839510779,
+            "sigma_v1": 0.07040131641843021,
+            "v1_lower": true
+          }
+        },
+        "n_years": 11,
+        "n_years_v1_lower": 11,
+        "sigma_benchmark": 0.0788318616815654,
+        "sigma_ratio": 0.8573322047524624,
+        "sigma_v1": 0.06758509378019763
+      }
+    }
+  },
+  "window": {
+    "end": "20241231",
+    "frozen": "2013-01～2024-12 全区间；分段并排不用于挑选（§B.5）",
+    "n_months": 144,
+    "start": "20130131"
+  }
+}
