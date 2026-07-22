@@ -6,7 +6,7 @@
    "title": "P0-1 momentum sleeve 数据语义 + ETF 白名单（40% 仓位）",
    "priority": "high",
    "executor": "generator",
-   "status": "pending",
+   "status": "done",
    "acceptance": "【spec 工作流 A / 诊断 §6 F1】(1) 给 generate_momentum_signal 喂月末重采样序列，或把 3/6/9 窗口换算成 63/126/189 交易日 + 200D 趋势过滤 —— **二选一，按原设计文档语义定**，不得自创第三种。(2)★**显式传入 ETF universe 白名单**，拒绝个股混入（实盘现持 CAT/HD 即此 bug 直接产物）。(3) 回归测试：日线输入下 3/6/9 **月**语义不变；个股不得进入候选池。(4)★**不改任何策略设计意图**——目标是让跑着的=被验证过的，不是让它更好；顺手优化属越界。Gates: ruff + mypy trade + 全量 pytest 不回归 + 新增回归测试 + CI 全绿。",
    "design_decisions": [
     "★这是修复不是研究：无假设可失败，确定性≈1.0。",

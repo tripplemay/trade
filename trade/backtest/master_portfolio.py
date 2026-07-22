@@ -23,6 +23,7 @@ from trade.portfolio.master import (
 from trade.strategies.global_etf_momentum import (
     MomentumParameters,
     generate_momentum_signal,
+    prepare_momentum_records,
 )
 from trade.strategies.hk_china_momentum.parameters import HkChinaMomentumParameters
 from trade.strategies.hk_china_momentum.signal import (
@@ -482,7 +483,18 @@ def _resolve_child_weights(
     if sleeve.sleeve_type != SLEEVE_TYPE_IMPLEMENTED:
         raise BacktestError(f"unsupported sleeve_type for backtest: {sleeve.sleeve_type}")
     if sleeve.strategy_id == "global_etf_momentum":
-        momentum_signal = generate_momentum_signal(records, momentum_params, signal_date)
+        # P0-1 (diagnosis §6 F1): restrict to the ETF universe (reject the
+        # individual equities sharing the unified price feed) and collapse the
+        # daily production feed to month-end bars so the 3/6/9 windows keep
+        # their validated MONTHLY semantics. Both transforms are no-ops on the
+        # ETF-only, already-monthly backtest fixture, so validated behaviour is
+        # unchanged; only the polluted daily production feed is corrected.
+        momentum_records = prepare_momentum_records(
+            records, parameters=momentum_params, signal_date=signal_date
+        )
+        momentum_signal = generate_momentum_signal(
+            momentum_records, momentum_params, signal_date
+        )
         return dict(momentum_signal.target_weights)
     if sleeve.strategy_id == "risk_parity_vol_target":
         risk_parity_signal = generate_risk_parity_signal(

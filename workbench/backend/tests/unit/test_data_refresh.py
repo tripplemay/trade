@@ -180,6 +180,20 @@ def test_etf_universe_includes_hk_china_phase1_etfs() -> None:
     assert {"MCHI", "FXI", "KWEB", "ASHR"}.issubset(set(ETF_UNIVERSE))
 
 
+def test_momentum_universe_matches_priced_etf_set() -> None:
+    """B111 F001 drift-guard — the Global ETF Momentum sleeve's whitelist
+    (defined in the ``trade`` package, since ``trade`` cannot import workbench)
+    must equal the priced ``ETF_UNIVERSE``. If the two drift apart, the sleeve
+    would either rank an unpriced ETF or silently omit a priced one; keeping
+    them identical is what makes the P0-1 whitelist authoritative."""
+
+    from trade.strategies.global_etf_momentum import (  # type: ignore[import-untyped]
+        GLOBAL_ETF_MOMENTUM_UNIVERSE,
+    )
+
+    assert set(GLOBAL_ETF_MOMENTUM_UNIVERSE) == set(ETF_UNIVERSE)
+
+
 # --- prices CSV ---
 
 
