@@ -1,0 +1,12 @@
+{
+  "framework": {
+    "source": "harness-template",
+    "source_url": "https://github.com/tripplemay/harness-template.git",
+    "version": "unknown",
+    "commit": "b9f5dfd",
+    "adopted": true
+  },
+  "project": {
+    "name": "trade"
+  }
+}
