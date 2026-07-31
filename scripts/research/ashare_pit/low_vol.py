@@ -10,7 +10,8 @@
 
 低波的点估计在起草 spec 前已被看到（席位产出）。因此：
 - 已观测的点估计是**背景，不是证据**，不得作为「本方向成立」的依据。
-- 判据的信息量在 **G1（排序滞后一月）/ G2（流动性）两个尚未执行的证伪**上。
+- 判据的信息量在 **G1（排序滞后一月）/ G2（流动性）两个证伪**上——
+  **执行前**那里答案未知（fix-round 时态修正：两硬门现已执行完毕）。
 - 任何阈值**不由观测值反推**：0.90 σ 比来自复利拖累 ≈ σ²/2 的量级要求；
   1.0pp 沿用 B110 冻结的 NO-GO 线；11/12 年沿用 B110「分年」精神对风险声明加严。
 
@@ -42,10 +43,12 @@ DEFAULT_BOOTSTRAP = 2000
 DEFAULT_SEED = 20260721
 
 #: §B.0 诚实性声明——原样进入产物（背景不作证据）。
+#: fix-round 时态修正（finding F007-3）：硬门已执行，改历史时态，
+#: 原 spec 的「尚未执行」指**执行前**的状态。
 HONESTY_STATEMENT: str = (
     "本方向不是干净的预注册：下列点估计在起草 spec 前已被看到，"
     "故为背景不作证据；判据信息量在 G1（排序滞后一月）/ G2（流动性）"
-    "两个尚未执行的证伪上。已观测数字不得作为本方向成立的依据。"
+    "两个证伪上——执行前那里答案未知。已观测数字不得作为本方向成立的依据。"
 )
 
 #: §B.5 诚实限制 = 沿用 B110 §5 + 本方向特有两条。
@@ -157,6 +160,10 @@ class LowVolCrossSection:
     #: B-scored 基准 = 进入五分位的名等权
     benchmark_scored: float
     n_scored: int
+    #: B-wide 基准 = 该形成日**全部**有前向收益的名等权（不要求 σ 窗口；
+    #: §B.1「同时出 B-wide 与二者之差」——fix-round 补齐）。
+    benchmark_wide: float = 0.0
+    n_wide: int = 0
 
 
 def monthly_grid(rows: Iterable[Mapping[str, str]]) -> list[str]:
@@ -224,6 +231,7 @@ def build_low_vol_section(
     observations: Sequence[LowVolObservation],
     *,
     n_groups: int = N_QUANTILES,
+    wide_returns: Sequence[float] | None = None,
 ) -> LowVolCrossSection | None:
     if len(observations) < n_groups:
         return None
@@ -231,12 +239,15 @@ def build_low_vol_section(
     grouped: dict[str, list[float]] = defaultdict(list)
     for item in observations:
         grouped[assignment[item.ts_code]].append(item.forward_return)
+    wide = list(wide_returns) if wide_returns is not None else []
     return LowVolCrossSection(
         formation_date=formation_date,
         group_returns={name: _mean(rets) for name, rets in grouped.items()},
         group_counts={name: len(rets) for name, rets in grouped.items()},
         benchmark_scored=_mean([item.forward_return for item in observations]),
         n_scored=len(observations),
+        benchmark_wide=_mean(wide) if wide else 0.0,
+        n_wide=len(wide),
     )
 
 
@@ -260,10 +271,13 @@ def build_sections(
     sections: list[LowVolCrossSection] = []
     for idx, formation_date in enumerate(grid):
         observations: list[LowVolObservation] = []
+        wide_returns: list[float] = []
         for ts_code, stock_series in series.items():
             forward = stock_series.get(formation_date)
             if forward is None:
                 continue
+            # B-wide：全部有前向收益的名（不要求 σ 窗口）。
+            wide_returns.append(forward)
             sigma = trailing_sigma(stock_series, grid, idx, window=window, lag=lag)
             if sigma is None:
                 continue
@@ -272,7 +286,9 @@ def build_sections(
             observations = _apply_liquidity_filter(
                 observations, liquidity.get(formation_date, {}), liquidity_drop_fraction
             )
-        section = build_low_vol_section(formation_date, observations)
+        section = build_low_vol_section(
+            formation_date, observations, wide_returns=wide_returns
+        )
         if section is not None:
             sections.append(section)
     return sections
@@ -383,6 +399,32 @@ def bootstrap_geometric_excess(
 # --- 汇总（★不含任何裁定措辞，H7）---
 
 
+def _benchmark_wide_summary(sections: Sequence[LowVolCrossSection]) -> dict[str, object]:
+    """B-wide（全市场等权）与 B-scored 的并排 + 差值（§B.1 fix-round 补齐）。
+
+    B-wide 覆盖不要求 σ 窗口的全部名（含新上市/短历史名），B-scored 只含
+    进入五分位的名；二者之差 = 可评宇宙的构成效应，必须并排披露。
+    """
+    wide = [s.benchmark_wide for s in sections]
+    scored = [s.benchmark_scored for s in sections]
+    ann_wide = geometric_annual(wide)
+    ann_scored = geometric_annual(scored)
+    n_wide_min = min((s.n_wide for s in sections), default=0)
+    n_wide_max = max((s.n_wide for s in sections), default=0)
+    return {
+        "ann_benchmark_wide_geometric": ann_wide,
+        "ann_benchmark_scored_geometric": ann_scored,
+        "wide_minus_scored_pp": (
+            (ann_wide - ann_scored) * 100.0
+            if ann_wide is not None and ann_scored is not None
+            else None
+        ),
+        "n_wide_min": n_wide_min,
+        "n_wide_max": n_wide_max,
+        "note": "B-wide=全市场等权（不要求 σ 窗口）；B-scored=进入五分位的名等权。",
+    }
+
+
 def summarize_low_vol(
     sections: Sequence[LowVolCrossSection], *, label: str
 ) -> dict[str, object]:
@@ -423,6 +465,9 @@ def summarize_low_vol(
         "excess_ann_geometric_vs_scored": excess_geo,
         "ann_v1_geometric": ann_top,
         "ann_benchmark_scored_geometric": ann_bench,
+        # ★B-wide 基准与二者之差（§B.1 fix-round 补齐）：B-wide = 全市场等权
+        # （不要求 σ 窗口），差值 = 可评宇宙（B-scored）相对全市场的构成效应。
+        "benchmark_wide": _benchmark_wide_summary(sections),
         "group_annual_geometric": group_annual,
         # ★算术并排 + t / NW-t / CI95（★强制披露，本方案不依赖它）
         "arithmetic_side_by_side": {
@@ -448,4 +493,164 @@ def summarize_low_vol(
             "note": "阈值为陈述值，独立于观测；施加与裁定归 F007（H7）。",
         },
         "honest_limits": LOW_VOL_HONEST_LIMITS,
+    }
+
+
+# --- §B.1 可实施口径：N=100 只、半年调仓（fix-round 补齐）---
+
+SEMIANNUAL_N = 100
+SEMIANNUAL_HOLD_MONTHS = 6
+
+
+def build_semiannual_n100(
+    rows: Sequence[Mapping[str, str]],
+    *,
+    stub: str,
+    sections: Sequence[LowVolCrossSection],
+    top_n: int = SEMIANNUAL_N,
+    hold_months: int = SEMIANNUAL_HOLD_MONTHS,
+    window: int = SIGMA_WINDOW,
+) -> dict[str, object]:
+    """§B.1 冻结的可实施口径：σ 最低 N=100 名等权、半年调仓（fix-round 补齐）。
+
+    冻结约定（先于看到结果）：
+    - 调仓形成日 = 月度网格上每隔 6 个月一个，首个可评形成日（idx 12，σ 需
+      12 个月 burn-in）起：idx 12, 18, 24, …。
+    - 持有期收益 = 各持有名在持有窗内月度前向收益的复利；持有窗内**缺月按
+      0.0 计入**并计入 ``n_missing_months`` 披露（退市终值已在面板 stub 内，
+      停牌/缺数按平盘如实处理——H4 不静默 dropna）。
+    - 只保留**完整** 6 个月持有窗；面板末的不完整窗丢弃并计入
+      ``n_incomplete_windows_dropped``。
+    - 基准 = 同一批持有窗上 **B-scored** 等权月度收益的复利（``sections``
+      逐月基准，与主口径同源）。
+    - 不建交易成本模型（§B.5 沿用：无交易成本（G2 之外）），只报毛收益。
+    """
+    series = return_series(rows, stub=stub)
+    grid = monthly_grid(rows)
+    bench_by_month = {section.formation_date: section.benchmark_scored for section in sections}
+    windows: list[dict[str, object]] = []
+    n_missing_months = 0
+    n_incomplete = 0
+    for idx in range(window, len(grid), hold_months):
+        if idx + hold_months > len(grid):
+            n_incomplete += 1
+            continue
+        month_keys = grid[idx : idx + hold_months]
+        if any(month_key not in bench_by_month for month_key in month_keys):
+            n_incomplete += 1
+            continue
+        # σ 排序（与主口径同一函数、同一无前视窗口）。
+        ranked: list[tuple[str, float]] = []
+        for ts_code, stock_series in series.items():
+            sigma = trailing_sigma(stock_series, grid, idx, window=window, lag=0)
+            if sigma is None:
+                continue
+            ranked.append((ts_code, sigma))
+        ranked.sort(key=lambda pair: pair[1])
+        held = ranked[:top_n]
+        if not held:
+            continue
+        # 组合与基准的持有窗复利。
+        held_growth: list[float] = []
+        for ts_code, _sigma in held:
+            stock_series = series[ts_code]
+            growth = 1.0
+            for month_key in month_keys:
+                value = stock_series.get(month_key)
+                if value is None:
+                    n_missing_months += 1
+                    value = 0.0
+                growth *= 1.0 + value
+            held_growth.append(growth - 1.0)
+        port_ret = _mean(held_growth)
+        bench_growth = 1.0
+        for month_key in month_keys:
+            bench_growth *= 1.0 + bench_by_month[month_key]
+        bench_ret = bench_growth - 1.0
+        windows.append(
+            {
+                "formation_date": grid[idx],
+                "hold_months": len(month_keys),
+                "n_held": len(held),
+                "portfolio_window_return": port_ret,
+                "benchmark_window_return": bench_ret,
+                "excess_window": port_ret - bench_ret,
+            }
+        )
+
+    total_months = sum(int(w["hold_months"]) for w in windows)
+    port_series = [float(w["portfolio_window_return"]) for w in windows]
+    bench_series = [float(w["benchmark_window_return"]) for w in windows]
+    ann_port = geometric_annual_semiannual(port_series, total_months)
+    ann_bench = geometric_annual_semiannual(bench_series, total_months)
+    sigma_port = _stdev(port_series)
+    sigma_bench = _stdev(bench_series)
+    return {
+        "label": f"n{top_n}_semiannual_stub_{stub}",
+        "top_n": top_n,
+        "hold_months": hold_months,
+        "n_windows": len(windows),
+        "total_months": total_months,
+        "n_missing_months_in_windows": n_missing_months,
+        "n_incomplete_windows_dropped": n_incomplete,
+        "ann_portfolio_geometric": ann_port,
+        "ann_benchmark_geometric": ann_bench,
+        "excess_ann_geometric": (
+            ann_port - ann_bench if ann_port is not None and ann_bench is not None else None
+        ),
+        "window_sigma_ratio": (
+            sigma_port / sigma_bench
+            if sigma_port is not None and sigma_bench is not None and sigma_bench > 0
+            else None
+        ),
+        "windows": windows,
+        "note": (
+            "毛收益口径：无成本、无行业中性、无涨跌停可执行性（§B.5）；"
+            "持有窗内缺月按 0.0 计入并已计数披露。"
+        ),
+    }
+
+
+def geometric_annual_semiannual(
+    window_returns: Sequence[float], total_months: int
+) -> float | None:
+    """持有窗收益序列的几何年化：``∏(1+w)^(12/total_months) − 1``。"""
+    if not window_returns or total_months <= 0:
+        return None
+    growth = 1.0
+    for value in window_returns:
+        growth *= 1.0 + value
+    if growth <= 0:
+        return -1.0
+    return float(growth ** (12.0 / total_months) - 1.0)
+
+
+# --- §B.5 窗口敏感性：分段并排（fix-round 补齐；冻结分段，不用于挑选）---
+
+#: 冻结分段（按可评年份 2014-2024 的 4/4/3 年三分，先于看到结果；§B.5 禁挑选）。
+FROZEN_SEGMENTS: tuple[tuple[str, str, str], ...] = (
+    ("2014-2017", "2014", "2017"),
+    ("2018-2021", "2018", "2021"),
+    ("2022-2024", "2022", "2024"),
+)
+
+
+def summarize_segments(
+    sections: Sequence[LowVolCrossSection], *, label: str
+) -> dict[str, object]:
+    """把主口径 sections 按 FROZEN_SEGMENTS 切分，各段复用 summarize_low_vol
+    全套统计并排披露（§B.5：分段结果不得用于挑选窗口）。"""
+    segments: dict[str, object] = {}
+    for name, start_year, end_year in FROZEN_SEGMENTS:
+        sub = [
+            section
+            for section in sections
+            if start_year <= section.formation_date[:4] <= end_year
+        ]
+        segments[name] = summarize_low_vol(sub, label=f"{label}__{name}")
+    return {
+        "label": f"{label}__segments",
+        "frozen_segments": [name for name, _, _ in FROZEN_SEGMENTS],
+        "note": "分段为冻结披露（4/4/3 年三分），不得用于挑选窗口（§B.5）。",
+        "segments": segments,
     }

@@ -186,9 +186,107 @@ def test_cli_g2_executes_with_liquidity() -> None:
     stocks = sorted({r["ts_code"] for r in rows})
     # Give every stock a turnover so G2's 30% drop applies uniformly.
     liquidity = {d: {s: float(i + 1) for i, s in enumerate(stocks)} for d in dates}
-    result = low_vol_cli.run(rows, liquidity=liquidity)
+    # 正式 G2（fix-round）：12 个月日均成交额 → g2_liquidity_stub_0.00 执行。
+    result = low_vol_cli.run(rows, liquidity_dailyavg=liquidity)
     g2 = result["variants"]["g2_liquidity_stub_0.00"]
     assert g2["n_months"] > 0  # executed → real stats, not a status stub
+    assert result["hard_gates"]["G2_liquidity_filter"]["status"] == "executed_daily_average"
+
+
+def test_single_day_proxy_is_not_the_formal_g2() -> None:
+    """fix-round finding B111-F007-1：单日成交额只能是**代理**，不得充当正式
+    G2——只传 --liquidity 时正式门保持 not_executed，代理并排输出。"""
+    from scripts.research.ashare_pit import low_vol_cli
+
+    rows = _synthetic_rows()
+    dates = sorted({r["formation_date"] for r in rows})
+    stocks = sorted({r["ts_code"] for r in rows})
+    liquidity = {d: {s: float(i + 1) for i, s in enumerate(stocks)} for d in dates}
+    result = low_vol_cli.run(rows, liquidity=liquidity)
+    assert result["variants"]["g2_liquidity_stub_0.00"]["status"] == "not_executed"
+    proxy = result["variants"]["g2_proxy_single_day_stub_0.00"]
+    assert proxy["n_months"] > 0
+    # 时态修正（finding F007-3）：硬门 role 不再写「尚未执行」。
+    assert "尚未执行" not in json.dumps(result["hard_gates"], ensure_ascii=False)
+
+
+# --- fix-round：§B.1 B-wide + 差值 / N=100 半年调仓 / §B.5 分段 ---
+
+
+def test_b_wide_benchmark_and_difference_present() -> None:
+    rows = _synthetic_rows()
+    summary = low_vol.summarize_low_vol(
+        low_vol.build_sections(rows, stub="0.00"), label="main"
+    )
+    wide = summary["benchmark_wide"]
+    assert wide["ann_benchmark_wide_geometric"] is not None
+    assert wide["ann_benchmark_scored_geometric"] is not None
+    assert wide["wide_minus_scored_pp"] is not None
+    # B-wide 覆盖名数 ≥ B-scored（含无 σ 窗口的名）。
+    assert wide["n_wide_min"] >= 200
+    sections = low_vol.build_sections(rows, stub="0.00")
+    assert all(s.n_wide >= s.n_scored for s in sections)
+
+
+def test_n100_semiannual_shape_and_holdings() -> None:
+    rows = _synthetic_rows()
+    sections = low_vol.build_sections(rows, stub="0.00")
+    result = low_vol.build_semiannual_n100(rows, stub="0.00", sections=sections)
+    # 36 月网格：idx 12/18/24/30 四个完整 6 月持有窗。
+    assert result["n_windows"] == 4
+    assert all(w["n_held"] == 100 for w in result["windows"])
+    assert all(w["hold_months"] == 6 for w in result["windows"])
+    assert result["total_months"] == 24
+    assert result["excess_ann_geometric"] is not None
+    assert result["n_incomplete_windows_dropped"] == 0
+    # 持有窗复利 = 逐月几何链：抽查第一个窗口的组合收益与基准收益符号一致。
+    first = result["windows"][0]
+    assert abs(float(first["portfolio_window_return"])) < 1.0
+
+
+def test_n100_semiannual_counts_missing_months() -> None:
+    rows = [row for row in _synthetic_rows() if not (
+        row["ts_code"] == "000000.SZ" and row["formation_date"] == "20140401"
+    )]
+    sections = low_vol.build_sections(rows, stub="0.00")
+    result = low_vol.build_semiannual_n100(rows, stub="0.00", sections=sections)
+    # 删了一个月的一只股若在持有名单内 → 缺月计数 > 0（H4 结构化披露）。
+    assert result["n_missing_months_in_windows"] >= 1
+
+
+def test_segments_are_the_frozen_thirds() -> None:
+    rows = _synthetic_rows()
+    result = low_vol.summarize_segments(
+        low_vol.build_sections(rows, stub="0.00"), label="main"
+    )
+    assert result["frozen_segments"] == ["2014-2017", "2018-2021", "2022-2024"]
+    segments = result["segments"]
+    assert set(segments) == {"2014-2017", "2018-2021", "2022-2024"}
+    # 合成面板只有 2013-2015 → 仅首段有月；分段键必须齐全（不静默省略）。
+    assert segments["2014-2017"]["n_months"] > 0
+    assert segments["2018-2021"]["n_months"] == 0
+
+
+def test_dailyavg_reader_uses_avg_amount_column(tmp_path) -> None:
+    from scripts.research.ashare_pit.low_vol_cli import read_liquidity_dailyavg
+
+    path = tmp_path / "dailyavg.csv"
+    path.write_text(
+        "formation_date,ts_code,avg_amount_12m,n_days\n"
+        "20140131,600000.SH,12345.5,240\n"
+        "20140131,600001.SH,999.9,238\n",
+        encoding="utf-8",
+    )
+    out = read_liquidity_dailyavg(path)
+    assert out == {"20140131": {"600000.SH": 12345.5, "600001.SH": 999.9}}
+
+
+def test_shift_months_helper() -> None:
+    from scripts.research.ashare_pit.low_vol_daily_amount_fetch import _shift_months
+
+    assert _shift_months("20140131", -12) == "20130131"
+    assert _shift_months("20241231", -12) == "20231231"
+    assert _shift_months("20130131", -12) == "20120131"
 
 
 def test_honesty_statement_and_thresholds_present() -> None:

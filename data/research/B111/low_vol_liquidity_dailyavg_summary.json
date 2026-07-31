@@ -1,0 +1,20 @@
+{
+  "window_months": 12,
+  "trade_days_fetched": 3157,
+  "formations": 144,
+  "rows": 554478,
+  "api_calls": 2694,
+  "api_rows": 8756899,
+  "short_days_skipped": [
+    "20150708",
+    "20150709",
+    "20150710"
+  ],
+  "short_days_note": "低于行数下限的交易日被跳过不缓存、不参与均值（H4 如实披露）。2015-07 停牌潮属真实低计数（邻日 2371→2044→1489 逐日递减可验），但为与静默截断不可区分而不接纳。",
+  "coverage_n_days": {
+    "min": 1,
+    "max": 248,
+    "window_days_at_last_formation": 242,
+    "note": "n_days = 12 月窗口内该股有成交记录的交易日数；停牌日无记录不视为零成交。"
+  }
+}
