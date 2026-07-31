@@ -8,8 +8,10 @@
 
 set -euo pipefail
 
-BACKEND_URL="http://127.0.0.1:${WORKBENCH_BACKEND_PORT:-8723}/api/health"
-FRONTEND_URL="http://127.0.0.1:${WORKBENCH_FRONTEND_PORT:-3000}/"
+# B111 fix-round soft-watch S1: defaults unified to the AGENTS.md §3 Codex
+# ports (3099 backend / 3100 frontend), matching codex-setup.sh.
+BACKEND_URL="http://127.0.0.1:${WORKBENCH_BACKEND_PORT:-3099}/api/health"
+FRONTEND_URL="http://127.0.0.1:${WORKBENCH_FRONTEND_PORT:-3100}/"
 MAX_WAIT_SECONDS="${CODEX_WAIT_TIMEOUT:-120}"
 POLL_INTERVAL=2
 

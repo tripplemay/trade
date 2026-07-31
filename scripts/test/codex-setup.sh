@@ -104,8 +104,11 @@ if [[ ! -d "${WORKBENCH_DIR}/frontend/node_modules" ]]; then
   exit 1
 fi
 
-BACKEND_PORT="${WORKBENCH_BACKEND_PORT:-8723}"
-FRONTEND_PORT="${WORKBENCH_FRONTEND_PORT:-3000}"
+# B111 fix-round soft-watch S1: defaults unified to the AGENTS.md §3 Codex
+# ports (3099 backend / 3100 frontend) — the rules文件要求 3099，此前默认
+# 8723/3000 迫使每轮验收用 env 覆盖。可用 WORKBENCH_*_PORT 覆盖回开发端口。
+BACKEND_PORT="${WORKBENCH_BACKEND_PORT:-3099}"
+FRONTEND_PORT="${WORKBENCH_FRONTEND_PORT:-3100}"
 
 # Pre-flight: refuse to overlap if port already bound (another instance running)
 for port in "${BACKEND_PORT}" "${FRONTEND_PORT}"; do
