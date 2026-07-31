@@ -1,35 +1,49 @@
 """B111 F004 — backtest-vs-paper cost caliber reconciliation.
 
-The diagnosis (§1.4) showed the backtest is systematically OPTIMISTIC about
-trading cost versus the paper book — three stacked mismatches:
+**Fix-round update (evaluator finding B111-F006-1):** the two calibers are
+now UNIFIED in code — see ``trade/backtest/execution_caliber.py``. Going
+forward, the backtest engines and the paper engine share one cost formula
+(``cost = capital x gross-turnover x (5bps fee + 5bps slippage)`` on BOTH
+legs) and one execution-session rule (fills strictly after the signal
+session; backtest at the T+1 open, paper at the first available close
+strictly after the signal session).
 
-1. **Rate:** the monthly backtest assumes ``1bp + 2bp = 3bps``
-   (``trade/backtest/monthly.py`` ``BacktestParameters``); the paper engine
-   charges ``5bps + 5bps = 10bps`` (``workbench_api/paper/service.py``).
-2. **Sidedness:** ``monthly.py`` charges friction on the BUY leg only (one-sided
-   haircut on deployed capital); the paper engine (and the master turnover model)
-   charge the GROSS traded notional across BOTH legs.
-3. **Fill timing:** the backtest fills at T+1 open (one session of lag / gap risk
-   modelled); the paper book fills at the same-day close. This is a
-   price-realisation caliber difference, NOT a bps number — noted, not scored.
+This module keeps two things pure and testable:
 
-This module turns (1) + (2) into a pure, testable NUMBER so historical verdicts
-can be re-calibrated to the paper caliber (F004 deliverable #3). It imports
-nothing from the workbench — the paper parameters are passed in — so it stays a
-research-only reconciliation helper. It does NOT change any backtest or paper
-cost (rewriting the backtest cost would rewrite validated history — H1); it only
-quantifies the gap.
+1. **The PRE-unification gap** (provenance / re-calibration of historical
+   verdicts): the legacy backtest caliber (3bps, one-sided buy-leg haircut)
+   vs the paper caliber (10bps, both legs) — a 6.67x gap on a full swap.
+   Historical "weakly positive" backtest verdicts must be re-scored at the
+   unified caliber before being trusted (F004 deliverable #3).
+2. **The POST-unification delta**: with both sides on the same formula the
+   cost difference on any rebalance is 0 by construction (ratio 1.0). The
+   remaining caliber difference is price REALISATION only — T+1 open
+   (backtest) vs >=T+1 close (paper) — not a bps number and no longer a
+   session mismatch.
+
+It imports nothing from the workbench — the paper parameters are passed
+in — so it stays a research-only reconciliation helper.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 
-# The two calibers as they ship today (the reconciliation defaults).
-BACKTEST_COST_BPS = 1.0
-BACKTEST_SLIPPAGE_BPS = 2.0
-PAPER_FEE_BPS = 5.0
-PAPER_SLIPPAGE_BPS = 5.0
+from trade.backtest.execution_caliber import (
+    LEGACY_BACKTEST_COST_BPS,
+    LEGACY_BACKTEST_SLIPPAGE_BPS,
+    LEGACY_PAPER_COST_BPS,
+    LEGACY_PAPER_SLIPPAGE_BPS,
+    UNIFIED_COST_BPS,
+    UNIFIED_SLIPPAGE_BPS,
+)
+
+# The two PRE-unification calibers (kept for historical-artifact provenance;
+# the values are pinned in execution_caliber so they cannot drift).
+BACKTEST_COST_BPS = LEGACY_BACKTEST_COST_BPS
+BACKTEST_SLIPPAGE_BPS = LEGACY_BACKTEST_SLIPPAGE_BPS
+PAPER_FEE_BPS = LEGACY_PAPER_COST_BPS
+PAPER_SLIPPAGE_BPS = LEGACY_PAPER_SLIPPAGE_BPS
 
 
 @dataclass(frozen=True, slots=True)
@@ -54,7 +68,7 @@ def rebalance_cost(
     ``turnover`` is ``Σ |Δweight|`` (≈ 2.0 on a full swap = sell all + buy all).
     ``both_legs`` charges the full gross traded notional (``nav × turnover``, the
     paper / master-turnover model); one-sided charges only the buy leg
-    (``nav × turnover / 2``, the ``monthly.py`` haircut).
+    (``nav × turnover / 2``, the legacy ``monthly.py`` haircut).
     """
 
     if nav <= 0 or turnover <= 0:
@@ -72,12 +86,12 @@ def cost_caliber_comparison(
     paper_rate_bps: float = PAPER_FEE_BPS + PAPER_SLIPPAGE_BPS,
     paper_both_legs: bool = True,
 ) -> CostCaliberComparison:
-    """Quantify the backtest-vs-paper cost gap for a rebalance.
+    """Quantify the PRE-unification backtest-vs-paper cost gap for a rebalance.
 
-    Defaults reflect the shipped calibers: backtest 3bps one-sided vs paper
-    10bps both-legs. Returns the per-caliber cost, their difference, the ratio,
-    and each expressed in bps of NAV so a historical verdict can be re-scored at
-    the paper caliber."""
+    Defaults reflect the legacy shipped calibers: backtest 3bps one-sided vs
+    paper 10bps both-legs. Returns the per-caliber cost, their difference,
+    the ratio, and each expressed in bps of NAV so a historical verdict can
+    be re-scored at the paper (now unified) caliber."""
 
     bt = rebalance_cost(
         nav, turnover, rate_bps=backtest_rate_bps, both_legs=backtest_both_legs
@@ -94,4 +108,42 @@ def cost_caliber_comparison(
         ratio=(paper / bt if bt > 0 else None),
         backtest_bps_of_nav=(bt / nav * 10_000.0 if nav > 0 else 0.0),
         paper_bps_of_nav=(paper / nav * 10_000.0 if nav > 0 else 0.0),
+    )
+
+
+def unified_rebalance_cost(nav: float, turnover: float) -> float:
+    """Cost of one rebalance under the UNIFIED forward caliber.
+
+    Both engines now compute exactly this: gross traded notional
+    (``nav × turnover``, both legs) × (5bps fee + 5bps slippage). The
+    post-unification backtest-vs-paper cost difference is therefore 0 on
+    every rebalance (ratio 1.0) — the 6.67x gap existed only between the
+    legacy calibers.
+    """
+
+    return rebalance_cost(
+        nav,
+        turnover,
+        rate_bps=UNIFIED_COST_BPS + UNIFIED_SLIPPAGE_BPS,
+        both_legs=True,
+    )
+
+
+def post_unification_comparison(
+    nav: float, turnover: float
+) -> CostCaliberComparison:
+    """The backtest-vs-paper cost gap AFTER the unification landed.
+
+    Both sides use the unified formula, so ``difference`` is 0 and ``ratio``
+    is 1.0 for any positive turnover — the number the fix-round report
+    tables against the pre-unification 6.67x.
+    """
+
+    return cost_caliber_comparison(
+        nav,
+        turnover,
+        backtest_rate_bps=UNIFIED_COST_BPS + UNIFIED_SLIPPAGE_BPS,
+        backtest_both_legs=True,
+        paper_rate_bps=UNIFIED_COST_BPS + UNIFIED_SLIPPAGE_BPS,
+        paper_both_legs=True,
     )

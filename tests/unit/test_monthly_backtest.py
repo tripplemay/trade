@@ -44,9 +44,70 @@ def test_monthly_backtest_records_cost_and_slippage_parameters() -> None:
         signal_date=date(2024, 10, 31),
     )
 
-    assert result.cost_bps == 1.0
-    assert result.slippage_bps == 2.0
+    # B111 F004 fix-round — the defaults are the UNIFIED caliber (5+5bps);
+    # the legacy 1+2bps stays available via explicit BacktestParameters.
+    assert result.cost_bps == 5.0
+    assert result.slippage_bps == 5.0
     assert result.ending_value > 0
+
+
+def test_from_cash_single_leg_cost_under_unified_caliber() -> None:
+    """Unified caliber, from-cash deployment: only the buy leg exists, so
+    cost = capital x Σ|target| x 10bps = $100 on $100k fully deployed."""
+    snapshot = load_fixture_prices()
+    result = run_monthly_backtest(
+        snapshot.records,
+        _short_window_parameters(),
+        signal_date=date(2024, 10, 31),
+    )
+
+    assert result.turnover == pytest.approx(1.0)
+    assert result.cost_amount == pytest.approx(100.0)
+    # The cost is DEDUCTED from the executed portfolio value (paper-engine
+    # form), not baked into smaller fills (legacy one-sided haircut).
+    assert result.ending_value == pytest.approx(
+        result.equity_curve[-1].value
+    )
+
+
+def test_multi_monthly_unchanged_target_is_costless_under_unified_caliber() -> None:
+    """Both-legs turnover model: a rebalance into an UNCHANGED target trades
+    nothing (Σ|Δw| = 0) and therefore costs nothing — the legacy haircut
+    charged a buy leg every single month regardless."""
+    records = (
+        PriceBar(date(2024, 1, 31), "SPY", 100.0, 100.0, 100.0, 1),
+        PriceBar(date(2024, 2, 29), "SPY", 101.0, 101.0, 101.0, 1),
+        PriceBar(date(2024, 3, 29), "SPY", 102.0, 102.0, 102.0, 1),
+        PriceBar(date(2024, 4, 30), "SPY", 103.0, 103.0, 103.0, 1),
+        PriceBar(date(2024, 5, 31), "SPY", 104.0, 104.0, 104.0, 1),
+        PriceBar(date(2024, 6, 28), "SPY", 105.0, 105.0, 105.0, 1),
+        # Defensive asset must exist in the records; flat price, never selected.
+        PriceBar(date(2024, 1, 31), "AGG", 100.0, 100.0, 100.0, 1),
+        PriceBar(date(2024, 2, 29), "AGG", 100.0, 100.0, 100.0, 1),
+        PriceBar(date(2024, 3, 29), "AGG", 100.0, 100.0, 100.0, 1),
+        PriceBar(date(2024, 4, 30), "AGG", 100.0, 100.0, 100.0, 1),
+        PriceBar(date(2024, 5, 31), "AGG", 100.0, 100.0, 100.0, 1),
+        PriceBar(date(2024, 6, 28), "AGG", 100.0, 100.0, 100.0, 1),
+    )
+    params = MomentumParameters(
+        top_n=1,
+        momentum_windows=(MomentumWindow(periods=2, weight=1.0),),
+        trend_window=2,
+    )
+    result = run_multi_monthly_backtest(
+        records,
+        (date(2024, 3, 29), date(2024, 4, 30), date(2024, 5, 31)),
+        params,
+    )
+
+    periods = result.rebalance_results
+    assert periods[0].turnover == pytest.approx(1.0)  # from cash: buy leg
+    assert periods[0].cost_amount == pytest.approx(100_000.0 * 0.001)
+    # Same winner every month → no Δweights → zero cost thereafter.
+    assert periods[1].turnover == pytest.approx(0.0)
+    assert periods[1].cost_amount == pytest.approx(0.0)
+    assert periods[2].cost_amount == pytest.approx(0.0)
+    assert result.cost_amount == pytest.approx(periods[0].cost_amount)
 
 
 def test_missing_t_plus_1_open_falls_back_with_risk_flag() -> None:

@@ -30,7 +30,13 @@ def test_get_marks_returns_latest_and_prior(initialised_db: str) -> None:
     with Session(get_engine()) as session:
         _seed(session, "AAPL", [(date(2026, 6, 3), 192.0), (date(2026, 6, 4), 195.0)])
         marks = DbPriceProvider(session).get_marks(["AAPL"])
-        assert marks == {"AAPL": PriceMark(latest_close=195.0, prior_close=192.0)}
+        # B111 F004 fix-round: the mark also carries the latest close's obs_date
+        # (the paper fill-timing guard's input).
+        assert marks == {
+            "AAPL": PriceMark(
+                latest_close=195.0, prior_close=192.0, latest_date=date(2026, 6, 4)
+            )
+        }
 
 
 def test_get_marks_omits_symbol_with_one_close(initialised_db: str) -> None:

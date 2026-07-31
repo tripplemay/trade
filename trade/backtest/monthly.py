@@ -1,4 +1,15 @@
-"""Monthly backtest with T close signals and T+1 open execution."""
+"""Monthly backtest with T close signals and T+1 open execution.
+
+Cost caliber (B111 F004 fix-round): the defaults point at the UNIFIED
+forward caliber in ``trade/backtest/execution_caliber.py`` — 5bps + 5bps
+per leg, charged on the gross traded notional of BOTH legs
+(``cost = capital x Sigma|delta_weight| x rate``), the same turnover form
+the paper engine and the master / risk-parity / hk_china backtests use.
+The pre-fix legacy caliber (1bp + 2bp, one-sided buy-leg haircut) stays
+reproducible for historical-artifact provenance via explicit
+``BacktestParameters(cost_bps=1.0, slippage_bps=2.0)`` plus the legacy
+constants in ``execution_caliber``.
+"""
 
 from __future__ import annotations
 
@@ -6,6 +17,10 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Literal
 
+from trade.backtest.execution_caliber import (
+    UNIFIED_COST_BPS,
+    UNIFIED_SLIPPAGE_BPS,
+)
 from trade.data.loader import PriceBar
 from trade.strategies.global_etf_momentum import (
     MomentumParameters,
@@ -23,8 +38,8 @@ MissingTPlusOneOpenPolicy = Literal[
 @dataclass(frozen=True, slots=True)
 class BacktestParameters:
     starting_capital: float = 100_000.0
-    cost_bps: float = 1.0
-    slippage_bps: float = 2.0
+    cost_bps: float = UNIFIED_COST_BPS
+    slippage_bps: float = UNIFIED_SLIPPAGE_BPS
     missing_t_plus_1_open_policy: MissingTPlusOneOpenPolicy = "flag_and_fallback_to_signal_close"
 
 
@@ -60,6 +75,9 @@ class MonthlyBacktestResult:
     equity_curve: tuple[EquityPoint, ...]
     turnover: float
     rebalance_results: tuple[MonthlyBacktestResult, ...] = ()
+    # B111 F004 fix-round — explicit cost deducted under the unified both-legs
+    # turnover caliber (was implicit in the legacy one-sided haircut).
+    cost_amount: float = 0.0
 
 
 class BacktestError(ValueError):
@@ -71,8 +89,17 @@ def run_monthly_backtest(
     strategy_parameters: MomentumParameters | None = None,
     backtest_parameters: BacktestParameters | None = None,
     signal_date: date | None = None,
+    prior_weights: dict[str, float] | None = None,
 ) -> MonthlyBacktestResult:
-    """Run a one-rebalance monthly MVP backtest from signal date to next available close."""
+    """Run a one-rebalance monthly MVP backtest from signal date to next available close.
+
+    ``prior_weights`` is the book carried into the rebalance (B111 F004
+    fix-round): ``None`` means a from-cash deployment, so only the buy leg
+    exists and cost turnover = Σ|target weight| of the executed names. When
+    given, cost turnover = Σ|Δweight| over prior ∪ new book (both legs of the
+    full swap), matching the paper engine's ``gross_traded x rate`` form. A
+    skipped trade keeps its prior position and contributes no turnover.
+    """
 
     if strategy_parameters is None:
         strategy_parameters = MomentumParameters()
@@ -94,9 +121,13 @@ def run_monthly_backtest(
     fills: list[ExecutionFill] = []
     risk_flags: list[str] = []
     ending_value = 0.0
-    friction_multiplier = 1.0 - (
+    # Unified both-legs turnover cost (B111 F004 fix-round) replaces the
+    # legacy one-sided haircut on deployed capital.
+    cost_rate = (
         backtest_parameters.cost_bps + backtest_parameters.slippage_bps
     ) / 10_000.0
+    executed_weights: dict[str, float] = {}
+    skipped_symbols: list[str] = []
     for symbol, weight in signal.target_weights.items():
         signal_record = by_symbol_date[(symbol, signal.signal_date)]
         execution_record = by_symbol_date.get((symbol, execution_date))
@@ -126,6 +157,7 @@ def run_monthly_backtest(
                     )
                 )
                 continue
+            skipped_symbols.append(symbol)
             if (
                 backtest_parameters.missing_t_plus_1_open_policy
                 != "flag_and_fallback_to_signal_close"
@@ -140,8 +172,9 @@ def run_monthly_backtest(
             execution_price_field = "open"
             execution_assumption = "t_plus_1_open"
 
+        executed_weights[symbol] = weight
         valuation_record = by_symbol_date.get((symbol, valuation_date), execution_record)
-        capital = backtest_parameters.starting_capital * weight * friction_multiplier
+        capital = backtest_parameters.starting_capital * weight
         shares = capital / execution_price
         ending_value += shares * valuation_record.close
         fills.append(
@@ -158,6 +191,19 @@ def run_monthly_backtest(
             )
         )
 
+    # Unified cost: gross traded notional of BOTH legs x rate. The new book is
+    # the executed target weights (a skipped trade instead keeps its prior
+    # position); prior names absent from the new book are sold. From cash
+    # (no prior) this collapses to the single buy leg.
+    prior = dict(prior_weights or {})
+    effective_new_weights = dict(executed_weights)
+    for skipped in skipped_symbols:
+        if skipped in prior:
+            effective_new_weights[skipped] = prior[skipped]
+    turnover = _weight_turnover(prior, effective_new_weights)
+    cost_amount = backtest_parameters.starting_capital * turnover * cost_rate
+    ending_value -= cost_amount
+
     return MonthlyBacktestResult(
         starting_capital=backtest_parameters.starting_capital,
         ending_value=ending_value,
@@ -171,7 +217,8 @@ def run_monthly_backtest(
             EquityPoint(signal.signal_date, backtest_parameters.starting_capital),
             EquityPoint(valuation_date, ending_value),
         ),
-        turnover=sum(abs(fill.target_weight) for fill in fills),
+        turnover=turnover,
+        cost_amount=cost_amount,
     )
 
 
@@ -195,6 +242,7 @@ def run_multi_monthly_backtest(
     risk_flags: list[str] = []
     previous_weights: dict[str, float] = {}
     turnover = 0.0
+    total_cost = 0.0
     for current_signal_date in signal_dates:
         period_parameters = BacktestParameters(
             starting_capital=current_capital,
@@ -207,10 +255,12 @@ def run_multi_monthly_backtest(
             strategy_parameters,
             period_parameters,
             signal_date=current_signal_date,
+            prior_weights=previous_weights,
         )
         rebalance_results.append(period_result)
         risk_flags.extend(period_result.risk_flags)
-        turnover += _weight_turnover(previous_weights, period_result.signal.target_weights)
+        turnover += period_result.turnover
+        total_cost += period_result.cost_amount
         previous_weights = period_result.signal.target_weights
         current_capital = period_result.ending_value
 
@@ -230,6 +280,7 @@ def run_multi_monthly_backtest(
         equity_curve=equity_curve,
         turnover=turnover,
         rebalance_results=tuple(rebalance_results),
+        cost_amount=total_cost,
     )
 
 

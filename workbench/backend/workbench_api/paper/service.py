@@ -35,7 +35,11 @@ from workbench_api.db.repositories.paper_account import (
 from workbench_api.paper.engine import RebalancePlan, compute_rebalance
 from workbench_api.paper.targets import StrategyTargets, load_strategy_targets
 from workbench_api.services.mark_to_market import marks_for
-from workbench_api.services.prices_provider import DbPriceProvider, PriceProvider
+from workbench_api.services.prices_provider import (
+    DbPriceProvider,
+    PriceMark,
+    PriceProvider,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -76,13 +80,35 @@ class PaperAccountExistsError(RuntimeError):
     """Raised when activating a strategy that already has a paper account."""
 
 
-def _resolve_close_marks(
-    provider: PriceProvider, symbols: set[str]
+def _caliber_valid_marks(
+    marks: dict[str, PriceMark], signal_date: date | None
 ) -> dict[str, float]:
-    """``SYMBOL -> latest_close`` over ``symbols`` (omits unmarkable symbols)."""
+    """Unified execution caliber (B111 F004 fix-round, finding B111-F006-1).
 
-    marks = marks_for(provider, symbols)
-    return {symbol: mark.latest_close for symbol, mark in marks.items()}
+    The recommendations job computes a target from session-T closes, so
+    filling at the session-T close is a same-session fill the live manual
+    workflow can never achieve (the user trades the next day). A mark dated
+    on/before the target's signal session is therefore NOT a usable fill
+    price: it is dropped, and the engine treats the symbol exactly like an
+    unmarkable one — skipped, ``build_complete=False``, and the daily job
+    retries once the snapshot carries a session strictly after the signal
+    (>= T+1 close; ``price_snapshot`` stores closes only, so T+1-open is
+    not implementable on the paper side). Per-symbol filtering (not a
+    whole-book gate) so one stale/suspended name never paralyses the book.
+
+    Marks with an unknown date (synthetic test providers) pass through;
+    production ``DbPriceProvider`` marks always carry ``obs_date``. A
+    ``None`` signal date (hand-built targets) disables the filter (legacy
+    behaviour).
+    """
+
+    if signal_date is None:
+        return {symbol: mark.latest_close for symbol, mark in marks.items()}
+    return {
+        symbol: mark.latest_close
+        for symbol, mark in marks.items()
+        if mark.latest_date is None or mark.latest_date > signal_date
+    }
 
 
 def _apply_rebalance(
@@ -93,8 +119,15 @@ def _apply_rebalance(
     on_date: date,
     now: datetime,
     provider: PriceProvider,
+    enforce_caliber_timing: bool = True,
 ) -> RebalancePlan:
-    """Compute + persist one rebalance: new book, cash, rebalance log row."""
+    """Compute + persist one rebalance: new book, cash, rebalance log row.
+
+    ``enforce_caliber_timing`` (B111 F004 fix-round) drops same-session
+    marks before pricing (see :func:`_caliber_valid_marks`); only the
+    manual :func:`align_to_current_target` repair primitive disables it —
+    user-invoked, outside the forward-simulation cadence.
+    """
 
     pos_repo = PaperPositionRepository(session)
     current = {
@@ -102,7 +135,10 @@ def _apply_rebalance(
         for p in pos_repo.list_by_account(account.id)
     }
     symbols = set(current) | set(targets.weights)
-    marks = _resolve_close_marks(provider, symbols)
+    dated_marks = marks_for(provider, symbols)
+    marks = _caliber_valid_marks(
+        dated_marks, targets.as_of_date if enforce_caliber_timing else None
+    )
 
     plan = compute_rebalance(
         cash=float(account.cash),
@@ -254,9 +290,14 @@ def _build_progress_available(
     # diverge from what the engine will actually build. A zero/negative close is
     # a bad snapshot, not a buildable mark; treating it as covered would re-enter
     # the daily-churn bug this fix exists to kill (B058 F001 review).
+    # B111 F004 fix-round: a same-session mark (dated on/before the target's
+    # signal session) is also not usable progress — the caliber filter drops it
+    # at fill time, so it must not count as buildable here either.
     marks = {
         sym: close
-        for sym, close in _resolve_close_marks(provider, symbols).items()
+        for sym, close in _caliber_valid_marks(
+            marks_for(provider, symbols), targets.as_of_date
+        ).items()
         if close > 0
     }
 
@@ -342,6 +383,14 @@ def align_to_current_target(
         return account, None
     provider = provider or DbPriceProvider(session)
     plan = _apply_rebalance(
-        session, account, targets, on_date=on_date, now=now, provider=provider
+        session,
+        account,
+        targets,
+        on_date=on_date,
+        now=now,
+        provider=provider,
+        # Manual repair primitive (user-invoked, outside the forward-simulation
+        # cadence): bypasses the B111 F004 same-session fill guard.
+        enforce_caliber_timing=False,
     )
     return account, plan

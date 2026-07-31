@@ -14,12 +14,19 @@ trading day). Symbols with fewer than two observations are simply absent
 from the returned dict, and ``build_home`` treats a position with no mark
 as contributing nothing to Day P&L (degrading to ``null`` when no
 position can be marked) — the spec's empty-state path.
+
+B111 F004 fix-round: :class:`PriceMark` additionally carries
+``latest_date`` (the ``obs_date`` of the latest close) so the paper
+engine can enforce the unified execution caliber — fills strictly AFTER
+the target's signal session (no same-session fills). It defaults to
+``None`` so existing Day-P&L callers and test fakes are unchanged.
 """
 
 from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass
+from datetime import date
 from typing import Protocol
 
 from sqlalchemy.orm import Session
@@ -33,6 +40,9 @@ class PriceMark:
 
     latest_close: float
     prior_close: float
+    # obs_date of ``latest_close`` (B111 F004 fix-round); ``None`` when the
+    # caller does not need date-aware fill timing (Day P&L path / test fakes).
+    latest_date: date | None = None
 
 
 class PriceProvider(Protocol):
@@ -63,5 +73,6 @@ class DbPriceProvider:
                 marks[symbol] = PriceMark(
                     latest_close=float(rows[0].close),
                     prior_close=float(rows[1].close),
+                    latest_date=rows[0].obs_date,
                 )
         return marks

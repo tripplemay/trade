@@ -227,9 +227,14 @@ def test_paper_build_succeeds_once_etf_marked(session: Session, tmp_path: Path) 
     snapshot→price_snapshot sync), the cn_dividend_lowvol paper book builds its 512890.SH
     position instead of stranding all-cash. Cash-sentinel CASH is stripped (no skip)."""
 
-    # 1. Producer syncs the ETF mark from the frozen snapshot.
-    base = _write_etf_csv(tmp_path, [("2024-06-25", 1.00), ("2024-06-26", 1.00)])
-    assert upsert_etf_price_marks(session, data_dir=base) == 2
+    # 1. Producer syncs the ETF mark from the frozen snapshot. The 06-27 row
+    # makes the latest mark POSTDATE the target's signal session (06-26) —
+    # B111 F004 unified caliber: no same-session fills, the book builds at
+    # the first post-signal close (06-27, same 1.00 price → same math).
+    base = _write_etf_csv(
+        tmp_path, [("2024-06-25", 1.00), ("2024-06-26", 1.00), ("2024-06-27", 1.00)]
+    )
+    assert upsert_etf_price_marks(session, data_dir=base) == 3
     session.commit()
 
     # 2. Producer's published target (ETF half + CASH residual).

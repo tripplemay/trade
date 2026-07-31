@@ -21,6 +21,7 @@ new key → rebalance day. The cadence-agnostic "is today a rebalance day?" sign
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 
 from sqlalchemy.orm import Session
 
@@ -76,11 +77,17 @@ def paper_strategy_name(strategy_id: str) -> str:
 
 @dataclass(frozen=True, slots=True)
 class StrategyTargets:
-    """A strategy's current target allocation + its fingerprint."""
+    """A strategy's current target allocation + its fingerprint.
+
+    ``as_of_date`` (B111 F004 fix-round) is the signal session the target
+    was computed from; the paper fill-timing guard refuses same-session
+    fills against it. ``None`` only for hand-built targets in tests.
+    """
 
     strategy_id: str
     weights: dict[str, float]  # SYMBOL -> target weight (upper-cased)
     target_key: str
+    as_of_date: date | None = None
 
 
 def load_strategy_targets(
@@ -109,4 +116,5 @@ def load_strategy_targets(
         strategy_id=target.strategy_id,
         weights=weights,
         target_key=target.target_key,
+        as_of_date=target.as_of_date,
     )

@@ -31,6 +31,11 @@ def default_fixture_workflow_config() -> WorkflowConfig:
             ),
             trend_window=3,
         ),
+        # B111 F004 fix-round — the fixture workflow deliberately pins the
+        # LEGACY caliber (1bp+2bp) so its frozen CI outputs stay byte-identical
+        # (provenance: these fixture artifacts predate the unified caliber in
+        # trade/backtest/execution_caliber.py). Forward-looking runs use the
+        # BacktestParameters defaults (5bp+5bp, unified).
         backtest_parameters=BacktestParameters(
             starting_capital=100_000.0,
             cost_bps=1.0,
