@@ -24,6 +24,16 @@ Additionally subtracting ``held_marked_value × cost_rate`` reserves the sell-si
 cost (sells can never exceed the held value), so cash lands ≥ 0 at any turnover.
 A from-cash build holds nothing (held value 0), so the formula collapses to
 ``equity × (1 − cost_rate)`` — activation is byte-identical (zero-regression).
+
+B111-F006-3 (fix-round): the reservation assumes every planned sell executes.
+When ``min_trade_fraction`` skips small SELLS, their proceeds never arrive and
+a buy sized on the full-book premise overdraws cash (production Master paper:
+cash $60.25 → −$18.94 on 2026-08-01). The engine therefore now decides all
+trades first (min-trade included), then checks affordability against cash +
+EXECUTED sell proceeds, and if the buys are not honestly fundable scales the
+buy legs down proportionally (``buy_scale_factor``) — never clamping a
+negative cash to 0, which would mask the overbuy. An explicit postcondition
+raises if ``new_cash < -1e-6``.
 """
 
 from __future__ import annotations
@@ -59,6 +69,10 @@ class RebalancePlan:
     # True when any trade actually happened (equity>0 and at least one markable
     # target); False is a graceful no-op (no targets / no prices / no equity).
     traded: bool
+    # B111-F006-3 — < 1.0 when the buy legs were scaled down to what cash +
+    # executed sell proceeds honestly fund (skipped min-trade sells must not
+    # fund buys). 1.0 = fully affordable, no scaling.
+    buy_scale_factor: float = 1.0
 
 
 def compute_rebalance(
@@ -164,12 +178,15 @@ def compute_rebalance(
     cash_delta = 0.0
     new_positions: list[PlannedPosition] = []
 
+    # Pass 1 — decide each touched symbol's post-trade shares (min-trade
+    # filtering included) BEFORE any cash math, so the affordability check
+    # below sees the trades that will ACTUALLY happen.
+    planned_shares: dict[str, float] = {}
     for symbol in sorted(touched):
-        close = marks[symbol]
-        old_shares, old_avg = current_positions.get(symbol, (0.0, 0.0))
+        old_shares, _old_avg = current_positions.get(symbol, (0.0, 0.0))
         new_shares = desired.get(symbol, 0.0)
         delta = new_shares - old_shares
-        notional = abs(delta) * close
+        notional = abs(delta) * marks[symbol]
         # Skip a below-threshold trade: hold the position at its current level.
         # A full close (new_shares → 0) is exempt so stale names still exit.
         if (
@@ -178,8 +195,50 @@ def compute_rebalance(
             and new_shares > _EPSILON
         ):
             new_shares = old_shares
-            delta = 0.0
-            notional = 0.0
+        planned_shares[symbol] = new_shares
+
+    # Pass 2 — cash-feasible sizing (B111-F006-3). The B078 reservation only
+    # reserves COST; it implicitly assumes every planned sell executes. When
+    # min-trade skips small SELLS, their proceeds never arrive, and a buy
+    # sized on the full-book premise overdraws cash (production: Master paper
+    # cash $60.25 → −$18.94 on 2026-08-01). A skipped sell must not fund a
+    # buy — so when the executed trades are not affordable, scale the BUY
+    # legs down proportionally to what cash + EXECUTED sell proceeds actually
+    # cover. new_cash = cash + S − B − (S+B)·rate is feasible ⟺
+    # B ≤ (cash + S·(1−rate)) / (1+rate); scaling buys by k = B_max/B lands
+    # cash at ~0 by construction (never a clamp that would mask overbuying).
+    sell_notional = 0.0
+    buy_notional = 0.0
+    for symbol, new_shares in planned_shares.items():
+        old_shares, _old_avg = current_positions.get(symbol, (0.0, 0.0))
+        delta = new_shares - old_shares
+        if delta > _EPSILON:
+            buy_notional += delta * marks[symbol]
+        elif delta < -_EPSILON:
+            sell_notional += -delta * marks[symbol]
+
+    buy_scale_factor = 1.0
+    max_affordable_buy = (cash + sell_notional * (1.0 - cost_rate)) / (1.0 + cost_rate)
+    if buy_notional > _EPSILON and buy_notional > max_affordable_buy:
+        buy_scale_factor = max(0.0, max_affordable_buy) / buy_notional
+        for symbol in planned_shares:
+            old_shares, _old_avg = current_positions.get(symbol, (0.0, 0.0))
+            new_shares = planned_shares[symbol]
+            if new_shares - old_shares > _EPSILON:
+                # Partial fill: buys keep their target PROPORTIONS, just sized
+                # to what is honestly fundable. No min-trade re-check here —
+                # this is a forced partial fill, not a new dust order.
+                planned_shares[symbol] = old_shares + (
+                    new_shares - old_shares
+                ) * buy_scale_factor
+
+    # Pass 3 — build the book from the final per-symbol shares.
+    for symbol in sorted(touched):
+        close = marks[symbol]
+        old_shares, old_avg = current_positions.get(symbol, (0.0, 0.0))
+        new_shares = planned_shares[symbol]
+        delta = new_shares - old_shares
+        notional = abs(delta) * close
         gross_traded += notional
         cash_delta += -delta * close  # sells add cash, buys subtract
         if abs(new_shares) <= _EPSILON:
@@ -200,6 +259,16 @@ def compute_rebalance(
 
     cost = gross_traded * cost_rate
     new_cash = cash + cash_delta - cost
+    # Explicit postcondition (B111-F006-3): cash may never go negative. Any
+    # residual beyond float dust means the sizing above is broken — fail loud
+    # rather than persist an impossible book (B053 family).
+    if new_cash < -1e-6:
+        raise RuntimeError(
+            f"paper rebalance would overdraw cash: {new_cash:.6f} "
+            f"(cash={cash}, sells={sell_notional:.2f}, buys={buy_notional:.2f}, "
+            f"scale={buy_scale_factor:.6f}, cost={cost:.2f})"
+        )
+    new_cash = max(0.0, new_cash)  # float dust only (|x| ≤ 1e-6)
 
     return RebalancePlan(
         cash=new_cash,
@@ -208,4 +277,5 @@ def compute_rebalance(
         traded_notional=gross_traded,
         skipped_symbols=skipped,
         traded=True,
+        buy_scale_factor=buy_scale_factor,
     )

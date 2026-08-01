@@ -201,6 +201,18 @@ def _apply_rebalance(
             len(plan.skipped_symbols),
             ",".join(plan.skipped_symbols),
         )
+    if plan.buy_scale_factor < 1.0:
+        # B111-F006-3 visibility: buy legs were scaled to what cash + executed
+        # sells honestly fund (skipped min-trade sells did not fund them). The
+        # book lands at cash≈0, proportionally below target — surfaced, never
+        # silently clamped.
+        logger.warning(
+            "paper rebalance for strategy=%s was cash-constrained: buy legs "
+            "scaled to %.4f of full size (skipped dust sells did not fund "
+            "them); the book lands proportionally below target at cash≈0.",
+            account.strategy_id,
+            plan.buy_scale_factor,
+        )
     return plan
 
 

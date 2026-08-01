@@ -26,6 +26,7 @@ from workbench_api.paper.service import (
     DEFAULT_SLIPPAGE_BPS,
     PaperAccountExistsError,
     activate_paper_account,
+    align_to_current_target,
 )
 from workbench_api.paper.targets import MASTER_STRATEGY_ID
 
@@ -63,6 +64,21 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--on-date", type=str, default=None,
         help="Activation date ISO YYYY-MM-DD (default: today UTC).",
     )
+    # B111-F006-3 production recovery entrypoint: the manual align primitive
+    # (user-invoked, unconditional re-align to the current target) had no CLI
+    # until now. Used to bring an account back to a cash-feasible book with a
+    # rebalance-ledger trail after the negative-cash bug.
+    align = sub.add_parser(
+        "align", help="Force one rebalance of an account to its current target."
+    )
+    align.add_argument(
+        "--strategy", type=str, default=MASTER_STRATEGY_ID,
+        help="strategy_id to align (default: %(default)s).",
+    )
+    align.add_argument(
+        "--on-date", type=str, default=None,
+        help="Rebalance date ISO YYYY-MM-DD (default: today UTC).",
+    )
     return parser.parse_args(argv)
 
 
@@ -72,7 +88,7 @@ def main(argv: list[str] | None = None) -> int:
         format="%(asctime)s %(levelname)s %(name)s %(message)s",
     )
     args = parse_args(argv)
-    if args.command != "activate":
+    if args.command not in ("activate", "align"):
         return 2
 
     now = datetime.now(UTC)
@@ -82,6 +98,24 @@ def main(argv: list[str] | None = None) -> int:
     factory = sessionmaker(bind=get_engine(), autoflush=False, future=True)
     session = factory()
     try:
+        if args.command == "align":
+            account, plan = align_to_current_target(
+                session, args.strategy, on_date=on_date, now=now
+            )
+            session.commit()
+            if account is None:
+                print(f"no paper account for strategy {args.strategy!r} — activate first")
+                return 1
+            if plan is None:
+                print(f"no strategy target for {args.strategy!r} yet — nothing to align to")
+                return 1
+            print(
+                f"aligned {args.strategy!r}: traded={plan.traded} "
+                f"positions={len(plan.positions)} cost={plan.cost:.2f} "
+                f"cash={plan.cash:.2f} scale={plan.buy_scale_factor:.4f} "
+                f"skipped={list(plan.skipped_symbols)}"
+            )
+            return 0
         account, plan = activate_paper_account(
             session,
             strategy_id=args.strategy,

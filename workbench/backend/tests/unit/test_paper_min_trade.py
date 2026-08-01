@@ -98,6 +98,85 @@ def test_min_trade_never_overdraws_cash() -> None:
     assert plan.cash >= 0.0
 
 
+# --- B111-F006-3 fix-round regression: cash-feasible sizing after min-trade ---
+
+
+def test_skipped_sells_scale_buy_down_proportionally() -> None:
+    """When skipped dust sells leave the buy side unaffordable, the buy legs
+    are scaled down proportionally (not clamped): cash lands at ~0, the scale
+    factor is surfaced on the plan, and cost is charged on the SCALED trades."""
+
+    # 6 x $10k book + $50 cash; +$105 top-up on S0 vs five $55 dust trims
+    # (below the $60 min) → only $50 honestly funds the $105 buy → scale ~0.48.
+    investable = 60_050.0 * (1.0 - 0.001) - 60_000.0 * 0.001
+    desired_values = [10_105.0] + [9_945.0] * 5
+    plan = compute_rebalance(
+        cash=50.0,
+        current_positions={f"S{i}": (10_000.0, 1.0) for i in range(6)},
+        target_weights={
+            f"S{i}": desired_value / investable
+            for i, desired_value in enumerate(desired_values)
+        },
+        marks={f"S{i}": 1.0 for i in range(6)},
+        fee_bps=5.0,
+        slippage_bps=5.0,
+        min_trade_fraction=0.001,  # $60.05 min → the $55 trims are dust
+    )
+    assert 0.0 < plan.buy_scale_factor < 1.0  # visible scale-down, not a clamp
+    assert plan.cash >= 0.0
+    assert plan.cash < 1.0  # fully deployed to what is honestly fundable
+    held = {p.symbol: p.shares for p in plan.positions}
+    # Partial fill: S0 grew, but by less than the full $105 top-up.
+    assert 10_000.0 < held["S0"] < 10_105.0
+    # The five trimmed names are untouched (dust sells skipped).
+    for i in range(1, 6):
+        assert held[f"S{i}"] == 10_000.0
+    # Cost is charged on the scaled gross traded notional.
+    assert plan.cost == plan.traded_notional * 0.001
+
+
+def test_unfundable_buy_is_dropped_entirely_at_zero_cash() -> None:
+    """cash=0 + every sell skipped as dust → the buy scales to 0 and the book
+    simply holds; cash stays exactly 0 (no negative, no fabricated funding)."""
+
+    investable = 60_000.0 * (1.0 - 0.001) - 60_000.0 * 0.001
+    desired_values = [10_105.0] + [9_945.0] * 5
+    plan = compute_rebalance(
+        cash=0.0,
+        current_positions={f"S{i}": (10_000.0, 1.0) for i in range(6)},
+        target_weights={
+            f"S{i}": desired_value / investable
+            for i, desired_value in enumerate(desired_values)
+        },
+        marks={f"S{i}": 1.0 for i in range(6)},
+        fee_bps=5.0,
+        slippage_bps=5.0,
+        min_trade_fraction=0.001,  # $60 min → the $55 trims are dust
+    )
+    assert plan.cash == 0.0
+    assert plan.buy_scale_factor == 0.0
+    # Nothing traded: every position is held at its current shares.
+    held = {p.symbol: p.shares for p in plan.positions}
+    assert held == {f"S{i}": 10_000.0 for i in range(6)}
+
+
+def test_fully_affordable_rebalance_never_scales() -> None:
+    """Zero-regression: when the trades are affordable, no scaling happens
+    (scale stays exactly 1.0 and the book reaches full target size)."""
+
+    plan = compute_rebalance(
+        cash=10_000.0,
+        current_positions={"AAA": (50.0, 100.0)},
+        target_weights={"AAA": 0.5, "BBB": 0.5},
+        marks={"AAA": 100.0, "BBB": 100.0},
+        fee_bps=5.0,
+        slippage_bps=5.0,
+        min_trade_fraction=0.001,
+    )
+    assert plan.buy_scale_factor == 1.0
+    assert plan.cash >= 0.0
+
+
 def test_min_trade_skipped_sells_cannot_fund_executed_buy() -> None:
     """Skipped dust sells must not leave an above-threshold buy unfunded.
 
