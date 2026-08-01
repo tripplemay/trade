@@ -177,6 +177,27 @@ def test_fully_affordable_rebalance_never_scales() -> None:
     assert plan.cash >= 0.0
 
 
+def test_preexisting_negative_cash_sells_back_to_non_negative() -> None:
+    """Production recovery path (B111-F006-3): an account STARTING at the
+    bug's −$18.94 with an on-target book (every trim is dust) must still heal
+    — dust sells are exempt from min-trade while cash < 0, so the align sells
+    the book down to the cash-feasible size and lands cash ≥ 0."""
+
+    # 6 x ~$16,672 positions ≈ on target, cash −18.94 (the production shape):
+    # every per-name trim is below the $100 min-trade, yet cash must recover.
+    plan = compute_rebalance(
+        cash=-18.944156,
+        current_positions={f"S{i}": (16_672.0, 1.0) for i in range(6)},
+        target_weights={f"S{i}": 1 / 6 for i in range(6)},
+        marks={f"S{i}": 1.0 for i in range(6)},
+        fee_bps=5.0,
+        slippage_bps=5.0,
+        min_trade_fraction=0.001,  # ~$100 min on the ~$100k book
+    )
+    assert plan.cash >= 0.0
+    assert plan.traded_notional > 0.0  # dust sells executed to heal
+
+
 def test_min_trade_skipped_sells_cannot_fund_executed_buy() -> None:
     """Skipped dust sells must not leave an above-threshold buy unfunded.
 

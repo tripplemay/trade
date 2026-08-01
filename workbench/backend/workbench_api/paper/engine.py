@@ -189,10 +189,17 @@ def compute_rebalance(
         notional = abs(delta) * marks[symbol]
         # Skip a below-threshold trade: hold the position at its current level.
         # A full close (new_shares → 0) is exempt so stale names still exit.
+        # B111-F006-3 recovery: when the account STARTS in a cash violation
+        # (cash < 0), dust SELLS are exempt too — healing the B078 cash
+        # invariant takes precedence over dust suppression (this is how the
+        # production Master book's −$18.94 is sold back to ≥ 0). Dust buys
+        # stay skipped (no money to fund them anyway).
+        skip_is_dust_sell_in_violation = delta < -_EPSILON and cash < 0.0
         if (
             min_trade_notional > 0.0
             and 0.0 < notional < min_trade_notional
             and new_shares > _EPSILON
+            and not skip_is_dust_sell_in_violation
         ):
             new_shares = old_shares
         planned_shares[symbol] = new_shares
@@ -259,9 +266,12 @@ def compute_rebalance(
 
     cost = gross_traded * cost_rate
     new_cash = cash + cash_delta - cost
-    # Explicit postcondition (B111-F006-3): cash may never go negative. Any
-    # residual beyond float dust means the sizing above is broken — fail loud
-    # rather than persist an impossible book (B053 family).
+    # Explicit postcondition (B111-F006-3): cash may never go negative. With a
+    # pre-existing violation (cash < 0 in), the dust-sell exemption above lets
+    # the book sell its way back to >= 0 whenever the held value covers the
+    # hole; a residual beyond float dust after that means the state is
+    # genuinely unrecoverable — fail loud rather than persist an impossible
+    # book (B053 family).
     if new_cash < -1e-6:
         raise RuntimeError(
             f"paper rebalance would overdraw cash: {new_cash:.6f} "
