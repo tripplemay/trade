@@ -96,3 +96,33 @@ def test_min_trade_never_overdraws_cash() -> None:
         min_trade_fraction=0.01,
     )
     assert plan.cash >= 0.0
+
+
+def test_min_trade_skipped_sells_cannot_fund_executed_buy() -> None:
+    """Skipped dust sells must not leave an above-threshold buy unfunded.
+
+    Production reproduced this on 2026-08-01: several sub-threshold sells were
+    held while a larger buy executed, moving Master paper cash from $60.25 to
+    -$18.94. The six-name fixture is the smallest deterministic shape of that
+    failure: one $105 buy executes while five $61 sells are skipped.
+    """
+
+    equity = 100_000.0
+    current_value = equity / 6.0
+    investable = equity * (1.0 - 0.001) - equity * 0.001
+    desired_values = [current_value + 105.0] + [current_value - 61.0] * 5
+
+    plan = compute_rebalance(
+        cash=0.0,
+        current_positions={f"S{i}": (current_value, 1.0) for i in range(6)},
+        target_weights={
+            f"S{i}": desired_value / investable
+            for i, desired_value in enumerate(desired_values)
+        },
+        marks={f"S{i}": 1.0 for i in range(6)},
+        fee_bps=5.0,
+        slippage_bps=5.0,
+        min_trade_fraction=0.001,
+    )
+
+    assert plan.cash >= 0.0

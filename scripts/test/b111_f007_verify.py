@@ -21,9 +21,11 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 PANEL = ROOT / "data/research/B110/ep_panel.csv.gz"
-LIQUIDITY = ROOT / "data/research/B111/low_vol_liquidity.csv.gz"
+LIQUIDITY_PROXY = ROOT / "data/research/B111/low_vol_liquidity.csv.gz"
+LIQUIDITY_DAILYAVG = ROOT / "data/research/B111/low_vol_liquidity_dailyavg.csv.gz"
 DELIVERED = ROOT / "docs/audits/B111-F005-low-vol-first-look.json"
-OUT = ROOT / "docs/test-reports/B111-F007-evidence-2026-07-21.json"
+DELIVERED_MARKDOWN = ROOT / "docs/audits/B111-F005-low-vol-first-look.md"
+OUT = ROOT / "docs/test-reports/B111-F007-reverify-evidence-2026-08-01.json"
 SAMPLE_SEED = "B111-F007-codex-unconditional-sample-v1"
 BOOTSTRAP_SEED = 20260721
 N_BOOT = 2000
@@ -116,10 +118,10 @@ def paired_bootstrap(top: list[float], benchmark: list[float]) -> dict[str, Any]
     }
 
 
-def load_liquidity() -> dict[str, dict[str, float]]:
+def load_liquidity(path: Path, value_column: str) -> dict[str, dict[str, float]]:
     result: dict[str, dict[str, float]] = defaultdict(dict)
-    for row in read_gz(LIQUIDITY):
-        amount = usable_float(row.get("amount"))
+    for row in read_gz(path):
+        amount = usable_float(row.get(value_column))
         if amount is not None:
             result[row["formation_date"]][row["ts_code"]] = amount
     return dict(result)
@@ -150,6 +152,11 @@ def compute_sections(
     assignments: dict[tuple[str, str], dict[str, Any]] = {}
     for grid_index, formation_date in enumerate(grid):
         observations: list[tuple[str, float, float]] = []
+        wide_returns = [
+            returns[formation_date]
+            for returns in series.values()
+            if formation_date in returns
+        ]
         start = grid_index - 12 - lag
         stop = grid_index - lag
         if start >= 0:
@@ -199,6 +206,8 @@ def compute_sections(
                 "group_counts": {key: len(value) for key, value in sorted(grouped.items())},
                 "group_returns": {key: mean(value) for key, value in sorted(grouped.items())},
                 "benchmark_scored": mean([item[2] for item in observations]),
+                "benchmark_wide": mean(wide_returns),
+                "n_wide": len(wide_returns),
             }
         )
     return sections, assignments
@@ -245,12 +254,21 @@ def summarize(label: str, sections: list[dict[str, Any]]) -> dict[str, Any]:
             group_series[group].append(value)
     annual_se = stdev(excess) * 12.0 / math.sqrt(len(excess))
     bootstrap = paired_bootstrap(top, benchmark)
+    benchmark_wide = [section["benchmark_wide"] for section in sections]
+    benchmark_wide_ann = geometric_annual(benchmark_wide)
     return {
         "label": label,
         "n_months": len(sections),
         "ann_v1_geometric": top_ann,
         "ann_benchmark_scored_geometric": benchmark_ann,
         "excess_ann_geometric_vs_scored": excess_geo,
+        "benchmark_wide": {
+            "ann_benchmark_wide_geometric": benchmark_wide_ann,
+            "ann_benchmark_scored_geometric": benchmark_ann,
+            "wide_minus_scored_pp": (benchmark_wide_ann - benchmark_ann) * 100.0,
+            "n_wide_min": min(section["n_wide"] for section in sections),
+            "n_wide_max": max(section["n_wide"] for section in sections),
+        },
         "group_annual_geometric": {
             group: geometric_annual(values) for group, values in sorted(group_series.items())
         },
@@ -271,6 +289,96 @@ def summarize(label: str, sections: list[dict[str, Any]]) -> dict[str, Any]:
             "by_year": by_year,
         },
         "monthly": sections,
+    }
+
+
+def geometric_annual_semiannual(values: list[float], total_months: int) -> float | None:
+    if not values or total_months <= 0:
+        return None
+    growth = 1.0
+    for value in values:
+        growth *= 1.0 + value
+    if growth <= 0:
+        return -1.0
+    return growth ** (12.0 / total_months) - 1.0
+
+
+def build_n100_semiannual(
+    rows: list[dict[str, str]], sections: list[dict[str, Any]]
+) -> dict[str, Any]:
+    grid = sorted({row["formation_date"] for row in rows})
+    series = build_return_series(rows, "0.00")
+    benchmark_by_month = {
+        section["formation_date"]: section["benchmark_scored"] for section in sections
+    }
+    windows: list[dict[str, Any]] = []
+    missing_months = 0
+    incomplete_windows = 0
+    for grid_index in range(12, len(grid), 6):
+        if grid_index + 6 > len(grid):
+            incomplete_windows += 1
+            continue
+        month_keys = grid[grid_index : grid_index + 6]
+        if any(month not in benchmark_by_month for month in month_keys):
+            incomplete_windows += 1
+            continue
+        ranked: list[tuple[str, float]] = []
+        for code, returns in series.items():
+            history = [returns.get(grid[index]) for index in range(grid_index - 12, grid_index)]
+            if any(value is None for value in history):
+                continue
+            sigma = stdev([float(value) for value in history if value is not None])
+            if sigma is not None:
+                ranked.append((code, sigma))
+        ranked.sort(key=lambda item: item[1])
+        held = ranked[:100]
+        if not held:
+            continue
+        held_returns: list[float] = []
+        for code, _sigma in held:
+            growth = 1.0
+            for month in month_keys:
+                value = series[code].get(month)
+                if value is None:
+                    missing_months += 1
+                    value = 0.0
+                growth *= 1.0 + value
+            held_returns.append(growth - 1.0)
+        portfolio_return = mean(held_returns)
+        benchmark_growth = 1.0
+        for month in month_keys:
+            benchmark_growth *= 1.0 + benchmark_by_month[month]
+        benchmark_return = benchmark_growth - 1.0
+        windows.append(
+            {
+                "formation_date": grid[grid_index],
+                "hold_months": len(month_keys),
+                "n_held": len(held),
+                "portfolio_window_return": portfolio_return,
+                "benchmark_window_return": benchmark_return,
+                "excess_window": portfolio_return - benchmark_return,
+            }
+        )
+    total_months = sum(window["hold_months"] for window in windows)
+    portfolio = [window["portfolio_window_return"] for window in windows]
+    benchmark = [window["benchmark_window_return"] for window in windows]
+    portfolio_ann = geometric_annual_semiannual(portfolio, total_months)
+    benchmark_ann = geometric_annual_semiannual(benchmark, total_months)
+    sigma_portfolio = stdev(portfolio)
+    sigma_benchmark = stdev(benchmark)
+    return {
+        "label": "n100_semiannual_stub_0.00",
+        "top_n": 100,
+        "hold_months": 6,
+        "n_windows": len(windows),
+        "total_months": total_months,
+        "n_missing_months_in_windows": missing_months,
+        "n_incomplete_windows_dropped": incomplete_windows,
+        "ann_portfolio_geometric": portfolio_ann,
+        "ann_benchmark_geometric": benchmark_ann,
+        "excess_ann_geometric": portfolio_ann - benchmark_ann,
+        "window_sigma_ratio": sigma_portfolio / sigma_benchmark,
+        "windows": windows,
     }
 
 
@@ -334,6 +442,11 @@ def aggregate_comparisons(
         ("bootstrap_geometric_excess", "p_positive"),
         ("arithmetic_side_by_side", "monthly_excess_t_simple"),
         ("arithmetic_side_by_side", "monthly_excess_t_newey_west_lag6"),
+        ("benchmark_wide", "ann_benchmark_wide_geometric"),
+        ("benchmark_wide", "ann_benchmark_scored_geometric"),
+        ("benchmark_wide", "wide_minus_scored_pp"),
+        ("benchmark_wide", "n_wide_min"),
+        ("benchmark_wide", "n_wide_max"),
     ]
     checks: list[dict[str, Any]] = []
     for components in paths:
@@ -356,14 +469,24 @@ def aggregate_comparisons(
 
 def main() -> None:
     rows = read_gz(PANEL)
-    liquidity = load_liquidity()
+    liquidity_proxy = load_liquidity(LIQUIDITY_PROXY, "amount")
+    liquidity_dailyavg = load_liquidity(LIQUIDITY_DAILYAVG, "avg_amount_12m")
     delivered = json.loads(DELIVERED.read_text(encoding="utf-8"))
     specs = {
         "main_stub_0.00": {"stub": "0.00", "lag": 0, "liquidity": None},
         "main_stub_-0.30": {"stub": "-0.30", "lag": 0, "liquidity": None},
         "main_stub_-1.00": {"stub": "-1.00", "lag": 0, "liquidity": None},
         "g1_lag1_stub_0.00": {"stub": "0.00", "lag": 1, "liquidity": None},
-        "g2_liquidity_stub_0.00": {"stub": "0.00", "lag": 0, "liquidity": liquidity},
+        "g2_liquidity_stub_0.00": {
+            "stub": "0.00",
+            "lag": 0,
+            "liquidity": liquidity_dailyavg,
+        },
+        "g2_proxy_single_day_stub_0.00": {
+            "stub": "0.00",
+            "lag": 0,
+            "liquidity": liquidity_proxy,
+        },
     }
     variants: dict[str, Any] = {}
     comparisons: dict[str, Any] = {}
@@ -380,6 +503,43 @@ def main() -> None:
     main = variants["main_stub_0.00"]
     g1 = variants["g1_lag1_stub_0.00"]
     g2 = variants["g2_liquidity_stub_0.00"]
+    n100 = build_n100_semiannual(rows, main["monthly"])
+    n100_delivered = delivered["variants"]["n100_semiannual_stub_0.00"]
+    n100_paths = [
+        "top_n",
+        "hold_months",
+        "n_windows",
+        "total_months",
+        "n_missing_months_in_windows",
+        "n_incomplete_windows_dropped",
+        "ann_portfolio_geometric",
+        "ann_benchmark_geometric",
+        "excess_ann_geometric",
+        "window_sigma_ratio",
+        "windows",
+    ]
+    n100_comparisons = [
+        compare_value(path, n100[path], n100_delivered[path]) for path in n100_paths
+    ]
+
+    segment_ranges = {
+        "2014-2017": ("2014", "2017"),
+        "2018-2021": ("2018", "2021"),
+        "2022-2024": ("2022", "2024"),
+    }
+    segments: dict[str, Any] = {}
+    segment_comparisons: dict[str, Any] = {}
+    for name, (start_year, end_year) in segment_ranges.items():
+        segment_sections = [
+            section
+            for section in main["monthly"]
+            if start_year <= section["formation_date"][:4] <= end_year
+        ]
+        segments[name] = summarize(f"main_stub_0.00__{name}", segment_sections)
+        segment_comparisons[name] = aggregate_comparisons(
+            segments[name],
+            delivered["variants"]["segments_stub_0.00"]["segments"][name],
+        )
     criteria = {
         "G1_geometric_excess_ge_1pp": g1["excess_ann_geometric_vs_scored"] >= 0.01,
         "G2_geometric_excess_ge_1pp": g2["excess_ann_geometric_vs_scored"] >= 0.01,
@@ -395,21 +555,43 @@ def main() -> None:
         "B1_g1_sort_t_minus_13_through_t_minus_2": True,
         "B1_five_equal_count_groups_v1_lowest_sigma": True,
         "B1_b_scored_equal_weight_benchmark": True,
-        "B1_b_wide_and_difference_reported": False,
+        "B1_b_wide_and_difference_reported": all(
+            check["matched"]
+            for check in comparisons["main_stub_0.00"]
+            if check["path"].startswith("benchmark_wide.")
+        ),
         "B1_geometric_and_arithmetic_annualization": True,
         "B1_stub_zero_and_three_stub_sensitivity": True,
-        "B1_executable_n100_semiannual_context_reported": False,
+        "B1_executable_n100_semiannual_context_reported": all(
+            check["matched"] for check in n100_comparisons
+        ),
         "B2_g1_proxy_executed": True,
-        "B2_g2_frozen_daily_average_liquidity_executed": False,
+        "B2_g2_frozen_daily_average_liquidity_executed": (
+            delivered["hard_gates"]["G2_liquidity_filter"]["status"]
+            == "executed_daily_average"
+            and len(liquidity_dailyavg) == 144
+        ),
         "B3_main_risk_sigma_ratio_computed": True,
         "B3_required_12_independent_years_observed": main["realized_sigma"]["n_years"] >= 12,
         "B3_secondary_compounding_computed": True,
-        "B3_arithmetic_excess_t_nw_and_ci_same_table": False,
+        "B3_arithmetic_excess_t_nw_and_ci_same_table": all(
+            token
+            in DELIVERED_MARKDOWN.read_text(encoding="utf-8")
+            for token in ("算术年化超额", "t 简单", "t NW(6)", "CI95（解析）")
+        ),
         "B5_full_window_frozen": True,
-        "B5_segment_results_side_by_side": False,
+        "B5_segment_results_side_by_side": all(
+            check["matched"]
+            for checks in segment_comparisons.values()
+            for check in checks
+        ),
         "H7_generator_did_not_adjudicate": True,
     }
     all_checks = [check for checks in comparisons.values() for check in checks]
+    all_checks.extend(n100_comparisons)
+    all_checks.extend(
+        check for checks in segment_comparisons.values() for check in checks
+    )
     artifact_text = DELIVERED.read_text(encoding="utf-8")
     report = {
         "method": {
@@ -418,7 +600,8 @@ def main() -> None:
                 "low_vol_cli, or signal_stats"
             ),
             "panel": str(PANEL.relative_to(ROOT)),
-            "liquidity": str(LIQUIDITY.relative_to(ROOT)),
+            "liquidity_proxy": str(LIQUIDITY_PROXY.relative_to(ROOT)),
+            "liquidity_daily_average": str(LIQUIDITY_DAILYAVG.relative_to(ROOT)),
             "sample_seed": SAMPLE_SEED,
             "sample_selection": (
                 "five raw panel rows per calendar year; no "
@@ -429,17 +612,27 @@ def main() -> None:
             "panel_rows": len(rows),
             "formation_months": len({row["formation_date"] for row in rows}),
             "securities": len({row["ts_code"] for row in rows}),
-            "liquidity_rows": sum(len(values) for values in liquidity.values()),
-            "liquidity_months": len(liquidity),
+            "liquidity_proxy_rows": sum(
+                len(values) for values in liquidity_proxy.values()
+            ),
+            "liquidity_proxy_months": len(liquidity_proxy),
+            "liquidity_dailyavg_rows": sum(
+                len(values) for values in liquidity_dailyavg.values()
+            ),
+            "liquidity_dailyavg_months": len(liquidity_dailyavg),
         },
         "independent_sample": unconditional_sample(rows, main_assignments),
         "variants": variants,
+        "n100_semiannual": n100,
+        "segments": segments,
         "delivered_aggregate_comparisons": comparisons,
+        "n100_delivered_comparisons": n100_comparisons,
+        "segment_delivered_comparisons": segment_comparisons,
         "all_delivered_aggregate_checks_match": all(check["matched"] for check in all_checks),
         "criteria": criteria,
         "frozen_clause_checks": frozen_clause_checks,
         "criterion_outcome": {
-            "delivered_proxy_hard_gates_pass": (
+            "formal_hard_gates_pass": (
                 criteria["G1_geometric_excess_ge_1pp"]
                 and criteria["G2_geometric_excess_ge_1pp"]
             ),
@@ -467,10 +660,10 @@ def main() -> None:
                 in artifact_text
             ),
             "generator_boundary_present": "H7" in delivered.get("generator_boundary", ""),
-            "known_wording_defect": (
-                "两个尚未执行的证伪" in delivered["hard_gates"]["role"]
+            "historical_tense_is_correct": (
+                "门执行前答案未知" in delivered["hard_gates"]["role"]
                 and delivered["hard_gates"]["G2_liquidity_filter"]["status"]
-                == "executed"
+                == "executed_daily_average"
             ),
         },
     }
