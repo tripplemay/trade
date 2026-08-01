@@ -8,7 +8,7 @@ type: project
 - **B111 → `done`（fix_rounds=1）**。F001-F007 全部完成；signoff：`docs/test-reports/B111-signoff-2026-08-01.md`。
 - **★生产服务器 = `ssh deploysvr`**（194.238.26.173/root/kolmatrix_new）；旧 GCP IP 退役，勿用。
 - **F006 PASS**：F006-3 的 min-trade 后现金可行 sizing、`buy_scale_factor` 告警和 fail-loud postcondition 均通过；paper+现金不变量 79/79，生产只读重放逐数字匹配。
-- **生产恢复留痕**：Master cash `-$18.944156` → **`+$332.248912`**，账本 cost `$0.351545`；5/5 paper 账户 cash≥0；产品/生产 SHA `fa1c6fe`，health 200/DB ok。
+- **生产恢复留痕**：Master cash `-$18.944156` → **`+$332.248912`**，账本 cost `$0.351545`；5/5 paper 账户 cash≥0；已验证产品 SHA `fa1c6fe`，签收提交/生产 release `55a5f5e`（仅增测试/状态/报告），health 200/DB ok。
 - **F007 最终裁定 NO-GO**：G1 `+2.2098pp`、正式日均 G2 `+2.8457pp` 过硬门，但仅 11 个可评年份且 bootstrap P=`0.862<0.90`，不满足冻结双判据。
 
 ## 接续（Planner done）
