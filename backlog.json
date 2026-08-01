@@ -1,1 +1,12 @@
-[]
+[
+ {
+  "id": "BL-B112-OPS1",
+  "title": "workbench-backup 清理 /tmp 临时文件的鲁棒性（权限失败不应 fail 整个备份）",
+  "description": "B111 F006-2 取证留下的 root 属主 /tmp/wb-ro.db* 导致 2026-08-01 03:00 workbench-backup.service 清理时权限失败 status=1（备份文件本身已生成，health 有效）。修复方向：备份脚本用自有 mktemp 目录/PrivateTmp，或清理失败降级为 warning。附：evaluator signoff S2。",
+  "decisions": [
+   "源自 B111 signoff soft-watch S2（medium），done 阶段登记"
+  ],
+  "confirmed_at": "2026-08-01",
+  "priority": "medium"
+ }
+]

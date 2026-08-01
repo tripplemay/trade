@@ -634,3 +634,38 @@ B110 主口径几何超额 +0.9606%（正）而算术超额 −0.3237%（负）�
 「原始判据触发项 / 覆盖敏感性覆盖项」两栏）
 
 **状态：** 待确认
+
+## [2026-08-01] Claude CLI + Codex — 来源：B111（F006-3 负现金事故 + 生产迁移误判）
+
+**类型：** 新规律 ×2（evaluator signoff 沉淀）+ 新坑 ×2（generator 修复轮）
+
+**内容 1 — ★交易过滤后必须按「实际执行的卖腿」重验现金可行性（evaluator 沉淀）。**
+min-trade / drift-band 类交易过滤发生后，成本准备金若基于**过滤前**的目标册计算，
+被跳过的卖单 proceeds 不会到账，买单仍按全册 premise 定价 → 超买、现金变负
+（B111-F006-3 生产实例：Master cash $60.25 → −$18.94）。
+**规则：任何 trade-filter（min-trade、drift band、skipped-name 降级）落地时，其验收必须含
+「跳过卖单不为买单供血」的对抗用例；现金可行性以过滤后的实际成交为准。**
+
+**内容 2 — ★生产状态修复的三件套证据（evaluator 沉淀）。**
+仅凭一次 CLI 输出不可签收生产修复。B111 的标准做法：**故障快照 + 恢复账本 + 纯函数重放**
+（读取故障时刻快照，用生产 SHA 的引擎重放，与恢复账本逐位吻合）。
+**规则：生产状态修复的 signoff 必须同时具备三类证据。**
+
+**内容 3 — ★环境迁移必须当日同步 environment.md（generator 坑，第三次同类）。**
+生产服务器迁移（GCP→deploysvr）后 environment.md 未更新，agent 对已退役 IP 重试 17 次
+×5 小时误判「fail2ban 封禁」——该文件里已两次沉淀同型教训（B065/B067），本次复发说明
+「连接失败先核对 IP」规约**依赖 environment.md 本身是对的**。
+**规则：任何环境迁移（服务器/域名/端口/账号），迁移动作不闭环到 environment.md 更新不算完成；
+连接失败时先核对 `~/.ssh/config` 别名与 environment.md 是否一致。**
+
+**内容 4 — venv 自愈探针要覆盖测试依赖（generator 坑）。**
+codex-setup.sh 的 venv 自愈只探 `import workbench_api.app`（运行依赖），本地 venv 缺
+vcrpy/pytest-recording（测试依赖）时 5 个 VCR 测试假红，首次误判成本约 30 分钟。
+**规则：venv 同步探针应覆盖 dev 测试依赖（如 `import vcr`），或自愈直接走
+`pip install -e backend[dev]` 全量同步。**
+
+**建议写入：** `framework/harness/generator.md`（内容 1、4）+
+`framework/harness/evaluator.md`（内容 2：signoff 证据强度）+
+`framework/README.md` §经验教训（内容 3）
+
+**状态：** 待确认
