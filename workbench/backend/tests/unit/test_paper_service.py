@@ -8,6 +8,7 @@ stable target, rebalance on a changed allocation).
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Iterable, Iterator
 from datetime import UTC, date, datetime
 
@@ -416,6 +417,65 @@ def test_align_builds_all_cash_book_to_target(session: Session) -> None:
     assert acc.build_complete is True
     held = {p.symbol for p in PaperPositionRepository(session).list_by_account(account.id)}
     assert held == {"AAA", "BBB"}
+
+
+def test_align_warns_when_skipped_sells_force_buy_scale_down(
+    session: Session, caplog: pytest.LogCaptureFixture
+) -> None:
+    """F006-3: the service must surface a cash-constrained partial fill."""
+
+    symbols = [f"S{i}" for i in range(6)]
+    _seed_targets(
+        session,
+        [
+            {"symbol": symbol, "sleeve": "m", "target_weight": 1 / 6}
+            for symbol in symbols
+        ],
+        as_of=date(2026, 3, 31),
+    )
+    provider = _FakeProvider({symbol: 1.0 for symbol in symbols})
+    account, _ = activate_paper_account(
+        session,
+        strategy_id="master_portfolio",
+        on_date=ON_DATE,
+        now=NOW,
+        initial_capital=60_000.0,
+        provider=provider,
+    )
+    for position in PaperPositionRepository(session).list_by_account(account.id):
+        position.shares = 10_000.0
+        position.avg_cost = 1.0
+    account.cash = 50.0
+    session.commit()
+
+    investable = 60_050.0 * (1.0 - 0.001) - 60_000.0 * 0.001
+    desired_values = [10_105.0] + [(investable - 10_105.0) / 5] * 5
+    _seed_targets(
+        session,
+        [
+            {
+                "symbol": symbol,
+                "sleeve": "m",
+                "target_weight": desired / investable,
+            }
+            for symbol, desired in zip(symbols, desired_values, strict=True)
+        ],
+        as_of=date(2026, 6, 30),
+    )
+
+    with caplog.at_level(logging.WARNING, logger="workbench_api.paper.service"):
+        aligned, plan = align_to_current_target(
+            session,
+            "master_portfolio",
+            on_date=date(2026, 7, 1),
+            now=NOW,
+            provider=provider,
+        )
+
+    assert aligned is not None and plan is not None
+    assert 0.0 < plan.buy_scale_factor < 1.0
+    assert aligned.cash >= 0.0
+    assert "was cash-constrained: buy legs scaled" in caplog.text
 
 
 def test_align_no_account_returns_none(session: Session) -> None:

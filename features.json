@@ -68,7 +68,7 @@
    "title": "Codex：独立验收工作流 A（P0 修复）",
    "priority": "high",
    "executor": "codex",
-   "status": "pending",
+   "status": "done",
    "acceptance": "前置 F001-F004。(1)★**不得只看单测**：须核验修复后的**实际**持仓（momentum 候选池是否只剩 ETF、是否不再持 CAT/HD）、us_quality 因子非 NaN 数 >0 且真实持仓 >0、regime as_of_date 是否前进、45 天 staleness 告警可触发。(2)★成本上升是预期内的，须**量化**（修复前后调仓次数/费用对比）而非当作缺陷。(3) 核验 F002 的 fallback 语义：构造全 NaN 场景，确认 status=fallback 且告警触发、且**不再报 scored**。(4) 逐条审 H1-H4；特别核验 H1（只改诊断 §6 列出的路径，无策略设计意图变更）。(5) 输出 signoff，★每个数字能追到实际跑过的命令。",
    "design_decisions": [
     "验收主体：独立无实现上下文 agent 代 Codex。",

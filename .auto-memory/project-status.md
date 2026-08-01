@@ -5,16 +5,15 @@ type: project
 ---
 
 ## 当前状态
-- **B111 → `reverifying`（fix_rounds=1）**。F006-3（min-trade 负现金）已修复并部署（HEAD/Production = `fa1c6fe`，CI 绿），生产 Master 账户已恢复非负现金；F007 已定 done（维持 NO-GO = 有效完成态）；signoff 仍 null，待 Codex 复验 F006-3。
+- **B111 → `done`（fix_rounds=1）**。F001-F007 全部完成；signoff：`docs/test-reports/B111-signoff-2026-08-01.md`。
 - **★生产服务器 = `ssh deploysvr`**（194.238.26.173/root/kolmatrix_new）；旧 GCP IP 退役，勿用。
-- **F006-3 修复**：引擎三段式——先定全部成交（含 min-trade 跳过）→ 现金可行性（买单上限 =(cash+实际卖单×(1−rate))/(1+rate)，超出按比例缩买腿，`buy_scale_factor` 入 plan+service 告警，绝不 clamp）→ 建册；postcondition `new_cash<−1e-6` 即 raise。起始现金为负时 dust 卖单豁免 min-trade（不变量修复优先），新增 `paper.cli align` 恢复通道。
-- **生产恢复留痕**：align master → cash −$18.94 → **+$332.25**（含成本准备金），账本行 2026-08-01 $0.35；全账户 cash≥0。cn_pure build_complete=0 系统一口径顺延，次日自动补。
-- 此前已交付：统一口径（5+5bps 双腿、禁同会话成交）、正式 G2 +2.846pp、B-wide/N100/分段、S1 端口。
+- **F006 PASS**：F006-3 的 min-trade 后现金可行 sizing、`buy_scale_factor` 告警和 fail-loud postcondition 均通过；paper+现金不变量 79/79，生产只读重放逐数字匹配。
+- **生产恢复留痕**：Master cash `-$18.944156` → **`+$332.248912`**，账本 cost `$0.351545`；5/5 paper 账户 cash≥0；产品/生产 SHA `fa1c6fe`，health 200/DB ok。
+- **F007 最终裁定 NO-GO**：G1 `+2.2098pp`、正式日均 G2 `+2.8457pp` 过硬门，但仅 11 个可评年份且 bootstrap P=`0.862<0.90`，不满足冻结双判据。
 
-## 接续（Codex 复验要点）
-- 只需复验 F006-3：`test_paper_min_trade.py` 10/10（含 evaluator 对抗用例 + 3 个 generator 回归）、生产 align 留痕与现金恢复（上文数字）、buy_scale_factor 告警语义。
-- F006-1/2、F007-1/2/3 首轮已验过；F007 NO-GO 为最终裁定。
-- 本机 venv 已装回 vcrpy/pytest-recording（此前 5 个 VCR 测试假红）。
+## 接续（Planner done）
+- 登记独立 ops 项：backup 文件已生成但清理 `/tmp/wb-ro.db` 权限失败；advisor 因 AIGC Gateway 503 失败，均与 B111 diff 无关。
+- 下一 MTM 日确认 Master 新历史行 cash 继续非负；08-01 负现金行保留为事故审计证据。
 
 ## 永久边界
 - research-safe / no-broker / no-AI 预测 / no 自动下单；A 股 PIT 禁 latest-wins 等；`DATA_NO_GO` 不变。
