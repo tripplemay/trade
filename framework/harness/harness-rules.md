@@ -196,7 +196,7 @@ Codex-only 批次（全部 executor:codex）：
 - `planning → building`：仅当存在 `executor:generator` 的功能时
 - `planning → verifying`：当全部功能均为 `executor:codex` 时（跳过 building）
 - `verifying`：首轮，有问题 → `fixing`，全 PASS → `done`
-- `fixing`：修复完成 → `reverifying`，fix_rounds +1
+- `fixing`：修复完成 → `reverifying`，fix_rounds +1（**仅 Generator 在 fixing→reverifying 时 +1**；evaluator 在 verifying→fixing 时不得加——B109 F003 双重计数教训，详见 `framework/harness/generator.md`；pre-commit 门禁 `scripts/check_state_json.py`）
 - `reverifying`：有问题 → `fixing`，全 PASS → `done`
 
 ## 文档目录约定

@@ -5,6 +5,21 @@
 
 ---
 
+## v0.9.56 — 2026-08-01（B109-B111：分页接口拉取纪律 + fix_rounds 递增门禁 + 退役判据 + 裁定纪律 + 交易过滤现金重验 / 生产修复三件套 / environment.md 迁移同步 / venv 探针覆盖 dev 依赖）
+
+**来源批次：** B109 / B110 / B111（2026-07-20 → 2026-08-01 累积 5 条候选，用户确认后沉淀）。
+
+**沉淀内容（用户确认，5 条）：**
+- **★分页接口拉取纪律——要么分页拉取，要么显式证明未触顶；失效常量撤回留 `None` 不留旧值** → `generator.md §46` + `README.md §经验教训「外部数据源完整性不可假设」`（B109 F002，Tushare 静默截断非均匀砍 vintage 记录，F001 已交付核心数字作废：2021FY 修订率 0.525%→1.325%）。
+- **fix_rounds 递增方限定——仅 Generator 在 fixing→reverifying 时 +1，evaluator 在 verifying→fixing 时不得加** → 根 `harness-rules.md §状态流转` + `framework/harness/harness-rules.md` 同段同步 + `scripts/check_state_json.py` fix_rounds 递增门禁（B109 F003 双重计数；门禁只拦递增，开新批次重置 done N→building 0 合法放行）。
+- **退役判据——让误用不可能悄悄发生，而非让代码消失** → `evaluator.md §35` + `README.md §经验教训`（B109 F003，提删除/退役建议前必查消费者；变异测试验证弃用契约有牙齿；`DeprecationWarning` 默认 filter 下须实证可见；禁令有射程勿跨射程套用）。
+- **★裁定纪律四件套（用户裁 NO-GO 推翻 evaluator 的 INCONCLUSIVE）** → `README.md §经验教训「裁定纪律」`（B110 F004 内容 1/2/5：敏感性触发≠改档，须验是否跨判据边界 + 不对称性自检；推翻析取项≠推翻析取式；「保守」须限定对数据还是对资本，裁定档须标注资本行动含义）+ `evaluator.md §36`（内容 3/4：signoff 必逐条列已核对冻结条款清单；一致率/通过率必报分母筛选逻辑；禁恒真断言——望远镜恒等式捏造数字也返回 True）+ `generator.md §47`（内容 6，扩 §37：几何年化为裁定口径时算术必须同表并排，符号相反须显式波动率分解——+0.96% 几何 vs −0.32% 算术，全部超额来自波动率）+ `templates/signoff-report.md` 新增「裁定核对清单」段（已逐条核对的冻结条款清单 + 原始判据触发项/敏感性覆盖项）。
+- **B111 四件套** → `generator.md §48`（交易过滤后按实际执行的卖腿重验现金可行性——F006-3 生产实例 Master cash $60.25→−$18.94；验收须含「跳过卖单不为买单供血」对抗用例）+ `generator.md §49`（venv/环境自愈探针须覆盖 dev 测试依赖如 `import vcr`，或走全量 `[dev]` 同步——vcrpy 假红 30 分钟误判）+ `evaluator.md §37`（生产状态修复 signoff 三件套证据：故障快照+恢复账本+纯函数重放，仅凭 CLI 输出不可签收）+ `README.md §经验教训`（环境迁移当日必须同步 environment.md，连接失败先核对 ssh config 别名一致性——第三次同类 B065/B067/B111）。
+
+归档 `framework/archive/proposed-learnings-archive-v0.9.56.md`。**活跃候选队列清空。**
+
+---
+
 ## v0.9.55 — 2026-07-07（B080-B098 队列清扫：trade/-edit 门禁族 + api.ts 契约 + 部署种子数据 + freeze/restore + 回测保真本金扫描 + CI-红物理关联诊断 + signoff 落地 gate + pre-commit 钩子）
 
 **来源批次：** B080 / B081 / B083 / B087+B090 / B098（2026-07-03 → 2026-07-06 累积 10 条候选，用户 2026-07-07 明确「沉淀 learnings，全批准」）。其中 P5-F2（B098）已于 2026-07-06 先行写入 `evaluator.md §33`，本次仅归档。
