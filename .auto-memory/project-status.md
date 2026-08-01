@@ -5,15 +5,16 @@ type: project
 ---
 
 ## 当前状态
-- **B111 → `fixing`**。F004/F005 修复已交付并部署：**HEAD/Production = `ac1340f`**，Python/Backend CI 全绿；signoff 仍为 null。
-- **F006-1 已修**：统一前向口径落地——`trade/backtest/execution_caliber.py`（5+5bps/腿、双腿、禁同会话成交）为单一事实源；monthly.py 单边 haircut → 双腿 turnover（+`prior_weights`/+`cost_amount`）；paper 侧 PriceMark 带日期、目标带 as_of_date，**同会话 mark 逐只过滤**（引擎按缺价跳过、build_complete=False、次日重试），手动 align 豁免。对账文档含统一前(6.67×)/后(1.0×)表 + 受影响范围；fixture 工作流钉 legacy 保 provenance。
-- **F007-1/2/3 已修**：正式 G2 = 12 个自然月日均成交额剔 30% → **+2.846pp**（σ 比 0.843、11/11、P 0.841；3157 交易日/2694 调用；2015-07 停牌潮 3 个短表日跳过并披露）；单日代理 +4.106pp 仅并排。B-wide 12.627% vs B-scored 10.840%（差 +1.786pp）；N=100 半年调仓 +2.253pp（22 窗）；冻结分段 2014-2017/2018-2021/2022-2024 并排；Markdown 几何+算术+t/NW/CI 同表、时态已修。
-- **工作流 B 裁定仍归 Codex**：修复只补证据/口径，未动任何阈值与判据。
-- **S1 已修**：codex-setup/wait 默认端口 3099/3100。
+- **B111 → `reverifying`**（2026-08-01）。F004/F005 修复交付并部署（HEAD/Production = `ac1340f`，CI 全绿）；F006-2 生产证据已产出；signoff 仍为 null，待 Codex 复验。
+- **★生产服务器已迁移**：`ssh deploysvr`（194.238.26.173/root/`~/.ssh/kolmatrix_new`，hostname vmi3430901）；旧 GCP 34.180.93.185 退役（environment.md 已更正，勿再用旧 IP）。
+- **F006-1 已修**：统一前向口径（`execution_caliber.py` 单一事实源：5+5bps 双腿、禁同会话成交）；monthly.py 双腿 turnover；paper 同会话 mark 逐只过滤（跳过+次日重试，手动 align 豁免）；统一前 6.67×→后 1.0×，文档含受影响范围。
+- **F007-1/2/3 已修**：正式 G2（12 个月日均剔 30%）**+2.846pp**（3157 交易日实拉，3 个停牌潮短表日披露）；B-wide 12.627% vs B-scored 10.840%（差 +1.786pp）；N=100 半年调仓 +2.253pp；冻结分段并排；Markdown 算术+t/NW/CI 同表、时态已修。阈值/判据一律未动，裁定仍归 Codex。
+- **F006-2 证据**：02:41 recommendations 成功（persisted Master 快照 momentum=EEM/QQQ 纯 ETF、us_quality 15 只真实持仓、hk 诚实 fallback/mixed）；02:44 paper MTM 成功（rebalanced=0=已在目标无 churn，持仓自 07-23 为新代码目标，账本 07-22 $55.42=post-min-trade 样本）；cn_attack_pure 25 只 A 股按新口径顺延（mark 不晚于信号日），次日自动补——统一时点口径生产可观测。
 
-## 接续
-- **F006-2 待证**：修复轮部署后 recommendations 与 paper MTM 须各正常跑一轮（今晨 03:00/03:45 CEST timer 自动跑新代码即满足）；Codex 复验收 persisted snapshot（momentum 无 CAT/HD）、paper 持仓、新调仓账本、min-trade 前后成本。**本机 SSH 连不上 VM**（22 通、banner 超时，疑 fail2ban/源 IP）——SSH 恢复后可手动 `systemctl start workbench-recommendations.service / workbench-paper-mtm.service` 提前产出。
-- 确认两轮运行成功 → 转 `reverifying`。
+## 接续（Codex 复验要点）
+- 用 `ssh deploysvr`；核对 persisted snapshot/paper 持仓/新账本（数字见 progress.json session_notes.generator）；cn pure 明日应自动补齐成交。
+- 复验正式 G2 与 B.1/B.3/B.5 全部冻结输出（产物 docs/audits/B111-F005-low-vol-first-look.{json,md}），独立复算后下裁定并写 signoff。
+- 本机 venv 曾缺 vcrpy/pytest-recording（5 个 VCR 测试假红）已装回；全量 1759 root + 1844 backend 绿。
 - B110 最终 NO-GO；新信号搜索继续冻结（重开仅限数据类别改变）。
 
 ## 永久边界

@@ -10,25 +10,25 @@ type: reference
 - ★**旧地址 `astock.guangai.ai` 已失效/被最外层 nginx basic-auth 挡死**（2026-07-06 实测 home 直接 401，应用根本到不了）——**真机验收/synthetic 一律用 `trade.guangai.ai`，勿再用 astock**。B079-B096 期间 environment.md 一直误记 astock 为活面，各批真机验收凡打 astock 者应重核。
 - 注：同 VM 还托管其它项目（kol.guangai.ai=KOLMatrix / aigc.guangai.ai=LLM gateway）。本项目当前面=**trade.guangai.ai**。
 
-## 生产服务器（2026-06-18 — B067 done 实测填实，治本占位符）
+## 生产服务器（★2026-08-01 用户裁定：生产已迁移到新服务器，旧 GCP VM 作废）
 
 | 项目 | 值 |
 |---|---|
-| 云 | GCP（hostname `instance-20260403-154049`）|
-| **外网 IP** | **`34.180.93.185`**（2026-06-18 SSH 实测可达）|
-| **SSH** | **`ssh tripplezhou@34.180.93.185`** |
-| 部署路径 | `/srv/workbench/current/backend`（symlink → `/srv/workbench/releases/<sha>/backend`；历史 release GC 见 commit e49e217）|
+| **SSH** | **`ssh deploysvr`**（本机 `~/.ssh/config` 已有别名：HostName `194.238.26.173`，User `root`，IdentityFile `~/.ssh/kolmatrix_new`）|
+| hostname | `vmi3430901` |
+| 部署路径 | `/srv/workbench/current/backend`（symlink → `/srv/workbench/releases/<sha>/backend`）|
 | 启动 | systemd（`workbench-*.service` + `*.timer`）|
-| 数据根 | `WORKBENCH_DATA_ROOT=/var/lib/workbench/data` |
-| 部署后台 venv | `/opt/workbench/.venv`（含 akshare/baostock）|
+| 数据根 | `WORKBENCH_DATA_ROOT=/var/lib/workbench/data`；DB `/var/lib/workbench/db/workbench.db` |
+| 部署后台 venv | `/opt/workbench/.venv` |
 | CI/CD | GitHub Actions（绿 CI 自动链式部署）|
+| ★旧值作废 | 旧 GCP VM `34.180.93.185`（`ssh tripplezhou@…`，config 别名 `kolmatrix`）**已退役**——2026-07-31 全日 SSH banner 超时即因此；勿再使用 |
 
-### ★连接失败先核对 IP，勿误判 fail2ban/封锁（2026-06-18 — B065+B067 两次误判教训；evaluator §25 实例）
+### ★连接失败先核对服务器/别名，勿误判 fail2ban（2026-07-31 第三次此类教训）
 
-- **真 VM IP = `34.180.93.185`**。曾出现 agent 用**旧/猜的 IP**（如 `162.14.96.221`）连不上 → **误判为「SSH fail2ban 封锁」并把核心验收降级为 soft-watch**（B067 F004 evaluator + B065 各一次）。
-- **规约（evaluator §25 实例）：SSH/连接失败 → 先核对用的是不是上表 `34.180.93.185`**，再判封锁/超时；勿在用错 IP 时归因 fail2ban。
-- **timer/precompute job 运行机制**：`*.service` 设 `WorkingDirectory=/srv/workbench/current/backend` + `ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.<module>`。`workbench_api` 从 **WorkingDirectory 源树** import（`/opt/workbench/.venv` 的 site-packages 里 workbench_api 是 stale，缺 strategy_modes 等子包）→ **本地 import-check 必须先 `cd /srv/workbench/current/backend`**，否则误报 ModuleNotFoundError（B067 planner 自己也差点踩此 false alarm）。
+- **2026-07-31 实例**：生产迁移后 environment.md 仍记旧 GCP IP，agent 对旧 IP 重试 17 次 × 5 小时判「fail2ban 封禁」——实际是该 VM 已退役。**规约不变：连接失败 → 先核对 environment.md 本表与 `~/.ssh/config` 别名，再判封锁。**
+- **timer/precompute job 运行机制**：`*.service` 设 `WorkingDirectory=/srv/workbench/current/backend` + `ExecStart=/opt/workbench/.venv/bin/python -m workbench_api.<module>`。`workbench_api` 从 **WorkingDirectory 源树** import（`/opt/workbench/.venv` 的 site-packages 里 workbench_api 是 stale，缺 strategy_modes 等子包）→ **本地 import-check 必须先 `cd /srv/workbench/current/backend`**，否则误报 ModuleNotFoundError。
   - **VM 跑 `/tmp/*.py` 临时脚本时 `cd` 无效**（B075）：`sys.path[0]=/tmp`（脚本所在目录），cwd 不进 `sys.path` → stale site-packages 的 `workbench_api` 仍被优先 import → ModuleNotFoundError。**修法：前置 `PYTHONPATH=/srv/workbench/current/backend`** 让源树覆盖 stale site-packages（`-m` / cwd-import 走 `cd` 即可；`/tmp` 脚本必须 `PYTHONPATH`）。
+  - **VM 上跑 workbench_api 需环境变量**：先 `set -a && . /etc/workbench/workbench.env && set +a`（DB URL 等），否则 get_engine() 落到默认 dev 库报 no such table。
 
 ## 测试账号（如有）
 
