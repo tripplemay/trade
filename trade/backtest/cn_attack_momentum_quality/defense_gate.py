@@ -72,7 +72,12 @@ class DefenseGate:
         return prior[-1] if prior else None
 
     def state_for(self, day: date) -> GateState:
-        """``day`` 所在自然月的闸状态（每月评估一次并缓存）。"""
+        """``day`` 所在自然月的闸状态（每月评估一次并缓存）。
+
+        ★B112-F001-3（evaluator 对抗用例）：指数在评估日必须有**当日的**有效
+        观测；评估日缺失/NaN/非正一律可见 fail-open（reason 留痕），
+        绝不回退到更早的收盘冒充当日值（spec §1/H6）。
+        """
         key = f"{day.year:04d}-{day.month:02d}"
         cached = self._month_cache.get(key)
         if cached is not None:
@@ -86,6 +91,15 @@ class DefenseGate:
         if len(upto) < self._config.ma_window:
             state = GateState(
                 key, False, eval_date, None, None, "fail_open_insufficient_history"
+            )
+            self._month_cache[key] = state
+            return state
+        # 评估日精确观测检查（缺当日/NaN/非正都已被 __init__ 的 >0 过滤剔除 →
+        # 最新可用日 < 评估日即视为评估日缺失）。
+        latest_date = upto.index[-1].date()
+        if latest_date != eval_date:
+            state = GateState(
+                key, False, eval_date, None, None, "fail_open_missing_eval_date"
             )
             self._month_cache[key] = state
             return state

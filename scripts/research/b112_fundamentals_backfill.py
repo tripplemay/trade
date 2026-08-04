@@ -153,6 +153,20 @@ def backfill(out_path: Path, cache_dir: Path) -> tuple[int, int]:
     merged = merged.drop_duplicates(
         subset=["ticker", "fiscal_quarter_end"], keep="last"
     ).sort_values(["ticker", "fiscal_quarter_end"])
+    # ★schema 补全（2026-08-04 冒烟发现）：quality_score 的 _ensure_columns 要求
+    # pe/pb/ev_ebitda/earnings_yield 四列存在。CAS 回填不算这四个估值比率
+    #（质量 composite 只用 roe/gross_margin/fcf_yield/debt_to_assets 四输入，
+    # 估值列在 CN 复合分中不被读取）——补 NaN 列以满足模式契约，报告中如实披露。
+    for column in ("pe", "pb", "ev_ebitda", "earnings_yield"):
+        if column not in merged.columns:
+            merged[column] = float("nan")
+    merged = merged[
+        [
+            "report_date", "ticker", "fiscal_quarter", "fiscal_quarter_end",
+            "roe", "gross_margin", "fcf_yield", "debt_to_assets",
+            "pe", "pb", "ev_ebitda", "earnings_yield",
+        ]
+    ]
     out_path.parent.mkdir(parents=True, exist_ok=True)
     merged.to_csv(out_path, index=False)
     if failed:

@@ -178,7 +178,9 @@ _WINDOW = (date(2025, 8, 1), date(2025, 12, 31))
 
 
 def test_gate_none_is_byte_identical_to_default() -> None:
-    """A/B 的 V0 基准：defense_gate=None（默认）与显式不传完全一致。"""
+    """A/B 的 V0 零回归基准（B112-F001-5）：pre-B112 默认路径（不构造闸）与
+    显式 defense_gate=None 两条路径的输出必须逐字段一致——权益曲线、逐日记录、
+    成本、换手、调仓数、终值全部对拍，不是只跑一条路径看个大概。"""
     prices = _synth_prices()
     baseline = run_cn_attack_backtest(
         _params(),
@@ -187,8 +189,22 @@ def test_gate_none_is_byte_identical_to_default() -> None:
         prices=prices,
         universe_history=_universe_history(),
     )
+    explicit_none = run_cn_attack_backtest(
+        _params(),
+        CnAttackBacktestConfig(defense_gate=None),
+        *_WINDOW,
+        prices=prices,
+        universe_history=_universe_history(),
+    )
     assert baseline.gate_states == ()
-    assert baseline.ending_value > 0
+    assert explicit_none.gate_states == ()
+    assert baseline.ending_value == explicit_none.ending_value
+    assert baseline.total_cost == explicit_none.total_cost
+    assert baseline.total_turnover == explicit_none.total_turnover
+    assert baseline.rebalance_count == explicit_none.rebalance_count
+    assert baseline.exit_count == explicit_none.exit_count
+    assert baseline.equity_curve.equals(explicit_none.equity_curve)
+    assert baseline.daily_records == explicit_none.daily_records
 
 
 def test_defensive_month_liquidates_and_stays_cash() -> None:

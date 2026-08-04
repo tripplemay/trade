@@ -66,6 +66,25 @@ HONESTY_STATEMENT = (
 )
 
 
+def load_fundamentals_frame(path: Path) -> pd.DataFrame:
+    """读回填基本面 CSV 并归一到 loader 契约（B112-F001-2 修复点）。
+
+    - ``report_date`` / ``fiscal_quarter_end`` → datetime64（quality 因子按
+      ``report_date <= cutoff`` 比较，字符串会 TypeError——远端 HEAD 复跑即
+      死在这里，因为修复最初只在本地未提交）；
+    - ``pe/pb/ev_ebitda/earnings_yield`` 缺列补 NaN（quality_score 的
+      _ensure_columns 契约；CN composite 不读这四列）。
+    """
+
+    frame = pd.read_csv(path)
+    for column in ("report_date", "fiscal_quarter_end"):
+        frame[column] = pd.to_datetime(frame[column])
+    for column in ("pe", "pb", "ev_ebitda", "earnings_yield"):
+        if column not in frame.columns:
+            frame[column] = float("nan")
+    return frame
+
+
 def load_inputs(*, include_fundamentals: bool = True) -> dict[str, Any]:
     base = pd.read_pickle(_PRICES_BASE)
     ext = pd.read_pickle(_PRICES_EXT)
@@ -91,7 +110,7 @@ def load_inputs(*, include_fundamentals: bool = True) -> dict[str, Any]:
                 f"fundamentals 尚未回填完成：{_FUNDAMENTALS}（quality mode 必需；"
                 "pure mode 可用 include_fundamentals=False）"
             )
-        fundamentals = pd.read_csv(_FUNDAMENTALS)
+        fundamentals = load_fundamentals_frame(_FUNDAMENTALS)
     csi300 = pd.read_pickle(_CSI300)
     index_close = pd.Series(
         pd.to_numeric(csi300["close"]).to_numpy(),
@@ -130,6 +149,55 @@ def _per_year_returns(result: CnAttackBacktestResult) -> dict[str, float]:
     return out
 
 
+def _input_coverage(inputs: dict[str, Any]) -> dict[str, Any]:
+    """H6 覆盖分母（B112-F001-4）：宇宙/指数/基本面/价格的覆盖与缺口统计，
+    结构化入产物，不静默。"""
+    universe_history = inputs["universe_history"]
+    block_sizes = {str(day): len(members) for day, members in universe_history.items()}
+    prices = inputs["prices"]
+    index = inputs["index_close"]
+    coverage: dict[str, Any] = {
+        "universe": {
+            "source": "见报告数据源表（b070 去偏 PIT 块）",
+            "n_blocks": len(block_sizes),
+            "block_sizes": block_sizes,
+            "size_min": min(block_sizes.values()),
+            "size_max": max(block_sizes.values()),
+        },
+        "prices": {
+            "rows": int(len(prices)),
+            "tickers": int(prices["ticker"].nunique()),
+            "date_min": str(prices["date"].min().date()),
+            "date_max": str(prices["date"].max().date()),
+            "splice": "b081 cache（→2026-06-18）+ 生产延伸（2026-06-22→07-31）",
+        },
+        "index": {
+            "series_days": int(len(index)),
+            "window_days_covered": int(
+                pd.to_datetime(pd.Series(pd.date_range(WINDOW_START, WINDOW_END))).isin(
+                    index.index
+                ).sum()
+            ),
+        },
+    }
+    failures_path = Path("data/research/b112/fundamentals_backfill_failures.txt")
+    if _FUNDAMENTALS.is_file():
+        fund = pd.read_csv(_FUNDAMENTALS)
+        coverage["fundamentals"] = {
+            "rows": int(len(fund)),
+            "tickers": int(fund["ticker"].nunique()),
+            "nonnull_rates": {
+                column: round(float(fund[column].notna().mean()), 4)
+                for column in ("roe", "gross_margin", "fcf_yield", "debt_to_assets")
+            },
+            "backfill_failures": (
+                sum(1 for _ in failures_path.open()) if failures_path.is_file() else 0
+            ),
+            "note": "fcf_yield 在部分中报季为 NaN（akshare 字段固有缺口，生产同口径）。",
+        }
+    return coverage
+
+
 def _run_cell(
     inputs: dict[str, Any], mode: str, variant: str, capital: float
 ) -> dict[str, Any]:
@@ -166,6 +234,8 @@ def _run_cell(
         "split_date": split.date().isoformat(),
         "ending_value": result.ending_value,
         "total_turnover": result.total_turnover,
+        # B112-F001-4 — 年化换手（判据/披露输入）：总换手 ÷（交易日/252）。
+        "annual_turnover": result.total_turnover / (result.trading_days / 252.0),
         "total_cost": result.total_cost,
         "rebalance_count": result.rebalance_count,
         "trading_days": result.trading_days,
@@ -237,6 +307,7 @@ def run_matrix(out_json: Path, modes: tuple[str, ...] = MODES) -> dict[str, Any]
             "secondary_delta_sharpe_min": -0.05,
             "note": "阈值为陈述值，独立于观测；施加与裁定归 F002（H7）。",
         },
+        "input_coverage": _input_coverage(inputs),
         "comparisons": comparisons,
         "generator_boundary": (
             "H7：本产物只含原始统计与判据输入，不含任何裁定；"

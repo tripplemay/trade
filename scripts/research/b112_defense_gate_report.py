@@ -74,8 +74,8 @@ def render(payload: dict[str, Any]) -> str:
     lines.append("## 两臂绝对水平并排（全样本 | OOS）")
     lines.append("")
     lines.append("| mode | 本金 | 臂 | CAGR 全样本 | CAGR OOS | MaxDD 全样本 | MaxDD OOS | "
-                 "Sharpe 全样本 | 换手 | 成本 | 调仓次数 |")
-    lines.append("|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|")
+                 "Sharpe 全样本 | Sharpe OOS | 年化换手 | 成本 | 调仓次数 |")
+    lines.append("|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
     for key, comp in sorted(payload["comparisons"].items()):
         mode, capital = key.rsplit("__", 1)
         for arm in ("v0", "v1"):
@@ -90,10 +90,13 @@ def render(payload: dict[str, Any]) -> str:
                 f"{_pct(full['max_drawdown'])} | "
                 f"{_pct(oos.get('max_drawdown'))} | "
                 f"{full['sharpe_ratio']:.3f} | "
-                f"{cell['total_turnover']:.1f} | "
+                f"{oos.get('sharpe_ratio', 0.0):.3f} | "
+                f"{cell['annual_turnover']:.2f} | "
                 f"{cell['total_cost']:,.0f} | "
                 f"{cell['rebalance_count']} |"
             )
+    lines.append("")
+    lines.append("年化换手 = 总换手 ÷（交易日数/252）；累计换手见 JSON 的 `total_turnover`。")
     lines.append("")
 
     lines.append("## 分年收益（全样本，V0 → V1）")
@@ -135,6 +138,39 @@ def render(payload: dict[str, Any]) -> str:
             + (f"；fail-open 记录：{', '.join(fail_open)}" if fail_open else "")
         )
     lines.append("")
+
+    # B112-F001-4 — H6 覆盖分母结构化呈现。
+    coverage = payload.get("input_coverage")
+    if coverage:
+        lines.append("## 覆盖分母（H6，结构化披露）")
+        lines.append("")
+        universe = coverage["universe"]
+        lines.append(
+            f"- **宇宙**：{universe['n_blocks']} 个季度块，每块 "
+            f"{universe['size_min']}–{universe['size_max']} 只；逐块分母见 JSON "
+            f"`input_coverage.universe.block_sizes`。来源：{universe['source']}"
+        )
+        prices = coverage["prices"]
+        lines.append(
+            f"- **价格**：{prices['rows']:,} 行 / {prices['tickers']} 只，"
+            f"{prices['date_min']} → {prices['date_max']}；拼接：{prices['splice']}"
+        )
+        index = coverage["index"]
+        lines.append(
+            f"- **指数**：序列 {index['series_days']} 个交易日；冻结窗口内日历日覆盖 "
+            f"{index['window_days_covered']} 天"
+        )
+        fundamentals = coverage.get("fundamentals")
+        if fundamentals:
+            rates = fundamentals["nonnull_rates"]
+            lines.append(
+                f"- **基本面**：{fundamentals['rows']:,} 行 / {fundamentals['tickers']} 只；"
+                f"非空率 roe {rates['roe']:.1%} / 毛利率 {rates['gross_margin']:.1%} / "
+                f"fcf_yield {rates['fcf_yield']:.1%} / 资产负债率 {rates['debt_to_assets']:.1%}；"
+                f"回填失败 {fundamentals['backfill_failures']} 只（落盘留痕 "
+                f"`fundamentals_backfill_failures.txt`）。{fundamentals['note']}"
+            )
+        lines.append("")
     lines.append("---")
     lines.append("")
     lines.append("**复现：** `python -m scripts.research.b112_defense_gate_ab`（cell 缓存在 "
