@@ -30,6 +30,11 @@ from datetime import date
 import pandas as pd
 
 from trade.backtest.cn_attack_momentum_quality.costs import CnCostModel
+from trade.backtest.cn_attack_momentum_quality.defense_gate import (
+    DefenseGate,
+    DefenseGateConfig,
+    GateState,
+)
 from trade.backtest.us_quality_momentum.metrics import (
     PerformanceMetrics,
     compute_performance_metrics,
@@ -105,6 +110,11 @@ class CnAttackBacktestConfig:
     # target), re-evaluated next rebalance. Default True (更保守); False bit-level
     # reproduces the pre-B081口径 (trades through the limit at the open price).
     price_limit_gating: bool = True
+    # B112 F001 — 指数趋势防御闸（MA200，spec §1 冻结口径）。Default None = OFF,
+    # 与现引擎逐位一致（A/B 的 V0 零回归保证）。给定则月末评估 CSI300 vs 其 MA200，
+    # 触发时次月目标 = 100% 现金；fail-open（缺数据不触发 + 留痕 reason）。
+    # 这是风险层结构件，不改信号计算；禁扫参。
+    defense_gate: DefenseGateConfig | None = None
 
     def __post_init__(self) -> None:
         if self.starting_capital <= 0:
@@ -185,6 +195,8 @@ class CnAttackBacktestResult:
     # B067 F001 — the held book at the final day's close (for the live advisory
     # producer). Default empty so existing constructors / pickles stay valid.
     final_holdings: CnAttackHoldings = CnAttackHoldings(weights=(), cash_weight=1.0)
+    # B112 F001 — 防御闸逐月状态留痕（空 = 未启用闸）。
+    gate_states: tuple[GateState, ...] = ()
 
 
 # --------------------------------------------------------------------------- #
@@ -538,6 +550,7 @@ def run_cn_attack_backtest(
     fundamentals: pd.DataFrame | None = None,
     marketcap: pd.DataFrame | None = None,
     universe_history: Mapping[date, tuple[str, ...]] | None = None,
+    index_close: pd.Series | None = None,
 ) -> CnAttackBacktestResult:
     """Run the daily-monitor / no-trade-band backtest over ``[start, end]``.
 
@@ -546,10 +559,16 @@ def run_cn_attack_backtest(
     point-in-time membership in memory. Decisions at each close execute at the next
     open (T+1). ``marketcap`` (B076 F001) is required only when ``size_tilt_weight > 0``
     activates the size factor; the daily signal reads its latest PIT cap per name.
+    ``index_close`` (B112 F001, date-indexed CSI300 close) is required only when
+    ``config.defense_gate`` is set — fail fast at entry otherwise.
     """
 
     if config is None:
         config = CnAttackBacktestConfig()
+    if config.defense_gate is not None and (index_close is None or index_close.empty):
+        raise CnBacktestError(
+            "defense_gate requires a non-empty index_close series (inject `index_close=`)"
+        )
     if prices is None:
         prices = load_prices()
     if prices.empty:
@@ -582,6 +601,11 @@ def run_cn_attack_backtest(
         else {}
     )
     real_bar = _real_bar_mask(prices) if config.suspension_halt else None
+    # B112 F001 — 防御闸实例（完整交易日历 + 指数序列；每月只在月初首个交易日评估一次）。
+    gate: DefenseGate | None = None
+    if config.defense_gate is not None:
+        gate = DefenseGate(config.defense_gate, trading_dates, index_close)
+    gate_states_seen: dict[str, GateState] = {}
 
     if start is None or end is None:
         default_start, default_end = _default_window(prices)
@@ -709,6 +733,14 @@ def run_cn_attack_backtest(
                     for ticker, weight in signal.weights_dict().items()
                     if ticker not in forced_exits
                 }
+                # B112 F001 — 防御闸覆盖：本月被评估为防守 → 目标 = 空（100% 现金）。
+                # 全覆盖仍在信号之后施加（信号照常计算、留痕可见），band 会把
+                # 持仓册在下个 open 全卖成现金；持币月内 target 恒空 → 不再入场。
+                if gate is not None:
+                    gate_state = gate.state_for(day)
+                    gate_states_seen[gate_state.month] = gate_state
+                    if gate_state.active:
+                        target = {}
                 target_tickers = tuple(sorted(target))
                 # Band gate uses close[d]-valued current weights vs the close[d]
                 # target; the realised turnover is re-priced at open[d+1] on
@@ -780,6 +812,9 @@ def run_cn_attack_backtest(
         metrics=metrics,
         daily_records=tuple(records),
         final_holdings=final_holdings,
+        gate_states=tuple(
+            gate_states_seen[month] for month in sorted(gate_states_seen)
+        ),
     )
 
 
@@ -793,5 +828,7 @@ __all__ = [
     "CnAttackDailyRecord",
     "CnAttackHoldings",
     "CnBacktestError",
+    "DefenseGateConfig",
+    "GateState",
     "run_cn_attack_backtest",
 ]
