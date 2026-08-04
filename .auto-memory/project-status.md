@@ -14,7 +14,7 @@ type: project
 - **S2（medium）**：workbench-backup.service 清理 /tmp 临时文件权限失败（根因是 F006-2 取证留下的 root 属主副本，已清理）；系统性修复（备份清理鲁棒性）已登记 backlog `BL-B112-OPS1`。
 - S1（low）：paper_nav_history 保留 08-01 负现金历史行作事故审计证据（保留不动）；S3（low）：advisor 的 AIGC Gateway 503 跟踪。
 - proposed-learnings 待确认队列：B107 退役判据、B110 裁定逻辑（6 条）、B111 新增 4 条——done 阶段提交用户确认。
-- backlog.json 其余为空；`docs/test-reports/user_report/` 无用户反馈。
+- backlog.json：BL-B112-OPS1（backup 清理鲁棒性，medium）；BL-B112-DFG1（cn_attack 防御闸预注册 A/B 批，用户 08-04 同意登记，暂停开批裁定不变）；BL-B112-PRB1（partial_rebalance A/B，low）。`docs/test-reports/user_report/` 无用户反馈。
 
 ## 永久边界
 - research-safe / no-broker / no-AI 预测 / no 自动下单；A 股 PIT 禁 latest-wins 等。
