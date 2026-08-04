@@ -82,6 +82,19 @@ def test_gate_fail_open_on_empty_series() -> None:
     assert state.reason == "fail_open_no_series"
 
 
+def test_gate_fail_open_when_evaluation_date_is_missing() -> None:
+    series = _index_series().drop(pd.Timestamp("2025-09-30"))
+    gate = DefenseGate(DefenseGateConfig(), _trading_dates(), series)
+
+    state = gate.state_for(date(2025, 10, 8))
+
+    assert state.active is False
+    assert state.reason.startswith("fail_open")
+    assert state.eval_date == date(2025, 9, 30)
+    assert state.index_close is None
+    assert state.ma_value is None
+
+
 def test_gate_state_is_stable_within_a_month() -> None:
     gate = DefenseGate(
         DefenseGateConfig(), _trading_dates(), _index_series(pd.Timestamp("2025-09-01"))

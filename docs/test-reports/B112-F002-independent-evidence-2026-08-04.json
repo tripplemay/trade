@@ -1,0 +1,35 @@
+{
+  "checks": {
+    "annual_turnover_declared": false,
+    "gate_states_match_independent_ma200": true,
+    "h6_coverage_declared_in_artifact": false,
+    "mechanical_split_matches": true,
+    "metric_deltas_match": true
+  },
+  "gate_mismatches": [],
+  "input_observations": {
+    "base_universe_blocks": 29,
+    "base_universe_size_max": 800,
+    "base_universe_size_min": 799,
+    "extended_universe_blocks": 20,
+    "extended_universe_size_max": 1495,
+    "extended_universe_size_min": 1276,
+    "index_window_coverage": 1780,
+    "mechanical_split_date": "2024-05-22",
+    "window_first_date": "2019-04-01",
+    "window_last_date": "2026-07-31",
+    "window_trading_days": 1780
+  },
+  "mechanical_verdicts_from_delivered_numbers": {
+    "pure_momentum__100000": "GO",
+    "pure_momentum__1000000": "NO-GO",
+    "quality_momentum__100000": "NO-GO",
+    "quality_momentum__1000000": "NO-GO"
+  },
+  "method": {
+    "artifact": "docs/research/B112-F001-defense-gate-ab.json",
+    "independence": "no imports from scripts.research or trade"
+  },
+  "metric_mismatches": [],
+  "split_mismatches": []
+}
