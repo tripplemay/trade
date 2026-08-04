@@ -10,18 +10,6 @@
   "priority": "medium"
  },
  {
-  "id": "BL-B112-DFG1",
-  "title": "cn_attack 防御闸预注册 A/B 裁定批（regime/指数趋势门控 × 现状纯进攻）",
-  "description": "前向实证：cn_attack 两 mode 2026-06-19→08-04 paper −41.2%/−41.1%（MaxDD −46.5%），基准 CSI300 −0.26%；形态=动量多头撞 7 月均值回归 regime，无防御闸（B066 定案）。候选改造：给 cn_attack 加 regime/指数趋势防御闸，A/B 对现状。★证据先验：本项目已验证为正的全是风险层（B082 削尾 25.7pp / B089 急跌 −34.1%→−15.2%）。★边界：这是风险/结构层改造，不属于被冻结的新信号搜索；但必须走完整 verdict 批（spec 预注册判据 ΔMaxDD/ΔCAGR + 独立验收），不得顺手改参数；会推翻 B066「无防御闸」定案，spec 须明写。分析材料：docs/research/ashare-strategy-review-2026-08-04.md。",
-  "decisions": [
-   "2026-08-04 用户同意登记需求池（暂停开新批裁定不变，候下一批次安排）",
-   "判据必须预注册（建议 ΔMaxDD 与 ΔCAGR 双门槛，参照 B106 形态），不得用事前后向窗口反推",
-   "禁区自查：不涉及新 alpha 信号，不违反信号搜索冻结（重开条件=数据类别改变，本条无关）"
-  ],
-  "confirmed_at": "2026-08-04",
-  "priority": "medium"
- },
- {
   "id": "BL-B112-PRB1",
   "title": "cn_attack partial_rebalance 独立 A/B 裁定批（B081 F005 遗留）",
   "description": "B081 F005（planner 裁定 c772c72）实测 partial_rebalance 为收益改善型节奏变动：调仓 639→1517、OOS +28.4%→+32.7%；默认 False。按 verdict-gating 纪律须独立 A/B 裁定批才能上线，至今未开。若与 BL-B112-DFG1 同批评估须分开归因（两个自变量不得混入一个 A/B）。",

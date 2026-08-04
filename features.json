@@ -1,90 +1,29 @@
 {
- "sprint": "B111-p0-fixes-and-lowvol-first-look",
+ "sprint": "B112-cn-attack-defense-gate-ab",
  "features": [
   {
    "id": "F001",
-   "title": "P0-1 momentum sleeve 数据语义 + ETF 白名单（40% 仓位）",
+   "title": "cn_attack 指数趋势防御闸（MA200）实现 + 冻结 A/B 回测与报告（只算不裁）",
    "priority": "high",
    "executor": "generator",
-   "status": "done",
-   "acceptance": "【spec 工作流 A / 诊断 §6 F1】(1) 给 generate_momentum_signal 喂月末重采样序列，或把 3/6/9 窗口换算成 63/126/189 交易日 + 200D 趋势过滤 —— **二选一，按原设计文档语义定**，不得自创第三种。(2)★**显式传入 ETF universe 白名单**，拒绝个股混入（实盘现持 CAT/HD 即此 bug 直接产物）。(3) 回归测试：日线输入下 3/6/9 **月**语义不变；个股不得进入候选池。(4)★**不改任何策略设计意图**——目标是让跑着的=被验证过的，不是让它更好；顺手优化属越界。Gates: ruff + mypy trade + 全量 pytest 不回归 + 新增回归测试 + CI 全绿。",
+   "status": "pending",
+   "acceptance": "【spec §1/§2】(1) 闸按冻结口径实现于回测层：月末信号日 CSI300 收盘 < 200 日 SMA（≤信号日，严格无前视）→ 次月 100% 现金；fail-open + risk_flag；V0（gate off）与现引擎 byte 级零回归。(2) 两 mode（pure/quality）× 两本金档（10万/100万）× 全样本+OOS（70/30）全矩阵执行，窗口 2019-04-01→2026-07-31。(3) 报告含判据输入（ΔMaxDD 全样本/OOS、ΔCAGR、ΔSharpe）与并列披露（换手/成本/分年/闸逐月状态留痕），无结论性措辞（机器禁词判据）。(4) 回归测试：闸关零回归、闸开合成数据行为确定、fail-open 可见。Gates: ruff + mypy trade + 全量 pytest 不回归 + CI 全绿。",
    "design_decisions": [
-    "★这是修复不是研究：无假设可失败，确定性≈1.0。",
-    "诊断已端到端复现，根因明确，不需要重新调研。",
-    "40% 仓位 —— 本批次单点影响最大的一项。"
+    "风险层改造，非新信号（不违反冻结）；推翻 B066 无防御闸定案已在 spec §0 明写。",
+    "MA200 单口径禁扫参；本批次零生产部署（H1），GO 后接产另批。",
+    "前向 −41% 只作背景，不得用于拟合或选窗（H4）。"
    ]
   },
   {
    "id": "F002",
-   "title": "P0-2 us_quality 数据隔离 + ★静默回落改为显式 fallback（20% 仓位）",
-   "priority": "high",
-   "executor": "generator",
-   "status": "done",
-   "acceptance": "【spec 工作流 A / 诊断 §6 F2】(1) 因子管道**先按 universe 过滤再 pivot**（27 股票池），滚动窗口对中美日历并集的孔洞给出显式策略（US 日历重索引）。(2)★★**空持仓回落 SGOV 时 `sleeve_status` 必须标 `fallback` 并告警，禁止再报 `scored`/`real`** —— 该缺陷的性质是「算不出来却报告成算出来了」，与 B109/B110 的静默截断/静默空表/静默回落同族，H4 已把它升格为通用规则。(3) 回归测试：混入 A 股行情后 `low_vol`/`trend` 非 NaN 数 > 0；构造全 NaN 场景断言 status=fallback 且告警触发。Gates: 同 F001。",
-   "design_decisions": [
-    "★静默失败是本仓反复吃亏的同一族问题：B109 静默截断、B110 静默空表、此处静默回落。修复必须让它**可见**，不只是让它**不发生**。",
-    "元数据谎报 scored 使监控完全失明 —— 这比 0 持仓本身更严重。"
-   ]
-  },
-  {
-   "id": "F003",
-   "title": "P0-3 regime 刷新 + 监控扩到 USD 账户",
-   "priority": "high",
-   "executor": "generator",
-   "status": "done",
-   "acceptance": "【spec 工作流 A / 诊断 §6 F3+F4】(1) 补跑 regime precompute（QQQ 历史已具备）；月度 timer 加 `Persistent=true` 校验 + 失败告警；★危机检测信号改**每日评估**（调仓仍月度，评估≠交易）。(2) B080 指标（NAV vs 基准/滚动超额/回撤/sleeve 现金占比/目标 staleness 天数）**覆盖 master + regime**（现 metrics_job 明确把二者排除 → 三个 P0 全程零告警）。(3)★`as_of_date` 超过 45 天未前进 → 告警。Gates: 同 F001 + 告警可触发须有测试。",
-   "design_decisions": [
-    "★目标冻结 7 周而无任何告警，根因是监控本身把这两个账户排除了 —— 修 P0-3 不修监控等于下次照样发现不了。",
-    "评估频率与调仓频率解耦：每日评估不增加交易成本。"
-   ]
-  },
-  {
-   "id": "F004",
-   "title": "成本对齐 + 最小交易阈值（★修完 P0 后成本会上升，必须同批落地）",
-   "priority": "high",
-   "executor": "generator",
-   "status": "done",
-   "acceptance": "【spec 工作流 A / 诊断 §6 F5】(1) paper 与回测统一执行/成本假设，并**量化二者差距**——★席位指出回测系统性乐观：回测假设 1bp+2bp 单边，paper 收 5+5bps，信号 T→T+1 open vs paper 当日收盘；实盘实测 5 周 9 次调仓 $419 ≈ 0.42% NAV（年化约 5%）。(2) 调仓加最小交易阈值（drift band 已有，补 min-trade），杜绝 $17 级碎单。(3)★产出一份「回测 vs 实盘成本口径差」的数字，供后续给历史裁定重新定标。Gates: 同 F001。",
-   "design_decisions": [
-    "★修完 P0 后 Master 会真正持仓 → 成本上升是**预期内**的，不是新缺陷；不同批落地 min-trade 等于把一个 bug 换成另一个问题。",
-    "成本口径差会给全部历史裁定重新定标，可能让若干「弱正」结论翻负 —— 这是它的价值，不是它的风险。"
-   ]
-  },
-  {
-   "id": "F005",
-   "title": "A 股股票层低波 first-look — ★G1/G2 两个硬门（只算不裁）",
-   "priority": "high",
-   "executor": "generator",
-   "status": "done",
-   "acceptance": "【spec 工作流 B】(1)★★**先跑 B.2 的两个硬门，答案未知，任一不过即 NO-GO**：G1 排序滞后一月后几何超额仍 ≥+1.0pp（规模因子头条 >50% 死在这一刀下）；G2 剔除最低 30% 流动性后仍 ≥+1.0pp（需补 daily_basic.amount，走 fetch.py 三道防线，本批次唯一 API 成本）。(2) 排序变量=过去 12 月月收益已实现 σ，★严格无前视。(3) 双判据：主=风险声明（σ 比 ≤0.90 且 ≥11/12 年成立），副=复利声明（几何超额>0 且 bootstrap P(>0)≥0.90）。(4)★★**算术超额及其 t / NW-t / CI95 强制同表并排，明写「本方案不依赖它」**——已知 t=0.763<2，报告不得回避也不得包装成通过（B110 D2 教训）。(5)★★**H7 只算不裁**，产物不得出现结论性措辞，复用 B110 的单测机器判据。(6) spec §B.0 的诚实性声明必须原样进入产物：已看到的点估计是**背景不是证据**。(7) 诚实限制 + 数据层可信度分层 + 窗口冻结 2013-2024 须随附。Gates: ruff + pytest 不回归 + 新增单测。",
-   "design_decisions": [
-    "★★本方向**不是干净的预注册**（点估计已被看到），所以硬门放在两个**尚未执行**的证伪上 —— 那里才有信息量。",
-    "阈值 1.0pp 沿用 B110 冻结的 NO-GO 线，不新设；0.90 σ 比来自复利拖累≈σ²/2 的量级要求，非拟合值。",
-    "★已实测可靠性拆分：降波分量 11/11 年、选股分量 7/11 年 → 下限 +1.1~1.4pp 近乎确定，但这是**背景**，判据仍在 G1/G2。"
-   ]
-  },
-  {
-   "id": "F006",
-   "title": "Codex：独立验收工作流 A（P0 修复）",
+   "title": "Codex：独立验收 A/B + 按预注册判据对两 mode 下裁定",
    "priority": "high",
    "executor": "codex",
-   "status": "done",
-   "acceptance": "前置 F001-F004。(1)★**不得只看单测**：须核验修复后的**实际**持仓（momentum 候选池是否只剩 ETF、是否不再持 CAT/HD）、us_quality 因子非 NaN 数 >0 且真实持仓 >0、regime as_of_date 是否前进、45 天 staleness 告警可触发。(2)★成本上升是预期内的，须**量化**（修复前后调仓次数/费用对比）而非当作缺陷。(3) 核验 F002 的 fallback 语义：构造全 NaN 场景，确认 status=fallback 且告警触发、且**不再报 scored**。(4) 逐条审 H1-H4；特别核验 H1（只改诊断 §6 列出的路径，无策略设计意图变更）。(5) 输出 signoff，★每个数字能追到实际跑过的命令。",
+   "status": "pending",
+   "acceptance": "前置 F001。(1) 零 import 独立复算 A/B 关键数字或独立重跑引擎对拍；(2) ★逐条核对 spec 冻结条款并在报告列出编号（§1 全表 + §2 判据表 + §3 H1-H6）；(3) 按 §2 判据对 pure/quality 分别下裁定（GO/NO-GO/INCONCLUSIVE），100 万档为机制判据、10 万档为容量判据分别陈述；(4) 确认 V0 零回归与窗口/70-30 分割的机械一致性；(5) 输出 signoff，docs.signoff 写入后方可 done。",
    "design_decisions": [
-    "验收主体：独立无实现上下文 agent 代 Codex。",
-    "★这是产品代码修复，验收标准比 research 批更严：必须看运行时行为，不能只看测试。"
-   ]
-  },
-  {
-   "id": "F007",
-   "title": "Codex：独立验收工作流 B + ★下裁定",
-   "priority": "high",
-   "executor": "codex",
-   "status": "done",
-   "acceptance": "前置 F005。(1)★自选样本独立复算 σ 排序与分组收益（Generator 不得抽样）。(2)★★**独立执行 G1/G2 两个硬门**并核验 Generator 的实现正确 —— 这两门是本方向唯一有信息量的部分。(3) 按 spec §B.3 双判据下裁定。(4)★★**核查 §B.0 的诚实性声明是否被遵守**：报告有没有把已看到的点估计当成预注册证据？算术 t=0.763 是否被并排披露而非回避？(5)★★**不得重犯 B110 F004 的三处证据强度问题**：抽样池不得按构造排除被检项；禁恒真断言；驱动裁定的输入必须有独立留痕。(6)★**逐条核对冻结条款并在 signoff 中列出已核对的编号**（B110 漏读 D8 却把漏读记成框架缺口）。(7) 输出 signoff。",
-   "design_decisions": [
-    "★★裁定权归 Codex 不归 Generator（铁律 #4），与 B110 同构。",
-    "★但 B110 的教训是 evaluator 也会错：本次明确要求列出已核对的冻结条款编号，让漏读在报告结构上可见。"
+    "裁定权归 Codex（铁律 #4），Generator 只算不裁（H7 同款机器禁词）。",
+    "窗口杠杆/窗口落位假象/容量下限三个前科已写入 spec §5 提醒。"
    ]
   }
  ]
