@@ -140,6 +140,11 @@ def backfill(out_path: Path, cache_dir: Path) -> tuple[int, int]:
     # 合并缓存 + 生产新鲜段（2026 年报告期以生产 pipeline 为准）。
     frames = [pd.read_csv(path) for path in sorted(cache_dir.glob("*.csv"))]
     merged = pd.concat(frames, ignore_index=True)
+    # ★单位归一（2026-08-04 对拍实证）：akshare CAS 行是**百分数**（roe=2.80），
+    # 生产 fundamentals 是**小数**（0.0280，`_frac` 口径）——回填行必须先 /100
+    # 才能与生产同口径合并；fcf_yield 已是 fcf_ps/close 的小数，不再除。
+    for column in ("roe", "gross_margin", "debt_to_assets"):
+        merged[column] = pd.to_numeric(merged[column], errors="coerce") / 100.0
     prod = pd.read_pickle("data/research/b112/b112_fundamentals.pkl")
     prod["fiscal_quarter_end"] = pd.to_datetime(prod["fiscal_quarter_end"]).dt.date.astype(str)
     merged = pd.concat([merged, prod[merged.columns]], ignore_index=True)
