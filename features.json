@@ -6,7 +6,7 @@
    "title": "cn_attack 指数趋势防御闸（MA200）实现 + 冻结 A/B 回测与报告（只算不裁）",
    "priority": "high",
    "executor": "generator",
-   "status": "pending",
+   "status": "done",
    "acceptance": "【spec §1/§2】(1) 闸按冻结口径实现于回测层：月末信号日 CSI300 收盘 < 200 日 SMA（≤信号日，严格无前视）→ 次月 100% 现金；fail-open + risk_flag；V0（gate off）与现引擎 byte 级零回归。(2) 两 mode（pure/quality）× 两本金档（10万/100万）× 全样本+OOS（70/30）全矩阵执行，窗口 2019-04-01→2026-07-31。(3) 报告含判据输入（ΔMaxDD 全样本/OOS、ΔCAGR、ΔSharpe）与并列披露（换手/成本/分年/闸逐月状态留痕），无结论性措辞（机器禁词判据）。(4) 回归测试：闸关零回归、闸开合成数据行为确定、fail-open 可见。Gates: ruff + mypy trade + 全量 pytest 不回归 + CI 全绿。",
    "design_decisions": [
     "风险层改造，非新信号（不违反冻结）；推翻 B066 无防御闸定案已在 spec §0 明写。",
