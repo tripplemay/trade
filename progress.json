@@ -1,5 +1,5 @@
 {
- "status": "building",
+ "status": "verifying",
  "total_features": 2,
  "completed_features": 1,
  "fix_rounds": 0,
@@ -28,7 +28,7 @@
  ],
  "session_notes": {
   "planner": "2026-08-04 B112 planning→building。用户选定 DFG1 单条目开批（OPS1/PRB1 留池），解除暂停开批裁定。spec 已冻结：窗口 2019-04-01→2026-07-31（7 月崩盘月在窗内，预注册非挑选）、WF 70/30、10万/100万双本金、MA200 单闸禁扫参、fail-open+risk_flag、两 mode 独立裁定。判据阈值均带独立理由（5pp≈MaxDD 基数 9%、3pp 沿用 B106、−2pp 比 B082 的 3.15pp 教训更严一档、−0.05 噪声带）。H1 零生产部署——GO 后接产另批。",
-  "generator": "2026-08-04 B112 F001 done。★闸门实现：DefenseGate 月态机（上月最后交易日评估、≤评估日 MA200、严格无前视、fail-open+reason 留痕），engine 集成 defense_gate=None 逐位零回归。★数据链：b081 cache+生产延伸段拼接（复权连续性抽查过）；宇宙只用 b070 去偏 800 名块（生产 1500 块并集会污染——已实证并规避）；基本面 akshare stock_financial_abstract 深回填 113,064 行/2028 只（CSRC 披露死线口径与生产一致，百分数→小数单位归一已对拍，pe/pb 等四列 NaN 补 schema 未入 composite）；B070 pinned 基线逐位复现（0.1312/243406/639 全中）。★A/B 数字（ΔMaxDD 全样本/OOS，ΔCAGR，ΔSharpe）：pure@10万 +14.21/+5.35pp, +2.65pp, +0.016；pure@100万 +21.50/−0.21pp, +0.37pp, +0.035；quality@10万 +12.87/+1.57pp, +2.72pp, −0.043；quality@100万 +21.07/−0.09pp, −0.02pp, +0.036。★关键形态：33 个防守月精准覆盖 2020covid/2021-08→2023-01/2023-06→2024-09 三段指数熊，但 2026-07 动量层崩盘未被覆盖（CSI300 未破 MA200）——闸对指数 regime 有效、对动量层崩盘盲。产物 docs/research/B112-F001-defense-gate-ab.{json,md}，禁词机检 clean，ruff/mypy/定向测试全绿。★F002 复验要点：逐条核对 spec §1/§2 冻结条款、V0 零回归、窗口与 70/30 机械一致、两 mode×两本金档分开裁（100万=机制判据/10万=容量判据 per spec §5）。",
+  "generator": "2026-08-04 B112 F001 done。★闸门实现：DefenseGate 月态机（上月最后交易日评估、≤评估日 MA200、严格无前视、fail-open+reason 留痕），engine 集成 defense_gate=None 逐位零回归。★数据链：b081 cache+生产延伸段拼接（复权连续性抽查过）；宇宙只用 b070 去偏 800 名块（生产 1500 块并集会污染——已实证并规避）；基本面 akshare stock_financial_abstract 深回填 113,064 行/2028 只（CSRC 披露死线口径与生产一致，百分数→小数单位归一已对拍，pe/pb 等四列 NaN 补 schema 未入 composite）；B070 pinned 基线逐位复现（0.1312/243406/639 全中）。★A/B 数字（ΔMaxDD 全样本/OOS，ΔCAGR，ΔSharpe）：pure@10万 +14.21/+5.35pp, +2.65pp, +0.016；pure@100万 +21.50/−0.21pp, +0.37pp, +0.035；quality@10万 +12.87/+1.57pp, +2.72pp, −0.043；quality@100万 +21.07/−0.09pp, −0.02pp, +0.036。★关键形态：33 个防守月精准覆盖 2020covid/2021-08→2023-01/2023-06→2024-09 三段指数熊，但 2026-07 动量层崩盘未被覆盖（CSI300 未破 MA200）——闸对指数 regime 有效、对动量层崩盘盲。产物 docs/research/B112-F001-defense-gate-ab.{json,md}，禁词机检 clean，ruff/mypy/定向测试全绿。★F002 复验要点：逐条核对 spec §1/§2 冻结条款、V0 零回归、窗口与 70/30 机械一致、两 mode×两本金档分开裁（100万=机制判据/10万=容量判据 per spec §5）。（补）用户指令推进：F001 交付完成，status building→verifying，交 Codex 执行 F002 独立验收与裁定。",
   "evaluator": "2026-08-01 B111 fix-round 1 最终复验 PASS。F006-3 对抗用例与 Generator 回归 10/10；新增 DB-backed 服务层用例验证 cash-constrained align 会比例缩买、cash>=0 且发 WARNING；paper 全域+现金不变量 79/79，ruff 绿。已验证产品 SHA fa1c6fe；签收提交 55a5f5e 的 Backend CI/Frontend CI/两次 Deploy 全绿，生产现为 55a5f5e，health 200/DB ok。生产 5/5 paper 账户非负，Master cash=332.248912；用 08-01 cash=-18.944156 历史快照在生产代码只读重放，精确得到 cash=332.248912/cost=0.351545/traded=351.544613/22 positions，与账本一致。F006 done；F007 仍以冻结判据 NO-GO 有效完成；signoff docs/test-reports/B111-signoff-2026-08-01.md；批次 done。"
  }
 }
