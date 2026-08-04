@@ -8,8 +8,10 @@
 数据来源（留痕，H6）：
 
 - 价格：`b070/b081_prices_cache.pkl`（2018-01→2026-06-18，去偏 PIT 1310 只）
-  + `b112_prices_ext.pkl`（生产延伸 06-22→07-31，复权连续性已抽查）。
-- 宇宙：`b070/cn_pit_universe.csv`（2019-03→2026-03 共 29 块）+ 生产 2026-06-30 块。
+  + `b112_prices_ext.pkl`（生产延伸 06-22→07-31，复权连续性已抽查）
+  + `prices_newnames.pkl`（1500 宇宙新名，baostock qfq 回填）。
+- 宇宙：`cn_pit_universe_1500.csv`（top-1500 PIT 季度块；生产同源
+  `point_in_time_top_n` 排序复用，输入 tushare daily_basic/daily 全市场）。
 - 基本面：`fundamentals_full.csv`（本批 akshare 深历史回填 + 生产新鲜段，CSRC 披露死线口径）。
 - 指数：`b112_csi300.pkl`（生产 cn_csi300.csv，2002→2026-08）。
 
@@ -52,8 +54,8 @@ MODES = (FACTOR_VARIANT_PURE_MOMENTUM, FACTOR_VARIANT_QUALITY_MOMENTUM)
 
 _PRICES_BASE = Path("data/research/b070/b081_prices_cache.pkl")
 _PRICES_EXT = Path("data/research/b112/b112_prices_ext.pkl")
-_UNIVERSE_BASE = Path("data/research/b070/snapshots/universe/cn_pit_universe.csv")
-_UNIVERSE_EXT = Path("data/research/b112/b112_universe.pkl")
+_PRICES_NEW = Path("data/research/b112/prices_newnames.pkl")
+_UNIVERSE_BASE = Path("data/research/b112/cn_pit_universe_1500.csv")
 _FUNDAMENTALS = Path("data/research/b112/fundamentals_full.csv")
 _CSI300 = Path("data/research/b112/b112_csi300.pkl")
 _CACHE_DIR = Path("data/research/b112/ab_cache")
@@ -88,13 +90,17 @@ def load_fundamentals_frame(path: Path) -> pd.DataFrame:
 def load_inputs(*, include_fundamentals: bool = True) -> dict[str, Any]:
     base = pd.read_pickle(_PRICES_BASE)
     ext = pd.read_pickle(_PRICES_EXT)
-    prices = pd.concat([base, ext], ignore_index=True)
+    frames = [base, ext]
+    # F001-1c：1500 宇宙新名（超出 1310+1494 覆盖的名）——构建后必须存在。
+    if _PRICES_NEW.is_file():
+        frames.append(pd.read_pickle(_PRICES_NEW))
+    prices = pd.concat(frames, ignore_index=True)
     prices["date"] = pd.to_datetime(prices["date"])
+    # 拼接边界去重（同日同名保留先来段；新名段不与既有段重叠，防御性去重）。
+    prices = prices.drop_duplicates(subset=["date", "ticker"], keep="first")
 
-    # ★宇宙口径（2026-08-04 调试实证后冻结）：只用 b070 去偏 PIT 研究宇宙
-    #（800 名季度块，B070/B081 已验证基线同源）。生产宇宙（~1500 名、B075 扩口径、
-    # 方法论不同）不得并集混入（同 as_of 会并出伪宇宙）；2026-04 起的日子按 PIT 规则
-    # 解析最近块（2026-03-31）——研究与生产的宇宙口径差在报告中如实披露。
+    # ★宇宙口径（fix-round，用户 2026-08-04 裁定「先建 1500 宇宙再裁」）：
+    # top-1500 PIT 块（生产同源 point_in_time_top_n 排序，tushare 全市场输入）。
     universe = pd.read_csv(_UNIVERSE_BASE)
     universe["as_of_date"] = pd.to_datetime(universe["as_of_date"]).dt.date
     universe = universe.sort_values(["as_of_date", "rank"])
@@ -158,7 +164,7 @@ def _input_coverage(inputs: dict[str, Any]) -> dict[str, Any]:
     index = inputs["index_close"]
     coverage: dict[str, Any] = {
         "universe": {
-            "source": "见报告数据源表（b070 去偏 PIT 块）",
+            "source": "top-1500 PIT 块（生产同源 point_in_time_top_n 排序，tushare 全市场输入）",
             "n_blocks": len(block_sizes),
             "block_sizes": block_sizes,
             "size_min": min(block_sizes.values()),

@@ -57,10 +57,10 @@ def _fiscal_quarter(period_end: date) -> str:
     return f"{period_end.year}Q{(period_end.month - 1) // 3 + 1}"
 
 
-def backfill(out_path: Path, cache_dir: Path) -> tuple[int, int]:
+def backfill(out_path: Path, cache_dir: Path, universe_path: Path = _UNIVERSE) -> tuple[int, int]:
     import akshare as ak  # noqa: PLC0415 — 联网依赖，仅回填时导入
 
-    tickers = sorted(pd.read_csv(_UNIVERSE)["ticker"].unique())
+    tickers = sorted(pd.read_csv(universe_path)["ticker"].unique())
     base = pd.read_pickle(_PRICES_BASE)
     ext = pd.read_pickle(_PRICES_EXT)
     prices = pd.concat([base, ext], ignore_index=True)
@@ -190,8 +190,14 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="B112 基本面深历史回填")
     parser.add_argument("--out", type=Path, default=_OUT)
     parser.add_argument("--cache-dir", type=Path, default=_CACHE_DIR)
+    parser.add_argument(
+        "--universe",
+        type=Path,
+        default=_UNIVERSE,
+        help="宇宙 CSV（ticker 列）；默认 b070 研究宇宙，可指向 1500 宇宙",
+    )
     args = parser.parse_args(argv)
-    rows, failures = backfill(args.out, args.cache_dir)
+    rows, failures = backfill(args.out, args.cache_dir, args.universe)
     print(f"落盘行数: {rows}  失败: {failures}  → {args.out}")
     return 0
 
