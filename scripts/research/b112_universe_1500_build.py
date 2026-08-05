@@ -35,27 +35,36 @@ _AMOUNT_CACHE = Path("data/research/B111/liquidity_cache")
 _OUT = Path("data/research/b112/cn_pit_universe_1500.csv")
 _SUMMARY = Path("data/research/b112/universe_1500_build_summary.json")
 TOP_N = 1500
+# ★板块口径（2026-08-04 实证修正）：与生产宇宙一致只含 .SH/.SZ。
+# tushare 全市场含北交所（.BJ，920xxx）——生产宇宙不含（其池与排名都不覆盖），
+# 且 baostock/akshare 价格链不支持 .BJ。构建时在输入侧剔除并披露剔除数（H6）。
+_ALLOWED_SUFFIXES = (".SH", ".SZ")
 
 
-def _load_mv() -> dict[str, list[MarketCapBar]]:
+def _load_mv() -> tuple[dict[str, list[MarketCapBar]], int]:
     bars: dict[str, list[MarketCapBar]] = defaultdict(list)
+    excluded = 0
     for path in sorted(_MV_CACHE.glob("mv_*.csv.gz")):
         stem = path.stem.removeprefix("mv_")  # YYYYMMDD
         day = date(int(stem[:4]), int(stem[4:6]), int(stem[6:8]))
         frame = pd.read_csv(path)
         for record in frame.itertuples(index=False):
+            ts_code = str(record.ts_code)
+            if not ts_code.endswith(_ALLOWED_SUFFIXES):
+                excluded += 1
+                continue
             mv = getattr(record, "total_mv", None)
             if mv is None or not (mv > 0):
                 continue
-            bars[str(record.ts_code)].append(
+            bars[ts_code].append(
                 MarketCapBar(
-                    ticker=str(record.ts_code),
+                    ticker=ts_code,
                     bar_date=day,
                     total_mv=float(mv),
                     circ_mv=None,
                 )
             )
-    return bars
+    return bars, excluded
 
 
 def _load_amount() -> dict[str, list[tuple[date, float]]]:
@@ -65,15 +74,18 @@ def _load_amount() -> dict[str, list[tuple[date, float]]]:
         day = date(int(stem[:4]), int(stem[4:6]), int(stem[6:8]))
         frame = pd.read_csv(path)
         for record in frame.itertuples(index=False):
+            ts_code = str(record.ts_code)
+            if not ts_code.endswith(_ALLOWED_SUFFIXES):
+                continue
             amount = getattr(record, "amount", None)
             if amount is None or not (amount > 0):
                 continue
-            out[str(record.ts_code)].append((day, float(amount)))
+            out[ts_code].append((day, float(amount)))
     return out
 
 
 def build(out_path: Path, summary_path: Path) -> dict[str, object]:
-    market_caps = _load_mv()
+    market_caps, excluded_rows = _load_mv()
     turnover = _load_amount()
     block_dates = quarterly_rebalance_dates(date(2019, 1, 1), date(2026, 6, 30))
     # 季度块日对齐到 ≤ 该日的最近一个有市值数据的交易日（生产 build 同理用 ≤as_of）。
@@ -118,6 +130,8 @@ def build(out_path: Path, summary_path: Path) -> dict[str, object]:
         writer.writerows(rows)
     summary = {
         "top_n": TOP_N,
+        "allowed_suffixes": list(_ALLOWED_SUFFIXES),
+        "excluded_mv_rows_non_sh_sz": excluded_rows,
         "blocks": per_block,
         "rows": len(rows),
         "mv_days": len(mv_days),
@@ -125,6 +139,7 @@ def build(out_path: Path, summary_path: Path) -> dict[str, object]:
         "tickers_with_amount": len(turnover),
         "note": (
             "生产同源排序（point_in_time_top_n 复用），输入=tushare 全市场；"
+            "北交所（.BJ）按生产宇宙口径剔除（计数见 excluded 行）；"
             "缺额块（<1500）如实呈现。"
         ),
     }

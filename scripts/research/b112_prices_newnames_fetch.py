@@ -54,13 +54,13 @@ def fetch(out_path: Path, cache_dir: Path, universe_path: Path) -> tuple[int, in
     done = 0
     try:
         for ticker in todo:
-            code = to_baostock(ticker)
             try:
+                code = to_baostock(ticker)
                 rs = bs.query_history_k_data_plus(
                     code, _K_FIELDS, start_date=_START, end_date=_END,
                     frequency="d", adjustflag="2",
                 )
-            except Exception as exc:  # noqa: BLE001 — 留痕后继续
+            except Exception as exc:  # noqa: BLE001 — 留痕后继续（含不支持的板块码）
                 failed.append(f"{ticker}: {exc!r}")
                 continue
             rows: list[dict[str, object]] = []
