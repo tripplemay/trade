@@ -1,10 +1,10 @@
 {
- "status": "fixing",
+ "status": "reverifying",
  "total_features": 2,
  "completed_features": 0,
- "fix_rounds": 0,
+ "fix_rounds": 1,
  "current_sprint": "F001",
- "last_updated": "2026-08-04",
+ "last_updated": "2026-08-05",
  "user_goal": "B112 cn_attack 防御闸预注册 A/B 裁定批（backlog BL-B112-DFG1，用户 2026-08-04 选定单条目开批）。背景：cn_attack 前向 −41%/6 周（无防御闸的动量多头撞均值回归 regime）；只测 MA200 指数趋势闸这一风险层改造，禁新信号（冻结不变）。零生产部署；判据预注册（ΔMaxDD 全样本≥+5pp/OOS≥+3pp；ΔCAGR≥−2pp；ΔSharpe≥−0.05），裁定归 Codex。",
  "reference_docs": [
   "docs/specs/B112-cn-attack-defense-gate-spec.md",
@@ -62,7 +62,7 @@
  ],
  "session_notes": {
   "planner": "2026-08-04 B112 planning→building。用户选定 DFG1 单条目开批（OPS1/PRB1 留池），解除暂停开批裁定。spec 已冻结：窗口 2019-04-01→2026-07-31（7 月崩盘月在窗内，预注册非挑选）、WF 70/30、10万/100万双本金、MA200 单闸禁扫参、fail-open+risk_flag、两 mode 独立裁定。判据阈值均带独立理由（5pp≈MaxDD 基数 9%、3pp 沿用 B106、−2pp 比 B082 的 3.15pp 教训更严一档、−0.05 噪声带）。H1 零生产部署——GO 后接产另批。",
-  "generator": "2026-08-04 B112 F001 done。★闸门实现：DefenseGate 月态机（上月最后交易日评估、≤评估日 MA200、严格无前视、fail-open+reason 留痕），engine 集成 defense_gate=None 逐位零回归。★数据链：b081 cache+生产延伸段拼接（复权连续性抽查过）；宇宙只用 b070 去偏 800 名块（生产 1500 块并集会污染——已实证并规避）；基本面 akshare stock_financial_abstract 深回填 113,064 行/2028 只（CSRC 披露死线口径与生产一致，百分数→小数单位归一已对拍，pe/pb 等四列 NaN 补 schema 未入 composite）；B070 pinned 基线逐位复现（0.1312/243406/639 全中）。★A/B 数字（ΔMaxDD 全样本/OOS，ΔCAGR，ΔSharpe）：pure@10万 +14.21/+5.35pp, +2.65pp, +0.016；pure@100万 +21.50/−0.21pp, +0.37pp, +0.035；quality@10万 +12.87/+1.57pp, +2.72pp, −0.043；quality@100万 +21.07/−0.09pp, −0.02pp, +0.036。★关键形态：33 个防守月精准覆盖 2020covid/2021-08→2023-01/2023-06→2024-09 三段指数熊，但 2026-07 动量层崩盘未被覆盖（CSI300 未破 MA200）——闸对指数 regime 有效、对动量层崩盘盲。产物 docs/research/B112-F001-defense-gate-ab.{json,md}，禁词机检 clean，ruff/mypy/定向测试全绿。★F002 复验要点：逐条核对 spec §1/§2 冻结条款、V0 零回归、窗口与 70/30 机械一致、两 mode×两本金档分开裁（100万=机制判据/10万=容量判据 per spec §5）。（补）用户指令推进：F001 交付完成，status building→verifying，交 Codex 执行 F002 独立验收与裁定。",
+  "generator": "2026-08-05 B112 F001 fix-round 收口 → reverifying。★F001-1（用户裁定先建后裁）：top-1500 PIT 宇宙全窗口建成——tushare daily_basic 全市场 2072 个交易日（total_mv）+ amount 全段，生产同款 point_in_time_top_n 排序（mcap/60 日成交额 0.5/0.5，top_n=1500，季度块函数同源），30 块×1500 只/3907 唯一名；北交所（.BJ）按生产口径剔除并披露。新名价格 baostock qfq 1913 只/322 万行 0 失败；基本面 akshare 深回填 245,287 行/3923 只，宇宙覆盖 3840/3907=98.3%（88 只空表失败留痕）。★F001-2/3/4/5 已修：dtype 提交+无缓存冒烟、评估日缺失 fail-open（evaluator 对抗用例过）、H6 覆盖分母/OOS Sharpe/年化换手入产物、V0 真对拍零回归。★1500 宇宙全矩阵数字（ΔMaxDD 全样本/OOS，ΔCAGR，ΔSharpe）：pure@10万 +10.75/−2.93pp,+3.47pp,+0.179；pure@100万 +22.05/−0.73pp,+2.23pp,−0.027；quality@10万 +18.13/+5.62pp,+1.92pp,+0.115；quality@100万 +8.15/+1.78pp,−1.82pp,+0.012。★与 800 名旧跑相比 OOS 读数位移（pure@10万 +5.35→−2.93、quality@10万 +1.57→+5.62）——宇宙口径真实影响结论，evaluator 坚持冻结口径是对的。产物 docs/research/B112-F001-defense-gate-ab.{json,md}（禁词机检 clean、含覆盖分母/年化换手）；ruff/mypy/全量 1776 绿。★F002 复验要点：从空 cache 复跑可复现（runner 路径已提交）；逐条核对 spec 冻结条款；100万=机制/10万=容量分别陈述。",
   "evaluator": "2026-08-04 B112 首轮 verifying→fixing，fix_rounds 保持 0。独立脚本确认交付数字、70/30 分割和当前完整指数下 88 月 MA200 状态内部一致；数字层 pure@10万 GO、pure@100万 NO-GO、quality 两档 NO-GO。但正式裁定 INCONCLUSIVE：实际只用 799-800 只 B070 宇宙而非 spec top~1500/生产同源；远端 HEAD quality runner 因 report_date=str 抛 TypeError，数字依赖未提交修补；评估日指数缺失会静默取旧值而不 fail-open；报告缺 H6 分母/OOS Sharpe/年化换手；V0 byte 零回归测试无实际基线比较。报告 docs/test-reports/B112-F002-verification-2026-08-04.md；证据 docs/test-reports/B112-F002-independent-evidence-2026-08-04.json。"
  }
 }
