@@ -5,12 +5,12 @@ type: project
 ---
 
 ## 当前状态
-- **B112 → `fixing`**（2026-08-04，fix_rounds=0，0/2）。首轮验收报告 `docs/test-reports/B112-F002-verification-2026-08-04.md`，正式裁定 **INCONCLUSIVE**。
-- **High 1**：A/B 实际使用 799-800 只 B070 研究宇宙，违反冻结的 top~1500/生产同源口径；须明确唯一 PIT 宇宙并清空 cache 重跑 8 cell。
-- **High 2**：远端 HEAD quality runner 因 `report_date=str` 首月 TypeError；交付数字依赖未提交本地修补。
-- **High 3**：CSI300 月末评估日缺失会静默使用旧日收盘并标 off/on，未 fail-open。
-- **Medium**：报告缺 H6 覆盖分母/OOS Sharpe/年化换手；V0 byte 零回归测试未做实际基线比较。
-- 独立复算确认现有数字内部一致：pure 10万 GO/100万 NO-GO；quality 两档 NO-GO。但数据/执行缺陷修复前不得形成正式裁定。
+- **B112 → `fixing`**（2026-08-06，fix_rounds=1，0/2）。复验报告 `docs/test-reports/B112-F002-reverification-2026-08-06.md`。
+- 首轮 3 High 已修：30×1500 PIT 宇宙、quality 原始路径、缺评估日 fail-open 均通过；空 cache 完整 8 cell 跑通，定向 17/17、ruff/mypy/CI 绿。
+- **裁定已收敛**：pure 10万/100万均 **NO-GO**；quality 10万容量档 **GO**、100万机制档 **NO-GO**，故两个 mode 的机制均不放行。
+- **Medium F001-4a**：H6 价格 splice 漏披露 3,219,272 行 `prices_newnames.pkl`；指数 1,780 交易日被误标为日历日。
+- **Medium F001-5a**：V0 测试仍比较当前默认 config 与显式 `None`，未对拍 pre-B112 `2e81836` golden 基线。
+- 下一轮只需修复/复验 F001-4a/5a，重渲染报告；`docs.signoff` 仍为 null。
 - **B111 已完成**：签收 `docs/test-reports/B111-signoff-2026-08-01.md`；Production=`55a5f5e`。
 - **★生产服务器 = `ssh deploysvr`**（194.238.26.173/root/kolmatrix_new）；旧 GCP IP 已退役（environment.md 已更正）。
 - 新信号搜索继续冻结（重开仅限数据类别改变）；`DATA_NO_GO` 不变。

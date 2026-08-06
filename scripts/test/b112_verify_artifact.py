@@ -84,6 +84,8 @@ def verify(args: argparse.Namespace) -> dict[str, Any]:
     payload = json.loads(args.artifact.read_text(encoding="utf-8"))
     price_frames = [pd.read_pickle(path) for path in args.prices]
     prices = pd.concat(price_frames, ignore_index=True)
+    prices["date"] = pd.to_datetime(prices["date"])
+    prices = prices.drop_duplicates(["date", "ticker"], keep="first")
     all_dates = pd.DatetimeIndex(pd.to_datetime(prices["date"]).drop_duplicates()).sort_values()
     window_dates = all_dates[(all_dates >= WINDOW_START) & (all_dates <= WINDOW_END)]
     expected_split = window_dates[int(len(window_dates) * IS_FRACTION)].date().isoformat()
@@ -133,13 +135,34 @@ def verify(args: argparse.Namespace) -> dict[str, Any]:
                      "expected": expected, "recorded": recorded}
                 )
 
-    base_universe = pd.read_csv(args.universe_base)
-    extended_universe = pd.read_pickle(args.universe_extended)
-    base_sizes = base_universe.groupby("as_of_date").size()
-    extended_sizes = extended_universe.groupby("as_of_date").size()
+    if args.universe is not None:
+        universe = pd.read_csv(args.universe)
+        universe_sizes = universe.groupby("as_of_date").size()
+        universe_observation = {
+            "universe_blocks": int(universe_sizes.size),
+            "universe_size_min": int(universe_sizes.min()),
+            "universe_size_max": int(universe_sizes.max()),
+        }
+    else:
+        base_universe = pd.read_csv(args.universe_base)
+        extended_universe = pd.read_pickle(args.universe_extended)
+        base_sizes = base_universe.groupby("as_of_date").size()
+        extended_sizes = extended_universe.groupby("as_of_date").size()
+        universe_observation = {
+            "base_universe_blocks": int(base_sizes.size),
+            "base_universe_size_min": int(base_sizes.min()),
+            "base_universe_size_max": int(base_sizes.max()),
+            "extended_universe_blocks": int(extended_sizes.size),
+            "extended_universe_size_min": int(extended_sizes.min()),
+            "extended_universe_size_max": int(extended_sizes.max()),
+        }
     coverage_key = next(
         (key for key in ("input_coverage", "coverage") if key in payload), None
     )
+    coverage = payload.get(coverage_key, {}) if coverage_key is not None else {}
+    price_coverage = coverage.get("prices", {})
+    universe_coverage = coverage.get("universe", {})
+    index_coverage = coverage.get("index", {})
     annual_turnover_present = all(
         any(
             key in cell[arm]
@@ -153,6 +176,23 @@ def verify(args: argparse.Namespace) -> dict[str, Any]:
         "mechanical_split_matches": not split_mismatches,
         "gate_states_match_independent_ma200": not gate_mismatches,
         "h6_coverage_declared_in_artifact": coverage_key is not None,
+        "h6_price_counts_match_inputs": (
+            price_coverage.get("rows") == len(prices)
+            and price_coverage.get("tickers") == prices["ticker"].nunique()
+            and price_coverage.get("date_min") == prices["date"].min().date().isoformat()
+            and price_coverage.get("date_max") == prices["date"].max().date().isoformat()
+        ),
+        "h6_price_splice_discloses_new_names": "prices_newnames" in price_coverage.get(
+            "splice", ""
+        ),
+        "h6_universe_counts_match_inputs": (
+            universe_coverage.get("n_blocks") == universe_observation["universe_blocks"]
+            and universe_coverage.get("size_min") == universe_observation["universe_size_min"]
+            and universe_coverage.get("size_max") == universe_observation["universe_size_max"]
+        ),
+        "h6_index_coverage_matches_trading_calendar": (
+            index_coverage.get("window_days_covered") == int(window_dates.isin(index.index).sum())
+        ),
         "annual_turnover_declared": annual_turnover_present,
     }
     return {
@@ -166,12 +206,7 @@ def verify(args: argparse.Namespace) -> dict[str, Any]:
             "window_last_date": window_dates[-1].date().isoformat(),
             "mechanical_split_date": expected_split,
             "index_window_coverage": int(window_dates.isin(index.index).sum()),
-            "base_universe_blocks": int(base_sizes.size),
-            "base_universe_size_min": int(base_sizes.min()),
-            "base_universe_size_max": int(base_sizes.max()),
-            "extended_universe_blocks": int(extended_sizes.size),
-            "extended_universe_size_min": int(extended_sizes.min()),
-            "extended_universe_size_max": int(extended_sizes.max()),
+            **universe_observation,
         },
         "checks": checks,
         "mechanical_verdicts_from_delivered_numbers": verdicts,
@@ -188,23 +223,30 @@ def main() -> int:
         default=Path("docs/research/B112-F001-defense-gate-ab.json"),
     )
     parser.add_argument(
-        "--prices", type=Path, nargs=2,
+        "--prices", type=Path, nargs="+",
         default=[Path("data/research/b070/b081_prices_cache.pkl"),
-                 Path("data/research/b112/b112_prices_ext.pkl")],
+                 Path("data/research/b112/b112_prices_ext.pkl"),
+                 Path("data/research/b112/prices_newnames.pkl")],
     )
     parser.add_argument(
         "--index", type=Path, default=Path("data/research/b112/b112_csi300.pkl")
     )
     parser.add_argument(
-        "--universe-base", type=Path,
-        default=Path("data/research/b070/snapshots/universe/cn_pit_universe.csv"),
+        "--universe", type=Path,
+        default=Path("data/research/b112/cn_pit_universe_1500.csv"),
+        help="single PIT universe CSV; use the legacy base/extended flags only for old artifacts",
     )
+    parser.add_argument("--universe-base", type=Path, default=None)
     parser.add_argument(
         "--universe-extended", type=Path,
-        default=Path("data/research/b112/b112_universe.pkl"),
+        default=None,
     )
     parser.add_argument("--out", type=Path)
     args = parser.parse_args()
+    if (args.universe_base is None) != (args.universe_extended is None):
+        parser.error("--universe-base and --universe-extended must be supplied together")
+    if args.universe_base is not None:
+        args.universe = None
     result = verify(args)
     rendered = json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     if args.out is not None:

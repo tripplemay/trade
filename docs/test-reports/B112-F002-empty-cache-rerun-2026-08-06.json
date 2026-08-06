@@ -1,0 +1,12 @@
+{
+  "comparison_cells": [
+    "pure_momentum__100000",
+    "pure_momentum__1000000",
+    "quality_momentum__100000",
+    "quality_momentum__1000000"
+  ],
+  "delivered_sha256_canonical_json": "374aee7a69ce734adb4e3fd86ab65d510b5bda32506aee79a587c63304255298",
+  "exact_match": false,
+  "method": "full 2 modes x 2 arms x 2 capitals rerun with a new TemporaryDirectory cache",
+  "rerun_sha256_canonical_json": "a29d9bd7d6cd449426b73351fd72c3f9087b2f78952246d82e477bd049926813"
+}

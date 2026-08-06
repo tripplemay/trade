@@ -1,0 +1,81 @@
+{
+  "cell": "pure_momentum__v0_current__100000",
+  "difference_count": 5,
+  "differences": [
+    {
+      "delivered": 190.09283564308086,
+      "fresh": 190.09283564308083,
+      "path": "$.annual_turnover"
+    },
+    {
+      "delivered": 1342.719235891603,
+      "fresh": 1342.7192358916027,
+      "path": "$.segments.full.total_turnover"
+    },
+    {
+      "delivered": 1342.719235891603,
+      "fresh": 1342.7192358916027,
+      "path": "$.segments.oos.total_turnover"
+    },
+    {
+      "delivered": 62449.2163171023,
+      "fresh": 62449.216317102284,
+      "path": "$.total_cost"
+    },
+    {
+      "delivered": 1342.719235891603,
+      "fresh": 1342.7192358916027,
+      "path": "$.total_turnover"
+    }
+  ],
+  "exact_match": false,
+  "fresh": {
+    "annual_turnover": 190.09283564308083,
+    "capital": 100000.0,
+    "ending_value": 33848.96759389784,
+    "gate_states": [],
+    "mode": "pure_momentum",
+    "per_year_returns": {
+      "2019": -0.12853724766349162,
+      "2020": -0.06431707223509642,
+      "2021": -0.07386833274884264,
+      "2022": -0.20675263232634733,
+      "2023": -0.1718451064592379,
+      "2024": -0.13536504755805634,
+      "2025": -0.14146557483931377,
+      "2026": -0.10202535596847884
+    },
+    "rebalance_count": 1777,
+    "segments": {
+      "full": {
+        "annualized_return": -0.1373490082735359,
+        "annualized_volatility": 0.12067600043985402,
+        "calmar_ratio": -0.20235088282746225,
+        "cumulative_return": -0.6615103240610216,
+        "max_drawdown": -0.6787665383730931,
+        "profit_loss_ratio": 1.1153456263187855,
+        "sharpe_ratio": -1.2106781526810877,
+        "sortino_ratio": -1.5597924559141265,
+        "total_turnover": 1342.7192358916027,
+        "win_rate": 0.41540191118605957
+      },
+      "oos": {
+        "annualized_return": -0.13943235745968574,
+        "annualized_volatility": 0.06902416802701998,
+        "calmar_ratio": -0.4765359581757769,
+        "cumulative_return": -0.27998851319339124,
+        "max_drawdown": -0.29259566894688394,
+        "profit_loss_ratio": 1.4054700181921886,
+        "sharpe_ratio": -2.2190919038023127,
+        "sortino_ratio": -2.9309332385680427,
+        "total_turnover": 1342.7192358916027,
+        "win_rate": 0.30639097744360905
+      }
+    },
+    "split_date": "2024-05-22",
+    "total_cost": 62449.216317102284,
+    "total_turnover": 1342.7192358916027,
+    "trading_days": 1780,
+    "variant": "v0_current"
+  }
+}
