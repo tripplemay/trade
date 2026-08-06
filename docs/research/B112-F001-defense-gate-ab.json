@@ -3299,13 +3299,32 @@
     },
     "index": {
       "series_days": 5962,
-      "window_days_covered": 1780
+      "window_trading_days_covered": 1780,
+      "window_trading_days_total": 1780
     },
     "prices": {
       "date_max": "2026-07-31",
       "date_min": "2018-01-02",
+      "dedupe_rule": "三段 concat 后按 (date, ticker) 去重（keep=first）；拼接总行数即 rows",
       "rows": 5731069,
-      "splice": "b081 cache（→2026-06-18）+ 生产延伸（2026-06-22→07-31）",
+      "segments": [
+        {
+          "name": "b081_prices_cache.pkl（去偏 PIT 1310 只）",
+          "rows": 2467137,
+          "span": "2018-01-02 → 2026-06-18"
+        },
+        {
+          "name": "b112_prices_ext.pkl（生产统一 CSV 延伸）",
+          "rows": 44660,
+          "span": "2026-06-22 → 2026-07-31"
+        },
+        {
+          "name": "prices_newnames.pkl（1500 宇宙新名 baostock qfq 回填）",
+          "rows": 3219272,
+          "span": "2018-01-02 → 2026-07-31"
+        }
+      ],
+      "splice": "b081 cache + 生产延伸 b112_prices_ext + 新名段 prices_newnames（三段行数见 segments）",
       "tickers": 3979
     },
     "universe": {

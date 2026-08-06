@@ -90,12 +90,35 @@ def load_fundamentals_frame(path: Path) -> pd.DataFrame:
 def load_inputs(*, include_fundamentals: bool = True) -> dict[str, Any]:
     base = pd.read_pickle(_PRICES_BASE)
     ext = pd.read_pickle(_PRICES_EXT)
+    # 段 span 计算前先把各段的 date 列解析为 datetime（ext/新名段源 CSV 为字符串）。
+    for frame in (base, ext):
+        frame["date"] = pd.to_datetime(frame["date"])
     frames = [base, ext]
     # F001-1c：1500 宇宙新名（超出 1310+1494 覆盖的名）——构建后必须存在。
+    price_segments: list[dict[str, Any]] = [
+        {
+            "name": "b081_prices_cache.pkl（去偏 PIT 1310 只）",
+            "rows": int(len(base)),
+            "span": f"{base['date'].min().date()} → {base['date'].max().date()}",
+        },
+        {
+            "name": "b112_prices_ext.pkl（生产统一 CSV 延伸）",
+            "rows": int(len(ext)),
+            "span": f"{ext['date'].min().date()} → {ext['date'].max().date()}",
+        },
+    ]
     if _PRICES_NEW.is_file():
-        frames.append(pd.read_pickle(_PRICES_NEW))
+        new = pd.read_pickle(_PRICES_NEW)
+        new["date"] = pd.to_datetime(new["date"])
+        frames.append(new)
+        price_segments.append(
+            {
+                "name": "prices_newnames.pkl（1500 宇宙新名 baostock qfq 回填）",
+                "rows": int(len(new)),
+                "span": f"{new['date'].min().date()} → {new['date'].max().date()}",
+            }
+        )
     prices = pd.concat(frames, ignore_index=True)
-    prices["date"] = pd.to_datetime(prices["date"])
     # 拼接边界去重（同日同名保留先来段；新名段不与既有段重叠，防御性去重）。
     prices = prices.drop_duplicates(subset=["date", "ticker"], keep="first")
 
@@ -127,6 +150,7 @@ def load_inputs(*, include_fundamentals: bool = True) -> dict[str, Any]:
         "fundamentals": fundamentals,
         "universe_history": universe_history,
         "index_close": index_close,
+        "price_segments": price_segments,
     }
 
 
@@ -162,6 +186,10 @@ def _input_coverage(inputs: dict[str, Any]) -> dict[str, Any]:
     block_sizes = {str(day): len(members) for day, members in universe_history.items()}
     prices = inputs["prices"]
     index = inputs["index_close"]
+    window_days = {
+        day for day in prices["date"].dt.date.unique() if WINDOW_START <= day <= WINDOW_END
+    }
+    window_days_covered = sum(1 for day in window_days if day in set(index.index.date))
     coverage: dict[str, Any] = {
         "universe": {
             "source": "top-1500 PIT 块（生产同源 point_in_time_top_n 排序，tushare 全市场输入）",
@@ -175,15 +203,20 @@ def _input_coverage(inputs: dict[str, Any]) -> dict[str, Any]:
             "tickers": int(prices["ticker"].nunique()),
             "date_min": str(prices["date"].min().date()),
             "date_max": str(prices["date"].max().date()),
-            "splice": "b081 cache（→2026-06-18）+ 生产延伸（2026-06-22→07-31）",
+            # B112-F001-4a — 三段输入与去重规则全披露（新名段占半数以上，不得遗漏）。
+            "segments": inputs["price_segments"],
+            "dedupe_rule": "三段 concat 后按 (date, ticker) 去重（keep=first）；拼接总行数即 rows",
+            "splice": (
+                "b081 cache + 生产延伸 b112_prices_ext + 新名段 prices_newnames"
+                "（三段行数见 segments）"
+            ),
         },
         "index": {
             "series_days": int(len(index)),
-            "window_days_covered": int(
-                pd.to_datetime(pd.Series(pd.date_range(WINDOW_START, WINDOW_END))).isin(
-                    index.index
-                ).sum()
-            ),
+            # B112-F001-4a — 正确口径：窗口**交易日**覆盖（分母为价格框交易日），
+            # 不得用「日历日」措辞。
+            "window_trading_days_total": len(window_days),
+            "window_trading_days_covered": window_days_covered,
         },
     }
     failures_path = Path("data/research/b112/fundamentals_backfill_failures.txt")

@@ -179,8 +179,7 @@ _WINDOW = (date(2025, 8, 1), date(2025, 12, 31))
 
 def test_gate_none_is_byte_identical_to_default() -> None:
     """A/B 的 V0 零回归基准（B112-F001-5）：pre-B112 默认路径（不构造闸）与
-    显式 defense_gate=None 两条路径的输出必须逐字段一致——权益曲线、逐日记录、
-    成本、换手、调仓数、终值全部对拍，不是只跑一条路径看个大概。"""
+    显式 defense_gate=None 两条路径的输出必须逐字段一致（确定性证明）。"""
     prices = _synth_prices()
     baseline = run_cn_attack_backtest(
         _params(),
@@ -205,6 +204,70 @@ def test_gate_none_is_byte_identical_to_default() -> None:
     assert baseline.exit_count == explicit_none.exit_count
     assert baseline.equity_curve.equals(explicit_none.equity_curve)
     assert baseline.daily_records == explicit_none.daily_records
+
+
+def _load_pre_b112_engine():
+    """从 git 历史加载 pre-B112 引擎（commit 2e81836，B112 闸门落地前）。
+
+    该历史模块 import 的同级模块（costs/universe/signal/metrics/parameters）在
+    B112 中均未改动，故其行为等价于 pre-B112 真实基线。
+    """
+    import importlib.util
+    import subprocess
+    import sys
+    import tempfile
+    from pathlib import Path
+
+    src = subprocess.run(
+        ["git", "show", "2e81836:trade/backtest/cn_attack_momentum_quality/engine.py"],
+        capture_output=True,
+        check=True,
+        text=True,
+    ).stdout
+    path = Path(tempfile.mkdtemp()) / "pre_b112_engine.py"
+    path.write_text(src, encoding="utf-8")
+    spec = importlib.util.spec_from_file_location("pre_b112_engine", path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    # 标准 importlib 咒语：先注册进 sys.modules（dataclasses/typing 内部会查
+    # 模块字典），再执行。
+    sys.modules["pre_b112_engine"] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_v0_matches_pre_b112_baseline() -> None:
+    """B112-F001-5a：defense_gate=None 的输出必须与 pre-B112 git 基线逐字段一致
+    （不是与同一实现的其他配置比）。覆盖权益曲线、逐日记录、终值、成本、换手、
+    调仓数和退出数。"""
+    import dataclasses
+
+    old = _load_pre_b112_engine()
+    prices = _synth_prices()
+    old_result = old.run_cn_attack_backtest(
+        _params(),
+        old.CnAttackBacktestConfig(),
+        *_WINDOW,
+        prices=prices,
+        universe_history=_universe_history(),
+    )
+    new_result = run_cn_attack_backtest(
+        _params(),
+        CnAttackBacktestConfig(defense_gate=None),
+        *_WINDOW,
+        prices=prices,
+        universe_history=_universe_history(),
+    )
+    assert old_result.ending_value == new_result.ending_value
+    assert old_result.total_cost == new_result.total_cost
+    assert old_result.total_turnover == new_result.total_turnover
+    assert old_result.rebalance_count == new_result.rebalance_count
+    assert old_result.exit_count == new_result.exit_count
+    assert old_result.equity_curve.equals(new_result.equity_curve)
+    # 跨模块类的 slots-dataclass 不能用 == 直接比（类身份不同）→ astuple 逐字段。
+    assert [dataclasses.astuple(r) for r in old_result.daily_records] == [
+        dataclasses.astuple(r) for r in new_result.daily_records
+    ]
 
 
 def test_defensive_month_liquidates_and_stays_cash() -> None:

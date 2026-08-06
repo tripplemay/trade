@@ -140,9 +140,31 @@ def _sample_payload() -> dict:
                 "tickers": 1310,
                 "date_min": "2018-01-02",
                 "date_max": "2026-07-31",
-                "splice": "测试拼接",
+                "segments": [
+                    {
+                        "name": "b081_prices_cache.pkl（测试段一）",
+                        "rows": 700,
+                        "span": "2018-01-02 → 2026-06-18",
+                    },
+                    {
+                        "name": "b112_prices_ext.pkl（测试段二）",
+                        "rows": 100,
+                        "span": "2026-06-22 → 2026-07-31",
+                    },
+                    {
+                        "name": "prices_newnames.pkl（测试段三）",
+                        "rows": 200,
+                        "span": "2018-01-01 → 2026-07-31",
+                    },
+                ],
+                "dedupe_rule": "三段 concat 后按 (date, ticker) 去重（keep=first）",
+                "splice": "段一 + 段二 + prices_newnames",
             },
-            "index": {"series_days": 3000, "window_days_covered": 1780},
+            "index": {
+                "series_days": 3000,
+                "window_trading_days_total": 1780,
+                "window_trading_days_covered": 1780,
+            },
             "fundamentals": {
                 "rows": 113064,
                 "tickers": 2028,
@@ -179,13 +201,15 @@ def test_render_contains_criterion_table_and_gate_states() -> None:
 
 
 def test_render_contains_coverage_and_annual_turnover() -> None:
-    """F001-4：报告必须含 H6 覆盖分母、OOS Sharpe 与年化换手（含公式）。"""
+    """F001-4/4a：报告必须含 H6 覆盖分母（三段价格披露）、OOS Sharpe 与年化换手（含公式）。"""
     md = render(_sample_payload())
     assert "覆盖分母" in md
+    assert "prices_newnames" in md  # 新名段不得遗漏（4a）
     assert "Sharpe OOS" in md
     assert "年化换手" in md
     assert "交易日数/252" in md
     assert "29 个季度块" in md
+    assert "1780/1780" in md  # 指数交易日覆盖口径（4a）
 
 
 def test_runner_payload_has_no_verdict_language() -> None:

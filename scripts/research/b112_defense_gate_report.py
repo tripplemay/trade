@@ -153,12 +153,16 @@ def render(payload: dict[str, Any]) -> str:
         prices = coverage["prices"]
         lines.append(
             f"- **价格**：{prices['rows']:,} 行 / {prices['tickers']} 只，"
-            f"{prices['date_min']} → {prices['date_max']}；拼接：{prices['splice']}"
+            f"{prices['date_min']} → {prices['date_max']}；去重：{prices['dedupe_rule']}"
         )
+        for segment in prices["segments"]:
+            lines.append(
+                f"  - `{segment['name']}`：{segment['rows']:,} 行（{segment['span']}）"
+            )
         index = coverage["index"]
         lines.append(
-            f"- **指数**：序列 {index['series_days']} 个交易日；冻结窗口内日历日覆盖 "
-            f"{index['window_days_covered']} 天"
+            f"- **指数**：序列 {index['series_days']} 个交易日；窗口交易日覆盖 "
+            f"{index['window_trading_days_covered']}/{index['window_trading_days_total']}"
         )
         fundamentals = coverage.get("fundamentals")
         if fundamentals:
