@@ -17,7 +17,7 @@
    "title": "PRB1：partial_rebalance 预注册 A/B 实现 + 全矩阵执行 + 报告（只算不裁）",
    "priority": "high",
    "executor": "generator",
-   "status": "pending",
+   "status": "done",
    "acceptance": "【spec 工作流 B】(1) 完全复用 B112 数据链（1500 宇宙/价格/基本面/指数，零新 API 成本）与冻结窗口 2019-04-01→2026-07-31、机械 70/30；(2) V0=partial_rebalance False（生产现状）、V1=True，两 mode×两本金档全矩阵；(3) 报告含判据输入（OOS ΔCAGR、OOS ΔMaxDD、年化换手倍率）与并列披露（全样本/OOS 指标、分年、H6 逐段覆盖）；(4) 产物禁词机检 clean；Gates: ruff+mypy+pytest 不回归。",
    "design_decisions": [
     "判据预注册：OOS ΔCAGR≥+1.0pp（主）、OOS ΔMaxDD≥−2.0pp、年化换手倍率≤3.0×（副）。",
