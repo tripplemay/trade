@@ -1,41 +1,34 @@
 {
- "status": "done",
- "total_features": 2,
- "completed_features": 2,
- "fix_rounds": 2,
- "current_sprint": "F002",
+ "status": "building",
+ "total_features": 3,
+ "completed_features": 0,
+ "fix_rounds": 0,
+ "current_sprint": "F001",
  "last_updated": "2026-08-06",
- "user_goal": "B112 cn_attack 防御闸预注册 A/B 裁定批（backlog BL-B112-DFG1，用户 2026-08-04 选定单条目开批）。背景：cn_attack 前向 −41%/6 周（无防御闸的动量多头撞均值回归 regime）；只测 MA200 指数趋势闸这一风险层改造，禁新信号（冻结不变）。零生产部署；判据预注册（ΔMaxDD 全样本≥+5pp/OOS≥+3pp；ΔCAGR≥−2pp；ΔSharpe≥−0.05），裁定归 Codex。",
+ "user_goal": "B113 双条目批（用户 2026-08-06 选定）：OPS1 备份清理鲁棒性（小修）+ PRB1 partial_rebalance 预注册 A/B 裁定（复用 B112 数据链，零新 API 成本）。",
  "reference_docs": [
-  "docs/specs/B112-cn-attack-defense-gate-spec.md",
-  "docs/research/ashare-strategy-review-2026-08-04.md"
+  "docs/specs/B113-backup-cleanup-and-partial-rebalance-spec.md",
+  "docs/test-reports/B112-signoff-2026-08-06.md"
  ],
  "docs": {
-  "spec": "docs/specs/B112-cn-attack-defense-gate-spec.md",
+  "spec": "docs/specs/B113-backup-cleanup-and-partial-rebalance-spec.md",
   "runbook": null,
-  "signoff": "docs/test-reports/B112-signoff-2026-08-06.md",
+  "signoff": null,
   "framework_reviewed": false
  },
  "role_assignments": null,
- "evaluator_feedback": {
-  "summary": "B112 fix-round 2 复验 PASS；F001/F002 全部签收。机制档 pure/quality 均 NO-GO，quality 10 万容量档单独 GO。",
-  "pass_count": 2,
-  "partial_count": 0,
-  "fail_count": 0,
-  "report": "docs/test-reports/B112-signoff-2026-08-06.md",
-  "evidence": "docs/test-reports/B112-F002-independent-evidence-2026-08-06.json",
-  "issues": []
- },
+ "evaluator_feedback": null,
  "generator_handoff": {
   "workflow_A_F001_F004": "已推 main,CI 全绿(修了一次 backend mypy-strict-on-tests 触红:commit 37a594c),自动链式部署。★F006 须 L2 真机核验(不能只看单测):(1)momentum 候选池只剩 ETF、不再持 CAT/HD——部署后下次 recommendations 日 timer 跑出的 recommendation_snapshot;(2)us_quality 因子非 NaN 数>0 且真实持仓>0(VM 统一 CSV 含 A 股场景);(3)regime as_of_date 前进——★依赖 daily+Persistent timer 部署后跑一轮,原冻结在 2026-05-29;(4)45 天 staleness 告警可触发(monitoring_target_stale)、all-NaN us_quality→fallback 且不再报 scored/data_source 不报 real;(5)成本上升是预期内须量化(修复前后调仓次数/费用),F004 数字见 docs/research/B111-F004-cost-caliber-reconciliation.md(回测 3bps 单边 vs paper 10bps 双边=6.67×)。逐条审 H1-H4,特别 H1(只改诊断§6 路径无策略设计意图变更)。",
   "workflow_B_F005": "★只算不裁(H7)。产物:docs/audits/B111-F005-low-vol-first-look.json(+.md 人读摘要,均 banned-word clean)。工具:scripts/research/ashare_pit/low_vol.py(核心)/low_vol_cli.py(runner)/low_vol_liquidity_fetch.py(G2 唯一 API 成本,已跑,数据 data/research/B111/low_vol_liquidity.csv.gz force-add)。★F007 须自选样本独立复算 σ 排序+分组收益(Generator 未抽样)、独立执行 G1/G2 两硬门、按§B.3 双判据下裁定。已算值(背景不作证据):主口径几何超额+3.086pp/σ 比 0.857/11-11 年/P(>0)0.862;★G1(滞后一月)+2.210pp;★G2(剔最低30%流动性)+4.106pp/σ 比 0.843/11-11/P 0.915;算术 t 主 0.704(NW6 0.815)G2 1.031(NW6 1.327)均<2 已并排披露。窗口 132 月(12 月 σ burn-in,面板 144)。★F007 提醒:核查§B.0 诚实性声明是否被遵守、算术 t 是否并排非回避、不重犯 B110 F004 三处证据强度问题、逐条列已核对的冻结条款编号。★G2 流动性口径限制:amount 取形成日单日(无前视但非滚动均值)。"
  },
  "features": [
   "F001",
-  "F002"
+  "F002",
+  "F003"
  ],
  "session_notes": {
-  "planner": "2026-08-04 B112 planning→building。用户选定 DFG1 单条目开批（OPS1/PRB1 留池），解除暂停开批裁定。spec 已冻结：窗口 2019-04-01→2026-07-31（7 月崩盘月在窗内，预注册非挑选）、WF 70/30、10万/100万双本金、MA200 单闸禁扫参、fail-open+risk_flag、两 mode 独立裁定。判据阈值均带独立理由（5pp≈MaxDD 基数 9%、3pp 沿用 B106、−2pp 比 B082 的 3.15pp 教训更严一档、−0.05 噪声带）。H1 零生产部署——GO 后接产另批。",
+  "planner": "2026-08-06 B113 planning→building。用户选定 OPS1+PRB1 同批。★OPS1 根因明确（清理通配 /tmp/wb-* 误删他主文件权限失败 + set -e 传递非零退出）：修 trap 吞错 + 属主收窄。★PRB1 判据预注册：OOS ΔCAGR≥+1.0pp（主）+ OOS ΔMaxDD≥−2.0pp + 年化换手倍率≤3.0×（副）；数据链全复用 B112（1500 宇宙/拼接价格/回填基本面/CSI300），防御闸关闭单自变量；机制档（100万）与容量档（10万）分开裁。",
   "generator": "2026-08-06 B112 fixing 第二轮（残余 F001-4a/5a）收口 → reverifying。★4a：价格披露补第三段 prices_newnames 3,219,272 行（段行数改为 load_inputs 动态计算非硬编码），去重规则入产物；指数覆盖从日历日误标改为 window_trading_days_covered/total=1780/1780（分母=价格框交易日）。★5a：V0 零回归从「同实现两配置互拍」改为对 pre-B112 git 基线——git show 2e81836 动态加载历史引擎（sys.modules 注册咒语），逐字段对拍全中（权益曲线/逐日记录 astuple/终值/成本/换手/调仓/退出数）。★产物数字与上轮逐位一致（8 cell 缓存再生成，pure/quality Δ 不变）；禁词机检 clean；ruff/mypy/18 定向/1777 全量绿。★两轮复验经验：evaluator 的「证据完整性」粒度在上升——披露要逐段数清、口径措辞要精确、基线要对历史 commit 不只是同实现互拍。",
   "evaluator": "2026-08-06 B112 fix-round 2 reverifying→done。F001-4a：独立 verifier 逐段核对 2467137+44660+3219272=5731069 行，指数窗口交易日 1780/1780；H6 PASS。F001-5a：V0 当前默认与 None 仍精确相同，并以 pre-B112 2e81836 固定 golden 对拍权益曲线、daily records、终值、成本、换手、调仓/退出；改为提交内指纹以兼容 CI fetch-depth=1，五种 hash seed 通过。独立 10 checks、定向 18/18、全量 1777/1777、ruff/mypy/compile、Python CI 31141903592、Backend CI 31141903609、Deploy 31142505697 全绿。最终机制裁定 pure NO-GO、quality NO-GO；quality 10万容量档单独 GO。签收 docs/test-reports/B112-signoff-2026-08-06.md。"
  }
