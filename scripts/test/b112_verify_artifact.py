@@ -83,6 +83,16 @@ def _expected_gate_states(
 def verify(args: argparse.Namespace) -> dict[str, Any]:
     payload = json.loads(args.artifact.read_text(encoding="utf-8"))
     price_frames = [pd.read_pickle(path) for path in args.prices]
+    price_segment_observations = []
+    for path, frame in zip(args.prices, price_frames, strict=True):
+        dates = pd.to_datetime(frame["date"])
+        price_segment_observations.append(
+            {
+                "path": str(path),
+                "rows": int(len(frame)),
+                "span": f"{dates.min().date()} → {dates.max().date()}",
+            }
+        )
     prices = pd.concat(price_frames, ignore_index=True)
     prices["date"] = pd.to_datetime(prices["date"])
     prices = prices.drop_duplicates(["date", "ticker"], keep="first")
@@ -163,6 +173,20 @@ def verify(args: argparse.Namespace) -> dict[str, Any]:
     price_coverage = coverage.get("prices", {})
     universe_coverage = coverage.get("universe", {})
     index_coverage = coverage.get("index", {})
+    recorded_price_segments = price_coverage.get("segments", [])
+    price_segments_match = len(recorded_price_segments) == len(price_segment_observations)
+    if price_segments_match:
+        for recorded, observed in zip(
+            recorded_price_segments, price_segment_observations, strict=True
+        ):
+            if (
+                Path(observed["path"]).stem not in recorded.get("name", "")
+                or recorded.get("rows") != observed["rows"]
+                or recorded.get("span") != observed["span"]
+            ):
+                price_segments_match = False
+                break
+    index_window_covered = int(window_dates.isin(index.index).sum())
     annual_turnover_present = all(
         any(
             key in cell[arm]
@@ -185,13 +209,15 @@ def verify(args: argparse.Namespace) -> dict[str, Any]:
         "h6_price_splice_discloses_new_names": "prices_newnames" in price_coverage.get(
             "splice", ""
         ),
+        "h6_price_segments_match_inputs": price_segments_match,
         "h6_universe_counts_match_inputs": (
             universe_coverage.get("n_blocks") == universe_observation["universe_blocks"]
             and universe_coverage.get("size_min") == universe_observation["universe_size_min"]
             and universe_coverage.get("size_max") == universe_observation["universe_size_max"]
         ),
         "h6_index_coverage_matches_trading_calendar": (
-            index_coverage.get("window_days_covered") == int(window_dates.isin(index.index).sum())
+            index_coverage.get("window_trading_days_covered") == index_window_covered
+            and index_coverage.get("window_trading_days_total") == len(window_dates)
         ),
         "annual_turnover_declared": annual_turnover_present,
     }
@@ -205,7 +231,8 @@ def verify(args: argparse.Namespace) -> dict[str, Any]:
             "window_first_date": window_dates[0].date().isoformat(),
             "window_last_date": window_dates[-1].date().isoformat(),
             "mechanical_split_date": expected_split,
-            "index_window_coverage": int(window_dates.isin(index.index).sum()),
+            "index_window_coverage": index_window_covered,
+            "price_segments": price_segment_observations,
             **universe_observation,
         },
         "checks": checks,

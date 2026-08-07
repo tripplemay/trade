@@ -5,7 +5,8 @@
     "h6_coverage_declared_in_artifact": true,
     "h6_index_coverage_matches_trading_calendar": true,
     "h6_price_counts_match_inputs": true,
-    "h6_price_splice_discloses_new_names": false,
+    "h6_price_segments_match_inputs": true,
+    "h6_price_splice_discloses_new_names": true,
     "h6_universe_counts_match_inputs": true,
     "mechanical_split_matches": true,
     "metric_deltas_match": true
@@ -14,6 +15,23 @@
   "input_observations": {
     "index_window_coverage": 1780,
     "mechanical_split_date": "2024-05-22",
+    "price_segments": [
+      {
+        "path": "data/research/b070/b081_prices_cache.pkl",
+        "rows": 2467137,
+        "span": "2018-01-02 → 2026-06-18"
+      },
+      {
+        "path": "data/research/b112/b112_prices_ext.pkl",
+        "rows": 44660,
+        "span": "2026-06-22 → 2026-07-31"
+      },
+      {
+        "path": "data/research/b112/prices_newnames.pkl",
+        "rows": 3219272,
+        "span": "2018-01-02 → 2026-07-31"
+      }
+    ],
     "universe_blocks": 30,
     "universe_size_max": 1500,
     "universe_size_min": 1500,
