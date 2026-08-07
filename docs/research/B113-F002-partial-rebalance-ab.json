@@ -1,0 +1,463 @@
+{
+  "ab_caliber": "V0=partial_rebalance False（生产现状全 band）vs V1=True（per-name 阈值 0.5%，聚合计量带绕过）；防御闸关闭，单自变量",
+  "comparisons": {
+    "pure_momentum__100000": {
+      "annual_turnover_ratio": 0.9209006566893854,
+      "deltas": {
+        "full": {
+          "delta_cagr_pp": 1.2610658226303806,
+          "delta_max_drawdown_pp": 3.695878584498735,
+          "delta_sharpe": 0.2833414300105661
+        },
+        "oos": {
+          "delta_cagr_pp": -0.1103311887074021,
+          "delta_max_drawdown_pp": -1.6749669567909076,
+          "delta_sharpe": 0.5540125794376729
+        }
+      },
+      "v0": {
+        "annual_turnover": 190.09283564308086,
+        "capital": 100000.0,
+        "ending_value": 33848.96759389784,
+        "mode": "pure_momentum",
+        "per_year_returns": {
+          "2019": -0.12853724766349162,
+          "2020": -0.06431707223509642,
+          "2021": -0.07386833274884264,
+          "2022": -0.20675263232634733,
+          "2023": -0.1718451064592379,
+          "2024": -0.13536504755805634,
+          "2025": -0.14146557483931377,
+          "2026": -0.10202535596847884
+        },
+        "rebalance_count": 1777,
+        "segments": {
+          "full": {
+            "annualized_return": -0.1373490082735359,
+            "annualized_volatility": 0.12067600043985402,
+            "calmar_ratio": -0.20235088282746225,
+            "cumulative_return": -0.6615103240610216,
+            "max_drawdown": -0.6787665383730931,
+            "profit_loss_ratio": 1.1153456263187855,
+            "sharpe_ratio": -1.2106781526810877,
+            "sortino_ratio": -1.5597924559141265,
+            "total_turnover": 1342.719235891603,
+            "win_rate": 0.41540191118605957
+          },
+          "oos": {
+            "annualized_return": -0.13943235745968574,
+            "annualized_volatility": 0.06902416802701998,
+            "calmar_ratio": -0.4765359581757769,
+            "cumulative_return": -0.27998851319339124,
+            "max_drawdown": -0.29259566894688394,
+            "profit_loss_ratio": 1.4054700181921886,
+            "sharpe_ratio": -2.2190919038023127,
+            "sortino_ratio": -2.9309332385680427,
+            "total_turnover": 1342.719235891603,
+            "win_rate": 0.30639097744360905
+          }
+        },
+        "split_date": "2024-05-22",
+        "total_cost": 62449.216317102284,
+        "total_turnover": 1342.719235891603,
+        "trading_days": 1780,
+        "variant": "v0_full_band"
+      },
+      "v1": {
+        "annual_turnover": 175.05661717566056,
+        "capital": 100000.0,
+        "ending_value": 37649.320513381346,
+        "mode": "pure_momentum",
+        "per_year_returns": {
+          "2019": -0.1287119403422461,
+          "2020": -0.046161373675288164,
+          "2021": -0.044823320162340474,
+          "2022": -0.15932651383518603,
+          "2023": -0.20538313740176795,
+          "2024": -0.11159516668102243,
+          "2025": -0.13736214089955656,
+          "2026": -0.10606809022599772
+        },
+        "rebalance_count": 1779,
+        "segments": {
+          "full": {
+            "annualized_return": -0.1247383500472321,
+            "annualized_volatility": 0.13876821969998615,
+            "calmar_ratio": -0.1943546950872483,
+            "cumulative_return": -0.6235067948661865,
+            "max_drawdown": -0.6418077525281057,
+            "profit_loss_ratio": 1.0873547080525485,
+            "sharpe_ratio": -0.9273367226705216,
+            "sortino_ratio": -1.2193036188032054,
+            "total_turnover": 1236.5110260820468,
+            "win_rate": 0.4362001124227094
+          },
+          "oos": {
+            "annualized_return": -0.14053566934675976,
+            "annualized_volatility": 0.09169643831014615,
+            "calmar_ratio": -0.4543002652682264,
+            "cumulative_return": -0.2820063152228087,
+            "max_drawdown": -0.309345338514793,
+            "profit_loss_ratio": 1.3322131415083103,
+            "sharpe_ratio": -1.6650793243646398,
+            "sortino_ratio": -2.2302191230702286,
+            "total_turnover": 1236.5110260820468,
+            "win_rate": 0.34774436090225563
+          }
+        },
+        "split_date": "2024-05-22",
+        "total_cost": 61526.23366661832,
+        "total_turnover": 1236.5110260820468,
+        "trading_days": 1780,
+        "variant": "v1_partial"
+      }
+    },
+    "pure_momentum__1000000": {
+      "annual_turnover_ratio": 0.9907134007420061,
+      "deltas": {
+        "full": {
+          "delta_cagr_pp": -0.41905271182784976,
+          "delta_max_drawdown_pp": -1.4697287335307063,
+          "delta_sharpe": -0.004334172603483358
+        },
+        "oos": {
+          "delta_cagr_pp": 0.2619990889830004,
+          "delta_max_drawdown_pp": -1.4346708733398772,
+          "delta_sharpe": 0.018323821955750844
+        }
+      },
+      "v0": {
+        "annual_turnover": 47.352993545406456,
+        "capital": 1000000.0,
+        "ending_value": 521417.917242229,
+        "mode": "pure_momentum",
+        "per_year_returns": {
+          "2019": -0.13190810926282492,
+          "2020": 0.2322980644992214,
+          "2021": 0.049650598486142394,
+          "2022": -0.18669625995546857,
+          "2023": -0.34066972890188163,
+          "2024": 0.0005304568365218643,
+          "2025": -0.059188750165019566,
+          "2026": -0.10292010707762855
+        },
+        "rebalance_count": 1044,
+        "segments": {
+          "full": {
+            "annualized_return": -0.0849870357409559,
+            "annualized_volatility": 0.32210194235506495,
+            "calmar_ratio": -0.12788930952016025,
+            "cumulative_return": -0.47858208275777103,
+            "max_drawdown": -0.6645358870090599,
+            "profit_loss_ratio": 0.9478400147534507,
+            "sharpe_ratio": -0.12493913476852912,
+            "sortino_ratio": -0.1834294533615223,
+            "total_turnover": 334.4774940905694,
+            "win_rate": 0.508150646430579
+          },
+          "oos": {
+            "annualized_return": -0.06785638746554501,
+            "annualized_volatility": 0.31204395433666987,
+            "calmar_ratio": -0.2215924069469245,
+            "cumulative_return": -0.14248370671785182,
+            "max_drawdown": -0.3062216273583683,
+            "profit_loss_ratio": 0.9792857161673147,
+            "sharpe_ratio": -0.07757902956079643,
+            "sortino_ratio": -0.11568138906202109,
+            "total_turnover": 334.4774940905694,
+            "win_rate": 0.5018796992481203
+          }
+        },
+        "split_date": "2024-05-22",
+        "total_cost": 239573.06903877115,
+        "total_turnover": 334.4774940905694,
+        "trading_days": 1780,
+        "variant": "v0_full_band"
+      },
+      "v1": {
+        "annual_turnover": 46.913245270683895,
+        "capital": 1000000.0,
+        "ending_value": 504161.2727783929,
+        "mode": "pure_momentum",
+        "per_year_returns": {
+          "2019": -0.14151545703679314,
+          "2020": 0.24200163120562568,
+          "2021": 0.08696085982996449,
+          "2022": -0.20214191090636602,
+          "2023": -0.36884324293052395,
+          "2024": 0.009578448071389634,
+          "2025": -0.07117472779820377,
+          "2026": -0.09873293483676426
+        },
+        "rebalance_count": 1744,
+        "segments": {
+          "full": {
+            "annualized_return": -0.0891775628592344,
+            "annualized_volatility": 0.32948831975707166,
+            "calmar_ratio": -0.13129153025441295,
+            "cumulative_return": -0.49583872722160716,
+            "max_drawdown": -0.6792331743443669,
+            "profit_loss_ratio": 0.9471435079617724,
+            "sharpe_ratio": -0.12927330737201248,
+            "sortino_ratio": -0.18958696050066048,
+            "total_turnover": 331.37133564213224,
+            "win_rate": 0.508150646430579
+          },
+          "oos": {
+            "annualized_return": -0.065236396575715,
+            "annualized_volatility": 0.31963267663767064,
+            "calmar_ratio": -0.20350230896491348,
+            "cumulative_return": -0.13720241428784252,
+            "max_drawdown": -0.32056833609176705,
+            "profit_loss_ratio": 0.9533241588336626,
+            "sharpe_ratio": -0.05925520760504559,
+            "sortino_ratio": -0.08951875845369464,
+            "total_turnover": 331.37133564213224,
+            "win_rate": 0.5093984962406015
+          }
+        },
+        "split_date": "2024-05-22",
+        "total_cost": 241964.45900851887,
+        "total_turnover": 331.37133564213224,
+        "trading_days": 1780,
+        "variant": "v1_partial"
+      }
+    },
+    "quality_momentum__100000": {
+      "annual_turnover_ratio": 0.8746966300989837,
+      "deltas": {
+        "full": {
+          "delta_cagr_pp": 4.844859901468423,
+          "delta_max_drawdown_pp": 10.626459838081608,
+          "delta_sharpe": 0.4046785919224424
+        },
+        "oos": {
+          "delta_cagr_pp": 5.031585482284539,
+          "delta_max_drawdown_pp": 8.46275538164509,
+          "delta_sharpe": 0.9506460026002947
+        }
+      },
+      "v0": {
+        "annual_turnover": 161.8561610626655,
+        "capital": 100000.0,
+        "ending_value": 81205.61484429259,
+        "mode": "quality_momentum",
+        "per_year_returns": {
+          "2019": 0.03200724881657746,
+          "2020": 0.14824795883278763,
+          "2021": -0.09624614531393749,
+          "2022": -0.060576084055486756,
+          "2023": -0.05799553989298578,
+          "2024": -0.046038863414231246,
+          "2025": -0.04204420319842672,
+          "2026": -0.09128645053291551
+        },
+        "rebalance_count": 1779,
+        "segments": {
+          "full": {
+            "annualized_return": -0.027994943293383145,
+            "annualized_volatility": 0.12009327179945918,
+            "calmar_ratio": -0.07787625884720231,
+            "cumulative_return": -0.18794385155707405,
+            "max_drawdown": -0.35947981718421823,
+            "profit_loss_ratio": 0.9980517288961857,
+            "sharpe_ratio": -0.18541773737039322,
+            "sortino_ratio": -0.25308622071694886,
+            "total_turnover": 1143.269709093431,
+            "win_rate": 0.4924114671163575
+          },
+          "oos": {
+            "annualized_return": -0.10545381054204872,
+            "annualized_volatility": 0.08176006555313256,
+            "calmar_ratio": -0.45005208439169214,
+            "cumulative_return": -0.21633763743477707,
+            "max_drawdown": -0.2343146808987324,
+            "profit_loss_ratio": 0.975728447843331,
+            "sharpe_ratio": -1.371175777532379,
+            "sortino_ratio": -1.9096463117574511,
+            "total_turnover": 1143.269709093431,
+            "win_rate": 0.44548872180451127
+          }
+        },
+        "split_date": "2024-05-22",
+        "total_cost": 89314.23715070666,
+        "total_turnover": 1143.269709093431,
+        "trading_days": 1780,
+        "variant": "v0_full_band"
+      },
+      "v1": {
+        "annual_turnover": 141.57503864227186,
+        "capital": 100000.0,
+        "ending_value": 116003.75807555733,
+        "mode": "quality_momentum",
+        "per_year_returns": {
+          "2019": 0.035116430683855615,
+          "2020": 0.2270143126891695,
+          "2021": -0.08516055516264465,
+          "2022": 0.01440039727904785,
+          "2023": -0.03438780630827476,
+          "2024": 0.06356753360103018,
+          "2025": -0.010189485207254823,
+          "2026": -0.07249166180273825
+        },
+        "rebalance_count": 1779,
+        "segments": {
+          "full": {
+            "annualized_return": 0.02045365572130109,
+            "annualized_volatility": 0.1417145252819722,
+            "calmar_ratio": 0.08077577571347097,
+            "cumulative_return": 0.1600375807555734,
+            "max_drawdown": -0.25321521880340214,
+            "profit_loss_ratio": 1.002787020954711,
+            "sharpe_ratio": 0.21926085455204913,
+            "sortino_ratio": 0.31405865613689543,
+            "total_turnover": 1000.0141618382695,
+            "win_rate": 0.5087127599775154
+          },
+          "oos": {
+            "annualized_return": -0.055137955719203324,
+            "annualized_volatility": 0.12208407558374787,
+            "calmar_ratio": -0.3683546928447264,
+            "cumulative_return": -0.11668149481974921,
+            "max_drawdown": -0.1496871270822815,
+            "profit_loss_ratio": 1.0465998610149712,
+            "sharpe_ratio": -0.42052977493208427,
+            "sortino_ratio": -0.6343599716788346,
+            "total_turnover": 1000.0141618382695,
+            "win_rate": 0.4699248120300752
+          }
+        },
+        "split_date": "2024-05-22",
+        "total_cost": 93332.7583694434,
+        "total_turnover": 1000.0141618382695,
+        "trading_days": 1780,
+        "variant": "v1_partial"
+      }
+    },
+    "quality_momentum__1000000": {
+      "annual_turnover_ratio": 1.1944192199438768,
+      "deltas": {
+        "full": {
+          "delta_cagr_pp": 0.6116395169275979,
+          "delta_max_drawdown_pp": -0.36258817535292365,
+          "delta_sharpe": 0.013333148334779388
+        },
+        "oos": {
+          "delta_cagr_pp": 0.8074537365729606,
+          "delta_max_drawdown_pp": -0.23961512258569573,
+          "delta_sharpe": 0.02656282441315505
+        }
+      },
+      "v0": {
+        "annual_turnover": 25.27202464934823,
+        "capital": 1000000.0,
+        "ending_value": 2461336.211596583,
+        "mode": "quality_momentum",
+        "per_year_returns": {
+          "2019": 0.24412944453073182,
+          "2020": 0.6990665940139416,
+          "2021": 0.05592389417769872,
+          "2022": -0.1118926300073424,
+          "2023": -0.060624923854168844,
+          "2024": 0.1386976745626498,
+          "2025": 0.3406865888304378,
+          "2026": -0.18794384198084746
+        },
+        "rebalance_count": 642,
+        "segments": {
+          "full": {
+            "annualized_return": 0.13071056781572987,
+            "annualized_volatility": 0.27364803023745754,
+            "calmar_ratio": 0.3330514744882228,
+            "cumulative_return": 1.4613362115965831,
+            "max_drawdown": -0.3924635614257039,
+            "profit_loss_ratio": 0.9556839602472736,
+            "sharpe_ratio": 0.6036987093318767,
+            "sortino_ratio": 0.8359558795150319,
+            "total_turnover": 178.508745539047,
+            "win_rate": 0.5368184373243395
+          },
+          "oos": {
+            "annualized_return": 0.03551408469011452,
+            "annualized_volatility": 0.30449604435573385,
+            "calmar_ratio": 0.10800854824458256,
+            "cumulative_return": 0.07933042902024323,
+            "max_drawdown": -0.3288080922048299,
+            "profit_loss_ratio": 1.0027074741978332,
+            "sharpe_ratio": 0.2713838555480256,
+            "sortino_ratio": 0.37028115844125165,
+            "total_turnover": 178.508745539047,
+            "win_rate": 0.5112781954887218
+          }
+        },
+        "split_date": "2024-05-22",
+        "total_cost": 356379.97974941763,
+        "total_turnover": 178.508745539047,
+        "trading_days": 1780,
+        "variant": "v0_full_band"
+      },
+      "v1": {
+        "annual_turnover": 30.185391968076935,
+        "capital": 1000000.0,
+        "ending_value": 2560643.422345975,
+        "mode": "quality_momentum",
+        "per_year_returns": {
+          "2019": 0.24309602994597168,
+          "2020": 0.7280318061366664,
+          "2021": 0.05574713312634527,
+          "2022": -0.10495743541154523,
+          "2023": -0.061629140919474024,
+          "2024": 0.13400199491045428,
+          "2025": 0.35756421825893203,
+          "2026": -0.18173008123286538
+        },
+        "rebalance_count": 1678,
+        "segments": {
+          "full": {
+            "annualized_return": 0.13682696298500585,
+            "annualized_volatility": 0.2794094475032992,
+            "calmar_ratio": 0.3454446093961932,
+            "cumulative_return": 1.5606434223459749,
+            "max_drawdown": -0.3960894431792331,
+            "profit_loss_ratio": 0.9451419702375984,
+            "sharpe_ratio": 0.6170318576666561,
+            "sortino_ratio": 0.8534959916079377,
+            "total_turnover": 213.21427659990852,
+            "win_rate": 0.5401911186059584
+          },
+          "oos": {
+            "annualized_return": 0.04358862205584413,
+            "annualized_volatility": 0.31145502750340426,
+            "calmar_ratio": 0.13160647220078925,
+            "cumulative_return": 0.09782651052697267,
+            "max_drawdown": -0.3312042434306869,
+            "profit_loss_ratio": 0.9851146871321228,
+            "sharpe_ratio": 0.2979466799611806,
+            "sortino_ratio": 0.4075937796740417,
+            "total_turnover": 213.21427659990852,
+            "win_rate": 0.5169172932330827
+          }
+        },
+        "split_date": "2024-05-22",
+        "total_cost": 435845.44222184434,
+        "total_turnover": 213.21427659990852,
+        "trading_days": 1780,
+        "variant": "v1_partial"
+      }
+    }
+  },
+  "criterion_thresholds": {
+    "main_oos_delta_cagr_min_pp": 1.0,
+    "note": "阈值为陈述值，独立于观测；施加与裁定归 F003（H7）。",
+    "secondary_annual_turnover_ratio_max": 3.0,
+    "secondary_oos_delta_maxdd_min_pp": -2.0
+  },
+  "frozen_window": {
+    "end": "2026-07-31",
+    "is_oos": "交易日机械 70/30（分割日见各 cell split_date）",
+    "start": "2019-04-01"
+  },
+  "generator_boundary": "H7：本产物只含原始统计与判据输入，不含任何裁定；判据的施加与裁定归 F003 的 Codex（铁律 #4）。",
+  "honesty_statement": "本批次的判据与口径先于任何 A/B 结果冻结（B113 spec §B.0/B.1）；partial_rebalance 的 B081 实测值（OOS +28.4%→+32.7%）只作背景，不用于拟合或挑选窗口。本产物只含原始统计，裁定归 F003 的 Codex（H7）。",
+  "input_coverage": "复用 B112 数据链（见其产物 input_coverage，同源同文件）"
+}
