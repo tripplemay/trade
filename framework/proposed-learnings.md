@@ -523,3 +523,39 @@
 <!-- 2026-07-07: v0.9.55 沉淀完成（B080-B098 队列清扫,用户 2026-07-07「沉淀 learnings,全批准」）：9 条正式写入 + 1 条（P5-F2）先行已在 evaluator.md §33 仅归档。①B080 F002 + B081 F001 合并 → generator.md §41(a)(b)（trade/-edit 门禁 family,子集绿≠全绿）;②B080 F004 → generator.md §42（api.ts required 字段同 commit 补前端 fixture）;③B080 F005 → generator.md §43 + planner.md §种子数据落地路径（种子数据走 data-migration/部署链,勿只 bootstrap CLI）;④B081 F002/F003 → generator.md §44（执行限制 loop-level freeze/restore）;⑤B081 F004 → generator.md §45（慢真机跑 resumable+pickle 抗 kill）+ README §经验教训「回测保真度」（★F005 更正版:容量下限非分数股假象,lot@10M 保留 99% edge）;⑥B083 F002 → evaluator.md §34（改动面 vs 红测面物理关联判 flake,rerun 不清=race 须真修,修正 §27）;⑦B087+B090 + B098 F002 planner 部分合并 → planner.md §done 收尾/开批前置 gate（signoff 落地 + 写入序列化）;⑧B098 F002 → harness-rules.md §启动流程（clone 后装 pre-commit 钩子）;⑨P5-F2 已在 evaluator.md §33 仅归档。归档 framework/archive/proposed-learnings-archive-v0.9.55.md。CHANGELOG v0.9.55。**活跃候选队列=空。** -->
 
 <!-- 2026-08-01: v0.9.56 沉淀完成（5 条，B109-B111，用户确认）：①B109 F002 Tushare 静默截断 → generator.md §46 + README §经验教训「外部数据源完整性不可假设」；②B109 F003 fix_rounds 双重计数 → 根 harness-rules.md §状态流转 递增方限定（framework/harness/harness-rules.md 同段同步）+ scripts/check_state_json.py 递增门禁；③B109 F003 退役判据 → evaluator.md §35 + README §经验教训；④B110 F004 裁定更正 → README §经验教训「裁定纪律」（内容 1/2/5）+ evaluator.md §36（内容 3/4）+ generator.md §47（内容 6，扩 §37）+ templates/signoff-report.md 新增「裁定核对清单」段；⑤B111 四件套 → generator.md §48（交易过滤按实际卖腿重验现金）+ generator.md §49（venv 探针覆盖 dev 依赖）+ evaluator.md §37（生产修复三件套证据）+ README §经验教训（environment.md 迁移当日同步）。归档：framework/archive/proposed-learnings-archive-v0.9.56.md。CHANGELOG v0.9.56。当前活动候选队列=空。 -->
+
+## [2026-08-06] Claude CLI + Codex — 来源：B112（防御闸 A/B 裁定批，两轮修复）
+
+**类型：** 新规律 ×3（evaluator signoff 沉淀）+ 新坑 ×3（generator 修复轮）
+
+**内容 1 — golden 测试不依赖 git show old-sha（CI 浅克隆 fetch-depth:1）。**
+固定历史基线应提交 golden 快照/指纹；golden 前必须 canonicalization
+（float `.14g`、set 排序、date isoformat），否则 hash seed / 1-ULP 噪声造假回归。
+（B112-F001-5a；落地实例 649c22f。）
+
+**内容 2 — 浮点回测产物的等价判据是数值容差，不是 canonical JSON hash。**
+同输入跨进程有 ≤3e-13 IEEE 末位噪声；hash 不同必须展开字段级 diff，
+≤1e-10 且仅数值末位可接受，超阈或非数值字段变化即 blocker。（B112 signoff S1。）
+
+**内容 3 — H6 覆盖披露必须逐段：名称、行数、跨度、去重优先级。**
+只报合并总数会漏掉占半数以上的输入段（B112-F001-4a：3.2M 行新名价格段漏报未被发现，
+指数「日历日」误标「交易日」）。
+
+**内容 4 — spec 冻结输入条款，落笔前必须核实全窗口可得性。**
+「top~1500 去偏 PIT 宇宙」在 2019-2026 全窗口本不存在（baostock 无 zz1000/800 dated 成分、
+生产宇宙 2021-09 才起且有偏差），验收才暴露 → 数据缺口条款应预设分支：
+「不可得 → 按数据缺口处理」，避免 fixing 轮才发现。
+
+**内容 5 — 「提交前可运行」升级为「HEAD 可从原始输入复跑」。**
+本地工作树修补未提交 = 验收方在 HEAD 复跑即死（B112-F001-2：日期 dtype 修复只存在本地）。
+交付含 runner 的产物前，必须在干净 stash 状态下从原始输入冒烟一遍。
+
+**内容 6 — 数据集拼接防方法论并集污染。**
+同 as_of 不同源的宇宙块按 (as_of,ticker) 并集会造出 1700+ 名伪宇宙（B112 实测）；
+拼接规则只能是「同源优先 + 异源补新块」，不得混合。
+
+**建议写入：** `framework/harness/generator.md`（内容 1/4/5/6）+
+`framework/harness/evaluator.md`（内容 2/3）+
+`framework/harness/planner.md`（内容 4 的 spec 起草 checklist）
+
+**状态：** 待确认

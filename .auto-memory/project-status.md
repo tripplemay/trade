@@ -5,24 +5,17 @@ type: project
 ---
 
 ## 当前状态
-- B112 → done（2026-08-06，fix_rounds=2，2/2）。
-- 签收：docs/test-reports/B112-signoff-2026-08-06.md；独立证据：
-  docs/test-reports/B112-F002-independent-evidence-2026-08-06.json。
-- 最终机制裁定（100 万档）：pure NO-GO；quality NO-GO。
-- 容量观察（10 万档）：pure NO-GO；quality GO，不覆盖其机制档失败。
-- H6：30×1500 PIT 宇宙；三段价格合计 5,731,069 行；CSI300 窗口交易日
-  1780/1780；V0 已对 pre-B112 2e81836 固定 golden。
-- 本地 18/18 定向、1777/1777 全量、ruff/mypy/compile 全绿；
-  Python CI 31141903592、Backend CI 31141903609、Deploy 31142505697 全绿。
-- 防御闸未接入 strategy_modes / precompute / timer / readiness；DATA_NO_GO 不变。
+- **B112 → `done`**（2026-08-06，fix_rounds=2，2/2）。签收 `docs/test-reports/B112-signoff-2026-08-06.md`（PASS）；CI 全绿（`649c22f`）。
+- **批次裁定（冻结判据，预注册）**：MA200 防御闸全样本 MaxDD 改善 4/4 档过主门 A（+8.15~+22.05pp），但 OOS 主门 B 仅 quality@10万 过（+5.62pp）。**pure 双档 NO-GO；quality 机制档（100万）NO-GO、容量档（10万）GO**。机制档未放行 → 无接产动作（H1 本批零生产变更）。
+- **实质资产**：top-1500 PIT 宇宙构建链（生产同源排序、含退市、剔 .BJ 披露）+ 深历史基本面回填（245k 行/3923 只/98.3%）+ 防御闸实现（默认关、pre-B112 golden 基线对拍）。
+- **★生产服务器 = `ssh deploysvr`**（194.238.26.173/root/kolmatrix_new）；旧 GCP IP 已退役。
+- 新信号搜索继续冻结（重开仅限数据类别改变）；`DATA_NO_GO` 不变。
 
 ## 遗留 / 跟踪
-- Soft-watch：跨进程浮点末位噪声 ≤3e-13；hash 差异须展开字段 diff，
-  ≤1e-10 且仅数值末位可接受，否则 blocker。
-- backlog：BL-B112-OPS1、BL-B112-PRB1 保留。
-- proposed-learnings 待 Planner done 阶段处理。
-- 生产服务器：ssh deploysvr（旧 GCP IP 已退役）。
+- backlog：BL-B112-OPS1（backup 清理鲁棒性，medium）；BL-B112-PRB1（partial_rebalance A/B，low）。`docs/test-reports/user_report/` 无用户反馈。
+- B112 soft-watch：S1 浮点末位噪声（hash 判据须用数值容差）；S2 spec 措辞「零生产部署」宜写「零生产接线/激活」。
+- 低波 first-look（B111）最终 NO-GO；cn_attack 前向 −41% 的观察序列继续（研究态 paper 每日运行）。
 
 ## 永久边界
-- research-safe / no-broker / no-AI 预测 / no 自动下单；A 股 PIT 禁 latest-wins。
-- Generator 不裁自己代码；被规则挡住不等于被验证；Generator 不得抽评测样本。
+- research-safe / no-broker / no-AI 预测 / no 自动下单；A 股 PIT 禁 latest-wins 等。
+- Generator 不裁自己代码（铁律 #4）；被规则挡住≠被验证过；Generator 不得抽评测样本。
