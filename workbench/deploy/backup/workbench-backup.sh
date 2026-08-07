@@ -52,7 +52,22 @@ log() {
 }
 
 cleanup_stage() {
-  rm -f /tmp/wb-*.db /tmp/wb-*.db.gz
+  # B113 F001 (OPS1): cleanup must NEVER fail the backup. Two bugs fixed:
+  #  1. The bare wildcard `rm -f /tmp/wb-*.db*` attempted to delete files owned
+  #     by OTHER users (e.g. a root-owned evidence copy /tmp/wb-ro.db), which
+  #     fails on the sticky /tmp — and with `set -e` the trap's non-zero exit
+  #     flipped a SUCCESSFUL backup to a systemd failure (prod 2026-08-01).
+  #  2. The sweep now only touches files owned by this user (`-O`), so foreign
+  #     files are skipped, and every failure is swallowed (`|| true`).
+  rm -f "${STAGE_FILE}" "${STAGE_GZ}" 2>/dev/null || true
+  local f
+  for f in /tmp/wb-*.db /tmp/wb-*.db.gz; do
+    [[ -e "$f" ]] || continue
+    if [[ -O "$f" ]]; then
+      rm -f "$f" 2>/dev/null || true
+    fi
+  done
+  return 0
 }
 trap cleanup_stage EXIT
 
