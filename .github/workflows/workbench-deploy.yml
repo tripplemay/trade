@@ -192,6 +192,12 @@ jobs:
           # silently matched nothing).
           rsync -a workbench/deploy/systemd "${STAGE_DIR}/"
 
+          # B113-F001-1 — ship the backup/restore scripts so deploy.sh's sync
+          # step can install them to /opt/workbench/ every deploy (the infra
+          # path was a one-time bootstrap copy that never tracked releases;
+          # without this directory in the tarball the sync is a no-op).
+          rsync -a workbench/deploy/backup "${STAGE_DIR}/"
+
           # B037-OPS1 — ship the versioned sudoers drop-in + the root-owned
           # install wrapper so the one-time admin sudoers update can source
           # them from the release tree (/srv/workbench/current/sudoers/). These
