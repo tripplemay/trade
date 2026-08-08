@@ -1,8 +1,8 @@
 {
- "status": "fixing",
+ "status": "reverifying",
  "total_features": 3,
  "completed_features": 1,
- "fix_rounds": 0,
+ "fix_rounds": 1,
  "current_sprint": "F001",
  "last_updated": "2026-08-08",
  "user_goal": "B113 双条目批（用户 2026-08-06 选定）：OPS1 备份清理鲁棒性（小修）+ PRB1 partial_rebalance 预注册 A/B 裁定（复用 B112 数据链，零新 API 成本）。",
@@ -45,7 +45,7 @@
  ],
  "session_notes": {
   "planner": "2026-08-06 B113 planning→building。用户选定 OPS1+PRB1 同批。★OPS1 根因明确（清理通配 /tmp/wb-* 误删他主文件权限失败 + set -e 传递非零退出）：修 trap 吞错 + 属主收窄。★PRB1 判据预注册：OOS ΔCAGR≥+1.0pp（主）+ OOS ΔMaxDD≥−2.0pp + 年化换手倍率≤3.0×（副）；数据链全复用 B112（1500 宇宙/拼接价格/回填基本面/CSI300），防御闸关闭单自变量；机制档（100万）与容量档（10万）分开裁。",
-  "generator": "2026-08-07 B113 F001/F002 done → verifying。★F001（OPS1）：backup cleanup trap 吞错+属主收窄，回归测试 3 用例过（ce9e376）。★F002（PRB1）：全复用 B112 数据链，8 cells 完成（~2.5h）；OOS ΔCAGR/ΔMaxDD/年化换手倍率：pure@10万 −0.11/−1.67pp/×0.92；pure@100万 +0.26/−1.43pp/×0.99；quality@10万 +5.03/+8.46pp/×0.87；quality@100万 +0.81/−0.24pp/×1.19。★与 B081 实测（OOS +4.3pp）方向同但数值异——宇宙口径（800→1500）+ 窗口（延伸至 2026-07）双重位移，已留痕。产物 docs/research/B113-F002-partial-rebalance-ab.{json,md}；禁词机检 clean；全量 1781 绿。★F003 复验要点：空 cache 可复跑；判据逐档（机制 100万/容量 10万分开）；换手倍率是年化比值。",
+  "generator": "2026-08-08 B113 fixing 第一轮（F001-1 生产 blocker）收口 → reverifying。★三层传播链才修通：(1) deploy.sh 加备份脚本同步步骤（每次部署 install release → /opt/workbench/，deploy 属主 0755）；(2) 发布包暂存段补 rsync workbench/deploy/backup（此前 tarball 根本不含该目录，同步找不到源）；(3) 同步源路径从 \\${RELEASE_DIR}/deploy/backup 修正为 \\${RELEASE_DIR}/backup（发布包实际结构），并把源缺失从 warning 升为 exit 1 硬失败（静默 no-op 连坑两次）。★生产验证（evaluator 要求的 root-owned marker 测试）：/opt 脚本 grep 到 B113 标记（mtime 当日）；root 属主 /tmp/wb-marker 在场时 workbench-backup.service Result=success/ExecMainStatus=0，marker 按属主规则保留未误删，side effect 已清。★chore-only commit 不触发链式部署的两次手动 dispatch 也留痕（paths-ignore 兜底路径）。★PRB1 裁定已由 evaluator 给出（pure 双档 NO-GO、quality 10万 GO/100万 NO-GO）；复验只需 F001-1。",
   "evaluator": "2026-08-08 B113 verifying→fixing。F001 仓库 L1 PASS（bash -n + scripts/test/b113_backup_cleanup_test.sh），但生产 service 实际 ExecStart=/opt/workbench/workbench-backup.sh，脚本仍为旧 cleanup_stage `rm -f /tmp/wb-*.db /tmp/wb-*.db.gz`；root-owned /tmp/wb-b113 marker 以 deploy 用户跑 cleanup_stage 复现 Operation not permitted，marker 已清理。F002 独立 verifier scripts/test/b113_verify_partial_rebalance_artifact.py PASS，PRB1 裁定：pure 10万/100万均 NO-GO；quality 10万容量档 GO、100万机制档 NO-GO。Blocker: docs/test-reports/B113-blocker-2026-08-08.md。"
  }
 }
