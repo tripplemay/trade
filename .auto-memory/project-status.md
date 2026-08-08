@@ -5,14 +5,14 @@ type: project
 ---
 
 ## 当前状态
-- **B112 → `done`**（2026-08-06，fix_rounds=2，2/2）。签收 `docs/test-reports/B112-signoff-2026-08-06.md`（PASS）；CI 全绿（`649c22f`）。
-- **批次裁定（冻结判据，预注册）**：MA200 防御闸全样本 MaxDD 改善 4/4 档过主门 A（+8.15~+22.05pp），但 OOS 主门 B 仅 quality@10万 过（+5.62pp）。**pure 双档 NO-GO；quality 机制档（100万）NO-GO、容量档（10万）GO**。机制档未放行 → 无接产动作（H1 本批零生产变更）。
-- **实质资产**：top-1500 PIT 宇宙构建链（生产同源排序、含退市、剔 .BJ 披露）+ 深历史基本面回填（245k 行/3923 只/98.3%）+ 防御闸实现（默认关、pre-B112 golden 基线对拍）。
+- **B113 → `fixing`**（2026-08-08，fix_rounds=0，1/3）。首轮 Codex 验收退回：`docs/test-reports/B113-blocker-2026-08-08.md`。
+- **Blocker：OPS1 未到真实 service**。仓库 `workbench/deploy/backup/workbench-backup.sh` L1 PASS，但生产 `workbench-backup.service` 实际 `ExecStart=/opt/workbench/workbench-backup.sh`；该脚本仍为旧 `rm -f /tmp/wb-*.db /tmp/wb-*.db.gz`，root-owned marker 以 deploy 用户复现 `Operation not permitted`（测试 marker 已清理）。
+- **PRB1 已可裁定但不签收整批**：F002 independent verifier PASS；pure 10万/100万均 **NO-GO**；quality 10万容量档 **GO**、100万机制档 **NO-GO**。机制档未放行 → 无接产动作。
 - **★生产服务器 = `ssh deploysvr`**（194.238.26.173/root/kolmatrix_new）；旧 GCP IP 已退役。
 - 新信号搜索继续冻结（重开仅限数据类别改变）；`DATA_NO_GO` 不变。
 
 ## 遗留 / 跟踪
-- backlog：BL-B112-OPS1（backup 清理鲁棒性，medium）；BL-B112-PRB1（partial_rebalance A/B，low）。`docs/test-reports/user_report/` 无用户反馈。
+- B113 待修：Generator 需让 `/opt/workbench/workbench-backup.sh` 获得 B113 cleanup 修复，或调整真实 service/runbook；复验必须重跑 root-owned `/tmp/wb-*` marker 跳过验证。
 - B112 soft-watch：S1 浮点末位噪声（hash 判据须用数值容差）；S2 spec 措辞「零生产部署」宜写「零生产接线/激活」。
 - 低波 first-look（B111）最终 NO-GO；cn_attack 前向 −41% 的观察序列继续（研究态 paper 每日运行）。
 

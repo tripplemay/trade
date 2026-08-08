@@ -6,7 +6,7 @@
    "title": "OPS1：workbench-backup 清理鲁棒性（清理失败不再 fail 整个备份）",
    "priority": "medium",
    "executor": "generator",
-   "status": "done",
+   "status": "pending",
    "acceptance": "【spec 工作流 A】(1) cleanup 不再影响退出码（trap 吞错）；(2) 通配清扫只删当前用户属主的 /tmp/wb-* 文件，他主文件跳过；(3) 备份主流程零改动；(4) 回归测试脚本：他主/不存在文件占位时清理不报错、不误删。Gates: bash 语法检查 + 测试脚本通过 + CI 绿。",
    "design_decisions": [
     "生产事故源：root 属主 /tmp/wb-ro.db 致 08-01 备份 service failed（备份文件本身已生成）。"
