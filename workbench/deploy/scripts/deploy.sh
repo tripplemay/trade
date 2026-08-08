@@ -415,12 +415,15 @@ ln -sfn "${RELEASE_DIR}" "${CURRENT_LINK}"
 # release. deploy-owned path — plain install, no sudo (deploy.sh runs as deploy).
 echo "→ sync backup scripts to /opt/workbench (B113-F001-1)"
 for script_name in workbench-backup.sh workbench-restore.sh; do
-  src="${RELEASE_DIR}/deploy/backup/${script_name}"
+  # 发布包结构：rsync workbench/deploy/backup → STAGE_DIR/backup（注意不是
+  # ${RELEASE_DIR}/deploy/backup——初次写错路径导致同步静默 no-op，生产实测）。
+  src="${RELEASE_DIR}/backup/${script_name}"
   if [[ -f "${src}" ]]; then
     install -m 0755 "${src}" "/opt/workbench/${script_name}"
     echo "  synced /opt/workbench/${script_name}"
   else
-    echo "::warning::${src} not found in the release; /opt/workbench/${script_name} left unchanged" >&2
+    echo "::error::${src} not found in the release; refusing to continue with a stale /opt/workbench/${script_name} (B113-F001-1)" >&2
+    exit 1
   fi
 done
 
