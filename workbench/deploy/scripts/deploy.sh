@@ -405,6 +405,25 @@ ln -sfn "${MARKET_SNAPSHOT_DIR}" "${RELEASE_DIR}/data/snapshots/market-context"
 echo "→ symlink ${CURRENT_LINK} → ${RELEASE_DIR}"
 ln -sfn "${RELEASE_DIR}" "${CURRENT_LINK}"
 
+# B113-F001-1 (OPS1 fix-round) — sync the backup + restore scripts to their
+# infra path. workbench-backup.service ExecStarts /opt/workbench/... which was
+# a ONE-TIME bootstrap install under the (now falsified) assumption that these
+# scripts never change: the B113 cleanup fix sat in the release tree for days
+# while production kept running the stale copy (Codex production blocker
+# B113-F001-1). Every deploy now syncs the release's scripts there, so the
+# infra path stays stable (survives release GC) while its CONTENT tracks the
+# release. deploy-owned path — plain install, no sudo (deploy.sh runs as deploy).
+echo "→ sync backup scripts to /opt/workbench (B113-F001-1)"
+for script_name in workbench-backup.sh workbench-restore.sh; do
+  src="${RELEASE_DIR}/deploy/backup/${script_name}"
+  if [[ -f "${src}" ]]; then
+    install -m 0755 "${src}" "/opt/workbench/${script_name}"
+    echo "  synced /opt/workbench/${script_name}"
+  else
+    echo "::warning::${src} not found in the release; /opt/workbench/${script_name} left unchanged" >&2
+  fi
+done
+
 # 3. Restart both workbench services. The deploy user's sudoers grant
 # (B021 prep #3) whitelists each service name individually, so we MUST
 # call systemctl restart once per service. A single combined call

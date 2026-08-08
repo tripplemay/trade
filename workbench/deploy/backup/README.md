@@ -13,6 +13,17 @@ The backup **target is pluggable** via `WORKBENCH_BACKUP_TARGET`:
 Both share the snapshot / gzip / retention logic; only the store put/list/rm
 primitives differ. See the "deploysvr / local target" section below.
 
+## Propagation — how these scripts reach production (B113-F001-1)
+
+`workbench-backup.service` ExecStarts `/opt/workbench/workbench-backup.sh`
+(an infra path, survives release GC). It was originally a **one-time bootstrap
+install** under the assumption the script never changes — falsified by B113:
+the cleanup fix sat in the release tree while production ran the stale copy.
+**`deploy.sh` now syncs both scripts from the release on every deploy**
+(`${RELEASE_DIR}/deploy/backup/{workbench-backup.sh,workbench-restore.sh}` →
+`/opt/workbench/`, deploy-owned, 0755). Editing them in the repo is sufficient;
+no manual VM copy step.
+
 This directory ships:
 
 | File | Role |
