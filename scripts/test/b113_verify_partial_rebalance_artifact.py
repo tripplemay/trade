@@ -108,17 +108,33 @@ def verify() -> dict[str, dict[str, str]]:
             _fail(f"{key}: capital mismatch")
         if v0["variant"] != "v0_full_band" or v1["variant"] != "v1_partial":
             _fail(f"{key}: variant mismatch")
-        if v0["split_date"] != EXPECTED_SPLIT_DATE or v1["split_date"] != EXPECTED_SPLIT_DATE:
+        if (
+            v0["split_date"] != EXPECTED_SPLIT_DATE
+            or v1["split_date"] != EXPECTED_SPLIT_DATE
+        ):
             _fail(f"{key}: split date mismatch")
-        if v0["trading_days"] != EXPECTED_TRADING_DAYS or v1["trading_days"] != EXPECTED_TRADING_DAYS:
+        if (
+            v0["trading_days"] != EXPECTED_TRADING_DAYS
+            or v1["trading_days"] != EXPECTED_TRADING_DAYS
+        ):
             _fail(f"{key}: trading days mismatch")
 
         for arm_name, arm in (("v0", v0), ("v1", v1)):
-            recomputed_annual = float(arm["total_turnover"]) / (float(arm["trading_days"]) / 252.0)
-            _assert_close(f"{key}.{arm_name}.annual_turnover", float(arm["annual_turnover"]), recomputed_annual)
+            recomputed_annual = float(arm["total_turnover"]) / (
+                float(arm["trading_days"]) / 252.0
+            )
+            _assert_close(
+                f"{key}.{arm_name}.annual_turnover",
+                float(arm["annual_turnover"]),
+                recomputed_annual,
+            )
 
         recomputed_ratio = float(v1["annual_turnover"]) / float(v0["annual_turnover"])
-        _assert_close(f"{key}.annual_turnover_ratio", float(comp["annual_turnover_ratio"]), recomputed_ratio)
+        _assert_close(
+            f"{key}.annual_turnover_ratio",
+            float(comp["annual_turnover_ratio"]),
+            recomputed_ratio,
+        )
 
         for segment in ("full", "oos"):
             expected_cagr = _segment_delta_pp(v0, v1, segment, "annualized_return")
@@ -146,8 +162,14 @@ def verify() -> dict[str, dict[str, str]]:
         oos = comp["deltas"]["oos"]
         passes = {
             "cagr": float(oos["delta_cagr_pp"]) >= thresholds["main_oos_delta_cagr_min_pp"],
-            "maxdd": float(oos["delta_max_drawdown_pp"]) >= thresholds["secondary_oos_delta_maxdd_min_pp"],
-            "turnover": float(comp["annual_turnover_ratio"]) <= thresholds["secondary_annual_turnover_ratio_max"],
+            "maxdd": (
+                float(oos["delta_max_drawdown_pp"])
+                >= thresholds["secondary_oos_delta_maxdd_min_pp"]
+            ),
+            "turnover": (
+                float(comp["annual_turnover_ratio"])
+                <= thresholds["secondary_annual_turnover_ratio_max"]
+            ),
         }
         verdict = "GO" if all(passes.values()) else "NO-GO"
         verdicts.setdefault(mode, {})[CAPITAL_VERDICT_LABEL[capital]] = verdict
